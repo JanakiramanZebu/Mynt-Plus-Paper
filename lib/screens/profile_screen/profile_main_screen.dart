@@ -550,17 +550,15 @@ class UserAccountScreen extends ConsumerWidget {
 
           /// 🔹 Version
           tapTooltip(
+            theme: theme,
             message: auth.versiontext,
-            child: Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: TextWidget.paraText(
-                text: "Version 3.0.2",
-                theme: false,
-                color: !theme.isDarkMode
-                    ? colors.textSecondaryLight
-                    : colors.textSecondaryDark,
-                fw: 0,
-              ),
+            child: TextWidget.paraText(
+              text: "Version 3.0.2",
+              theme: false,
+              color: !theme.isDarkMode
+                  ? colors.textSecondaryLight
+                  : colors.textSecondaryDark,
+              fw: 0,
             ),
           ),
           const SizedBox(height: 8),
@@ -569,26 +567,43 @@ class UserAccountScreen extends ConsumerWidget {
     );
   }
 
-  Widget tapTooltip({required String message, required Widget child}) {
+  Widget tapTooltip({
+    required String message,
+    required Widget child,
+    required ThemesProvider theme,
+  }) {
     final GlobalKey<TooltipState> key = GlobalKey<TooltipState>();
 
-    return GestureDetector(
-      onTap: () {
-        key.currentState?.ensureTooltipVisible();
-      },
-      child: TooltipTheme(
-        data: TooltipThemeData(
-          textStyle: const TextStyle(color: Colors.white),
-          decoration: BoxDecoration(
-            color: Colors.black,
-            borderRadius: BorderRadius.circular(4),
+    return Material(
+      color: Colors.transparent,
+      shape: const RoundedRectangleBorder(),
+      child: InkWell(
+        customBorder: const RoundedRectangleBorder(),
+        splashColor:
+            theme.isDarkMode ? colors.splashColorDark : colors.splashColorLight,
+        highlightColor:
+            theme.isDarkMode ? colors.highlightDark : colors.highlightLight,
+        borderRadius: BorderRadius.circular(4),
+        onTap: () {
+          key.currentState?.ensureTooltipVisible();
+        },
+        child: TooltipTheme(
+          data: TooltipThemeData(
+            textStyle: const TextStyle(color: Colors.white),
+            decoration: BoxDecoration(
+              color: Colors.black,
+              borderRadius: BorderRadius.circular(4),
+            ),
           ),
-        ),
-        child: Tooltip(
-          key: key,
-          message: message,
-          preferBelow: false,
-          child: child,
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Tooltip(
+              key: key,
+              message: message,
+              preferBelow: false,
+              child: child,
+            ),
+          ),
         ),
       ),
     );
@@ -2014,6 +2029,11 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
         _buildDetailRow("Email", clientData?.cLIENTIDMAIL ?? "N/A", theme),
         _buildDetailRow("Mobile", clientData?.mOBILENO ?? "N/A", theme),
         _buildDetailRow("PAN", clientData?.pANNO ?? "N/A", theme),
+        _buildDetailRow(
+            "Address",
+            "${clientData?.cLRESIADD1} ${clientData?.cLRESIADD2} ${clientData?.cLRESIADD3}" ??
+                "N/A",
+            theme),
         // _buildDetailRow("DP ID", clientData?.cLIENTDPCODE ?? "N/A", theme),
       ],
     );
@@ -2923,12 +2943,19 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                   ? colors.textSecondaryDark
                   : colors.textSecondaryLight,
             ),
-            TextWidget.subText(
-              text: value,
-              theme: false,
-              color: theme.isDarkMode
-                  ? colors.textPrimaryDark
-                  : colors.textPrimaryLight,
+            SizedBox(
+              width: MediaQuery.of(context).size.width * 0.6,
+              child: TextWidget.subText(
+                text: value,
+                theme: false,
+                color: theme.isDarkMode
+                    ? colors.textPrimaryDark
+                    : colors.textPrimaryLight,
+                softWrap: true,
+                align: TextAlign.right,
+                textOverflow: TextOverflow.ellipsis,
+                maxLines: 4,
+              ),
             ),
           ],
         ),

@@ -44,7 +44,6 @@ class CustomTextFormField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return TextFormField(
-       
         controller: textCtrl,
         style: style,
         readOnly: isReadable ?? false,
@@ -67,7 +66,7 @@ class CustomTextFormField extends StatelessWidget {
                 borderRadius: BorderRadius.circular(5)),
             disabledBorder: InputBorder.none,
             focusedBorder: OutlineInputBorder(
-                borderSide: BorderSide.none,
+                borderSide: BorderSide(color: colors.colorBlue),
                 borderRadius: BorderRadius.circular(5)),
             border: OutlineInputBorder(
                 borderSide: BorderSide.none,

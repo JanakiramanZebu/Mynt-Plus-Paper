@@ -230,8 +230,8 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
               ),
               body: (ledgerprovider.calendarpnlloading ||
                       ledgerprovider.calenderpnlAllData == null ||
-                      (ledgerprovider.selectedSegment == 'Fno' &&
-                          ledgerprovider.calenderpnlAllData?.segment != 'Fno'))
+                      (ledgerprovider.selectedSegment == 'FNO' &&
+                          ledgerprovider.calenderpnlAllData?.segment != 'FNO'))
                   ? Center(
                       child: Container(
                         color: Colors.white,
@@ -1241,8 +1241,8 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                                       theme),
                                   const SizedBox(height: 8),
                                   _buildInfoRow(
-                                      "Sell Qty",
-                                      "${double.tryParse(trade[index].sQTY)!.toInt()} (${double.tryParse(trade[index].sRATE)!.toStringAsFixed(2)})",
+                                      "Sell Qty / Price",
+                                      "${double.tryParse(trade[index].sQTY)!.toInt()} / ${double.tryParse(trade[index].sRATE)!.toStringAsFixed(2)}",
                                       theme),
                                   const SizedBox(height: 8),
                                   _buildInfoRow(

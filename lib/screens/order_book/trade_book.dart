@@ -222,7 +222,7 @@ class TradeBook extends ConsumerWidget {
                                       Expanded(
                                         child: TextWidget.subText(
                                           text:
-                                              "${tradeBook[index].symbol} ${tradeBook[index].expDate} ${tradeBook[index].option ?? ''}",
+                                              "${tradeBook[index].symbol?.replaceAll("-EQ", "")} ${tradeBook[index].expDate} ${tradeBook[index].option ?? ''}",
                                           theme: theme.isDarkMode,
                                           fw: 3,
                                           maxLines: 1,

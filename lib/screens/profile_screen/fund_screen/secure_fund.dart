@@ -179,7 +179,7 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                 _buildExpandableInfoRow(
                   "Available Capital",
                   getFormatter(
-                      value: double.parse(
+                      value: _safeParseDouble(
                           "${funds.fundDetailModel?.totCredit ?? 0.00}"),
                       v4d: false,
                       noDecimal: false),
@@ -341,7 +341,7 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                   ),
                   TextWidget.subText(
                     text:
-                        "${getFormatter(value: double.parse("${funds.fundDetailModel?.payin ?? 0.00}"), v4d: false, noDecimal: false)}",
+                        "${getFormatter(value: _safeParseDouble("${funds.fundDetailModel?.payin ?? 0.00}"), v4d: false, noDecimal: false)}",
                     theme: false,
                     color: theme.isDarkMode
                         ? colors.textPrimaryDark
@@ -369,7 +369,7 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                   ),
                   TextWidget.subText(
                     text:
-                        "${getFormatter(value: double.parse("${funds.pledgeAndUnpledgeModel?.noncashEquivalent ?? 0.00}"), v4d: false, noDecimal: false)}",
+                        "${getFormatter(value: _safeParseDouble("${funds.pledgeAndUnpledgeModel?.noncashEquivalent ?? 0.00}"), v4d: false, noDecimal: false)}",
                     theme: false,
                     color: theme.isDarkMode
                         ? colors.textPrimaryDark
@@ -397,7 +397,7 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                   ),
                   TextWidget.subText(
                     text:
-                        "${getFormatter(value: double.parse("${funds.pledgeAndUnpledgeModel?.cashEquivalent ?? 0.00}"), v4d: false, noDecimal: false)}",
+                        "${getFormatter(value: _safeParseDouble("${funds.pledgeAndUnpledgeModel?.cashEquivalent ?? 0.00}"), v4d: false, noDecimal: false)}",
                     theme: false,
                     color: theme.isDarkMode
                         ? colors.textPrimaryDark
@@ -425,7 +425,7 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                   ),
                   TextWidget.subText(
                     text:
-                        "${getFormatter(value: double.parse("${funds.fundDetailModel?.brkcollamt ?? 0.00}"), v4d: false, noDecimal: false)}",
+                        "${getFormatter(value: _safeParseDouble("${funds.fundDetailModel?.brkcollamt ?? 0.00}"), v4d: false, noDecimal: false)}",
                     theme: false,
                     color: theme.isDarkMode
                         ? colors.textPrimaryDark
@@ -462,7 +462,7 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                           fw: 3),
                       TextWidget.subText(
                           text: getFormatter(
-                              value: double.parse(
+                              value: _safeParseDouble(
                                   "${filteredCredits[index]["value"]}"),
                               v4d: false,
                               noDecimal: false),
@@ -516,7 +516,8 @@ class _SecureFundState extends ConsumerState<SecureFund> {
             isDarkMode: theme.isDarkMode,
             theme: theme,
             value: getFormatter(
-                value: double.parse("${funds.fundDetailModel?.span ?? 0.00}"),
+                value:
+                    _safeParseDouble("${funds.fundDetailModel?.span ?? 0.00}"),
                 v4d: false,
                 noDecimal: false),
             text: "Span",
@@ -525,7 +526,8 @@ class _SecureFundState extends ConsumerState<SecureFund> {
             isDarkMode: theme.isDarkMode,
             theme: theme,
             value: getFormatter(
-                value: double.parse("${funds.fundDetailModel?.expo ?? 0.00}"),
+                value:
+                    _safeParseDouble("${funds.fundDetailModel?.expo ?? 0.00}"),
                 v4d: false,
                 noDecimal: false),
             text: "Exposure",
@@ -534,7 +536,7 @@ class _SecureFundState extends ConsumerState<SecureFund> {
             isDarkMode: theme.isDarkMode,
             theme: theme,
             value: getFormatter(
-                value: double.parse(
+                value: _safeParseDouble(
                     "${funds.fundDetailModel?.scripbskmar ?? 0.00}"),
                 v4d: false,
                 noDecimal: false),
@@ -544,7 +546,7 @@ class _SecureFundState extends ConsumerState<SecureFund> {
             isDarkMode: theme.isDarkMode,
             theme: theme,
             value: getFormatter(
-                value: double.parse(
+                value: _safeParseDouble(
                     "${funds.fundDetailModel?.cobomargin ?? 0.00}"),
                 v4d: false,
                 noDecimal: false),
@@ -554,8 +556,8 @@ class _SecureFundState extends ConsumerState<SecureFund> {
             isDarkMode: theme.isDarkMode,
             theme: theme,
             value: getFormatter(
-                value:
-                    double.parse("${funds.fundDetailModel?.premium ?? 0.00}"),
+                value: _safeParseDouble(
+                    "${funds.fundDetailModel?.premium ?? 0.00}"),
                 v4d: false,
                 noDecimal: false),
             text: "Option Premium",
@@ -564,7 +566,7 @@ class _SecureFundState extends ConsumerState<SecureFund> {
             isDarkMode: theme.isDarkMode,
             theme: theme,
             value: getFormatter(
-                value: double.parse(
+                value: _safeParseDouble(
                     "${funds.fundDetailModel?.deliverySellBenefit ?? 0.00}"),
                 v4d: false,
                 noDecimal: false),
@@ -574,14 +576,13 @@ class _SecureFundState extends ConsumerState<SecureFund> {
             isDarkMode: theme.isDarkMode,
             theme: theme,
             value: getFormatter(
-                value: double.parse(
+                value: _safeParseDouble(
                     "${funds.fundDetailModel?.pendordval ?? 0.00}"),
                 v4d: false,
                 noDecimal: false),
             text: "Unrealized Expenses",
           ),
 
-          
           if (funds.listOfUsedMrgn.isNotEmpty) ...[
             ListView.separated(
                 shrinkWrap: true,
@@ -602,7 +603,7 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                               fw: 3),
                           TextWidget.subText(
                               text: getFormatter(
-                                  value: double.parse(
+                                  value: _safeParseDouble(
                                       "${filteredMargin[index]["value"]}"),
                                   v4d: false,
                                   noDecimal: false),
@@ -752,6 +753,17 @@ class _SecureFundState extends ConsumerState<SecureFund> {
         Divider(color: colors.colorDivider.withOpacity(0.5))
       ]))
     ]);
+  }
+
+  double _safeParseDouble(String value) {
+    try {
+      if (value.isEmpty || value == "null" || value == "undefined") {
+        return 0.0;
+      }
+      return double.parse(value);
+    } catch (e) {
+      return 0.0;
+    }
   }
 }
 

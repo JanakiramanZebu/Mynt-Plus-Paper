@@ -71,7 +71,7 @@ mixin MutualFundApi on ApiCore {
 
       final json = jsonDecode((res.body));
 
-      // log("MF Master ==>$json");
+      log("NFO data ==>$json");
 
       return MutualFundModel.fromJson(json);
     } catch (e) {

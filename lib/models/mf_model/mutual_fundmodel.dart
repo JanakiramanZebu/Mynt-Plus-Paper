@@ -275,7 +275,7 @@ class MutualFundList {
     data['Lock_in_Period'] = lockInPeriod;
     data['Channel Partner_Code'] = channelPartnerCode;
     data['ReOpening_Date'] = reOpeningDate;
-    data['Name'] = name;
+    data['name'] = name;
     data['name'] = mfsearchnamename;
 
     

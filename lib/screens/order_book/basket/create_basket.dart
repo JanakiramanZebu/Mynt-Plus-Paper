@@ -210,9 +210,9 @@ class _CreateBasketState extends ConsumerState<CreateBasket> {
                   const SizedBox(height: 16),
                   SizedBox(
                     width: double.infinity,
-                    child: ElevatedButton(
+                    child: OutlinedButton(
                       onPressed: _isProcessing ? null : _handleButton,
-                      style: ElevatedButton.styleFrom(
+                      style: OutlinedButton.styleFrom(
                         elevation: 0,
                         minimumSize: const Size(0, 40), // width, height
 

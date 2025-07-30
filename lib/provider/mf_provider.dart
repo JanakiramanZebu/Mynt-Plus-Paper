@@ -138,7 +138,7 @@ class MFProvider extends DefaultChangeNotifier {
 
   List _paymentMethod = [];
 
-  List get paymentMethod => _paymentMethod; 
+  List get paymentMethod => _paymentMethod;
   // NFODataModel? _mfNFOList;
   // NFODataModel? get mfNFOList => _mfNFOList;
 
@@ -263,9 +263,9 @@ class MFProvider extends DefaultChangeNotifier {
   int? _activeTab = 0;
   int? get activeTab => _activeTab;
 
-  Timer? _autoPopTimer; 
+  Timer? _autoPopTimer;
   Timer? get autoPopTimer => _autoPopTimer;
-  
+
   Timer? _threeSecondTimer;
 
   Timer? get threeSecondTimer => _threeSecondTimer;
@@ -379,6 +379,9 @@ class MFProvider extends DefaultChangeNotifier {
   bool _investloader = false;
   bool get investloader => _investloader;
 
+  String? _loadingMessage;
+  String? get loadingMessage => _loadingMessage;
+
   String _accNum = "";
 
   String get accNum => _accNum;
@@ -467,6 +470,16 @@ class MFProvider extends DefaultChangeNotifier {
 
   setInitialPay(bool value) {
     _isInitalPay = value;
+    notifyListeners();
+  }
+
+  setLoadingMessage(String? message) {
+    _loadingMessage = message;
+    notifyListeners();
+  }
+
+  setInvestLoader(bool value) {
+    _investloader = value;
     notifyListeners();
   }
 
@@ -1326,10 +1339,11 @@ class MFProvider extends DefaultChangeNotifier {
     }
   }
 
-  Future<void> fetchorderdetails(String orderid,
-  //  String bs, String type,
-  //     String status, String sipno, String remarks
-      ) async {
+  Future<void> fetchorderdetails(
+    String orderid,
+    //  String bs, String type,
+    //     String status, String sipno, String remarks
+  ) async {
     try {
       _bestmfloader = true;
 
@@ -1340,8 +1354,7 @@ class MFProvider extends DefaultChangeNotifier {
       // print(
       //     "payload${value},${type},${bs},${status},${sipno},${orderStatus == 'usercancel' ? "" : orderStatus}");
 
-      _mforderdet = await api.getsingleortderapi(
-          orderid);
+      _mforderdet = await api.getsingleortderapi(orderid);
       // print("11111@@${orderStatus}");
       return notifyListeners();
     } catch (e, stackTrace) {
@@ -1784,7 +1797,7 @@ class MFProvider extends DefaultChangeNotifier {
 
       _dateList = [];
       _mfSIPModel = await api.getMFSip(isin, schemeCode);
-
+      print("object ${_mfSIPModel!.toJson()}");
       if (_mfSIPModel!.stat == "Ok") {
         if (_mfSIPModel!.data!.isNotEmpty) {
           _freqName = "${_mfSIPModel!.data![0].sIPFREQUENCY}";
@@ -2206,26 +2219,31 @@ class MFProvider extends DefaultChangeNotifier {
       _threeSecondTimer?.cancel(); // Stop the repeating timer
       if (Navigator.of(context).canPop()) {
         Navigator.of(context).pop(); // Auto pop after 1 minute
-        
       }
     });
-    
   }
 
   Future upipaymenttrigger(
       BuildContext context, id, val, upiid, ordertype) async {
     try {
       _investloader = true;
+      _loadingMessage = "Processing payment...";
       notifyListeners();
 
       _upiApiresponse = await api.apiPushUpiTrigger(id, val, upiid, ordertype);
       if (_upiApiresponse?.stat != "Not Ok") {
         if (_upiApiresponse?.stat == "Ok") {
-          Navigator.pop(context);
+          _loadingMessage = "Initiated";
+          notifyListeners();
+
+          // Add a small delay to show the verification message
+          await Future.delayed(Duration(milliseconds: 1000));
+
+          // Navigator.pop(context);
           _triggerfromMF = true;
           if (_paymentName == 'NET BANKING') {
             checknetbankingstatus(context);
-          } 
+          }
           // ScaffoldMessenger.of(context)
           //     .showSnackBar(successMessage(context, "${_upiApiresponse!.msg}"));
           //     showModalBottomSheet(
@@ -2320,21 +2338,22 @@ class MFProvider extends DefaultChangeNotifier {
         }
       }
       _investloader = false;
-Navigator.pop(context);
-        
-      ScaffoldMessenger.of(context)
-          .showSnackBar(warningMessage(context, "${_upiApiresponse?.data?.responsestring}"));
-          notifyListeners();
+      _loadingMessage = null;
+      Navigator.pop(context);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+          warningMessage(context, "${_upiApiresponse?.data?.responsestring}"));
+      notifyListeners();
     } catch (e) {
       debugPrint("$e");
-        Navigator.pop(context);
-        
+      Navigator.pop(context);
+
       ScaffoldMessenger.of(context)
           .showSnackBar(warningMessage(context, "Something Went Wrong"));
-          notifyListeners();
+      notifyListeners();
     } finally {
       _investloader = false;
-
+      _loadingMessage = null;
       notifyListeners();
     }
   }
@@ -2342,18 +2361,33 @@ Navigator.pop(context);
   Future placeordermftemp(BuildContext context, String upiId,
       MfPlaceOrderInput input, String scode, double amt) async {
     _investloader = true;
+    _loadingMessage = "Processing order...";
     notifyListeners();
 
     try {
       _mfPlaceOrderResponces = await api.getLumpSumOrder(scode, amt);
-      _investloader = false;
 
-      // if (_mfPlaceOrderResponces != null) {
-      //   final val = await api.getlinkfordisplay();
+      if (_mfPlaceOrderResponces?.stat == "Ok") {
+        setLoadingMessage("Order Initiated");
 
-      //   if (_mfPlaceOrderResponces!.stat == "Ok" && val['stat'] == 'Ok') {
-      ScaffoldMessenger.of(context).showSnackBar(
-          successMessage(context, "Order initiated successfully"));
+        // Add a small delay to show the success message
+        await Future.delayed(Duration(milliseconds: 1000));
+
+        _investloader = false;
+        _loadingMessage = null;
+        notifyListeners();
+
+        // Show success message
+        // ScaffoldMessenger.of(context).showSnackBar(
+        //     successMessage(context, "Order initiated successfully"));
+      } else {
+        _investloader = false;
+        _loadingMessage = null;
+        notifyListeners();
+
+        ScaffoldMessenger.of(context).showSnackBar(
+            warningMessage(context, "${_mfPlaceOrderResponces?.remarks}"));
+      }
       //     // showModalBottomSheet(
       //     //     context: context,
       //     //     shape: const RoundedRectangleBorder(
@@ -2436,24 +2470,28 @@ Navigator.pop(context);
       //   _investloader = false;
       //   notifyListeners();
       // }
+      _investloader = false;
 
       notifyListeners();
 
-      if (_createMandateModel?.mandate == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            warningMessage(context, "${_createMandateModel!.error}"));
-      } else {
-        fetchMFMandateDetail();
-        ScaffoldMessenger.of(context).showSnackBar(
-            successMessage(context, "${_createMandateModel!.resp}"));
-      }
+      // if (_createMandateModel?.mandate == null) {
+      //   ScaffoldMessenger.of(context).showSnackBar(
+      //       warningMessage(context, "${_createMandateModel!.error}"));
+      // } else {
+      //   fetchMFMandateDetail();
+      //   ScaffoldMessenger.of(context).showSnackBar(
+      //       successMessage(context, "${_createMandateModel!.resp}"));
+      // }
       // print(
       //     "object ${_createMandateModel!.error} ${_createMandateModel!.url1} ::${_createMandateModel!.mandate}");
     } catch (e) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(warningMessage(context, "Error${e}"));
+
       _investloader = false;
+      _loadingMessage = null;
       notifyListeners();
       log("Failed to place order :: ${e.toString()}");
-      notifyListeners();
     }
   }
 
@@ -2491,12 +2529,20 @@ Navigator.pop(context);
     try {
       // print("welcoooo");
       toggleLoadingOn(true);
+      _loadingMessage = "Processing SIP order...";
+      notifyListeners();
 // print("okokok11ttt${loading}");
 
       _xsipOrderResponces = await api.getXsipPurchase(schemecode, startDate,
           freqtype, amt, noofinstallment, endDate, mandateId);
 // print("okokok11${loading}");
       if (_xsipOrderResponces?.stat == 'Ok') {
+        _loadingMessage = "SIP order placed successfully!";
+        notifyListeners();
+
+        // Add a small delay to show the success message
+        await Future.delayed(Duration(milliseconds: 1000));
+
         toggleLoadingOn(false);
 
         // toggleLoad(false);
@@ -2517,6 +2563,7 @@ Navigator.pop(context);
         Navigator.pop(context);
       } else {
         toggleLoadingOn(false);
+        _loadingMessage = null;
         ScaffoldMessenger.of(context).showSnackBar(
             warningMessage(context, "${_xsipOrderResponces!.remarks}"));
         Navigator.pop(context);
@@ -2527,12 +2574,14 @@ Navigator.pop(context);
     } catch (e) {
       log("Failed to Place X-sip :: ${e.toString()}");
       toggleLoadingOn(false);
+      _loadingMessage = null;
       notifyListeners();
       ScaffoldMessenger.of(context)
           .showSnackBar(warningMessage(context, "Network Error"));
       Navigator.pop(context);
     } finally {
       toggleLoadingOn(false);
+      _loadingMessage = null;
       notifyListeners();
     }
   }

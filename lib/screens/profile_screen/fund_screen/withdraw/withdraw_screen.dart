@@ -149,7 +149,7 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
                             borderRadius: BorderRadius.circular(5)),
                         disabledBorder: InputBorder.none,
                         focusedBorder: OutlineInputBorder(
-                            borderSide: BorderSide.none,
+                            borderSide: BorderSide(color: colors.colorBlue),
                             borderRadius: BorderRadius.circular(5)),
                         border: OutlineInputBorder(
                             borderSide: BorderSide.none,
@@ -193,81 +193,85 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
                       ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: OutlinedButton(
-                  style: OutlinedButton.styleFrom(
-                    elevation: 0,
-                    minimumSize: const Size(double.infinity, 40),
-                    backgroundColor: disable
-                        ? colors.darkGrey
-                        : widget.theme.isDarkMode
-                            ? colors.primaryDark
-                            : colors.primaryLight,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(5),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    style: OutlinedButton.styleFrom(
+                      elevation: 0,
+                      minimumSize: const Size(0, 45),
+                      backgroundColor: disable
+                          ? colors.darkGrey
+                          : widget.theme.isDarkMode
+                              ? colors.primaryDark
+                              : colors.primaryLight,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      side: BorderSide.none,
                     ),
-                    side: BorderSide.none,
-                  ),
-                  onPressed: (disable)
-                      ? () {
-                          if (widget.withdarw.payoutdetails!.withdrawAmount ==
-                              "0.00") {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                                warningMessage(context, "Insufficient fund"));
-                          } else if (widget
-                              .withdarw.withdrawamount.text.isEmpty) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                                warningMessage(
-                                    context, "Please enter the amount"));
-                          } else if (double.tryParse(
-                                      widget.withdarw.withdrawamount.text) !=
-                                  null &&
-                              double.parse(
-                                      widget.withdarw.withdrawamount.text) <=
-                                  0) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                                warningMessage(
-                                    context, "Amount must be greater than 0"));
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                                warningMessage(
-                                    context, "Please enter a valid amount"));
+                    onPressed: (disable)
+                        ? () {
+                            if (widget.withdarw.payoutdetails!.withdrawAmount ==
+                                "0.00") {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  warningMessage(context, "Insufficient fund"));
+                            } else if (widget
+                                .withdarw.withdrawamount.text.isEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  warningMessage(
+                                      context, "Please enter the amount"));
+                            } else if (double.tryParse(
+                                        widget.withdarw.withdrawamount.text) !=
+                                    null &&
+                                double.parse(
+                                        widget.withdarw.withdrawamount.text) <=
+                                    0) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  warningMessage(context,
+                                      "Amount must be greater than 0"));
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  warningMessage(
+                                      context, "Please enter a valid amount"));
+                            }
                           }
-                        }
-                      : () async {
-                          setState(() {
-                            _withdrawLoading = true;
-                          });
-                          await widget.withdarw.fetchPaymentWithDraw(
-                              widget.withdarw.ipAddress,
-                              widget.withdarw.withdrawamount.text,
-                              widget.segment,
-                              context);
-                          _isVisible = false;
-                          widget.withdarw.focusNode.unfocus();
-                          widget.withdarw.withdrawamount.clear();
-                          setState(() {
-                            disable = true;
-                            withdarwerror = "";
-                          });
+                        : () async {
+                            setState(() {
+                              _withdrawLoading = true;
+                            });
+                            await widget.withdarw.fetchPaymentWithDraw(
+                                widget.withdarw.ipAddress,
+                                widget.withdarw.withdrawamount.text,
+                                widget.segment,
+                                context);
+                            _isVisible = false;
+                            widget.withdarw.focusNode.unfocus();
+                            widget.withdarw.withdrawamount.clear();
+                            setState(() {
+                              disable = true;
+                              withdarwerror = "";
+                            });
 
-                          showUIWithDelay();
-                          setState(() {
-                            _withdrawLoading = false;
-                          });
-                        },
-                  child: _withdrawLoading
-                      ? SizedBox(
-                          width: 18,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                              strokeWidth: 2, color: colors.colorWhite),
-                        )
-                      : TextWidget.titleText(
-                          text: 'Withdraw',
-                          theme: false,
-                          color: disable ? colors.colorGrey : colors.colorWhite,
-                          fw: disable ? 0 : 2),
+                            showUIWithDelay();
+                            setState(() {
+                              _withdrawLoading = false;
+                            });
+                          },
+                    child: _withdrawLoading
+                        ? SizedBox(
+                            width: 18,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                                strokeWidth: 2, color: colors.colorWhite),
+                          )
+                        : TextWidget.titleText(
+                            text: 'Withdraw',
+                            theme: false,
+                            color:
+                                disable ? colors.colorGrey : colors.colorWhite,
+                            fw: disable ? 0 : 2),
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
@@ -487,20 +491,20 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
         children: [
           // Available cash
           data(
-            "Available cash",
-            "₹${funds.fundDetailModel?.totCredit ?? "0.00"}",
+            "Available Capital",
+            "${funds.fundDetailModel?.totCredit ?? "0.00"}",
             widget.theme,
           ),
           // Margin used
           data(
-            "Margin used",
-            "₹${funds.fundDetailModel?.utilizedMrgn ?? "0.00"}",
+            "Margin Used",
+            "${funds.fundDetailModel?.utilizedMrgn ?? "0.00"}",
             widget.theme,
           ),
           // Withdrawable amount
           data(
-            "Withdrawable amount",
-            "₹${widget.withdarw.payoutdetails!.withdrawAmount}",
+            "Withdrawable Amount",
+            "${widget.withdarw.payoutdetails!.withdrawAmount}",
             widget.theme,
           ),
         ],

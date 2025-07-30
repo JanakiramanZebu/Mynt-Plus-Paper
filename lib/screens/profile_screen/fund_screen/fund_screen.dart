@@ -513,7 +513,8 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                                       borderRadius: BorderRadius.circular(5)),
                                   disabledBorder: InputBorder.none,
                                   focusedBorder: OutlineInputBorder(
-                                      borderSide: BorderSide.none,
+                                      borderSide:
+                                          BorderSide(color: colors.colorBlue),
                                       borderRadius: BorderRadius.circular(5)),
                                   border: OutlineInputBorder(
                                       borderSide: BorderSide.none,
