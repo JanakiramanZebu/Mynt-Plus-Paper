@@ -43,9 +43,9 @@ class Data {
   String? iPAddress;
   String? datetime;
   String? orderVal;
-  Null? folioNo;
+  String? folioNo;
   String? iSIN;
-  Null? dPFolioNo;
+  String? dPFolioNo;
   String? settType;
   String? orderType;
   String? subOrderType;

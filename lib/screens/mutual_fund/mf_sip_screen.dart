@@ -68,7 +68,7 @@ class MFSipdetScreen extends ConsumerWidget {
               showModalBottomSheet(
                   context: context,
                   isScrollControlled: true,
-                  backgroundColor: Colors.transparent,
+                  // backgroundColor: Colors.transparent,
                   builder: (context) => mfSipdetScren(data: item));
               // Navigator.pushNamed(context, Routes.mfSipdetScren);
               // } else {

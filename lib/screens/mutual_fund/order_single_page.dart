@@ -30,92 +30,68 @@ class _mforderdetscreen extends State<mforderdetscreen>
     with SingleTickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, ref, child) {
-      final theme = ref.watch(themeProvider);
-      final mfdata = ref.watch(mfProvider);
+    return DraggableScrollableSheet(
+        expand: false,
+        initialChildSize: 0.88,
+        minChildSize: 0.05,
+        maxChildSize: 0.99,
+        builder: (context, scrollController) {
+          return Consumer(builder: (context, ref, child) {
+            final theme = ref.watch(themeProvider);
+            final mfdata = ref.watch(mfProvider);
 
-      // Check if order data is null
-      final hasData = mfdata.mforderdet?.data != null;
+            // Check if order data is null
+            final hasData = mfdata.mforderdet?.data != null;
 
-      return Scaffold(
-        appBar: AppBar(
-          elevation: 0,
-          centerTitle: false,
-          leadingWidth: 41,
-          titleSpacing: 6,
-          leading: Padding(
-            padding: const EdgeInsets.only(left: 8.0),
-            child: IconButton(
-              icon: Icon(Icons.arrow_back_ios,
-                  color:
-                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack),
-              onPressed: () {
-                Navigator.pop(context);
-              },
-            ),
-          ),
-          backgroundColor:
-              theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-          shadowColor: const Color(0xffECEFF3),
-          title: Text("Order details",
-              style: textStyles.appBarTitleTxt.copyWith(
-                fontSize: 17,
-                fontWeight: FontWeight.bold,
-                color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-              )),
-        ),
-        body: hasData
-            ? Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildOrderHeader(theme, mfdata),
-                    const SizedBox(height: 18),
-                    _buildCancelButton(theme, mfdata, context),
-                    
-                    TextWidget.subText(
-                        align: TextAlign.right,
-                        text: "Order details",
-                        color: theme.isDarkMode
-                            ? colors.textPrimaryDark
-                            : colors.textPrimaryLight,
-                        textOverflow: TextOverflow.ellipsis,
-                        theme: theme.isDarkMode,
-                        fw: 3),
-                    const SizedBox(height: 24),
-                    _buildDetailsSection(theme, mfdata),
-                    const SizedBox(height: 20),
-                    if (mfdata.mforderdet?.data![0].status != "PLACED") ...[
-                      TextWidget.subText(
-                          align: TextAlign.start,
-                          text: _getStatusText(
-                              mfdata.mforderdet?.data![0].status),
-                          color: theme.isDarkMode
-                              ? colors.textPrimaryDark
-                              : colors.textPrimaryLight,
-                          textOverflow: TextOverflow.ellipsis,
-                          theme: theme.isDarkMode,
-                          fw: 3),
-                      const SizedBox(height: 8),
-                      TextWidget.subText(
-                          align: TextAlign.start,
-                          text:
-                              "${mfdata.mforderdet?.data![0].remarks ?? "No remarks available"}",
-                          color: theme.isDarkMode
-                              ? colors.colorWhite
-                              : const Color(0xFFF33E4B),
-                          textOverflow: TextOverflow.ellipsis,
-                          theme: theme.isDarkMode,
-                          maxLines: 3,
-                          fw: 3),
-                    ],
-                  ],
-                ),
-              )
-            : const Center(child: NoDataFound()),
-      );
-    });
+            return Scaffold(
+                 backgroundColor: Colors.transparent,
+              body: hasData
+                  ? Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Expanded(
+                        child: SingleChildScrollView(
+                           controller: scrollController,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildOrderHeader(theme, mfdata),
+                              const SizedBox(height: 18),
+                              _buildCancelButton(theme, mfdata, context),
+                            const SizedBox(height: 24),
+                              _buildDetailsSection(theme, mfdata),
+                              const SizedBox(height: 20),
+                              if (mfdata.mforderdet?.data![0].status !=
+                                  "PLACED") ...[
+                                      TextWidget.subText(
+              align: TextAlign.right,
+              text: "Reason",
+              color: theme.isDarkMode
+                  ? colors.textSecondaryDark
+                  : colors.textSecondaryLight,
+              textOverflow: TextOverflow.ellipsis,
+              theme: theme.isDarkMode,
+              fw: 3),
+                              
+                                const SizedBox(height: 8),
+                                TextWidget.subText(
+                                    align: TextAlign.start,
+                                    text:
+                                        "${mfdata.mforderdet?.data![0].remarks ?? "No remarks available"}",
+                                    color: colors.loss,
+                                    textOverflow: TextOverflow.ellipsis,
+                                    theme: theme.isDarkMode,
+                                    maxLines: 3,
+                                    fw: 3),
+                              ],
+                            ],
+                          ),
+                        ),
+                      ),
+                    )
+                  : const Center(child: NoDataFound()),
+            );
+          });
+        });
   }
 
   String _getStatusText(String? status) {
@@ -144,11 +120,11 @@ class _mforderdetscreen extends State<mforderdetscreen>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         SizedBox(
-                          width: MediaQuery.of(context).size.width * 0.6,
+                          width: MediaQuery.of(context).size.width * 0.7,
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              TextWidget.subText(
+                              TextWidget.titleText(
                                   align: TextAlign.start,
                                   text: mfdata.mforderdet?.data?[0].name ??
                                       "Unknown Scheme",
@@ -158,7 +134,7 @@ class _mforderdetscreen extends State<mforderdetscreen>
                                   textOverflow: TextOverflow.ellipsis,
                                   maxLines: 2,
                                   theme: theme.isDarkMode,
-                                  fw: 0),
+                                  fw: 1),
                             ],
                           ),
                         ),
@@ -175,22 +151,43 @@ class _mforderdetscreen extends State<mforderdetscreen>
       Row(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          SvgPicture.asset(
-            _getStatusIcon(mfdata.mforderdet?.data?[0].status),
-            width: 20,
-          ),
-          Padding(
-            padding: const EdgeInsets.only(left: 4.0),
+
+           Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color:mfdata.mforderdet?.data?[0].status == "PLACED"
+                  ? colors.profit.withOpacity(0.1)
+                  : mfdata.mforderdet?.data?[0].status == "NOT PLACED"
+                      ? colors.loss.withOpacity(0.1)
+                      : mfdata.mforderdet?.data?[0].status == "PENDING"
+                          ? colors.pending.withOpacity(0.1)
+                          : colors.pending.withOpacity(0.1), // default fallback
+              borderRadius: BorderRadius.circular(4),
+            ),
             child: TextWidget.paraText(
-                align: TextAlign.right,
                 text: _getStatusLabel(mfdata.mforderdet?.data?[0].status),
-                color: theme.isDarkMode
-                    ? colors.textPrimaryDark
-                    : colors.textPrimaryLight,
-                textOverflow: TextOverflow.ellipsis,
-                theme: theme.isDarkMode,
-                fw: 3),
-          )
+                theme: false,
+                color: mfdata.mforderdet?.data?[0].status == "PLACED"
+                    ? colors.profit
+                    : mfdata.mforderdet?.data?[0].status == "NOT PLACED"
+                        ? colors.loss
+                        : mfdata.mforderdet?.data?[0].status == "PENDING"
+                            ? colors.pending
+                            : colors.pending),
+          ),
+          
+          // Padding(
+          //   padding: const EdgeInsets.only(left: 4.0),
+          //   child: TextWidget.paraText(
+          //       align: TextAlign.right,
+          //       text: _getStatusLabel(mfdata.mforderdet?.data?[0].status),
+          //       color: theme.isDarkMode
+          //           ? colors.textPrimaryDark
+          //           : colors.textPrimaryLight,
+          //       textOverflow: TextOverflow.ellipsis,
+          //       theme: theme.isDarkMode,
+          //       fw: 3),
+          // )
         ],
       ),
     ]);
@@ -214,81 +211,38 @@ class _mforderdetscreen extends State<mforderdetscreen>
       children: [
         rowOfInfoData(
             "Transaction Type",
-            mfdata.mforderdet?.data?[0].buySell == "P" ? "Purchase" : "Redemption",
+            mfdata.mforderdet?.data?[0].buySell == "P"
+                ? "Purchase"
+                : "Redemption",
             theme),
-        const SizedBox(height: 10),
-        Divider(
-          color:
-              theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
-          thickness: 1.0,
-        ),
-        const SizedBox(height: 10),
+       
         rowOfInfoData(
             "Order Type",
             mfdata.mforderdet?.data?[0].orderType == "NRM" ? "Lumpsum" : "SIP",
             theme),
-        const SizedBox(height: 10),
-        Divider(
-          color:
-              theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
-          thickness: 1.0,
-        ),
-        const SizedBox(height: 10),
-        rowOfInfoData(
-            "Price", "${mfdata.mforderdet?.data?[0].orderVal ?? "0.00"}", theme),
-        const SizedBox(height: 10),
-        Divider(
-          color:
-              theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
-          thickness: 1.0,
-        ),
-        const SizedBox(height: 10),
+       
+        rowOfInfoData("Amount",
+            "${mfdata.mforderdet?.data?[0].orderVal ?? "0.00"}", theme),
+       
         // rowOfInfoData(
-        //     "Units", "${mfdata.mforderdet?.data?.units ?? "0.00"}", theme),
+        //     "Units", "${mfdata.mforderdet?.data?[0].units ?? "0.00"}", theme),
         // const SizedBox(height: 10),
-        // Divider(
-        //   color:
-        //       theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
-        //   thickness: 1.0,
-        // ),
-        const SizedBox(height: 10),
-        rowOfInfoData(
-            "Date", "${mfdata.mforderdet?.data?[0].datetime ?? "N/A"}", theme),
-        const SizedBox(height: 10),
-        Divider(
-          color:
-              theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
-          thickness: 1.0,
-        ),
-        const SizedBox(height: 10),
+       
+        
+        // rowOfInfoData(
+        //     "Date", "${mfdata.mforderdet?.data?[0].datetime ?? "N/A"}", theme),
+       
         rowOfInfoData("Date & Time",
             "${mfdata.mforderdet?.data?[0].datetime ?? "N/A"}", theme),
-        const SizedBox(height: 10),
-        Divider(
-          color:
-              theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
-          thickness: 1.0,
-        ),
-        const SizedBox(height: 10),
+        
         rowOfInfoData("Order No",
             "${mfdata.mforderdet?.data?[0].orderId ?? "N/A"}", theme),
-        const SizedBox(height: 10),
-        Divider(
-          color:
-              theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
-          thickness: 1.0,
-        ),
-        const SizedBox(height: 10),
+      
         rowOfInfoData(
             "Folio No",
             "${mfdata.mforderdet?.data?[0].folioNo?.isEmpty ?? true ? "---" : mfdata.mforderdet?.data?[0].folioNo}",
             theme),
-        const SizedBox(height: 10),
-        Divider(
-          color:
-              theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
-          thickness: 1.0,
-        ),
+      
       ],
     );
   }
@@ -302,75 +256,85 @@ class _mforderdetscreen extends State<mforderdetscreen>
 
     if (!shouldShowCancel) return const SizedBox();
 
-    return Padding(
-      padding: const EdgeInsets.only(bottom :20.0),
-      child: SizedBox(
-        height: 45,
-        width: double.infinity,
-        child: ElevatedButton(
-          onPressed: () async {
-            if (mfdata.mforderdet?.data != null) {
-              await showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return MfCancelAlert(
-                      mfcancel: mfdata.mforderdet!.data!, message: "order");
-                },
-              );
-            }
-          },
-          style: ElevatedButton.styleFrom(
-            elevation: 0,
-            backgroundColor: colors.btnBg,
-            foregroundColor: const Color.fromARGB(255, 0, 0, 0),
-            side: BorderSide(
-              color: colors.btnOutlinedBorder,
-              width: 1,
-            ),
-            minimumSize: Size(double.infinity, 45), // height: 48
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(5),
+    return Row(
+      children: [
+        Expanded(
+          flex: 6,
+          child: SizedBox(
+           
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () async {
+                if (mfdata.mforderdet?.data != null) {
+                  await showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return MfCancelAlert(
+                          mfcancel: mfdata.mforderdet!.data!, message: "order");
+                    },
+                  );
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                elevation: 0,
+                backgroundColor: colors.btnBg,
+                foregroundColor: const Color.fromARGB(255, 0, 0, 0),
+                side: BorderSide(
+                  color: colors.btnOutlinedBorder,
+                  width: 1,
+                ),
+                minimumSize: Size(double.infinity, 40), // height: 48
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(5),
+                ),
+              ),
+              child: TextWidget.subText(
+                  align: TextAlign.right,
+                  text: "Cancel Order",
+                  color:
+                      theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
+                  textOverflow: TextOverflow.ellipsis,
+                  theme: theme.isDarkMode,
+                  fw: 2),
             ),
           ),
-          child: TextWidget.subText(
-              align: TextAlign.right,
-              text: "Cancel Order",
-              color:
-                  theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
-              textOverflow: TextOverflow.ellipsis,
-              theme: theme.isDarkMode,
-              fw: 2),
         ),
-      ),
+      ],
     );
   }
 
-  Row rowOfInfoData(String title1, String value1, ThemesProvider theme) {
-    return Row(children: [
-      Expanded(
-          child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-            TextWidget.subText(
-                align: TextAlign.right,
-                text: title1,
-                color: theme.isDarkMode
-                    ? colors.textPrimary
-                    : colors.textPrimaryLight,
-                textOverflow: TextOverflow.ellipsis,
-                theme: theme.isDarkMode,
-                fw: 3),
-            TextWidget.subText(
+   Column rowOfInfoData(String title1, String value1, ThemesProvider theme) {
+    return Column(
+      children: [
+        const SizedBox(height: 12),
+        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+          TextWidget.subText(
+              align: TextAlign.right,
+              text: title1,
+              color: theme.isDarkMode
+                  ? colors.textSecondaryDark
+                  : colors.textSecondaryLight,
+              textOverflow: TextOverflow.ellipsis,
+              theme: theme.isDarkMode,
+              fw: 3),
+          SizedBox(
+            width: MediaQuery.of(context).size.width * 0.5,
+            child: TextWidget.subText(
                 align: TextAlign.right,
                 text: value1,
                 color: theme.isDarkMode
                     ? colors.textPrimary
                     : colors.textPrimaryLight,
-                textOverflow: TextOverflow.ellipsis,
                 theme: theme.isDarkMode,
                 fw: 3),
-          ])),
-    ]);
+          ),
+        ]),
+        const SizedBox(height: 8),
+        Divider(
+          thickness: 0,
+          color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
+        )
+      ],
+    );
   }
 }
