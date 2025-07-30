@@ -3106,6 +3106,14 @@ class MFProvider extends DefaultChangeNotifier {
     return itemsHeights;
   }
 
+  bool ispaymentcalled = false;
+  bool get isPaymentCalled => ispaymentcalled;
+
+  IsPaymentCalled(bool value) {
+    ispaymentcalled = value;
+    notifyListeners();
+  }
+
   bool isValidUpiId(MutualFundList mfData) {
     // print("Change made");
     final RegExp upiRegex =

@@ -657,6 +657,64 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
                                   child: Row(
                                     children: [
                                       Expanded(
+                                          child: Container(
+                                              height: 40,
+                                              decoration: BoxDecoration(
+                                                  border: Border.all(
+                                                    color: colors
+                                                        .btnOutlinedBorder,
+                                                    width: 1,
+                                                  ),
+                                                  color: colors.btnBg,
+                                                  borderRadius:
+                                                      BorderRadius.circular(5)),
+                                              child: Material(
+                                                color: Colors.transparent,
+                                                shape:
+                                                    const BeveledRectangleBorder(),
+                                                child: InkWell(
+                                                  customBorder:
+                                                      const BeveledRectangleBorder(),
+                                                  splashColor: theme.isDarkMode
+                                                      ? colors.splashColorDark
+                                                      : colors.splashColorLight,
+                                                  highlightColor: theme
+                                                          .isDarkMode
+                                                      ? colors.highlightDark
+                                                      : colors.highlightLight,
+                                                  onTap: _isProcessingSell
+                                                      ? null
+                                                      : _handleSell,
+                                                  child: Center(
+                                                    child: _isProcessingSell
+                                                        ? SizedBox(
+                                                            width: 18,
+                                                            height: 18,
+                                                            child:
+                                                                CircularProgressIndicator(
+                                                              strokeWidth: 2,
+                                                              valueColor:
+                                                                  AlwaysStoppedAnimation<
+                                                                          Color>(
+                                                                      colors
+                                                                          .secondary),
+                                                            ),
+                                                          )
+                                                        : TextWidget.subText(
+                                                            text: "Exit",
+                                                            theme: false,
+                                                            color: theme
+                                                                    .isDarkMode
+                                                                ? colors
+                                                                    .primaryDark
+                                                                : colors
+                                                                    .primaryLight,
+                                                            fw: 0),
+                                                  ),
+                                                ),
+                                              ))),
+                                      const SizedBox(width: 12),
+                                      Expanded(
                                         child: Container(
                                             height: 40,
                                             decoration: BoxDecoration(
@@ -713,64 +771,6 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
                                               ),
                                             )),
                                       ),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                          child: Container(
-                                              height: 40,
-                                              decoration: BoxDecoration(
-                                                  border: Border.all(
-                                                    color: colors
-                                                        .btnOutlinedBorder,
-                                                    width: 1,
-                                                  ),
-                                                  color: colors.btnBg,
-                                                  borderRadius:
-                                                      BorderRadius.circular(5)),
-                                              child: Material(
-                                                color: Colors.transparent,
-                                                shape:
-                                                    const BeveledRectangleBorder(),
-                                                child: InkWell(
-                                                  customBorder:
-                                                      const BeveledRectangleBorder(),
-                                                  splashColor: theme.isDarkMode
-                                                      ? colors.splashColorDark
-                                                      : colors.splashColorLight,
-                                                  highlightColor: theme
-                                                          .isDarkMode
-                                                      ? colors.highlightDark
-                                                      : colors.highlightLight,
-                                                  onTap: _isProcessingSell
-                                                      ? null
-                                                      : _handleSell,
-                                                  child: Center(
-                                                    child: _isProcessingSell
-                                                        ? SizedBox(
-                                                            width: 18,
-                                                            height: 18,
-                                                            child:
-                                                                CircularProgressIndicator(
-                                                              strokeWidth: 2,
-                                                              valueColor:
-                                                                  AlwaysStoppedAnimation<
-                                                                          Color>(
-                                                                      colors
-                                                                          .secondary),
-                                                            ),
-                                                          )
-                                                        : TextWidget.subText(
-                                                            text: "Exit",
-                                                            theme: false,
-                                                            color: theme
-                                                                    .isDarkMode
-                                                                ? colors
-                                                                    .primaryDark
-                                                                : colors
-                                                                    .primaryLight,
-                                                            fw: 0),
-                                                  ),
-                                                ),
-                                              )))
                                     ],
                                   ),
                                 ),

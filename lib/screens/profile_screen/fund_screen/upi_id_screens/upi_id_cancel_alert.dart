@@ -27,7 +27,7 @@ class UPIIDPaymentCancelAlert extends ConsumerStatefulWidget {
 class _UPIIDPaymentCancelAlertState
     extends ConsumerState<UPIIDPaymentCancelAlert> {
   Timer? _timer;
-Timer? _autoPopTimer;
+  Timer? _autoPopTimer;
   @override
   void initState() {
     super.initState();
@@ -38,16 +38,15 @@ Timer? _autoPopTimer;
     final mfProv = ref.read(mfProvider);
     final txnProv = ref.read(transcationProvider);
 
-    if (mfProv.triggerfromMF == true) { 
+    if (mfProv.triggerfromMF == true) {
       _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
         mfProv.getpaymentstatus(widget.data, context);
       });
       _autoPopTimer = Timer(const Duration(minutes: 3), () {
-          if (Navigator.of(context).canPop()) {
-            Navigator.of(context).pop();
-          }
-        });
-
+        if (Navigator.of(context).canPop()) {
+          Navigator.of(context).pop();
+        }
+      });
     } else {
       _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
         final status = txnProv.hdfcpaymentstatus?.upiId?.status;
@@ -65,7 +64,7 @@ Timer? _autoPopTimer;
   @override
   void dispose() {
     _timer?.cancel();
-     _autoPopTimer?.cancel();
+    _autoPopTimer?.cancel();
     super.dispose();
   }
 
@@ -74,11 +73,13 @@ Timer? _autoPopTimer;
     if (ref.read(mfProvider).triggerfromMF == true) {
       ref.read(mfProvider).setterformftrigger(false);
       Navigator.pop(context);
+      ref.read(mfProvider).IsPaymentCalled(false);
     } else {
       ref.read(transcationProvider).amount.clear();
       Navigator.pop(context);
       _timer?.cancel();
       FocusScope.of(context).unfocus();
+      ref.read(mfProvider).IsPaymentCalled(false);
     }
   }
 
@@ -95,14 +96,9 @@ Timer? _autoPopTimer;
         child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-                boxShadow: const [
-                  BoxShadow(
-                      color: Color(0xff999999),
-                      blurRadius: 4.0,
-                      offset: Offset(2.0, 0.0))
-                ]),
+              borderRadius: BorderRadius.circular(16),
+              color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+            ),
             child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.start,
