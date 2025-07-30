@@ -2229,13 +2229,14 @@ class MFProvider extends DefaultChangeNotifier {
       if (_upiApiresponse?.stat != "Not Ok") {
         if (_upiApiresponse?.stat == "Ok") {
           _loadingMessage = "Initiated";
+          _triggerfromMF = true;
+
           notifyListeners();
 
           // Add a small delay to show the verification message
-          await Future.delayed(Duration(milliseconds: 1000));
+          // await Future.delayed(Duration(milliseconds: 1000));
 
           // Navigator.pop(context);
-          _triggerfromMF = true;
           // if (_paymentName == 'NET BANKING') {
           // checknetbankingstatus(context);
           // }
@@ -2329,7 +2330,7 @@ class MFProvider extends DefaultChangeNotifier {
           //   },
           // );
           // _timer = true;
-          notifyListeners();
+          // notifyListeners();
         }
       }
       _investloader = false;
