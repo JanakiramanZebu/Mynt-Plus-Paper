@@ -69,7 +69,6 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
       final theme = ref.watch(themeProvider);
       final ledgerprovider = ref.watch(ledgerProvider);
 
-      
       return SafeArea(
         child: Stack(
           children: [
@@ -77,7 +76,6 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(16),
                 color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-                
               ),
               child: Padding(
                 padding: const EdgeInsets.only(bottom: 24),
@@ -86,7 +84,8 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 8.0, horizontal: 16.0),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -100,7 +99,8 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
                             shape: const CircleBorder(),
                             child: InkWell(
                               onTap: () async {
-                                await Future.delayed(const Duration(milliseconds: 150));
+                                await Future.delayed(
+                                    const Duration(milliseconds: 150));
                                 Navigator.pop(context);
                               },
                               borderRadius: BorderRadius.circular(20),
@@ -115,7 +115,9 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
                                 child: Icon(
                                   Icons.close_rounded,
                                   size: 22,
-                                  color: theme.isDarkMode ? const Color(0xffBDBDBD) : colors.colorGrey,
+                                  color: theme.isDarkMode
+                                      ? const Color(0xffBDBDBD)
+                                      : colors.colorGrey,
                                 ),
                               ),
                             ),
@@ -124,7 +126,9 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
                       ),
                     ),
                     Divider(
-                      color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+                      color: theme.isDarkMode
+                          ? colors.darkColorDivider
+                          : colors.colorDivider,
                       height: 0,
                     ),
                     const SizedBox(height: 16),
@@ -143,7 +147,8 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
                         children: [
                           Container(
                             width: double.infinity,
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 6),
                             decoration: BoxDecoration(
                               color: const Color(0xffF1F3F8),
                               border: Border.all(
@@ -162,12 +167,15 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
                                     splashColor: theme.isDarkMode
                                         ? colors.colorWhite.withOpacity(0.1)
                                         : colors.colorBlack.withOpacity(0.1),
-                                    onTap: ledgerprovider.yearforTaxpnl <= (ledgerprovider.yearforTaxpnlDummy - 4)
+                                    onTap: ledgerprovider.yearforTaxpnl <=
+                                            (ledgerprovider.yearforTaxpnlDummy -
+                                                4)
                                         ? null
                                         : () {
                                             ledgerprovider.fetchtaxpnleqdata(
                                                 context,
-                                                ledgerprovider.yearforTaxpnl - 1);
+                                                ledgerprovider.yearforTaxpnl -
+                                                    1);
                                           },
                                     child: Container(
                                       width: 40,
@@ -176,7 +184,10 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
                                       child: Icon(
                                         Icons.chevron_left,
                                         size: 24,
-                                        color: ledgerprovider.yearforTaxpnl <= (ledgerprovider.yearforTaxpnlDummy - 4)
+                                        color: ledgerprovider.yearforTaxpnl <=
+                                                (ledgerprovider
+                                                        .yearforTaxpnlDummy -
+                                                    4)
                                             ? Colors.grey
                                             : theme.isDarkMode
                                                 ? colors.colorWhite
@@ -201,13 +212,15 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
                                     splashColor: theme.isDarkMode
                                         ? colors.colorWhite.withOpacity(0.1)
                                         : colors.colorBlack.withOpacity(0.1),
-                                    onTap: ledgerprovider.yearforTaxpnl >= ledgerprovider.yearforTaxpnlDummy
+                                    onTap: ledgerprovider.yearforTaxpnl >=
+                                            ledgerprovider.yearforTaxpnlDummy
                                         ? null
                                         : () => {
-                                            ledgerprovider.fetchtaxpnleqdata(
-                                                context,
-                                                ledgerprovider.yearforTaxpnl + 1)
-                                          },
+                                              ledgerprovider.fetchtaxpnleqdata(
+                                                  context,
+                                                  ledgerprovider.yearforTaxpnl +
+                                                      1)
+                                            },
                                     child: Container(
                                       width: 40,
                                       height: 40,
@@ -215,7 +228,9 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
                                       child: Icon(
                                         Icons.chevron_right,
                                         size: 24,
-                                        color: ledgerprovider.yearforTaxpnl >= ledgerprovider.yearforTaxpnlDummy
+                                        color: ledgerprovider.yearforTaxpnl >=
+                                                ledgerprovider
+                                                    .yearforTaxpnlDummy
                                             ? Colors.grey
                                             : theme.isDarkMode
                                                 ? colors.colorWhite
@@ -232,7 +247,6 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
                     ),
                     const SizedBox(height: 16),
                     if (errorMessage != null) ...[
-                      const SizedBox(height: 8),
                       Align(
                         alignment: Alignment.centerLeft,
                         child: Padding(
@@ -246,6 +260,7 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
                           ),
                         ),
                       ),
+                      const SizedBox(height: 16),
                     ],
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -255,14 +270,14 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
                         child: OutlinedButton(
                           style: OutlinedButton.styleFrom(
                             elevation: 0,
-                            minimumSize: const Size(0, 48), 
+                            minimumSize: const Size(0, 48),
                             backgroundColor: theme.isDarkMode
                                 ? colors.primaryDark
                                 : colors.primaryLight,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(5),
                             ),
-                            padding: EdgeInsets.zero, 
+                            padding: EdgeInsets.zero,
                           ),
                           onPressed: isLoading
                               ? null

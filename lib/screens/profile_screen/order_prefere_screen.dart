@@ -357,94 +357,91 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                           ],
                         ),
                       ),
-                      Expanded(
-                        flex: 1,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Padding(
-                              padding:
-                                  const EdgeInsets.only(top: 16, bottom: 8),
-                              child:
-                                  headerTitleText("Market Protection %", theme),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(right: 16),
-                              child: Container(
-                                height: 40,
-                                child: Row(
-                                  children: [
-                                    Expanded(
-                                      child: CustomTextFormField(
-                                        fillColor: theme.isDarkMode
-                                            ? colors.darkGrey
-                                            : const Color(0xffF1F3F8),
-                                        inputFormate: [
-                                          FilteringTextInputFormatter.digitsOnly
-                                        ],
-                                        onChanged: (value) {
-                                          setState(() {
-                                            ScaffoldMessenger.of(context)
-                                                .hideCurrentSnackBar();
-                                            if (value.isNotEmpty) {
-                                              int parsed =
-                                                  int.tryParse(value) ?? 1;
-                                              if (parsed > 20) {
-                                                mktProtCtrl.text = "20";
-                                                ScaffoldMessenger.of(context)
-                                                    .showSnackBar(
-                                                  warningMessage(context,
-                                                      "Can't enter greater than 20% of Market Protection"),
-                                                );
-                                              } else if (parsed < 1) {
-                                                mktProtCtrl.text = "1";
-                                                ScaffoldMessenger.of(context)
-                                                    .showSnackBar(
-                                                  warningMessage(context,
-                                                      "can't enter less than 1% of Market Protection"),
-                                                );
-                                              }
-                                            }
-                                          });
-                                        },
-                                        style: TextWidget.textStyle(
-                                          color: theme.isDarkMode
-                                              ? colors.textPrimaryDark
-                                              : colors.textPrimaryLight,
-                                          fontSize: 14,
-                                          theme: theme.isDarkMode,
-                                        ),
-                                        textCtrl: mktProtCtrl,
-                                        prefixIcon: Container(
-                                          margin: const EdgeInsets.all(12),
-                                          decoration: BoxDecoration(
-                                            borderRadius:
-                                                BorderRadius.circular(20),
-                                            color: theme.isDarkMode
-                                                ? const Color(0xff555555)
-                                                : colors.colorWhite,
-                                          ),
-                                          child: SvgPicture.asset(
-                                            assets.precentIcon,
-                                            color: theme.isDarkMode
-                                                ? colors.colorWhite
-                                                : colors.colorGrey,
-                                            fit: BoxFit.scaleDown,
-                                          ),
-                                        ),
-                                        textAlign: TextAlign.start,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
                     ],
                   ),
-
+                  const SizedBox(height: 16),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(top: 0, bottom: 8),
+                          child: headerTitleText("Market Protection", theme),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(right: 16),
+                          child: SizedBox(
+                            width: MediaQuery.of(context).size.width * 0.3,
+                            height: 40,
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: CustomTextFormField(
+                                    fillColor: theme.isDarkMode
+                                        ? colors.darkGrey
+                                        : const Color(0xffF1F3F8),
+                                    inputFormate: [
+                                      FilteringTextInputFormatter.digitsOnly
+                                    ],
+                                    onChanged: (value) {
+                                      setState(() {
+                                        ScaffoldMessenger.of(context)
+                                            .hideCurrentSnackBar();
+                                        if (value.isNotEmpty) {
+                                          int parsed = int.tryParse(value) ?? 1;
+                                          if (parsed > 20) {
+                                            mktProtCtrl.text = "20";
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              warningMessage(context,
+                                                  "Can't enter greater than 20% of Market Protection"),
+                                            );
+                                          } else if (parsed < 1) {
+                                            mktProtCtrl.text = "1";
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              warningMessage(context,
+                                                  "can't enter less than 1% of Market Protection"),
+                                            );
+                                          }
+                                        }
+                                      });
+                                    },
+                                    style: TextWidget.textStyle(
+                                      color: theme.isDarkMode
+                                          ? colors.textPrimaryDark
+                                          : colors.textPrimaryLight,
+                                      fontSize: 14,
+                                      theme: theme.isDarkMode,
+                                    ),
+                                    textCtrl: mktProtCtrl,
+                                    prefixIcon: Container(
+                                      margin: const EdgeInsets.all(12),
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(20),
+                                        color: theme.isDarkMode
+                                            ? const Color(0xff555555)
+                                            : colors.colorWhite,
+                                      ),
+                                      child: SvgPicture.asset(
+                                        assets.precentIcon,
+                                        color: theme.isDarkMode
+                                            ? colors.colorWhite
+                                            : colors.colorGrey,
+                                        fit: BoxFit.scaleDown,
+                                      ),
+                                    ),
+                                    textAlign: TextAlign.start,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                   const SizedBox(height: 16),
                   Padding(
                       padding: const EdgeInsets.only(left: 16, bottom: 0),
@@ -472,7 +469,7 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                           });
                         }),
                     TextWidget.subText(
-                      text: 'Minimum Qty',
+                      text: 'Default Qty / Lot',
                       theme: theme.isDarkMode,
                       color: theme.isDarkMode
                           ? Color(QtyPrefer == OrdQtyPref.mktqty
@@ -503,7 +500,7 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                           });
                         }),
                     TextWidget.subText(
-                      text: 'No.of Market Lots',
+                      text: 'Multiples of Qty / Lot',
                       theme: theme.isDarkMode,
                       color: theme.isDarkMode
                           ? Color(QtyPrefer == OrdQtyPref.mktqty
@@ -515,9 +512,11 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                     ),
                   ]),
                   if (QtyPrefer == OrdQtyPref.mktlot) ...[
-                    Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: SizedBox(
                         height: 40,
+                        width: MediaQuery.of(context).size.width * 0.3,
                         child: Row(children: [
                           Expanded(
                               child: CustomTextFormField(
@@ -564,7 +563,9 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                       }
                                     }
                                   }))
-                        ])),
+                        ]),
+                      ),
+                    ),
                   ],
                   Padding(
                       padding: const EdgeInsets.only(left: 16, top: 16),

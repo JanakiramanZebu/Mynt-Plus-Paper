@@ -315,6 +315,9 @@ class LDProvider extends DefaultChangeNotifier {
   int _holdingdetailindex = 0;
   int get holdingdetailindex => _holdingdetailindex;
 
+  String _cpactionerrormsgqty = "";
+  String get cpactionerrormsgqty => _cpactionerrormsgqty;
+
   set setholdingdetailindex(val) {
     _holdingdetailindex = val;
   }
@@ -326,7 +329,7 @@ class LDProvider extends DefaultChangeNotifier {
     _currentfilterpage = val;
   }
 
-  String _selectvalueofcpaction = "Buyback";
+  String _selectvalueofcpaction = "CA";
   String get selectvalueofcpaction => _selectvalueofcpaction;
 
   set setselectvalueofcpaction(val) {
@@ -473,16 +476,23 @@ class LDProvider extends DefaultChangeNotifier {
 
     return _cpactiondata!.corporateAction!.where((item) {
       switch (_selectvalueofcpaction) {
-        case 'Buyback':
-          return item.issueType == 'BB' || item.issueType == 'BUYBACK';
-        case 'Delisting':
-          return item.issueType == 'DLST' || item.issueType == 'DS';
-        case 'Takeover':
-          return item.issueType == 'TAKEOVER' || item.issueType == 'TO';
+        case 'CA':
+          return item.issueType == 'BB' ||
+              item.issueType == 'BUYBACK' ||
+              item.issueType == 'DLST' ||
+              item.issueType == 'DS' ||
+              item.issueType == 'TAKEOVER' ||
+              item.issueType == 'TO';
+        // case 'Buyback':
+        //   return item.issueType == 'BB' || item.issueType == 'BUYBACK';
+        // case 'Delisting':
+        //   return item.issueType == 'DLST' || item.issueType == 'DS';
+        // case 'Takeover':
+        //   return item.issueType == 'TAKEOVER' || item.issueType == 'TO';
         case 'OFS':
           return item.issueType == 'IS' || item.issueType == 'RS';
-        case 'RIGHTS':
-          return item.issueType == 'RIGHTS';
+        // case 'RIGHTS':
+        //   return item.issueType == 'RIGHTS';
         default:
           return false;
       }
@@ -2678,23 +2688,23 @@ class LDProvider extends DefaultChangeNotifier {
 
     _requiredamountforofs = (qtyInt * priceNum).toString();
     if (qty.isEmpty) {
-      _cpactionerrormsg = 'Quantity cannot be empty';
+      _cpactionerrormsgqty = 'Quantity cannot be empty';
       _cpactionsubtn = false;
       _qtyvalidcp = false;
     } else if (qty.contains('.')) {
-      _cpactionerrormsg = 'Quantity cannot be decimal';
+      _cpactionerrormsgqty = 'Quantity cannot be decimal';
       _cpactionsubtn = false;
 
       _qtyvalidcp = false;
     } else {
       final qtyInt = int.parse(qty);
       if (qtyInt > 0) {
-        _cpactionerrormsg = '';
+        _cpactionerrormsgqty = '';
         _cpactionsubtn = true;
 
         _qtyvalidcp = true;
       } else {
-        _cpactionerrormsg = 'Invalid quantity input';
+        _cpactionerrormsgqty = 'Invalid quantity input';
         _cpactionsubtn = false;
 
         _qtyvalidcp = false;
@@ -2764,21 +2774,21 @@ class LDProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
-  void setCutoffcheckboxofs(bool val, String cutOffPrice, String balance) {
-    _cutoffcheckboxofs = val;
-    if (val) {
-      // Keep existing quantity, set price to cutoff price
-      selectedpriceforcpaction.text = cutOffPrice;
-      _pricevalidcp = true;
-      _cpactionerrormsg = '';
-    } else {
-      selectedpriceforcpaction.text = '';
-      _pricevalidcp = false;
-      _cpactionerrormsg = '';
-    }
-    _recalculateOFSAmount(balance);
-    notifyListeners();
-  }
+  // void setCutoffcheckboxofs(bool val, String cutOffPrice, String balance) {
+  //   _cutoffcheckboxofs = val;
+  //   if (val) {
+  //     // Keep existing quantity, set price to cutoff price
+  //     selectedpriceforcpaction.text = cutOffPrice;
+  //     _pricevalidcp = true;
+  //     _cpactionerrormsg = '';
+  //   } else {
+  //     selectedpriceforcpaction.text = '';
+  //     _pricevalidcp = false;
+  //     _cpactionerrormsg = '';
+  //   }
+  //   _recalculateOFSAmount(balance);
+  //   notifyListeners();
+  // }
 
   void setCPActionQty(String setnet, String qty, String type, String balance) {
     if (type == 'OFS') {
@@ -2786,15 +2796,15 @@ class LDProvider extends DefaultChangeNotifier {
 
       // Validate quantity input for OFS
       if (setnet.isEmpty) {
-        _cpactionerrormsg = 'Quantity cannot be empty';
+        _cpactionerrormsgqty = 'Quantity cannot be empty';
         _qtyvalidcp = false;
       } else {
         final qtyInt = int.tryParse(setnet);
         if (qtyInt != null && qtyInt > 0) {
           _qtyvalidcp = true;
-          _cpactionerrormsg = '';
+          _cpactionerrormsgqty = '';
         } else {
-          _cpactionerrormsg = 'Invalid quantity input';
+          _cpactionerrormsgqty = 'Invalid quantity input';
           _qtyvalidcp = false;
         }
       }
@@ -2806,23 +2816,29 @@ class LDProvider extends DefaultChangeNotifier {
       final qtyDouble = double.tryParse(qty);
       final qtyInt = qtyDouble != null ? (qtyDouble.toInt()) : null;
       if (setnet.isEmpty) {
-        _cpactionerrormsg = 'Quantity cannot be empty';
+        _cpactionerrormsgqty = 'Quantity cannot be empty';
         _qtyvalidcp = false;
       } else if (net != null && qtyInt != null) {
         if (net > qtyInt) {
-          _cpactionerrormsg = 'Qty must be less than or equal to $qty';
+          _cpactionerrormsgqty = 'Qty must be less than or equal to $qty';
           _qtyvalidcp = false;
         } else {
+          _cpactionerrormsgqty = '';
           _qtyvalidcp = true;
         }
       } else {
-        _cpactionerrormsg = 'Invalid quantity input';
+        _cpactionerrormsgqty = 'Invalid quantity input';
         _qtyvalidcp = false;
       }
 
       selectedqtyforcpaction.text = setnet;
       _evaluateCPActionValidation();
     }
+    notifyListeners();
+  }
+
+  showofserrormsg(String msg) {
+    _cpactionerrormsgqty = msg;
     notifyListeners();
   }
 
@@ -2869,6 +2885,7 @@ class LDProvider extends DefaultChangeNotifier {
       if (parsedValue != null) {
         if (parsedValue >= min && parsedValue <= max) {
           _pricevalidcp = true;
+          _cpactionerrormsg = '';
         } else {
           _pricevalidcp = false;
           _cpactionerrormsg = 'Price must be between $min - $max';
@@ -3181,6 +3198,7 @@ class LDProvider extends DefaultChangeNotifier {
     _pricevalidcp = false;
     _cpactionsubtn = false;
     _cpactionerrormsg = '';
+    _cpactionerrormsgqty = '';
     _cutoffcheckboxofs = false;
     notifyListeners();
   }
@@ -3553,6 +3571,10 @@ class LDProvider extends DefaultChangeNotifier {
         calendarPnlCache[cacheKey] != null) {
       // Use cached data
       _calenderpnlAllData = calendarPnlCache[cacheKey];
+      // Ensure segment field is set for cached data
+      if (_calenderpnlAllData != null && _calenderpnlAllData!.segment == null) {
+        _calenderpnlAllData!.segment = segment;
+      }
       // Rebuild grouped and heatmapData from cached data
       _rebuildGroupedAndHeatmap(_calenderpnlAllData);
       setFinancialYear(fy);
@@ -3575,7 +3597,7 @@ class LDProvider extends DefaultChangeNotifier {
       notifyListeners();
       final data = await api.getcalenderpnldata(from, to, type);
       // Only update cache and UI for FNO after data is received
-      if (type == 'Fno') {
+      if (type == 'FNO') {
         if (cacheKey != null) {
           calendarPnlCache[cacheKey] = data;
         }
@@ -3645,6 +3667,10 @@ class LDProvider extends DefaultChangeNotifier {
     _originalGrouped = {};
     _heatmapData = {};
     if (data == null) return;
+    // Set the segment field when rebuilding from cache
+    if (data.segment == null) {
+      data.segment = selectedSegment;
+    }
     if (data.journal != null) {
       for (var element in data.journal!) {
         if (element.realisedpnl != '0.0') {

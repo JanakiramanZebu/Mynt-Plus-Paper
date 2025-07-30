@@ -129,12 +129,12 @@ class FundProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
-  eDis(BuildContext context) {
+  Future eDis(BuildContext context) async {
     var enCodePass = utf8.encode(
         'sLoginId=${fundHstoken!.uid}&sAccountId=${fundHstoken!.actid}&prd=C&token=${fundHstoken!.hstk}&sBrokerId=ZEBU&open=edis');
     var base64Pass = base64Url.encode(enCodePass);
 
-    Navigator.pushNamed(context, Routes.edis, arguments: base64Pass);
+    await Navigator.pushNamed(context, Routes.edis, arguments: base64Pass);
     'sLoginId=${fundHstoken!.uid}&token=${fundHstoken!.hstk}';
 
     // launch("https://go.mynt.in/NorenEdis/NonPoaHoldings/?$base64Pass");

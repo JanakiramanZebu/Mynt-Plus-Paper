@@ -29,21 +29,18 @@ class LedgerScreen extends ConsumerStatefulWidget {
 }
 
 class _LedgerScreenState extends ConsumerState<LedgerScreen> {
- 
- @override
+  @override
   void initState() {
     super.initState();
-    if(ref.read(ledgerProvider).selectedFilters.isNotEmpty) {
+    if (ref.read(ledgerProvider).selectedFilters.isNotEmpty) {
       // If there are selected filters, apply them immediately
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-    ref.read(ledgerProvider).applyLedgerMultiFilter(context,ref.read(ledgerProvider).selectedFilters.toList());
-    });
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.read(ledgerProvider).applyLedgerMultiFilter(
+            context, ref.read(ledgerProvider).selectedFilters.toList());
+      });
     }
-    }
+  }
 
- 
- 
- 
   @override
   Widget build(BuildContext context) {
     final List<String> staticColumn = [
@@ -69,116 +66,114 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
       double dtamount = 0.0;
 
       final ledgerprovider = ref.watch(ledgerProvider);
-      Future<void> _refresh() async {
-        // Show confirmation dialog
-        bool shouldRefresh = await showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (BuildContext dialogContext) {
-            return Consumer(builder: (context, ref, _) {
-              final theme = ref.watch(themeProvider);
-              return AlertDialog(
-                backgroundColor: colors.colorWhite,
-                titlePadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(8)),
-                ),
-                scrollable: true,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                actionsPadding: const EdgeInsets.only(bottom: 16, right: 16, left: 16, top: 8),
-                insetPadding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
-                title: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Material(
-                          color: Colors.transparent,
-                          shape: const CircleBorder(),
-                          child: InkWell(
-                            onTap: () async {
-                              await Future.delayed(const Duration(milliseconds: 150));
-                              Navigator.pop(dialogContext, false);
-                            },
-                            borderRadius: BorderRadius.circular(20),
-                            splashColor: theme.isDarkMode
-                                ? colors.splashColorDark
-                                : colors.splashColorLight,
-                            highlightColor: theme.isDarkMode
-                                ? colors.splashColorDark
-                                : colors.splashColorLight,
-                            child: Padding(
-                              padding: const EdgeInsets.all(6.0),
-                              child: Icon(
-                                Icons.close_rounded,
-                                size: 22,
-                                color: theme.isDarkMode
-                                    ? colors.colorWhite
-                                    : colors.colorBlack,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          const SizedBox(height: 10),
-                          TextWidget.subText(
-                            text: "Do you want to refresh?",
-                            theme: theme.isDarkMode,
-                            color: theme.isDarkMode
-                                ? colors.textPrimaryDark
-                                : colors.textPrimaryLight,
-                            fw: 3,
-                            align: TextAlign.center,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                actions: [
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton(
-                      onPressed: () async {
-                        Navigator.pop(dialogContext, true);
-                      },
-                      style: OutlinedButton.styleFrom(
-                        minimumSize: const Size(0, 40),
-                        side: BorderSide(color: colors.btnOutlinedBorder),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                        backgroundColor: colors.primaryDark,
-                      ),
-                      child: TextWidget.titleText(
-                        text: "Yes",
-                        theme: theme.isDarkMode,
-                        color: !theme.isDarkMode
-                            ? colors.colorWhite
-                            : colors.colorBlack,
-                        fw: 0,
-                      ),
-                    ),
-                  ),
-                ],
-              );
-            });
-          },
-        ) ?? false;
+      // Future<void> _refresh() async {
+      //   // Show confirmation dialog
+      //   bool shouldRefresh = await showDialog(
+      //     context: context,
+      //     barrierDismissible: false,
+      //     builder: (BuildContext dialogContext) {
+      //       return Consumer(builder: (context, ref, _) {
+      //         final theme = ref.watch(themeProvider);
+      //         return AlertDialog(
+      //           backgroundColor: colors.colorWhite,
+      //           titlePadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      //           shape: const RoundedRectangleBorder(
+      //             borderRadius: BorderRadius.all(Radius.circular(8)),
+      //           ),
+      //           scrollable: true,
+      //           contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      //           actionsPadding: const EdgeInsets.only(bottom: 16, right: 16, left: 16, top: 8),
+      //           insetPadding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+      //           title: Column(
+      //             children: [
+      //               Row(
+      //                 mainAxisAlignment: MainAxisAlignment.end,
+      //                 children: [
+      //                   Material(
+      //                     color: Colors.transparent,
+      //                     shape: const CircleBorder(),
+      //                     child: InkWell(
+      //                       onTap: () async {
+      //                         await Future.delayed(const Duration(milliseconds: 150));
+      //                         Navigator.pop(dialogContext, false);
+      //                       },
+      //                       borderRadius: BorderRadius.circular(20),
+      //                       splashColor: theme.isDarkMode
+      //                           ? colors.splashColorDark
+      //                           : colors.splashColorLight,
+      //                       highlightColor: theme.isDarkMode
+      //                           ? colors.splashColorDark
+      //                           : colors.splashColorLight,
+      //                       child: Padding(
+      //                         padding: const EdgeInsets.all(6.0),
+      //                         child: Icon(
+      //                           Icons.close_rounded,
+      //                           size: 22,
+      //                           color: theme.isDarkMode
+      //                               ? colors.colorWhite
+      //                               : colors.colorBlack,
+      //                         ),
+      //                       ),
+      //                     ),
+      //                   ),
+      //                 ],
+      //               ),
+      //               const SizedBox(height: 12),
+      //               SizedBox(
+      //                 width: MediaQuery.of(context).size.width,
+      //                 child: Column(
+      //                   crossAxisAlignment: CrossAxisAlignment.center,
+      //                   children: [
+      //                     const SizedBox(height: 10),
+      //                     TextWidget.subText(
+      //                       text: "Do you want to refresh?",
+      //                       theme: theme.isDarkMode,
+      //                       color: theme.isDarkMode
+      //                           ? colors.textPrimaryDark
+      //                           : colors.textPrimaryLight,
+      //                       fw: 3,
+      //                       align: TextAlign.center,
+      //                     ),
+      //                   ],
+      //                 ),
+      //               ),
+      //             ],
+      //           ),
+      //           actions: [
+      //             SizedBox(
+      //               width: double.infinity,
+      //               child: OutlinedButton(
+      //                 onPressed: () async {
+      //                   Navigator.pop(dialogContext, true);
+      //                 },
+      //                 style: OutlinedButton.styleFrom(
+      //                   minimumSize: const Size(0, 40),
+      //                   side: BorderSide(color: colors.btnOutlinedBorder),
+      //                   shape: RoundedRectangleBorder(
+      //                     borderRadius: BorderRadius.circular(5),
+      //                   ),
+      //                   backgroundColor: colors.primaryDark,
+      //                 ),
+      //                 child: TextWidget.titleText(
+      //                   text: "Yes",
+      //                   theme: theme.isDarkMode,
+      //                   color: !theme.isDarkMode
+      //                       ? colors.colorWhite
+      //                       : colors.colorBlack,
+      //                   fw: 0,
+      //                 ),
+      //               ),
+      //             ),
+      //           ],
+      //         );
+      //       });
+      //     },
+      //   ) ?? false;
 
-        if (shouldRefresh) {
-          await ledgerprovider.getCurrentDate('else');
-          await ledgerprovider.fetchLegerData(
-              context, ledgerprovider.startDate, ledgerprovider.endDate);
-        }
-      }
+      //   if (shouldRefresh) {
+
+      //   }
+      // }
 
       String opbalance = ledgerprovider.ledgerAllData?.openingBalance ?? '0.0';
       // String tdebit = ledgerprovider.ledgerAllData?.drAmt ?? '0.0';
@@ -186,13 +181,16 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
       String clbalance = ledgerprovider.ledgerAllData?.closingBalance ?? '0.0';
 
       return RefreshIndicator(
-        onRefresh: _refresh,
+        onRefresh: () async {
+          await ledgerprovider.getCurrentDate('else');
+          await ledgerprovider.fetchLegerData(
+              context, ledgerprovider.startDate, ledgerprovider.endDate);
+        },
         child: PopScope(
-          canPop: false,
+          canPop: true,
           onPopInvokedWithResult: (didPop, result) async {
             ledgerprovider.falseloader('ledger');
             ledgerprovider.showledgerSearch(true);
-            Future.microtask(() => Navigator.pop(context));
           },
           child: Scaffold(
             appBar: AppBar(
@@ -200,13 +198,34 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
               leadingWidth: 41,
               titleSpacing: 6,
               centerTitle: false,
-              leading: InkWell(
-                onTap: () {
-                  ledgerprovider.falseloader('ledger');
-                  ledgerprovider.showledgerSearch(true);
-                  Navigator.pop(context);
-                },
-                child: const CustomBackBtn(),
+              leading: Material(
+                color: Colors.transparent,
+                shape: const CircleBorder(),
+                clipBehavior: Clip.hardEdge,
+                child: InkWell(
+                  customBorder: const CircleBorder(),
+                  splashColor: theme.isDarkMode
+                      ? colors.splashColorDark
+                      : colors.splashColorLight,
+                  highlightColor: theme.isDarkMode
+                      ? colors.highlightDark
+                      : colors.highlightLight,
+                  onTap: () {
+                    ledgerprovider.falseloader('ledger');
+                    ledgerprovider.showledgerSearch(true);
+                    Navigator.pop(context);
+                  },
+                  child: Container(
+                    width: 44, // Increased touch area
+                    height: 44,
+                    alignment: Alignment.center,
+                    child: Icon(Icons.arrow_back_ios_outlined,
+                        size: 18,
+                        color: theme.isDarkMode
+                            ? colors.colorWhite
+                            : colors.colorBlack),
+                  ),
+                ),
               ),
               elevation: 0.2,
               title: TextWidget.titleText(
@@ -928,17 +947,23 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                                             showDialog(
                                               context: context,
                                               barrierDismissible: false,
-                                              builder: (_) => const CircularLoaderImage(),
+                                              builder: (_) =>
+                                                  const CircularLoaderImage(),
                                             );
-                                            await ledgerprovider.fetchBillDetails(
+                                            await ledgerprovider
+                                                .fetchBillDetails(
                                               context,
                                               ledgerEntry.sETTLEMENTNO ?? '',
                                               ledgerEntry.mKTTYPE ?? '',
                                               ledgerEntry.cOCD ?? '',
-                                              dateFormatChangeForLedger(ledgerEntry.vOUCHERDATE ?? ''),
+                                              dateFormatChangeForLedger(
+                                                  ledgerEntry.vOUCHERDATE ??
+                                                      ''),
                                             );
                                             // Hide loader
-                                            Navigator.of(context, rootNavigator: true).pop();
+                                            Navigator.of(context,
+                                                    rootNavigator: true)
+                                                .pop();
 
                                             if (context.mounted) {
                                               await _showBottomSheet(
