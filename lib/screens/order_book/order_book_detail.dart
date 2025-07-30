@@ -743,7 +743,7 @@ Widget _buildRepeatOrderBar(
     children: [
       Expanded(
         child: Container(
-          height: 40,
+          height: 45,
           decoration: BoxDecoration(
             color: const Color(0xffF1F3F8),
             borderRadius: BorderRadius.circular(5),
@@ -782,7 +782,7 @@ Widget _buildRepeatOrderBar(
         Expanded(
             child: Container(
                 margin: const EdgeInsets.only(left: 12),
-                height: 40,
+                height: 45,
                 decoration: BoxDecoration(
                   border: Border.all(color: colors.btnOutlinedBorder, width: 1),
                   color: const Color(0xffF1F3F8),
@@ -1001,7 +1001,7 @@ void _showCancelOrderDialog(
                     );
               },
               style: OutlinedButton.styleFrom(
-                minimumSize: const Size(0, 40), // width, height
+                minimumSize: const Size(0, 45), // width, height
                 side: BorderSide(
                     color: colors.btnOutlinedBorder), // Outline border color
                 shape: RoundedRectangleBorder(

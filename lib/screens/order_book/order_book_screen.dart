@@ -133,18 +133,19 @@ class _OrderBookScreenState extends ConsumerState<OrderBookScreen>
                                           : colors.textPrimaryLight,
                                       fw: 3),
                                   if (badge != null) ...[
-                                    const SizedBox(width: 8),
+                                    const SizedBox(width: 3),
                                     Container(
+                                      margin: const EdgeInsets.only(bottom: 6),
                                       padding: const EdgeInsets.symmetric(
                                           horizontal: 4, vertical: 1),
-                                      decoration: BoxDecoration(
-                                        color: colors.colorWhite,
-                                        borderRadius: BorderRadius.circular(4),
-                                      ),
+                                      // decoration: BoxDecoration(
+                                      //   color: colors.colorWhite,
+                                      //   borderRadius: BorderRadius.circular(4),
+                                      // ),
                                       child: Text(
                                         badge,
                                         style: TextWidget.textStyle(
-                                            fontSize: 14, theme: false, fw: 3),
+                                            fontSize: 12, theme: false, fw: 3),
                                       ),
                                     ),
                                   ],

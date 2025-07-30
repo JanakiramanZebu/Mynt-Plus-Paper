@@ -99,7 +99,7 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
                     return MFSchemeInfo(mfStockData: widget.mfStockData);
                   case "Allocation":
                     return MFAllocation(mfStockData: widget.mfStockData);
-                  default  :
+                  default:
                     return Container();
                   // default:
                   //   return MFComparison(mfStockData: widget.mfStockData);
@@ -124,7 +124,7 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
                   ),
                   child: SizedBox(
                     width: MediaQuery.of(context).size.width,
-                    height: 46,
+                    height: 45,
                     child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
                             elevation: 0,
@@ -166,7 +166,7 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
                   ),
                   child: SizedBox(
                     width: MediaQuery.of(context).size.width,
-                    height: 46,
+                    height: 45,
                     child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
                             elevation: 0,
@@ -270,7 +270,7 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
                     children: [
                       _buildFundHeader(theme, mfData),
                       const SizedBox(height: 8),
-                      _buildFundMetrics(theme,mfData),
+                      _buildFundMetrics(theme, mfData),
                     ],
                   ),
                 ),
@@ -356,14 +356,16 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
     return widget.mfStockData.schemeName ?? 'Unknown Fund';
   }
 
-  Widget _buildFundMetrics(dynamic theme,MFProvider mfdatapro) {
+  Widget _buildFundMetrics(dynamic theme, MFProvider mfdatapro) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         _buildMetricColumn(
             "AUM (CR)", _formatAum(widget.mfStockData.aUM), theme),
         _buildMetricColumn(
-            "NAV", _formatValue(mfdatapro.factSheetDataModel?.data?.currentNAV), theme),
+            "NAV",
+            _formatValue(mfdatapro.factSheetDataModel?.data?.currentNAV),
+            theme),
         _buildMetricColumn("MIN. INV",
             _formatValue(widget.mfStockData.minimumPurchaseAmount), theme),
         _buildMetricColumn("5YR CAGR",

@@ -316,7 +316,7 @@ class _SetAlertState extends State<SetAlert> {
                 24, 10, 24, MediaQuery.of(context).viewInsets.bottom + 10),
             child: SizedBox(
               width: MediaQuery.of(context).size.width,
-              height: 40,
+              height: 45,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   elevation: 0,

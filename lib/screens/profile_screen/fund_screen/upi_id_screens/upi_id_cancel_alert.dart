@@ -49,6 +49,7 @@ class _UPIIDPaymentCancelAlertState
           _autoPopTimer?.cancel(); // Cancel auto-pop if running
 
           mfProv.setterformftrigger(false);
+          ref.read(mfProvider).IsPaymentCalled(false);
 
           if (Navigator.of(context).canPop()) {
             Navigator.of(context).pop();
@@ -59,6 +60,7 @@ class _UPIIDPaymentCancelAlertState
       _autoPopTimer = Timer(const Duration(minutes: 3), () {
         _timer?.cancel(); // Also stop periodic timer here as a fallback
         mfProv.setterformftrigger(false);
+        ref.read(mfProvider).IsPaymentCalled(false);
 
         if (Navigator.of(context).canPop()) {
           Navigator.of(context).pop();
@@ -160,7 +162,7 @@ class _UPIIDPaymentCancelAlertState
                             onPressed: _triggerButtonAction,
                             style: ElevatedButton.styleFrom(
                               elevation: 0,
-                              minimumSize: const Size(0, 40),
+                              minimumSize: const Size(0, 45),
                               backgroundColor: theme.isDarkMode
                                   ? colors.primaryDark
                                   : colors.primaryLight,
