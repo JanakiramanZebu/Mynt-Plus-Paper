@@ -31,6 +31,17 @@ class _MfOrderBookScreen extends State<MfOrderBookScreen>
     {"title": "Holdings", "index": 0},
     {"title": "Orders", "index": 1}
   ];
+  final inProgressStatuses = {
+    "PAYMENT NOT INITIATED",
+    "MODIFIED",
+    "PAYMENT INITATED",
+    "PAYMENT INIT",
+    "PAYMENT COMPLETED",
+    "CANCEL ERROR",
+    "WAIT FOR ALLOTMENT",
+    "MODIFY REJECTED",
+    "PAYMENT REJECTED"
+  };
   int activeTab = 0;
 
   @override
@@ -54,7 +65,7 @@ class _MfOrderBookScreen extends State<MfOrderBookScreen>
         body: Stack(
           children: [
             TransparentLoaderScreen(
-              isLoading:   mforderbook.bestmfloader == true,
+              isLoading: mforderbook.bestmfloader == true,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -81,8 +92,8 @@ class _MfOrderBookScreen extends State<MfOrderBookScreen>
                       labelPadding: const EdgeInsets.only(right: 0, bottom: 0),
                       tabAlignment: TabAlignment.start,
                       indicatorColor: theme.isDarkMode
-                              ? colors.primaryDark
-                              : colors.primaryLight, 
+                          ? colors.primaryDark
+                          : colors.primaryLight,
                       controller: _tabController,
                       isScrollable: true,
                       tabs: List.generate(
@@ -144,16 +155,15 @@ class _MfOrderBookScreen extends State<MfOrderBookScreen>
         if (orderData == null) return const SizedBox();
 
         return InkWell(
-          onTap: () async {
-            mforderbook.loaderfun();
-            await mforderbook.fetchorderdetails(
-              orderData.orderId ?? ""
-              // orderData.buySell ?? "",
-              // orderData.ordertype ?? "",
-              // orderData.status ?? "",
-              // orderData.sipregnno ?? "",
-              // orderData.orderremarks ?? "",
-            );
+            onTap: () async {
+              mforderbook.loaderfun();
+              await mforderbook.fetchorderdetails(orderData.orderId ?? ""
+                  // orderData.buySell ?? "",
+                  // orderData.ordertype ?? "",
+                  // orderData.status ?? "",
+                  // orderData.sipregnno ?? "",
+                  // orderData.orderremarks ?? "",
+                  );
 
               if (mforderbook.mforderdet?.stat == "Ok") {
                 showModalBottomSheet(
@@ -178,15 +188,20 @@ class _MfOrderBookScreen extends State<MfOrderBookScreen>
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(warningMessage(
                     context,
-                    mforderbook.mforderdet?.emsg ?? 'Error loading order details'));
+                    mforderbook.mforderdet?.emsg ??
+                        'Error loading order details'));
               }
             },
             child: ListTile(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16,),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                ),
                 title: Padding(
                   padding: const EdgeInsets.only(bottom: 8.0),
                   child: Container(
-                   margin:  EdgeInsets.only(right: MediaQuery.of(context).size.width *0.1,),
+                    margin: EdgeInsets.only(
+                      right: MediaQuery.of(context).size.width * 0.1,
+                    ),
                     child: TextWidget.subText(
                         align: TextAlign.start,
                         text: orderData.name ?? "Unknown Fund",
@@ -263,24 +278,29 @@ class _MfOrderBookScreen extends State<MfOrderBookScreen>
                       padding: const EdgeInsets.symmetric(
                           horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: orderData.status == "VALID"
-                            ? colors.profit.withOpacity(0.1)
-                            : orderData.status == "INVALID"
-                                ? colors.loss.withOpacity(0.1)
-                                : orderData.status == "PENDING"
-                                    ? colors.pending.withOpacity(0.1)
-                                    : colors.pending
-                                        .withOpacity(0.1), // default fallback
+                        color: orderData.status == "ALLOCATED"
+                              ? colors.profit.withOpacity(0.1)
+                              : orderData.status == "REJECTED" ||
+                                      orderData.status == "CANCELLED" || orderData.status == "PAYMENT DECLINED"
+                                  ? colors.loss.withOpacity(0.1)
+                                  : orderData.status ==
+                                          inProgressStatuses
+                                              .contains(orderData.status)
+                                      ? colors.pending.withOpacity(0.1)
+                                      : colors.pending.withOpacity(0.1), // default fallback
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: TextWidget.paraText(
-                          text: _getStatusText(orderData.status),
+                          text: _getListStatusText(orderData.status),
                           theme: false,
-                          color: orderData.status == "VALID"
+                          color: orderData.status == "ALLOCATED"
                               ? colors.profit
-                              : orderData.status == "INVALID"
+                              : orderData.status == "REJECTED" ||
+                                      orderData.status == "CANCELLED" || orderData.status == "PAYMENT DECLINED"
                                   ? colors.loss
-                                  : orderData.status == "PENDING"
+                                  : orderData.status ==
+                                          inProgressStatuses
+                                              .contains(orderData.status)
                                       ? colors.pending
                                       : colors.pending),
                     ),
@@ -297,17 +317,14 @@ class _MfOrderBookScreen extends State<MfOrderBookScreen>
                     const SizedBox(height: 12),
 
                     TextWidget.paraText(
-                                                    align: TextAlign.right,
-                                                    text:  _formatAmount(orderData.orderVal),
-                                                    color: theme.isDarkMode
-                                                        ?  colors.textSecondaryDark:
-                                                         colors.textSecondaryLight
-                                                             ,
-                                                    textOverflow:
-                                                        TextOverflow.ellipsis,
-                                                    theme: theme.isDarkMode,
-                                                    fw: 3),
-                    
+                        align: TextAlign.right,
+                        text: _formatAmount(orderData.orderVal),
+                        color: theme.isDarkMode
+                            ? colors.textSecondaryDark
+                            : colors.textSecondaryLight,
+                        textOverflow: TextOverflow.ellipsis,
+                        theme: theme.isDarkMode,
+                        fw: 3),
                   ],
                 )));
       },
@@ -320,10 +337,13 @@ class _MfOrderBookScreen extends State<MfOrderBookScreen>
     return assets.warningIcon;
   }
 
-  String _getStatusText(String? status) {
-    if (status == "VALID") return 'Success';
-    if (status == 'PENDING') return 'Pending';
-    if (status == 'INVALID') return 'Invalid';
+  String _getListStatusText(String? status) {
+    if (status == "ALLOCATED") return 'ALLOCATED';
+    if (status == "REJECTED") return 'REJECTED';
+    if (status == "CANCELLED") return 'CANCELLED';
+    if (status == "PAYMENT DECLINED") return 'PAYMENT DECLINED';
+    if (inProgressStatuses.contains(status)) return 'IN PROGRESS';
+
     return status ?? 'Unknown';
   }
 

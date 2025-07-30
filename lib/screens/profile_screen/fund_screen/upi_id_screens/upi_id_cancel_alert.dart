@@ -15,6 +15,7 @@ import '../../../../res/res.dart';
 import '../../../../sharedWidget/custom_drag_handler.dart';
 import '../../../../sharedWidget/functions.dart';
 import '../../../../sharedWidget/payment_loader.dart';
+import 'mf_payment_resp_alert.dart';
 
 class UPIIDPaymentCancelAlert extends ConsumerStatefulWidget {
   const UPIIDPaymentCancelAlert({super.key, this.data});
@@ -49,6 +50,28 @@ class _UPIIDPaymentCancelAlertState
           _autoPopTimer?.cancel(); // Cancel auto-pop if running
 
           mfProv.setterformftrigger(false);
+          // showModalBottomSheet(
+          //       shape: const RoundedRectangleBorder(
+          //           borderRadius:
+          //               BorderRadius.vertical(top: Radius.circular(16))),
+          //       backgroundColor: Colors.transparent,
+          //       isDismissible: false,
+          //       enableDrag: false,
+          //       showDragHandle: false,
+          //       useSafeArea: false,
+          //       isScrollControlled: true,
+          //       context: context,
+          //       builder: (BuildContext context) {
+          //         return PopScope(
+          //             canPop: false,
+          //             onPopInvokedWithResult: (didPop, result) async {
+          //               if (didPop) return;
+          //             },
+          //             child:
+          //                 Container(child: const MfPaymentRespAlert()));
+          //       }).whenComplete(() {
+              
+          //   });
 
           if (Navigator.of(context).canPop()) {
             Navigator.of(context).pop();
