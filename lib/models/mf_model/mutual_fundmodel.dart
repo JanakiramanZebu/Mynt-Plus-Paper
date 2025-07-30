@@ -204,8 +204,9 @@ class MutualFundList {
     lockInPeriod = json['Lock_in_Period'];
     channelPartnerCode = json['Channel Partner_Code'];
     reOpeningDate = json['ReOpening_Date'];
-    name = json['name'];
     mfsearchnamename = json['name'];
+    name = json['name'];
+
     aUM = json['AUM'];
     iNTERNETEXPENSERATIO = json['INTER_NET_EXPENSE_RATIO'];
     tHREEYEARDATA = json['3Year'];

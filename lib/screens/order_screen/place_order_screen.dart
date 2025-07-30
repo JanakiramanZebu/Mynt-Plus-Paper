@@ -3877,13 +3877,13 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                               widget: Row(
                                                                   children: [
                                                                     Text(
-                                                                        "Ord Mrg : ",
+                                                                        "Required ",
                                                                         style: textStyle(
                                                                             const Color(0xff666666),
                                                                             12,
                                                                             FontWeight.w500)),
                                                                     Text(
-                                                                        "₹${orderProvide.orderMarginModel == null ? 0.00 : orderProvide.orderMarginModel!.ordermargin}  + ${orderProvide.getBrokerageModel == null ? 0.00 : orderProvide.getBrokerageModel!.brkageAmt ?? 0.00}",
+                                                                        "${orderProvide.orderMarginModel == null ? 0.00 : orderProvide.orderMarginModel!.ordermargin}  + ${orderProvide.getBrokerageModel == null ? 0.00 : orderProvide.getBrokerageModel!.brkageAmt ?? 0.00}",
                                                                         style: textStyle(
                                                                             !theme.isDarkMode
                                                                                 ? colors.colorBlue
@@ -3902,7 +3902,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                               width: 16),
                                                           Row(
                                                             children: [
-                                                              Text("Avl Mrg : ",
+                                                              Text("Balance ",
                                                                   style: textStyle(
                                                                       const Color(
                                                                           0xff666666),

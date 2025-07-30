@@ -119,7 +119,7 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                           width: MediaQuery.of(context).size.width * 0.8,
                           child: TextWidget.subText(
                               text:
-                                  "${(mfOrder.orderpagetitle == "SDS" && mfOrder.factSheetDataModel!.data?.name != null) ? mfOrder.factSheetDataModel!.data?.name!.replaceAll(RegExp(r'(Reg \(G\)|\(G\))$'), ' ') : '${widget.mfData.fSchemeName}'}",
+                                  "${(mfOrder.orderpagetitle == "SDS" && mfOrder.factSheetDataModel!.data?.name != null) ? mfOrder.factSheetDataModel!.data?.name!.replaceAll(RegExp(r'(Reg \(G\)|\(G\))$'), ' ') : '${widget.mfData.name}'}",
                               textOverflow: TextOverflow.ellipsis,
                               theme: theme.isDarkMode,
                               color: theme.isDarkMode
@@ -1374,7 +1374,7 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                               }
                             },
                             style: OutlinedButton.styleFrom(
-                              minimumSize: const Size(0, 40),
+                              minimumSize: const Size(0, 45),
                               side: BorderSide(color: colors.btnOutlinedBorder),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(5),

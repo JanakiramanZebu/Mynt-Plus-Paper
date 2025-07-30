@@ -82,7 +82,7 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                       // Add Fund Button
                       Expanded(
                         child: SizedBox(
-                          height: 48,
+                          height: 45,
                           child: OutlinedButton(
                             style: OutlinedButton.styleFrom(
                               side: BorderSide(
@@ -116,7 +116,7 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                       // Withdraw Button
                       Expanded(
                         child: SizedBox(
-                          height: 48,
+                          height: 45,
                           child: OutlinedButton(
                             style: OutlinedButton.styleFrom(
                               side: BorderSide(
@@ -577,7 +577,7 @@ class _SecureFundState extends ConsumerState<SecureFund> {
             theme: theme,
             value: getFormatter(
                 value: _safeParseDouble(
-                    "${funds.fundDetailModel?.pendordval ?? 0.00}"),
+                    "${funds.fundDetailModel?.brokerage ?? 0.00}"),
                 v4d: false,
                 noDecimal: false),
             text: "Unrealized Expenses",

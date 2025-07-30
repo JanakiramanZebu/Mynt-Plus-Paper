@@ -215,17 +215,133 @@ class _PendingAlertDetailsState extends ConsumerState<PendingAlertDetails> {
                                             children: [
                                               Expanded(
                                                 child: Container(
-                                                  height: 40,
+                                                  height: 45,
                                                   decoration: BoxDecoration(
                                                     color: colors.btnBg,
                                                     borderRadius:
                                                         BorderRadius.circular(
                                                             5),
-                                                    border: Border.all(
-                                                      color: colors
-                                                          .btnOutlinedBorder,
-                                                      width: 1,
+                                                    // border: Border.all(
+                                                    //   color: colors
+                                                    //       .btnOutlinedBorder,
+                                                    //   width: 1,
+                                                    // ),
+                                                  ),
+                                                  child: Material(
+                                                    color: Colors.transparent,
+                                                    shape:
+                                                        const BeveledRectangleBorder(),
+                                                    child: InkWell(
+                                                      customBorder:
+                                                          const BeveledRectangleBorder(),
+                                                      splashColor: theme
+                                                              .isDarkMode
+                                                          ? colors
+                                                              .splashColorDark
+                                                          : colors
+                                                              .splashColorLight,
+                                                      highlightColor: theme
+                                                              .isDarkMode
+                                                          ? colors.highlightDark
+                                                          : colors
+                                                              .highlightLight,
+                                                      onTap: isModifying ||
+                                                              isCancelling
+                                                          ? null
+                                                          : () async {
+                                                              setState(() {
+                                                                isCancelling =
+                                                                    true;
+                                                              });
+
+                                                              try {
+                                                                final String
+                                                                    alertId =
+                                                                    "${widget.alert.alId}";
+
+                                                                await ref
+                                                                    .read(
+                                                                        marketWatchProvider)
+                                                                    .fetchCancelAlert(
+                                                                        alertId,
+                                                                        context);
+
+                                                                await ref
+                                                                    .read(
+                                                                        marketWatchProvider)
+                                                                    .fetchPendingAlert(
+                                                                        context);
+
+                                                                if (mounted)
+                                                                  Navigator.pop(
+                                                                      context);
+                                                              } catch (e) {
+                                                                if (mounted) {
+                                                                  ScaffoldMessenger.of(
+                                                                          context)
+                                                                      .showSnackBar(
+                                                                    SnackBar(
+                                                                      content: Text(
+                                                                          "Failed to cancel alert: ${e.toString()}"),
+                                                                    ),
+                                                                  );
+                                                                }
+                                                              } finally {
+                                                                if (mounted) {
+                                                                  setState(() {
+                                                                    isCancelling =
+                                                                        false;
+                                                                  });
+                                                                }
+                                                              }
+                                                            },
+                                                      child: Center(
+                                                        child: isCancelling
+                                                            ? SizedBox(
+                                                                height: 20,
+                                                                width: 20,
+                                                                child:
+                                                                    CircularProgressIndicator(
+                                                                  strokeWidth:
+                                                                      2,
+                                                                  color: theme.isDarkMode
+                                                                      ? colors
+                                                                          .primaryDark
+                                                                      : colors
+                                                                          .primaryLight,
+                                                                ),
+                                                              )
+                                                            : TextWidget
+                                                                .subText(
+                                                                text:
+                                                                    "Cancel Alert",
+                                                                theme: false,
+                                                                color: theme.isDarkMode
+                                                                    ? colors
+                                                                        .primaryDark
+                                                                    : colors
+                                                                        .primaryLight,
+                                                                fw: 0,
+                                                              ),
+                                                      ),
                                                     ),
+                                                  ),
+                                                ),
+                                              ),
+                                              const SizedBox(width: 16),
+                                              Expanded(
+                                                child: Container(
+                                                  height: 45,
+                                                  decoration: BoxDecoration(
+                                                    color: colors.primaryLight,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            5),
+                                                    // border: Border.all(
+                                                    //   color: colors
+                                                    //       .btnOutlinedBorder,
+                                                    //   width: 1,
+                                                    // ),
                                                   ),
                                                   child: Material(
                                                     color: Colors.transparent,
@@ -323,127 +439,8 @@ class _PendingAlertDetailsState extends ConsumerState<PendingAlertDetails> {
                                                                 text:
                                                                     "Modify Alert",
                                                                 theme: false,
-                                                                color: theme.isDarkMode
-                                                                    ? colors
-                                                                        .primaryDark
-                                                                    : colors
-                                                                        .primaryLight,
-                                                                fw: 0,
-                                                              ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                              const SizedBox(width: 16),
-                                              Expanded(
-                                                child: Container(
-                                                  height: 40,
-                                                  decoration: BoxDecoration(
-                                                    color: colors.btnBg,
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            5),
-                                                    border: Border.all(
-                                                      color: colors
-                                                          .btnOutlinedBorder,
-                                                      width: 1,
-                                                    ),
-                                                  ),
-                                                  child: Material(
-                                                    color: Colors.transparent,
-                                                    shape:
-                                                        const BeveledRectangleBorder(),
-                                                    child: InkWell(
-                                                      customBorder:
-                                                          const BeveledRectangleBorder(),
-                                                      splashColor: theme
-                                                              .isDarkMode
-                                                          ? colors
-                                                              .splashColorDark
-                                                          : colors
-                                                              .splashColorLight,
-                                                      highlightColor: theme
-                                                              .isDarkMode
-                                                          ? colors.highlightDark
-                                                          : colors
-                                                              .highlightLight,
-                                                      onTap: isModifying ||
-                                                              isCancelling
-                                                          ? null
-                                                          : () async {
-                                                              setState(() {
-                                                                isCancelling =
-                                                                    true;
-                                                              });
-
-                                                              try {
-                                                                final String
-                                                                    alertId =
-                                                                    "${widget.alert.alId}";
-
-                                                                await ref
-                                                                    .read(
-                                                                        marketWatchProvider)
-                                                                    .fetchCancelAlert(
-                                                                        alertId,
-                                                                        context);
-
-                                                                await ref
-                                                                    .read(
-                                                                        marketWatchProvider)
-                                                                    .fetchPendingAlert(
-                                                                        context);
-
-                                                                if (mounted)
-                                                                  Navigator.pop(
-                                                                      context);
-                                                              } catch (e) {
-                                                                if (mounted) {
-                                                                  ScaffoldMessenger.of(
-                                                                          context)
-                                                                      .showSnackBar(
-                                                                    SnackBar(
-                                                                      content: Text(
-                                                                          "Failed to cancel alert: ${e.toString()}"),
-                                                                    ),
-                                                                  );
-                                                                }
-                                                              } finally {
-                                                                if (mounted) {
-                                                                  setState(() {
-                                                                    isCancelling =
-                                                                        false;
-                                                                  });
-                                                                }
-                                                              }
-                                                            },
-                                                      child: Center(
-                                                        child: isCancelling
-                                                            ? SizedBox(
-                                                                height: 20,
-                                                                width: 20,
-                                                                child:
-                                                                    CircularProgressIndicator(
-                                                                  strokeWidth:
-                                                                      2,
-                                                                  color: theme.isDarkMode
-                                                                      ? colors
-                                                                          .primaryDark
-                                                                      : colors
-                                                                          .primaryLight,
-                                                                ),
-                                                              )
-                                                            : TextWidget
-                                                                .subText(
-                                                                text:
-                                                                    "Cancel Alert",
-                                                                theme: false,
-                                                                color: theme.isDarkMode
-                                                                    ? colors
-                                                                        .primaryDark
-                                                                    : colors
-                                                                        .primaryLight,
+                                                                color: colors
+                                                                    .colorWhite,
                                                                 fw: 0,
                                                               ),
                                                       ),

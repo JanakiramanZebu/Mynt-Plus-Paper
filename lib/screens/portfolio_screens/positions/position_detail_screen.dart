@@ -338,135 +338,13 @@ class _PositionDetailScreenState extends ConsumerState<PositionDetailScreen> {
                                                   !positions.isDay) ...[
                                                 Expanded(
                                                   child: Container(
-                                                    height: 40,
-                                                    decoration: BoxDecoration(
-                                                      color: colors.btnBg,
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              5),
-                                                      border: Border.all(
-                                                        color: colors
-                                                            .btnOutlinedBorder,
-                                                        width: 1,
-                                                      ),
-                                                    ),
-                                                    child: Material(
-                                                      color: Colors.transparent,
-                                                      shape:
-                                                          const BeveledRectangleBorder(),
-                                                      child: InkWell(
-                                                        customBorder:
-                                                            const BeveledRectangleBorder(),
-                                                        splashColor: theme
-                                                                .isDarkMode
-                                                            ? colors
-                                                                .splashColorDark
-                                                            : colors
-                                                                .splashColorLight,
-                                                        highlightColor: theme
-                                                                .isDarkMode
-                                                            ? colors
-                                                                .highlightDark
-                                                            : colors
-                                                                .highlightLight,
-                                                        onTap: () async {
-                                                          await ref
-                                                              .read(
-                                                                  marketWatchProvider)
-                                                              .fetchScripInfo(
-                                                                "${widget.positionList.token}",
-                                                                '${widget.positionList.exch}',
-                                                                context,
-                                                                true,
-                                                              );
-                                                          int lotsize = int.parse(ref
-                                                              .read(
-                                                                  marketWatchProvider)
-                                                              .scripInfoModel!
-                                                              .ls
-                                                              .toString());
-                                                          Navigator.pop(
-                                                              context);
-                                                          OrderScreenArgs
-                                                              orderArgs =
-                                                              OrderScreenArgs(
-                                                            exchange:
-                                                                '${widget.positionList.exch}',
-                                                            tSym:
-                                                                '${widget.positionList.tsym}',
-                                                            isExit: false,
-                                                            token:
-                                                                "${widget.positionList.token}",
-                                                            transType: int.parse(widget
-                                                                        .positionList
-                                                                        .netqty!) <
-                                                                    0
-                                                                ? false
-                                                                : true,
-                                                            prd:
-                                                                '${widget.positionList.prd}',
-                                                            lotSize: lotsize
-                                                                .toString(),
-                                                            ltp: widget
-                                                                .positionList
-                                                                .lp,
-                                                            perChange: widget
-                                                                    .positionList
-                                                                    .perChange ??
-                                                                "0.00",
-                                                            orderTpye: '',
-                                                            holdQty:
-                                                                '${widget.positionList.netqty}',
-                                                            isModify: false,
-                                                            raw: {},
-                                                          );
-
-                                                          Navigator.pushNamed(
-                                                              context,
-                                                              Routes
-                                                                  .placeOrderScreen,
-                                                              arguments: {
-                                                                "orderArg":
-                                                                    orderArgs,
-                                                                "scripInfo": ref
-                                                                    .read(
-                                                                        marketWatchProvider)
-                                                                    .scripInfoModel!,
-                                                                "isBskt": "",
-                                                              });
-                                                        },
-                                                        child: Center(
-                                                          child: TextWidget
-                                                              .subText(
-                                                            text: "Add",
-                                                            theme: false,
-                                                            color: theme
-                                                                    .isDarkMode
-                                                                ? colors
-                                                                    .primaryDark
-                                                                : colors
-                                                                    .primaryLight,
-                                                            fw: 0,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                                const SizedBox(width: 12),
-                                              ],
-                                              if (widget.positionList.qty !=
-                                                      "0" &&
-                                                  !positions.isDay) ...[
-                                                Expanded(
-                                                  child: Container(
-                                                    height: 40,
+                                                    height: 45,
                                                     decoration: BoxDecoration(
                                                       border: Border.all(
                                                         color: theme.isDarkMode
                                                             ? colors.colorGrey
-                                                            : const Color(
-                                                                0xff0037B7),
+                                                            : colors
+                                                                .primaryLight,
                                                       ),
                                                       color: const Color(
                                                           0xffF1F3F8),
@@ -565,6 +443,125 @@ class _PositionDetailScreenState extends ConsumerState<PositionDetailScreen> {
                                                                     .primaryDark
                                                                 : colors
                                                                     .primaryLight,
+                                                            fw: 0,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 12),
+                                              ],
+                                              if (widget.positionList.qty !=
+                                                      "0" &&
+                                                  !positions.isDay) ...[
+                                                Expanded(
+                                                  child: Container(
+                                                    height: 45,
+                                                    decoration: BoxDecoration(
+                                                      color:
+                                                          colors.primaryLight,
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              5),
+                                                      // border: Border.all(
+                                                      //   color: colors
+                                                      //       .btnOutlinedBorder,
+                                                      //   width: 1,
+                                                      // ),
+                                                    ),
+                                                    child: Material(
+                                                      color: Colors.transparent,
+                                                      shape:
+                                                          const BeveledRectangleBorder(),
+                                                      child: InkWell(
+                                                        customBorder:
+                                                            const BeveledRectangleBorder(),
+                                                        splashColor: theme
+                                                                .isDarkMode
+                                                            ? colors
+                                                                .splashColorDark
+                                                            : colors
+                                                                .splashColorLight,
+                                                        highlightColor: theme
+                                                                .isDarkMode
+                                                            ? colors
+                                                                .highlightDark
+                                                            : colors
+                                                                .highlightLight,
+                                                        onTap: () async {
+                                                          await ref
+                                                              .read(
+                                                                  marketWatchProvider)
+                                                              .fetchScripInfo(
+                                                                "${widget.positionList.token}",
+                                                                '${widget.positionList.exch}',
+                                                                context,
+                                                                true,
+                                                              );
+                                                          int lotsize = int.parse(ref
+                                                              .read(
+                                                                  marketWatchProvider)
+                                                              .scripInfoModel!
+                                                              .ls
+                                                              .toString());
+                                                          Navigator.pop(
+                                                              context);
+                                                          OrderScreenArgs
+                                                              orderArgs =
+                                                              OrderScreenArgs(
+                                                            exchange:
+                                                                '${widget.positionList.exch}',
+                                                            tSym:
+                                                                '${widget.positionList.tsym}',
+                                                            isExit: false,
+                                                            token:
+                                                                "${widget.positionList.token}",
+                                                            transType: int.parse(widget
+                                                                        .positionList
+                                                                        .netqty!) <
+                                                                    0
+                                                                ? false
+                                                                : true,
+                                                            prd:
+                                                                '${widget.positionList.prd}',
+                                                            lotSize: lotsize
+                                                                .toString(),
+                                                            ltp: widget
+                                                                .positionList
+                                                                .lp,
+                                                            perChange: widget
+                                                                    .positionList
+                                                                    .perChange ??
+                                                                "0.00",
+                                                            orderTpye: '',
+                                                            holdQty:
+                                                                '${widget.positionList.netqty}',
+                                                            isModify: false,
+                                                            raw: {},
+                                                          );
+
+                                                          Navigator.pushNamed(
+                                                              context,
+                                                              Routes
+                                                                  .placeOrderScreen,
+                                                              arguments: {
+                                                                "orderArg":
+                                                                    orderArgs,
+                                                                "scripInfo": ref
+                                                                    .read(
+                                                                        marketWatchProvider)
+                                                                    .scripInfoModel!,
+                                                                "isBskt": "",
+                                                              });
+                                                        },
+                                                        child: Center(
+                                                          child: TextWidget
+                                                              .subText(
+                                                            text: "Add",
+                                                            theme: false,
+                                                            color: colors
+                                                                .colorWhite,
                                                             fw: 0,
                                                           ),
                                                         ),

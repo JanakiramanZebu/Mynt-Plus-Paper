@@ -335,8 +335,6 @@ class MFProvider extends DefaultChangeNotifier {
     //     "https://mynt.zebuetrade.com/mutualfund?sUserId=${pref.clientId}&sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}");
   }
 
-  
-
   mfExTabchange(int tab) {
     _activeTab = tab;
     notifyListeners();
@@ -595,7 +593,6 @@ class MFProvider extends DefaultChangeNotifier {
       "title": "Solution",
       "sub": []
     },
-    
   ];
 
   List get mFCategoryTypesStatic => _mFCategoryTypesStatic;
@@ -1058,7 +1055,6 @@ class MFProvider extends DefaultChangeNotifier {
 
     notifyListeners();
   }
-  
 
   clearMfSearchResult() {
     _mutualFundsearchdata = [];
@@ -1067,7 +1063,6 @@ class MFProvider extends DefaultChangeNotifier {
 
   Future fetchmfCommonsearch(String value, BuildContext context) async {
     try {
-      
       print("[MF SEARCH] Query: '$value'");
       var mutualFundsearch = await api.getSearchMf(value);
       print("[MF SEARCH] API Request Body: {\"text\": \"$value\"}");
@@ -1416,7 +1411,7 @@ class MFProvider extends DefaultChangeNotifier {
 
   void fetchmfholdsingpage(String isin) async {
     // print("qqqq|${isin}---");
-    
+
     // Clear previous data
     _holssinglelist = [];
     notifyListeners();
@@ -1430,10 +1425,9 @@ class MFProvider extends DefaultChangeNotifier {
 
         // print("ttttttt$_holssinglelist");
         break; // Found the item, no need to continue
-
       }
     }
-    
+
     notifyListeners();
   }
 
@@ -2112,7 +2106,7 @@ class MFProvider extends DefaultChangeNotifier {
     }
   }
 
-   fetchcatdatanew(String tit, String chi) {
+  fetchcatdatanew(String tit, String chi) {
     // print("qqqq|${tit}----${chi}");
 
     // Define mapping of title to index dynamically
@@ -2219,7 +2213,7 @@ class MFProvider extends DefaultChangeNotifier {
       _threeSecondTimer?.cancel(); // Stop the repeating timer
       if (Navigator.of(context).canPop()) {
         Navigator.of(context).pop(); // Auto pop after 1 minute
-          _triggerfromMF = false; 
+        _triggerfromMF = false;
       }
     });
   }
@@ -2243,7 +2237,7 @@ class MFProvider extends DefaultChangeNotifier {
           // Navigator.pop(context);
           _triggerfromMF = true;
           // if (_paymentName == 'NET BANKING') {
-            // checknetbankingstatus(context);
+          // checknetbankingstatus(context);
           // }
           // ScaffoldMessenger.of(context)
           //     .showSnackBar(successMessage(context, "${_upiApiresponse!.msg}"));
@@ -2340,7 +2334,7 @@ class MFProvider extends DefaultChangeNotifier {
       }
       _investloader = false;
       _loadingMessage = null;
-      Navigator.pop(context);
+      // Navigator.pop(context);
 
       // ScaffoldMessenger.of(context).showSnackBar(
       //     warningMessage(context, "${_upiApiresponse?.data?.responsestring}"));
@@ -2629,11 +2623,11 @@ class MFProvider extends DefaultChangeNotifier {
           //               child: Container(
           //                   child: const UpiIdSucessorFaliureScreen()));
           //         })
-              //     .whenComplete(()
-              //     {
+          //     .whenComplete(()
+          //     {
 
-              // })
-              ;
+          // })
+          ;
         }
       }
       // print("object ${_xsipOrderCancleResone?.data![0].id}");
@@ -3262,4 +3256,3 @@ class MFProvider extends DefaultChangeNotifier {
     }
   }
 }
-

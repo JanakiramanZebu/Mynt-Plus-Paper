@@ -50,28 +50,7 @@ class _UPIIDPaymentCancelAlertState
           _autoPopTimer?.cancel(); // Cancel auto-pop if running
 
           mfProv.setterformftrigger(false);
-          // showModalBottomSheet(
-          //       shape: const RoundedRectangleBorder(
-          //           borderRadius:
-          //               BorderRadius.vertical(top: Radius.circular(16))),
-          //       backgroundColor: Colors.transparent,
-          //       isDismissible: false,
-          //       enableDrag: false,
-          //       showDragHandle: false,
-          //       useSafeArea: false,
-          //       isScrollControlled: true,
-          //       context: context,
-          //       builder: (BuildContext context) {
-          //         return PopScope(
-          //             canPop: false,
-          //             onPopInvokedWithResult: (didPop, result) async {
-          //               if (didPop) return;
-          //             },
-          //             child:
-          //                 Container(child: const MfPaymentRespAlert()));
-          //       }).whenComplete(() {
-              
-          //   });
+          ref.read(mfProvider).IsPaymentCalled(false);
 
           if (Navigator.of(context).canPop()) {
             Navigator.of(context).pop();
@@ -82,6 +61,7 @@ class _UPIIDPaymentCancelAlertState
       _autoPopTimer = Timer(const Duration(minutes: 3), () {
         _timer?.cancel(); // Also stop periodic timer here as a fallback
         mfProv.setterformftrigger(false);
+        ref.read(mfProvider).IsPaymentCalled(false);
 
         if (Navigator.of(context).canPop()) {
           Navigator.of(context).pop();
@@ -112,6 +92,8 @@ class _UPIIDPaymentCancelAlertState
     // Clear the amount text field
     if (ref.read(mfProvider).triggerfromMF == true) {
       ref.read(mfProvider).setterformftrigger(false);
+      _timer?.cancel(); // This is safe even if already cancelled
+          _autoPopTimer?.cancel();
       Navigator.pop(context);
       ref.read(mfProvider).IsPaymentCalled(false);
     } else {
@@ -181,7 +163,7 @@ class _UPIIDPaymentCancelAlertState
                             onPressed: _triggerButtonAction,
                             style: ElevatedButton.styleFrom(
                               elevation: 0,
-                              minimumSize: const Size(0, 40),
+                              minimumSize: const Size(0, 45),
                               backgroundColor: theme.isDarkMode
                                   ? colors.primaryDark
                                   : colors.primaryLight,
