@@ -24,6 +24,24 @@ import '../../sharedWidget/snack_bar.dart';
 import '../mutual_fund_old/create_mandate_daialogue.dart';
 import 'mf_order_bottomsheet.dart';
 
+// Utility function to get the appropriate suffix for date numbers
+String getDateSuffix(int day) {
+  if (day >= 11 && day <= 13) {
+    return 'th';
+  }
+
+  switch (day % 10) {
+    case 1:
+      return 'st';
+    case 2:
+      return 'nd';
+    case 3:
+      return 'rd';
+    default:
+      return 'th';
+  }
+}
+
 class MFOrderScreen extends ConsumerStatefulWidget {
   final MutualFundList mfData;
   const MFOrderScreen({super.key, required this.mfData});
@@ -736,7 +754,8 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                                     child: Row(
                                       children: [
                                         TextWidget.subText(
-                                            text: "Monthly on ${mfOrder.dates}",
+                                            text:
+                                                "Monthly on ${mfOrder.dates}${getDateSuffix(int.tryParse(mfOrder.dates) ?? 1)}",
                                             theme: theme.isDarkMode,
                                             color: theme.isDarkMode
                                                 ? colors.primaryDark
@@ -1648,6 +1667,15 @@ void _showCalendarDialog(
       context: context,
       isScrollControlled: true,
       builder: (BuildContext context) {
+        final screenHeight = MediaQuery.of(context).size.height;
+        final screenWidth = MediaQuery.of(context).size.width;
+
+        // Calculate responsive dimensions
+        final maxHeight = screenHeight * 0.5; // 70% of screen height
+        final minHeight = 400.0; // Minimum height
+        final calendarHeight = (maxHeight - 120).clamp(
+            minHeight, maxHeight); // Subtract space for header and buttons
+
         return Container(
           padding: const EdgeInsets.all(16.0),
           child: Column(
@@ -1668,7 +1696,7 @@ void _showCalendarDialog(
               ),
               const SizedBox(height: 12),
               SizedBox(
-                height: 350,
+                height: calendarHeight,
                 child: _SIPCalendar(
                   theme: theme,
                   mfOrder: mfOrder,
@@ -1786,16 +1814,20 @@ class _SIPCalendarState extends State<_SIPCalendar> {
 
     return Column(
       children: [
-        const SizedBox(height: 16),
+        SizedBox(
+            height: MediaQuery.of(context).size.height *
+                0.02), // Responsive spacing
 
         // Static date grid (1-31)
         Expanded(
           child: GridView.builder(
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 7,
               childAspectRatio: 1.0,
-              crossAxisSpacing: 8,
-              mainAxisSpacing: 4,
+              crossAxisSpacing: MediaQuery.of(context).size.width *
+                  0.02, // Responsive spacing
+              mainAxisSpacing: MediaQuery.of(context).size.height *
+                  0.005, // Responsive spacing
             ),
             itemCount: 31,
             itemBuilder: (context, index) {
@@ -1804,37 +1836,53 @@ class _SIPCalendarState extends State<_SIPCalendar> {
             },
           ),
         ),
-        const SizedBox(height: 8),
+        SizedBox(
+            height: MediaQuery.of(context).size.height *
+                0.01), // Responsive spacing
 
         // Legend for available/unavailable dates
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              width: 12,
-              height: 12,
+              width:
+                  MediaQuery.of(context).size.width * 0.03, // Responsive width
+              height:
+                  MediaQuery.of(context).size.width * 0.03, // Responsive height
               decoration: BoxDecoration(
                 color: const Color(0xffF1F3F8),
-                borderRadius: BorderRadius.circular(2),
+                borderRadius: BorderRadius.circular(
+                    MediaQuery.of(context).size.width *
+                        0.005), // Responsive radius
               ),
             ),
-            const SizedBox(width: 4),
+            SizedBox(
+                width: MediaQuery.of(context).size.width *
+                    0.01), // Responsive spacing
             TextWidget.captionText(
               text: "Available",
               theme: widget.theme.isDarkMode,
               color: colors.colorBlack,
               fw: 3,
             ),
-            const SizedBox(width: 16),
+            SizedBox(
+                width: MediaQuery.of(context).size.width *
+                    0.04), // Responsive spacing
             Container(
-              width: 12,
-              height: 12,
+              width:
+                  MediaQuery.of(context).size.width * 0.03, // Responsive width
+              height:
+                  MediaQuery.of(context).size.width * 0.03, // Responsive height
               decoration: BoxDecoration(
                 color: const Color(0xFFE0E0E0),
-                borderRadius: BorderRadius.circular(2),
+                borderRadius: BorderRadius.circular(
+                    MediaQuery.of(context).size.width *
+                        0.005), // Responsive radius
               ),
             ),
-            const SizedBox(width: 4),
+            SizedBox(
+                width: MediaQuery.of(context).size.width *
+                    0.01), // Responsive spacing
             TextWidget.captionText(
               text: "Unavailable",
               theme: widget.theme.isDarkMode,
@@ -1844,7 +1892,9 @@ class _SIPCalendarState extends State<_SIPCalendar> {
           ],
         ),
 
-        const SizedBox(height: 8),
+        SizedBox(
+            height: MediaQuery.of(context).size.height *
+                0.01), // Responsive spacing
         // Confirm button
         SizedBox(
           width: double.infinity,
@@ -1904,11 +1954,13 @@ class _SIPCalendarState extends State<_SIPCalendar> {
             }
           : null, // No action for unavailable dates
       child: Padding(
-        padding: const EdgeInsets.all(1.0),
+        padding: EdgeInsets.all(
+            MediaQuery.of(context).size.width * 0.002), // Responsive padding
         child: Container(
           decoration: BoxDecoration(
             color: bgColor,
-            borderRadius: BorderRadius.circular(8.0),
+            borderRadius: BorderRadius.circular(
+                MediaQuery.of(context).size.width * 0.02), // Responsive radius
           ),
           child: Center(
             child: TextWidget.paraText(

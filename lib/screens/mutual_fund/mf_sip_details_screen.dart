@@ -33,137 +33,109 @@ class _mfSipdetScren extends State<mfSipdetScren>
       final theme = ref.watch(themeProvider);
       final mfdata = ref.watch(mfProvider);
       // Remove debug prints for production code
-      
-      return Scaffold(
-        appBar: AppBar(
-          elevation: 0,
-          centerTitle: false,
-          leadingWidth: 41,
-          titleSpacing: 6,
-          leading: Padding(
-            padding: const EdgeInsets.only(left: 8.0),
-            child: IconButton(
-              icon: Icon(Icons.arrow_back_ios,
-                  color: theme.isDarkMode
-                      ? colors.colorWhite
-                      : colors.colorBlack),
-              onPressed: () {
-                Navigator.pop(context);
-              },
-            ),
-          ),
-          backgroundColor:
-              theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-          shadowColor: const Color(0xffECEFF3),
-          title: Text("SIP details",
-              style: textStyles.appBarTitleTxt.copyWith(
-                fontSize: 17,
-                fontWeight: FontWeight.bold,
-                color:
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-              )),
-        ),
-        body: Stack(children: [
-          TransparentLoaderScreen(
-            isLoading: mfdata.bestmfloader ?? false,
-            child:widget.data == null
-                ? const Center(child: NoDataFound())
-                : Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _buildHeaderSection(mfdata, theme),
-                          const SizedBox(height: 20), 
-                          TextWidget.subText(
-                                                    align: TextAlign.right,
-                                                    text: "SIP Details",
-                                                    color: theme.isDarkMode
-                                                        ?  colors.textPrimaryDark:
-                                                         colors.textPrimaryLight
-                                                             ,
-                                                    textOverflow:
-                                                        TextOverflow.ellipsis,
-                                                    theme: theme.isDarkMode,
-                                                    fw: 3),
-                           SizedBox(height: 25),
-                          // Safely handle potential null values
-                          if (mfdata.mfsinglepageres?.invList != null && 
-                              mfdata.mfsinglepageres!.invList!.isNotEmpty)
-                            rowOfInfoData(
-                              "SIP Register Date",
-                              "${widget.data!.sIPRegnDate ?? ""}",
-                              
-                              theme),
 
-                          const SizedBox(height: 10),
-                            Divider(
-                            color: theme.isDarkMode
-                                ? colors.darkColorDivider
-                                : colors.colorDivider,
-                            thickness: 1.0,
-                          ),
-                          const SizedBox(height: 10),
+      return DraggableScrollableSheet(
+          expand: false,
+          initialChildSize: 0.88,
+          maxChildSize: 0.99,
+          builder: (context, scrollController) {
+            return Scaffold(
+                backgroundColor: Colors.transparent,
+                body: SingleChildScrollView(
+                  controller: scrollController,
+                  child: TransparentLoaderScreen(
+                      isLoading: mfdata.bestmfloader ?? false,
+                      child: widget.data == null
+                          ? const Center(child: NoDataFound())
+                          : Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                      const CustomDragHandler(),
+                                    _buildHeaderSection(mfdata, theme),
+                                    const SizedBox(height: 20),
 
-                             rowOfInfoData(
-                            
-                              "Amount",
-                              "${widget.data!.installmentAmount ?? "0.00"}",
-                              theme),
-                          const SizedBox(height: 25),
-                            TextWidget.subText(
-                                                    align: TextAlign.right,
-                                                    text:   "SIP Status",
-                                                    color: theme.isDarkMode
-                                                        ?  colors.textPrimaryDark:
-                                                         colors.textPrimaryLight
-                                                             ,
-                                                    textOverflow:
-                                                        TextOverflow.ellipsis,
-                                                    theme: theme.isDarkMode,
-                                                    fw: 3),
-                          
+                                    _buildPauseButton( context, mfdata, theme),
+                                    if (mfdata.mfsinglepageres?.liveCancel ==
+                                        "LIVE")
+                                      _buildCancelButton(
+                                          context, mfdata, theme),
+                                    
+                                    if (mfdata.mfsinglepageres?.invList !=
+                                            null &&
+                                        mfdata.mfsinglepageres!.invList!
+                                            .isNotEmpty)
+                                      rowOfInfoData(
+                                          "SIP Register Date",
+                                          "${widget.data!.sIPRegnDate ?? ""}",
+                                          theme),
 
-                                                    const SizedBox(height: 15),
+                                  
 
-                          // Safely build the timeline list
-                          _buildTimelineList(mfdata),
-                          
-                          if ((mfdata.mfsinglepageres?.nextInstallmentDate ?? "").isEmpty) ...[
-                            const SizedBox(height: 16),
-                             TextWidget.subText(
-                                                    align: TextAlign.right,
-                                                    text:   "Rejected Reason",
-                                                    color: theme.isDarkMode
-                                                        ?  colors.textPrimaryDark:
-                                                         colors.textPrimaryLight
-                                                             ,
-                                                    textOverflow:
-                                                        TextOverflow.ellipsis,
-                                                    theme: theme.isDarkMode,
-                                                    fw: 3),
-                           
-                            const SizedBox(height: 8),
-                            if (mfdata.mfsinglepageres?.invList != null && 
-                                mfdata.mfsinglepageres!.invList!.isNotEmpty)
-                                  TextWidget.paraText(
-                                                    align: TextAlign.start,
-                                                    text:    "${mfdata.mfsinglepageres!.invList![0]["orderremarks"] ?? "No reason provided"}",
-                                                    color:  theme.isDarkMode
-                                        ? colors.colorWhite
-                                        : const Color(0xFFF33E4B),
-                                                    textOverflow:
-                                                        TextOverflow.ellipsis,
-                                                    theme: theme.isDarkMode,
-                                                    maxLines: 3,
-                                                    fw: 3),
-                              
-                          ],
-                          const SizedBox(height: 20),
-                          if (mfdata.mfsinglepageres?.liveCancel == "LIVE") 
-                            _buildCancelButton(context, mfdata,theme),
-                        ])))
-        ]));
+                                    rowOfInfoData(
+                                        "Amount",
+                                        "${widget.data!.installmentAmount ?? "0.00"}",
+                                        theme),
+
+                                         if ((mfdata.mfsinglepageres
+                                                  ?.nextInstallmentDate ??
+                                              "")
+                                          .isNotEmpty) ...[
+                                        rowOfInfoData(
+                                            "Next Due Date",
+                                            "${widget.data?.nextInstallmentDate ?? ""}",
+                                            theme),
+                                      ],
+                                   
+                                    // TextWidget.subText(
+                                    //     align: TextAlign.right,
+                                    //     text: "SIP Status",
+                                    //     color: theme.isDarkMode
+                                    //         ? colors.textPrimaryDark
+                                    //         : colors.textPrimaryLight,
+                                    //     textOverflow: TextOverflow.ellipsis,
+                                    //     theme: theme.isDarkMode,
+                                    //     fw: 3),
+
+                                    // const SizedBox(height: 15),
+
+                                    // // Safely build the timeline list
+                                    // _buildTimelineList(mfdata),
+
+                                    if ((mfdata.mfsinglepageres
+                                                ?.nextInstallmentDate ??
+                                            "")
+                                        .isEmpty) ...[
+                                      const SizedBox(height: 16),
+                                      TextWidget.subText(
+                                          // align: TextAlign.right,
+                                          text: "Rejected Reason",
+                                          color: theme.isDarkMode
+                                                ? colors.textSecondaryDark
+                                                : colors.textSecondaryLight,
+                                          textOverflow: TextOverflow.ellipsis,
+                                          theme: theme.isDarkMode,
+                                          fw: 3),
+                                      const SizedBox(height: 8),
+                                      if (mfdata.mfsinglepageres?.invList !=
+                                              null &&
+                                          mfdata.mfsinglepageres!.invList!
+                                              .isNotEmpty)
+                                        TextWidget.paraText(
+                                          
+                                            text:
+                                                "${mfdata.mfsinglepageres!.invList![0]["orderremarks"] ?? "No reason provided"}",
+                                            color:colors.loss,
+                                            textOverflow: TextOverflow.ellipsis,
+                                            theme: theme.isDarkMode,
+                                            maxLines: 3,
+                                            fw: 3),
+                                    ],
+                                    
+                                  ]))),
+                ));
+          });
     });
   }
 
@@ -185,7 +157,7 @@ class _mfSipdetScren extends State<mfSipdetScren>
                     children: [
                       TextWidget.titleText(
                           // align: TextAlign.right,
-                          text: mfdata.mfsinglepageres?.schemename ??
+                          text: mfdata.mfsinglepageres?.name ??
                               "Unknown Scheme",
                           color: theme.isDarkMode
                               ? colors.textPrimaryDark
@@ -199,26 +171,26 @@ class _mfSipdetScren extends State<mfSipdetScren>
                 ),
 
                 Container(
-                    padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 4),
-
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: mfdata.mfsinglepageres?.liveCancel == "LIVE"
-                        ?  colors.profit.withOpacity(0.1)
+                    color: mfdata.mfsinglepageres?.status == "LIVE"
+                        ? colors.profit.withOpacity(0.1)
                         : colors.loss.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(3),
                   ),
                   child: TextWidget.paraText(
-                    text: mfdata.mfsinglepageres?.liveCancel == "LIVE" ? "Live" : "Cancel",
-                    color: 
-                      mfdata.mfsinglepageres?.liveCancel == "LIVE"
-                          ?  colors.profit
-                          :  colors.loss,
-                      theme: theme.isDarkMode,
-                      fw: 3,
-                    ),
+                    text: mfdata.mfsinglepageres?.liveCancel == "LIVE"
+                        ? "Live"
+                        : "Cancel",
+                    color: mfdata.mfsinglepageres?.liveCancel == "LIVE"
+                        ? colors.profit
+                        : colors.loss,
+                    theme: theme.isDarkMode,
+                    fw: 3,
                   ),
-                
+                ),
+
                 // const SizedBox(height: 8),
               ],
             ),
@@ -257,6 +229,48 @@ class _mfSipdetScren extends State<mfSipdetScren>
           orderHistoryData: mfdata.mfsinglepageres?.invList?[index] ?? {},
         );
       },
+    );
+  }
+
+    Widget _buildPauseButton(
+      BuildContext context, dynamic mfdata, dynamic theme) {
+    return Row(
+      children: [
+        Expanded(
+          flex: 6,
+          child: SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () async {
+               
+              },
+              style: ElevatedButton.styleFrom(
+                elevation: 0,
+                backgroundColor: colors.btnBg,
+                foregroundColor: const Color.fromARGB(255, 0, 0, 0),
+                side: BorderSide(
+                  color: colors.btnOutlinedBorder,
+                  width: 1,
+                ),
+                minimumSize: Size(double.infinity, 40), // height: 48
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(5),
+                ),
+              ),
+              child: TextWidget.subText(
+                  align: TextAlign.right,
+                  text: "Pause",
+                  color: theme.isDarkMode
+                      ? colors.primaryDark
+                      : colors.primaryLight,
+                  textOverflow: TextOverflow.ellipsis,
+                  theme: theme.isDarkMode,
+                  fw: 2),
+            ),
+          ),
+        ),
+        const SizedBox(width: 10),
+      ],
     );
   }
 

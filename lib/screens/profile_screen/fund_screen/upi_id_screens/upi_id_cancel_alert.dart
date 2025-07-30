@@ -92,11 +92,13 @@ class _UPIIDPaymentCancelAlertState
       _timer?.cancel(); // This is safe even if already cancelled
           _autoPopTimer?.cancel();
       Navigator.pop(context);
+      ref.read(mfProvider).IsPaymentCalled(false);
     } else {
       ref.read(transcationProvider).amount.clear();
       Navigator.pop(context);
       _timer?.cancel();
       FocusScope.of(context).unfocus();
+      ref.read(mfProvider).IsPaymentCalled(false);
     }
   }
 
@@ -113,14 +115,9 @@ class _UPIIDPaymentCancelAlertState
         child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-                boxShadow: const [
-                  BoxShadow(
-                      color: Color(0xff999999),
-                      blurRadius: 4.0,
-                      offset: Offset(2.0, 0.0))
-                ]),
+              borderRadius: BorderRadius.circular(16),
+              color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+            ),
             child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.start,

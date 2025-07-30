@@ -161,6 +161,12 @@ class _MandateSelectionScreenState extends State<MandateSelectionScreen> {
                                         ),
                                         const SizedBox(height: 4),
                                         TextWidget.paraText(
+                                          text: "Amount: ${mandate.amount}",
+                                          theme: theme.isDarkMode,
+                                          color: colors.colorGrey,
+                                        ),
+                                        const SizedBox(height: 4),
+                                        TextWidget.paraText(
                                           text: "Status: ${mandate.status}",
                                           theme: theme.isDarkMode,
                                           color: colors.colorGrey,

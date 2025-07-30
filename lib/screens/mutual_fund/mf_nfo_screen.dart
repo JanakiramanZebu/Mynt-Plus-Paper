@@ -10,6 +10,8 @@ import '../../../provider/mf_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../routes/route_names.dart';
 import '../../res/global_state_text.dart';
+import '../../sharedWidget/custom_back_btn.dart';
+import '../../sharedWidget/list_divider.dart';
 import '../../sharedWidget/loader_ui.dart';
 
 class MFNFOScreen extends ConsumerWidget {
@@ -29,22 +31,11 @@ class MFNFOScreen extends ConsumerWidget {
           leadingWidth: 41,
           centerTitle: false,
           titleSpacing: 6,
-          leading: Padding(
-            padding: const EdgeInsets.only(left: 8.0),
-            child: IconButton(
-              icon: Icon(Icons.arrow_back_ios,
-                  color:
-                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack),
-              onPressed: () => Navigator.pop(context),
-            ),
-          ),
-          title: Text(
-            "New Fund Offer",
-            style: textStyles.appBarTitleTxt.copyWith(
-              fontSize: 17,
-              fontWeight: FontWeight.bold,
-              color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-            ),
+          leading: const CustomBackBtn(),
+         title: TextWidget.titleText(
+            text: "New Fund Offer",
+            theme: theme.isDarkMode,
+            fw: 1,
           ),
         ),
       ),
@@ -64,165 +55,91 @@ class MFNFOScreen extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
-            child: ListView.builder(
+             child: ListView.separated(
               shrinkWrap: true,
               physics: const AlwaysScrollableScrollPhysics(),
+                separatorBuilder: (_, __) => const ListDivider(),
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               itemCount: mf.mfNFOList!.mutualFundList!.length,
               itemBuilder: (BuildContext context, int index) {
                 final nfoItem = mf.mfNFOList!.mutualFundList![index];
 
-                return Column(
-                  children: [
-                    InkWell(
-                      onTap: () async {
-                        try {
-                          mf.chngMandate("Lumpsum");
-                          await mf.fetchUpiDetail();
-                          // await mf.fetchBankDetail();
-
-                          if (nfoItem.sIPFLAG == "Y") {
-                            await mf.fetchMFSipData(
-                              nfoItem.iSIN!,
-                              nfoItem.schemeCode!,
-                            );
-                            await mf.fetchMFMandateDetail();
-                          }
-                          mf.orderpagetite("NFO");
-
-                          if (context.mounted) {
-                            Navigator.pushNamed(
-                              context,
-                              Routes.mforderScreen,
-                              arguments: nfoItem,
-                            );
-                          }
-                        } catch (e) {
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text("Error: ${e.toString()}"),
-                                backgroundColor: Colors.red,
-                              ),
-                            );
-                          }
-                        }
-                      },
-                      child: Container(
-                        decoration: BoxDecoration(
-                          border: Border.symmetric(
-                            vertical: BorderSide(
-                              color: theme.isDarkMode
-                                  ? colors.darkGrey
-                                  : const Color(0xffEEF0F2),
-                              width: 0,
-                            ),
+                return InkWell(
+                  onTap: () async {
+                    try {
+                      mf.chngMandate("Lumpsum");
+                      await mf.fetchUpiDetail();
+                      // await mf.fetchBankDetail();
+                
+                      if (nfoItem.sIPFLAG == "Y") {
+                        await mf.fetchMFSipData(
+                          nfoItem.iSIN!,
+                          nfoItem.schemeCode!,
+                        );
+                        await mf.fetchMFMandateDetail();
+                      }
+                      mf.orderpagetite("NFO");
+                
+                      if (context.mounted) {
+                        Navigator.pushNamed(
+                          context,
+                          Routes.mforderScreen,
+                          arguments: nfoItem,
+                        );
+                      }
+                    } catch (e) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text("Error: ${e.toString()}"),
+                            backgroundColor: Colors.red,
                           ),
-                        ),
-                        padding: const EdgeInsets.all(8),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                CircleAvatar(
-                                  backgroundImage: NetworkImage(
-                                    "https://v3.mynt.in/mfapi/static/images/mf/${nfoItem.aMCCode ?? 'default'}.png",
-                                  ),
-                                  onBackgroundImageError: (_, __) {},
-                                ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          SizedBox(
-                                            width: MediaQuery.of(context)
-                                                    .size
-                                                    .width *
-                                                0.65,
-                                            child: 
-                                            
-                                            
-                                            TextWidget.subText(
-                                                    align: TextAlign.start,
-                                                    text: nfoItem.name ??
-                                                  "Unknown Fund",
-                                                    color: theme.isDarkMode
-                                                        ?  colors.textPrimaryDark:
-                                                         colors.textPrimaryLight
-                                                             ,
-                                                    textOverflow:
-                                                        TextOverflow.ellipsis,
-                                                        maxLines: 2,
-                                                    theme: theme.isDarkMode,
-                                                    fw: 3),
-                                                    
-                                                    
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                           TextWidget.paraText(
-                                                    align: TextAlign.start,
-                                                    text: "Open ${_formatDate(nfoItem.startDate)}",
-                                                    color: theme.isDarkMode
-                                                        ?  colors.textSecondaryDark
-                                                        :  colors.textSecondaryLight 
-                                                             ,
-                                                    textOverflow:
-                                                        TextOverflow.ellipsis,
-                                                        maxLines: 2,
-                                                    theme: theme.isDarkMode,
-                                                    fw: 3),
-                                           
-                                          Padding(
-                                            padding: const EdgeInsets.only(
-                                                right: 8.0),
-                                            child:TextWidget.paraText(
-                                                    align: TextAlign.start,
-                                                    text:  "Closing ${_formatDate(nfoItem.endDate)}",
-                                                    color: theme.isDarkMode
-                                                        ?  colors.textSecondaryDark
-                                                        :  colors.textSecondaryLight 
-                                                             ,
-                                                    textOverflow:
-                                                        TextOverflow.ellipsis,
-                                                        maxLines: 2,
-                                                    theme: theme.isDarkMode,
-                                                    fw: 3),
-                                           
-                                            
-                                            
-                                              
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            Divider(
-                              color: theme.isDarkMode
-                                  ? colors.darkColorDivider
-                                  : colors.colorDivider,
-                              thickness: 1.0,
-                            ),
-                          ],
-                        ),
+                        );
+                      }
+                    }
+                  },
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+                    dense: false,
+                    leading: CircleAvatar(
+                      backgroundImage: NetworkImage(
+                        "https://v3.mynt.in/mfapi/static/images/mf/${nfoItem.aMCCode ?? 'default'}.png",
                       ),
+                      onBackgroundImageError: (_, __) {},
                     ),
-                  ],
+                    title: Container(
+                      margin: EdgeInsets.only(
+                        right: MediaQuery.of(context).size.width * 0.1,
+                      ),
+                      child: TextWidget.subText(
+                          align: TextAlign.start,
+                          text: nfoItem.name ?? "Unknown Fund",
+                          color: theme.isDarkMode
+                              ? colors.textPrimaryDark
+                              : colors.textPrimaryLight,
+                          textOverflow: TextOverflow.ellipsis,
+                          maxLines: 2,
+                          theme: theme.isDarkMode,
+                          fw: 3),
+                    ),
+                    subtitle: TextWidget.paraText(
+                        align: TextAlign.start,
+                        text: "Closes on ${_formatDate(nfoItem.endDate)}",
+                        color: theme.isDarkMode
+                            ? colors.textSecondaryDark
+                            : colors.textSecondaryLight,
+                        textOverflow: TextOverflow.ellipsis,
+                        maxLines: 2,
+                        theme: theme.isDarkMode,
+                        fw: 3),
+                  ),
+                  
+                  
+                  
+                  
+                  
+                  
+                 
                 );
               },
             ),
