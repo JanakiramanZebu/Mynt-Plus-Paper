@@ -15,6 +15,7 @@ import '../../../../res/res.dart';
 import '../../../../sharedWidget/custom_drag_handler.dart';
 import '../../../../sharedWidget/functions.dart';
 import '../../../../sharedWidget/payment_loader.dart';
+import '../../../../sharedWidget/snack_bar.dart';
 import 'mf_payment_resp_alert.dart';
 
 class UPIIDPaymentCancelAlert extends ConsumerStatefulWidget {
@@ -55,7 +56,10 @@ class _UPIIDPaymentCancelAlertState
           if (Navigator.of(context).canPop()) {
             Navigator.of(context).pop();
           }
-        }
+          ScaffoldMessenger.of(context).showSnackBar(
+                warningMessage(context, '$status'));
+          }
+        
       });
 
       _autoPopTimer = Timer(const Duration(minutes: 3), () {
@@ -65,6 +69,9 @@ class _UPIIDPaymentCancelAlertState
 
         if (Navigator.of(context).canPop()) {
           Navigator.of(context).pop();
+          ScaffoldMessenger.of(context).showSnackBar(
+                warningMessage(context, 'Timeout try again'));
+          
         }
       });
     } else {
