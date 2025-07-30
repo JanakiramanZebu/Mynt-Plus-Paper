@@ -161,7 +161,7 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        "${(mfOrder.orderpagetitle == "SDS" && mfOrder.factSheetDataModel!.data?.name != null) ? mfOrder.factSheetDataModel!.data?.name!.replaceAll(RegExp(r'(Reg \(G\)|\(G\))$'), ' ') : '${widget.mfData.fSchemeName}'}",
+                                        "${(mfOrder.orderpagetitle == "SDS" && mfOrder.factSheetDataModel!.data?.name != null) ? mfOrder.factSheetDataModel!.data?.name!.replaceAll(RegExp(r'(Reg \(G\)|\(G\))$'), ' ') : '${widget.mfData.name}'}",
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                         style: textStyle(

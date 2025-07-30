@@ -2298,11 +2298,11 @@ class MFProvider extends DefaultChangeNotifier {
         }
       }
       _investloader = false;
-Navigator.pop(context);
+        Navigator.pop(context);
         
-      ScaffoldMessenger.of(context)
-          .showSnackBar(warningMessage(context, "${_upiApiresponse?.data?.responsestring}"));
-          notifyListeners();
+          ScaffoldMessenger.of(context)
+              .showSnackBar(warningMessage(context, "${_upiApiresponse?.data?.responsestring}"));
+              notifyListeners();
     } catch (e) {
       debugPrint("$e");
         Navigator.pop(context);
@@ -2417,17 +2417,21 @@ Navigator.pop(context);
 
       notifyListeners();
 
-      if (_createMandateModel?.mandate == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            warningMessage(context, "${_createMandateModel!.error}"));
-      } else {
-        fetchMFMandateDetail();
-        ScaffoldMessenger.of(context).showSnackBar(
-            successMessage(context, "${_createMandateModel!.resp}"));
-      }
+      // if (_createMandateModel?.mandate == null) {
+      //   ScaffoldMessenger.of(context).showSnackBar(
+      //       warningMessage(context, "${_createMandateModel!.error}"));
+      // } else {
+      //   fetchMFMandateDetail();
+      //   ScaffoldMessenger.of(context).showSnackBar(
+      //       successMessage(context, "${_createMandateModel!.resp}"));
+      // }
       // print(
       //     "object ${_createMandateModel!.error} ${_createMandateModel!.url1} ::${_createMandateModel!.mandate}");
     } catch (e) {
+    
+        ScaffoldMessenger.of(context).showSnackBar(
+            warningMessage(context, "Error${e}"));
+     
       _investloader = false;
       notifyListeners();
       log("Failed to place order :: ${e.toString()}");
