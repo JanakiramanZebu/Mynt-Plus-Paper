@@ -978,7 +978,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                       height: 44,
                                       child: CustomTextFormField(
                                           fillColor: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
-                                          hintText: orderInput.qtyCtrl.text,
+                                          hintText: "0",//orderInput.qtyCtrl.text ,
                                           hintStyle: textStyle(const Color(0xff666666), 15, FontWeight.w400),
                                           inputFormate: [FilteringTextInputFormatter.digitsOnly],
                                           keyboardType: TextInputType.number,
@@ -1441,7 +1441,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                         height: 44,
                                         child: CustomTextFormField(
                                             fillColor: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
-                                            hintText: orderInput.ocoQtyCtrl.text,
+                                            hintText: "0", //orderInput.ocoQtyCtrl.text,
                                             hintStyle: textStyle(const Color(0xff666666), 15, FontWeight.w400),
                                             inputFormate: [FilteringTextInputFormatter.digitsOnly],
                                             keyboardType: TextInputType.number,
@@ -2249,7 +2249,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                             height: 44,
                                             child: CustomTextFormField(
                                               fillColor: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
-                                              hintText: qtyCtrl.text,
+                                              hintText: "0",//qtyCtrl.text,
                                               hintStyle: textStyle(const Color(0xff666666), 15, FontWeight.w400),
                                               inputFormate: [FilteringTextInputFormatter.digitsOnly],
                                               keyboardType: TextInputType.number,
