@@ -12,6 +12,7 @@ import '../../res/res.dart';
 import '../../routes/route_names.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
 import '../../sharedWidget/functions.dart';
+import 'mf_sip_details_screen.dart';
 
 class MFSipdetScreen extends ConsumerWidget {
   const MFSipdetScreen({super.key});
@@ -26,7 +27,7 @@ class MFSipdetScreen extends ConsumerWidget {
         children: [
           TransparentLoaderScreen(
             isLoading: mfData.bestmfloader ?? false,
-            child: mfData.mfsiporderlist?.xsip?.isEmpty ?? true
+            child: mfData.mfsiporderlist?.data?.isEmpty ?? true
                 ? const Center(child: NoDataFound())
                 : Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -45,39 +46,44 @@ class MFSipdetScreen extends ConsumerWidget {
   Widget _buildSipOrderList(BuildContext context, dynamic mfData, dynamic theme) {
     return ListView.builder(
       padding: const EdgeInsets.all(0),
-      itemCount: mfData.mfsiporderlist?.xsip?.length ?? 0,
+      itemCount: mfData.mfsiporderlist?.data?.length ?? 0,
       itemBuilder: (BuildContext context, int index) {
-        final item = mfData.mfsiporderlist?.xsip?[index];
+        final item = mfData.mfsiporderlist?.data?[index];
         if (item == null) return const SizedBox.shrink();
         
         return Column(
           children: [
             InkWell(
               onTap: () async {
-                try {
-                  mfData.loaderfun();
-                  final xsipRegId = item.xsipRegId;
+                // try {
+                  // mfData.loaderfun();
+                  final sIPRegnNo = item.sIPRegnNo;
                   
-                  if (xsipRegId != null) {
-                    await mfData.fetchmfsipsinglepage(xsipRegId);
+                  if (sIPRegnNo != null) {
+                    // await mfData.fetchmfsipsinglepage(sIPRegnNo);
                     
-                    if (mfData.mfsinglepageres?.stat == "Ok") {
-                      Navigator.pushNamed(context, Routes.mfSipdetScren);
-                    } else {
-                      final errorMsg = mfData.mfsinglepageres?.Msg ?? "Failed to fetch SIP details";
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        successMessage(context, errorMsg)
-                      );
-                    }
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      successMessage(context, "Missing SIP registration ID")
-                    );
-                  }
-                } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    successMessage(context, "Error: ${e.toString()}")
-                  );
+                    // if (mfData.mfsinglepageres?.stat == "Ok") {
+                    showModalBottomSheet(
+                                                  context: context,
+                                                  builder: (context) =>
+                                                      mfSipdetScren(
+                                                          data: item));
+                      // Navigator.pushNamed(context, Routes.mfSipdetScren);
+                    // } else {
+                      // final errorMsg = mfData.mfsinglepageres?.Msg ?? "Failed to fetch SIP details";
+                      // ScaffoldMessenger.of(context).showSnackBar(
+                      //   successMessage(context, errorMsg)
+                      // );
+                  //   }
+                  // } else {
+                  //   ScaffoldMessenger.of(context).showSnackBar(
+                  //     successMessage(context, "Missing SIP registration ID")
+                  //   );
+                  // }
+                // } catch (e) {
+                //   ScaffoldMessenger.of(context).showSnackBar(
+                //     successMessage(context, "Error: ${e.toString()}")
+                //   );
                 }
               },
               child: Container(
@@ -110,7 +116,7 @@ class MFSipdetScreen extends ConsumerWidget {
                                       width: MediaQuery.of(context).size.width * 0.7,
                                       child: TextWidget.subText(
                                                     align: TextAlign.start,
-                                                    text: item.schemeName ?? "Unknown Scheme",
+                                                    text: item.name ?? "Unknown Scheme",
                                                     color: theme.isDarkMode
                                                         ?  colors.textPrimaryDark:
                                                          colors.textPrimaryLight
@@ -127,7 +133,7 @@ class MFSipdetScreen extends ConsumerWidget {
                                   ),
                                   const Spacer(),
                                   SvgPicture.asset(
-                                    item.liveCancel == "LIVE"
+                                    item.status == "ACTIVE"
                                         ? assets.completedIcon
                                         : assets.cancelledIcon,
                                   ),
@@ -136,7 +142,7 @@ class MFSipdetScreen extends ConsumerWidget {
                                     child: 
                                     TextWidget.paraText(
                                                     align: TextAlign.start,
-                                                    text:  item.liveCancel == "LIVE" ? "Live" : "Cancel",
+                                                    text:  item.status == "ACTIVE" ? "Live" : "Cancel",
                                                     color: theme.isDarkMode
                                                         ?  colors.textPrimaryDark:
                                                          colors.textPrimaryLight
@@ -170,7 +176,7 @@ class MFSipdetScreen extends ConsumerWidget {
                                   const SizedBox(width: 5),
                                      TextWidget.paraText(
                                                     align: TextAlign.start,
-                                                    text:  item.dateTime ?? "Unknown Date",
+                                                    text:  item.datetime ?? "Unknown Date",
                                                     color: theme.isDarkMode
                                                         ?  colors.textPrimaryDark:
                                                          colors.textPrimaryLight
@@ -182,10 +188,10 @@ class MFSipdetScreen extends ConsumerWidget {
                                                     fw: 3),
                                   
                                   const SizedBox(width: 5),
-                                  if (item.liveCancel == "LIVE" && item.nextSipDate != null) 
+                                  if (item.status == "ACTIVE" && item.startDate != null) 
                                    TextWidget.paraText(
                                                     align: TextAlign.start,
-                                                    text:  "Due Date : ${item.nextSipDate}",
+                                                    text:  "Due Date : ${item.startDate}",
                                                     color: theme.isDarkMode
                                                         ?  colors.textPrimaryDark:
                                                          colors.textPrimaryLight
@@ -199,7 +205,7 @@ class MFSipdetScreen extends ConsumerWidget {
                                   const Spacer(),
                                    TextWidget.paraText(
                                                     align: TextAlign.start,
-                                                    text:  item.amount ?? 'N/A',
+                                                    text:  item.installmentAmount ?? 'N/A',
                                                     color: theme.isDarkMode
                                                         ?  colors.textPrimaryDark:
                                                          colors.textPrimaryLight

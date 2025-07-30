@@ -57,7 +57,7 @@ class MFNFOScreen extends ConsumerWidget {
 
   Widget _buildContent(
       BuildContext context, MFProvider mf, ThemesProvider theme) {
-    if (mf.mfNFOList!.data!.isEmpty) {
+    if (mf.mfNFOList!.mutualFundList!.isEmpty) {
       return const Center(child: NoDataFound());
     } else {
       return Column(
@@ -68,9 +68,9 @@ class MFNFOScreen extends ConsumerWidget {
               shrinkWrap: true,
               physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              itemCount: mf.mfNFOList!.data!.length,
+              itemCount: mf.mfNFOList!.mutualFundList!.length,
               itemBuilder: (BuildContext context, int index) {
-                final nfoItem = mf.mfNFOList!.data![index];
+                final nfoItem = mf.mfNFOList!.mutualFundList![index];
 
                 return Column(
                   children: [
@@ -150,7 +150,7 @@ class MFNFOScreen extends ConsumerWidget {
                                             
                                             TextWidget.subText(
                                                     align: TextAlign.start,
-                                                    text: nfoItem.name ??
+                                                    text: nfoItem.schemeName ??
                                                   "Unknown Fund",
                                                     color: theme.isDarkMode
                                                         ?  colors.textPrimaryDark:

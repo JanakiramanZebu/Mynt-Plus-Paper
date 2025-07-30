@@ -948,8 +948,7 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                               // context, mfOrder, theme, widget.mfData);
                               // } else if (mfOrder.paymentName != "UPI") {
                               // mfPlaceorder(widget.mfData, mfOrder, context);
-                              // }
-
+                              // } 
                               await mfPlaceorder(
                                   widget.mfData, mfOrder, context);
 

@@ -767,7 +767,7 @@ class AppRoutes {
         );
       case Routes.mfSipdetScren:
         return _createRoute(
-          pageBuilder: (_, __, ___) => const mfSipdetScren(),
+          pageBuilder: (_, __, ___) => const mfSipdetScren(data:{}),
           beginOffset: const Offset(-1.0, 0.0),
         );
 

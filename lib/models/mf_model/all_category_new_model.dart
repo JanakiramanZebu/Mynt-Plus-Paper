@@ -74,7 +74,9 @@ class Values {
 }
 
 class Fund {
+   String? aUM;
   String? name;
+  String? s1Year;
   String? s3Year;
   String? s5Year;
   String? iSIN;
@@ -82,6 +84,7 @@ class Fund {
   String? subType;
   String? aMCCode;
   String? schemeType;
+  String? schemeCode;
   String? exitLoadFlag;
   String? schemeName;
   String? purchaseAllowed;
@@ -101,7 +104,10 @@ class Fund {
   String? endDate;
 
   Fund(
-      {this.name,
+      {
+      this.aUM,
+      this.name,
+      this.s1Year,
       this.s3Year,
       this.s5Year,
       this.iSIN,
@@ -109,6 +115,7 @@ class Fund {
       this.subType,
       this.aMCCode,
       this.schemeType,
+      this.schemeCode,
       this.exitLoadFlag,
       this.schemeName,
       this.purchaseAllowed,
@@ -128,7 +135,9 @@ class Fund {
       this.endDate});
 
   Fund.fromJson(Map<String, dynamic> json) {
+     aUM = json['AUM'];
     name = json['name'];
+    s1Year = json['1Year'];
     s3Year = json['3Year'];
     s5Year = json['5Year'];
     iSIN = json['ISIN'];
@@ -136,6 +145,7 @@ class Fund {
     subType = json['SubType'];
     aMCCode = json['AMC_Code'];
     schemeType = json['Scheme_Type'];
+    schemeCode = json['Scheme_Code'];
     exitLoadFlag = json['Exit_Load_Flag'];
     schemeName = json['Scheme_Name'];
     purchaseAllowed = json['Purchase_Allowed'];
@@ -157,7 +167,9 @@ class Fund {
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
+     data['AUM'] = this.aUM;
     data['name'] = this.name;
+    data['1Year'] = this.s1Year;
     data['3Year'] = this.s3Year;
     data['5Year'] = this.s5Year;
     data['ISIN'] = this.iSIN;
@@ -165,6 +177,7 @@ class Fund {
     data['SubType'] = this.subType;
     data['AMC_Code'] = this.aMCCode;
     data['Scheme_Type'] = this.schemeType;
+    data['Scheme_Code'] = this.schemeCode;
     data['Exit_Load_Flag'] = this.exitLoadFlag;
     data['Scheme_Name'] = this.schemeName;
     data['Purchase_Allowed'] = this.purchaseAllowed;

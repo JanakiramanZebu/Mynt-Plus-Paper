@@ -138,10 +138,12 @@ class MFProvider extends DefaultChangeNotifier {
 
   List _paymentMethod = [];
 
-  List get paymentMethod => _paymentMethod;
+  List get paymentMethod => _paymentMethod; 
+  // NFODataModel? _mfNFOList;
+  // NFODataModel? get mfNFOList => _mfNFOList;
 
-  NFODataModel? _mfNFOList;
-  NFODataModel? get mfNFOList => _mfNFOList;
+  MutualFundModel? _mfNFOList;
+  MutualFundModel? get mfNFOList => _mfNFOList;
 
   List<MutualFundList>? _mutualFundtopsearch = [];
   List<MutualFundList>? get mutualFundtopsearch => _mutualFundtopsearch;
@@ -1301,6 +1303,8 @@ class MFProvider extends DefaultChangeNotifier {
     } catch (e, stackTrace) {
       _bestmfloader = false;
       debugPrint("Error fetching siplist: $e\n$stackTrace");
+      notifyListeners();
+
       // print("apii errror");
     } finally {
       _bestmfloader = false;
@@ -2199,8 +2203,7 @@ class MFProvider extends DefaultChangeNotifier {
           _triggerfromMF = true;
           if (_paymentName == 'NET BANKING') {
             checknetbankingstatus(context);
-          }
-
+          } 
           // ScaffoldMessenger.of(context)
           //     .showSnackBar(successMessage(context, "${_upiApiresponse!.msg}"));
           //     showModalBottomSheet(

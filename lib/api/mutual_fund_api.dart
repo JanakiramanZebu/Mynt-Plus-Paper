@@ -63,7 +63,7 @@ mixin MutualFundApi on ApiCore {
     }
   }
 
-  Future<NFODataModel> getNFOData() async {
+  Future<MutualFundModel> getNFOData() async {
     try {
       final uri = Uri.parse(apiLinks.mfnfoMF);
       final res = await apiClient.post(uri,
@@ -73,7 +73,7 @@ mixin MutualFundApi on ApiCore {
 
       // log("MF Master ==>$json");
 
-      return NFODataModel.fromJson(json);
+      return MutualFundModel.fromJson(json);
     } catch (e) {
       rethrow;
     }
@@ -205,8 +205,7 @@ mixin MutualFundApi on ApiCore {
             "placed_by": "${prefs.clientId}"
           }));
 
-      final json = jsonDecode((res.body));
-
+      final json = jsonDecode((res.body)); 
       log("palce order mf ==>$json");
 
       return MfPlaceOrderResponces.fromJson(json as Map<String, dynamic>);
@@ -780,10 +779,8 @@ mixin MutualFundApi on ApiCore {
             "vpa_id": upiid,
             "loop_back_url": "https://app.mynt.in/orders",
             "allow_loop_back": "Y"
-          }));
-
-      final json = jsonDecode((res.body));
-
+          })); 
+      final json = jsonDecode((res.body)); 
       return UpiIdOrderResponse.fromJson(json as Map<String, dynamic>);
     } catch (e) {
       rethrow;
@@ -834,10 +831,15 @@ mixin MutualFundApi on ApiCore {
 
   Future<Sip_list_data> getSiplist() async {
     try {
-      final uri = Uri.parse(apiLinks.mfsiplist);
+      final uri = Uri.parse(apiLinks.mfsiplistnew);
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
-          body: jsonEncode({"client_code": "${prefs.clientId}"}));
+          body: jsonEncode({
+             
+                "ClientCode":"${prefs.clientId}",
+                "status":"ACTIVE"
+             
+          }));
 
       final json = jsonDecode((res.body));
 
