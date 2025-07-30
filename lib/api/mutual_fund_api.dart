@@ -785,6 +785,7 @@ mixin MutualFundApi on ApiCore {
       final json = jsonDecode((res.body)); 
       return UpiIdOrderResponse.fromJson(json as Map<String, dynamic>);
     } catch (e) {
+      
       rethrow;
     }
   }

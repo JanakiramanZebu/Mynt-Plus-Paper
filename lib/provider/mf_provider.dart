@@ -2219,6 +2219,7 @@ class MFProvider extends DefaultChangeNotifier {
       _threeSecondTimer?.cancel(); // Stop the repeating timer
       if (Navigator.of(context).canPop()) {
         Navigator.of(context).pop(); // Auto pop after 1 minute
+          _triggerfromMF = false; 
       }
     });
   }
@@ -2241,9 +2242,9 @@ class MFProvider extends DefaultChangeNotifier {
 
           // Navigator.pop(context);
           _triggerfromMF = true;
-          if (_paymentName == 'NET BANKING') {
-            checknetbankingstatus(context);
-          }
+          // if (_paymentName == 'NET BANKING') {
+            // checknetbankingstatus(context);
+          // }
           // ScaffoldMessenger.of(context)
           //     .showSnackBar(successMessage(context, "${_upiApiresponse!.msg}"));
           //     showModalBottomSheet(
@@ -2341,9 +2342,9 @@ class MFProvider extends DefaultChangeNotifier {
       _loadingMessage = null;
       Navigator.pop(context);
 
-      ScaffoldMessenger.of(context).showSnackBar(
-          warningMessage(context, "${_upiApiresponse?.data?.responsestring}"));
-      notifyListeners();
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //     warningMessage(context, "${_upiApiresponse?.data?.responsestring}"));
+      // notifyListeners();
     } catch (e) {
       debugPrint("$e");
       Navigator.pop(context);
@@ -2603,30 +2604,31 @@ class MFProvider extends DefaultChangeNotifier {
       _statusCheckUpi = await api.getstatuspaymentcheck(orderid);
 
       if ((_statusCheckUpi != null) &&
-          (_statusCheckUpi!.status == 'PAYMENT DECLINED' ||
+          (_statusCheckUpi!.status == 'PAYMENT REJECTED' ||
               _statusCheckUpi!.status == 'PAYMENT APPROVED')) {
         setterformftrigger(false);
         if (context.mounted) {
-          showModalBottomSheet(
-                  shape: const RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.vertical(top: Radius.circular(16))),
-                  backgroundColor: Colors.transparent,
-                  isDismissible: false,
-                  enableDrag: false,
-                  showDragHandle: false,
-                  useSafeArea: false,
-                  isScrollControlled: true,
-                  context: context,
-                  builder: (BuildContext context) {
-                    return PopScope(
-                        canPop: false,
-                        onPopInvokedWithResult: (didPop, result) async {
-                          if (didPop) return;
-                        },
-                        child: Container(
-                            child: const UpiIdSucessorFaliureScreen()));
-                  })
+          // Navigator.pop(context);
+          // showModalBottomSheet(
+          //         shape: const RoundedRectangleBorder(
+          //             borderRadius:
+          //                 BorderRadius.vertical(top: Radius.circular(16))),
+          //         backgroundColor: Colors.transparent,
+          //         isDismissible: false,
+          //         enableDrag: false,
+          //         showDragHandle: false,
+          //         useSafeArea: false,
+          //         isScrollControlled: true,
+          //         context: context,
+          //         builder: (BuildContext context) {
+          //           return PopScope(
+          //               canPop: false,
+          //               onPopInvokedWithResult: (didPop, result) async {
+          //                 if (didPop) return;
+          //               },
+          //               child: Container(
+          //                   child: const UpiIdSucessorFaliureScreen()));
+          //         })
               //     .whenComplete(()
               //     {
 
