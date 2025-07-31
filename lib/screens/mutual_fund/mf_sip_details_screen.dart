@@ -59,12 +59,18 @@ class _mfSipdetScren extends State<mfSipdetScren>
                                      
                                     if (widget.data?.status ==
                                         "ACTIVE")
-                                        _buildPauseButton( context, mfdata, theme),
-                                           
-                                    if (widget.data?.status ==
-                                        "ACTIVE")
-                                        _buildCancelButton(
-                                          context, mfdata, theme), 
+                                        Row(
+                                          children: [
+                                            Expanded(
+                                              child: _buildPauseButton(context, mfdata, theme),
+                                            ),
+                                            const SizedBox(width: 12),
+                                            Expanded(
+                                              child: _buildCancelButton(context, mfdata, theme),
+                                            ),
+                                          ],
+                                        ),
+                                     
                                     // if (widget.data?.invList !=
                                     //         null &&
                                     //     widget.data!.invList!
@@ -94,7 +100,7 @@ class _mfSipdetScren extends State<mfSipdetScren>
                                             "${widget.data?.sIPRegnNo ?? ""}",
                                             theme),
                                        rowOfInfoData(
-                                            "Sett Type",
+                                            "Settlement Type",
                                             "${widget.data?.settType ?? ""}",
                                             theme),
 

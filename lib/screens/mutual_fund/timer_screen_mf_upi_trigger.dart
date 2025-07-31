@@ -133,8 +133,10 @@ class _TimmerScreenForUPI extends State<TimmerScreenForUPI> {
 
             ElevatedButton(
                 onPressed: () async {
-                  showDialog(
+                  showModalBottomSheet(
                       context: context,
+                      isScrollControlled: true,
+                      backgroundColor: Colors.transparent,
                       builder: (BuildContext context) {
                         return const CreateMandateDialogue();
                       });
