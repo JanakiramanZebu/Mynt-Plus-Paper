@@ -737,6 +737,13 @@ class MFProvider extends DefaultChangeNotifier {
 
   final TextEditingController mfsearchcontroller = TextEditingController();
 
+  // MF Holdings Search Variables
+  final TextEditingController mfHoldingSearchController = TextEditingController();
+  bool _showMfHoldingSearch = false;
+  bool get showMfHoldingSearch => _showMfHoldingSearch;
+  List<dynamic>? _mfHoldingSearchItems = [];
+  List<dynamic>? get mfHoldingSearchItems => _mfHoldingSearchItems;
+
   TextEditingController invDuration = TextEditingController();
   String _freqName = "";
   String _dates = "1";
@@ -1058,6 +1065,51 @@ class MFProvider extends DefaultChangeNotifier {
 
   clearMfSearchResult() {
     _mutualFundsearchdata = [];
+    notifyListeners();
+  }
+
+  // MF Holdings Search Methods
+  void setMfHoldingSearch(bool show) {
+    _showMfHoldingSearch = show;
+    if (!show) {
+      mfHoldingSearchController.clear();
+      _mfHoldingSearchItems = [];
+    }
+    notifyListeners();
+  }
+
+  void mfHoldingSearch(String value, BuildContext context) {
+    if (value.isNotEmpty) {
+      _mfHoldingSearchItems = [];
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      
+      // Search in the holdings data
+      if (_mfholdingnew?.data != null) {
+        _mfHoldingSearchItems = _mfholdingnew!.data!
+            .where((element) => 
+                (element.name?.toUpperCase().contains(value.toUpperCase()) ?? false) ||
+                (element.iSIN?.toUpperCase().contains(value.toUpperCase()) ?? false))
+            .toList();
+      }
+      
+      if (_mfHoldingSearchItems!.isEmpty) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(warningMessage(context, 'No Data Found'));
+      } else {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      }
+    } else {
+      // When search text is empty, show all items (don't filter)
+      _mfHoldingSearchItems = _mfholdingnew?.data ?? [];
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    }
+    notifyListeners();
+  }
+
+  void clearMfHoldingSearch() {
+    _mfHoldingSearchItems = [];
+    mfHoldingSearchController.clear();
+    _showMfHoldingSearch = false;
     notifyListeners();
   }
 
@@ -3255,5 +3307,68 @@ class MFProvider extends DefaultChangeNotifier {
 
       notifyListeners();
     }
+  }
+
+  // MF Holdings Filter Method
+  void filterMFHoldings({required String sorting, required BuildContext context}) {
+    if (_mfholdingnew?.data == null) return;
+
+    if (sorting == "NAMEASC") {
+      _mfholdingnew!.data!.sort((a, b) => 
+          (a.name ?? "").compareTo(b.name ?? ""));
+    } else if (sorting == "NAMEDSC") {
+      _mfholdingnew!.data!.sort((a, b) => 
+          (b.name ?? "").compareTo(a.name ?? ""));
+    } else if (sorting == "NAVASC") {
+      _mfholdingnew!.data!.sort((a, b) {
+        double aNav = double.tryParse(a.curNav ?? "0.00") ?? 0.0;
+        double bNav = double.tryParse(b.curNav ?? "0.00") ?? 0.0;
+        return aNav.compareTo(bNav);
+      });
+    } else if (sorting == "NAVDSC") {
+      _mfholdingnew!.data!.sort((a, b) {
+        double aNav = double.tryParse(a.curNav ?? "0.00") ?? 0.0;
+        double bNav = double.tryParse(b.curNav ?? "0.00") ?? 0.0;
+        return bNav.compareTo(aNav);
+      });
+    } else if (sorting == "UNITASC") {
+      _mfholdingnew!.data!.sort((a, b) {
+        double aQty = double.tryParse(a.avgQty ?? "0.00") ?? 0.0;
+        double bQty = double.tryParse(b.avgQty ?? "0.00") ?? 0.0;
+        return aQty.compareTo(bQty);
+      });
+    } else if (sorting == "UNITDSC") {
+      _mfholdingnew!.data!.sort((a, b) {
+        double aQty = double.tryParse(a.avgQty ?? "0.00") ?? 0.0;
+        double bQty = double.tryParse(b.avgQty ?? "0.00") ?? 0.0;
+        return bQty.compareTo(aQty);
+      });
+    } else if (sorting == "RETURNPERCASC") {
+      _mfholdingnew!.data!.sort((a, b) {
+        double aChange = double.tryParse(a.changeprofitLoss ?? "0.00") ?? 0.0;
+        double bChange = double.tryParse(b.changeprofitLoss ?? "0.00") ?? 0.0;
+        return aChange.compareTo(bChange);
+      });
+    } else if (sorting == "RETURNPERCDSC") {
+      _mfholdingnew!.data!.sort((a, b) {
+        double aChange = double.tryParse(a.changeprofitLoss ?? "0.00") ?? 0.0;
+        double bChange = double.tryParse(b.changeprofitLoss ?? "0.00") ?? 0.0;
+        return bChange.compareTo(aChange);
+      });
+    } else if (sorting == "INVESTEDASC") {
+      _mfholdingnew!.data!.sort((a, b) {
+        double aInvested = double.tryParse(a.investedValue ?? "0.00") ?? 0.0;
+        double bInvested = double.tryParse(b.investedValue ?? "0.00") ?? 0.0;
+        return aInvested.compareTo(bInvested);
+      });
+    } else if (sorting == "INVESTEDDSC") {
+      _mfholdingnew!.data!.sort((a, b) {
+        double aInvested = double.tryParse(a.investedValue ?? "0.00") ?? 0.0;
+        double bInvested = double.tryParse(b.investedValue ?? "0.00") ?? 0.0;
+        return bInvested.compareTo(aInvested);
+      });
+    }
+
+    notifyListeners();
   }
 }
