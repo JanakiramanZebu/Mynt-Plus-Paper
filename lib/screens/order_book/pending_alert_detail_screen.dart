@@ -221,11 +221,11 @@ class _PendingAlertDetailsState extends ConsumerState<PendingAlertDetails> {
                                                     borderRadius:
                                                         BorderRadius.circular(
                                                             5),
-                                                    // border: Border.all(
-                                                    //   color: colors
-                                                    //       .btnOutlinedBorder,
-                                                    //   width: 1,
-                                                    // ),
+                                                    border: Border.all(
+                                                      color: colors
+                                                          .btnOutlinedBorder,
+                                                      width: 1,
+                                                    ),
                                                   ),
                                                   child: Material(
                                                     color: Colors.transparent,

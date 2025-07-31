@@ -19,7 +19,7 @@ class BondsListScreen extends StatelessWidget {
     return Consumer(builder: (context, WidgetRef ref, _) {
       final bonds = ref.watch(bondsProvider);
       final devHeight = MediaQuery.of(context).size.height;
-      
+
       return SingleChildScrollView(
         child: Column(
           children: [
@@ -31,10 +31,15 @@ class BondsListScreen extends StatelessWidget {
   }
 
   Widget _buildContent(BondsProvider bonds, double devHeight) {
+    // Check if there's a search query
+    if (bonds.bondscommonsearchcontroller.text.isNotEmpty) {
+      return _buildSearchResults(bonds, devHeight);
+    }
+
     final bool isEmpty = bonds.govtBonds!.ncbGSec!.isEmpty &&
-                         bonds.treasuryBonds!.ncbTBill!.isEmpty &&
-                         bonds.stateBonds!.ncbSDL!.isEmpty &&
-                         bonds.sovereignGoldBonds!.ncbSGB!.isEmpty;
+        bonds.treasuryBonds!.ncbTBill!.isEmpty &&
+        bonds.stateBonds!.ncbSDL!.isEmpty &&
+        bonds.sovereignGoldBonds!.ncbSGB!.isEmpty;
 
     if (isEmpty) {
       return _buildEmptyState(devHeight);
@@ -48,6 +53,48 @@ class BondsListScreen extends StatelessWidget {
         SovereignGoldBondsScreen(),
         SizedBox(height: 24),
       ],
+    );
+  }
+
+  Widget _buildSearchResults(BondsProvider bonds, double devHeight) {
+    if (bonds.bondsCommonSearchList.isEmpty) {
+      return _buildNoSearchResults(devHeight);
+    }
+
+    // Filter bonds by type and show only sections that have matching results
+    final hasGovtBonds = bonds.bondsCommonSearchList
+        .any((bond) => bonds.govtBonds?.ncbGSec?.contains(bond) == true);
+    final hasTreasuryBonds = bonds.bondsCommonSearchList
+        .any((bond) => bonds.treasuryBonds?.ncbTBill?.contains(bond) == true);
+    final hasStateBonds = bonds.bondsCommonSearchList
+        .any((bond) => bonds.stateBonds?.ncbSDL?.contains(bond) == true);
+    final hasSovereignBonds = bonds.bondsCommonSearchList.any(
+        (bond) => bonds.sovereignGoldBonds?.ncbSGB?.contains(bond) == true);
+
+    return Column(
+      children: [
+        if (hasGovtBonds) const GovtBondsScreen(),
+        if (hasTreasuryBonds) const TreasuryBondsScreen(),
+        if (hasStateBonds) const StateBondsScreen(),
+        if (hasSovereignBonds) const SovereignGoldBondsScreen(),
+        const SizedBox(height: 24),
+      ],
+    );
+  }
+
+  Widget _buildNoSearchResults(double devHeight) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.only(top: 225),
+        child: SizedBox(
+          height: devHeight - 140,
+          child: const Column(
+            children: [
+              NoDataFound(),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -66,5 +113,4 @@ class BondsListScreen extends StatelessWidget {
       ),
     );
   }
-
 }

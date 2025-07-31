@@ -384,175 +384,161 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                                           mainAxisAlignment:
                                               MainAxisAlignment.spaceBetween,
                                           children: [
-                                            Expanded(
-                                              child: Padding(
-                                                padding: const EdgeInsets.only(
-                                                    right: 10),
-                                                child: Row(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.center,
-                                                  children: [
-                                                    if (!isSearching)
-                                                      Material(
-                                                        color:
-                                                            Colors.transparent,
-                                                        shape:
+                                            Padding(
+                                              padding: const EdgeInsets.only(
+                                                  right: 10),
+                                              child: Row(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.center,
+                                                children: [
+                                                  if (!isSearching)
+                                                    Material(
+                                                      color: Colors.transparent,
+                                                      shape:
+                                                          const CircleBorder(),
+                                                      clipBehavior:
+                                                          Clip.hardEdge,
+                                                      child: InkWell(
+                                                        customBorder:
                                                             const CircleBorder(),
-                                                        clipBehavior:
-                                                            Clip.hardEdge,
-                                                        child: InkWell(
-                                                          customBorder:
-                                                              const CircleBorder(),
-                                                          splashColor: theme
-                                                                  .isDarkMode
-                                                              ? colors
-                                                                  .splashColorDark
-                                                              : colors
-                                                                  .splashColorLight,
-                                                          highlightColor: theme
-                                                                  .isDarkMode
-                                                              ? colors
-                                                                  .highlightDark
-                                                              : colors
-                                                                  .highlightLight,
-                                                          onTap: () {
-                                                            Future.delayed(
-                                                                const Duration(
-                                                                    milliseconds:
-                                                                        150),
-                                                                () async {
-                                                              _toggleSearch();
-                                                            });
-                                                          },
-                                                          child: Padding(
-                                                            padding:
-                                                                const EdgeInsets
-                                                                    .all(8.0),
-                                                            child: SvgPicture
-                                                                .asset(
-                                                              assets.searchIcon,
-                                                              color: colors
-                                                                  .textPrimaryLight,
-                                                              width: 20,
-                                                              fit: BoxFit
-                                                                  .scaleDown,
-                                                            ),
+                                                        splashColor: theme
+                                                                .isDarkMode
+                                                            ? colors
+                                                                .splashColorDark
+                                                            : colors
+                                                                .splashColorLight,
+                                                        highlightColor: theme
+                                                                .isDarkMode
+                                                            ? colors
+                                                                .highlightDark
+                                                            : colors
+                                                                .highlightLight,
+                                                        onTap: () {
+                                                          Future.delayed(
+                                                              const Duration(
+                                                                  milliseconds:
+                                                                      150),
+                                                              () async {
+                                                            _toggleSearch();
+                                                          });
+                                                        },
+                                                        child: Padding(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .all(8.0),
+                                                          child:
+                                                              SvgPicture.asset(
+                                                            assets.searchIcon,
+                                                            color: colors
+                                                                .textPrimaryLight,
+                                                            width: 20,
+                                                            fit: BoxFit
+                                                                .scaleDown,
                                                           ),
                                                         ),
                                                       ),
-                                                    if (isSearching)
-                                                      Expanded(
-                                                        child: Row(
-                                                          crossAxisAlignment:
-                                                              CrossAxisAlignment
-                                                                  .center,
-                                                          children: [
-                                                            const SizedBox(
-                                                                width: 4),
-                                                            SvgPicture.asset(
-                                                              assets.searchIcon,
-                                                              color: colors
-                                                                  .textPrimaryLight,
-                                                              width: 20,
-                                                              fit: BoxFit
-                                                                  .scaleDown,
-                                                            ),
-                                                            Expanded(
-                                                              child: TextField(
-                                                                controller:
-                                                                    searchController,
-                                                                focusNode:
-                                                                    searchFocusNode,
-                                                                onChanged:
-                                                                    _onSearchChanged,
-                                                                style:
-                                                                    TextStyle(
-                                                                  color: theme.isDarkMode
-                                                                      ? colors
-                                                                          .textPrimaryDark
-                                                                      : colors
-                                                                          .textPrimaryLight,
-                                                                  fontSize: 14,
-                                                                ),
-                                                                decoration:
-                                                                    InputDecoration(
-                                                                  hintText:
-                                                                      'Search...',
-                                                                  hintStyle:
-                                                                      TextStyle(
-                                                                    color: theme.isDarkMode
-                                                                        ? colors
-                                                                            .textSecondaryDark
-                                                                        : colors
-                                                                            .textSecondaryLight,
-                                                                    fontSize:
-                                                                        14,
-                                                                  ),
-                                                                  border:
-                                                                      InputBorder
-                                                                          .none,
-                                                                  contentPadding:
-                                                                      const EdgeInsets
-                                                                          .symmetric(
-                                                                    horizontal:
-                                                                        12,
-                                                                    vertical: 8,
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                            ),
-                                                            if (searchController
-                                                                .text
-                                                                .isNotEmpty)
-                                                              Material(
-                                                                color: Colors
-                                                                    .transparent,
-                                                                shape:
-                                                                    const CircleBorder(),
-                                                                clipBehavior:
-                                                                    Clip.hardEdge,
-                                                                child: InkWell(
-                                                                  customBorder:
-                                                                      const CircleBorder(),
-                                                                  splashColor: theme
-                                                                          .isDarkMode
-                                                                      ? colors
-                                                                          .splashColorDark
-                                                                      : colors
-                                                                          .splashColorLight,
-                                                                  highlightColor: theme
-                                                                          .isDarkMode
-                                                                      ? colors
-                                                                          .highlightDark
-                                                                      : colors
-                                                                          .highlightLight,
-                                                                  onTap: () {
-                                                                    searchController
-                                                                        .clear();
-                                                                    _onSearchChanged(
-                                                                        '');
-                                                                  },
-                                                                  child:
-                                                                      Padding(
-                                                                    padding:
-                                                                        const EdgeInsets
-                                                                            .all(
-                                                                            8.0),
-                                                                    child: Icon(
-                                                                      Icons
-                                                                          .clear,
-                                                                      color: colors
-                                                                          .textPrimaryLight,
-                                                                      size: 16,
-                                                                    ),
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                          ],
+                                                    ),
+                                                  if (isSearching)
+                                                    Row(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        const SizedBox(
+                                                            width: 4),
+                                                        SvgPicture.asset(
+                                                          assets.searchIcon,
+                                                          color: colors
+                                                              .textPrimaryLight,
+                                                          width: 20,
+                                                          fit: BoxFit.scaleDown,
                                                         ),
-                                                      ),
-                                                  ],
-                                                ),
+                                                        TextField(
+                                                          controller:
+                                                              searchController,
+                                                          focusNode:
+                                                              searchFocusNode,
+                                                          onChanged:
+                                                              _onSearchChanged,
+                                                          style: TextStyle(
+                                                            color: theme
+                                                                    .isDarkMode
+                                                                ? colors
+                                                                    .textPrimaryDark
+                                                                : colors
+                                                                    .textPrimaryLight,
+                                                            fontSize: 14,
+                                                          ),
+                                                          decoration:
+                                                              InputDecoration(
+                                                            hintText:
+                                                                'Search...',
+                                                            hintStyle:
+                                                                TextStyle(
+                                                              color: theme.isDarkMode
+                                                                  ? colors
+                                                                      .textSecondaryDark
+                                                                  : colors
+                                                                      .textSecondaryLight,
+                                                              fontSize: 14,
+                                                            ),
+                                                            border: InputBorder
+                                                                .none,
+                                                            contentPadding:
+                                                                const EdgeInsets
+                                                                    .symmetric(
+                                                              horizontal: 12,
+                                                              vertical: 8,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        if (searchController
+                                                            .text.isNotEmpty)
+                                                          Material(
+                                                            color: Colors
+                                                                .transparent,
+                                                            shape:
+                                                                const CircleBorder(),
+                                                            clipBehavior:
+                                                                Clip.hardEdge,
+                                                            child: InkWell(
+                                                              customBorder:
+                                                                  const CircleBorder(),
+                                                              splashColor: theme
+                                                                      .isDarkMode
+                                                                  ? colors
+                                                                      .splashColorDark
+                                                                  : colors
+                                                                      .splashColorLight,
+                                                              highlightColor: theme
+                                                                      .isDarkMode
+                                                                  ? colors
+                                                                      .highlightDark
+                                                                  : colors
+                                                                      .highlightLight,
+                                                              onTap: () {
+                                                                searchController
+                                                                    .clear();
+                                                                _onSearchChanged(
+                                                                    '');
+                                                              },
+                                                              child: Padding(
+                                                                padding:
+                                                                    const EdgeInsets
+                                                                        .all(
+                                                                        8.0),
+                                                                child: Icon(
+                                                                  Icons.clear,
+                                                                  color: colors
+                                                                      .textPrimaryLight,
+                                                                  size: 16,
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ),
+                                                      ],
+                                                    ),
+                                                ],
                                               ),
                                             ),
                                             Row(

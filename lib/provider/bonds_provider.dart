@@ -96,6 +96,8 @@ class BondsProvider extends DefaultChangeNotifier {
 
   clearCommonBondsSearch() {
     _bondscommonsearchcontroller.text = "";
+    _bondsCommonSearchList = [];
+    notifyListeners();
   }
 
   List<BondsList> _bondsCommonSearchList = [];
@@ -252,16 +254,44 @@ class BondsProvider extends DefaultChangeNotifier {
         }
       }
       _openOrderBook?.sort((b, a) {
-        // final DateFormat dateFormat = DateFormat("yyyy-MM-dd hh:mm a"); //"2025-01-30 13:37:46.945384"
-        DateTime dateA = DateTime.parse(a.responseDatetime.toString());
-        DateTime dateB = DateTime.parse(b.responseDatetime.toString());
-        return dateA.compareTo(dateB);
+        try {
+          // Handle empty or null responseDatetime
+          if (a.responseDatetime == null ||
+              a.responseDatetime.toString().isEmpty) {
+            return 1; // Put items with null/empty datetime at the end
+          }
+          if (b.responseDatetime == null ||
+              b.responseDatetime.toString().isEmpty) {
+            return -1; // Put items with null/empty datetime at the end
+          }
+
+          DateTime dateA = DateTime.parse(a.responseDatetime.toString());
+          DateTime dateB = DateTime.parse(b.responseDatetime.toString());
+          return dateA.compareTo(dateB); // Newest first (descending order)
+        } catch (e) {
+          print("Error parsing datetime in openOrderBook sort: $e");
+          return 0; // Keep original order if parsing fails
+        }
       });
       _closeOrderBook?.sort((b, a) {
-        // final DateFormat dateFormat = DateFormat("yyyy-MM-dd hh:mm a"); //"2025-01-30 13:37:46.945384"
-        DateTime dateA = DateTime.parse(a.responseDatetime.toString());
-        DateTime dateB = DateTime.parse(b.responseDatetime.toString());
-        return dateA.compareTo(dateB);
+        try {
+          // Handle empty or null responseDatetime
+          if (a.responseDatetime == null ||
+              a.responseDatetime.toString().isEmpty) {
+            return 1; // Put items with null/empty datetime at the end
+          }
+          if (b.responseDatetime == null ||
+              b.responseDatetime.toString().isEmpty) {
+            return -1; // Put items with null/empty datetime at the end
+          }
+
+          DateTime dateA = DateTime.parse(a.responseDatetime.toString());
+          DateTime dateB = DateTime.parse(b.responseDatetime.toString());
+          return dateA.compareTo(dateB); // Newest first (descending order)
+        } catch (e) {
+          print("Error parsing datetime in closeOrderBook sort: $e");
+          return 0; // Keep original order if parsing fails
+        }
       });
       print("ordersplit :: Open Orders (${_openOrderBook?.length}):");
       for (var order in _openOrderBook ?? []) {
@@ -440,7 +470,7 @@ class BondsProvider extends DefaultChangeNotifier {
               ? successMessage(
                   context, _bondOrderResponcesModel!.orderStatusResponse!)
               : error(context, _bondOrderResponcesModel!.reason!));
-        Navigator.pop(context); 
+      Navigator.pop(context);
       Navigator.pushReplacementNamed(context, Routes.bonds, arguments: 1);
       // return _ipoOrderResponcesModel;
     } catch (e) {

@@ -11,13 +11,17 @@ import '../../../../sharedWidget/functions.dart';
 import '../ipo_orderbook_details/open_order_details.dart';
 
 class IpoOpenOrder extends ConsumerWidget {
-  // final IPOProvider ipo;
-  const IpoOpenOrder({super.key});
+  final List<dynamic>? filteredOrders;
+
+  const IpoOpenOrder({super.key, this.filteredOrders});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref.watch(themeProvider);
     final ipo = ref.watch(ipoProvide);
+
+    // Use filtered orders if provided, otherwise use original orders
+    final ordersToDisplay = filteredOrders ?? ipo.openorder ?? [];
 
     return SingleChildScrollView(
       child: Column(
@@ -25,7 +29,7 @@ class IpoOpenOrder extends ConsumerWidget {
         children: [
           if (ipo.showSearch) _SearchBar(ipo: ipo, theme: theme),
           ipo.iposearch!.isEmpty
-              ? _OpenOrderList(orders: ipo.openorder!, theme: theme)
+              ? _OpenOrderList(orders: ordersToDisplay, theme: theme)
               : _OpenOrderList(
                   orders: ipo.iposearch!, theme: theme, isSearch: true),
         ],
@@ -216,7 +220,6 @@ class _OpenOrderItem extends StatelessWidget {
           child: TextWidget.subText(
             text: order.companyName.toString(),
             theme: false,
-            fw: 0,
             color: theme.isDarkMode
                 ? colors.textPrimaryDark
                 : colors.textPrimaryLight,
@@ -264,7 +267,7 @@ class _OpenOrderItem extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        TextWidget.subText(
+        TextWidget.paraText(
           text: order.responseDatetime.toString() == ""
               ? "----"
               : ipodateres(order.responseDatetime.toString()),
@@ -274,7 +277,7 @@ class _OpenOrderItem extends StatelessWidget {
               ? colors.textSecondaryDark
               : colors.textSecondaryLight,
         ),
-        TextWidget.subText(
+        TextWidget.paraText(
           text: _getInvestedAmount(),
           theme: false,
           fw: 0,
