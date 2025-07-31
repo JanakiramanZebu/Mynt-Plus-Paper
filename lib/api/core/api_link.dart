@@ -351,6 +351,8 @@ class ApiLinks {
   String get lumpsumOrderbooknew => "$newvenketmfurl/order/OrderBook";
   String get mfsingleordernew => "$newvenketmfurl/order/SingleOrderHistory";
   String get mfsiplistnew => "$newvenketmfurl/order/FetchSIP";
+  String get mfsipcancelnew => "$newvenketmfurl/order/xsip_cancel";
+  String get mfsippausenew => "$newvenketmfurl/order/xsip_pause";
   
 
 }

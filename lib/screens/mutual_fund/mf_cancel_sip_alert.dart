@@ -18,19 +18,19 @@ import '../../res/res.dart';
 class MfSipCancelalert extends ConsumerWidget {
   final String mfcancels;
   final String message;
-  final String mforderno;
-  final String mfreferno;
+  final String mforderno; 
   final String mffreqtype;
   final String mfnextsipdate;
+  final String mfscode;
 
   const MfSipCancelalert({
     super.key,
     required this.mfcancels,
-    required this.mforderno,
-    required this.mfreferno,
+    required this.mforderno, 
     required this.message,
     required this.mffreqtype,
     required this.mfnextsipdate,
+    required this.mfscode,
   });
 
   @override
@@ -41,10 +41,10 @@ class MfSipCancelalert extends ConsumerWidget {
 
     // Safe access with defaults
     final schemeName = mfcancels.isNotEmpty ? mfcancels : "this mutual fund";
-    final orderNo = mforderno.isNotEmpty ? mforderno : "";
-    final referNo = mfreferno.isNotEmpty ? mfreferno : "";
+    final orderNo = mforderno.isNotEmpty ? mforderno : ""; 
     final freqType = mffreqtype.isNotEmpty ? mffreqtype : "";
     final nextSipDate = mfnextsipdate.isNotEmpty ? mfnextsipdate : "";
+    final scode = mfscode.isNotEmpty ? mfscode : "";
     final isPause = message == 'pause';
 
     return AlertDialog(
@@ -180,7 +180,7 @@ class MfSipCancelalert extends ConsumerWidget {
                     ),
                     onPressed: () async {
                       try {
-                        await mfData.cancelsiporder(context, orderNo, referNo);
+                        await mfData.cancelsiporder(context, orderNo,scode);
                       } catch (e) {
                         // Handle error silently
                       }
@@ -203,7 +203,7 @@ class MfSipCancelalert extends ConsumerWidget {
                     onPressed: () async {
                       try {
                         await mfData.pausesiporder(
-                            context, orderNo, freqType, nextSipDate);
+                            context, orderNo, freqType, nextSipDate,scode);
                       } catch (e) {
                         // Handle error silently
                       }

@@ -60,7 +60,10 @@ class _mfSipdetScren extends State<mfSipdetScren>
                                     if (widget.data?.status ==
                                         "ACTIVE")
                                         _buildPauseButton( context, mfdata, theme),
-                                      _buildCancelButton(
+                                           
+                                    if (widget.data?.status ==
+                                        "ACTIVE")
+                                        _buildCancelButton(
                                           context, mfdata, theme), 
                                     // if (widget.data?.invList !=
                                     //         null &&
@@ -254,7 +257,21 @@ class _mfSipdetScren extends State<mfSipdetScren>
             width: double.infinity,
             child: ElevatedButton(
               onPressed: () async {
-               
+               await showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return MfSipCancelalert(
+                        mfcancels: widget.data?.name ?? "",
+                        mforderno: widget.data?.sIPRegnNo ?? "",
+                        mfscode: widget.data?.schemeCode ?? "",
+                         
+                        message: "pause",
+                        mffreqtype:
+                            widget.data?.frequencyType ?? "",
+                        mfnextsipdate:
+                            widget.data?.NextSIPDate ?? "");
+                  },
+                );
               },
               style: ElevatedButton.styleFrom(
                 elevation: 0,
@@ -300,13 +317,13 @@ class _mfSipdetScren extends State<mfSipdetScren>
                   context: context,
                   builder: (BuildContext context) {
                     return MfSipCancelalert(
-                        mfcancels: widget.data?.schemename ?? "",
-                        mforderno: widget.data?.sipregnno ?? "",
-                        mfreferno:
-                            widget.data?.internalrefernumber ?? "",
+                        mfcancels: widget.data?.name ?? "",
+                        mforderno: widget.data?.sIPRegnNo ?? "",
+                        mfscode: widget.data?.schemeCode ?? "",
+                         
                         message: "sip",
                         mffreqtype:
-                            widget.data?.frequency_type ?? "",
+                            widget.data?.frequencyType ?? "",
                         mfnextsipdate:
                             widget.data?.NextSIPDate ?? "");
                   },

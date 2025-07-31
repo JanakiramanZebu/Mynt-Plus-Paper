@@ -57,6 +57,7 @@ class MFSipdetScreen extends ConsumerWidget {
         if (index == mfData.mfsiporderlist?.data?.length) {
           return InkWell(
             onTap: () {
+              mfData.fetchmfsipnotlivelist();
               Navigator.push(
                 context,
                 MaterialPageRoute(

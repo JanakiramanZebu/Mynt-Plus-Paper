@@ -44,7 +44,7 @@ class MFSipOrderHistoryScreen extends ConsumerWidget {
         children: [
           TransparentLoaderScreen(
             isLoading: mfData.bestmfloader ?? false,
-            child: mfData.mfsiporderlist?.data?.isEmpty ?? true
+            child: mfData.mfnotlivesiporderlist?.data?.isEmpty ?? true
                 ? const Center(child: NoDataFound())
                 : Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -66,9 +66,9 @@ class MFSipOrderHistoryScreen extends ConsumerWidget {
       shrinkWrap: true,
       separatorBuilder: (context, index) => const ListDivider(),
       // padding: const EdgeInsets.all(0),
-      itemCount: mfData.mfsiporderlist?.data?.length ?? 0,
+      itemCount: mfData.mfnotlivesiporderlist?.data?.length ?? 0,
       itemBuilder: (BuildContext context, int index) {
-        final item = mfData.mfsiporderlist?.data?[index];
+        final item = mfData.mfnotlivesiporderlist?.data?[index];
         if (item == null) return const SizedBox.shrink();
 
         return InkWell(

@@ -106,7 +106,7 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
               children: [
                 if (mfOrder.upiApiresponse != null &&
                     mfOrder.upiApiresponse?.stat == "Ok" &&
-                    mfOrder.paymentName == "UPI" &&
+                    (mfOrder.paymentName == "UPI" || mfOrder.paymentName == "NET BANKING") &&
                     mfOrder.ispaymentcalled == true) ...[
                   SizedBox(
                     height: screenheight * 0.24, 
@@ -594,7 +594,7 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                     final isUpiValid =
                                         isUpi ? mfOrder.upiError == '' : true;
 
-                                    mfOrder.IsPaymentCalled(true);
+                                   
 
                                     mfOrder.isValidUpiId(widget.data);
 
@@ -605,6 +605,7 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                       mfOrder.setInvestLoader(true);
                                       mfOrder.setLoadingMessage(
                                           "Processing payment...");
+                                           mfOrder.IsPaymentCalled(true);
                                       await mfOrder.upipaymenttrigger(
                                         context,
                                         mfOrder.mfPlaceOrderResponces!.orderId,
@@ -617,35 +618,14 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                           mfOrder.upiApiresponse?.stat ==
                                               "Ok") {
                                         if (isUpi) {
-                                          // showModalBottomSheet(
-                                          //   shape: const RoundedRectangleBorder(
-                                          //     borderRadius: BorderRadius.vertical(
-                                          //         top: Radius.circular(16)),
-                                          //   ),
-                                          //   backgroundColor:
-                                          //       const Color(0xffffffff),
-                                          //   isDismissible: false,
-                                          //   enableDrag: false,
-                                          //   showDragHandle: false,
-                                          //   useSafeArea: false,
-                                          //   isScrollControlled: true,
-                                          //   context: context,
-                                          //   builder: (BuildContext context) {
-                                          //     return PopScope(
-                                          //       canPop: true,
-                                          //       onPopInvokedWithResult:
-                                          //           (didPop, result) {
-                                          //         if (didPop) return;
-                                          //       },
-                                          //       child:
-                                          //     );
-                                          //   },
-                                          // );
+                                           
                                         } else if (isNetBanking) {
                                           final url = Uri.parse(
                                             'https://v3.mynt.in/mfapi${mfOrder.upiApiresponse!.file!}',
                                           );
-
+                                          //  mfOrder.IsPaymentCalled(false);
+                                            // Navigator.pop(context);
+                                      
                                           // Navigate to a new screen showing InAppWebView
                                           Navigator.of(context).push(
                                             MaterialPageRoute(
@@ -710,8 +690,8 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                   } else {
                                     if (mfOrder.mandateStatus == "APPROVED") {
                                       // Set loading state immediately when button is pressed
-                                      mfOrder.setLoadingMessage(
-                                          "Processing SIP order...");
+                                      // mfOrder.setLoadingMessage(
+                                      //     "Processing SIP order...");
                                       mfOrder.fetchXsipPlaceOrder(
                                           context,
                                           "${double.parse(mfOrder.installmentAmt.text).toInt() >= 200000 ? "${widget.data.schemeCode}-L1" : widget.data.schemeCode}",

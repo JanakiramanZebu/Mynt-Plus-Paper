@@ -1,24 +1,36 @@
 class pause_spi_res {
-  String? bseremarks;
-  String? msg;
-  String? sipRegisterNumber;
+  String? registrationNumber;
+  String? bseRemarks;
+  String? statusFlag;
+  String? filler;
   String? stat;
+  String? status;
 
-  pause_spi_res({this.bseremarks, this.msg, this.sipRegisterNumber, this.stat});
+  pause_spi_res(
+      {this.registrationNumber,
+      this.bseRemarks,
+      this.statusFlag,
+      this.filler,
+      this.stat,
+      this.status});
 
   pause_spi_res.fromJson(Map<String, dynamic> json) {
-    bseremarks = json['bseremarks'];
-    msg = json['msg'];
-    sipRegisterNumber = json['sip_register_number'];
+    registrationNumber = json['RegistrationNumber'];
+    bseRemarks = json['BseRemarks'];
+    statusFlag = json['StatusFlag'];
+    filler = json['filler'];
     stat = json['stat'];
+    status = json['status'];
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['bseremarks'] = this.bseremarks;
-    data['msg'] = this.msg;
-    data['sip_register_number'] = this.sipRegisterNumber;
+    data['RegistrationNumber'] = this.registrationNumber;
+    data['BseRemarks'] = this.bseRemarks;
+    data['StatusFlag'] = this.statusFlag;
+    data['filler'] = this.filler;
     data['stat'] = this.stat;
+    data['status'] = this.status;
     return data;
   }
 }

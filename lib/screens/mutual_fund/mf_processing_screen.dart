@@ -15,7 +15,8 @@ import '../../../../res/res.dart';
 import '../../../../sharedWidget/custom_drag_handler.dart';
 import '../../../../sharedWidget/functions.dart';
 import '../../../../sharedWidget/payment_loader.dart';
-import '../../../../sharedWidget/snack_bar.dart'; 
+import '../../../../sharedWidget/snack_bar.dart';
+import '../profile_screen/fund_screen/upi_id_screens/mf_payment_resp_alert.dart';
 
 class MfUPIProcessingScreen extends ConsumerStatefulWidget {
   const MfUPIProcessingScreen({super.key, this.data});
@@ -25,8 +26,7 @@ class MfUPIProcessingScreen extends ConsumerStatefulWidget {
       _MfUPIProcessingScreen();
 }
 
-class _MfUPIProcessingScreen
-    extends ConsumerState<MfUPIProcessingScreen> {
+class _MfUPIProcessingScreen extends ConsumerState<MfUPIProcessingScreen> {
   Timer? _timer;
   Timer? _autoPopTimer;
   @override
@@ -36,44 +36,54 @@ class _MfUPIProcessingScreen
   }
 
   void _handleInitialLogic() async {
-    final mfProv = ref.read(mfProvider);
-    final txnProv = ref.read(transcationProvider);
+    final mfProv = ref.read(mfProvider); 
+ 
 
-     
-      _timer = Timer.periodic(const Duration(seconds: 3), (timer) async {
-        await mfProv.getpaymentstatus(
-            widget.data, context); // Use await if async
+    _timer = Timer.periodic(const Duration(seconds: 3), (timer) async {
+      await mfProv.getpaymentstatus(widget.data, context); // Use await if async
 
-        final status = mfProv.statusCheckUpi?.status;
-        if (status == 'PAYMENT REJECTED' || status == 'PAYMENT APPROVED') {
-          _timer?.cancel(); // This is safe even if already cancelled
-          _autoPopTimer?.cancel(); // Cancel auto-pop if running
+      final status = mfProv.statusCheckUpi?.status;
+      if (status == 'PAYMENT REJECTED' || status == 'PAYMENT APPROVED') {
+        _timer?.cancel(); // This is safe even if already cancelled
+        _autoPopTimer?.cancel(); // Cancel auto-pop if running
 
-          mfProv.setterformftrigger(false);
-          ref.read(mfProvider).IsPaymentCalled(false);
-
-          if (Navigator.of(context).canPop()) {
-            Navigator.of(context).pop();
-          }
-          ScaffoldMessenger.of(context).showSnackBar(
-                warningMessage(context, '$status'));
-          }
-        
-      });
-
-      _autoPopTimer = Timer(const Duration(minutes: 3), () {
-        _timer?.cancel(); // Also stop periodic timer here as a fallback
         mfProv.setterformftrigger(false);
         ref.read(mfProvider).IsPaymentCalled(false);
 
         if (Navigator.of(context).canPop()) {
-          Navigator.of(context).pop();
-          ScaffoldMessenger.of(context).showSnackBar(
-                warningMessage(context, 'Timeout try again'));
-          
+          if (mfProv.paymentName == "UPI") {
+            Navigator.of(context).pop(); 
+          }
+          showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            enableDrag: false,
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.vertical(
+                top: Radius.circular(15),
+              ),
+            ),
+            builder: (context) => MfPaymentRespAlert(
+              upiData: mfProv.statusCheckUpi?.toJson(),
+            ),
+          );
         }
-      });
-    
+        ScaffoldMessenger.of(context)
+            .showSnackBar(warningMessage(context, '$status'));
+      }
+    });
+
+    _autoPopTimer = Timer(const Duration(minutes: 3), () {
+      _timer?.cancel(); // Also stop periodic timer here as a fallback
+      mfProv.setterformftrigger(false);
+      ref.read(mfProvider).IsPaymentCalled(false);
+
+      if (Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+        ScaffoldMessenger.of(context)
+            .showSnackBar(warningMessage(context, 'Timeout try again'));
+      }
+    });
   }
 
   @override
@@ -85,19 +95,18 @@ class _MfUPIProcessingScreen
 
   void _triggerButtonAction() {
     // Clear the amount text field
-     
-      ref.read(mfProvider).setterformftrigger(false);
-      _timer?.cancel(); // This is safe even if already cancelled
-          _autoPopTimer?.cancel();
-      Navigator.pop(context);
-      ref.read(mfProvider).IsPaymentCalled(false);
-     
+
+    ref.read(mfProvider).setterformftrigger(false);
+    _timer?.cancel(); // This is safe even if already cancelled
+    _autoPopTimer?.cancel();
+    Navigator.pop(context);
+    ref.read(mfProvider).IsPaymentCalled(false);
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = ref.read(themeProvider);
-    // final upiId = ref.read(transcationProvider);
+    final mfprovider = ref.read(mfProvider);
 
     return PopScope(
         canPop: true, // Allows default back navigation
@@ -121,7 +130,7 @@ class _MfUPIProcessingScreen
                     padding: const EdgeInsets.only(top: 10, bottom: 5),
                     alignment: Alignment.center,
                     child: TextWidget.subText(
-                      text: 'Awaiting UPI conformation',
+                      text: 'Awaiting ${mfprovider.paymentName} confirmation',
                       theme: false,
                       color: theme.isDarkMode
                           ? colors.textPrimaryDark
@@ -133,8 +142,8 @@ class _MfUPIProcessingScreen
                       child: Column(children: [
                         // const ListDivider(),
                         const SizedBox(height: 16),
-                          const ProgressiveDotsLoader(),
-                                                const SizedBox(height: 16),
+                        const ProgressiveDotsLoader(),
+                        const SizedBox(height: 16),
 
                         TextWidget.subText(
                           text: 'This will take a few seconds.',
@@ -142,8 +151,7 @@ class _MfUPIProcessingScreen
                           color: colors.textPrimaryLight,
                         ),
                       ])),
-                                                                 const SizedBox(height: 24),
-
+                  const SizedBox(height: 24),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8),
                     child: SizedBox(

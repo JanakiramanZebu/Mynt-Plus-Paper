@@ -53,9 +53,8 @@ class Xsip {
   String? installmentAmount;
   String? startDate;
   String? endDate;
+  String? schemeCode;
   String? NextSIPDate;
-  
-  
 
   Xsip(
       {this.transCode,
@@ -86,10 +85,8 @@ class Xsip {
       this.installmentAmount,
       this.startDate,
       this.endDate,
-      this.NextSIPDate
-      
-      
-      });
+      this.NextSIPDate,
+      this.schemeCode});
 
   Xsip.fromJson(Map<String, dynamic> json) {
     transCode = json['TransCode'].toString();
@@ -121,6 +118,7 @@ class Xsip {
     startDate = json['StartDate'].toString();
     endDate = json['EndDate'].toString();
     NextSIPDate = json['NextSIPDate'].toString();
+    schemeCode = json['Scheme_Code'].toString();
   }
 
   Map<String, dynamic> toJson() {
@@ -154,6 +152,7 @@ class Xsip {
     data['StartDate'] = this.startDate;
     data['EndDate'] = this.endDate;
     data['NextSIPDate'] = this.NextSIPDate;
+    data['Scheme_Code'] = this.schemeCode;
     return data;
   }
 }

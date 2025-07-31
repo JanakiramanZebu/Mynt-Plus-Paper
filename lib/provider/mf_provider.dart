@@ -101,6 +101,9 @@ class MFProvider extends DefaultChangeNotifier {
   Sip_list_data? _mfsiporderlist;
   Sip_list_data? get mfsiporderlist => _mfsiporderlist;
 
+  Sip_list_data? _mfnotlivesiporderlist;
+  Sip_list_data? get mfnotlivesiporderlist => _mfnotlivesiporderlist;
+
   Sip_single_page? _mfsinglepageres;
   Sip_single_page? get mfsinglepageres => _mfsinglepageres;
 
@@ -1356,7 +1359,23 @@ class MFProvider extends DefaultChangeNotifier {
   Future<void> fetchmfsiplist() async {
     try {
       _bestmfloader = true;
-      _mfsiporderlist = await api.getSiplist();
+      notifyListeners();
+
+      _mfsiporderlist = await api.getSiplist('');
+      // print("sipppppres${_mfsiporderlist?.toJson()}");
+      notifyListeners();
+    } catch (e, stackTrace) {
+      debugPrint("Error fetching siplist: $e\n$stackTrace");
+    } finally {
+      _bestmfloader = false;
+      notifyListeners();
+    }
+  }
+
+   Future<void> fetchmfsipnotlivelist() async {
+    try {
+      _bestmfloader = true;
+      _mfnotlivesiporderlist = await api.getSiplist('notlive');
       // print("sipppppres${_mfsiporderlist?.toJson()}");
       notifyListeners();
     } catch (e, stackTrace) {
@@ -1999,7 +2018,7 @@ class MFProvider extends DefaultChangeNotifier {
     }
   }
 
-  Future cancelsiporder(BuildContext context, orderno, siprefno) async {
+  Future cancelsiporder(BuildContext context, orderno,scode) async {
     // print("WWWWWW{${orderno},1111${siprefno},22222222!!${droupreason}!!,33333333${rejectsip.text}}");
     if (droupreason != "") {
       toggleLoadingOn(true);
@@ -2009,30 +2028,35 @@ class MFProvider extends DefaultChangeNotifier {
           toggleLoadingOn(true);
 
           _mfsipcancelmess = await api.cancelsipapi(
-              orderno, siprefno, droupreason, rejectsip.text);
+              orderno, droupreason, rejectsip.text,scode);
           // print("@@@1111111111111111$_mfLumpSumOrderbook");
           // Navigator.pop(context);
-          fetchmfsiplist();
-          if (_mfsipcancelmess?.stat == "Not Ok") {
+          if (_mfsipcancelmess?.stat == "Not_Ok") {
             toggleLoadingOn(false);
+             Navigator.pop(context);
             ScaffoldMessenger.of(context).showSnackBar(
-                warningMessage(context, "${_mfsipcancelmess?.emsg}"));
+                warningMessage(context, "${_mfsipcancelmess?.bSERemarks}"));
             Navigator.pop(context);
           }
           if (_mfsipcancelmess?.stat == "Ok") {
+          fetchmfsiplist();
+
             toggleLoadingOn(false);
             Navigator.pop(context);
 
             ScaffoldMessenger.of(context).showSnackBar(
-                warningMessage(context, "Sip su ${_mfsipcancelmess?.msg}"));
+                successMessage(context, "Sip successfully ${_mfsipcancelmess?.status}"));
             Navigator.pop(context);
           }
+          fetchmfsiplist();
+
         } catch (e) {
           toggleLoadingOn(false);
           Navigator.pop(context);
           ScaffoldMessenger.of(context)
               .showSnackBar(warningMessage(context, "Something Went Wrong"));
           log("Failed to Create Mandate :: ${e.toString()}");
+           Navigator.pop(context);
           notifyListeners();
         }
       } catch (e) {
@@ -2057,7 +2081,7 @@ class MFProvider extends DefaultChangeNotifier {
     cleartext();
   }
 
-  Future pausesiporder(BuildContext context, orderno, freqty, nxtdate) async {
+  Future pausesiporder(BuildContext context, orderno, freqty, nxtdate,scode) async {
     // print(
     //     "@@@@@@@@{${orderno},${pausesip.text},freqty${freqty},nxtdate${nxtdate}}");
     if (pausesip.text != "") {
@@ -2068,24 +2092,25 @@ class MFProvider extends DefaultChangeNotifier {
         try {
           toggleLoadingOn(true);
           _mfsippause =
-              await api.pausesipapi(orderno, pausesip.text, freqty, nxtdate);
+              await api.pausesipapi(orderno, pausesip.text, freqty, nxtdate,scode);
           // print("function coming");
           // print("pausee sip${_mfsippause?.toJson()}");
           // print("pausee sip${_mfsippause?.toString()}");
 
           // Navigator.pop(context);
-          // fetchmfsiplist();
-          if (_mfsippause?.stat == "Not Ok") {
+          fetchmfsiplist();
+          if (_mfsippause?.stat == "Not_Ok") {
             ScaffoldMessenger.of(context).showSnackBar(
-                warningMessage(context, "${_mfsipcancelmess?.msg}"));
+                warningMessage(context, "${_mfsipcancelmess?.bSERemarks}"));
             Navigator.pop(context);
           }
           if (_mfsippause?.stat == "Ok") {
-            fetchmfsiplist();
             ScaffoldMessenger.of(context)
-                .showSnackBar(warningMessage(context, " ${_mfsippause?.msg}"));
+                .showSnackBar(warningMessage(context, " ${_mfsippause?.status}"));
             Navigator.pop(context);
           }
+            
+
         } catch (e) {
           toggleLoadingOn(false);
           Navigator.pop(context);
@@ -2282,112 +2307,36 @@ class MFProvider extends DefaultChangeNotifier {
       if (_upiApiresponse?.stat != "Not Ok") {
         if (_upiApiresponse?.stat == "Ok") {
           _loadingMessage = "Initiated";
-          _triggerfromMF = true;
-
-          notifyListeners();
-
-          // Add a small delay to show the verification message
-          // await Future.delayed(Duration(milliseconds: 1000));
-
-          // Navigator.pop(context);
-          // if (_paymentName == 'NET BANKING') {
-          // checknetbankingstatus(context);
-          // }
-          // ScaffoldMessenger.of(context)
-          //     .showSnackBar(successMessage(context, "${_upiApiresponse!.msg}"));
-          //     showModalBottomSheet(
-          //   context: context,
-          //   shape: const RoundedRectangleBorder(
-          //     borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-          //   ),
-          //   isScrollControlled: true,
-          //   isDismissible: false,
-          //   enableDrag: false,
-          //   builder: (context) {
-          //     return WillPopScope(
-          //       onWillPop: () async => false,
-          //       child: StatefulBuilder(
-          //         builder: (context, setState) {
-
-          //           // Start the timer only once
-
-          //           return Padding(
-          //             padding: const EdgeInsets.only(
-          //                 top: 22.0, bottom: 16.0, left: 16.0, right: 16.0),
-          //             child: Wrap(
-          //               children: [
-          //                 Center(
-          //                   child: Column(
-          //                     mainAxisSize: MainAxisSize.min,
-          //                     children: [
-          //                       const Icon(Icons.check_circle,
-          //                           color: Colors.green, size: 48),
-          //                       const SizedBox(height: 12),
-          //                       const Text(
-          //                         "BSE StAR MF has requested payment from your UPI account. To authorise debit please login to your UPI account.",
-          //                         style: TextStyle(
-          //                             fontSize: 18,
-          //                             fontWeight: FontWeight.bold),
-          //                         textAlign: TextAlign.center,
-          //                       ),
-          //                       const SizedBox(height: 20),
-
-          //                       /// 🔥 Countdown Timer
-          //                       // Text(
-          //                       //   formatTime(countdown),
-          //                       //   style: const TextStyle(
-          //                       //     fontSize: 24,
-          //                       //     fontWeight: FontWeight.bold,
-          //                       //     color: Colors.red,
-          //                       //   ),
-          //                       // ),
-          //                       const SizedBox(height: 20),
-
-          //                       const SizedBox(height: 20),
-          //                       SizedBox(
-          //                         width: double.infinity,
-          //                         child: ElevatedButton(
-          //                           onPressed: () {
-
-          //                             Navigator.of(context)
-          //                                 .pop(); // Manual cancel
-          //                           },
-          //                           style: ElevatedButton.styleFrom(
-          //                             elevation: 0,
-          //                             backgroundColor: colors.primaryLight,
-          //                             shape: RoundedRectangleBorder(
-          //                               borderRadius: BorderRadius.circular(5),
-          //                             ),
-          //                           ),
-          //                           child: const Text(
-          //                             "Cancel",
-          //                             style: TextStyle(
-          //                               color:
-          //                                   Color.fromARGB(255, 246, 246, 246),
-          //                               fontSize: 12,
-          //                               fontWeight: FontWeight.normal,
-          //                             ),
-          //                           ),
-          //                         ),
-          //                       ),
-          //                       const SizedBox(height: 8),
-          //                     ],
-          //                   ),
-          //                 ),
-          //               ],
-          //             ),
-          //           );
-          //         },
-          //       ),
-          //     );
-          //   },
-          // );
-          // _timer = true;
-          // notifyListeners();
+          _triggerfromMF = true; 
+          notifyListeners(); 
+           
         }
+      }else{
+       ispaymentcalled = false; 
+        if (_upiApiresponse!.data!.responsestring!.contains('Could not validate payment create request due to')) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            warningMessage(context, 'UPI ID not liked with bank'),
+          );
+          Navigator.pop(context); // Only pop when the condition is true
+        }else if(_upiApiresponse != null && _upiApiresponse!.data != null && _upiApiresponse!.data!.responsestring != null){
+            ScaffoldMessenger.of(context).showSnackBar(
+            warningMessage(context, '${_upiApiresponse!.data!.responsestring}'),
+          );
+          Navigator.pop(context); // Only po
+        }else{
+            ScaffoldMessenger.of(context).showSnackBar(
+            warningMessage(context, 'Something error try again later'),
+          );
+          Navigator.pop(context); // Only po
+        }
+          notifyListeners(); 
+
+
       }
       _investloader = false;
       _loadingMessage = null;
+          notifyListeners(); 
+
       // Navigator.pop(context);
 
       // ScaffoldMessenger.of(context).showSnackBar(
@@ -2577,8 +2526,9 @@ class MFProvider extends DefaultChangeNotifier {
       String mandateId) async {
     try {
       // print("welcoooo");
-      toggleLoadingOn(true);
-      _loadingMessage = "Processing SIP order...";
+      // toggleLoadingOn(true);
+      // _loadingMessage = "Processing SIP order...";
+      _investloader = true;
       notifyListeners();
 // print("okokok11ttt${loading}");
 
@@ -2586,17 +2536,19 @@ class MFProvider extends DefaultChangeNotifier {
           freqtype, amt, noofinstallment, endDate, mandateId);
 // print("okokok11${loading}");
       if (_xsipOrderResponces?.stat == 'Ok') {
-        _loadingMessage = "SIP order placed successfully!";
+        // _loadingMessage = "SIP order placed successfully!";
         notifyListeners();
 
         // Add a small delay to show the success message
         await Future.delayed(Duration(milliseconds: 1000));
 
-        toggleLoadingOn(false);
+        // toggleLoadingOn(false);
 
         // toggleLoad(false);
         ScaffoldMessenger.of(context).showSnackBar(
             successMessage(context, "${_xsipOrderResponces!.remarks}"));
+      _investloader = false;
+
         // fetchAllPayment(
         //     context,
         //     "${_mfPlaceOrderResponces?.orderNumber}",
@@ -2610,12 +2562,18 @@ class MFProvider extends DefaultChangeNotifier {
         //     upiId.text,
         //     schemecode);
         Navigator.pop(context);
+        notifyListeners();
+
       } else {
-        toggleLoadingOn(false);
+        // toggleLoadingOn(false);
         _loadingMessage = null;
         ScaffoldMessenger.of(context).showSnackBar(
             warningMessage(context, "${_xsipOrderResponces!.remarks}"));
+            _investloader = false;
+
         Navigator.pop(context);
+     
+        notifyListeners();
       }
       fetchmfsiplist();
       fetchMfOrderbook(context);
