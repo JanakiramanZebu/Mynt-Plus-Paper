@@ -16,12 +16,10 @@ class MfPaymentRespAlert extends StatefulWidget {
   });
 
   @override
-  State<MfPaymentRespAlert> createState() =>
-      _MfPaymentRespAlertState();
+  State<MfPaymentRespAlert> createState() => _MfPaymentRespAlertState();
 }
 
-class _MfPaymentRespAlertState
-    extends State<MfPaymentRespAlert> {
+class _MfPaymentRespAlertState extends State<MfPaymentRespAlert> {
   @override
   Widget build(BuildContext context) {
     return PopScope(

@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../provider/fund_provider.dart';
 import '../../provider/mf_provider.dart';
 import '../../provider/thems.dart';
+import '../../res/global_state_text.dart';
 import '../../res/res.dart';
 import '../../sharedWidget/cust_text_formfield.dart';
 import '../../sharedWidget/functions.dart';
@@ -34,223 +35,322 @@ class _CreateMandateDialogueState extends ConsumerState<CreateMandateDialogue> {
     final theme = ref.watch(themeProvider);
     final fund = ref.watch(fundProvider);
     final mfOrder = ref.watch(mfProvider);
-    return AlertDialog(
-        backgroundColor: theme.isDarkMode
-            ? const Color.fromARGB(255, 18, 18, 18)
-            : colors.colorWhite,
-        shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(16))),
-        actionsPadding:
-            const EdgeInsets.only(left: 16, right: 16, bottom: 4, top: 4),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-        insetPadding: const EdgeInsets.symmetric(horizontal: 16),
-        titlePadding: const EdgeInsets.only(left: 16, top: 16),
-        title: Text("Create Mandate",
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: textStyle(
-                theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                14,
-                FontWeight.w500)),
-        content: SizedBox(
-            width: MediaQuery.of(context).size.width,
-            child: ListView(
-                shrinkWrap: true,
+    
+    return Padding(
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          color: theme.isDarkMode
+              ? const Color.fromARGB(255, 18, 18, 18)
+              : colors.colorWhite,
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(16),
+            topRight: Radius.circular(16),
+          ),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [          
+            // Title
+            Padding(
+                padding: const EdgeInsets.symmetric(
+                        vertical: 8.0, horizontal: 16.0),
+              child: Row(
+                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const ListDivider(),
-                  const SizedBox(height: 10),
-                  const SizedBox(height: 8),
-                  Text("Amount",
-                      style: textStyle(
-                          theme.isDarkMode
-                              ? colors.colorWhite
-                              : colors.colorBlack,
-                          14,
-                          FontWeight.w500)),
-                  Container(
-                      margin: const EdgeInsets.symmetric(vertical: 8),
-                      height: 44,
-                      child: CustomTextFormField(
-                          textAlign: TextAlign.start,
-                          fillColor: theme.isDarkMode
-                              ? colors.darkGrey
-                              : const Color(0xffF1F3F8),
-                          hintText: '0',
-                          hintStyle: textStyle(
-                              const Color(0xff666666), 15, FontWeight.w400),
-                          inputFormate: [
-                            FilteringTextInputFormatter.digitsOnly
-                          ],
-                          style: textStyle(
-                              theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : colors.colorBlack,
-                              16,
-                              FontWeight.w600),
-                          // prefixIcon: InkWell(
-                          //   onTap: () {},
-                          //   child: SvgPicture.asset(
-                          //       theme.isDarkMode
-                          //           ? assets.darkCMinus
-                          //           : assets.minusIcon,
-                          //       fit: BoxFit.scaleDown),
-                          // ),
-                          // suffixIcon: InkWell(
-                          //     onTap: () {},
-                          //     child: SvgPicture.asset(
-                          //         theme.isDarkMode
-                          //             ? assets.darkAdd
-                          //             : assets.addIcon,
-                          //         fit: BoxFit.scaleDown)),
-                          textCtrl: mfOrder.installmentAmt,
-                          onChanged: (value) {
-                            fund.isValidUpiId();
-                          })),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: InkWell(
-                          onTap: () {
-                            mfOrder.datePickerStart(context);
-                          },
+                 TextWidget.titleText(
+                          text: "Create Mandate",
+                          theme: theme.isDarkMode,
+                          fw: 1,
+                        ),
+                 
+                  Material(
+                          color: Colors.transparent,
+                          shape: const CircleBorder(),
+                          child: InkWell(
+                            onTap: () async {
+                              await Future.delayed(
+                                  const Duration(milliseconds: 150));
+                              Navigator.pop(context);
+                            },
+                            borderRadius: BorderRadius.circular(20),
+                            splashColor: theme.isDarkMode
+                                ? Colors.white.withOpacity(0.15)
+                                : Colors.black.withOpacity(0.15),
+                            highlightColor: theme.isDarkMode
+                                ? Colors.white.withOpacity(0.08)
+                                : Colors.black.withOpacity(0.08),
+                            child: Padding(
+                              padding: const EdgeInsets.all(6.0),
+                              child: Icon(
+                                Icons.close_rounded,
+                                size: 22,
+                                color: theme.isDarkMode
+                                    ? const Color(0xffBDBDBD)
+                                    : colors.colorGrey,
+                              ),
+                            ),
+                          ),
+                        ),
+                ],
+              ),
+            ),
+            const ListDivider(),
+            Flexible(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 16),
+                    TextWidget.subText(
+                      text: "Amount",
+                      theme: theme.isDarkMode,
+                      fw: 0,
+                    ),
+                    Container(
+                        margin: const EdgeInsets.symmetric(vertical: 8),
+                        height: 44,
+                        child: CustomTextFormField(
+                           keyboardType: TextInputType.number,
+                            textAlign: TextAlign.start,
+                            fillColor: theme.isDarkMode
+                                ? colors.darkGrey
+                                :  const Color(0xffF1F3F8),
+                            hintText: '0',
+                            hintStyle: TextWidget.textStyle(
+                                color:  colors.textSecondary,  fontSize:  14, 
+                                
+                                theme: theme.isDarkMode,
+                                ),
+                            inputFormate: [
+                              FilteringTextInputFormatter.digitsOnly
+                            ],
+                            style: TextWidget.textStyle(
+                                color: theme.isDarkMode
+                                    ? colors.textPrimaryDark
+                                    : colors.textPrimaryLight,
+                                fontSize: 14,
+                                
+                                theme: theme.isDarkMode,
+                                ),
+                            textCtrl: mfOrder.installmentAmt,
+                            onChanged: (value) {
+                              setState(() {
+                                fund.isValidUpiId();
+                              });
+                            })),
+                    // Error message below amount field
+                    if (mfOrder.installmentAmt.text.trim().isEmpty)
+                      TextWidget.paraText(
+                        text: "Please enter an amount",
+                        theme: theme.isDarkMode,
+                        color: colors.loss,
+                        fw: 0,
+                        maxLines: 1,
+                        textOverflow: TextOverflow.ellipsis,
+                        align: TextAlign.start,
+                      ),
+                    // else if (double.tryParse(mfOrder.installmentAmt.text) != null &&
+                    //     double.parse(mfOrder.installmentAmt.text) < 100)
+                    //   TextWidget.paraText(
+                    //     text: "Amount must be at least 100",
+                    //     theme: theme.isDarkMode,
+                    //     color: colors.loss,
+                    //   ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text("Start Date",
-                                  style: textStyle(
-                                      theme.isDarkMode
-                                          ? colors.colorWhite
-                                          : colors.colorBlack,
-                                      14,
-                                      FontWeight.w500)),
+                              TextWidget.subText(
+                                text: "Start Date",
+                                theme: theme.isDarkMode,
+                                fw: 0,
+                              ),
                               Container(
-                                margin: const EdgeInsets.symmetric(vertical: 6),
-                                alignment: Alignment.centerLeft,
-                                padding: const EdgeInsets.symmetric(
-                                    vertical: 10, horizontal: 10),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(30),
-                                  color: theme.isDarkMode
-                                      ? colors.darkGrey
-                                      : const Color(0xffF1F3F8),
+                                margin: const EdgeInsets.symmetric(vertical: 8),
+                                height: 44,
+                                child: InkWell(
+                                  onTap: () async {
+                                    await mfOrder.datePickerStart(context);
+                                    setState(() {});
+                                  },
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: theme.isDarkMode
+                                          ? colors.darkGrey
+                                          : const Color(0xffF1F3F8),
+                                      borderRadius: BorderRadius.circular(5),
+                                      border: Border.all(
+                                        color: colors.colorBlue,
+                                        width: 1,
+                                      ),
+                                    ),
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 10, horizontal: 10),
+                                      child: Row(
+                                        children: [
+                                          Expanded(
+                                            child: TextWidget.subText(
+                                              text: mfOrder.startDate,
+                                              theme: theme.isDarkMode,
+                                              color: theme.isDarkMode
+                                                ? colors.textPrimaryDark
+                                                : colors.textPrimaryLight,
+                                              
+                                            ),
+                                          ),
+                                          Icon(
+                                            Icons.calendar_today,
+                                            size: 20,
+                                            color: theme.isDarkMode
+                                                ? colors.colorWhite
+                                                : colors.colorBlack,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
                                 ),
-                                child: Text(mfOrder.startDate,
-                                    style: textStyle(
-                                        theme.isDarkMode
-                                            ? colors.colorWhite
-                                            : colors.colorBlack,
-                                        14,
-                                        FontWeight.w500)),
                               ),
                             ],
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 22),
-                      Expanded(
-                        child: InkWell(
-                          onTap: () {
-                            mfOrder.datePickerEnd(context);
-                          },
+                        const SizedBox(width: 22),
+                        Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text("End Date",
-                                  style: textStyle(
-                                      theme.isDarkMode
-                                          ? colors.colorWhite
-                                          : colors.colorBlack,
-                                      14,
-                                      FontWeight.w500)),
+                              TextWidget.subText(
+                                text: "End Date",
+                                theme: theme.isDarkMode,
+                                fw: 0,
+                              ),
                               Container(
-                                margin: const EdgeInsets.symmetric(vertical: 6),
-                                alignment: Alignment.centerLeft,
-                                padding: const EdgeInsets.symmetric(
-                                    vertical: 10, horizontal: 10),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(30),
-                                  color: theme.isDarkMode
-                                      ? colors.darkGrey
-                                      : const Color(0xffF1F3F8),
+                                margin: const EdgeInsets.symmetric(vertical: 8),
+                                height: 44,
+                                child: InkWell(
+                                  onTap: () async {
+                                    await mfOrder.datePickerEnd(context);
+                                    setState(() {});
+                                  },
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: theme.isDarkMode
+                                          ? colors.darkGrey
+                                          : const Color(0xffF1F3F8),
+                                      borderRadius: BorderRadius.circular(5),
+                                      border: Border.all(
+                                        color: colors.colorBlue,
+                                        width: 1,
+                                      ),
+                                    ),
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 10, horizontal: 10),
+                                      child: Row(
+                                        children: [
+                                          Expanded(
+                                            child: TextWidget.subText(
+                                              text: mfOrder.endDate,
+                                              theme: theme.isDarkMode,
+                                              color: theme.isDarkMode
+                                                ? colors.textPrimaryDark
+                                                : colors.textPrimaryLight,
+                                              
+                                            ),
+                                          ),
+                                          Icon(
+                                            Icons.calendar_today,
+                                            size: 20,
+                                            color: theme.isDarkMode
+                                                ? colors.colorWhite
+                                                : colors.colorBlack,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
                                 ),
-                                child: Text(mfOrder.endDate,
-                                    style: textStyle(
-                                        theme.isDarkMode
-                                            ? colors.colorWhite
-                                            : colors.colorBlack,
-                                        14,
-                                        FontWeight.w500)),
                               ),
                             ],
                           ),
                         ),
-                      ),
-                    
-                    ],
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+                ),
+              ),
+            ),
+            // Action buttons
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                 
+                  Expanded(
+                    child: ElevatedButton(
+                        onPressed: () async {
+                          if (mfOrder.installmentAmt.text.trim().isEmpty) {
+                            return; // Error is shown inline below the field
+                          }
+                          
+                          int installmentAmount = double.parse(mfOrder.installmentAmt.text).toInt();
+                          if (installmentAmount >= 100) {
+                         await mfOrder.fetchCreateMandate(
+                                context,
+                                double.parse(mfOrder.installmentAmt.text)
+                                    .toInt()
+                                    .toString(),
+                                mfOrder.startDate,
+                                mfOrder.endDate);
+                            Navigator.pop(context);
+                          }
+                          // Error for low amount is shown inline below the field
+                        },
+                        style: ElevatedButton.styleFrom(
+                            elevation: 0,
+                        minimumSize: const Size(0, 40), // width, height
+
+                        backgroundColor: theme.isDarkMode
+                            ? colors.primaryDark
+                            : colors.primaryLight,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(5),
+                        ),),
+                            // padding: const EdgeInsets.symmetric(vertical: 12)),
+                        child: mfOrder.loading == true 
+                                    ? const SizedBox(
+                                        height: 15,
+                                        width: 15,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2.0,
+                                          valueColor: AlwaysStoppedAnimation<Color>(
+                                              Color.fromARGB(99, 48, 48, 48)),
+                                          backgroundColor:
+                                              Color.fromARGB(255, 255, 255, 255),
+                                        ),
+                                      )
+                                    :  TextWidget.subText(
+                              text: "Submit",
+                              color: colors.colorWhite,
+                              theme: theme.isDarkMode,
+                              fw: 2,
+                            ),),
                   ),
                 ],
-              )),
-          actions: [
-            ElevatedButton(
-                onPressed: () async {
-                  Navigator.pop(context);
-                },
-                style: ElevatedButton.styleFrom(
-                    elevation: 0,
-                    backgroundColor: const Color(0xffF1F3F8),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(50))),
-                child: Text("Cancel",
-                    style: GoogleFonts.inter(
-                        textStyle: textStyle(
-                            colors.colorBlack, 14, FontWeight.w500)))),
-            ElevatedButton(
-                onPressed: () async {
-                  int installmentAmount = double.parse(mfOrder.installmentAmt.text).toInt();
-                  if (installmentAmount >= 100) {
-                 await mfOrder.fetchCreateMandate(
-                        context,
-                        double.parse(mfOrder.installmentAmt.text)
-                            .toInt()
-                            .toString(),
-                        mfOrder.startDate,
-                        mfOrder.endDate);
-                    Navigator.pop(context);
-                  }else{
-                     ScaffoldMessenger.of(context).showSnackBar(
-        warningMessage(context,"Amount must be at least 100")
+              ),
+            ),
+          ],
+        ),
+      ),
     );
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                    elevation: 0,
-                    backgroundColor:
-                        theme.isDarkMode
-                            ? colors.colorbluegrey
-                            : const Color.fromARGB(255, 0, 0, 0),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(50))),
-                child:  mfOrder.loading == true 
-                            ? const SizedBox(
-                                height: 15,
-                                width: 15,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2.0,
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                      Color.fromARGB(99, 48, 48, 48)),
-                                  backgroundColor:
-                                      Color.fromARGB(255, 255, 255, 255),
-                                ),
-                              )
-                            :  Text("Submit",
-                    style: GoogleFonts.inter(
-                        textStyle: textStyle(
-                            theme.isDarkMode
-                                ? colors.colorBlack
-                                : colors.colorWhite,
-                            14,
-                            FontWeight.w500))))
-          ]);
   }
 }

@@ -59,9 +59,18 @@ class _mfSipdetScren extends State<mfSipdetScren>
                                      
                                     if (widget.data?.status ==
                                         "ACTIVE")
-                                        _buildPauseButton( context, mfdata, theme),
-                                      _buildCancelButton(
-                                          context, mfdata, theme), 
+                                        Row(
+                                          children: [
+                                            Expanded(
+                                              child: _buildPauseButton(context, mfdata, theme),
+                                            ),
+                                            const SizedBox(width: 12),
+                                            Expanded(
+                                              child: _buildCancelButton(context, mfdata, theme),
+                                            ),
+                                          ],
+                                        ),
+                                     
                                     // if (widget.data?.invList !=
                                     //         null &&
                                     //     widget.data!.invList!
@@ -91,7 +100,7 @@ class _mfSipdetScren extends State<mfSipdetScren>
                                             "${widget.data?.sIPRegnNo ?? ""}",
                                             theme),
                                        rowOfInfoData(
-                                            "Sett Type",
+                                            "Settlement Type",
                                             "${widget.data?.settType ?? ""}",
                                             theme),
 
@@ -246,99 +255,77 @@ class _mfSipdetScren extends State<mfSipdetScren>
 
     Widget _buildPauseButton(
       BuildContext context, dynamic mfdata, dynamic theme) {
-    return Row(
-      children: [
-        Expanded(
-          flex: 6,
-          child: SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () async {
-               
-              },
-              style: ElevatedButton.styleFrom(
-                elevation: 0,
-                backgroundColor: colors.btnBg,
-                foregroundColor: const Color.fromARGB(255, 0, 0, 0),
-                side: BorderSide(
-                  color: colors.btnOutlinedBorder,
-                  width: 1,
-                ),
-                minimumSize: Size(double.infinity, 40), // height: 48
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(5),
-                ),
-              ),
-              child: TextWidget.subText(
-                  align: TextAlign.right,
-                  text: "Pause",
-                  color: theme.isDarkMode
-                      ? colors.primaryDark
-                      : colors.primaryLight,
-                  textOverflow: TextOverflow.ellipsis,
-                  theme: theme.isDarkMode,
-                  fw: 2),
-            ),
-          ),
+    return ElevatedButton(
+      onPressed: () async {
+         
+      },
+      style: ElevatedButton.styleFrom(
+        elevation: 0,
+        backgroundColor: colors.btnBg,
+        foregroundColor: const Color.fromARGB(255, 0, 0, 0),
+        side: BorderSide(
+          color: colors.btnOutlinedBorder,
+          width: 1,
         ),
-        const SizedBox(width: 10),
-      ],
+        minimumSize: const Size(0, 40), // height: 48
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(5),
+        ),
+      ),
+      child: TextWidget.subText(
+          align: TextAlign.center,
+          text: "Pause",
+          color: theme.isDarkMode
+              ? colors.primaryDark
+              : colors.primaryLight,
+          textOverflow: TextOverflow.ellipsis,
+          theme: theme.isDarkMode,
+          fw: 2),
     );
   }
 
   Widget _buildCancelButton(
       BuildContext context, dynamic mfdata, dynamic theme) {
-    return Row(
-      children: [
-        Expanded(
-          flex: 6,
-          child: SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () async {
-                await showDialog(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return MfSipCancelalert(
-                        mfcancels: widget.data?.schemename ?? "",
-                        mforderno: widget.data?.sipregnno ?? "",
-                        mfreferno:
-                            widget.data?.internalrefernumber ?? "",
-                        message: "sip",
-                        mffreqtype:
-                            widget.data?.frequency_type ?? "",
-                        mfnextsipdate:
-                            widget.data?.NextSIPDate ?? "");
-                  },
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                elevation: 0,
-                backgroundColor: colors.btnBg,
-                foregroundColor: const Color.fromARGB(255, 0, 0, 0),
-                side: BorderSide(
-                  color: colors.btnOutlinedBorder,
-                  width: 1,
-                ),
-                minimumSize: Size(double.infinity, 40), // height: 48
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(5),
-                ),
-              ),
-              child: TextWidget.subText(
-                  align: TextAlign.right,
-                  text: "Cancel SIP",
-                  color: theme.isDarkMode
-                      ? colors.primaryDark
-                      : colors.primaryLight,
-                  textOverflow: TextOverflow.ellipsis,
-                  theme: theme.isDarkMode,
-                  fw: 2),
-            ),
-          ),
+    return ElevatedButton(
+      onPressed: () async {
+        await showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return MfSipCancelalert(
+                mfcancels: widget.data?.schemename ?? "",
+                mforderno: widget.data?.sipregnno ?? "",
+                mfreferno:
+                    widget.data?.internalrefernumber ?? "",
+                message: "sip",
+                mffreqtype:
+                    widget.data?.frequency_type ?? "",
+                mfnextsipdate:
+                    widget.data?.NextSIPDate ?? "");
+          },
+        );
+      },
+      style: ElevatedButton.styleFrom(
+        elevation: 0,
+        backgroundColor: colors.btnBg,
+        foregroundColor: const Color.fromARGB(255, 0, 0, 0),
+        side: BorderSide(
+          color: colors.btnOutlinedBorder,
+          width: 1,
         ),
-        const SizedBox(width: 10),
-      ],
+        minimumSize: const Size(0, 40), // height: 48
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(5),
+        ),
+      ),
+      child: TextWidget.subText(
+          align: TextAlign.center,
+          text: "Cancel SIP",
+          color: theme.isDarkMode
+              ? colors.primaryDark
+              : colors.primaryLight,
+          textOverflow: TextOverflow.ellipsis,
+          theme: theme.isDarkMode,
+          fw: 2),
     );
   }
 
