@@ -136,27 +136,40 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
                               borderRadius: BorderRadius.circular(4),
                             )),
                         onPressed: () async {
-                          final isin = widget.mfStockData.iSIN;
-                          final schemeCode = widget.mfStockData.schemeCode;
+                          if (mfData.singleloader == false) {
+                            final isin = widget.mfStockData.iSIN;
+                            final schemeCode = widget.mfStockData.schemeCode;
 
-                          if (widget.mfStockData.sIPFLAG == "Y" &&
-                              isin != null &&
-                              schemeCode != null) {
-                            await mfData.invertfun(isin, schemeCode);
+                            if (widget.mfStockData.sIPFLAG == "Y" &&
+                                isin != null &&
+                                schemeCode != null) {
+                              await mfData.invertfun(isin, schemeCode);
+                            }
+                            Navigator.pushNamed(context, Routes.mforderScreen,
+                                arguments: widget.mfStockData);
+                            mfData.orderchangetitle("One-time");
+                            mfData.orderpagetite("SDS");
+                            mfData.chngOrderType("One-time");
                           }
-                          Navigator.pushNamed(context, Routes.mforderScreen,
-                              arguments: widget.mfStockData);
-                          mfData.orderchangetitle("One-time");
-                          mfData.orderpagetite("SDS");
-                          mfData.chngOrderType("One-time");
+                          
                         },
-                        child: TextWidget.subText(
+                        child: mfData.singleloader == false ? TextWidget.subText(
                           text: "One-time",
                           theme: false,
                           color: colors.colorWhite,
                           fw: 2,
                           align: TextAlign.center,
-                        )),
+                        ) : const SizedBox(
+                                    height: 15,
+                                    width: 15,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2.0,
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                          Color.fromARGB(99, 48, 48, 48)),
+                                      backgroundColor:
+                                          Color.fromARGB(255, 255, 255, 255),
+                                    ),
+                                  )),
                   ))),
           const SizedBox(width: 10),
           Expanded(
@@ -178,6 +191,7 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
                               borderRadius: BorderRadius.circular(4),
                             )),
                         onPressed: () async {
+                           if (mfData.singleloader == false) {
                           final isin = widget.mfStockData.iSIN;
                           final schemeCode = widget.mfStockData.schemeCode;
 
@@ -191,14 +205,25 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
                           mfData.orderchangetitle("SIP");
                           mfData.chngOrderType("SIP");
                           mfData.orderpagetite("SDS");
+                           }
                         },
-                        child: TextWidget.subText(
+                        child:   mfData.singleloader == false ?  TextWidget.subText(
                           text: "SIP",
                           theme: false,
                           color: colors.colorWhite,
                           fw: 2,
                           align: TextAlign.center,
-                        )),
+                        ) : const SizedBox(
+                                    height: 15,
+                                    width: 15,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2.0,
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                          Color.fromARGB(99, 48, 48, 48)),
+                                      backgroundColor:
+                                          Color.fromARGB(255, 255, 255, 255),
+                                    ),
+                                  )),
                   ))),
         ],
       ),

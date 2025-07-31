@@ -1299,6 +1299,8 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                                     //     mfOrder.installmentAmtError == ""
                                     ) {
                                   if (mfOrder.mfOrderTpye == "One-time") {
+                    Navigator.pop(context);
+
                                     final startTime = DateTime.now();
                                     // print(mfOrder.isValidUpiId(widget.mfData));
                                     // print(widget.mfData);
@@ -1310,11 +1312,24 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                                     // } else if (mfOrder.paymentName != "UPI") {
                                     // mfPlaceorder(widget.mfData, mfOrder, context);
                                     // }
-                                    _showBottomSheet(
-                                        context,
-                                        MfOrderBottomsheet(
+                                    showModalBottomSheet(
+                                      context: context,
+                                      isScrollControlled: true,
+                                      isDismissible: mfOrder.ispaymentcalled != true,
+                                      enableDrag: false,
+                                      shape: const RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.vertical(
+                                          top: Radius.circular(15),
+                                        ),
+                                      ),
+                                      builder: (context) => WillPopScope(
+                                        onWillPop: () async => mfOrder.ispaymentcalled != true,
+                                        child: MfOrderBottomsheet(
                                           data: widget.mfData,
-                                        ));
+                                        ),
+                                      ),
+                                    );
+
                                     await mfPlaceorder(
                                         widget.mfData, mfOrder, context);
 

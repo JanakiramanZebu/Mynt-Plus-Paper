@@ -25,6 +25,7 @@ import '../profile_screen/fund_screen/upi_id_screens/upi_id_cancel_alert.dart';
 import 'mandate_selection_screen.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../res/assets.dart';
+import 'mf_processing_screen.dart';
 
 class MfOrderBottomsheet extends StatefulWidget {
   final dynamic data;
@@ -107,8 +108,11 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                     mfOrder.upiApiresponse?.stat == "Ok" &&
                     mfOrder.paymentName == "UPI" &&
                     mfOrder.ispaymentcalled == true) ...[
-                  UPIIDPaymentCancelAlert(
-                    data: mfOrder.mfPlaceOrderResponces!.orderId,
+                  SizedBox(
+                    height: screenheight * 0.24, 
+                    child: MfUPIProcessingScreen(
+                      data: mfOrder.mfPlaceOrderResponces!.orderId,
+                    ),
                   ),
                 ] else ...[
                   mfOrder.investloader

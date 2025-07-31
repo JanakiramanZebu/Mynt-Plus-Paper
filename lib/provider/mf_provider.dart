@@ -933,13 +933,14 @@ class MFProvider extends DefaultChangeNotifier {
   //   }
   //   notifyListeners();
   // }
-  invertfun(String isin, String schemeCode) {
+  invertfun(String isin, String schemeCode) async{
     _singleloader = true;
-    fetchMFMandateDetail();
+    await fetchMFSipData(isin, schemeCode);
+
+    await fetchMFMandateDetail();
     // fetchBankDetail();
-    fetchUpiDetail();
-    fetchMFSipData(isin, schemeCode);
-    chngMandate("Lumpsum");
+    await fetchUpiDetail();
+    await chngMandate("Lumpsum");
     _singleloader = false;
   }
 
