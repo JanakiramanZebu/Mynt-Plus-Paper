@@ -2611,7 +2611,7 @@ class MFProvider extends DefaultChangeNotifier {
 
       if ((_statusCheckUpi != null) &&
           (_statusCheckUpi!.status == 'PAYMENT REJECTED' ||
-              _statusCheckUpi!.status == 'PAYMENT APPROVED')) {
+              _statusCheckUpi!.status == 'PAYMENT COMPLETED')) {
         setterformftrigger(false);
         if (context.mounted) {
           // Navigator.pop(context);

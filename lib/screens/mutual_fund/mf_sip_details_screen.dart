@@ -203,7 +203,7 @@ class _mfSipdetScren extends State<mfSipdetScren>
                   child: TextWidget.paraText(
                     text: widget.data?.status == "ACTIVE"
                         ? "Live"
-                        : "Cancel",
+                        : widget.data?.status,
                     color: widget.data?.status == "ACTIVE"
                         ? colors.profit
                         : colors.loss,

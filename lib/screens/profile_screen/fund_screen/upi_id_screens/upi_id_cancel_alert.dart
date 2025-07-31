@@ -46,7 +46,7 @@ class _UPIIDPaymentCancelAlertState
             widget.data, context); // Use await if async
 
         final status = mfProv.statusCheckUpi?.status;
-        if (status == 'PAYMENT REJECTED' || status == 'PAYMENT APPROVED') {
+        if (status == 'PAYMENT REJECTED' || status == 'PAYMENT COMPLETED') {
           _timer?.cancel(); // This is safe even if already cancelled
           _autoPopTimer?.cancel(); // Cancel auto-pop if running
 

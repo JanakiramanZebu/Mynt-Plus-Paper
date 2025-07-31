@@ -36,14 +36,13 @@ class _MfUPIProcessingScreen extends ConsumerState<MfUPIProcessingScreen> {
   }
 
   void _handleInitialLogic() async {
-    final mfProv = ref.read(mfProvider); 
- 
+    final mfProv = ref.read(mfProvider);
 
     _timer = Timer.periodic(const Duration(seconds: 3), (timer) async {
       await mfProv.getpaymentstatus(widget.data, context); // Use await if async
 
       final status = mfProv.statusCheckUpi?.status;
-      if (status == 'PAYMENT REJECTED' || status == 'PAYMENT APPROVED') {
+      if ((status == 'PAYMENT REJECTED') || (status == 'PAYMENT COMPLETED')) {
         _timer?.cancel(); // This is safe even if already cancelled
         _autoPopTimer?.cancel(); // Cancel auto-pop if running
 
@@ -52,7 +51,7 @@ class _MfUPIProcessingScreen extends ConsumerState<MfUPIProcessingScreen> {
 
         if (Navigator.of(context).canPop()) {
           if (mfProv.paymentName == "UPI") {
-            Navigator.of(context).pop(); 
+            Navigator.of(context).pop();
           }
           showModalBottomSheet(
             context: context,

@@ -54,11 +54,11 @@ class _MfPaymentRespAlertState extends State<MfPaymentRespAlert> {
                     children: [
                       const CustomDragHandler(),
                       Icon(
-                        widget.upiData?["status"] == "SUCCESS"
+                        widget.upiData?["status"] == "PAYMENT COMPLETED"
                             ? Icons.check_circle_rounded
                             : Icons.cancel_rounded,
                         //
-                        color: widget.upiData?["status"] == "SUCCESS"
+                        color: widget.upiData?["status"] == "PAYMENT COMPLETED"
                             ? colors.kColorGreenButton
                             : colors.kColorRedButton,
                         size: 70,
@@ -77,7 +77,7 @@ class _MfPaymentRespAlertState extends State<MfPaymentRespAlert> {
                         height: 5,
                       ),
                       TextWidget.paraText(
-                        text: widget.upiData?["status"] == "SUCCESS"
+                        text: widget.upiData?["status"] == "PAYMENT COMPLETED"
                             ? "Transaction Success"
                             : "Transaction fail",
                         theme: false,

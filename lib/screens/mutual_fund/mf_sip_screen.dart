@@ -161,7 +161,7 @@ class MFSipdetScreen extends ConsumerWidget {
                         ),
                         child: TextWidget.paraText(
                             // align: TextAlign.start,
-                            text: item.status == "ACTIVE" ? "Live" : "Cancel",
+                            text: item.status == "ACTIVE" ? "Live" : item.status,
                             color: item.status == "ACTIVE"
                                 ? colors.profit
                                 : colors.loss,

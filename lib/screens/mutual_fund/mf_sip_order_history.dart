@@ -131,16 +131,16 @@ class MFSipOrderHistoryScreen extends ConsumerWidget {
                             horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
                           color: item.status == "ACTIVE"
-                              ? colors.profit.withOpacity(0.1)
+                              ? colors.profit.withOpacity(0.1) : item.status == "ACTIVE" ? colors.pending.withOpacity(0.1)
                               : colors.loss.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: TextWidget.paraText(
                             // align: TextAlign.start,
-                            text: item.status == "ACTIVE" ? "Live" : "Cancel",
+                            text: item.status == "ACTIVE" ? "Live" : item.status,
                             color: item.status == "ACTIVE"
-                                ? colors.profit
-                                : colors.loss,
+                              ? colors.profit  : item.status == "ACTIVE" ? colors.pending 
+                              : colors.loss ,
                             textOverflow: TextOverflow.ellipsis,
                             theme: theme.isDarkMode,
                             maxLines: 2,

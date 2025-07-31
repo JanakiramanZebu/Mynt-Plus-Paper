@@ -192,14 +192,17 @@ class MfSipCancelalert extends ConsumerWidget {
             if (isPause)
               Expanded(
                 child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                        elevation: 0,
-                        backgroundColor: isDarkMode
-                            ? colors.colorbluegrey
-                            : colors.colorBlack,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(50),
-                        )),
+                     style: OutlinedButton.styleFrom(
+                      elevation: 0,
+                      minimumSize: const Size(0, 40), // width, height
+                      side: BorderSide(
+                          color:
+                              colors.btnOutlinedBorder), // Outline border color
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      backgroundColor: colors.primaryDark,
+                    ),
                     onPressed: () async {
                       try {
                         await mfData.pausesiporder(
