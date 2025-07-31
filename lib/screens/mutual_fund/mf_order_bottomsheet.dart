@@ -708,9 +708,9 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                               // Conditional UPI section
                             ],
                             // Show Setup-SIP button only when mandates exist and are approved
-                            if (mfOrder.mfOrderTpye == "SIP" &&
-                                mfOrder.mandateData != null &&
-                                mfOrder.mandateData!.isNotEmpty) ...[
+                            if ((mfOrder.mfOrderTpye == "SIP" &&
+                                mfOrder.mandateData != null && 
+                                mfOrder.mandateData!.isNotEmpty) || (mfOrder.mfOrderTpye != "SIP")) ...[
                               Container(
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 12, vertical: 4),
