@@ -132,6 +132,22 @@ class Preferences {
   Future setMfInvestby(bool isselect) async =>
       await _prefInstance!.setBool(_isMfInvest, isselect);
 
+  // New MF Filter Methods for Holdings
+  Future setMFName(bool isselect) async =>
+      await _prefInstance!.setBool(_isMFName, isselect);
+
+  Future setMFNav(bool isselect) async =>
+      await _prefInstance!.setBool(_isMFNav, isselect);
+
+  Future setMFUnit(bool isselect) async =>
+      await _prefInstance!.setBool(_isMFUnit, isselect);
+
+  Future setMFReturnPercChange(bool isselect) async =>
+      await _prefInstance!.setBool(_isMFReturnPercChange, isselect);
+
+  Future setMFInvestedPrice(bool isselect) async =>
+      await _prefInstance!.setBool(_isMFInvestedPrice, isselect);
+
 //// POSTION Filter
   Future setPosScrip(bool isselect) async =>
       await _prefInstance!.setBool(_isPosScripName, isselect);
@@ -227,6 +243,13 @@ class Preferences {
   bool? get isMfPrice => _prefInstance?.getBool(_isMfPrice) ?? true;
   bool? get isMfPerchang => _prefInstance?.getBool(_isMfPrechange) ?? true;
   bool? get isMfInvestby => _prefInstance?.getBool(_isMfInvest) ?? true;
+
+  ////// MF Holdings Filter (New)
+  bool? get isMFName => _prefInstance?.getBool(_isMFName) ?? true;
+  bool? get isMFNav => _prefInstance?.getBool(_isMFNav) ?? true;
+  bool? get isMFUnit => _prefInstance?.getBool(_isMFUnit) ?? true;
+  bool? get isMFReturnPercChange => _prefInstance?.getBool(_isMFReturnPercChange) ?? true;
+  bool? get isMFInvestedPrice => _prefInstance?.getBool(_isMFInvestedPrice) ?? true;
 
   ////// Postion Filter
   bool? get isPosScripname => _prefInstance?.getBool(_isPosScripName) ?? true;
@@ -344,6 +367,13 @@ const String _isMfPrice = "isMfPrice";
 const String _isMfQuantity = "isMfQuantity";
 const String _isMfPrechange = "isMfPrechange";
 const String _isMfInvest = "isMfInvest";
+
+///MF HOLDINGS FILTER (New)
+const String _isMFName = "isMFName";
+const String _isMFNav = "isMFNav";
+const String _isMFUnit = "isMFUnit";
+const String _isMFReturnPercChange = "isMFReturnPercChange";
+const String _isMFInvestedPrice = "isMFInvestedPrice";
 
 ///POSTION FILTER
 const String _isPosScripName = "isPosScripName";
