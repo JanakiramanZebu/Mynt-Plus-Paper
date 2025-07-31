@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -9,6 +10,8 @@ import '../../provider/thems.dart';
 import '../../res/global_state_text.dart';
 import '../../routes/route_names.dart';
 import '../../sharedWidget/custom_back_btn.dart';
+import '../../sharedWidget/custom_text_form_field.dart';
+import '../../utils/no_emoji_inputformatter.dart';
 
 class BondsScreen extends ConsumerStatefulWidget {
   final int? initialTabIndex;
@@ -24,13 +27,13 @@ class _BondsmainScreenState extends ConsumerState<BondsScreen> {
   static const double _searchBarHeight = 45.0;
   static const double _searchBarBorderRadius = 25.0;
   static const double _searchBarFontSize = 14.0;
-  
+
   int? initialTabIndex;
 
   @override
   void initState() {
     super.initState();
-    
+
     // Check for navigation arguments
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final args = ModalRoute.of(context)?.settings.arguments;
@@ -46,15 +49,16 @@ class _BondsmainScreenState extends ConsumerState<BondsScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = ref.watch(themeProvider);
+    final bonds = ref.watch(bondsProvider);
 
     return Scaffold(
-      appBar: _buildAppBar(context, theme),
+      appBar: _buildAppBar(context, theme, bonds),
       body: BondsExploreScreens(theme: theme, initialTabIndex: initialTabIndex),
     );
   }
-}
 
- AppBar _buildAppBar(BuildContext context, ThemesProvider theme) {
+  AppBar _buildAppBar(
+      BuildContext context, ThemesProvider theme, BondsProvider bonds) {
     return AppBar(
       automaticallyImplyLeading: false,
       elevation: 0,
@@ -62,58 +66,101 @@ class _BondsmainScreenState extends ConsumerState<BondsScreen> {
       centerTitle: false,
       titleSpacing: 0,
       leading: const CustomBackBtn(),
-      title: _buildSearchBar(context, theme),
+      title: TextWidget.heroText(
+          text: "Bonds",
+          theme: theme.isDarkMode,
+          color: theme.isDarkMode
+              ? colors.textPrimaryDark
+              : colors.textPrimaryLight,
+          fw: 0),
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(50),
+        child: _buildSearchBar(context, theme, bonds),
+      ),
     );
   }
-  
-  // Widget _buildBackButton(BuildContext context, ThemesProvider theme) {
-  //   return Padding(
-  //     padding: const EdgeInsets.symmetric(horizontal: 8),
-  //     child: InkWell(
-  //       onTap: () => Navigator.pop(context),
-  //       child: Icon(
-  //         Icons.arrow_back_ios,
-  //         color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-  //         size: 18,
-  //       ),
-  //     ),
-  //   );
-  // }
-  
-  Widget _buildSearchBar(BuildContext context, ThemesProvider theme) {
+
+  Widget _buildSearchBar(
+      BuildContext context, ThemesProvider theme, BondsProvider bonds) {
     return Padding(
-      padding: const EdgeInsets.only(right: 24),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
         children: [
           Expanded(
-            child: GestureDetector(
-              onTap: () {
-                FocusScope.of(context).requestFocus(FocusNode());
-                Navigator.pushNamed(context, Routes.bondssearchScreen);
-              },
-              child: Container(
-                height: 40,
-                decoration: BoxDecoration(
-                  color: colors.searchBg,
-                  borderRadius: BorderRadius.circular(5),
+            child: SizedBox(
+              height: 40,
+              child: TextFormField(
+                controller: bonds.bondscommonsearchcontroller,
+                style: TextWidget.textStyle(
+                  fontSize: 14,
+                  theme: theme.isDarkMode,
+                  fw: 1,
                 ),
-                child: Row(
-                  children: [
-                    const SizedBox(width: 12),
-                    SvgPicture.asset(
-                      assets.searchIcon,
-                      width: 18,
-                      height: 18,
+                keyboardType: TextInputType.text,
+                textCapitalization: TextCapitalization.characters,
+                inputFormatters: [
+                  UpperCaseTextFormatter(),
+                  NoEmojiInputFormatter(),
+                  FilteringTextInputFormatter.deny(RegExp('[π£•₹€℅™∆√¶/.,]'))
+                ],
+                decoration: InputDecoration(
+                    hintText: "Search Bonds",
+                    hintStyle: TextWidget.textStyle(
+                        fontSize: 14,
+                        theme: theme.isDarkMode,
+                        fw: 0,
+                        color: colors.textSecondaryLight),
+                    fillColor: colors.searchBg,
+                    filled: true,
+                    prefixIcon: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: SvgPicture.asset(assets.searchIcon,
+                          color: colors.textPrimaryLight,
+                          fit: BoxFit.scaleDown,
+                          width: 20),
                     ),
-                    const SizedBox(width: 8),
-                    TextWidget.subText(
-                      text: "Search Bonds",
-                      theme: theme.isDarkMode,
-                      color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                      
-                    ),
-                  ],
-                ),
+                    suffixIcon:
+                        bonds.bondscommonsearchcontroller.text.isNotEmpty
+                            ? Material(
+                                color: Colors.transparent,
+                                shape: const CircleBorder(),
+                                clipBehavior: Clip.hardEdge,
+                                child: InkWell(
+                                  customBorder: const CircleBorder(),
+                                  splashColor: theme.isDarkMode
+                                      ? colors.splashColorDark
+                                      : colors.splashColorLight,
+                                  highlightColor: theme.isDarkMode
+                                      ? colors.highlightDark
+                                      : colors.highlightLight,
+                                  onTap: () async {
+                                    bonds.clearCommonBondsSearch();
+                                    Future.delayed(
+                                        const Duration(milliseconds: 150), () {
+                                      FocusScope.of(context)
+                                          .requestFocus(FocusNode());
+                                    });
+                                  },
+                                  child: SvgPicture.asset(assets.removeIcon,
+                                      fit: BoxFit.scaleDown, width: 20),
+                                ),
+                              )
+                            : const SizedBox.shrink(),
+                    enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide.none,
+                        borderRadius: BorderRadius.circular(20)),
+                    disabledBorder: InputBorder.none,
+                    focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide.none,
+                        borderRadius: BorderRadius.circular(20)),
+                    contentPadding:
+                        const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+                    border: OutlineInputBorder(
+                        borderSide: BorderSide.none,
+                        borderRadius: BorderRadius.circular(20))),
+                onChanged: (value) {
+                  bonds.searchCommonBonds(value, context);
+                },
               ),
             ),
           ),
@@ -121,8 +168,6 @@ class _BondsmainScreenState extends ConsumerState<BondsScreen> {
       ),
     );
   }
-
-
 
 // NestedScrollView(
 //                 headerSliverBuilder:
@@ -228,7 +273,7 @@ class _BondsmainScreenState extends ConsumerState<BondsScreen> {
 //                                             .read(bondsProvider)
 //                                             .fetchBondsOrderBook();
 //                                       });
-
+}
 //                                         Navigator.pushNamed(
 //                                             context, Routes.bondsorderbook);
 //                                       },

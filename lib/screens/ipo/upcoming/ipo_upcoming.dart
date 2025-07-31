@@ -20,7 +20,9 @@ class UpcomingIpo extends StatelessWidget {
       final theme = ref.watch(themeProvider);
       final devHeight = MediaQuery.of(context).size.height;
 
-      final hasUpcomingIPOs = ipos.upcomingModel?.upcoming?.isNotEmpty ?? false;
+      // Get filtered upcoming IPOs based on search
+      List<dynamic> filteredUpcomingIPOs = _getFilteredUpcomingIPOs(ipos);
+      final hasUpcomingIPOs = filteredUpcomingIPOs.isNotEmpty;
 
       if (!hasUpcomingIPOs) {
         return _NoDataSection(devHeight: devHeight);
@@ -31,13 +33,31 @@ class UpcomingIpo extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _UpcomingIPOList(
-              upcomingIPOs: ipos.upcomingModel!.upcoming!,
+              upcomingIPOs: filteredUpcomingIPOs,
               theme: theme,
             ),
           ],
         ),
       );
     });
+  }
+
+  List<dynamic> _getFilteredUpcomingIPOs(IPOProvider ipos) {
+    final upcomingIPOs = ipos.upcomingModel?.upcoming ?? [];
+
+    // If there's a search query, filter the upcoming IPOs
+    if (ipos.ipocommonsearchcontroller.text.isNotEmpty) {
+      final searchQuery = ipos.ipocommonsearchcontroller.text.toLowerCase();
+      return upcomingIPOs.where((ipo) {
+        final companyName = ipo.companyName?.toLowerCase() ?? '';
+        final ipoType = ipo.ipoType?.toLowerCase() ?? '';
+        return companyName.contains(searchQuery) ||
+            ipoType.contains(searchQuery);
+      }).toList();
+    }
+
+    // Otherwise, return all upcoming IPOs
+    return upcomingIPOs;
   }
 }
 
@@ -120,7 +140,6 @@ class _UpcomingIPOItem extends StatelessWidget {
               child: TextWidget.subText(
                 text: ipo.companyName!,
                 theme: false,
-                fw: 0,
                 color: theme.isDarkMode
                     ? colors.textPrimaryDark
                     : colors.textPrimaryLight,
@@ -142,7 +161,7 @@ class _UpcomingIPOItem extends StatelessWidget {
                 child: Padding(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                  child: TextWidget.titleText(
+                  child: TextWidget.subText(
                     text: 'DRHP',
                     theme: false,
                     fw: 0,

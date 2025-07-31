@@ -1002,7 +1002,7 @@ class MFProvider extends DefaultChangeNotifier {
           } else {
             _dateList = element.sIPDATES!.replaceAll("\"", "").split(',');
           }
-          invDuration.text = "${element.sIPMINIMUMINSTALLMENTNUMBERS}";
+          invDuration.text = "${element.sIPMAXIMUMINSTALLMENTNUMBERS}";
           _sipDuration = "${element.sIPMINIMUMINSTALLMENTNUMBERS}";
           // _insAmt = "${element.sIPMINIMUMINSTALLMENTNUMBERS ?? 0.00}";
         }
@@ -1871,7 +1871,7 @@ class MFProvider extends DefaultChangeNotifier {
           installmentAmt.text =
               "${_mfSIPModel!.data![0].sIPMINIMUMINSTALLMENTAMOUNT}";
           invDuration.text =
-              "${_mfSIPModel!.data![0].sIPMINIMUMINSTALLMENTNUMBERS}";
+              "${_mfSIPModel!.data![0].sIPMAXIMUMINSTALLMENTNUMBERS}";
           _sipDuration =
               "${_mfSIPModel!.data![0].sIPMINIMUMINSTALLMENTNUMBERS}";
 

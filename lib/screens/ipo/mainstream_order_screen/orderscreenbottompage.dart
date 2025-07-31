@@ -216,11 +216,11 @@ class _OrderScreenbottomPage extends ConsumerState<OrderScreenbottomPage> {
                       elevation: 0,
                       side: BorderSide(
                           color: ischecked == false
-                              ? colors.primary
-                              : colors.btnOutlinedBorder),
+                              ? colors.primaryLight
+                              : colors.primaryDark),
                       backgroundColor: ischecked == false
-                          ? colors.btnBg
-                          : colors.btnOutlinedBorder,
+                          ? colors.primaryLight.withOpacity(0.6)
+                          : colors.primaryLight,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(5),
                       ),
@@ -253,9 +253,7 @@ class _OrderScreenbottomPage extends ConsumerState<OrderScreenbottomPage> {
                         : TextWidget.titleText(
                             text: "Apply",
                             theme: false,
-                            color: ischecked == false
-                                ? colors.secondaryDark
-                                : colors.textSecondaryDark,
+                            color: colors.colorWhite,
                             fw: 2,
                           ),
                   ),

@@ -11,12 +11,17 @@ import '../../../../sharedWidget/functions.dart';
 import '../ipo_orderbook_details/close_order_details.dart';
 
 class IpoCloseOrder extends ConsumerWidget {
-  const IpoCloseOrder({super.key});
+  final List<dynamic>? filteredOrders;
+
+  const IpoCloseOrder({super.key, this.filteredOrders});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref.watch(themeProvider);
     final ipo = ref.watch(ipoProvide);
+
+    // Use filtered orders if provided, otherwise use original orders
+    final ordersToDisplay = filteredOrders ?? ipo.closeorder ?? [];
 
     return SingleChildScrollView(
       child: Column(
@@ -25,9 +30,9 @@ class IpoCloseOrder extends ConsumerWidget {
           ListView.separated(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            itemCount: ipo.closeorder?.length ?? 0,
+            itemCount: ordersToDisplay.length,
             itemBuilder: (context, index) => _CloseOrderItem(
-              order: ipo.closeorder![index],
+              order: ordersToDisplay[index],
               theme: theme,
             ),
             separatorBuilder: (BuildContext context, int index) {
@@ -98,20 +103,36 @@ class _CloseOrderItem extends StatelessWidget {
           child: TextWidget.subText(
             text: order.companyName.toString(),
             theme: false,
-            fw: 0,
             color: theme.isDarkMode
                 ? colors.textPrimaryDark
                 : colors.textPrimaryLight,
             textOverflow: TextOverflow.ellipsis,
           ),
         ),
-        TextWidget.subText(
-          text: _getInvestedAmount(),
-          theme: false,
-          fw: 0,
-          color: theme.isDarkMode
-              ? colors.textPrimaryDark
-              : colors.textPrimaryLight,
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            color: order.reponseStatus == "cancel success"
+                ? colors.pending.withOpacity(0.1)
+                : theme.isDarkMode
+                    ? colors.lossDark.withOpacity(0.1)
+                    : colors.lossLight.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(5),
+          ),
+          child: TextWidget.subText(
+            text: order.reponseStatus == "cancel success"
+                ? "Cancelled"
+                : "Failed",
+            theme: false,
+            fw: 0,
+            color: order.reponseStatus == "cancel success"
+                ? theme.isDarkMode
+                    ? colors.pending
+                    : colors.pending
+                : theme.isDarkMode
+                    ? colors.lossDark
+                    : colors.lossLight,
+          ),
         ),
       ],
     );
@@ -121,7 +142,7 @@ class _CloseOrderItem extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        TextWidget.subText(
+        TextWidget.paraText(
           text: order.responseDatetime.toString() == ""
               ? "----"
               : ipodateres(order.responseDatetime.toString()),
@@ -131,40 +152,13 @@ class _CloseOrderItem extends StatelessWidget {
               ? colors.textSecondaryDark
               : colors.textSecondaryLight,
         ),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            // SvgPicture.asset(
-            //     order.reponseStatus == "cancel success"
-            //         ? "assets/icon/failed.svg"
-            //         : "assets/icon/failed.svg"),
-            // const SizedBox(width: 4),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: order.reponseStatus == "cancel success"
-                    ? colors.pending.withOpacity(0.1)
-                    : theme.isDarkMode
-                        ? colors.lossDark.withOpacity(0.1)
-                        : colors.lossLight.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(5),
-              ),
-              child: TextWidget.subText(
-                text: order.reponseStatus == "cancel success"
-                    ? "Cancelled"
-                    : "Failed",
-                theme: false,
-                fw: 0,
-                color: order.reponseStatus == "cancel success"
-                    ? theme.isDarkMode
-                        ? colors.pending
-                        : colors.pending
-                    : theme.isDarkMode
-                        ? colors.lossDark
-                        : colors.lossLight,
-              ),
-            ),
-          ],
+        TextWidget.paraText(
+          text: _getInvestedAmount(),
+          theme: false,
+          fw: 3,
+          color: theme.isDarkMode
+              ? colors.textPrimaryDark
+              : colors.textPrimaryLight,
         ),
       ],
     );

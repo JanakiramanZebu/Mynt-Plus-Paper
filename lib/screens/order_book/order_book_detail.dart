@@ -649,46 +649,16 @@ class _OrderDetailsSection extends ConsumerWidget {
 Widget _buildActionButtonsBar(
     BuildContext context, ThemesProvider theme, WidgetRef ref, orderBookData) {
   return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-    Expanded(
-      child: Container(
-        height: 40,
-        decoration: BoxDecoration(
-          color: const Color(0xffF1F3F8),
-          borderRadius: BorderRadius.circular(5),
-          border: Border.all(
-            color:
-                theme.isDarkMode ? colors.colorGrey : const Color(0xff0037B7),
-            width: 1,
-          ),
-        ),
-        child: InkWell(
-          onTap: () async {
-            await _navigateToModifyOrder(context, ref, orderBookData);
-          },
-          child: Center(
-            child: TextWidget.subText(
-                text: "Modify",
-                theme: false,
-                color:
-                    theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
-                fw: 0),
-          ),
-        ),
-      ),
-    ),
-    const SizedBox(width: 16),
     if ((orderBookData.sPrdtAli == "BO" || orderBookData.sPrdtAli == "CO") &&
         orderBookData.snonum != null) ...[
       Expanded(
           child: Container(
-              height: 40,
+              height: 45,
               decoration: BoxDecoration(
-                color: const Color(0xffF1F3F8),
+                color: colors.btnBg,
                 borderRadius: BorderRadius.circular(5),
                 border: Border.all(
-                  color: theme.isDarkMode
-                      ? colors.colorGrey
-                      : const Color(0xff0037B7),
+                  color: colors.btnOutlinedBorder,
                   width: 1,
                 ),
               ),
@@ -700,20 +670,21 @@ Widget _buildActionButtonsBar(
                   child: TextWidget.subText(
                       text: "Exit",
                       theme: false,
-                      color: const Color(0xff0037B7),
-                      fw: 1),
+                      color: theme.isDarkMode
+                          ? colors.primaryDark
+                          : colors.primaryLight,
+                      fw: 0),
                 ),
               )))
     ] else ...[
       Expanded(
         child: Container(
-          height: 40,
+          height: 45,
           decoration: BoxDecoration(
-            color: const Color(0xffF1F3F8),
+            color: colors.btnBg,
             borderRadius: BorderRadius.circular(5),
             border: Border.all(
-              color:
-                  theme.isDarkMode ? colors.colorGrey : const Color(0xff0037B7),
+              color: colors.btnOutlinedBorder,
               width: 1,
             ),
           ),
@@ -734,6 +705,29 @@ Widget _buildActionButtonsBar(
         ),
       ),
     ],
+    const SizedBox(width: 16),
+    Expanded(
+      child: Container(
+        height: 45,
+        decoration: BoxDecoration(
+          color: colors.primaryDark,
+          borderRadius: BorderRadius.circular(5),
+          // border: Border.all(
+          //   color: colors.btnOutlinedBorder,
+          //   width: 1,
+          // ),
+        ),
+        child: InkWell(
+          onTap: () async {
+            await _navigateToModifyOrder(context, ref, orderBookData);
+          },
+          child: Center(
+            child: TextWidget.subText(
+                text: "Modify", theme: false, color: colors.colorWhite, fw: 0),
+          ),
+        ),
+      ),
+    ),
   ]);
 }
 

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -5,12 +6,16 @@ import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/res/global_state_text.dart';
 import 'package:mynt_plus/screens/ipo/ipo_explore_screens.dart';
+import 'package:mynt_plus/screens/ipo/main_sme_list/single_page.dart';
 import '../../../res/res.dart';
 import '../../provider/iop_provider.dart';
+import '../../provider/market_watch_provider.dart';
 import '../../provider/thems.dart';
 import '../../routes/route_names.dart';
 import '../../sharedWidget/custom_text_form_field.dart';
+import '../../sharedWidget/functions.dart';
 import '../../utils/no_emoji_inputformatter.dart';
+import '../../sharedWidget/no_data_found.dart';
 
 class IPOScreen extends StatefulWidget {
   final int? initialTabIndex;
@@ -33,10 +38,17 @@ class _IPOmainScreenState extends State<IPOScreen> {
         final theme = ref.watch(themeProvider);
         final ipo = ref.watch(ipoProvide);
 
-        return Scaffold(
-          appBar: _buildAppBar(context, theme, ipo),
-          body: IpoExploreScreens(
-              theme: theme, initialTabIndex: widget.initialTabIndex),
+        return GestureDetector(
+          onTap: () {
+            FocusScope.of(context).unfocus();
+          },
+          child: Scaffold(
+            appBar: _buildAppBar(context, theme, ipo),
+            body: IpoExploreScreens(
+              theme: theme,
+              initialTabIndex: widget.initialTabIndex,
+            ),
+          ),
         );
       },
     );
@@ -79,7 +91,10 @@ class _IPOmainScreenState extends State<IPOScreen> {
           fw: 0),
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(50),
-        child: _SearchBarSection(theme: theme, ipo: ipo),
+        child: _SearchBarSection(
+          theme: theme,
+          ipo: ipo,
+        ),
       ),
     );
   }
@@ -89,7 +104,10 @@ class _SearchBarSection extends StatelessWidget {
   final ThemesProvider theme;
   final IPOProvider ipo;
 
-  const _SearchBarSection({required this.theme, required this.ipo});
+  const _SearchBarSection({
+    required this.theme,
+    required this.ipo,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -116,7 +134,7 @@ class _SearchBarSection extends StatelessWidget {
                 FilteringTextInputFormatter.deny(RegExp('[π£•₹€℅™∆√¶/.,]'))
               ],
               decoration: InputDecoration(
-                  hintText: "Search & Add stocks",
+                  hintText: "Search",
                   hintStyle: TextWidget.textStyle(
                       fontSize: 14,
                       theme: theme.isDarkMode,
@@ -131,27 +149,32 @@ class _SearchBarSection extends StatelessWidget {
                         fit: BoxFit.scaleDown,
                         width: 20),
                   ),
-                  suffixIcon: Material(
-                    color: Colors.transparent,
-                    shape: const CircleBorder(),
-                    clipBehavior: Clip.hardEdge,
-                    child: InkWell(
-                      customBorder: const CircleBorder(),
-                      splashColor: theme.isDarkMode
-                          ? colors.splashColorDark
-                          : colors.splashColorLight,
-                      highlightColor: theme.isDarkMode
-                          ? colors.highlightDark
-                          : colors.highlightLight,
-                      onTap: () async {
-                        Future.delayed(const Duration(milliseconds: 150), () {
-                          FocusScope.of(context).requestFocus(FocusNode());
-                        });
-                      },
-                      child: SvgPicture.asset(assets.removeIcon,
-                          fit: BoxFit.scaleDown, width: 20),
-                    ),
-                  ),
+                  suffixIcon: ipo.ipocommonsearchcontroller.text.isNotEmpty
+                      ? Material(
+                          color: Colors.transparent,
+                          shape: const CircleBorder(),
+                          clipBehavior: Clip.hardEdge,
+                          child: InkWell(
+                            customBorder: const CircleBorder(),
+                            splashColor: theme.isDarkMode
+                                ? colors.splashColorDark
+                                : colors.splashColorLight,
+                            highlightColor: theme.isDarkMode
+                                ? colors.highlightDark
+                                : colors.highlightLight,
+                            onTap: () async {
+                              ipo.clearCommonIpoSearch();
+                              Future.delayed(const Duration(milliseconds: 150),
+                                  () {
+                                FocusScope.of(context)
+                                    .requestFocus(FocusNode());
+                              });
+                            },
+                            child: SvgPicture.asset(assets.removeIcon,
+                                fit: BoxFit.scaleDown, width: 20),
+                          ),
+                        )
+                      : const SizedBox.shrink(),
                   enabledBorder: OutlineInputBorder(
                       borderSide: BorderSide.none,
                       borderRadius: BorderRadius.circular(20)),
@@ -165,15 +188,7 @@ class _SearchBarSection extends StatelessWidget {
                       borderSide: BorderSide.none,
                       borderRadius: BorderRadius.circular(20))),
               onChanged: (value) {
-                FocusScope.of(context).requestFocus(FocusNode());
-                Navigator.pushNamed(context, Routes.iposearchscreen);
-                // if (value.isNotEmpty) {
-                //   // positionBook.showPositionSearch(false);
-                // } else {
-                //   positionBook.showPositionSearch(false);
-                // }
-
-                // positionBook.positionSearch(value, context);
+                ipo.searchCommonIpo(value, context);
               },
             ),
           )),
