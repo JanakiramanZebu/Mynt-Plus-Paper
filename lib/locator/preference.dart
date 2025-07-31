@@ -299,6 +299,18 @@ class Preferences {
   String? get bsktScrips => _prefInstance?.getString(_basketScrips) ?? "";
 
   String? get bsktList => _prefInstance?.getString(_basketList) ?? "";
+  
+  // Order Tracking methods
+  Future setOrderTrackingForUser(String userId, String data) async =>
+      await _prefInstance!.setString('${_orderTracking}_$userId', data);
+  
+  String? getOrderTrackingForUser(String userId) =>
+      _prefInstance?.getString('${_orderTracking}_$userId') ?? "";
+      
+  Future setOrderTracking(String data) async =>
+      await _prefInstance!.setString(_orderTracking, data);
+
+  String? get orderTracking => _prefInstance?.getString(_orderTracking) ?? "";
 }
 
 const String _userTheme = 'userTheme';
@@ -324,6 +336,7 @@ const String _clientList = 'clientList';
 
 const String _basketList = 'basketList';
 const String _basketScrips = 'basketScrips';
+const String _orderTracking = 'orderTracking';
 
 ////MARKET WATCH Filter
 const String _isMWScripName = "isMWScripName";

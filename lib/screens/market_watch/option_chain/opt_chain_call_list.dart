@@ -10,6 +10,7 @@ import '../../../models/marketwatch_model/get_quotes.dart';
 import '../../../models/marketwatch_model/opt_chain_model.dart';
 import '../../../models/order_book_model/order_book_model.dart';
 import '../../../provider/market_watch_provider.dart';
+import '../../../provider/order_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../provider/websocket_provider.dart';
 import '../../../res/global_state_text.dart';
@@ -18,12 +19,14 @@ import '../../../routes/route_names.dart';
 import '../../../sharedWidget/list_divider.dart';
 import '../../../sharedWidget/snack_bar.dart';
 import 'package:flutter/foundation.dart';
+import 'basket_selection_bottom_sheet.dart';
 
 class OptChainCallList extends StatelessWidget {
   final List<OptionValues>? callData;
   final bool isCallUp;
   final SwipeActionController? swipe;
   final bool showPriceView;
+  final bool isBasketMode;
 
   const OptChainCallList({
     super.key,
@@ -31,6 +34,7 @@ class OptChainCallList extends StatelessWidget {
     this.swipe,
     required this.isCallUp,
     required this.showPriceView,
+    required this.isBasketMode,
   });
 
   @override
@@ -49,6 +53,7 @@ class OptChainCallList extends StatelessWidget {
           swipe: swipe,
           index: index,
           showPriceView: showPriceView,
+          isBasketMode: isBasketMode,
         );
       },
     );
@@ -60,6 +65,7 @@ class _OptionChainCallRow extends StatefulWidget {
   final SwipeActionController? swipe;
   final int index;
   final bool showPriceView;
+  final bool isBasketMode;
 
   const _OptionChainCallRow({
     Key? key,
@@ -67,6 +73,7 @@ class _OptionChainCallRow extends StatefulWidget {
     this.swipe,
     required this.index,
     required this.showPriceView,
+    required this.isBasketMode,
   }) : super(key: key);
 
   @override
@@ -109,6 +116,8 @@ class _OptionChainCallRowState extends State<_OptionChainCallRow> {
   void didChangeDependencies() {
     super.didChangeDependencies();
 
+    // Check if current option is in the basket
+
     // Now context is available - check for existing websocket data and update if needed
     try {
       final provider = ProviderScope.containerOf(context).read(websocketProvider);
@@ -143,32 +152,33 @@ class _OptionChainCallRowState extends State<_OptionChainCallRow> {
           _globalMaxOI = _currentOI;
         }
 
-        if (kDebugMode) {
-          print("=== CALL WEBSOCKET SYNC ===");
-          print("Token: ${widget.option.token}");
-          print("Updated from WebSocket - LTP: $_lp, PC: $_perChange, OI: $_currentOI");
-          print("LTP: $_lp, PC: $_perChange, OI: $_currentOI, OI Per Chng: $_oiPerChng, poi: ${existingData['poi']}, oi: ${existingData['oi']}");
-          print("===========================");
-        }
+        // if (kDebugMode) {
+        //   print("=== CALL WEBSOCKET SYNC ===");
+        //   print("Token: ${widget.option.token}");
+        //   print("Updated from WebSocket - LTP: $_lp, PC: $_perChange, OI: $_currentOI");
+        //   print("LTP: $_lp, PC: $_perChange, OI: $_currentOI, OI Per Chng: $_oiPerChng, poi: ${existingData['poi']}, oi: ${existingData['oi']}");
+        //   print("===========================");
+        // }
         
         // Update UI with websocket data
         setState(() {});
       }
     } catch (e) {
       // If provider access fails, just use option model data
-      if (kDebugMode) {
-        print("=== CALL INIT FALLBACK ===");
-        print("Token: ${widget.option.token}");
-        print("Using Option Model - LTP: $_lp, PC: $_perChange, OI: $_currentOI");
+      // if (kDebugMode) {
+      //   print("=== CALL INIT FALLBACK ===");
+      //   print("Token: ${widget.option.token}");
+      //   print("Using Option Model - LTP: $_lp, PC: $_perChange, OI: $_currentOI");
 
         
-        print("==========================");
-      }
+      //   print("==========================");
+      // }
     }
 
     // Always re-setup the listener to ensure fresh data flow
     _setupSocketListener();
   }
+
 
   @override
   void dispose() {
@@ -229,8 +239,8 @@ class _OptionChainCallRowState extends State<_OptionChainCallRow> {
 
           final poi = double.tryParse("${data['poi'] ?? 0.00}") ?? 0.0;
           String newOiPerChng = "0.00";
-          print("poi: $poi");
-          print("oi: $oi");
+          // print("poi: $poi");
+          // print("oi: $oi");
           // Safe calculation to avoid division by zero
           if (poi > 0) {
           
@@ -249,13 +259,15 @@ class _OptionChainCallRowState extends State<_OptionChainCallRow> {
         // Always rebuild if we have any data update
         if (needsUpdate) {
           // if (kDebugMode) {
-            print("=== CALL DATA UPDATE ===");
-            print("Token: ${widget.option.token}");
-            print("LTP: $_lp, PC: $_perChange, OI: $_currentOI, OI Per Chng: $_oiPerChng, poi: $data['poi'], oi: $data['oi']");
-            print("========================");
+            // print("=== CALL DATA UPDATE ===");
+            // print("Token: ${widget.option.token}");
+            // print("LTP: $_lp, PC: $_perChange, OI: $_currentOI, OI Per Chng: $_oiPerChng, poi: $data['poi'], oi: $data['oi']");
+            // print("========================");
           // }
           setState(() {});
-        }
+          
+          // Also check basket state periodically
+              }
       }
     });
   }
@@ -306,7 +318,9 @@ class _OptionChainCallRowState extends State<_OptionChainCallRow> {
           onTap: () => {
             widget.option.tsym!.contains("|||")
                 ? _symbolenotFound(context)
-                : _handleTap(context, widget.option)
+                : widget.isBasketMode 
+                  ? _handleBasketModeTap(context, widget.option)
+                  : _handleTap(context, widget.option)
           },
           child: Container(
             height: 65,
@@ -463,8 +477,48 @@ Widget _buildPriceData(ThemesProvider theme) {
       expDate: quots.expDate.toString(),
       option: quots.option.toString(),
     );
-    Navigator.pop(context);
+    // Navigator.pop(context);
     await scripData.calldepthApis(context, depthArgs, "");
+  }
+
+  Future<void> _handleBasketModeTap(BuildContext context, OptionValues option) async {
+    final provider = ProviderScope.containerOf(context);
+    final scripData = provider.read(marketWatchProvider);
+    final orderProv = provider.read(orderProvider);
+
+    // Check if a basket is selected
+    if (orderProv.selectedBsktName.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+            error(context, "Please select a basket"));
+      return;
+    }
+
+    // Preserve current symbol context before basket operations
+    scripData.preserveContextForBasket();
+
+    await scripData.fetchScripQuoteIndex(
+      "${option.token}",
+      "${option.exch}",
+      context,
+    );
+    final quots = scripData.getQuotes;
+    
+    if (quots != null) {
+      DepthInputArgs depthArgs = DepthInputArgs(
+        exch: quots.exch.toString(),
+        token: quots.token.toString(),
+        tsym: quots.tsym.toString(),
+        instname: quots.instname.toString(),
+        symbol: quots.symbol.toString(),
+        expDate: quots.expDate.toString(),
+        option: quots.option.toString(),
+      );
+      
+      await scripData.calldepthApis(context, depthArgs, "BasketMode");
+
+      // Restore original symbol context after basket operations
+      scripData.restoreContextFromBasket();
+    }
   }
 
   static final Map<Color, TextStyle> _actionStyleCache = {};
@@ -483,13 +537,12 @@ Widget _buildPriceData(ThemesProvider theme) {
     // return _textStyleCache.putIfAbsent(
     //   color,
       // () {
-        Color color = colors.textSecondaryLight;
-        if (perChange != "0.00") {
-          color = colors.profitLight;
+      Color color = colors.textSecondaryLight;
+        if (perChange != null && perChange != "0.00") {
+          color = perChange.startsWith("-") ? colors.lossLight : colors.profitLight;
         }
-        return TextWidget.textStyle(fontSize: 14, color: color, theme: false,);
-      // },
-    // );
+          return TextWidget.textStyle(fontSize: 14, color: color, theme: false, );
+    
   }
 
   static TextStyle _getPercentageStyle(String? value) {
@@ -503,8 +556,6 @@ Widget _buildPriceData(ThemesProvider theme) {
         // } 
         return TextWidget.textStyle(
             fontSize: 12, color: color, theme: false, );
-    //   },
-    // );
   }
 }
 
@@ -523,13 +574,19 @@ Future<void> placeOrderInput(
         context,
         true,
       );
+  
+  // **FIX: Use lot size from scripInfoModel if option data doesn't have it**
+  final lotSize = depthData.ls?.isNotEmpty == true 
+      ? depthData.ls 
+      : container.read(marketWatchProvider).scripInfoModel?.ls.toString();
+  
   OrderScreenArgs orderArgs = OrderScreenArgs(
     exchange: depthData.exch.toString(),
     tSym: depthData.tsym.toString(),
     isExit: false,
     token: depthData.token.toString(),
     transType: transType,
-    lotSize: depthData.ls,
+    lotSize: lotSize,
     ltp: "${depthData.lp ?? depthData.close ?? 0.00}",
     perChange: depthData.perChange ?? "0.00",
     orderTpye: '',

@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math' as math;
 
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
@@ -10,18 +9,23 @@ import 'package:flutter_swipe_action_cell/flutter_swipe_action_cell.dart';
 import '../../../../provider/websocket_provider.dart';
 import '../../../models/marketwatch_model/get_quotes.dart';
 import '../../../models/order_book_model/order_book_model.dart';
+import '../../../provider/index_list_provider.dart';
 import '../../../provider/market_watch_provider.dart';
+import '../../../provider/order_provider.dart';
+
 import '../../../provider/thems.dart';
 import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../routes/route_names.dart';
 import '../../../sharedWidget/custom_drag_handler.dart';
-import '../../../sharedWidget/functions.dart';
 import '../../../sharedWidget/list_divider.dart';
+import '../../../sharedWidget/custom_exch_badge.dart';
+import '../../../sharedWidget/functions.dart';
 import 'cur_strike_price.dart';
 import 'opt_chain_call_list.dart';
 import 'opt_chain_put_list.dart';
 import 'strike_price_list_card.dart';
+import '../../order_book/basket/create_basket.dart';
 
 class OptionChainSS extends ConsumerStatefulWidget {
   final DepthInputArgs wlValue;
@@ -40,8 +44,8 @@ class OptionChainSS extends ConsumerStatefulWidget {
 class _OptionChainSSState extends ConsumerState<OptionChainSS> {
   String regtoken = "";
   bool showPriceView = true; // true for Price, false for OI
+  bool isBasketMode = false; // true for Basket mode, false for normal mode
 
-  final ScrollController _controller = ScrollController();
   final ScrollController _mainScrollController = ScrollController();
   final GlobalKey _strikePriceKey = GlobalKey();
 
@@ -178,6 +182,7 @@ class _OptionChainSSState extends ConsumerState<OptionChainSS> {
           title: _NewAppBarTitle(
             wlValue: widget.wlValue,
             showPriceView: showPriceView,
+            isBasketMode: isBasketMode,
             onToggleView: () async {
               // Add delay for visual feedback
               await Future.delayed(const Duration(milliseconds: 150));
@@ -185,39 +190,79 @@ class _OptionChainSSState extends ConsumerState<OptionChainSS> {
                 showPriceView = !showPriceView;
               });
             },
+            onToggleBasketMode: () async {
+              // Add delay for visual feedback
+              await Future.delayed(const Duration(milliseconds: 150));
+              setState(() {
+                isBasketMode = !isBasketMode;
+              });
+              // Load basket data when enabling basket mode
+              if (isBasketMode) {
+                final orderProv = ref.read(orderProvider);
+                await orderProv.getBasketName();
+                
+                // If there's a selected basket, ensure WebSocket subscription
+                if (orderProv.selectedBsktName.isNotEmpty) {
+                  await orderProv.chngBsktName(
+                    orderProv.selectedBsktName, 
+                    context, 
+                    true // isOpt = true to prevent navigation
+                  );
+                }
+              }
+            },
             scrollToStrikePrice: _scrollToCurrentStrikePrice,
           ),
         ),
         body: SafeArea(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.start,
+          child: Stack(
             children: [
-              // Column headers
-              _ColumnHeaders(
-                scrollToStrikePrice: _scrollToCurrentStrikePrice,
-                showPriceView: showPriceView,
-                onToggleView: () async {
-                  await Future.delayed(const Duration(milliseconds: 150));
-                  setState(() {
-                    showPriceView = !showPriceView;
-                  });
-                },
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  // Column headers
+                  _ColumnHeaders(
+                    scrollToStrikePrice: _scrollToCurrentStrikePrice,
+                    showPriceView: showPriceView,
+                    onToggleView: () async {
+                      await Future.delayed(const Duration(milliseconds: 150));
+                      setState(() {
+                        showPriceView = !showPriceView;
+                      });
+                    },
+                  ),
+
+                  // Pre-defined watchlist info banner (conditional)
+                  _PreDefinedWatchlistBanner(),
+
+                  // Option chain data - main content
+                  Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.only(bottom: isBasketMode ? 200 : 0),
+                      child: _OptionChainContent(
+                        strikePriceKey: _strikePriceKey,
+                        mainScrollController: _mainScrollController,
+                        swipecontroller: swipecontroller,
+                        showPriceView: showPriceView,
+                        isBasketMode: isBasketMode,
+                      ),
+                    ),
+                  ),
+
+                  // Buy/Sell buttons (conditional) - only show when basket mode is OFF
+                  if (!isBasketMode) _ActionButtons(wlValue: widget.wlValue),
+                ],
               ),
-
-              // Pre-defined watchlist info banner (conditional)
-              _PreDefinedWatchlistBanner(),
-
-              // Option chain data - main content
-              _OptionChainContent(
-                strikePriceKey: _strikePriceKey,
-                mainScrollController: _mainScrollController,
-                swipecontroller: swipecontroller,
-                showPriceView: showPriceView,
-              ),
-
-              // Buy/Sell buttons (conditional)
-              _ActionButtons(wlValue: widget.wlValue),
+              
+              // Basket bottom sheet - only show when basket mode is ON
+              if (isBasketMode) 
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: _BasketBottomSheet(),
+                ),
             ],
           ),
         ),
@@ -230,14 +275,18 @@ class _OptionChainSSState extends ConsumerState<OptionChainSS> {
 class _NewAppBarTitle extends ConsumerWidget {
   final DepthInputArgs wlValue;
   final bool showPriceView;
+  final bool isBasketMode;
   final VoidCallback onToggleView;
+  final VoidCallback onToggleBasketMode;
   final VoidCallback scrollToStrikePrice;
 
   const _NewAppBarTitle({
     Key? key,
     required this.wlValue,
     required this.showPriceView,
+    required this.isBasketMode,
     required this.onToggleView,
+    required this.onToggleBasketMode,
     required this.scrollToStrikePrice,
   }) : super(key: key);
 
@@ -249,10 +298,8 @@ class _NewAppBarTitle extends ConsumerWidget {
     return Row(
       children: [
         // Symbol Name and Expiry Dropdown
-        Expanded(
-          flex: 0,
-          child: Row(
-            children: [
+        Row(
+          children: [
               TextWidget.subText(
                 text: wlValue.tsym.toUpperCase(),
                 theme: theme.isDarkMode,
@@ -322,7 +369,6 @@ class _NewAppBarTitle extends ConsumerWidget {
               ),
             ],
           ),
-        ),
 
         const Spacer(),
 
@@ -350,6 +396,29 @@ class _NewAppBarTitle extends ConsumerWidget {
         //     ),
         //   ),
         // ),
+
+        const SizedBox(width: 4),
+
+        // Basket Toggle Icon
+        InkWell(
+          borderRadius: BorderRadius.circular(20),
+          splashColor: theme.isDarkMode
+              ? colors.splashColorDark
+              : colors.splashColorLight,
+          highlightColor:
+              theme.isDarkMode ? colors.highlightDark : colors.highlightLight,
+          onTap: onToggleBasketMode,
+          child: Padding(
+            padding: const EdgeInsets.all(8),
+            child: Icon(
+              isBasketMode ? Icons.shopping_basket : Icons.shopping_basket_outlined,
+              size: 18,
+              color: isBasketMode 
+                ? colors.ltpgreen 
+                : (theme.isDarkMode ? colors.colorWhite : colors.colorBlack),
+            ),
+          ),
+        ),
 
         const SizedBox(width: 4),
 
@@ -596,6 +665,7 @@ class _OptionChainContent extends ConsumerWidget {
   final ScrollController mainScrollController;
   final SwipeActionController swipecontroller;
   final bool showPriceView;
+  final bool isBasketMode;
 
   const _OptionChainContent({
     Key? key,
@@ -603,6 +673,7 @@ class _OptionChainContent extends ConsumerWidget {
     required this.mainScrollController,
     required this.swipecontroller,
     required this.showPriceView,
+    required this.isBasketMode,
   }) : super(key: key);
 
   @override
@@ -625,8 +696,7 @@ class _OptionChainContent extends ConsumerWidget {
           builder: (context, snapshot) {
             // If the timeout completes and we're still loading, show a retry option
             if (snapshot.connectionState == ConnectionState.done) {
-              return Expanded(
-                child: Center(
+              return Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -664,23 +734,19 @@ class _OptionChainContent extends ConsumerWidget {
                       ),
                     ],
                   ),
-                ),
               );
             }
 
             // Show loading indicator while waiting
-            return const Expanded(
-                child: Center(
-                    child:
-                        CircularProgressIndicator(color: Color(0xff0037B7))));
+            return const Center(
+                child: CircularProgressIndicator(color: Color(0xff0037B7)));
           });
     }
 
-    return Expanded(
-      child: SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        controller: mainScrollController,
-        child: Column(children: [
+    return SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      controller: mainScrollController,
+      child: Column(children: [
           RepaintBoundary(
             child: Padding(
               padding:
@@ -696,6 +762,7 @@ class _OptionChainContent extends ConsumerWidget {
                         callData: scripInfo.optChainCallUP,
                         isCallUp: false,
                         showPriceView: showPriceView,
+                        isBasketMode: isBasketMode,
                       ),
                     ),
                   ),
@@ -711,6 +778,7 @@ class _OptionChainContent extends ConsumerWidget {
                         putData: scripInfo.optChainPutUp,
                         isPutUp: false,
                         showPriceView: showPriceView,
+                        isBasketMode: isBasketMode,
                       ),
                     ),
                   ),
@@ -736,6 +804,7 @@ class _OptionChainContent extends ConsumerWidget {
                       callData: scripInfo.optChainCallDown,
                       isCallUp: false,
                       showPriceView: showPriceView,
+                      isBasketMode: isBasketMode,
                     ),
                   ),
                   SizedBox(
@@ -748,6 +817,7 @@ class _OptionChainContent extends ConsumerWidget {
                       putData: scripInfo.optChainPutDown,
                       isPutUp: false,
                       showPriceView: showPriceView,
+                      isBasketMode: isBasketMode,
                     ),
                   )
                 ],
@@ -755,7 +825,6 @@ class _OptionChainContent extends ConsumerWidget {
             ),
           )
         ]),
-      ),
     );
   }
 }
@@ -843,24 +912,1284 @@ Future<void> _placeOrderInput(BuildContext context, WidgetRef ref,
       .read(marketWatchProvider)
       .fetchScripInfo(wlValue.token, wlValue.exch, context, true);
 
+  // Get the updated scripInfo after fetchScripInfo to ensure we have the correct lot size
+  final scripInfoModel = ref.read(marketWatchProvider).scripInfoModel!;
+  
   OrderScreenArgs orderArgs = OrderScreenArgs(
       exchange: wlValue.exch,
       tSym: wlValue.tsym,
       isExit: false,
       token: wlValue.token,
       transType: transType,
-      lotSize: depthData.ls,
+      // Use lot size from the updated scripInfoModel instead of potentially stale depthData
+      lotSize: scripInfoModel.ls ?? depthData.ls,
       ltp: "${depthData.lp ?? depthData.c ?? 0.00}",
       perChange: depthData.pc ?? "0.00",
       orderTpye: '',
       holdQty: '',
       isModify: false,
-      raw: {});
+      // Pass lot size in raw data as backup
+      raw: {"correctLotSize": scripInfoModel.ls ?? depthData.ls});
 
   Navigator.pop(context);
   Navigator.pushNamed(context, Routes.placeOrderScreen, arguments: {
     "orderArg": orderArgs,
-    "scripInfo": ref.read(marketWatchProvider).scripInfoModel!,
-    "isBskt": ""
+    "scripInfo": scripInfoModel,
+    "isBskt": "Basket"
   });
+}
+
+// Enhanced Basket Bottom Sheet Widget with full BasketScripList functionality
+class _BasketBottomSheet extends ConsumerStatefulWidget {
+  const _BasketBottomSheet({Key? key}) : super(key: key);
+
+  @override
+  ConsumerState<_BasketBottomSheet> createState() => _BasketBottomSheetState();
+}
+
+class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
+    with TickerProviderStateMixin {
+  double _sheetHeight = 200.0;
+  final double _minHeight = 200.0;
+  late double _maxHeight;
+  bool _isExpanded = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _maxHeight = MediaQuery.of(context).size.height * 0.8;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // Ensure WebSocket subscriptions are established when basket bottom sheet is initialized
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _ensureBasketWebSocketSubscription();
+    });
+  }
+
+  void _ensureBasketWebSocketSubscription() async {
+    final orderProv = ref.read(orderProvider);
+    // if (kDebugMode) {
+    //   print("=== BASKET WEBSOCKET DEBUG ===");
+    //   print("Selected basket: ${orderProv.selectedBsktName}");
+    //   print("Basket items count: ${orderProv.bsktScripList.length}");
+    //   print("Basket items: ${orderProv.bsktScripList.map((item) => "${item['tsym']}|${item['token']}").join(', ')}");
+    //   print("==============================");
+    // }
+    
+    if (orderProv.selectedBsktName.isNotEmpty && orderProv.bsktScripList.isNotEmpty) {
+      // Re-establish WebSocket subscription for current basket to ensure live updates
+      await orderProv.chngBsktName(orderProv.selectedBsktName, context, true);
+      
+      if (kDebugMode) {
+        print("WebSocket subscription refreshed for basket: ${orderProv.selectedBsktName}");
+      }
+    }
+  }
+
+  /// Checks if the basket contains scripts from multiple exchanges
+  bool _hasMultipleExchanges(List scriptList) {
+    if (scriptList.isEmpty) return false;
+
+    // Extract all exchanges from the basket scripts
+    Set<String> exchanges = {};
+    for (var script in scriptList) {
+      if (script['exch'] != null) {
+        exchanges.add(script['exch'].toString());
+      }
+    }
+
+    // If there's more than one unique exchange, return true
+    return exchanges.length > 1;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = ref.watch(themeProvider);
+    final orderProv = ref.watch(orderProvider);
+    
+    // print("=== BASKET BOTTOM SHEET BUILD ===");
+    // print("bsktList.length: ${orderProv.bsktList.length}");
+    // print("bsktList.isEmpty: ${orderProv.bsktList.isEmpty}");
+    // print("bsktScrips.keys: ${orderProv.bsktScrips.keys}");
+    // print("selectedBsktName: ${orderProv.selectedBsktName}");
+    // print("bsktScripList.length: ${orderProv.bsktScripList.length}");
+    // print("================================");
+    
+    return GestureDetector(
+      onPanUpdate: (details) {
+        setState(() {
+          _sheetHeight = (_sheetHeight - details.delta.dy).clamp(_minHeight, _maxHeight);
+        });
+      },
+      onPanEnd: (details) {
+        // Snap to min or max based on velocity and position
+        double velocity = details.velocity.pixelsPerSecond.dy;
+        double position = _sheetHeight / _maxHeight;
+        
+        setState(() {
+          if (velocity > 500 || position < 0.3) {
+            // Snap to minimum
+            _sheetHeight = _minHeight;
+            _isExpanded = false;
+          } else {
+            // Snap to maximum
+            _sheetHeight = _maxHeight;
+            _isExpanded = true;
+          }
+        });
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        height: _sheetHeight,
+        decoration: BoxDecoration(
+          color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(16),
+            topRight: Radius.circular(16),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 10,
+              offset: const Offset(0, -2),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            // Handle bar
+            const CustomDragHandler(),
+            
+            // Header with current basket name and action icons
+            _buildBasketHeader(theme, orderProv),
+            
+            // Margins section (if basket has items)
+            if (orderProv.selectedBsktName.isNotEmpty && orderProv.bsktScripList.isNotEmpty)
+              _buildMarginsSection(theme, orderProv),
+            
+            // Exchange validation warning (if needed)
+            if (orderProv.bsktScripList.isNotEmpty && _hasMultipleExchanges(orderProv.bsktScripList))
+              _buildMultiExchangeWarning(),
+            
+            // Content
+            Expanded(
+              child: orderProv.bsktList.isEmpty 
+                ? _buildCreateBasketView(theme, orderProv)
+                : _buildBasketContent(theme, orderProv),
+            ),
+            
+            // Place Order Button (if basket has items and is valid)
+            if (orderProv.selectedBsktName.isNotEmpty && orderProv.bsktScripList.isNotEmpty)
+              _buildPlaceOrderButton(theme, orderProv),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBasketHeader(ThemesProvider theme, OrderProvider orderProv) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextWidget.subText(
+                  text: orderProv.selectedBsktName.isNotEmpty 
+                    ? orderProv.selectedBsktName 
+                    : "No Basket Selected",
+                  theme: theme.isDarkMode,
+                  color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                  fw: 1,
+                ),
+                if (orderProv.selectedBsktName.isNotEmpty)
+                  TextWidget.subText(
+                    text: "${orderProv.bsktScripList.length} items",
+                    color: colors.colorGrey,
+                    theme: theme.isDarkMode,
+                  ),
+              ],
+            ),
+          ),
+          Row(
+            children: [
+              // Switch basket icon
+              if (orderProv.bsktList.length > 1)
+                IconButton(
+                  icon: Icon(
+                    Icons.swap_horiz,
+                    color: colors.ltpgreen,
+                    size: 20,
+                  ),
+                  onPressed: () => _showBasketSelector(context),
+                ),
+              // Refresh basket margin icon
+              if (orderProv.selectedBsktName.isNotEmpty && orderProv.bsktScripList.isNotEmpty)
+                IconButton(
+                  icon: Icon(
+                    Icons.refresh,
+                    color: colors.ltpgreen,
+                    size: 20,
+                  ),
+                  onPressed: () async {
+                    await orderProv.fetchBasketMargin();
+                  },
+                ),
+              // Add basket icon
+              IconButton(
+                icon: Icon(
+                  Icons.add_circle_outline,
+                  color: colors.ltpgreen,
+                  size: 20,
+                ),
+                onPressed: () => _showCreateBasket(context),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMarginsSection(ThemesProvider theme, OrderProvider orderProv) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: theme.isDarkMode
+            ? const Color(0xffB5C0CF).withOpacity(.15)
+            : const Color(0xffF1F3F8),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextWidget.paraText(
+                text: "Pre Trade Margin",
+                theme: false,
+                color: const Color(0xff5E6B7D),
+                fw: 0,
+              ),
+              const SizedBox(height: 6),
+              TextWidget.subText(
+                text: orderProv.bsktScripList.isEmpty || orderProv.bsktOrderMargin == null
+                    ? "₹0.00"
+                    : "₹${orderProv.bsktOrderMargin!.marginusedtrade ?? 0.00}",
+                theme: theme.isDarkMode,
+                fw: 0,
+              ),
+            ],
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              TextWidget.paraText(
+                text: "Post Trade Margin",
+                theme: false,
+                color: const Color(0xff5E6B7D),
+                fw: 0,
+              ),
+              const SizedBox(height: 6),
+              TextWidget.titleText(
+                text: orderProv.bsktScripList.isEmpty || orderProv.bsktOrderMargin == null
+                    ? "₹0.00"
+                    : "₹${orderProv.bsktOrderMargin!.marginused ?? 0.00}",
+                theme: theme.isDarkMode,
+                fw: 0,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMultiExchangeWarning() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xffe3f2fd),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.error_outline, color: colors.darkred, size: 16),
+          const SizedBox(width: 8),
+          Expanded(
+            child: TextWidget.subText(
+              text: "Basket should contain orders of only 1 exchange",
+              theme: false,
+              color: colors.darkred,
+              fw: 0,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCreateBasketView(ThemesProvider theme, OrderProvider orderProvider) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.shopping_basket_outlined,
+            size: 48,
+            color: colors.colorGrey,
+          ),
+          const SizedBox(height: 16),
+          TextWidget.subText(
+            text: "No baskets found",
+            theme: theme.isDarkMode,
+            color: colors.colorGrey,
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: () => _showCreateBasket(context),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: colors.ltpgreen,
+              foregroundColor: colors.colorWhite,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            ),
+            child: TextWidget.subText(
+              text: "Create Basket",
+              color: colors.colorWhite,
+              theme: false,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBasketContent(ThemesProvider theme, OrderProvider orderProvider) {
+    // If no basket is selected, show basket selector
+    if (orderProvider.selectedBsktName.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.folder_outlined,
+              size: 48,
+              color: colors.colorGrey,
+            ),
+            const SizedBox(height: 16),
+            TextWidget.subText(
+              text: "Select a basket",
+              theme: theme.isDarkMode,
+              color: colors.colorGrey,
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () => _showBasketSelector(context),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: colors.ltpgreen,
+                foregroundColor: colors.colorWhite,
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              ),
+              child: TextWidget.subText(
+                text: "Choose Basket",
+                color: colors.colorWhite,
+                theme: false,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+    
+    // If basket is selected but empty
+    if (orderProvider.bsktScripList.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.list_alt,
+              size: 48,
+              color: colors.colorGrey,
+            ),
+            const SizedBox(height: 16),
+            TextWidget.subText(
+              text: "Basket is empty",
+              theme: theme.isDarkMode,
+              color: colors.colorGrey,
+            ),
+            const SizedBox(height: 8),
+            TextWidget.subText(
+              text: "Tap on options above to add them to basket",
+              color: colors.colorGrey,
+              theme: theme.isDarkMode,
+            ),
+          ],
+        ),
+      );
+    }
+
+    return StreamBuilder<Map>(
+      stream: ref.watch(websocketProvider).socketDataStream,
+      builder: (context, snapshot) {
+        final socketDatas = snapshot.data ?? {};
+
+        // Check if we have socket data and need to update
+        if (snapshot.hasData && socketDatas.isNotEmpty) {
+          bool updated = false;
+
+          // Update basket script list with real-time values
+          for (var script in orderProvider.bsktScripList) {
+            final token = script['token']?.toString();
+            if (token != null && socketDatas.containsKey(token)) {
+              final lp = socketDatas[token]['lp']?.toString();
+              final pc = socketDatas[token]['pc']?.toString();
+
+              if (lp != null && lp != "null") {
+                if (script['lp']?.toString() != lp) {
+                  script['lp'] = lp;
+                  updated = true;
+                }
+              }
+
+              if (pc != null && pc != "null") {
+                if (script['pc']?.toString() != pc) {
+                  script['pc'] = pc;
+                  updated = true;
+                }
+              }
+            }
+          }
+
+          // Force a refresh if we have updates
+          if (updated) {
+            // Update in the next frame to avoid rebuild conflicts
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (context.mounted) {
+                // This will trigger a rebuild with the new values
+                orderProvider.notifyBasketUpdates();
+              }
+            });
+          }
+        }
+
+        return ListView.separated(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          itemCount: orderProvider.bsktScripList.length,
+          separatorBuilder: (context, index) => Container(
+            color: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
+            height: 6,
+          ),
+          itemBuilder: (context, index) {
+            final script = orderProvider.bsktScripList[index];
+            
+            // Process script data for display
+            if (script['exch'] == "BFO" && script["dname"] != "null") {
+              List<String> splitVal = script["dname"].toString().split(" ");
+              script['symbol'] = splitVal[0];
+              script['expDate'] = "${splitVal[1]} ${splitVal[2]}";
+              script['option'] = splitVal.length > 4
+                  ? "${splitVal[3]} ${splitVal[4]}"
+                  : splitVal[3];
+            } else {
+              Map spilitSymbol = spilitTsym(value: "${script['tsym']}");
+              script['symbol'] = "${spilitSymbol["symbol"]}";
+              script['expDate'] = "${spilitSymbol["expDate"]}";
+              script['option'] = "${spilitSymbol["option"]}";
+            }
+
+            return InkWell(
+              onTap: () => _handleBasketItemTap(index, script, orderProvider),
+              onLongPress: () => _deleteScript(index, script, orderProvider),
+              child: _buildScriptCard(theme, script, index),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildScriptCard(ThemesProvider theme, Map script, int index) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  TextWidget.subText(
+                    text: "${script['symbol'].toString().replaceAll("-EQ", "")} ",
+                    theme: theme.isDarkMode,
+                    fw: 1,
+                    textOverflow: TextOverflow.ellipsis,
+                  ),
+                  TextWidget.subText(
+                    text: " ${script['option']} ",
+                    theme: theme.isDarkMode,
+                    fw: 1,
+                    textOverflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+              Row(
+                children: [
+                  TextWidget.paraText(
+                    text: " LTP: ",
+                    theme: false,
+                    color: const Color(0xff5E6B7D),
+                    fw: 1,
+                  ),
+                  TextWidget.subText(
+                    text: "₹${script['lp']?.toString() ?? "0.00"}",
+                    theme: theme.isDarkMode,
+                    fw: 0,
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  CustomExchBadge(exch: "${script["exch"]}"),
+                  const SizedBox(width: 4),
+                  TextWidget.captionText(
+                    text: " ${script['expDate']} ",
+                    theme: theme.isDarkMode,
+                    fw: 0,
+                    textOverflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+              TextWidget.paraText(
+                text: " (${script['pc']?.toString() ?? "0.00"}%)",
+                theme: false,
+                color: script['pc']?.toString().startsWith("-") ?? false
+                    ? colors.darkred
+                    : script['pc']?.toString() == "0.00"
+                        ? colors.ltpgrey
+                        : colors.ltpgreen,
+                fw: 0,
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Divider(
+            color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+          ),
+          const SizedBox(height: 2),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(4),
+                      color: theme.isDarkMode
+                          ? script["trantype"] == "S"
+                              ? colors.darkred.withOpacity(.2)
+                              : colors.ltpgreen.withOpacity(.2)
+                          : Color(script["trantype"] == "S" ? 0xffFCF3F3 : 0xffECF8F1),
+                    ),
+                    child: TextWidget.paraText(
+                      text: script["trantype"] == "S" ? "SELL" : "BUY",
+                      theme: false,
+                      color: script["trantype"] == "S" ? colors.darkred : colors.ltpgreen,
+                      fw: 1,
+                    ),
+                  ),
+                  Container(
+                    margin: const EdgeInsets.only(left: 7),
+                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(4),
+                      color: theme.isDarkMode
+                          ? const Color(0xff666666).withOpacity(.2)
+                          : const Color(0xff999999).withOpacity(.2),
+                    ),
+                    child: TextWidget.paraText(
+                      text: "${script["prctype"]}",
+                      theme: false,
+                      color: const Color(0xff666666),
+                      fw: 1,
+                    ),
+                  ),
+                  Container(
+                    margin: const EdgeInsets.only(left: 7),
+                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(4),
+                      color: theme.isDarkMode
+                          ? const Color(0xff666666).withOpacity(.2)
+                          : const Color(0xff999999).withOpacity(.2),
+                    ),
+                    child: TextWidget.paraText(
+                      text: "${script["ordType"]}",
+                      theme: false,
+                      color: const Color(0xff666666),
+                      fw: 1,
+                    ),
+                  ),
+                ],
+              ),
+              Row(
+                children: [
+                  TextWidget.paraText(
+                    text: "Qty: ",
+                    theme: false,
+                    color: const Color(0xff5E6B7D),
+                    fw: 1,
+                  ),
+                  TextWidget.subText(
+                    text: "${script["dscqty"]}/${script["qty"]}",
+                    theme: theme.isDarkMode,
+                    fw: 0,
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              TextWidget.paraText(
+                text: "${script["date"]}",
+                theme: false,
+                color: const Color(0xff666666),
+                fw: 0,
+              ),
+              if (script["prctype"] != "MKT")
+                Row(
+                  children: [
+                    TextWidget.subText(
+                      text: "Price: ",
+                      theme: false,
+                      color: const Color(0xff5E6B7D),
+                      fw: 0,
+                    ),
+                    TextWidget.subText(
+                      text: "${script['prc'] ?? 0.00}",
+                      theme: false,
+                      color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                      fw: 0,
+                    ),
+                  ],
+                ),
+            ],
+          ),
+          // Order Status Display (if available)
+          if (script['orderStatus'] != null)
+            Container(
+              margin: const EdgeInsets.only(top: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: _getItemStatusColor(script['orderStatus']).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(4),
+                border: Border.all(color: _getItemStatusColor(script['orderStatus'])),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    _getItemStatusIcon(script['orderStatus']),
+                    color: _getItemStatusColor(script['orderStatus']),
+                    size: 12,
+                  ),
+                  const SizedBox(width: 4),
+                  TextWidget.captionText(
+                    text: _getItemStatusText(script['orderStatus']),
+                    theme: theme.isDarkMode,
+                    color: _getItemStatusColor(script['orderStatus']),
+                    fw: 1,
+                  ),
+                  if (script['avgPrice'] != null)
+                    TextWidget.captionText(
+                      text: " @ ₹${script['avgPrice']}",
+                      theme: theme.isDarkMode,
+                      color: _getItemStatusColor(script['orderStatus']),
+                    ),
+                  // Add navigation hint for placed orders  
+                  if (_isOrderPlaced(script['orderStatus'])) ...[
+                    const SizedBox(width: 8),
+                    Icon(
+                      Icons.arrow_forward_ios,
+                      color: _getItemStatusColor(script['orderStatus']),
+                      size: 10,
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          // Show rejection reason separately if needed
+          if (script['rejectionReason'] != null && script['orderStatus'] == 'failed')
+            Container(
+              margin: const EdgeInsets.only(top: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: colors.darkred.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(4),
+                border: Border.all(color: colors.darkred),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.error_outline,
+                    color: colors.darkred,
+                    size: 12,
+                  ),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: TextWidget.captionText(
+                      text: script['rejectionReason'],
+                      theme: theme.isDarkMode,
+                      color: colors.darkred,
+                      textOverflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPlaceOrderButton(ThemesProvider theme, OrderProvider orderProv) {
+    final hasMultipleExchanges = _hasMultipleExchanges(orderProv.bsktScripList);
+    final basketStatus = orderProv.basketOverallStatus[orderProv.selectedBsktName] ?? '';
+    final isBasketPlaced = orderProv.isBasketPlaced(orderProv.selectedBsktName);
+    
+    // Show order status if basket has been placed
+    if (isBasketPlaced) {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            // Order Status Display
+            // Container(
+            //   width: double.infinity,
+            //   padding: const EdgeInsets.all(12),
+            //   margin: const EdgeInsets.only(bottom: 8),
+            //   decoration: BoxDecoration(
+            //     color: _getStatusColor(basketStatus).withOpacity(0.1),
+            //     borderRadius: BorderRadius.circular(8),
+            //     border: Border.all(color: _getStatusColor(basketStatus)),
+            //   ),
+            //   child: Column(
+            //     children: [
+            //       // Row(
+            //       //   mainAxisAlignment: MainAxisAlignment.center,
+            //       //   children: [
+            //       //     Icon(
+            //       //       _getStatusIcon(basketStatus),
+            //       //       color: _getStatusColor(basketStatus),
+            //       //       size: 16,
+            //       //     ),
+            //       //     const SizedBox(width: 8),
+            //       //     TextWidget.subText(
+            //       //       text: _getStatusText(basketStatus),
+            //       //       theme: theme.isDarkMode,
+            //       //       color: _getStatusColor(basketStatus),
+            //       //       fw: 1,
+            //       //     ),
+            //       //   ],
+            //       // ),
+            //       if (basketStatus == 'partially_placed' || basketStatus == 'partially_completed')
+            //         const SizedBox(height: 4),
+            //       if (basketStatus == 'partially_placed' || basketStatus == 'partially_completed')
+            //         TextWidget.subText(
+            //           text: _getPartialStatusDetails(orderProv),
+            //           theme: theme.isDarkMode,
+            //           color: colors.colorGrey,
+            //         ),
+            //     ],
+            //   ),
+            // ),
+            // Reset Button
+            Container(
+              height: 40,
+              decoration: BoxDecoration(
+                color: colors.ltpgreen,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: InkWell(
+                onTap: () {
+                  orderProv.resetBasketOrderTracking(orderProv.selectedBsktName);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: const Text("Basket reset. You can place orders again."),
+                      backgroundColor: colors.ltpgreen,
+                      duration: const Duration(seconds: 2),
+                    ),
+                  );
+                },
+                child: Center(
+                  child: TextWidget.subText(
+                    text: "Reset",
+                    theme: false,
+                    color: colors.colorWhite,
+                    fw: 1,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+    
+    // Original place order button
+    return Container(
+      padding: const EdgeInsets.all(16),
+      child: Container(
+        height: 40,
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: hasMultipleExchanges
+                ? Colors.grey
+                : (theme.isDarkMode ? colors.colorWhite : colors.colorBlack),
+          ),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: InkWell(
+          onTap: hasMultipleExchanges
+              ? () {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: const Text(
+                      "Cannot place order: Basket should contain orders from only 1 exchange",
+                    ),
+                    backgroundColor: colors.darkred,
+                    duration: const Duration(seconds: 3),
+                  ));
+                }
+              : basketStatus == 'placing'
+              ? null // Disable button while placing
+              : () async {
+                  await orderProv.placeBasketOrder(context, navigateToOrderBook: false);
+                },
+          child: Center(
+            child: basketStatus == 'placing'
+                ? Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      TextWidget.subText(
+                        text: "Placing...",
+                        theme: false,
+                        color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                        fw: 1,
+                      ),
+                    ],
+                  )
+                : TextWidget.subText(
+                    text: "Place Order",
+                    theme: false,
+                    color: hasMultipleExchanges
+                        ? Colors.grey
+                        : (theme.isDarkMode ? colors.colorWhite : colors.colorBlack),
+                    fw: 1,
+                  ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status) {
+      case 'placing':
+        return colors.colorBlue;
+      case 'placed':
+      case 'completed':
+        return colors.ltpgreen;
+      case 'partially_placed':
+      case 'partially_completed':
+      case 'partially_filled':
+        return Colors.orange;
+      case 'failed':
+        return colors.darkred;
+      default:
+        return colors.colorGrey;
+    }
+  }
+
+  IconData _getStatusIcon(String status) {
+    switch (status) {
+      case 'placing':
+        return Icons.schedule;
+      case 'placed':
+      case 'completed':
+        return Icons.check_circle;
+      case 'partially_placed':
+      case 'partially_completed':
+      case 'partially_filled':
+        return Icons.warning;
+      case 'failed':
+        return Icons.error;
+      default:
+        return Icons.info;
+    }
+  }
+
+  String _getStatusText(String status) {
+    switch (status) {
+      case 'placing':
+        return 'Placing Orders...';
+      case 'placed':
+        return 'Orders Placed Successfully';
+      case 'completed':
+        return 'All Orders Completed';
+      case 'partially_placed':
+        return 'Partially Placed';
+      case 'partially_completed':
+        return 'Partially Completed';
+      case 'partially_filled':
+        return 'Partially Filled';
+      case 'failed':
+        return 'Order Placement Failed';
+      default:
+        return 'Unknown Status';
+    }
+  }
+
+  String _getPartialStatusDetails(OrderProvider orderProv) {
+    final orderIds = orderProv.basketOrderIds[orderProv.selectedBsktName] ?? [];
+    final totalOrders = orderProv.bsktScripList.length;
+    final successfulOrders = orderIds.length;
+    
+    if (orderIds.isNotEmpty) {
+      return '$successfulOrders of $totalOrders orders processed';
+    }
+    return '';
+  }
+
+  // Helper methods for individual item status indicators
+  Color _getItemStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'placed':
+        return colors.colorBlue;
+      case 'complete':
+        return colors.ltpgreen;
+      case 'rejected':
+      case 'canceled':
+      case 'failed':
+        return colors.darkred;
+      case 'open':
+      case 'partial':
+      case 'trigger_pending':
+        return Colors.orange;
+      default:
+        return colors.colorGrey;
+    }
+  }
+
+  IconData _getItemStatusIcon(String status) {
+    switch (status.toLowerCase()) {
+      case 'placed':
+        return Icons.send;
+      case 'complete':
+        return Icons.check_circle;
+      case 'rejected':
+      case 'canceled':
+      case 'failed':
+        return Icons.cancel;
+      case 'open':
+      case 'partial':
+      case 'trigger_pending':
+        return Icons.schedule;
+      default:
+        return Icons.info_outline;
+    }
+  }
+
+  String _getItemStatusText(String status) {
+    switch (status.toLowerCase()) {
+      case 'placed':
+        return 'Placed';
+      case 'complete':
+        return 'Executed';
+      case 'rejected':
+        return 'Rejected';
+      case 'canceled':
+        return 'Canceled';
+      case 'failed':
+        return 'Failed';
+      case 'open':
+        return 'Open';
+      case 'partial':
+        return 'Partial';
+      case 'trigger_pending':
+        return 'Trigger Pending';
+      default:
+        return status.toUpperCase(); // Show actual status from order book
+    }
+  }
+
+  // Handle tap on basket items - navigate to order book if placed, edit if not placed
+  void _handleBasketItemTap(int index, Map script, OrderProvider orderProvider) {
+    String? orderStatus = script['orderStatus'];
+    
+    // If order is placed/completed/etc, navigate to order book
+    if (orderStatus != null && _isOrderPlaced(orderStatus)) {
+      _navigateToOrderBook(orderProvider);
+    } else {
+      // If order not placed yet, allow editing
+      _editScript(index, script, orderProvider);
+    }
+  }
+  
+  // Check if order is placed (any status other than null or initial states)
+  bool _isOrderPlaced(String status) {
+    return !['pending', 'draft', 'preparing'].contains(status.toLowerCase());
+  }
+  
+  // Navigate to order book in portfolio screen  
+  void _navigateToOrderBook(OrderProvider orderProvider) {
+    // Navigate to portfolio screen (index 2) and order book tab
+    ref.read(indexListProvider).bottomMenu(2, context);
+    
+    // Show success message
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text("Navigating to Order Book to view order details"),
+        backgroundColor: colors.ltpgreen,
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  void _editScript(int index, Map script, OrderProvider orderProv) async {
+    await ref.read(marketWatchProvider).fetchScripInfo(
+      "${script['token']}",
+      '${script['exch']}',
+      context,
+      true,
+    );
+    
+    script['index'] = index;
+    script['prctyp'] = script['prctype'];
+    
+    // **FIX: Ensure prd field is correctly preserved for basket edit**
+    // The prd field should already be correct from when the item was saved to basket
+    // Only set prd if it's missing, but don't overwrite existing correct values
+    if (script['prd'] == null || script['prd'].toString().isEmpty) {
+      // Fallback mapping from ordType to prd if prd is missing
+      final ordType = script['ordType']?.toString();
+      if (ordType == 'MIS') {
+        script['prd'] = 'I'; // Intraday
+      } else if (ordType == 'CNC') {
+        script['prd'] = 'C'; // Delivery
+      } else if (ordType == 'NRML') {
+        script['prd'] = 'M'; // Carryforward
+      }
+    }
+
+    // Ensure lp and pc values are not null for OrderScreenArgs
+    final ltp = script['lp']?.toString() ?? "0.00";
+    final perChange = script['pc']?.toString() ?? "0.00";
+
+    OrderScreenArgs orderArgs = OrderScreenArgs(
+      exchange: '${script['exch']}',
+      tSym: '${script['tsym']}',
+      isExit: false,
+      token: "${script['token']}",
+      transType: script['trantype'] == 'B' ? true : false,
+      lotSize: ref.read(marketWatchProvider).scripInfoModel?.ls.toString(),
+      ltp: ltp,
+      perChange: perChange,
+      orderTpye: '',
+      holdQty: '',
+      isModify: true,
+      // **FIX: Set prd field in OrderScreenArgs for proper order type initialization**
+      prd: script['prd']?.toString(),
+      raw: script,
+    );
+    
+    Navigator.pushNamed(context, Routes.placeOrderScreen, arguments: {
+      "orderArg": orderArgs,
+      "scripInfo": ref.read(marketWatchProvider).scripInfoModel!,
+      "isBskt": 'BasketEdit'
+    });
+  }
+
+  void _deleteScript(int index, Map script, OrderProvider orderProv) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        final theme = ref.read(themeProvider);
+        return AlertDialog(
+          backgroundColor: theme.isDarkMode
+              ? const Color.fromARGB(255, 18, 18, 18)
+              : colors.colorWhite,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(10)),
+          ),
+          scrollable: true,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+          insetPadding: const EdgeInsets.symmetric(horizontal: 24),
+          titlePadding: const EdgeInsets.all(0),
+          title: Padding(
+            padding: const EdgeInsets.all(10),
+            child: SvgPicture.asset("assets/icon/ipo_cancel_icon.svg"),
+          ),
+          content: Column(
+            children: [
+              TextWidget.titleText(
+                text: "Are you sure you want to delete this basket Scrip ${script['symbol']?.toString().replaceAll("-EQ", "")}",
+                theme: theme.isDarkMode,
+                fw: 1,
+                align: TextAlign.center,
+              ),
+            ],
+          ),
+          actions: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      elevation: 0,
+                      backgroundColor: const Color(0xffF1F3F8),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(50),
+                      ),
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: TextWidget.paraText(
+                      text: "No",
+                      theme: false,
+                      color: colors.colorGrey,
+                      fw: 1,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      elevation: 0,
+                      backgroundColor: theme.isDarkMode
+                          ? colors.colorbluegrey
+                          : colors.colorBlack,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(50),
+                      ),
+                    ),
+                    onPressed: () async {
+                      await orderProv.removeBsktScrip(index, orderProv.selectedBsktName);
+                      await orderProv.fetchBasketMargin();
+                      Navigator.pop(context);
+                    },
+                    child: TextWidget.paraText(
+                      text: "Yes",
+                      theme: !theme.isDarkMode,
+                      fw: 1,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showCreateBasket(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) => const CreateBasket(),
+    ).then((_) async {
+      // Refresh basket data after creating basket
+      await ref.read(orderProvider).getBasketName();
+      
+      // Ensure WebSocket subscriptions are refreshed
+      _ensureBasketWebSocketSubscription();
+    });
+  }
+
+  void _showBasketSelector(BuildContext context) {
+    final orderProv = ref.read(orderProvider);
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const CustomDragHandler(),
+            const SizedBox(height: 8),
+            TextWidget.subText(
+              text: "Select Basket",
+              theme: ref.read(themeProvider).isDarkMode,
+              color: ref.read(themeProvider).isDarkMode ? colors.colorWhite : colors.colorBlack,
+              fw: 1,
+            ),
+            const SizedBox(height: 16),
+            ...orderProv.bsktList.map<Widget>((basket) {
+              final basketName = basket['bsketName'].toString();
+              return ListTile(
+                title: TextWidget.subText(
+                  text: basketName,
+                  theme: ref.read(themeProvider).isDarkMode,
+                  color: ref.read(themeProvider).isDarkMode ? colors.colorWhite : colors.colorBlack,
+                ),
+                subtitle: TextWidget.paraText(
+                  text: "${basket['curLength']} / ${basket['max']} items",
+                  theme: ref.read(themeProvider).isDarkMode,
+                  color: colors.colorGrey,
+                ),
+                trailing: basketName == orderProv.selectedBsktName
+                  ? Icon(Icons.check, color: colors.ltpgreen)
+                  : null,
+                onTap: () async {
+                  await orderProv.chngBsktName(basketName, context, true);
+                  Navigator.pop(context);
+                },
+              );
+            }).toList(),
+          ],
+        ),
+      ),
+    );
+  }
 }

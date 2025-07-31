@@ -2060,13 +2060,19 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
       GetQuotes depthData, bool transType) async {
     await ref.read(marketWatchProvider).fetchScripInfo(
         widget.wlValue.token, widget.wlValue.exch, context, true);
+    
+    // **FIX: Use lot size from scripInfoModel if depthData doesn't have it**
+    final lotSize = depthData.ls?.isNotEmpty == true 
+        ? depthData.ls 
+        : ref.read(marketWatchProvider).scripInfoModel?.ls.toString();
+    
     OrderScreenArgs orderArgs = OrderScreenArgs(
         exchange: widget.wlValue.exch,
         tSym: widget.wlValue.tsym,
         isExit: false,
         token: widget.wlValue.token,
         transType: transType,
-        lotSize: depthData.ls,
+        lotSize: lotSize,
         ltp: "${depthData.lp ?? depthData.c ?? 0.00}",
         perChange: depthData.pc ?? "0.00",
         orderTpye: '',

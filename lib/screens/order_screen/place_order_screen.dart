@@ -172,7 +172,9 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
       {"type": "Intraday"}
     ];
 
-    if (widget.isBasket != "Basket" && widget.isBasket != "BasketEdit") {
+    if (widget.isBasket != "Basket" &&
+        widget.isBasket != "BasketEdit" &&
+        widget.isBasket != "BasketMode") {
       if (widget.scripInfo.exch == "NSE" || widget.scripInfo.exch == "BSE") {
         if (widget.scripInfo.instname == "EQ") {
           orderTypes.add({"type": "MTF"});
@@ -199,7 +201,9 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
     }
     orderTypes.add({"type": "CO - BO"});
 
-    if (widget.isBasket != "Basket" && widget.isBasket != "BasketEdit") {
+    if (widget.isBasket != "Basket" &&
+        widget.isBasket != "BasketEdit" &&
+        widget.isBasket != "BasketMode") {
       if (widget.scripInfo.instname != "UNDIND" &&
           widget.scripInfo.instname != "COM") {
         orderTypes.add({
@@ -272,23 +276,31 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                 "F": InvestType.mtf
               }[widget.orderArg.prd] ??
               InvestType.carryForward
-          : checkRawValue
+          : checkRawValue && widget.isBasket == "BasketEdit"
               ? {
                     "C": InvestType.delivery,
                     "I": InvestType.intraday,
+                    "M": InvestType.carryForward,
                     "F": InvestType.mtf
                   }[orderRawValue['prd']] ??
-                  InvestType.carryForward
-              : !widget.orderArg.isExit && isUserOrderPreferenceAvailable
-                  ? userOrderPreference['prd'] == "Intraday"
-                      ? InvestType.intraday
-                      : (userOrderPreference['prd'] == "Delivery" &&
-                              widget.scripInfo.seg == "EQT")
+                  InvestType.delivery
+              : checkRawValue
+                  ? {
+                        "C": InvestType.delivery,
+                        "I": InvestType.intraday,
+                        "F": InvestType.mtf
+                      }[orderRawValue['prd']] ??
+                      InvestType.carryForward
+                  : !widget.orderArg.isExit && isUserOrderPreferenceAvailable
+                      ? userOrderPreference['prd'] == "Intraday"
+                          ? InvestType.intraday
+                          : (userOrderPreference['prd'] == "Delivery" &&
+                                  widget.scripInfo.seg == "EQT")
+                              ? InvestType.delivery
+                              : InvestType.carryForward
+                      : widget.scripInfo.seg == "EQT"
                           ? InvestType.delivery
-                          : InvestType.carryForward
-                  : widget.scripInfo.seg == "EQT"
-                      ? InvestType.delivery
-                      : InvestType.carryForward;
+                          : InvestType.carryForward;
 
       ref.read(ordInputProvider).chngInvesType(invesType, "PlcOrder");
 
@@ -378,6 +390,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
 
     if (widget.isBasket == "Basket" ||
         widget.isBasket == "BasketEdit" ||
+        widget.isBasket == "BasketMode" ||
         quote == null) {
       isAvbSecu = false;
       isSecu = true;
@@ -418,6 +431,58 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                       ?.toInt() ??
                   5)
               .toString();
+
+      // **FIX FOR BASKET EDIT**: Auto-expand advanced section and set states based on order data
+      if (widget.isBasket == "BasketEdit") {
+        // Auto-expand advanced section for stop-loss orders
+        if (["SL-LMT", "SL-MKT"].contains(orderRawValue['prctyp'])) {
+          _isStoplossOrder = true;
+          isAdvancedOptionClicked = true;
+        }
+
+        // Set market order state
+        _isMarketOrder = ["MKT", "SL-MKT"].contains(orderRawValue['prctyp']);
+
+        // Auto-expand for IOC validity or disclosed quantity
+        if (orderRawValue['ret']?.toUpperCase() == 'IOC' ||
+            (orderRawValue['dscqty'] != null &&
+                int.parse(orderRawValue['dscqty']) > 0)) {
+          isAdvancedOptionClicked = true;
+          _addValidityAndDisclosedQty = true;
+        }
+
+        // Auto-expand for AMO orders
+        if (orderRawValue['amo'] == "Yes") {
+          isAdvancedOptionClicked = true;
+          _afterMarketOrder = true;
+        }
+
+        // Set bracket order states for CO-BO orders based on product code
+        if (orderType == "CO - BO") {
+          // Differentiate between Cover Order (H) and Bracket Order (B)
+          if (orderRawValue['prd'] == 'H') {
+            // Cover Order - only Cover checkbox should be ticked
+            _isCoverOrderEnabled = true;
+            _isBracketOrderEnabled = false;
+          } else if (orderRawValue['prd'] == 'B') {
+            // Bracket Order - both Cover and Bracket checkboxes should be ticked
+            _isCoverOrderEnabled = true;
+            _isBracketOrderEnabled = true;
+          } else {
+            // Default fallback (for any other product codes)
+            _isCoverOrderEnabled = true;
+            _isBracketOrderEnabled = true;
+          }
+
+          // Auto-expand if bracket order has stop-loss or target values
+          if ((orderRawValue['blprc'] != null &&
+                  orderRawValue['blprc'] != "0") ||
+              (orderRawValue['bpprc'] != null &&
+                  orderRawValue['bpprc'] != "0")) {
+            isAdvancedOptionClicked = true;
+          }
+        }
+      }
     }
     ref.read(orderProvider).setDOrderloader(false);
     super.initState();
@@ -5081,7 +5146,9 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                     (widget.isBasket ==
                                                                 "Basket" ||
                                                             widget.isBasket ==
-                                                                "BasketEdit")
+                                                                "BasketEdit" ||
+                                                            widget.isBasket ==
+                                                                "BasketMode")
                                                         ? widget.isBasket ==
                                                                 "BasketEdit"
                                                             ? "Edit to Basket"
@@ -5105,9 +5172,9 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                   ),
                                           ),
                                         ),
+                                        // if (defaultTargetPlatform ==
+                                        //     TargetPlatform.iOS)
                                       ),
-                                      // if (defaultTargetPlatform ==
-                                      //     TargetPlatform.iOS)
                                       const SizedBox(height: 18)
                                     ]
                                   ]))));
@@ -5630,7 +5697,9 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
     String bsktName = ref.read(orderProvider).selectedBsktName;
     int frezQtyOrderSliceMaxLimit =
         ref.read(orderProvider).frezQtyOrderSliceMaxLimit;
-    if (widget.isBasket == "Basket" || widget.isBasket == "BasketEdit") {
+    if (widget.isBasket == "Basket" ||
+        widget.isBasket == "BasketEdit" ||
+        widget.isBasket == "BasketMode") {
       if (widget.isBasket == "BasketEdit") {
         await ref
             .read(orderProvider)
@@ -5772,6 +5841,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
         trantype: isBuy! ? "B" : "S",
         tsym: "${widget.scripInfo.tsym}",
         blprc: orderType == "CO - BO" ? stopLossCtrl.text : '',
+        bpprc: orderType == "CO - BO" ? targetCtrl.text : '',
         trgprc: priceType == "SL Limit" || priceType == "SL MKT"
             ? triggerPriceCtrl.text
             : "");
@@ -5844,7 +5914,29 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
       OrderInputProvider orderInput, String bsktName, bool stay) async {
     Map<String, dynamic> data = {};
     String curDate = convDateWithTime();
-    data = pref.bsktScrips!.isEmpty ? {} : jsonDecode(pref.bsktScrips!);
+
+    // Validate quantity is multiple of lot size for basket orders
+    final quantity = int.parse(qtyCtrl.text);
+    final lotSizeVal = lotSize;
+
+    if (quantity % lotSizeVal != 0) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(
+            "Quantity must be multiple of lot size ($lotSizeVal). Current: $quantity"),
+        backgroundColor: colors.darkred,
+        duration: const Duration(seconds: 3),
+      ));
+      return; // Exit the function without adding to basket
+    }
+
+    // Use user-specific storage if available, otherwise general storage
+    final userId = pref.clientId;
+    if (userId != null && userId.isNotEmpty) {
+      final userBasketScrips = pref.getBasketScripsForUser(userId) ?? "";
+      data = userBasketScrips.isEmpty ? {} : jsonDecode(userBasketScrips);
+    } else {
+      data = pref.bsktScrips!.isEmpty ? {} : jsonDecode(pref.bsktScrips!);
+    }
 
     List scripList = data[bsktName] ?? [];
 
@@ -5898,9 +5990,38 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
 
     String jsonData = jsonEncode(data);
 
-    pref.setBasketScrip(jsonData);
+    print("=== ADDING TO BASKET DEBUG ===");
+    print("Basket name: $bsktName");
+    print("Script count after add: ${scripList.length}");
+    print("Full data being saved: $jsonData");
+
+    // Save to the same storage type we read from
+    if (userId != null && userId.isNotEmpty) {
+      await pref.setBasketScripForUser(userId, jsonData);
+      print("Saved to user storage for user: $userId");
+
+      // Clear general storage to prevent conflicts
+      if (pref.bsktScrips != null && pref.bsktScrips!.isNotEmpty) {
+        await pref.setBasketScrip("{}");
+        print("Cleared general storage");
+      }
+    } else {
+      await pref.setBasketScrip(jsonData);
+      print("Saved to general storage");
+    }
+    print("==============================");
+
+    // **FIX: Add small delay to ensure storage write completes before reading**
+    await Future.delayed(const Duration(milliseconds: 100));
 
     await ref.read(orderProvider).getBasketName();
+
+    // Ensure WebSocket subscription for the updated basket
+    final orderProv = ref.read(orderProvider);
+    if (orderProv.selectedBsktName == bsktName) {
+      // Re-subscribe to ensure new items get real-time updates
+      await orderProv.chngBsktName(bsktName, context, true);
+    }
 
     await ref.read(orderProvider).fetchBasketMargin();
     Navigator.pop(context);

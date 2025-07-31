@@ -116,6 +116,19 @@ class OrderProvider extends DefaultChangeNotifier {
   Map _bsktScrips = {};
   Map get bsktScrips => _bsktScrips;
 
+  bool _isBasketLoading = false;
+  bool get isBasketLoading => _isBasketLoading;
+
+  // Basket order tracking
+  Map<String, List<String>> _basketOrderIds = {};
+  Map<String, List<String>> get basketOrderIds => _basketOrderIds;
+  
+  Map<String, Map<String, String>> _basketOrderStatuses = {};
+  Map<String, Map<String, String>> get basketOrderStatuses => _basketOrderStatuses;
+  
+  Map<String, String> _basketOverallStatus = {};
+  Map<String, String> get basketOverallStatus => _basketOverallStatus;
+
   String? bsketNameError;
 
   final TextEditingController orderSearchCtrl = TextEditingController();
@@ -318,7 +331,11 @@ class OrderProvider extends DefaultChangeNotifier {
     }
 
     if (index == 4) {
+      print("=== TAB SWITCH TO BASKET ===");
+      print("Calling getBasketName()...");
       getBasketName();
+      print("getBasketName() call initiated");
+      print("============================");
     }
   }
 
@@ -371,12 +388,35 @@ class OrderProvider extends DefaultChangeNotifier {
   }
 
 // Change Basket name
-  chngBsktName(String val, BuildContext context) async {
+  chngBsktName(String val, BuildContext context, bool isOpt) async {
+    print("=== DEBUG CHANGE BASKET ===");
+    print("Changing to basket: $val");
+    print("isOpt: $isOpt");
+    
     _selectedBsktName = val;
 
-    _bsktScrips = pref.bsktScrips!.isEmpty ? {} : jsonDecode(pref.bsktScrips!);
+    // Refresh basket data from preferences to ensure latest state
+    final userId = pref.clientId;
+    print("UserId in change: $userId");
+    
+    if (userId != null && userId.isNotEmpty) {
+      final userBasketScrips = pref.getBasketScripsForUser(userId) ?? "";
+      print("User basket scrips in change: $userBasketScrips");
+      
+      _bsktScrips = userBasketScrips.isEmpty
+          ? {}
+          : jsonDecode(userBasketScrips);
+    } else {
+      final generalBasketScrips = pref.bsktScrips ?? "";
+      print("General basket scrips in change: $generalBasketScrips");
+      
+      _bsktScrips = generalBasketScrips.isEmpty ? {} : jsonDecode(generalBasketScrips);
+    }
 
+    print("Parsed _bsktScrips in change: $_bsktScrips");
     _bsktScripList = _bsktScrips[val] ?? [];
+    print("Set _bsktScripList for $val: ${_bsktScripList.length} items");
+    print("==========================");
 
     if (_bsktScripList.isNotEmpty) {
       // Clean up expired scripts
@@ -391,7 +431,11 @@ class OrderProvider extends DefaultChangeNotifier {
           if (expDateStr == null || expDateStr.isEmpty) return;
 
           final parsedDate = formatDate(expDateStr);
-          if (parsedDate.isBefore(now)) {
+          // **FIX: Only remove options that have expired (after expiry date), not on expiry date
+          // Options are valid until end of expiry date, so only remove if current date is after expiry date
+          final todayDate = DateTime(now.year, now.month, now.day);
+          final expiryDate = DateTime(parsedDate.year, parsedDate.month, parsedDate.day);
+          if (todayDate.isAfter(expiryDate)) {
             removeBsktScrip(index, val);
           }
         } catch (e) {
@@ -423,8 +467,20 @@ class OrderProvider extends DefaultChangeNotifier {
     }
 
     await fetchBasketMargin();
-
-    Navigator.pushNamed(context, Routes.bsktScripList, arguments: val);
+    
+    // Load order tracking data for the selected basket
+    await _restoreOrderTrackingData();
+    
+    // Only update basket order status if we have order book data available
+    if (_orderBookModel != null && _orderBookModel!.isNotEmpty) {
+      updateBasketOrderStatus();
+    }
+    
+    if(!isOpt) {
+      // Navigate to basket script list screen
+      Navigator.pushNamed(context, Routes.bsktScripList, arguments: val);
+    } 
+    // Navigator.pushNamed(context, Routes.bsktScripList, arguments: val);
     notifyListeners();
   }
 
@@ -992,6 +1048,9 @@ class OrderProvider extends DefaultChangeNotifier {
       print(e);
     } finally {
       //
+
+      // Update basket order statuses after fetching order book
+      updateBasketOrderStatus();
 
       toggleLoadingOn(false);
     }
@@ -1899,97 +1958,364 @@ class OrderProvider extends DefaultChangeNotifier {
       await pref.setBasketList(jsonEncode(_bsktList));
     }
     getBasketName();
+    
+    // Auto-select the newly created basket
+    await chngBsktName(val, context, true);
+    
     tabSize();
     Navigator.pop(context);
     notifyListeners();
   }
 
   getBasketName() async {
+    _isBasketLoading = true;
+    notifyListeners();
+    
     final userId = pref.clientId;
+    
+    print("=== DEBUG BASKET LOADING ===");
+    print("UserId: $userId");
+    print("bsktScrips : ${pref.bsktScrips}");
+    
+    // Check both storages to find where the data actually exists
+    final generalBasketScrips = pref.bsktScrips ?? "";
+    final userBasketScrips = (userId != null && userId.isNotEmpty) 
+        ? (pref.getBasketScripsForUser(userId) ?? "") 
+        : "";
+    
+    print("General bsktScrips: $generalBasketScrips");
+    print("User bsktScrips: $userBasketScrips");
+    
+    // Use the storage that has data, prioritizing user-specific if both have data
+    bool useUserStorage = false;
+    
     if (userId != null && userId.isNotEmpty) {
-      _bsktList = pref.getBasketListForUser(userId)!.isEmpty
-          ? []
-          : jsonDecode(pref.getBasketListForUser(userId)!);
-      _bsktScrips = pref.getBasketScripsForUser(userId)!.isEmpty
-          ? {}
-          : jsonDecode(pref.getBasketScripsForUser(userId)!);
-    } else {
-      _bsktList = pref.bsktList!.isEmpty ? [] : jsonDecode(pref.bsktList!);
-      _bsktScrips =
-          pref.bsktScrips!.isEmpty ? {} : jsonDecode(pref.bsktScrips!);
+      // Check if user-specific storage has been initialized (exists and is not just "{}")
+      bool userStorageInitialized = userBasketScrips.isNotEmpty && userBasketScrips != "{}";
+      
+      if (userStorageInitialized) {
+        useUserStorage = true;
+        print("Using user-specific storage (already initialized)");
+      } else if (generalBasketScrips.isNotEmpty && generalBasketScrips != "{}" && generalBasketScrips.length > 10) {
+        // Only migrate if user storage has never been initialized
+        final userBasketList = pref.getBasketListForUser(userId) ?? "";
+        bool userListInitialized = userBasketList.isNotEmpty && userBasketList != "[]";
+        
+        if (!userListInitialized) {
+          // First time migration - user storage is completely uninitialized
+          print("First-time migration from general to user-specific storage");
+          await pref.setBasketScripForUser(userId, generalBasketScrips);
+          
+          final generalBasketList = pref.bsktList ?? "";
+          if (generalBasketList.isNotEmpty) {
+            await pref.setBasketListForUser(userId, generalBasketList);
+          }
+          
+          // Clear general storage after successful migration
+          print("Clearing general storage after migration");
+          await pref.setBasketScrip("{}");
+          await pref.setBasketList("[]");
+          
+          useUserStorage = true;
+        } else {
+          // User storage exists but is empty - user has cleared their baskets
+          print("User storage exists but empty - not migrating");
+          useUserStorage = true;
+        }
+      } else {
+        print("Both storages are empty or have minimal data");
+        useUserStorage = true; // Default to user storage for new users
+      }
     }
+    
+    if (useUserStorage && userId != null && userId.isNotEmpty) {
+      // User-specific storage
+      final userBasketList = pref.getBasketListForUser(userId) ?? "";
+      final finalUserBasketScrips = pref.getBasketScripsForUser(userId) ?? "";
+      
+      print("Using User Basket List: $userBasketList");
+      print("Using User Basket Scrips: $finalUserBasketScrips");
+      
+      _bsktList = userBasketList.isEmpty
+          ? []
+          : jsonDecode(userBasketList);
+      _bsktScrips = finalUserBasketScrips.isEmpty
+          ? {}
+          : jsonDecode(finalUserBasketScrips);
+    } else {
+      // General storage
+      final generalBasketList = pref.bsktList ?? "";
+      
+      print("Using General Basket List: $generalBasketList");
+      print("Using General Basket Scrips: $generalBasketScrips");
+      
+      _bsktList = generalBasketList.isEmpty ? [] : jsonDecode(generalBasketList);
+      _bsktScrips = generalBasketScrips.isEmpty ? {} : jsonDecode(generalBasketScrips);
+    }
+    
+    print("Parsed _bsktList: $_bsktList");
+    print("Parsed _bsktScrips: $_bsktScrips");
+    print("Selected basket: $_selectedBsktName");
 
     if (_bsktList.isNotEmpty) {
       for (var element in _bsktList) {
-        List scipList = _bsktScrips[element['bsketName']] ?? [];
+        String basketName = element['bsketName'];
+        List scipList = _bsktScrips[basketName] ?? [];
         element['curLength'] = "${scipList.length}";
-        if (_selectedBsktName == element['bsketName']) {
-          _bsktScripList = scipList;
+        
+        print("Basket: $basketName, Scripts count: ${scipList.length}");
+        
+        if (_selectedBsktName == basketName) {
+          _bsktScripList = List.from(scipList);
+          print("Set _bsktScripList for $basketName: ${_bsktScripList.length} items");
         }
       }
     }
 
-    log("$_bsktScrips");
+    print("Final _bsktScripList: ${_bsktScripList.length} items");
+    print("============================");
+    
+    _isBasketLoading = false;
+    
+    // Restore order tracking data after loading baskets
+    await _restoreOrderTrackingData();
+    
+    print("=== AFTER BASKET LOAD ===");
+    print("_bsktList.length: ${_bsktList.length}");
+    print("_bsktList.isEmpty: ${_bsktList.isEmpty}");
+    print("Order tracking restored for baskets: ${_basketOverallStatus.keys}");
+    print("Calling notifyListeners()...");
+    log("basket scrips$_bsktScrips");
     notifyListeners();
+    print("notifyListeners() completed");
+    print("========================");
   }
 
-  removeBasket(int index) async {
-    _bsktList.removeAt(index);
-    final userId = pref.clientId;
-    if (userId != null && userId.isNotEmpty) {
-      await pref.setBasketListForUser(userId, jsonEncode(_bsktList));
-      _bsktList = pref.getBasketListForUser(userId)!.isEmpty
-          ? []
-          : jsonDecode(pref.getBasketListForUser(userId)!);
-    } else {
-      await pref.setBasketList(jsonEncode(_bsktList));
-      _bsktList = pref.bsktList!.isEmpty ? [] : jsonDecode(pref.bsktList!);
-    }
-    tabSize();
-    notifyListeners();
+  // removeBasket(int index) async {
+
+  //   _bsktList.removeAt(index);
+  //   final userId = pref.clientId;
+  //   if (userId != null && userId.isNotEmpty) {
+  //     await pref.setBasketListForUser(userId, jsonEncode(_bsktList));
+  //     _bsktList = pref.getBasketListForUser(userId)!.isEmpty
+  //         ? []
+  //         : jsonDecode(pref.getBasketListForUser(userId)!);
+  //   } else {
+  //     await pref.setBasketList(jsonEncode(_bsktList));
+  //     _bsktList = pref.bsktList!.isEmpty ? [] : jsonDecode(pref.bsktList!);
+  //   }
+  //   tabSize();
+  //   notifyListeners();
+  // }
+
+  Future<void> removeBasket(int index) async {
+  // 1. Grab the basket name BEFORE you remove it
+  final String removedBasketName = _bsktList[index]['bsketName'];
+
+  // 2. Remove from list
+  _bsktList.removeAt(index);
+
+  // 3. Persist the updated basket list
+  final userId = pref.clientId;
+  if (userId != null && userId.isNotEmpty) {
+    await pref.setBasketListForUser(userId, jsonEncode(_bsktList));
+  } else {
+    await pref.setBasketList(jsonEncode(_bsktList));
   }
 
-  removeBsktScrip(int index, String bsktName) {
-    Map<String, dynamic> data = {};
-    final userId = pref.clientId;
-    if (userId != null && userId.isNotEmpty) {
-      data = pref.getBasketScripsForUser(userId)!.isEmpty
-          ? {}
-          : jsonDecode(pref.getBasketScripsForUser(userId)!);
-    } else {
-      data = pref.bsktScrips!.isEmpty ? {} : jsonDecode(pref.bsktScrips!);
+  // 4. ALSO remove the scripts for that basket
+  //    Get the current scripts map
+  Map<String, dynamic> allScripts;
+  if (userId != null && userId.isNotEmpty) {
+    final raw = pref.getBasketScripsForUser(userId) ?? "{}";
+    allScripts = raw.isEmpty ? {} : jsonDecode(raw);
+    // Remove the key
+    allScripts.remove(removedBasketName);
+    // Persist back
+    await pref.setBasketScripForUser(userId, jsonEncode(allScripts));
+  } else {
+    final raw = pref.bsktScrips ?? "{}";
+    allScripts = raw.isEmpty ? {} : jsonDecode(raw);
+    allScripts.remove(removedBasketName);
+    await pref.setBasketScrip(jsonEncode(allScripts));
+  }
+
+  // 5. Update your in-memory map
+  _bsktScrips = allScripts;
+  // 5. **Reset all order‑tracking for that basket**
+  resetBasketOrderTracking(removedBasketName);
+  // 6. Refresh any dependent state (recomputing curLength etc.)
+  tabSize();
+  notifyListeners();
+}
+
+  removeBsktScrip(int index, String bsktName) async {
+    try {
+      print("=== DEBUG REMOVE BASKET SCRIP ===");
+      print("Removing index: $index from basket: $bsktName");
+      print("Current _bsktScripList length: ${_bsktScripList.length}");
+      
+      Map<String, dynamic> data = {};
+      final userId = pref.clientId;
+      print("UserId in remove: $userId");
+      // 1️⃣ Capture the removed item
+    final removedItem = _bsktScripList[index];
+    final List<String> removedOrderIds =
+        List<String>.from(removedItem['orderIds'] ?? <String>[]);
+      
+      // Get current basket scrips data
+      if (userId != null && userId.isNotEmpty) {
+        final userBasketScrips = pref.getBasketScripsForUser(userId) ?? "";
+        print("User basket scrips before remove: $userBasketScrips");
+        data = userBasketScrips.isEmpty ? {} : jsonDecode(userBasketScrips);
+      } else {
+        final generalBasketScrips = pref.bsktScrips ?? "";
+        print("General basket scrips before remove: $generalBasketScrips");
+        data = generalBasketScrips.isEmpty ? {} : jsonDecode(generalBasketScrips);
+      }
+      
+      print("Parsed data before remove: $data");
+      
+      // Remove from local list
+      if (index >= 0 && index < _bsktScripList.length) {
+        final removedItem = _bsktScripList.removeAt(index);
+        print("Removed item: $removedItem");
+        print("_bsktScripList after removal: ${_bsktScripList.length} items");
+      } else {
+        print("Invalid index: $index");
+      }
+      
+      // Update the basket data with the modified list
+      data[bsktName] = List.from(_bsktScripList);
+      print("Updated data for basket $bsktName: ${data[bsktName]?.length} items");
+      
+      // Also update the local _bsktScrips to keep it in sync
+      _bsktScrips = Map.from(data);
+      
+      // Save to preferences
+      String jsonData = jsonEncode(data);
+      print("Saving JSON data: $jsonData");
+      
+      if (userId != null && userId.isNotEmpty) {
+        await pref.setBasketScripForUser(userId, jsonData);
+        print("Saved to user-specific storage");
+        
+        // Clear general storage to prevent conflicts after user makes changes
+        if (pref.bsktScrips != null && pref.bsktScrips!.isNotEmpty) {
+          print("Clearing general storage to prevent conflicts");
+          await pref.setBasketScrip("{}");
+        }
+      } else {
+        await pref.setBasketScrip(jsonData);
+        print("Saved to general storage");
+      }
+
+      // 4️⃣ Only remove individual script orders if there actually were any
+    if (removedOrderIds.isNotEmpty) {
+      // Create a unique key for this script (token + index is more reliable than just token)
+      String scriptKey = "${removedItem['token']}_$index";
+      // Remove only this script's order tracking, not the entire basket
+      removeScriptOrderTracking(bsktName, scriptKey, removedOrderIds);
     }
-    _bsktScripList.removeAt(index);
-    data.addAll({bsktName: _bsktScripList});
-    String jsonData = jsonEncode(data);
-    if (userId != null && userId.isNotEmpty) {
-      pref.setBasketScripForUser(userId, jsonData);
-    } else {
-      pref.setBasketScrip(jsonData);
+      
+      print("================================");
+      
+      // Refresh all basket data
+      await getBasketName();
+      notifyListeners();
+    } catch (e) {
+      print("Error removing basket scrip: $e");
+      // Still refresh basket data in case of error
+      await getBasketName();
+      notifyListeners();
     }
-    getBasketName();
+  }
+
+  addToBasket(String basketName, Map<String, dynamic> basketItem) async {
+    try {
+      print("=== DEBUG ADD TO BASKET ===");
+      print("Adding to basket: $basketName");
+      print("Item: $basketItem");
+      
+      Map<String, dynamic> data = {};
+      final userId = pref.clientId;
+      
+      // Get existing basket scrips data
+      if (userId != null && userId.isNotEmpty) {
+        final userBasketScrips = pref.getBasketScripsForUser(userId) ?? "";
+        print("User basket scrips: $userBasketScrips");
+        data = userBasketScrips.isEmpty ? {} : jsonDecode(userBasketScrips);
+      } else {
+        final generalBasketScrips = pref.bsktScrips ?? "";
+        print("General basket scrips: $generalBasketScrips");
+        data = generalBasketScrips.isEmpty ? {} : jsonDecode(generalBasketScrips);
+      }
+      
+      // Get current scripts in the basket
+      List currentScripts = data[basketName] ?? [];
+      print("Current scripts count: ${currentScripts.length}");
+      
+      // Add the new item to the basket
+      currentScripts.add(basketItem);
+      print("After adding: ${currentScripts.length}");
+      
+      // Update the data
+      data[basketName] = currentScripts;
+      _bsktScrips = Map.from(data);
+      
+      // Save back to preferences
+      String jsonData = jsonEncode(data);
+      print("Saving add JSON: $jsonData");
+      
+      if (userId != null && userId.isNotEmpty) {
+        await pref.setBasketScripForUser(userId, jsonData);
+        print("Saved to user-specific storage");
+        
+        // Clear general storage to prevent conflicts
+        if (pref.bsktScrips != null && pref.bsktScrips!.isNotEmpty) {
+          print("Clearing general storage to prevent conflicts");
+          await pref.setBasketScrip("{}");
+        }
+      } else {
+        await pref.setBasketScrip(jsonData);
+        print("Saved to general storage");
+      }
+      
+      print("===========================");
+      
+      // Refresh basket data
+      await getBasketName();
+      notifyListeners();
+    } catch (e) {
+      print("Error adding to basket: $e");
+      await getBasketName();
+      notifyListeners();
+    }
   }
 
   fetchBasketMargin() async {
     try {
       List basket = [];
       if (_bsktScripList.isNotEmpty) {
-        for (var i = 0; i < _bsktScripList.length; i++) {
-          if (i > 0) {
-            basket.add({
-              "exch": '${_bsktScripList[i]["exch"]}',
-              "tsym": '${_bsktScripList[i]["tsym"]}'.contains("&")
-                  ? '${_bsktScripList[i]["tsym"]}'.replaceAll("&", "%26")
-                  : '${_bsktScripList[i]["tsym"]}',
-              "qty": '${_bsktScripList[i]["qty"]}',
-              "prc": '${_bsktScripList[i]["prc"]}',
-              "prd": '${_bsktScripList[i]["prd"]}',
-              "trantype": '${_bsktScripList[i]["trantype"]}',
-              "prctyp": '${_bsktScripList[i]["prctyp"]}'
-            });
-          }
+        // Include ALL scripts in margin calculation (including executed ones)
+        for (var i = 1; i < _bsktScripList.length; i++) {
+          basket.add({
+            "exch": '${_bsktScripList[i]["exch"]}',
+            "tsym": '${_bsktScripList[i]["tsym"]}'.contains("&")
+                ? '${_bsktScripList[i]["tsym"]}'.replaceAll("&", "%26")
+                : '${_bsktScripList[i]["tsym"]}',
+            "qty": '${_bsktScripList[i]["qty"]}',
+            "prc": '${_bsktScripList[i]["prc"]}',
+            "prd": '${_bsktScripList[i]["prd"]}',
+            "trantype": '${_bsktScripList[i]["trantype"]}',
+            "prctyp": '${_bsktScripList[i]["prctyp"]}',
+            "trgprc": _bsktScripList[i]["trgprc"]?.toString() ?? '',
+            "blprc": _bsktScripList[i]["blprc"]?.toString() ?? '',
+            "bpprc": _bsktScripList[i]["bpprc"]?.toString() ?? ''
+          });
         }
 
+        // Use first script as main input with available order parameters
         OrderMarginInput inputs = OrderMarginInput(
             exch: '${_bsktScripList[0]["exch"]}',
             prc: '${_bsktScripList[0]["prc"]}',
@@ -1998,10 +2324,11 @@ class OrderProvider extends DefaultChangeNotifier {
             qty: '${_bsktScripList[0]["qty"]}',
             trantype: '${_bsktScripList[0]["trantype"]}',
             tsym: '${_bsktScripList[0]["tsym"]}',
-            trgprc: '',
-            rorgprc: '',
-            rorgqty: '',
-            blprc: '');
+            trgprc: _bsktScripList[0]["trgprc"]?.toString() ?? '',
+            rorgprc: '', // Not available in basket data
+            rorgqty: '', // Not available in basket data
+            blprc: _bsktScripList[0]["blprc"]?.toString() ?? '', 
+            bpprc: _bsktScripList[0]["bpprc"]?.toString() ?? '');
         _bsktOrderMargin = await api.getBasketMargin(inputs, basket);
       }
 
@@ -2208,9 +2535,23 @@ class OrderProvider extends DefaultChangeNotifier {
     } finally {}
   }
 
-  placeBasketOrder(BuildContext context) async {
+  placeBasketOrder(BuildContext context, {bool navigateToOrderBook = true}) async {
     try {
-      for (var element in _bsktScripList) {
+      // Initialize basket tracking for current basket
+      String basketName = _selectedBsktName;
+      _basketOrderIds[basketName] = [];
+      _basketOrderStatuses[basketName] = {};
+      _basketOverallStatus[basketName] = 'placing';
+      
+      notifyListeners();
+      
+      List<String> successfulOrders = [];
+      List<String> failedOrders = [];
+      
+      for (int index = 0; index < _bsktScripList.length; index++) {
+        var element = _bsktScripList[index];
+        String itemKey = "${element['tsym']}_${element['token']}_$index";
+        
         PlaceOrderInput placeOrderInput = PlaceOrderInput(
             amo: element['amo'],
             blprc: element['blprc'],
@@ -2240,25 +2581,646 @@ class OrderProvider extends DefaultChangeNotifier {
             _placeOrderModel!.stat == "Not_Ok") {
           ref.read(authProvider).ifSessionExpired(context);
           break;
-        } else {
+        } else if (_placeOrderModel!.stat == "Ok" && _placeOrderModel!.norenordno != null) {
+          // Store successful order details
+          String orderId = _placeOrderModel!.norenordno!;
+          _basketOrderIds[basketName]!.add(orderId);
+          _basketOrderStatuses[basketName]![itemKey] = 'placed';
+          
+          // Add order tracking to basket item
+          element['orderIds'] = element['orderIds'] ?? [];
+          element['orderIds'].add(orderId);
+          element['orderStatus'] = 'placed';
+          
+          successfulOrders.add(orderId);
           ConstantName.sessCheck = true;
+        } else {
+          // Handle failed order
+          _basketOrderStatuses[basketName]![itemKey] = 'failed';
+          element['orderStatus'] = 'failed';
+          element['orderError'] = _placeOrderModel!.emsg ?? 'Unknown error';
+          failedOrders.add(element['tsym']);
         }
       }
-      ref.read(indexListProvider).bottomMenu(2, context);
+      
+      // Update overall basket status
+      if (failedOrders.isEmpty) {
+        _basketOverallStatus[basketName] = 'placed';
+      } else if (successfulOrders.isEmpty) {
+        _basketOverallStatus[basketName] = 'failed';
+      } else {
+        _basketOverallStatus[basketName] = 'partially_placed';
+      }
+      
+      if (navigateToOrderBook) {
+        ref.read(indexListProvider).bottomMenu(2, context);
 
-      await fetchOrderBook(context, false);
-      await changeTabIndex(0, context);
-      ref.read(indexListProvider).bottomMenu(2, context);
+        await fetchOrderBook(context, false);
+        await changeTabIndex(0, context);
+        ref.read(indexListProvider).bottomMenu(2, context);
 
-      Navigator.pop(context);
+        Navigator.pop(context);
+      }
+      
+      // Save order tracking data to preferences
+      await _saveOrderTrackingData();
+      
+      // Show appropriate success/failure message
+      String message;
+      if (failedOrders.isEmpty) {
+        message = "Basket Order Successfully Placed (${successfulOrders.length} orders)";
+      } else if (successfulOrders.isEmpty) {
+        message = "Basket Order Failed - No orders placed";
+      } else {
+        message = "Basket Order Partially Placed - ${successfulOrders.length} success, ${failedOrders.length} failed";
+      }
+      
       ScaffoldMessenger.of(context).showSnackBar(
-          successMessage(context, "Basket Order Sucessfully Placed"));
+          successMessage(context, message));
+          
+      notifyListeners();
     } catch (e) {
+      // Update basket status to failed
+      if (_selectedBsktName.isNotEmpty) {
+        _basketOverallStatus[_selectedBsktName] = 'failed';
+      }
       ref
           .read(indexListProvider)
           .logError
           .add({"type": "API Place Slice  Order", "Error": "$e"});
       notifyListeners();
+    }
+  }
+
+  // Method to update basket order statuses from order book data
+  void updateBasketOrderStatus() async {
+    try {
+      print("=== UPDATING BASKET ORDER STATUS ===");
+      
+      // Get all baskets that need processing (those with tracking data OR current basket with item orders)
+      Set<String> basketsToProcess = Set<String>.from(_basketOrderIds.keys);
+      
+      // Also check if current basket has individual item order data
+      if (_selectedBsktName.isNotEmpty && _bsktScripList.isNotEmpty) {
+        bool hasItemOrders = _bsktScripList.any((item) => 
+          item['orderIds'] != null && item['orderIds'].isNotEmpty
+        );
+        if (hasItemOrders) {
+          basketsToProcess.add(_selectedBsktName);
+        }
+      }
+      
+      for (String basketName in basketsToProcess) {
+        List<String> orderIds = _basketOrderIds[basketName] ?? [];
+        
+        // If no global order ids, try to collect from individual items
+        if (orderIds.isEmpty && basketName == _selectedBsktName) {
+          Set<String> itemOrderIds = {};
+          for (var item in _bsktScripList) {
+            if (item['orderIds'] != null && item['orderIds'].isNotEmpty) {
+              itemOrderIds.addAll(List<String>.from(item['orderIds']));
+            }
+          }
+          orderIds = itemOrderIds.toList();
+          if (orderIds.isNotEmpty) {
+            _basketOrderIds[basketName] = orderIds; // Update global tracking
+          }
+        }
+        
+        if (orderIds.isEmpty) continue;
+        
+        print("Processing basket: $basketName with ${orderIds.length} orders");
+        
+        // Check each order ID against current order book
+        Map<String, String> orderIdToStatus = {};
+        Map<String, OrderBookModel> orderIdToModel = {};
+        int completedCount = 0;
+        int rejectedCount = 0;
+        int openCount = 0;
+        
+        for (String orderId in orderIds) {
+          // Find order in all order lists
+          OrderBookModel? order = _findOrderById(orderId);
+          
+          if (order != null && order.status != null) {
+            String actualStatus = order.status!; // Keep original case (REJECTED, COMPLETE, etc.)
+            orderIdToStatus[orderId] = actualStatus;
+            orderIdToModel[orderId] = order;
+            
+            print("Order $orderId status: $actualStatus");
+            
+            // Count statuses
+            if (actualStatus == 'COMPLETE') {
+              completedCount++;
+            } else if (actualStatus == 'REJECTED' || actualStatus == 'CANCELED') {
+              rejectedCount++;
+            } else {
+              openCount++; // OPEN or other statuses
+            }
+          } else {
+            // Order not found in order book yet (might still be processing)
+            orderIdToStatus[orderId] = 'PLACED';
+            openCount++;
+            print("Order $orderId status: PLACED (not found in order book yet)");
+          }
+        }
+        
+        // Update individual basket items with real order statuses
+        _updateBasketItemStatusesWithOrderBook(basketName, orderIdToStatus, orderIdToModel);
+        
+        // Update overall basket status based on real statuses
+        if (completedCount == orderIds.length) {
+          _basketOverallStatus[basketName] = 'completed';
+        } else if (rejectedCount == orderIds.length) {
+          _basketOverallStatus[basketName] = 'failed';
+        } else if (rejectedCount > 0 && (rejectedCount + completedCount) == orderIds.length) {
+          // Some rejected, some completed, none open
+          _basketOverallStatus[basketName] = 'partially_completed';
+        } else if (completedCount > 0) {
+          // Some completed, others still open/processing
+          _basketOverallStatus[basketName] = 'partially_filled';
+        } else {
+          // All orders still open/processing
+          _basketOverallStatus[basketName] = 'placed';
+        }
+        
+        print("Basket $basketName final status: ${_basketOverallStatus[basketName]}");
+        print("Counts - Complete: $completedCount, Rejected: $rejectedCount, Open: $openCount");
+      }
+      
+      // Save updated tracking data
+      await _saveOrderTrackingData();
+      
+      notifyListeners();
+    } catch (e) {
+      print("Error updating basket order status: $e");
+    }
+  }
+  
+  // Helper method to find order by ID in all order lists
+  OrderBookModel? _findOrderById(String orderId) {
+    // Search in all orders
+    if (_orderBookModel != null) {
+      try {
+        return _orderBookModel!.firstWhere(
+          (order) => order.norenordno == orderId,
+        );
+      } catch (e) {
+        // Order not found
+      }
+    }
+    
+    // Search in open orders
+    if (_openOrder != null) {
+      try {
+        return _openOrder!.firstWhere(
+          (order) => order.norenordno == orderId,
+        );
+      } catch (e) {
+        // Order not found
+      }
+    }
+    
+    // Search in executed orders
+    if (_executedOrder != null) {
+      try {
+        return _executedOrder!.firstWhere(
+          (order) => order.norenordno == orderId,
+        );
+      } catch (e) {
+        // Order not found
+      }
+    }
+    
+    return null; // Order not found anywhere
+  }
+  
+  // Method to update individual basket items with order book data
+  void _updateBasketItemStatusesWithOrderBook(String basketName, Map<String, String> orderIdToStatus, Map<String, OrderBookModel> orderIdToModel) {
+    // Update basket items with real order data
+    for (var element in _bsktScripList) {
+      if (element['orderIds'] != null) {
+        List<String> itemOrderIds = List<String>.from(element['orderIds']);
+        
+        // Find the status for this item's orders
+        List<String> itemStatuses = [];
+        List<String> itemOrderDetails = [];
+        
+        for (String orderId in itemOrderIds) {
+          if (orderIdToStatus.containsKey(orderId)) {
+            String status = orderIdToStatus[orderId]!;
+            itemStatuses.add(status);
+            
+            // Add order details for display
+            OrderBookModel? orderModel = orderIdToModel[orderId];
+            if (orderModel != null) {
+              String detail = 'ID: $orderId, Status: $status';
+              if (orderModel.avgprc != null && orderModel.avgprc != "0.00") {
+                detail += ', Avg: ₹${orderModel.avgprc}';
+              }
+              itemOrderDetails.add(detail);
+            }
+          }
+        }
+        
+        // Set the primary status for this item (worst case scenario)
+        if (itemStatuses.contains('REJECTED')) {
+          element['orderStatus'] = 'REJECTED';
+        } else if (itemStatuses.contains('CANCELED')) {
+          element['orderStatus'] = 'CANCELED';
+        } else if (itemStatuses.contains('COMPLETE')) {
+          element['orderStatus'] = itemStatuses.every((s) => s == 'COMPLETE') ? 'COMPLETE' : 'PARTIAL';
+        } else {
+          element['orderStatus'] = 'OPEN';
+        }
+        
+        // Store order details for UI display
+        element['orderDetails'] = itemOrderDetails;
+        
+        print("Updated item ${element['tsym']}: status=${element['orderStatus']}, details=${itemOrderDetails}");
+      }
+    }
+  }
+
+  // Method to update individual basket item statuses
+  void _updateBasketItemStatuses(String basketName, Map<String, String> orderStatuses) {
+    try {
+      for (int index = 0; index < _bsktScripList.length; index++) {
+        var element = _bsktScripList[index];
+        List<String>? orderIds = element['orderIds'];
+        
+        if (orderIds != null && orderIds.isNotEmpty) {
+          // Check if any of the order IDs have been updated
+          for (String orderId in orderIds) {
+            if (orderStatuses.containsKey(orderId)) {
+              element['orderStatus'] = orderStatuses[orderId];
+              
+              // Find full order details for additional info
+              OrderBookModel? order = _orderBookModel?.firstWhere(
+                (ord) => ord.norenordno == orderId,
+                orElse: () => OrderBookModel(),
+              );
+              
+              if (order?.avgprc != null) {
+                element['avgPrice'] = order!.avgprc;
+              }
+              if (order?.fillshares != null) {
+                element['filledQty'] = order!.fillshares;
+              }
+              if (order?.rejreason != null) {
+                element['rejectionReason'] = order!.rejreason;
+              }
+            }
+          }
+        }
+      }
+    } catch (e) {
+      print("Error updating basket item statuses: $e");
+    }
+  }
+
+  // Method to reset basket order tracking
+  void resetBasketOrderTracking(String basketName) {
+    _basketOrderIds.remove(basketName);
+    _basketOrderStatuses.remove(basketName);
+    _basketOverallStatus.remove(basketName);
+    
+    // Clear order tracking from basket items
+    for (var element in _bsktScripList) {
+      element.remove('orderIds');
+      element.remove('orderStatus');
+      element.remove('orderError');
+      element.remove('avgPrice');
+      element.remove('filledQty');
+      element.remove('rejectionReason');
+    }
+    
+    // Also clear from persistent storage immediately
+    _clearBasketFromPersistentStorage(basketName);
+    
+    // Save the reset state to preferences
+    _saveOrderTrackingData();
+    
+    notifyListeners();
+  }
+
+  // Helper method to clear specific basket from persistent storage
+  Future<void> _clearBasketFromPersistentStorage(String basketName) async {
+    try {
+      final userId = pref.clientId;
+      String? existingJsonData;
+      
+      if (userId != null && userId.isNotEmpty) {
+        existingJsonData = pref.getOrderTrackingForUser(userId);
+      } else {
+        existingJsonData = pref.orderTracking;
+      }
+      
+      if (existingJsonData != null && existingJsonData.isNotEmpty) {
+        final existingData = jsonDecode(existingJsonData);
+        
+        // Clear this basket from all tracking data in persistent storage
+        if (existingData['basketOrderIds'] != null) {
+          (existingData['basketOrderIds'] as Map).remove(basketName);
+        }
+        if (existingData['basketOrderStatuses'] != null) {
+          (existingData['basketOrderStatuses'] as Map).remove(basketName);
+        }
+        if (existingData['basketOverallStatus'] != null) {
+          (existingData['basketOverallStatus'] as Map).remove(basketName);
+        }
+        if (existingData['basketItemsData'] != null) {
+          (existingData['basketItemsData'] as Map).remove(basketName);
+        }
+        
+        // Save the updated data back to persistent storage
+        final updatedJsonData = jsonEncode(existingData);
+        if (userId != null && userId.isNotEmpty) {
+          await pref.setOrderTrackingForUser(userId, updatedJsonData);
+        } else {
+          await pref.setOrderTracking(updatedJsonData);
+        }
+      }
+    } catch (e) {
+      print("Error clearing basket from persistent storage: $e");
+    }
+  }
+
+  // Method to remove individual script order tracking without affecting other scripts
+  void removeScriptOrderTracking(String basketName, String scriptKey, List<String> orderIds) {
+    // Remove specific order IDs from basket tracking
+    if (_basketOrderIds.containsKey(basketName)) {
+      for (String orderId in orderIds) {
+        _basketOrderIds[basketName]?.remove(orderId);
+      }
+      // If no more orders left in basket, remove the basket entry
+      if (_basketOrderIds[basketName]?.isEmpty ?? true) {
+        _basketOrderIds.remove(basketName);
+        _basketOrderStatuses.remove(basketName);
+        _basketOverallStatus.remove(basketName);
+      }
+    }
+    
+    // Remove from basket order statuses
+    if (_basketOrderStatuses.containsKey(basketName)) {
+      _basketOrderStatuses[basketName]?.remove(scriptKey);
+    }
+    
+    // Clear the individual script's order data from persistent storage
+    _removeScriptFromPersistentStorage(basketName, scriptKey);
+    
+    // Save the updated state
+    _saveOrderTrackingData();
+    
+    notifyListeners();
+  }
+
+  // Helper method to remove specific script from persistent storage
+  Future<void> _removeScriptFromPersistentStorage(String basketName, String scriptKey) async {
+    try {
+      final userId = pref.clientId;
+      String? existingJsonData;
+      
+      if (userId != null && userId.isNotEmpty) {
+        existingJsonData = pref.getOrderTrackingForUser(userId);
+      } else {
+        existingJsonData = pref.orderTracking;
+      }
+      
+      if (existingJsonData != null && existingJsonData.isNotEmpty) {
+        final existingData = jsonDecode(existingJsonData);
+        
+        // Remove specific script from basketItemsData
+        if (existingData['basketItemsData'] != null && 
+            existingData['basketItemsData'][basketName] != null) {
+          List<Map<String, dynamic>> items = List<Map<String, dynamic>>.from(
+            existingData['basketItemsData'][basketName]
+          );
+          
+          // Remove items matching the script key (token + index combination)
+          items.removeWhere((item) {
+            String itemKey = "${item['token']}_${item['index']}";
+            return itemKey == scriptKey;
+          });
+          
+          if (items.isNotEmpty) {
+            existingData['basketItemsData'][basketName] = items;
+          } else {
+            (existingData['basketItemsData'] as Map).remove(basketName);
+          }
+        }
+        
+        // Save the updated data back to persistent storage
+        final updatedJsonData = jsonEncode(existingData);
+        if (userId != null && userId.isNotEmpty) {
+          await pref.setOrderTrackingForUser(userId, updatedJsonData);
+        } else {
+          await pref.setOrderTracking(updatedJsonData);
+        }
+      }
+    } catch (e) {
+      print("Error removing script from persistent storage: $e");
+    }
+  }
+  
+  // Method to check if basket has been placed
+  bool isBasketPlaced(String basketName) {
+    String status = _basketOverallStatus[basketName] ?? '';
+    return ['placed', 'partially_placed', 'partially_filled', 'partially_completed', 'completed', 'failed'].contains(status);
+  }
+
+  // Method to get basket status for UI display
+  String? getBasketStatus(String basketName) {
+    return _basketOverallStatus[basketName];
+  }
+  
+  // Save order tracking data to preferences
+  Future<void> _saveOrderTrackingData() async {
+    try {
+      final userId = pref.clientId;
+      
+      // Read existing basket items data first to preserve other baskets' data
+      Map<String, List<Map<String, dynamic>>> basketItemsData = {};
+      try {
+        String? existingJsonData;
+        if (userId != null && userId.isNotEmpty) {
+          existingJsonData = pref.getOrderTrackingForUser(userId);
+        } else {
+          existingJsonData = pref.orderTracking;
+        }
+        
+        if (existingJsonData != null && existingJsonData.isNotEmpty) {
+          final existingData = jsonDecode(existingJsonData);
+          basketItemsData = Map<String, List<Map<String, dynamic>>>.from(
+            (existingData['basketItemsData'] ?? {}).map((key, value) => 
+              MapEntry(key, List<Map<String, dynamic>>.from(value))
+            )
+          );
+        }
+      } catch (e) {
+        print("Error reading existing basket items data: $e");
+      }
+      
+      // Update current basket's item data
+      if (_selectedBsktName.isNotEmpty && _bsktScripList.isNotEmpty) {
+        String basketName = _selectedBsktName;
+        if (_basketOrderIds.containsKey(basketName) && _basketOrderIds[basketName]!.isNotEmpty) {
+          List<Map<String, dynamic>> itemsWithOrders = [];
+          for (int index = 0; index < _bsktScripList.length; index++) {
+            var item = _bsktScripList[index];
+            if (item['orderIds'] != null && item['orderIds'].isNotEmpty) {
+              itemsWithOrders.add({
+                'tsym': item['tsym'],
+                'token': item['token'],
+                'index': index, // Include index to handle duplicates
+                'orderIds': item['orderIds'],
+                'orderStatus': item['orderStatus'],
+                'orderError': item['orderError'],
+                'avgPrice': item['avgPrice'],
+                'filledQty': item['filledQty'],
+                'rejectionReason': item['rejectionReason'],
+              });
+            }
+          }
+          basketItemsData[basketName] = itemsWithOrders;
+        }
+      }
+      
+      final orderTrackingData = {
+        'basketOrderIds': _basketOrderIds,
+        'basketOrderStatuses': _basketOrderStatuses,
+        'basketOverallStatus': _basketOverallStatus,
+        'basketItemsData': basketItemsData,
+      };
+      
+      final jsonData = jsonEncode(orderTrackingData);
+      if (userId != null && userId.isNotEmpty) {
+        await pref.setOrderTrackingForUser(userId, jsonData);
+      } else {
+        await pref.setOrderTracking(jsonData);
+      }
+    } catch (e) {
+      print("Error saving order tracking data: $e");
+    }
+  }
+  
+  // Restore order tracking data from preferences
+  Future<void> _restoreOrderTrackingData() async {
+    try {
+      final userId = pref.clientId;
+      String? jsonData;
+      
+      if (userId != null && userId.isNotEmpty) {
+        jsonData = pref.getOrderTrackingForUser(userId);
+      } else {
+        jsonData = pref.orderTracking;
+      }
+      
+      if (jsonData != null && jsonData.isNotEmpty) {
+        final data = jsonDecode(jsonData);
+        _basketOrderIds = Map<String, List<String>>.from(
+          (data['basketOrderIds'] ?? {}).map((key, value) => 
+            MapEntry(key, List<String>.from(value))
+          )
+        );
+        _basketOrderStatuses = Map<String, Map<String, String>>.from(
+          (data['basketOrderStatuses'] ?? {}).map((key, value) => 
+            MapEntry(key, Map<String, String>.from(value))
+          )
+        );
+        _basketOverallStatus = Map<String, String>.from(data['basketOverallStatus'] ?? {});
+        
+        // Restore basket item order data
+        Map<String, dynamic> basketItemsData = data['basketItemsData'] ?? {};
+        _restoreBasketItemOrderDataFromSaved(basketItemsData);
+        
+        print("Restored order tracking for baskets: ${_basketOverallStatus.keys}");
+      }
+    } catch (e) {
+      print("Error restoring order tracking data: $e");
+    }
+  }
+
+  // Method to restore order tracking data to basket items from saved data
+  void _restoreBasketItemOrderDataFromSaved(Map<String, dynamic> basketItemsData) {
+    if (_selectedBsktName.isEmpty || _bsktScripList.isEmpty) return;
+    
+    String basketName = _selectedBsktName;
+    List<dynamic>? savedItems = basketItemsData[basketName];
+    
+    if (savedItems == null || savedItems.isEmpty) return;
+    
+    print("Restoring saved order data for basket: $basketName with ${savedItems.length} saved items");
+    
+    // Match saved items with current basket items using proper index-based matching
+    for (int index = 0; index < _bsktScripList.length; index++) {
+      var currentItem = _bsktScripList[index];
+      
+      // Find matching saved item by tsym, token, and index (to handle duplicates correctly)
+      for (var savedItem in savedItems) {
+        if (savedItem['tsym'] == currentItem['tsym'] && 
+            savedItem['token'] == currentItem['token'] &&
+            savedItem['index'] == index) {
+          
+          // Restore all order tracking fields
+          currentItem['orderIds'] = savedItem['orderIds'];
+          currentItem['orderStatus'] = savedItem['orderStatus'];
+          currentItem['orderError'] = savedItem['orderError'];
+          currentItem['avgPrice'] = savedItem['avgPrice'];
+          currentItem['filledQty'] = savedItem['filledQty'];
+          currentItem['rejectionReason'] = savedItem['rejectionReason'];
+          
+          print("Restored saved data for item ${currentItem['tsym']} at index $index: status=${currentItem['orderStatus']}");
+          break;
+        }
+      }
+    }
+  }
+
+  // Method to restore order tracking data to basket items (fallback method)
+  void _restoreBasketItemOrderData() {
+    if (_selectedBsktName.isEmpty || _bsktScripList.isEmpty) return;
+    
+    String basketName = _selectedBsktName;
+    List<String> orderIds = _basketOrderIds[basketName] ?? [];
+    
+    if (orderIds.isEmpty) return;
+    
+    print("Restoring order data for basket: $basketName with ${orderIds.length} orders");
+    
+    // For each basket item, restore its order tracking data if it exists
+    for (int index = 0; index < _bsktScripList.length; index++) {
+      var element = _bsktScripList[index];
+      String itemKey = "${element['tsym']}_${element['token']}_$index";
+      
+      // Check if this item has order data
+      String? itemStatus = _basketOrderStatuses[basketName]?[itemKey];
+      if (itemStatus != null) {
+        // Find matching order IDs for this item
+        List<String> itemOrderIds = [];
+        for (String orderId in orderIds) {
+          // Try to match order to item - this is a simplified approach
+          // In a more complex scenario, you might need better mapping
+          OrderBookModel? order = _findOrderById(orderId);
+          if (order != null && order.tsym == element['tsym']) {
+            itemOrderIds.add(orderId);
+            break; // Assuming one order per item for now
+          }
+        }
+        
+        if (itemOrderIds.isNotEmpty) {
+          element['orderIds'] = itemOrderIds;
+          element['orderStatus'] = itemStatus;
+          
+          // Get latest status from order book
+          OrderBookModel? order = _findOrderById(itemOrderIds.first);
+          if (order != null && order.status != null) {
+            element['orderStatus'] = order.status!;
+          }
+          
+          print("Restored order data for item ${element['tsym']}: status=${element['orderStatus']}");
+        }
+      }
     }
   }
 

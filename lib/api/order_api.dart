@@ -742,7 +742,9 @@ mixin OrderAPI on ApiCore {
         "prc": input.prc,
         "prd": input.prd,
         "trantype": input.trantype,
-        "prctyp": input.prctyp
+        "prctyp": input.prctyp,
+        "blprc": input.blprc,
+        "trgprc": input.trgprc,
       };
 
       if (basket.isNotEmpty) {

@@ -20,11 +20,20 @@ import 'create_basket.dart';
 class BasketList extends ConsumerWidget {
   const BasketList({super.key});
 
+
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final basket = ref.watch(orderProvider);
     final theme = ref.watch(themeProvider);
     bool _isDeleting = false;
+
+    print("=== BASKET LIST BUILD ===");
+    print("isBasketLoading: ${basket.isBasketLoading}");
+    print("bsktList.length: ${basket.bsktList.length}");
+    print("bsktList.isEmpty: ${basket.bsktList.isEmpty}");
+    print("bsktList content: ${basket.bsktList}");
+    print("========================");
 
     return Column(
       children: [
@@ -82,12 +91,16 @@ class BasketList extends ConsumerWidget {
             ],
           ),
         ),
-        basket.bsktList.isEmpty
-            ? SizedBox(height: 400, child: const NoDataFound())
-            : ListView.separated(
+        basket.isBasketLoading
+            ? const SizedBox(height: 400, child: Center(child: CircularProgressIndicator()))
+            : basket.bsktList.isEmpty
+                ? SizedBox(height: 400, child: const NoDataFound())
+                : ListView.separated(
                 shrinkWrap: true,
-                itemCount: basket.bsktList.length ?? 0,
+                itemCount: basket.bsktList.length,
                 itemBuilder: (BuildContext context, int index) {
+                  final bsktName = basket.bsktList[index]['bsketName'];
+                  
                   return ListTile(
                       onLongPress: () {
                         showDialog(
@@ -95,38 +108,27 @@ class BasketList extends ConsumerWidget {
                           barrierDismissible: false,
                           builder: (BuildContext context) {
                             return StatefulBuilder(
-                              builder: (BuildContext context,
-                                  StateSetter setDialogState) {
+                              builder: (BuildContext context, StateSetter setDialogState) {
                                 return AlertDialog(
                                   backgroundColor: colors.colorWhite,
-                                  titlePadding: const EdgeInsets.symmetric(
-                                      horizontal: 8, vertical: 8),
+                                  titlePadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                                   shape: const RoundedRectangleBorder(
-                                      borderRadius:
-                                          BorderRadius.all(Radius.circular(8))),
+                                      borderRadius: BorderRadius.all(Radius.circular(8))),
                                   scrollable: true,
-                                  contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 12,
-                                  ),
-                                  actionsPadding: const EdgeInsets.only(
-                                      bottom: 16, right: 16, left: 16, top: 8),
-                                  insetPadding: const EdgeInsets.symmetric(
-                                      horizontal: 30, vertical: 12),
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                                  actionsPadding: const EdgeInsets.only(bottom: 16, right: 16, left: 16, top: 8),
+                                  insetPadding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
                                   title: Column(
                                     children: [
                                       Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.end,
+                                        mainAxisAlignment: MainAxisAlignment.end,
                                         children: [
                                           Material(
                                             color: Colors.transparent,
                                             shape: const CircleBorder(),
                                             child: InkWell(
-                                              onTap: () =>
-                                                  Navigator.pop(context),
-                                              borderRadius:
-                                                  BorderRadius.circular(20),
+                                              onTap: () => Navigator.pop(context),
+                                              borderRadius: BorderRadius.circular(20),
                                               splashColor: theme.isDarkMode
                                                   ? colors.splashColorDark
                                                   : colors.splashColorLight,
@@ -134,8 +136,7 @@ class BasketList extends ConsumerWidget {
                                                   ? colors.splashColorDark
                                                   : colors.splashColorLight,
                                               child: Padding(
-                                                padding:
-                                                    const EdgeInsets.all(6.0),
+                                                padding: const EdgeInsets.all(6.0),
                                                 child: Icon(
                                                   Icons.close_rounded,
                                                   size: 22,
@@ -150,24 +151,13 @@ class BasketList extends ConsumerWidget {
                                       ),
                                       const SizedBox(height: 12),
                                       SizedBox(
-                                        width:
-                                            MediaQuery.of(context).size.width,
+                                        width: MediaQuery.of(context).size.width,
                                         child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.center,
+                                          crossAxisAlignment: CrossAxisAlignment.center,
                                           children: [
-                                            // TextWidget.subText(
-                                            //   text: "Delete Basket",
-                                            //   theme: theme.isDarkMode,
-                                            //   color: theme.isDarkMode
-                                            //       ? colors.textPrimaryDark
-                                            //       : colors.textPrimaryLight,
-                                            //   fw: 3,
-                                            // ),
                                             const SizedBox(height: 5),
                                             TextWidget.subText(
-                                              text:
-                                                  "Are you sure you want to delete this basket ${basket.bsktList[index]['bsketName'].toString().toUpperCase()}?",
+                                              text: "Are you sure you want to delete this basket ${bsktName.toString().toUpperCase()}?",
                                               theme: theme.isDarkMode,
                                               color: theme.isDarkMode
                                                   ? colors.textPrimaryDark
@@ -190,9 +180,8 @@ class BasketList extends ConsumerWidget {
                                                 setDialogState(() {
                                                   _isDeleting = true;
                                                 });
-                                                await basket
-                                                    .removeBasket(index);
                                                 Navigator.pop(context);
+                                                await basket.removeBasket(index);
                                                 if (context.mounted) {
                                                   setDialogState(() {
                                                     _isDeleting = false;
@@ -200,29 +189,22 @@ class BasketList extends ConsumerWidget {
                                                 }
                                               },
                                         style: OutlinedButton.styleFrom(
-                                          minimumSize: const Size(
-                                              0, 40), // width, height
-                                          side: BorderSide(
-                                              color: colors
-                                                  .btnOutlinedBorder), // Outline border color
+                                          minimumSize: const Size(0, 40),
+                                          side: BorderSide(color: colors.btnOutlinedBorder),
                                           shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(5),
+                                            borderRadius: BorderRadius.circular(5),
                                           ),
-                                          backgroundColor: colors
-                                              .primaryDark, // Transparent background
+                                          backgroundColor: colors.primaryDark,
                                         ),
                                         child: _isDeleting
                                             ? SizedBox(
                                                 width: 18,
                                                 height: 20,
-                                                child:
-                                                    CircularProgressIndicator(
+                                                child: CircularProgressIndicator(
                                                   strokeWidth: 2,
                                                   color: theme.isDarkMode
                                                       ? colors.textSecondaryDark
-                                                      : colors
-                                                          .textSecondaryLight,
+                                                      : colors.textSecondaryLight,
                                                 ),
                                               )
                                             : TextWidget.titleText(
@@ -244,34 +226,38 @@ class BasketList extends ConsumerWidget {
                       },
                       onTap: () async {
                         await basket.fetchBasketMargin();
-                        basket.chngBsktName(
-                            basket.bsktList[index]['bsketName'], context);
+                        basket.chngBsktName(basket.bsktList[index]['bsketName'], context, false);
                       },
-                      dense: true,
-                      trailing: TextWidget.paraText(
-                          text:
-                              "${basket.bsktList[index]['curLength']} / ${basket.bsktList[index]['max']}",
-                          theme: false,
-                          color: theme.isDarkMode
-                              ? colors.textSecondaryDark
-                              : colors.textSecondaryLight,
-                          fw: 3),
+                      leading: Icon(
+                        Icons.folder,
+                        color: theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
+                        size: 28,
+                      ),
                       title: TextWidget.subText(
-                          text:
-                              "Basket name: ${basket.bsktList[index]['bsketName']}",
-                          theme: false,
-                          color: theme.isDarkMode
-                              ? colors.textSecondaryDark
-                              : colors.textSecondaryLight,
-                          fw: 3),
-                      subtitle: TextWidget.paraText(
-                          text:
-                              "Created on: ${basket.bsktList[index]['createdDate']}",
-                          theme: false,
-                          color: theme.isDarkMode
-                              ? colors.textSecondaryDark
-                              : colors.textSecondaryLight,
-                          fw: 3));
+                        text: bsktName,
+                        theme: false,
+                        color: theme.isDarkMode
+                            ? colors.textPrimaryDark
+                            : colors.textPrimaryLight,
+                        fw: 3,
+                      ),
+                      subtitle: TextWidget.captionText(
+                        text: "Created: ${basket.bsktList[index]['createdDate']} • ${basket.bsktList[index]['curLength']} items",
+                        theme: false,
+                        color: theme.isDarkMode
+                            ? colors.textSecondaryDark
+                            : colors.textSecondaryLight,
+                        fw: 0,
+                      ),
+                      trailing: TextWidget.captionText(
+                        text: "${basket.bsktList[index]['curLength']}",
+                        theme: false,
+                        color: theme.isDarkMode
+                            ? colors.textSecondaryDark
+                            : colors.textSecondaryLight,
+                        fw: 1,
+                      ),
+                  );
                 },
                 separatorBuilder: (BuildContext context, int index) {
                   return const ListDivider();
@@ -301,6 +287,14 @@ class BasketScripList extends ConsumerWidget {
     // If there's more than one unique exchange, return true
     return exchanges.length > 1;
   }
+
+  /// Checks if the current basket has any orders placed
+  bool _hasOrdersPlacedInBasket(String basketName, OrderProvider orderProvider) {
+    // Check if this basket has any order tracking
+    return orderProvider.basketOrderIds.containsKey(basketName) && 
+           orderProvider.basketOrderIds[basketName]!.isNotEmpty;
+  }
+
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -377,6 +371,7 @@ class BasketScripList extends ConsumerWidget {
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Margin Information Row
                     Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -563,7 +558,7 @@ class BasketScripList extends ConsumerWidget {
                                             children: [
                                               TextWidget.titleText(
                                                   text:
-                                                      "Are you sure you want to delete this basket Scrip ${basket.bsktScripList[index]['symbol']?.replaceAll("-EQ", "")}",
+                                                      "Are you sure you want to delete this basket Script ${basket.bsktScripList[index]['symbol']?.replaceAll("-EQ", "")}",
                                                   theme: theme.isDarkMode,
                                                   fw: 1,
                                                   align: TextAlign.center),
@@ -596,7 +591,8 @@ class BasketScripList extends ConsumerWidget {
                                                         child:
                                                             TextWidget.paraText(
                                                                 text: "No",
-                                                                theme: false,
+                                                                theme: theme
+                                                                      .isDarkMode,
                                                                 color: colors
                                                                     .colorGrey,
                                                                 fw: 1)),
@@ -632,8 +628,7 @@ class BasketScripList extends ConsumerWidget {
                                                           child: TextWidget
                                                               .paraText(
                                                                   text: "Yes",
-                                                                  theme: theme
-                                                                      .isDarkMode,
+                                                                 theme:!theme.isDarkMode,
                                                                   fw: 1)))
                                                 ])
                                           ]);
@@ -681,6 +676,7 @@ class BasketScripList extends ConsumerWidget {
                                     orderTpye: '',
                                     holdQty: '',
                                     isModify: true,
+                                    prd: basket.bsktScripList[index]['prd']?.toString(),
                                     raw: basket.bsktScripList[index]);
                                 Navigator.pushNamed(
                                     context, Routes.placeOrderScreen,
@@ -885,6 +881,47 @@ class BasketScripList extends ConsumerWidget {
                                               ])
                                             ]),
                                         const SizedBox(height: 10),
+                                        // Individual Order Status Display
+                                        if (basket.bsktScripList[index]['orderStatus'] != null) ...[
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                            decoration: BoxDecoration(
+                                              color: _getItemStatusColor(basket.bsktScripList[index]['orderStatus']).withOpacity(0.1),
+                                              borderRadius: BorderRadius.circular(6),
+                                              border: Border.all(
+                                                color: _getItemStatusColor(basket.bsktScripList[index]['orderStatus']).withOpacity(0.3),
+                                                width: 1,
+                                              ),
+                                            ),
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Icon(
+                                                  _getItemStatusIcon(basket.bsktScripList[index]['orderStatus']),
+                                                  size: 14,
+                                                  color: _getItemStatusColor(basket.bsktScripList[index]['orderStatus']),
+                                                ),
+                                                const SizedBox(width: 4),
+                                                TextWidget.captionText(
+                                                  text: "Order: ${basket.bsktScripList[index]['orderStatus'].toString().toUpperCase()}",
+                                                  theme: false,
+                                                  color: _getItemStatusColor(basket.bsktScripList[index]['orderStatus']),
+                                                  fw: 1,
+                                                ),
+                                                if (basket.bsktScripList[index]['avgPrice'] != null) ...[
+                                                  const SizedBox(width: 8),
+                                                  TextWidget.captionText(
+                                                    text: "@ ₹${basket.bsktScripList[index]['avgPrice']}",
+                                                    theme: false,
+                                                    color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                                                    fw: 0,
+                                                  ),
+                                                ],
+                                              ],
+                                            ),
+                                          ),
+                                          const SizedBox(height: 8),
+                                        ],
                                         Row(
                                             mainAxisAlignment:
                                                 MainAxisAlignment.spaceBetween,
@@ -935,44 +972,121 @@ class BasketScripList extends ConsumerWidget {
         ]),
         bottomNavigationBar: basket.bsktScripList.isEmpty
             ? null
-            : BottomAppBar(
-                shape: const CircularNotchedRectangle(),
-                child: Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 16),
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    height: 40,
-                    decoration: BoxDecoration(
-                        border: Border.all(
-                            color: _hasMultipleExchanges(basket.bsktScripList)
+            : Container(
+                height: 80,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                  border: Border(
+                    top: BorderSide(
+                      color: theme.isDarkMode 
+                          ? colors.darkColorDivider 
+                          : colors.colorDivider,
+                      width: 0.5,
+                    ),
+                  ),
+                ),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: _hasOrdersPlacedInBasket(bsktName, basket)
+                      ? OutlinedButton.icon(
+                          onPressed: () {
+                            basket.resetBasketOrderTracking(bsktName);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: const Text("Basket reset. You can place orders again."),
+                                backgroundColor: colors.ltpgreen,
+                                duration: const Duration(seconds: 2),
+                              ),
+                            );
+                          },
+                          icon: const Icon(Icons.refresh, size: 18),
+                          label: TextWidget.subText(
+                            text: "Reset Orders",
+                            theme: false,
+                            color: theme.isDarkMode 
+                                ? colors.colorWhite 
+                                : colors.colorBlack,
+                            fw: 1,
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            minimumSize: const Size(0, 48),
+                            side: BorderSide(
+                              color: theme.isDarkMode 
+                                  ? colors.colorWhite 
+                                  : colors.colorBlack,
+                              width: 1.5,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                        )
+                      : ElevatedButton.icon(
+                          onPressed: _hasMultipleExchanges(basket.bsktScripList)
+                              ? null
+                              : () async {
+                                  await basket.placeBasketOrder(context,navigateToOrderBook:false);
+                                },
+                          icon: const Icon(Icons.play_arrow, size: 18),
+                          label: TextWidget.subText(
+                            text: "Place Order",
+                            theme: false,
+                            color: colors.colorWhite,
+                            fw: 1,
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            minimumSize: const Size(0, 48),
+                            backgroundColor: _hasMultipleExchanges(basket.bsktScripList)
                                 ? Colors.grey
                                 : (theme.isDarkMode
-                                    ? colors.colorWhite
-                                    : colors.colorBlack)),
-                        borderRadius: BorderRadius.circular(108)),
-                    child: InkWell(
-                        onTap: _hasMultipleExchanges(basket.bsktScripList)
-                            ? () {
-                                ScaffoldMessenger.of(context)
-                                    .showSnackBar(SnackBar(
-                                  content: Text(
-                                      "Cannot place order: Basket should contain orders from only 1 exchange"),
-                                  backgroundColor: colors.darkred,
-                                  duration: Duration(seconds: 3),
-                                ));
-                              }
-                            : () async {
-                                basket.placeBasketOrder(context);
-                              },
-                        child: Center(
-                          child: TextWidget.subText(
-                              text: "Place Order",
-                              theme: false,
-                              color: _hasMultipleExchanges(basket.bsktScripList)
-                                  ? Colors.grey
-                                  : (theme.isDarkMode
-                                      ? colors.colorWhite
-                                      : colors.colorBlack),
-                              fw: 1),
-                        )))));
+                                    ? colors.primaryDark
+                                    : colors.primaryLight),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                        ),
+                ),
+              ));
+  }
+
+    // Helper methods for individual item status indicators
+  Color _getItemStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'placed':
+        return colors.colorBlue;
+      case 'complete':
+        return colors.ltpgreen;
+      case 'rejected':
+      case 'canceled':
+      case 'failed':
+        return colors.darkred;
+      case 'open':
+      case 'partial':
+      case 'trigger_pending':
+        return Colors.orange;
+      default:
+        return colors.colorGrey;
+    }
+  }
+
+    IconData _getItemStatusIcon(String status) {
+    switch (status.toLowerCase()) {
+      case 'placed':
+        return Icons.send;
+      case 'complete':
+        return Icons.check_circle;
+      case 'rejected':
+      case 'canceled':
+      case 'failed':
+        return Icons.cancel;
+      case 'open':
+      case 'partial':
+      case 'trigger_pending':
+        return Icons.schedule;
+      default:
+        return Icons.info_outline;
+    }
   }
 }

@@ -73,6 +73,7 @@ class OrderMarginInput {
   String rorgqty;
   String rorgprc;
   String blprc;
+  String bpprc;
   String trgprc;
   OrderMarginInput(
       {required this.exch,
@@ -85,5 +86,6 @@ class OrderMarginInput {
       required this.trantype,
       required this.tsym,
       required this.blprc,
+      required this.bpprc,
       required this.trgprc});
 }

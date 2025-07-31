@@ -189,6 +189,69 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   );
   GetQuotes? get getQuotes => _getQuotes;
 
+  // State preservation for basket operations
+  GetQuotes? _originalContextForBasket;
+
+  // Save current symbol context before basket operations
+  void preserveContextForBasket() {
+    _originalContextForBasket = GetQuotes(
+      requestTime: _getQuotes.requestTime,
+      stat: _getQuotes.stat,
+      exch: _getQuotes.exch,
+      tsym: _getQuotes.tsym,
+      cname: _getQuotes.cname,
+      symname: _getQuotes.symname,
+      seg: _getQuotes.seg,
+      instname: _getQuotes.instname,
+      isin: _getQuotes.isin,
+      pp: _getQuotes.pp,
+      ls: _getQuotes.ls,
+      ti: _getQuotes.ti,
+      mult: _getQuotes.mult,
+      lut: _getQuotes.lut,
+      uc: _getQuotes.uc,
+      lc: _getQuotes.lc,
+      wk52H: _getQuotes.wk52H,
+      wk52L: _getQuotes.wk52L,
+      toi: _getQuotes.toi,
+      issuecap: _getQuotes.issuecap,
+      cutofAll: _getQuotes.cutofAll,
+      prcftrD: _getQuotes.prcftrD,
+      token: _getQuotes.token,
+      lp: _getQuotes.lp,
+      c: _getQuotes.c,
+      h: _getQuotes.h,
+      l: _getQuotes.l,
+      ap: _getQuotes.ap,
+      o: _getQuotes.o,
+      v: _getQuotes.v,
+      ltq: _getQuotes.ltq,
+      ltt: _getQuotes.ltt,
+      ltd: _getQuotes.ltd,
+      tbq: _getQuotes.tbq,
+      tsq: _getQuotes.tsq,
+      bp1: _getQuotes.bp1,
+      sp1: _getQuotes.sp1,
+      ordMsg: _getQuotes.ordMsg,
+      emsg: _getQuotes.emsg,
+      poi: _getQuotes.poi,
+      chng: _getQuotes.chng,
+      pc: _getQuotes.pc,
+      expDate: _getQuotes.expDate,
+      option: _getQuotes.option,
+      symbol: _getQuotes.symbol,
+    );
+  }
+
+  // Restore original symbol context after basket operations
+  void restoreContextFromBasket() {
+    if (_originalContextForBasket != null) {
+      _getQuotes = _originalContextForBasket!;
+      _originalContextForBasket = null;
+      notifyListeners();
+    }
+  }
+
   GetQuotes? _getStikePrc;
   GetQuotes? get getStikePrc => _getStikePrc;
 

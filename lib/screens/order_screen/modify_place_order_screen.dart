@@ -1673,6 +1673,7 @@ class _ModifyPlaceOrderScreenState extends ConsumerState<ModifyPlaceOrderScreen>
         trantype: widget.modifyOrderArgs.trantype!,
         tsym: "${widget.scripInfo.tsym}",
         blprc: '',
+        bpprc: '',
         trgprc: prcType == "SL-LMT" || prcType == "SL-MKT" ? triggerPriceCtrl.text : "");
     ref.read(orderProvider).fetchOrderMargin(input, context);
     BrokerageInput brokerageInput = BrokerageInput(
