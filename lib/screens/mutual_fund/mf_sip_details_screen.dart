@@ -59,9 +59,18 @@ class _mfSipdetScren extends State<mfSipdetScren>
                                      
                                     if (widget.data?.status ==
                                         "ACTIVE")
-                                        _buildPauseButton( context, mfdata, theme),
-                                      _buildCancelButton(
-                                          context, mfdata, theme), 
+                                        Row(
+                                          children: [
+                                            Expanded(
+                                              child: _buildPauseButton(context, mfdata, theme),
+                                            ),
+                                            const SizedBox(width: 12),
+                                            Expanded(
+                                              child: _buildCancelButton(context, mfdata, theme),
+                                            ),
+                                          ],
+                                        ),
+                                     
                                     // if (widget.data?.invList !=
                                     //         null &&
                                     //     widget.data!.invList!
@@ -91,7 +100,7 @@ class _mfSipdetScren extends State<mfSipdetScren>
                                             "${widget.data?.sIPRegnNo ?? ""}",
                                             theme),
                                        rowOfInfoData(
-                                            "Sett Type",
+                                            "Settlement Type",
                                             "${widget.data?.settType ?? ""}",
                                             theme),
 
@@ -194,7 +203,7 @@ class _mfSipdetScren extends State<mfSipdetScren>
                   child: TextWidget.paraText(
                     text: widget.data?.status == "ACTIVE"
                         ? "Live"
-                        : "Cancel",
+                        : widget.data?.status,
                     color: widget.data?.status == "ACTIVE"
                         ? colors.profit
                         : colors.loss,
@@ -254,7 +263,21 @@ class _mfSipdetScren extends State<mfSipdetScren>
             width: double.infinity,
             child: ElevatedButton(
               onPressed: () async {
-               
+               await showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return MfSipCancelalert(
+                        mfcancels: widget.data?.name ?? "",
+                        mforderno: widget.data?.sIPRegnNo ?? "",
+                        mfscode: widget.data?.schemeCode ?? "",
+                         
+                        message: "pause",
+                        mffreqtype:
+                            widget.data?.frequencyType ?? "",
+                        mfnextsipdate:
+                            widget.data?.NextSIPDate ?? "");
+                  },
+                );
               },
               style: ElevatedButton.styleFrom(
                 elevation: 0,
@@ -300,13 +323,13 @@ class _mfSipdetScren extends State<mfSipdetScren>
                   context: context,
                   builder: (BuildContext context) {
                     return MfSipCancelalert(
-                        mfcancels: widget.data?.schemename ?? "",
-                        mforderno: widget.data?.sipregnno ?? "",
-                        mfreferno:
-                            widget.data?.internalrefernumber ?? "",
+                        mfcancels: widget.data?.name ?? "",
+                        mforderno: widget.data?.sIPRegnNo ?? "",
+                        mfscode: widget.data?.schemeCode ?? "",
+                         
                         message: "sip",
                         mffreqtype:
-                            widget.data?.frequency_type ?? "",
+                            widget.data?.frequencyType ?? "",
                         mfnextsipdate:
                             widget.data?.NextSIPDate ?? "");
                   },

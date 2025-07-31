@@ -119,7 +119,7 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                           width: MediaQuery.of(context).size.width * 0.8,
                           child: TextWidget.subText(
                               text:
-                                  "${(mfOrder.orderpagetitle == "SDS" && mfOrder.factSheetDataModel!.data?.name != null) ? mfOrder.factSheetDataModel!.data?.name!.replaceAll(RegExp(r'(Reg \(G\)|\(G\))$'), ' ') : '${widget.mfData.name}'}",
+                                  "${(mfOrder.orderpagetitle == "SDS" && mfOrder.factSheetDataModel!.data?.name != null) ? mfOrder.factSheetDataModel!.data?.name!.replaceAll(RegExp(r'(Reg \(G\)|\(G\))$'), ' ') : '${widget.mfData.fSchemeName}'}",
                               textOverflow: TextOverflow.ellipsis,
                               theme: theme.isDarkMode,
                               color: theme.isDarkMode
@@ -1299,6 +1299,8 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                                     //     mfOrder.installmentAmtError == ""
                                     ) {
                                   if (mfOrder.mfOrderTpye == "One-time") {
+                    Navigator.pop(context);
+
                                     final startTime = DateTime.now();
                                     // print(mfOrder.isValidUpiId(widget.mfData));
                                     // print(widget.mfData);
@@ -1310,11 +1312,24 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                                     // } else if (mfOrder.paymentName != "UPI") {
                                     // mfPlaceorder(widget.mfData, mfOrder, context);
                                     // }
-                                    _showBottomSheet(
-                                        context,
-                                        MfOrderBottomsheet(
+                                    showModalBottomSheet(
+                                      context: context,
+                                      isScrollControlled: true,
+                                      isDismissible: mfOrder.ispaymentcalled != true,
+                                      enableDrag: false,
+                                      shape: const RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.vertical(
+                                          top: Radius.circular(15),
+                                        ),
+                                      ),
+                                      builder: (context) => WillPopScope(
+                                        onWillPop: () async => mfOrder.ispaymentcalled != true,
+                                        child: MfOrderBottomsheet(
                                           data: widget.mfData,
-                                        ));
+                                        ),
+                                      ),
+                                    );
+
                                     await mfPlaceorder(
                                         widget.mfData, mfOrder, context);
 
@@ -1374,7 +1389,7 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                               }
                             },
                             style: OutlinedButton.styleFrom(
-                              minimumSize: const Size(0, 45),
+                              minimumSize: const Size(0, 40),
                               side: BorderSide(color: colors.btnOutlinedBorder),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(5),
@@ -1667,15 +1682,6 @@ void _showCalendarDialog(
       context: context,
       isScrollControlled: true,
       builder: (BuildContext context) {
-        final screenHeight = MediaQuery.of(context).size.height;
-        final screenWidth = MediaQuery.of(context).size.width;
-
-        // Calculate responsive dimensions
-        final maxHeight = screenHeight * 0.5; // 70% of screen height
-        final minHeight = 400.0; // Minimum height
-        final calendarHeight = (maxHeight - 120).clamp(
-            minHeight, maxHeight); // Subtract space for header and buttons
-
         return Container(
           padding: const EdgeInsets.all(16.0),
           child: Column(
@@ -1696,7 +1702,7 @@ void _showCalendarDialog(
               ),
               const SizedBox(height: 12),
               SizedBox(
-                height: calendarHeight,
+                height: 350,
                 child: _SIPCalendar(
                   theme: theme,
                   mfOrder: mfOrder,
@@ -1814,20 +1820,16 @@ class _SIPCalendarState extends State<_SIPCalendar> {
 
     return Column(
       children: [
-        SizedBox(
-            height: MediaQuery.of(context).size.height *
-                0.02), // Responsive spacing
+        const SizedBox(height: 16),
 
         // Static date grid (1-31)
         Expanded(
           child: GridView.builder(
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 7,
               childAspectRatio: 1.0,
-              crossAxisSpacing: MediaQuery.of(context).size.width *
-                  0.02, // Responsive spacing
-              mainAxisSpacing: MediaQuery.of(context).size.height *
-                  0.005, // Responsive spacing
+              crossAxisSpacing: 8,
+              mainAxisSpacing: 4,
             ),
             itemCount: 31,
             itemBuilder: (context, index) {
@@ -1836,53 +1838,37 @@ class _SIPCalendarState extends State<_SIPCalendar> {
             },
           ),
         ),
-        SizedBox(
-            height: MediaQuery.of(context).size.height *
-                0.01), // Responsive spacing
+        const SizedBox(height: 8),
 
         // Legend for available/unavailable dates
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              width:
-                  MediaQuery.of(context).size.width * 0.03, // Responsive width
-              height:
-                  MediaQuery.of(context).size.width * 0.03, // Responsive height
+              width: 12,
+              height: 12,
               decoration: BoxDecoration(
                 color: const Color(0xffF1F3F8),
-                borderRadius: BorderRadius.circular(
-                    MediaQuery.of(context).size.width *
-                        0.005), // Responsive radius
+                borderRadius: BorderRadius.circular(2),
               ),
             ),
-            SizedBox(
-                width: MediaQuery.of(context).size.width *
-                    0.01), // Responsive spacing
+            const SizedBox(width: 4),
             TextWidget.captionText(
               text: "Available",
               theme: widget.theme.isDarkMode,
               color: colors.colorBlack,
               fw: 3,
             ),
-            SizedBox(
-                width: MediaQuery.of(context).size.width *
-                    0.04), // Responsive spacing
+            const SizedBox(width: 16),
             Container(
-              width:
-                  MediaQuery.of(context).size.width * 0.03, // Responsive width
-              height:
-                  MediaQuery.of(context).size.width * 0.03, // Responsive height
+              width: 12,
+              height: 12,
               decoration: BoxDecoration(
                 color: const Color(0xFFE0E0E0),
-                borderRadius: BorderRadius.circular(
-                    MediaQuery.of(context).size.width *
-                        0.005), // Responsive radius
+                borderRadius: BorderRadius.circular(2),
               ),
             ),
-            SizedBox(
-                width: MediaQuery.of(context).size.width *
-                    0.01), // Responsive spacing
+            const SizedBox(width: 4),
             TextWidget.captionText(
               text: "Unavailable",
               theme: widget.theme.isDarkMode,
@@ -1892,9 +1878,7 @@ class _SIPCalendarState extends State<_SIPCalendar> {
           ],
         ),
 
-        SizedBox(
-            height: MediaQuery.of(context).size.height *
-                0.01), // Responsive spacing
+        const SizedBox(height: 8),
         // Confirm button
         SizedBox(
           width: double.infinity,
@@ -1954,13 +1938,11 @@ class _SIPCalendarState extends State<_SIPCalendar> {
             }
           : null, // No action for unavailable dates
       child: Padding(
-        padding: EdgeInsets.all(
-            MediaQuery.of(context).size.width * 0.002), // Responsive padding
+        padding: const EdgeInsets.all(1.0),
         child: Container(
           decoration: BoxDecoration(
             color: bgColor,
-            borderRadius: BorderRadius.circular(
-                MediaQuery.of(context).size.width * 0.02), // Responsive radius
+            borderRadius: BorderRadius.circular(8.0),
           ),
           child: Center(
             child: TextWidget.paraText(

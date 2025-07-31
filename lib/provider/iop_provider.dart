@@ -337,7 +337,7 @@ class IPOProvider extends DefaultChangeNotifier {
     print("searchCommonIpo :: $value");
     if (value.length > 1) {
       _ipoCommonSearchList = [];
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      // ScaffoldMessenger.of(context).hideCurrentSnackBar();
 
       _ipoCommonSearchList = _ipoCommonSearchAllIpos
           .where((element) => element.companyName != ""
@@ -345,12 +345,12 @@ class IPOProvider extends DefaultChangeNotifier {
               : element.name!.toUpperCase().contains(value.toUpperCase()))
           .toList();
       print("_ipoCommonSearchList :: ${inspect(_ipoCommonSearchList)}");
-      if (_ipoCommonSearchList.isEmpty) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(warningMessage(context, 'No Data Found'));
-      } else {
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-      }
+      // if (_ipoCommonSearchList.isEmpty) {
+      //   ScaffoldMessenger.of(context)
+      //       .showSnackBar(warningMessage(context, 'No Data Found'));
+      // } else {
+      //   ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      // }
     } else {
       _ipoCommonSearchList = [];
     }
@@ -1286,16 +1286,44 @@ class IPOProvider extends DefaultChangeNotifier {
         }
       }
       _openorder?.sort((b, a) {
-        // final DateFormat dateFormat = DateFormat("yyyy-MM-dd hh:mm a"); //"2025-01-30 13:37:46.945384"
-        DateTime dateA = DateTime.parse(a.responseDatetime.toString());
-        DateTime dateB = DateTime.parse(b.responseDatetime.toString());
-        return dateA.compareTo(dateB);
+        try {
+          // Handle empty or null responseDatetime
+          if (a.responseDatetime == null ||
+              a.responseDatetime.toString().isEmpty) {
+            return 1; // Put items with null/empty datetime at the end
+          }
+          if (b.responseDatetime == null ||
+              b.responseDatetime.toString().isEmpty) {
+            return -1; // Put items with null/empty datetime at the end
+          }
+
+          DateTime dateA = DateTime.parse(a.responseDatetime.toString());
+          DateTime dateB = DateTime.parse(b.responseDatetime.toString());
+          return dateA.compareTo(dateB); // Newest first (descending order)
+        } catch (e) {
+          print("Error parsing datetime in openorder sort: $e");
+          return 0; // Keep original order if parsing fails
+        }
       });
       _closeorder?.sort((b, a) {
-        // final DateFormat dateFormat = DateFormat("yyyy-MM-dd hh:mm a"); //"2025-01-30 13:37:46.945384"
-        DateTime dateA = DateTime.parse(a.responseDatetime.toString());
-        DateTime dateB = DateTime.parse(b.responseDatetime.toString());
-        return dateA.compareTo(dateB);
+        try {
+          // Handle empty or null responseDatetime
+          if (a.responseDatetime == null ||
+              a.responseDatetime.toString().isEmpty) {
+            return 1; // Put items with null/empty datetime at the end
+          }
+          if (b.responseDatetime == null ||
+              b.responseDatetime.toString().isEmpty) {
+            return -1; // Put items with null/empty datetime at the end
+          }
+
+          DateTime dateA = DateTime.parse(a.responseDatetime.toString());
+          DateTime dateB = DateTime.parse(b.responseDatetime.toString());
+          return dateA.compareTo(dateB); // Newest first (descending order)
+        } catch (e) {
+          print("Error parsing datetime in closeorder sort: $e");
+          return 0; // Keep original order if parsing fails
+        }
       });
     } catch (e) {
       print("ordersplit :: ${e}");

@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:flutter/cupertino.dart';
 import 'package:mynt_plus/models/mf_model/all_category_new_model.dart';
 import 'package:mynt_plus/models/mf_model/mf_bestnewapi_list_model.dart';
 import 'package:mynt_plus/models/mf_model/mf_hold_singlepage_model.dart';
@@ -205,7 +206,7 @@ mixin MutualFundApi on ApiCore {
             "placed_by": "${prefs.clientId}"
           }));
 
-      final json = jsonDecode((res.body)); 
+      final json = jsonDecode((res.body));
       log("palce order mf ==>$json");
 
       return MfPlaceOrderResponces.fromJson(json as Map<String, dynamic>);
@@ -219,15 +220,11 @@ mixin MutualFundApi on ApiCore {
       final uri = Uri.parse(apiLinks.lumpsumOrderbooknew);
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
-          body: jsonEncode({
-            "ClientCode": "${prefs.clientId}"
-            }));
-      final res2 = {
-            "client_code": "${prefs.clientId}"
-            };
+          body: jsonEncode({"ClientCode": "${prefs.clientId}"}));
+      final res2 = {"client_code": "${prefs.clientId}"};
       final json = jsonDecode((res.body));
-    print("MF orderBook ==>${json}");
-    print("MF res2 ==>${res2}");
+      print("MF orderBook ==>${json}");
+      print("MF res2 ==>${res2}");
       // log("MF orderBook ==>${json}");
 
       return MFOrderBookModel.fromJson(json as Map<String, dynamic>);
@@ -258,21 +255,23 @@ mixin MutualFundApi on ApiCore {
     }
   }
 
-  cancelsipapi(orderno, siprefno, droupreason, retext) async {
+  cancelsipapi(orderno, droupreason, retext, scode) async {
     // print("ordermo ${orderno} ,siprefno ${siprefno} , droupreason ${droupreason} ");
     try {
       // print("object");
       // print("${orderno}");
 
-      final uri = Uri.parse(apiLinks.sipcancelapiend);
+      final uri = Uri.parse(apiLinks.mfsipcancelnew);
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
           body: jsonEncode({
-            "client_code": "${prefs.clientId}",
-            "xsip_reg_no": orderno,
-            "internal_refer_no": siprefno,
-            "case_no": droupreason,
-            "remarks": droupreason == "13" ? "${retext}" : ""
+            "ClientCode": "${prefs.clientId}",
+            "CaseNo": droupreason,
+            "CaseRemarks": droupreason == "13" ? "${retext}" : "",
+            "placed_by": "${prefs.clientId}",
+            "source": "API",
+            "SIPRegnNo": orderno,
+            "scheme_code": scode
           }));
 
       final json = jsonDecode((res.body));
@@ -285,25 +284,19 @@ mixin MutualFundApi on ApiCore {
     }
   }
 
-  pausesipapi(orderno, notext, freqty, nxtdate) async {
+  pausesipapi(orderno, notext, freqty, nxtdate,scode) async {
     // print("pausee ordermo ${orderno} ,siprefno ${notext}");
     try {
-      print("object pausee");
-      print("object paus function prefs.clientId${prefs.clientId}");
-      print("object paus function calll${orderno}");
-      print("object paus function installments${notext}");
-      print("object paus freqtys${freqty}");
-      print("object paus nxtdatents${nxtdate}");
-
-      final uri = Uri.parse(apiLinks.pausesipendpoint);
+      final uri = Uri.parse(apiLinks.mfsippausenew);
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
           body: jsonEncode({
-            "client_code": "${prefs.clientId}",
-            "sip_register_number": orderno,
-            "installments": notext,
-            "frequency": freqty,
-            "next_installment_date": nxtdate
+            "ClientCode": "${prefs.clientId}",
+            "placed_by": "${prefs.clientId}",
+            "source": "API",
+            "SIPRegnNo": orderno,
+            "scheme_code": scode,
+            "installments": notext
           }));
 
       final json = jsonDecode((res.body));
@@ -403,21 +396,17 @@ mixin MutualFundApi on ApiCore {
       final uri = Uri.parse(apiLinks.mfXSipordernew);
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
-          body: jsonEncode(
-            {
-                "ClientCode": prefs.clientId,
-                "no_of_installment": noofinstallment,
-                "scheme_code": schemecode,
-                "freq_type": freqtype,
-                "installment_amt": amt,
-                "mandate_id": mandateId,
-                "start_date": startDate,
-                "placed_by": prefs.clientId,
-                "source": "MOB"
-            }
-            
-            
-            ));
+          body: jsonEncode({
+            "ClientCode": prefs.clientId,
+            "no_of_installment": noofinstallment,
+            "scheme_code": schemecode,
+            "freq_type": freqtype,
+            "installment_amt": amt,
+            "mandate_id": mandateId,
+            "start_date": startDate,
+            "placed_by": prefs.clientId,
+            "source": "MOB"
+          }));
 
       final json = jsonDecode((res.body));
 
@@ -628,17 +617,18 @@ mixin MutualFundApi on ApiCore {
     }
   }
 
-    Future<UPIPaymentStatusCheck> getstatuspaymentcheck(orderid) async {
-    try { 
+  Future<UPIPaymentStatusCheck> getstatuspaymentcheck(orderid) async {
+    try {
       final uri = Uri.parse(apiLinks.mfupipaymentchecknew);
 
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
-          body: jsonEncode({"ClientCode": "${prefs.clientId}", "OrderId": orderid}));
+          body: jsonEncode(
+              {"ClientCode": "${prefs.clientId}", "OrderId": orderid}));
       // if (res.statusCode == 200) {
-        final json = jsonDecode((res.body));
+      final json = jsonDecode((res.body));
       // }
-        print("UPI Payment Status Check Response: $json");
+      print("UPI Payment Status Check Response: $json");
       //log("X-SIP OREDER CANCEL RESONE ==>$json");
 
       return UPIPaymentStatusCheck.fromJson(json as Map<String, dynamic>);
@@ -776,16 +766,14 @@ mixin MutualFundApi on ApiCore {
             "client_code": "${prefs.clientId}",
             "order_number": id,
             "total_amount": val,
-            "mode_of_payment":
-              ordertype,
+            "mode_of_payment": ordertype,
             "vpa_id": upiid,
             "loop_back_url": "https://app.mynt.in/orders",
             "allow_loop_back": "Y"
-          })); 
-      final json = jsonDecode((res.body)); 
+          }));
+      final json = jsonDecode((res.body));
       return UpiIdOrderResponse.fromJson(json as Map<String, dynamic>);
     } catch (e) {
-      
       rethrow;
     }
   }
@@ -832,17 +820,15 @@ mixin MutualFundApi on ApiCore {
     }
   }
 
-  Future<Sip_list_data> getSiplist() async {
+  Future<Sip_list_data> getSiplist(val) async {
     try {
       final uri = Uri.parse(apiLinks.mfsiplistnew);
+      final payload = val != 'notlive'
+          ? {"ClientCode": "${prefs.clientId}", "status": "ACTIVE"}
+          : {"ClientCode": "${prefs.clientId}"};
+
       final res = await apiClient.post(uri,
-          headers: defaultHeaders,
-          body: jsonEncode({
-             
-                "ClientCode":"${prefs.clientId}",
-                "status":"ACTIVE"
-             
-          }));
+          headers: defaultHeaders, body: jsonEncode(payload));
 
       final json = jsonDecode((res.body));
 
@@ -875,22 +861,24 @@ mixin MutualFundApi on ApiCore {
     }
   }
 
-  Future<mf_order_sig_det> getsingleortderapi(String orderid,
-  //  String bs,
-  //     String type, String status, String sipno, String orderStatus
-      ) async {
+  Future<mf_order_sig_det> getsingleortderapi(
+    String orderid,
+    //  String bs,
+    //     String type, String status, String sipno, String orderStatus
+  ) async {
     try {
       final uri = Uri.parse(apiLinks.mfsingleordernew);
 
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
-          body: jsonEncode({"ClientCode": "${prefs.clientId}","OrderId": orderid}));
+          body: jsonEncode(
+              {"ClientCode": "${prefs.clientId}", "OrderId": orderid}));
       // body: jsonEncode({"client_code": "ZE1A40","sipregnno":"126150781"}));
 
       final json = jsonDecode((res.body));
 
       print("mfsingle orfderrrrrr$json");
-      final PAYLOAD = {"ClientCode": "${prefs.clientId}","OrderId": orderid};
+      final PAYLOAD = {"ClientCode": "${prefs.clientId}", "OrderId": orderid};
       print("Request::$PAYLOAD");
       // print("mflisttt Type MF ==>$json.total_sip_amount");
 

@@ -11,17 +11,17 @@ import '../../../../sharedWidget/functions.dart';
 import '../../../../sharedWidget/list_divider.dart';
 
 class MfPaymentRespAlert extends StatefulWidget {
+  final Map<String, dynamic>? upiData;
   const MfPaymentRespAlert({
+    this.upiData,
     super.key,
   });
 
   @override
-  State<MfPaymentRespAlert> createState() =>
-      _MfPaymentRespAlertState();
+  State<MfPaymentRespAlert> createState() => _MfPaymentRespAlertState();
 }
 
-class _MfPaymentRespAlertState
-    extends State<MfPaymentRespAlert> {
+class _MfPaymentRespAlertState extends State<MfPaymentRespAlert> {
   @override
   Widget build(BuildContext context) {
     return PopScope(
@@ -54,21 +54,20 @@ class _MfPaymentRespAlertState
                     children: [
                       const CustomDragHandler(),
                       Icon(
-                        fund.hdfcpaymentstatus!.upiId!.status == "SUCCESS"
+                        widget.upiData?["status"] == "PAYMENT COMPLETED"
                             ? Icons.check_circle_rounded
                             : Icons.cancel_rounded,
                         //
-                        color:
-                            fund.hdfcpaymentstatus!.upiId!.status == "SUCCESS"
-                                ? colors.kColorGreenButton
-                                : colors.kColorRedButton,
+                        color: widget.upiData?["status"] == "PAYMENT COMPLETED"
+                            ? colors.kColorGreenButton
+                            : colors.kColorRedButton,
                         size: 70,
                       ),
                       const SizedBox(
                         height: 16,
                       ),
                       TextWidget.subText(
-                        text: "${fund.hdfcpaymentstatus!.upiId!.status}",
+                        text: "${widget.upiData?["status"]}",
                         theme: false,
                         color: theme.isDarkMode
                             ? colors.textPrimaryDark
@@ -78,7 +77,7 @@ class _MfPaymentRespAlertState
                         height: 5,
                       ),
                       TextWidget.paraText(
-                        text: fund.hdfcpaymentstatus!.upiId!.status == "SUCCESS"
+                        text: widget.upiData?["status"] == "PAYMENT COMPLETED"
                             ? "Transaction Success"
                             : "Transaction fail",
                         theme: false,
@@ -88,7 +87,7 @@ class _MfPaymentRespAlertState
                         height: 10,
                       ),
                       TextWidget.custmText(
-                          text: "₹${fund.hdfcpaymentstatus!.upiId!.amount}",
+                          text: "₹${widget.upiData?["OrderVal"]}",
                           theme: false,
                           color: theme.isDarkMode
                               ? colors.colorWhite
@@ -98,9 +97,7 @@ class _MfPaymentRespAlertState
                         height: 10,
                       ),
                       TextWidget.paraText(
-                        text: formatDateTimepaymet(
-                            value:
-                                "${fund.hdfcpaymentstatus!.upiId!.transactionAuthDate}"),
+                        text: "${widget.upiData?["datetime"]}",
                         theme: false,
                         color: colors.textSecondaryLight,
                       ),
@@ -108,17 +105,11 @@ class _MfPaymentRespAlertState
                   ),
                 ),
                 const SizedBox(height: 16),
-                data("UPI Address",
-                    "${fund.hdfcpaymentstatus!.upiId!.clientVPA}", theme),
-                data("Order ID",
-                    "${fund.hdfcpaymentstatus!.upiId!.orderNumber}", theme),
-                data(
-                    "UPI Transaction ID",
-                    "${fund.hdfcpaymentstatus!.upiId!.upiTransactionNo}",
+                // data("UPI Address", "${widget.upiData?["datetime"]}", theme),
+                data("Order ID", "${widget.upiData?["OrderId"]}", theme),
+                data("UPI Transaction ID", "${widget.upiData?["TransNo"]}",
                     theme),
-                data(
-                    "Status Description",
-                    "${fund.hdfcpaymentstatus!.upiId!.statusDescription}",
+                data("Status Description", "${widget.upiData?['Remarks']}",
                     theme),
                 const SizedBox(height: 16),
                 Padding(
@@ -138,8 +129,6 @@ class _MfPaymentRespAlertState
                         ),
                         onPressed: () {
                           // Clear the amount text field
-                          ref.read(transcationProvider).amount.clear();
-                          Navigator.pop(context);
                           Navigator.pop(context);
                           FocusScope.of(context).unfocus();
                         },

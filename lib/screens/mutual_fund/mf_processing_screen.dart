@@ -16,18 +16,17 @@ import '../../../../sharedWidget/custom_drag_handler.dart';
 import '../../../../sharedWidget/functions.dart';
 import '../../../../sharedWidget/payment_loader.dart';
 import '../../../../sharedWidget/snack_bar.dart';
-import 'mf_payment_resp_alert.dart';
+import '../profile_screen/fund_screen/upi_id_screens/mf_payment_resp_alert.dart';
 
-class UPIIDPaymentCancelAlert extends ConsumerStatefulWidget {
-  const UPIIDPaymentCancelAlert({super.key, this.data});
+class MfUPIProcessingScreen extends ConsumerStatefulWidget {
+  const MfUPIProcessingScreen({super.key, this.data});
   final String? data;
   @override
-  ConsumerState<UPIIDPaymentCancelAlert> createState() =>
-      _UPIIDPaymentCancelAlertState();
+  ConsumerState<MfUPIProcessingScreen> createState() =>
+      _MfUPIProcessingScreen();
 }
 
-class _UPIIDPaymentCancelAlertState
-    extends ConsumerState<UPIIDPaymentCancelAlert> {
+class _MfUPIProcessingScreen extends ConsumerState<MfUPIProcessingScreen> {
   Timer? _timer;
   Timer? _autoPopTimer;
   @override
@@ -38,54 +37,52 @@ class _UPIIDPaymentCancelAlertState
 
   void _handleInitialLogic() async {
     final mfProv = ref.read(mfProvider);
-    final txnProv = ref.read(transcationProvider);
 
-    if (mfProv.triggerfromMF == true) {
-      _timer = Timer.periodic(const Duration(seconds: 3), (timer) async {
-        await mfProv.getpaymentstatus(
-            widget.data, context); // Use await if async
+    _timer = Timer.periodic(const Duration(seconds: 3), (timer) async {
+      await mfProv.getpaymentstatus(widget.data, context); // Use await if async
 
-        final status = mfProv.statusCheckUpi?.status;
-        if (status == 'PAYMENT REJECTED' || status == 'PAYMENT COMPLETED') {
-          _timer?.cancel(); // This is safe even if already cancelled
-          _autoPopTimer?.cancel(); // Cancel auto-pop if running
+      final status = mfProv.statusCheckUpi?.status;
+      if ((status == 'PAYMENT REJECTED') || (status == 'PAYMENT COMPLETED')) {
+        _timer?.cancel(); // This is safe even if already cancelled
+        _autoPopTimer?.cancel(); // Cancel auto-pop if running
 
-          mfProv.setterformftrigger(false);
-          ref.read(mfProvider).IsPaymentCalled(false);
-
-          if (Navigator.of(context).canPop()) {
-            Navigator.of(context).pop();
-          }
-          ScaffoldMessenger.of(context).showSnackBar(
-                warningMessage(context, '$status'));
-          }
-        
-      });
-
-      _autoPopTimer = Timer(const Duration(minutes: 3), () {
-        _timer?.cancel(); // Also stop periodic timer here as a fallback
         mfProv.setterformftrigger(false);
         ref.read(mfProvider).IsPaymentCalled(false);
 
         if (Navigator.of(context).canPop()) {
-          Navigator.of(context).pop();
-          ScaffoldMessenger.of(context).showSnackBar(
-                warningMessage(context, 'Timeout try again'));
-          
-        }
-      });
-    } else {
-      _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
-        final status = txnProv.hdfcpaymentstatus?.upiId?.status;
-        if (status != "REJECTED" || status != "SUCCESS") {
-          txnProv.fetchHdfcpaymetstatus(
-            context,
-            '${txnProv.hdfctranction!.data!.orderNumber}',
-            '${txnProv.hdfctranction!.data!.upiTransactionNo}',
+          if (mfProv.paymentName == "UPI") {
+            Navigator.of(context).pop();
+          }
+          showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            enableDrag: false,
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.vertical(
+                top: Radius.circular(15),
+              ),
+            ),
+            builder: (context) => MfPaymentRespAlert(
+              upiData: mfProv.statusCheckUpi?.toJson(),
+            ),
           );
         }
-      });
-    }
+        ScaffoldMessenger.of(context)
+            .showSnackBar(warningMessage(context, '$status'));
+      }
+    });
+
+    _autoPopTimer = Timer(const Duration(minutes: 3), () {
+      _timer?.cancel(); // Also stop periodic timer here as a fallback
+      mfProv.setterformftrigger(false);
+      ref.read(mfProvider).IsPaymentCalled(false);
+
+      if (Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+        ScaffoldMessenger.of(context)
+            .showSnackBar(warningMessage(context, 'Timeout try again'));
+      }
+    });
   }
 
   @override
@@ -97,25 +94,18 @@ class _UPIIDPaymentCancelAlertState
 
   void _triggerButtonAction() {
     // Clear the amount text field
-    if (ref.read(mfProvider).triggerfromMF == true) {
-      ref.read(mfProvider).setterformftrigger(false);
-      _timer?.cancel(); // This is safe even if already cancelled
-          _autoPopTimer?.cancel();
-      Navigator.pop(context);
-      ref.read(mfProvider).IsPaymentCalled(false);
-    } else {
-      ref.read(transcationProvider).amount.clear();
-      Navigator.pop(context);
-      _timer?.cancel();
-      FocusScope.of(context).unfocus();
-      ref.read(mfProvider).IsPaymentCalled(false);
-    }
+
+    ref.read(mfProvider).setterformftrigger(false);
+    _timer?.cancel(); // This is safe even if already cancelled
+    _autoPopTimer?.cancel();
+    Navigator.pop(context);
+    ref.read(mfProvider).IsPaymentCalled(false);
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = ref.read(themeProvider);
-    // final upiId = ref.read(transcationProvider);
+    final mfprovider = ref.read(mfProvider);
 
     return PopScope(
         canPop: true, // Allows default back navigation
@@ -139,7 +129,7 @@ class _UPIIDPaymentCancelAlertState
                     padding: const EdgeInsets.only(top: 10, bottom: 5),
                     alignment: Alignment.center,
                     child: TextWidget.subText(
-                      text: 'Awaiting UPI conformation',
+                      text: 'Awaiting ${mfprovider.paymentName} confirmation',
                       theme: false,
                       color: theme.isDarkMode
                           ? colors.textPrimaryDark
@@ -150,18 +140,17 @@ class _UPIIDPaymentCancelAlertState
                       width: MediaQuery.of(context).size.width,
                       child: Column(children: [
                         // const ListDivider(),
-                        const SizedBox(height: 3),
+                        const SizedBox(height: 16),
                         const ProgressiveDotsLoader(),
-                        const SizedBox(height: 3),
+                        const SizedBox(height: 16),
+
                         TextWidget.subText(
                           text: 'This will take a few seconds.',
                           theme: false,
                           color: colors.textPrimaryLight,
                         ),
                       ])),
-                  const SizedBox(
-                    height: 10,
-                  ),
+                  const SizedBox(height: 24),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8),
                     child: SizedBox(

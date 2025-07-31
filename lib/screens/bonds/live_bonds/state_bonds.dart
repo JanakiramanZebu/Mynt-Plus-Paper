@@ -15,7 +15,8 @@ class StateBondsScreen extends StatelessWidget {
 
   // Static constants for better performance
   static const EdgeInsets _itemPadding = EdgeInsets.all(16);
-  static const EdgeInsets _buttonPadding = EdgeInsets.symmetric(horizontal: 14, vertical: 5);
+  static const EdgeInsets _buttonPadding =
+      EdgeInsets.symmetric(horizontal: 14, vertical: 5);
   static const double _badgeBorderRadius = 4.0;
   static const double _buttonHeight = 30.0;
   static const double _buttonBorderRadius = 50.0;
@@ -26,11 +27,11 @@ class StateBondsScreen extends StatelessWidget {
     return Consumer(builder: (context, WidgetRef ref, _) {
       final bonds = ref.watch(bondsProvider);
       final theme = ref.watch(themeProvider);
-      
+
       if (bonds.stateBonds?.ncbSDL?.isEmpty ?? true) {
         return const SizedBox();
       }
-      
+
       return Column(
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.start,
@@ -41,21 +42,36 @@ class StateBondsScreen extends StatelessWidget {
       );
     });
   }
-  
-  Widget _buildBondsList(BuildContext context, BondsProvider bonds, ThemesProvider theme) {
+
+  Widget _buildBondsList(
+      BuildContext context, BondsProvider bonds, ThemesProvider theme) {
+    // Filter bonds based on search query
+    List<dynamic> filteredBonds = bonds.stateBonds!.ncbSDL!;
+    if (bonds.bondscommonsearchcontroller.text.isNotEmpty) {
+      filteredBonds = bonds.stateBonds!.ncbSDL!
+          .where((bond) => bonds.bondsCommonSearchList.contains(bond))
+          .toList();
+    }
+
+    if (filteredBonds.isEmpty) {
+      return const SizedBox();
+    }
+
     return ListView.separated(
       padding: EdgeInsets.zero,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      itemBuilder: (context, index) => _buildBondItem(context, bonds, theme, index),
-      itemCount: bonds.stateBonds!.ncbSDL!.length,
+      itemBuilder: (context, index) =>
+          _buildBondItem(context, bonds, theme, index, filteredBonds),
+      itemCount: filteredBonds.length,
       separatorBuilder: (context, index) => _buildDivider(theme),
     );
   }
-  
-  Widget _buildBondItem(BuildContext context, BondsProvider bonds, ThemesProvider theme, int index) {
-    final bond = bonds.stateBonds!.ncbSDL![index];
-    
+
+  Widget _buildBondItem(BuildContext context, BondsProvider bonds,
+      ThemesProvider theme, int index, List<dynamic> filteredBonds) {
+    final bond = filteredBonds[index];
+
     return InkWell(
       onTap: () => _showOrderBottomSheet(context, bonds, bond),
       child: Container(
@@ -79,7 +95,7 @@ class StateBondsScreen extends StatelessWidget {
       ),
     );
   }
-  
+
   Widget _buildBondHeader(dynamic bond, ThemesProvider theme) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -96,16 +112,12 @@ class StateBondsScreen extends StatelessWidget {
             textOverflow: TextOverflow.ellipsis,
           ),
         ),
-       
       ],
     );
   }
-  
- 
-  
+
   Widget _buildYieldInfo(dynamic bond, ThemesProvider theme) {
     return Row(
-      
       children: [
         TextWidget.paraText(
           text: '${bond.yield}%',
@@ -125,8 +137,9 @@ class StateBondsScreen extends StatelessWidget {
       ],
     );
   }
-  
-  Widget _buildBondFooter(BuildContext context, BondsProvider bonds, dynamic bond, ThemesProvider theme) {
+
+  Widget _buildBondFooter(BuildContext context, BondsProvider bonds,
+      dynamic bond, ThemesProvider theme) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -135,13 +148,13 @@ class StateBondsScreen extends StatelessWidget {
       ],
     );
   }
-  
+
   Widget _buildClosingDate(dynamic bond, ThemesProvider theme) {
     return Row(
-       crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-       TextWidget.paraText(
+        TextWidget.paraText(
           text: "G-Sec",
           theme: theme.isDarkMode,
           color: theme.isDarkMode
@@ -168,15 +181,15 @@ class StateBondsScreen extends StatelessWidget {
       ],
     );
   }
-  
-  Widget _buildApplyButton(BuildContext context, BondsProvider bonds, dynamic bond, ThemesProvider theme) {
+
+  Widget _buildApplyButton(BuildContext context, BondsProvider bonds,
+      dynamic bond, ThemesProvider theme) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
         borderRadius: BorderRadius.circular(8),
-        splashColor: theme.isDarkMode
-            ? colors.splashColorDark
-            : colors.splashColorLight,
+        splashColor:
+            theme.isDarkMode ? colors.splashColorDark : colors.splashColorLight,
         highlightColor:
             theme.isDarkMode ? colors.highlightDark : colors.highlightLight,
         onTap: () => _showOrderBottomSheet(context, bonds, bond),
@@ -205,23 +218,23 @@ class StateBondsScreen extends StatelessWidget {
       ),
     );
   }
-  
+
   Widget _buildDivider(ThemesProvider theme) {
     return Divider(
       height: 0,
       color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
     );
   }
-  
-  Future<void> _showOrderBottomSheet(BuildContext context, BondsProvider bonds, dynamic bond) async {
+
+  Future<void> _showOrderBottomSheet(
+      BuildContext context, BondsProvider bonds, dynamic bond) async {
     await bonds.fetchLedgerBal();
     showModalBottomSheet(
       isScrollControlled: true,
       useSafeArea: true,
       isDismissible: true,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16))
-      ),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
       context: context,
       builder: (context) => Container(
         padding: EdgeInsets.only(
@@ -232,5 +245,5 @@ class StateBondsScreen extends StatelessWidget {
         ),
       ),
     );
-  }  
+  }
 }

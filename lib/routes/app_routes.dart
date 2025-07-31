@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/models/order_book_model/place_order_model.dart';
 import 'package:mynt_plus/screens/bonds/bonds_common_search_screen.dart';
-import 'package:mynt_plus/screens/ipo/ipo_common_search_screen.dart';
+// import 'package:mynt_plus/screens/ipo/ipo_common_search_screen.dart';
 import 'package:mynt_plus/screens/mutual_fund/cagr_calculator_screen.dart';
 import 'package:mynt_plus/screens/mutual_fund/mf_hold_singlepage.dart';
 import 'package:mynt_plus/screens/mutual_fund/mf_sip_details_screen.dart';
@@ -667,7 +667,7 @@ class AppRoutes {
       case Routes.ipo:
         return _createRoute(
           pageBuilder: (_, __, ___) => IPOScreen(initialTabIndex: args as int?),
-          beginOffset: const Offset(0.0, 1.0),
+          beginOffset: const Offset(-1.0, 0.0),
         );
 
       case Routes.applyIPO:
@@ -767,7 +767,7 @@ class AppRoutes {
         );
       case Routes.mfSipdetScren:
         return _createRoute(
-          pageBuilder: (_, __, ___) => const mfSipdetScren(data:{}),
+          pageBuilder: (_, __, ___) => const mfSipdetScren(data: {}),
           beginOffset: const Offset(-1.0, 0.0),
         );
 
@@ -783,11 +783,11 @@ class AppRoutes {
           beginOffset: const Offset(-1.0, 0.0),
         );
 
-      case Routes.iposearchscreen:
-        return _createRoute(
-          pageBuilder: (_, __, ___) => const IpoCommonSearch(),
-          beginOffset: const Offset(-1.0, 0.0),
-        );
+      // case Routes.iposearchscreen:
+      //   return _createRoute(
+      //     pageBuilder: (_, __, ___) => const IpoCommonSearch(),
+      //     beginOffset: const Offset(-1.0, 0.0),
+      //   );
       case Routes.bondssearchScreen:
         return _createRoute(
           pageBuilder: (_, __, ___) => const BondsCommonSearch(),

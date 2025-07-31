@@ -148,7 +148,6 @@ class Routes {
   static const String ipoclosedetailsscreen = 'ipoclosedetailsscreen';
   static const String ipoorderbook = 'IpoOrderbookMainScreen';
   static const String modifyipoorder = 'Modifyipoorder';
-  static const String iposearchscreen = 'IpoSearchScreen';
 
 // Bonds
   static const String bondsclosedetailsscreen = 'bondsclosedetailsscreen';

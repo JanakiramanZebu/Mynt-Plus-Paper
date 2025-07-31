@@ -46,8 +46,12 @@ class _IpoOrderbookMainScreenState extends ConsumerState<IpoOrderbookMainScreen>
   }
 
   Widget _buildBody(ipo, theme, double devHeight) {
-    final hasOrders = (ipo.openorder?.isNotEmpty ?? false) ||
-        (ipo.closeorder?.isNotEmpty ?? false);
+    // Get filtered orders based on search
+    final filteredOpenOrders = _getFilteredOpenOrders(ipo);
+    final filteredCloseOrders = _getFilteredCloseOrders(ipo);
+
+    final hasOrders =
+        filteredOpenOrders.isNotEmpty || filteredCloseOrders.isNotEmpty;
 
     if (!hasOrders) {
       return _buildNoDataState(devHeight);
@@ -57,7 +61,7 @@ class _IpoOrderbookMainScreenState extends ConsumerState<IpoOrderbookMainScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (ipo.openorder!.isNotEmpty) ...[
+          if (filteredOpenOrders.isNotEmpty) ...[
             Container(
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 width: double.infinity,
@@ -77,9 +81,9 @@ class _IpoOrderbookMainScreenState extends ConsumerState<IpoOrderbookMainScreen>
                   ),
                 ),
                 child: _buildSectionHeader("Open Orders", theme)),
-            const IpoOpenOrder(),
+            IpoOpenOrder(filteredOrders: filteredOpenOrders),
           ],
-          if (ipo.closeorder!.isNotEmpty) ...[
+          if (filteredCloseOrders.isNotEmpty) ...[
             Container(
               padding: const EdgeInsets.symmetric(vertical: 8),
               width: double.infinity,
@@ -100,11 +104,47 @@ class _IpoOrderbookMainScreenState extends ConsumerState<IpoOrderbookMainScreen>
               ),
               child: _buildSectionHeader("Closed Orders", theme),
             ),
-            const IpoCloseOrder(),
+            IpoCloseOrder(filteredOrders: filteredCloseOrders),
           ],
         ],
       ),
     );
+  }
+
+  List<dynamic> _getFilteredOpenOrders(IPOProvider ipo) {
+    final openOrders = ipo.openorder ?? [];
+
+    // If there's a search query, filter the open orders
+    if (ipo.ipocommonsearchcontroller.text.isNotEmpty) {
+      final searchQuery = ipo.ipocommonsearchcontroller.text.toLowerCase();
+      return openOrders.where((order) {
+        final companyName = order.companyName?.toLowerCase() ?? '';
+        final symbol = order.symbol?.toLowerCase() ?? '';
+        return companyName.contains(searchQuery) ||
+            symbol.contains(searchQuery);
+      }).toList();
+    }
+
+    // Otherwise, return all open orders
+    return openOrders;
+  }
+
+  List<dynamic> _getFilteredCloseOrders(IPOProvider ipo) {
+    final closeOrders = ipo.closeorder ?? [];
+
+    // If there's a search query, filter the close orders
+    if (ipo.ipocommonsearchcontroller.text.isNotEmpty) {
+      final searchQuery = ipo.ipocommonsearchcontroller.text.toLowerCase();
+      return closeOrders.where((order) {
+        final companyName = order.companyName?.toLowerCase() ?? '';
+        final symbol = order.symbol?.toLowerCase() ?? '';
+        return companyName.contains(searchQuery) ||
+            symbol.contains(searchQuery);
+      }).toList();
+    }
+
+    // Otherwise, return all close orders
+    return closeOrders;
   }
 
   Widget _buildNoDataState(double devHeight) {

@@ -142,7 +142,10 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
 
           var chips =
               ipo.ipoCategory.map((e) => e['subCatCode']).toSet().toList();
-          selectedChip = chips.isNotEmpty ? chips[0] : "";
+          // Only set selectedChip to first chip if it's still the default value
+          if (selectedChip == "Individual" && chips.isNotEmpty) {
+            selectedChip = chips[0];
+          }
 
           _updateProviderState(ipo);
 
@@ -315,127 +318,350 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
             body: Column(
               children: [
                 Expanded(
-                  child: Column(
-                    children: [
-                      const SizedBox(height: 20),
-                      // Container(
-                      //   color: Color(0xFFFCEFD4),
-                      //   height: 30,
-                      //   child: Center(
-                      //     child: Text(
-                      //         "IPO window is open from $dailyStartTime till $dailyEndTime on trading days.",
-                      //         style: textStyle(
-                      //             theme.isDarkMode
-                      //                 ? colors.colorWhite
-                      //                 : colors.colorBlack,
-                      //             10,
-                      //             FontWeight.w600)),
-                      //   ),
-                      // ),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 20),
+                        // Container(
+                        //   color: Color(0xFFFCEFD4),
+                        //   height: 30,
+                        //   child: Center(
+                        //     child: Text(
+                        //         "IPO window is open from $dailyStartTime till $dailyEndTime on trading days.",
+                        //         style: textStyle(
+                        //             theme.isDarkMode
+                        //                 ? colors.colorWhite
+                        //                 : colors.colorBlack,
+                        //             10,
+                        //             FontWeight.w600)),
+                        //   ),
+                        // ),
 
-                      // Category chips container with conditional styling
+                        // Category chips container with conditional styling
 
-                      ListView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: addIpo.length,
-                        itemBuilder: (context, index) {
-                          _updateProviderState(ipo);
+                        ListView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: addIpo.length,
+                          itemBuilder: (context, index) {
+                            _updateProviderState(ipo);
 
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                            ),
-                            child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: [
-                                      // Text("Bid - 0${index + 1}",
-                                      //     style: textStyle(
-                                      //         theme.isDarkMode
-                                      //             ? colors.colorWhite
-                                      //             : colors.colorBlack,
-                                      //         14,
-                                      //         FontWeight.w600)),
-                                      index > 0
-                                          ? InkWell(
-                                              splashFactory: InkSparkle
-                                                  .constantTurbulenceSeedSplashFactory,
-                                              onTap: ipo.loading
-                                                  ? null
-                                                  : () {
-                                                      removeItem(index);
-                                                    },
-                                              child: Padding(
-                                                padding:
-                                                    const EdgeInsets.all(5),
-                                                child: Row(
-                                                  children: [
-                                                    SvgPicture.asset(
-                                                      assets.trash,
-                                                      color: colors.darkred,
-                                                    ),
-                                                    const SizedBox(width: 5),
-                                                    TextWidget.subText(
-                                                      text: "Delete",
-                                                      theme: false,
-                                                      fw: 0,
-                                                      color: colors.darkred,
-                                                    ),
-                                                  ],
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                              ),
+                              child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                        // Text("Bid - 0${index + 1}",
+                                        //     style: textStyle(
+                                        //         theme.isDarkMode
+                                        //             ? colors.colorWhite
+                                        //             : colors.colorBlack,
+                                        //         14,
+                                        //         FontWeight.w600)),
+                                        index > 0
+                                            ? InkWell(
+                                                splashFactory: InkSparkle
+                                                    .constantTurbulenceSeedSplashFactory,
+                                                onTap: ipo.loading
+                                                    ? null
+                                                    : () {
+                                                        removeItem(index);
+                                                      },
+                                                child: Padding(
+                                                  padding:
+                                                      const EdgeInsets.all(5),
+                                                  child: Row(
+                                                    children: [
+                                                      SvgPicture.asset(
+                                                        assets.trash,
+                                                        color: colors.darkred,
+                                                      ),
+                                                      const SizedBox(width: 5),
+                                                      TextWidget.subText(
+                                                        text: "Delete",
+                                                        theme: false,
+                                                        fw: 0,
+                                                        color: colors.darkred,
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              )
+                                            : Container()
+                                      ],
+                                    ),
+                                    const SizedBox(height: 5),
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              TextWidget.subText(
+                                                text: "Qty",
+                                                theme: false,
+                                                fw: 3,
+                                                color: theme.isDarkMode
+                                                    ? colors.textSecondaryDark
+                                                    : colors.textSecondaryLight,
+                                              ),
+                                              const SizedBox(height: 10),
+                                              SizedBox(
+                                                height: 50,
+                                                child: TextFormField(
+                                                  readOnly: true,
+                                                  textAlign: TextAlign.center,
+                                                  style: TextWidget.textStyle(
+                                                    fontSize: 16,
+                                                    theme: false,
+                                                    color: theme.isDarkMode
+                                                        ? colors.textPrimary
+                                                        : colors
+                                                            .textPrimaryLight,
+                                                    fw: 0,
+                                                  ),
+                                                  keyboardType:
+                                                      TextInputType.number,
+                                                  controller: addIpo[index]
+                                                      .qualityController,
+                                                  decoration: InputDecoration(
+                                                      fillColor: colors.btnBg,
+                                                      filled: true,
+                                                      enabledBorder: OutlineInputBorder(
+                                                          borderSide: BorderSide(
+                                                              color: colors
+                                                                  .btnOutlinedBorder),
+                                                          borderRadius:
+                                                              BorderRadius.circular(
+                                                                  5)),
+                                                      disabledBorder:
+                                                          InputBorder.none,
+                                                      focusedBorder: OutlineInputBorder(
+                                                          borderSide: BorderSide(
+                                                              color: colors
+                                                                  .btnOutlinedBorder),
+                                                          borderRadius:
+                                                              BorderRadius.circular(
+                                                                  5)),
+                                                      contentPadding:
+                                                          const EdgeInsets.all(
+                                                              13),
+                                                      border: OutlineInputBorder(
+                                                          borderSide: BorderSide(
+                                                              color: colors
+                                                                  .btnOutlinedBorder),
+                                                          borderRadius:
+                                                              BorderRadius.circular(5)),
+                                                      suffixIcon: Material(
+                                                        color:
+                                                            Colors.transparent,
+                                                        shape:
+                                                            const CircleBorder(),
+                                                        clipBehavior:
+                                                            Clip.hardEdge,
+                                                        child: InkWell(
+                                                          customBorder:
+                                                              const CircleBorder(),
+                                                          splashColor: theme
+                                                                  .isDarkMode
+                                                              ? colors
+                                                                  .splashColorDark
+                                                              : colors
+                                                                  .splashColorLight,
+                                                          highlightColor: theme
+                                                                  .isDarkMode
+                                                              ? colors
+                                                                  .highlightDark
+                                                              : colors
+                                                                  .highlightLight,
+                                                          onTap: ipo.loading
+                                                              ? null
+                                                              : () {
+                                                                  if (isSME) {
+                                                                    ipo.smequalityplusefunction(
+                                                                        addIpo[
+                                                                            index],
+                                                                        _getButtonActiveState(
+                                                                            ipo),
+                                                                        ipoData,
+                                                                        ipo.maxUPIAmt,
+                                                                        selectedChip);
+                                                                  } else {
+                                                                    ipo.qualityplusefunction(
+                                                                        addIpo[
+                                                                            index],
+                                                                        _getButtonActiveState(
+                                                                            ipo),
+                                                                        ipo,
+                                                                        ipoData,
+                                                                        selectedChip);
+                                                                  }
+                                                                  setState(() {
+                                                                    _updateProviderState(
+                                                                        ipo);
+                                                                  });
+                                                                },
+                                                          child: SvgPicture.asset(
+                                                              theme.isDarkMode
+                                                                  ? assets
+                                                                      .darkAdd
+                                                                  : assets
+                                                                      .addIcon,
+                                                              fit: BoxFit
+                                                                  .scaleDown),
+                                                        ),
+                                                      ),
+                                                      prefixIcon: InkWell(
+                                                        onTap: addIpo[index]
+                                                                    .qualityController
+                                                                    .text ==
+                                                                addIpo[index]
+                                                                    .qualitytext
+                                                            ? null
+                                                            : ipo.loading
+                                                                ? null
+                                                                : () {
+                                                                    if (isSME) {
+                                                                      ipo.smequantityminusfunction(
+                                                                          addIpo[
+                                                                              index],
+                                                                          _getButtonActiveState(
+                                                                              ipo),
+                                                                          ipoData,
+                                                                          ipo.maxUPIAmt,
+                                                                          selectedChip);
+                                                                    } else {
+                                                                      ipo.quantityminusfunction(
+                                                                          addIpo[
+                                                                              index],
+                                                                          _getButtonActiveState(
+                                                                              ipo),
+                                                                          ipo,
+                                                                          ipoData,
+                                                                          selectedChip);
+                                                                    }
+                                                                    setState(
+                                                                        () {
+                                                                      _updateProviderState(
+                                                                          ipo);
+                                                                    });
+                                                                  },
+                                                        child: SvgPicture.asset(
+                                                            theme.isDarkMode
+                                                                ? assets
+                                                                    .darkCMinus
+                                                                : assets
+                                                                    .minusIcon,
+                                                            fit: BoxFit
+                                                                .scaleDown),
+                                                      )),
+                                                  onChanged: (value) {
+                                                    if (isSME) {
+                                                      ipo.smequantityOnchange(
+                                                          value,
+                                                          addIpo[index],
+                                                          ipoData,
+                                                          _getButtonActiveState(
+                                                              ipo),
+                                                          ipo.maxUPIAmt,
+                                                          selectedChip);
+                                                    } else {
+                                                      ipo.quantityOnchange(
+                                                          addIpo[index],
+                                                          _getButtonActiveState(
+                                                              ipo),
+                                                          ipo,
+                                                          value,
+                                                          ipoData,
+                                                          selectedChip);
+                                                    }
+                                                    setState(() {
+                                                      _updateProviderState(ipo);
+                                                    });
+                                                  },
                                                 ),
                                               ),
-                                            )
-                                          : Container()
-                                    ],
-                                  ),
-                                  const SizedBox(height: 5),
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            TextWidget.subText(
-                                              text: "Qty",
-                                              theme: false,
-                                              fw: 3,
-                                              color: theme.isDarkMode
-                                                  ? colors.textSecondaryDark
-                                                  : colors.textSecondaryLight,
-                                            ),
-                                            const SizedBox(height: 10),
-                                            SizedBox(
-                                              height: 50,
-                                              child: TextFormField(
-                                                readOnly:
-                                                    ipo.loading ? true : false,
-                                                textAlign: TextAlign.center,
-                                                style: TextWidget.textStyle(
-                                                  fontSize: 16,
-                                                  theme: false,
-                                                  color: theme.isDarkMode
-                                                      ? colors.textPrimary
-                                                      : colors.textPrimaryLight,
-                                                  fw: 0,
-                                                ),
-                                                keyboardType:
-                                                    TextInputType.number,
-                                                controller: addIpo[index]
-                                                    .qualityController,
-                                                decoration: InputDecoration(
+                                            ],
+                                          ),
+                                        ),
+                                        const SizedBox(width: 10),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Row(
+                                                children: [
+                                                  TextWidget.subText(
+                                                    text: "Bid Price",
+                                                    theme: false,
+                                                    fw: 3,
+                                                    color: theme.isDarkMode
+                                                        ? colors
+                                                            .textSecondaryDark
+                                                        : colors
+                                                            .textSecondaryLight,
+                                                  ),
+                                                  // Text(
+                                                  //     "(${double.parse(minPrice).toInt()}- ${double.parse(maxPrice).toInt()})",
+                                                  //     style: textStyle(
+                                                  //         theme.isDarkMode
+                                                  //             ? colors.colorWhite
+                                                  //             : colors.colorBlack,
+                                                  //         10,
+                                                  //         FontWeight.w600)),
+                                                ],
+                                              ),
+                                              const SizedBox(height: 10),
+                                              SizedBox(
+                                                height: 50,
+                                                child: TextFormField(
+                                                  style: TextWidget.textStyle(
+                                                    fontSize: 16,
+                                                    theme: false,
+                                                    color: theme.isDarkMode
+                                                        ? colors.textPrimary
+                                                        : colors
+                                                            .textPrimaryLight,
+                                                    fw: 0,
+                                                  ),
+                                                  keyboardType:
+                                                      TextInputType.number,
+                                                  readOnly: ipo.loading
+                                                      ? true
+                                                      : addIpo[index]
+                                                                  .isChecked ==
+                                                              true
+                                                          ? true
+                                                          : false,
+                                                  controller: addIpo[index]
+                                                      .bidpricecontroller,
+                                                  decoration: InputDecoration(
                                                     fillColor: colors.btnBg,
                                                     filled: true,
+                                                    labelStyle:
+                                                        TextWidget.textStyle(
+                                                      fontSize: 16,
+                                                      theme: false,
+                                                      color: theme.isDarkMode
+                                                          ? colors.textPrimary
+                                                          : colors
+                                                              .textPrimaryLight,
+                                                      fw: 0,
+                                                    ),
                                                     enabledBorder: OutlineInputBorder(
                                                         borderSide: BorderSide(
                                                             color: colors
                                                                 .btnOutlinedBorder),
                                                         borderRadius:
-                                                            BorderRadius.circular(
-                                                                5)),
+                                                            BorderRadius
+                                                                .circular(5)),
                                                     disabledBorder:
                                                         InputBorder.none,
                                                     focusedBorder: OutlineInputBorder(
@@ -443,8 +669,8 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                                                             color: colors
                                                                 .btnOutlinedBorder),
                                                         borderRadius:
-                                                            BorderRadius.circular(
-                                                                5)),
+                                                            BorderRadius
+                                                                .circular(5)),
                                                     contentPadding:
                                                         const EdgeInsets.all(
                                                             13),
@@ -453,7 +679,8 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                                                             color: colors
                                                                 .btnOutlinedBorder),
                                                         borderRadius:
-                                                            BorderRadius.circular(5)),
+                                                            BorderRadius
+                                                                .circular(5)),
                                                     suffixIcon: Material(
                                                       color: Colors.transparent,
                                                       shape:
@@ -479,351 +706,142 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                                                             ? null
                                                             : () {
                                                                 if (isSME) {
-                                                                  ipo.smequalityplusefunction(
-                                                                      addIpo[
-                                                                          index],
-                                                                      _getButtonActiveState(
-                                                                          ipo),
-                                                                      ipoData,
-                                                                      ipo.maxUPIAmt,
-                                                                      selectedChip);
-                                                                } else {
-                                                                  ipo.qualityplusefunction(
-                                                                      addIpo[
-                                                                          index],
-                                                                      _getButtonActiveState(
-                                                                          ipo),
-                                                                      ipo,
-                                                                      ipoData,
-                                                                      selectedChip);
-                                                                }
-                                                                setState(() {
-                                                                  _updateProviderState(
-                                                                      ipo);
-                                                                });
-                                                              },
-                                                        child: SvgPicture.asset(
-                                                            theme.isDarkMode
-                                                                ? assets.darkAdd
-                                                                : assets
-                                                                    .addIcon,
-                                                            fit: BoxFit
-                                                                .scaleDown),
-                                                      ),
-                                                    ),
-                                                    prefixIcon: InkWell(
-                                                      onTap: addIpo[index]
-                                                                  .qualityController
-                                                                  .text ==
-                                                              addIpo[index]
-                                                                  .qualitytext
-                                                          ? null
-                                                          : ipo.loading
-                                                              ? null
-                                                              : () {
-                                                                  if (isSME) {
-                                                                    ipo.smequantityminusfunction(
-                                                                        addIpo[
-                                                                            index],
-                                                                        _getButtonActiveState(
-                                                                            ipo),
-                                                                        ipoData,
-                                                                        ipo.maxUPIAmt,
-                                                                        selectedChip);
-                                                                  } else {
-                                                                    ipo.quantityminusfunction(
-                                                                        addIpo[
-                                                                            index],
-                                                                        _getButtonActiveState(
-                                                                            ipo),
-                                                                        ipo,
-                                                                        ipoData,
-                                                                        selectedChip);
-                                                                  }
-                                                                  setState(() {
-                                                                    _updateProviderState(
-                                                                        ipo);
-                                                                  });
-                                                                },
-                                                      child: SvgPicture.asset(
-                                                          theme.isDarkMode
-                                                              ? assets
-                                                                  .darkCMinus
-                                                              : assets
-                                                                  .minusIcon,
-                                                          fit:
-                                                              BoxFit.scaleDown),
-                                                    )),
-                                                onChanged: (value) {
-                                                  if (isSME) {
-                                                    ipo.smequantityOnchange(
-                                                        value,
-                                                        addIpo[index],
-                                                        ipoData,
-                                                        _getButtonActiveState(
-                                                            ipo),
-                                                        ipo.maxUPIAmt,
-                                                        selectedChip);
-                                                  } else {
-                                                    ipo.quantityOnchange(
-                                                        addIpo[index],
-                                                        _getButtonActiveState(
-                                                            ipo),
-                                                        ipo,
-                                                        value,
-                                                        ipoData,
-                                                        selectedChip);
-                                                  }
-                                                  setState(() {
-                                                    _updateProviderState(ipo);
-                                                  });
-                                                },
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      const SizedBox(width: 10),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Row(
-                                              children: [
-                                                TextWidget.subText(
-                                                  text: "Bid Price",
-                                                  theme: false,
-                                                  fw: 3,
-                                                  color: theme.isDarkMode
-                                                      ? colors.textSecondaryDark
-                                                      : colors
-                                                          .textSecondaryLight,
-                                                ),
-                                                // Text(
-                                                //     "(${double.parse(minPrice).toInt()}- ${double.parse(maxPrice).toInt()})",
-                                                //     style: textStyle(
-                                                //         theme.isDarkMode
-                                                //             ? colors.colorWhite
-                                                //             : colors.colorBlack,
-                                                //         10,
-                                                //         FontWeight.w600)),
-                                              ],
-                                            ),
-                                            const SizedBox(height: 10),
-                                            SizedBox(
-                                              height: 50,
-                                              child: TextFormField(
-                                                style: TextWidget.textStyle(
-                                                  fontSize: 16,
-                                                  theme: false,
-                                                  color: theme.isDarkMode
-                                                      ? colors.textPrimary
-                                                      : colors.textPrimaryLight,
-                                                  fw: 0,
-                                                ),
-                                                keyboardType:
-                                                    TextInputType.number,
-                                                readOnly: ipo.loading
-                                                    ? true
-                                                    : addIpo[index].isChecked ==
-                                                            true
-                                                        ? true
-                                                        : false,
-                                                controller: addIpo[index]
-                                                    .bidpricecontroller,
-                                                decoration: InputDecoration(
-                                                  fillColor: colors.btnBg,
-                                                  filled: true,
-                                                  labelStyle:
-                                                      TextWidget.textStyle(
-                                                    fontSize: 16,
-                                                    theme: false,
-                                                    color: theme.isDarkMode
-                                                        ? colors.textPrimary
-                                                        : colors
-                                                            .textPrimaryLight,
-                                                    fw: 0,
-                                                  ),
-                                                  enabledBorder: OutlineInputBorder(
-                                                      borderSide: BorderSide(
-                                                          color: colors
-                                                              .btnOutlinedBorder),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              5)),
-                                                  disabledBorder:
-                                                      InputBorder.none,
-                                                  focusedBorder: OutlineInputBorder(
-                                                      borderSide: BorderSide(
-                                                          color: colors
-                                                              .btnOutlinedBorder),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              5)),
-                                                  contentPadding:
-                                                      const EdgeInsets.all(13),
-                                                  border: OutlineInputBorder(
-                                                      borderSide: BorderSide(
-                                                          color: colors
-                                                              .btnOutlinedBorder),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              5)),
-                                                  suffixIcon: Material(
-                                                    color: Colors.transparent,
-                                                    shape: const CircleBorder(),
-                                                    clipBehavior: Clip.hardEdge,
-                                                    child: InkWell(
-                                                      customBorder:
-                                                          const CircleBorder(),
-                                                      splashColor: theme
-                                                              .isDarkMode
-                                                          ? colors
-                                                              .splashColorDark
-                                                          : colors
-                                                              .splashColorLight,
-                                                      highlightColor: theme
-                                                              .isDarkMode
-                                                          ? colors.highlightDark
-                                                          : colors
-                                                              .highlightLight,
-                                                      onTap: ipo.loading
-                                                          ? null
-                                                          : () {
-                                                              if (isSME) {
-                                                                ipo.smecutoffprice(
-                                                                  addIpo[index],
-                                                                  ipoData,
-                                                                );
-                                                              } else {
-                                                                ipo.cutoffprice(
+                                                                  ipo.smecutoffprice(
                                                                     addIpo[
                                                                         index],
-                                                                    ipoData);
-                                                              }
-                                                              FocusScope.of(
-                                                                      context)
-                                                                  .unfocus();
-                                                              _updateProviderState(
-                                                                  ipo);
-                                                            },
-                                                      child: Padding(
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .all(14.0),
-                                                        child: SvgPicture.asset(
-                                                            assets.switchIcon,
-                                                            fit:
-                                                                BoxFit.contain),
+                                                                    ipoData,
+                                                                  );
+                                                                } else {
+                                                                  ipo.cutoffprice(
+                                                                      addIpo[
+                                                                          index],
+                                                                      ipoData);
+                                                                }
+                                                                FocusScope.of(
+                                                                        context)
+                                                                    .unfocus();
+                                                                _updateProviderState(
+                                                                    ipo);
+                                                              },
+                                                        child: Padding(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .all(14.0),
+                                                          child: SvgPicture.asset(
+                                                              assets.switchIcon,
+                                                              fit: BoxFit
+                                                                  .contain),
+                                                        ),
                                                       ),
                                                     ),
                                                   ),
+                                                  onChanged: (value) {
+                                                    if (isSME) {
+                                                      ipo.smebidpriceOnChange(
+                                                          value,
+                                                          addIpo[index],
+                                                          _getButtonActiveState(
+                                                              ipo),
+                                                          ipoData);
+                                                    } else {
+                                                      ipo.bidpricefunction(
+                                                          addIpo[index],
+                                                          ipoData,
+                                                          value,
+                                                          _getButtonActiveState(
+                                                              ipo));
+                                                    }
+                                                    setState(() {
+                                                      _updateProviderState(ipo);
+                                                    });
+                                                  },
                                                 ),
-                                                onChanged: (value) {
-                                                  if (isSME) {
-                                                    ipo.smebidpriceOnChange(
-                                                        value,
-                                                        addIpo[index],
-                                                        _getButtonActiveState(
-                                                            ipo),
-                                                        ipoData);
-                                                  } else {
-                                                    ipo.bidpricefunction(
-                                                        addIpo[index],
-                                                        ipoData,
-                                                        value,
-                                                        _getButtonActiveState(
-                                                            ipo));
-                                                  }
-                                                  setState(() {
-                                                    _updateProviderState(ipo);
-                                                  });
-                                                },
                                               ),
-                                            ),
-                                          ],
+                                            ],
+                                          ),
                                         ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 10),
-                                  // Row(
-                                  //   mainAxisAlignment: MainAxisAlignment.center,
-                                  //   children: [
-                                  //     const Padding(
-                                  //         padding: EdgeInsets.symmetric(
-                                  //             horizontal: 55, vertical: 20)),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 10),
+                                    // Row(
+                                    //   mainAxisAlignment: MainAxisAlignment.center,
+                                    //   children: [
+                                    //     const Padding(
+                                    //         padding: EdgeInsets.symmetric(
+                                    //             horizontal: 55, vertical: 20)),
 
-                                  //   ],
-                                  // ),
-                                  if (addIpo[index]
-                                      .qualityerrortext
-                                      .isNotEmpty) ...[
-                                    const SizedBox(height: 6),
-                                    IpoErrorBadge(
-                                      errorName: addIpo[index].qualityerrortext,
-                                    )
-                                  ],
-                                  if (addIpo[index]
-                                      .biderrortext
-                                      .isNotEmpty) ...[
-                                    const SizedBox(height: 6),
-                                    IpoErrorBadge(
-                                      errorName: addIpo[index].biderrortext,
-                                    )
-                                  ],
-                                ]),
-                          );
-                        },
-                      ),
-                      addIpo.length == 3
-                          ? Container()
-                          : Material(
-                              color: Colors.transparent,
-                              shape: const RoundedRectangleBorder(),
-                              child: InkWell(
-                                customBorder: const RoundedRectangleBorder(),
-                                splashColor: theme.isDarkMode
-                                    ? colors.splashColorDark
-                                    : colors.splashColorLight,
-                                highlightColor: theme.isDarkMode
-                                    ? colors.highlightDark
-                                    : colors.highlightLight,
-                                onTap: ipo.loading
-                                    ? null
-                                    : () {
-                                        addNewItem();
-                                        ipo.categoryOnChange(
-                                            addIpo,
-                                            ipo.maxUPIAmt,
-                                            _getButtonActiveState(ipo),
-                                            selectedChip);
-                                      },
-                                child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      TextWidget.subText(
-                                        text: "Add another bid",
-                                        theme: false,
-                                        fw: 0,
-                                        color: theme.isDarkMode
-                                            ? colors.primaryDark
-                                            : colors.primaryLight,
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Icon(
-                                        Icons.keyboard_arrow_down,
-                                        color: colors.primary,
-                                      ),
+                                    //   ],
+                                    // ),
+                                    if (addIpo[index]
+                                        .qualityerrortext
+                                        .isNotEmpty) ...[
+                                      const SizedBox(height: 6),
+                                      IpoErrorBadge(
+                                        errorName:
+                                            addIpo[index].qualityerrortext,
+                                      )
                                     ],
+                                    if (addIpo[index]
+                                        .biderrortext
+                                        .isNotEmpty) ...[
+                                      const SizedBox(height: 6),
+                                      IpoErrorBadge(
+                                        errorName: addIpo[index].biderrortext,
+                                      )
+                                    ],
+                                  ]),
+                            );
+                          },
+                        ),
+                        addIpo.length == 3
+                            ? Container()
+                            : Material(
+                                color: Colors.transparent,
+                                shape: const RoundedRectangleBorder(),
+                                child: InkWell(
+                                  customBorder: const RoundedRectangleBorder(),
+                                  splashColor: theme.isDarkMode
+                                      ? colors.splashColorDark
+                                      : colors.splashColorLight,
+                                  highlightColor: theme.isDarkMode
+                                      ? colors.highlightDark
+                                      : colors.highlightLight,
+                                  onTap: ipo.loading
+                                      ? null
+                                      : () {
+                                          addNewItem();
+                                          ipo.categoryOnChange(
+                                              addIpo,
+                                              ipo.maxUPIAmt,
+                                              _getButtonActiveState(ipo),
+                                              selectedChip);
+                                        },
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        TextWidget.subText(
+                                          text: "Add another bid",
+                                          theme: false,
+                                          fw: 0,
+                                          color: theme.isDarkMode
+                                              ? colors.primaryDark
+                                              : colors.primaryLight,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Icon(
+                                          Icons.keyboard_arrow_down,
+                                          color: colors.primary,
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
                 Column(

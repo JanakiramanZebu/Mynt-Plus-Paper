@@ -10,6 +10,8 @@ import 'package:intl/intl.dart';
 import 'package:mynt_plus/screens/ipo/preclose_ipo/preclose_ipo_screen.dart';
 import 'package:mynt_plus/screens/ipo/IPO_order_screen/ipo_order_screen.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
+import '../../../models/ipo_model/ipo_sme_model.dart';
+import '../../../models/ipo_model/ipo_mainstream_model.dart';
 import '../../../provider/iop_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../provider/transcation_provider.dart';
@@ -34,16 +36,22 @@ class MainSmeListCard extends StatelessWidget {
       // Get filtered IPOs based on search
       List<dynamic> filteredIpos = _getFilteredIPOs(ipos, mainstreamipo);
 
-      List<dynamic> openIpos = filteredIpos
-          .where((ipo) =>
-              ipostartdate(ipo.biddingStartDate, ipo.biddingEndDate) == "Open")
-          .toList();
+      List<dynamic> openIpos = filteredIpos.where((ipo) {
+        // Check if the IPO object has biddingStartDate and biddingEndDate properties
+        if (ipo is! SMEIPO && ipo is! MainIPO) {
+          return false; // Skip IpoScrip and other objects that don't have these properties
+        }
+        return ipostartdate(ipo.biddingStartDate, ipo.biddingEndDate) == "Open";
+      }).toList();
 
-      List<dynamic> preOpenIpos = filteredIpos
-          .where((ipo) =>
-              ipostartdate(ipo.biddingStartDate, ipo.biddingEndDate) ==
-              "Pre-open")
-          .toList();
+      List<dynamic> preOpenIpos = filteredIpos.where((ipo) {
+        // Check if the IPO object has biddingStartDate and biddingEndDate properties
+        if (ipo is! SMEIPO && ipo is! MainIPO) {
+          return false; // Skip IpoScrip and other objects that don't have these properties
+        }
+        return ipostartdate(ipo.biddingStartDate, ipo.biddingEndDate) ==
+            "Pre-open";
+      }).toList();
 
       final hasAnyData = openIpos.isNotEmpty ||
           preOpenIpos.isNotEmpty ||
@@ -297,6 +305,14 @@ class _IPOListItem extends StatelessWidget {
     final date = isPreOpen
         ? _formatDate(ipo.biddingStartDate ?? "")
         : (ipo.biddingEndDate?.substring(5, 11) ?? "");
+    String toTitleCase(String input) {
+      return input
+          .toLowerCase()
+          .split(' ')
+          .map((word) =>
+              word.isNotEmpty ? word[0].toUpperCase() + word.substring(1) : '')
+          .join(' ');
+    }
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -308,9 +324,8 @@ class _IPOListItem extends StatelessWidget {
               SizedBox(
                 width: 250,
                 child: TextWidget.subText(
-                  text: ipo.name ?? "",
+                  text: toTitleCase(ipo.name ?? ""),
                   theme: false,
-                  fw: 0,
                   color: theme.isDarkMode
                       ? colors.textPrimaryDark
                       : colors.textPrimaryLight,
@@ -321,7 +336,7 @@ class _IPOListItem extends StatelessWidget {
               TextWidget.paraText(
                 text: "${ipo.key ?? ""} - $dateText $date",
                 theme: false,
-                fw: 0,
+                fw: 3,
                 color: theme.isDarkMode
                     ? colors.textSecondaryDark
                     : colors.textSecondaryLight,
@@ -366,7 +381,7 @@ class _IPOListItem extends StatelessWidget {
               child: TextWidget.subText(
                 text: isPreOpen ? 'Pre Apply' : 'Apply',
                 theme: false,
-                fw: 3,
+                fw: 0,
                 color:
                     theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
               ),

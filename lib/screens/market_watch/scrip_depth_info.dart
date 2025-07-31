@@ -1934,6 +1934,9 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                                 ))
                                                                               ]));
                                                                         })),
+                                                                         const SizedBox(
+                                                                        height:
+                                                                            12),
                                                                   ]
                                                                 ],
 
@@ -2259,7 +2262,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Column(
                 children: [
-                  // const SizedBox(height: 12),
+                  const SizedBox(height: 12),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [

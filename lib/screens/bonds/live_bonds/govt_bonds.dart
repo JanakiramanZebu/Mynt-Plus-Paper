@@ -53,20 +53,32 @@ class GovtBondsScreen extends StatelessWidget {
 
   Widget _buildBondsList(
       BuildContext context, BondsProvider bonds, ThemesProvider theme) {
+    // Filter bonds based on search query
+    List<dynamic> filteredBonds = bonds.govtBonds!.ncbGSec!;
+    if (bonds.bondscommonsearchcontroller.text.isNotEmpty) {
+      filteredBonds = bonds.govtBonds!.ncbGSec!
+          .where((bond) => bonds.bondsCommonSearchList.contains(bond))
+          .toList();
+    }
+
+    if (filteredBonds.isEmpty) {
+      return const SizedBox();
+    }
+
     return ListView.separated(
       padding: EdgeInsets.zero,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemBuilder: (context, index) =>
-          _buildBondItem(context, bonds, theme, index),
-      itemCount: bonds.govtBonds!.ncbGSec!.length,
+          _buildBondItem(context, bonds, theme, index, filteredBonds),
+      itemCount: filteredBonds.length,
       separatorBuilder: (context, index) => _buildDivider(theme),
     );
   }
 
   Widget _buildBondItem(BuildContext context, BondsProvider bonds,
-      ThemesProvider theme, int index) {
-    final bond = bonds.govtBonds!.ncbGSec![index];
+      ThemesProvider theme, int index, List<dynamic> filteredBonds) {
+    final bond = filteredBonds[index];
 
     return InkWell(
       onTap: () => _showOrderBottomSheet(context, bonds, bond),
@@ -81,7 +93,6 @@ class GovtBondsScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Expanded(child: _buildBondHeader(bond, theme)),
-                
                 _buildApplyButton(context, bonds, bond, theme),
               ],
             ),
@@ -185,9 +196,8 @@ class GovtBondsScreen extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         borderRadius: BorderRadius.circular(8),
-        splashColor: theme.isDarkMode
-            ? colors.splashColorDark
-            : colors.splashColorLight,
+        splashColor:
+            theme.isDarkMode ? colors.splashColorDark : colors.splashColorLight,
         highlightColor:
             theme.isDarkMode ? colors.highlightDark : colors.highlightLight,
         onTap: () => _showOrderBottomSheet(context, bonds, bond),
@@ -244,6 +254,4 @@ class GovtBondsScreen extends StatelessWidget {
       ),
     );
   }
-
- 
 }

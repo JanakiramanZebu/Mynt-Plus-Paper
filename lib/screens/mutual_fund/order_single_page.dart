@@ -29,6 +29,17 @@ class mforderdetscreen extends StatefulWidget {
 class _mforderdetscreen extends State<mforderdetscreen>
     with SingleTickerProviderStateMixin {
   @override
+  final inProgressStatuses = {
+    "PAYMENT NOT INITIATED",
+    "MODIFIED",
+    "PAYMENT INITATED",
+    "PAYMENT INIT",
+    "PAYMENT COMPLETED",
+    "CANCEL ERROR",
+    "WAIT FOR ALLOTMENT",
+    "MODIFY REJECTED",
+    "PAYMENT REJECTED"
+  };
   Widget build(BuildContext context) {
     return DraggableScrollableSheet(
         expand: false,
@@ -44,51 +55,48 @@ class _mforderdetscreen extends State<mforderdetscreen>
             final hasData = mfdata.mforderdet?.data != null;
 
             return Scaffold(
-                 backgroundColor: Colors.transparent,
+              backgroundColor: Colors.transparent,
               body: hasData
-                  ? Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Expanded(
-                        child: SingleChildScrollView(
-                           controller: scrollController,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _buildOrderHeader(theme, mfdata),
-                              const SizedBox(height: 18),
-                              _buildCancelButton(theme, mfdata, context),
-                            const SizedBox(height: 24),
-                              _buildDetailsSection(theme, mfdata),
-                              const SizedBox(height: 20),
-                              if (mfdata.mforderdet?.data![0].status !=
-                                  "PLACED") ...[
-                                      TextWidget.subText(
-              align: TextAlign.right,
-              text: "Reason",
-              color: theme.isDarkMode
-                  ? colors.textSecondaryDark
-                  : colors.textSecondaryLight,
-              textOverflow: TextOverflow.ellipsis,
-              theme: theme.isDarkMode,
-              fw: 3),
-                              
-                                const SizedBox(height: 8),
-                                TextWidget.subText(
-                                    align: TextAlign.start,
-                                    text:
-                                        "${mfdata.mforderdet?.data![0].remarks ?? "No remarks available"}",
-                                    color: colors.loss,
-                                    textOverflow: TextOverflow.ellipsis,
-                                    theme: theme.isDarkMode,
-                                    maxLines: 3,
-                                    fw: 3),
-                              ],
-                            ],
-                          ),
-                        ),
-                      ),
-                    )
-                  : const Center(child: NoDataFound()),
+    ? Padding(
+        padding: const EdgeInsets.all(16),
+        child: SingleChildScrollView(
+          controller: scrollController,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildOrderHeader(theme, mfdata),
+              const SizedBox(height: 18),
+              _buildCancelButton(theme, mfdata, context),
+              const SizedBox(height: 24),
+              _buildDetailsSection(theme, mfdata),
+              const SizedBox(height: 20),
+              if (mfdata.mforderdet?.data![0].status != "PLACED") ...[
+                TextWidget.subText(
+                    align: TextAlign.right,
+                    text: "Reason",
+                    color: theme.isDarkMode
+                        ? colors.textSecondaryDark
+                        : colors.textSecondaryLight,
+                    textOverflow: TextOverflow.ellipsis,
+                    theme: theme.isDarkMode,
+                    fw: 3),
+                const SizedBox(height: 8),
+                TextWidget.subText(
+                    align: TextAlign.start,
+                    text:
+                        "${mfdata.mforderdet?.data![0].remarks ?? "No remarks available"}",
+                    color: colors.loss,
+                    textOverflow: TextOverflow.ellipsis,
+                    theme: theme.isDarkMode,
+                    maxLines: 3,
+                    fw: 3),
+              ],
+            ],
+          ),
+        ),
+      )
+    : const Center(child: NoDataFound()),
+
             );
           });
         });
@@ -151,31 +159,40 @@ class _mforderdetscreen extends State<mforderdetscreen>
       Row(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-
-           Container(
+          Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color:mfdata.mforderdet?.data?[0].status == "PLACED"
-                  ? colors.profit.withOpacity(0.1)
-                  : mfdata.mforderdet?.data?[0].status == "NOT PLACED"
-                      ? colors.loss.withOpacity(0.1)
-                      : mfdata.mforderdet?.data?[0].status == "PENDING"
-                          ? colors.pending.withOpacity(0.1)
-                          : colors.pending.withOpacity(0.1), // default fallback
+              color: mfdata.mforderdet?.data?[0].status == "ALLOCATED"
+                    ? colors.profit.withOpacity(0.1)
+                    : mfdata.mforderdet?.data?[0].status == "REJECTED" ||
+                            mfdata.mforderdet?.data?[0].status == "CANCELLED" ||
+                            mfdata.mforderdet?.data?[0].status ==
+                                "PAYMENT DECLINED"
+                        ? colors.loss.withOpacity(0.1)
+                        : mfdata.mforderdet?.data?[0].status ==
+                                inProgressStatuses.contains(
+                                    mfdata.mforderdet?.data?[0].status)
+                            ? colors.pending.withOpacity(0.1)
+                            : colors.pending.withOpacity(0.1), // default fallback
               borderRadius: BorderRadius.circular(4),
             ),
             child: TextWidget.paraText(
-                text: _getStatusLabel(mfdata.mforderdet?.data?[0].status),
+                text: _getListStatusText(mfdata.mforderdet?.data?[0].status),
                 theme: false,
-                color: mfdata.mforderdet?.data?[0].status == "PLACED"
+                color: mfdata.mforderdet?.data?[0].status == "ALLOCATED"
                     ? colors.profit
-                    : mfdata.mforderdet?.data?[0].status == "NOT PLACED"
+                    : mfdata.mforderdet?.data?[0].status == "REJECTED" ||
+                            mfdata.mforderdet?.data?[0].status == "CANCELLED" ||
+                            mfdata.mforderdet?.data?[0].status ==
+                                "PAYMENT DECLINED"
                         ? colors.loss
-                        : mfdata.mforderdet?.data?[0].status == "PENDING"
+                        : mfdata.mforderdet?.data?[0].status ==
+                                inProgressStatuses.contains(
+                                    mfdata.mforderdet?.data?[0].status)
                             ? colors.pending
                             : colors.pending),
           ),
-          
+
           // Padding(
           //   padding: const EdgeInsets.only(left: 4.0),
           //   child: TextWidget.paraText(
@@ -199,12 +216,16 @@ class _mforderdetscreen extends State<mforderdetscreen>
     return assets.warningIcon;
   }
 
-  String _getStatusLabel(String? status) {
-    if (status == "PLACED") return 'Success';
-    if (status == "NOT PLACED") return 'Failed';
-    if (status == "PENDING") return 'Pending';
-    return status ?? 'Unknown';
-  }
+String _getListStatusText(String? status) {
+  if (status == "ALLOCATED") return 'ALLOCATED';
+  if (status == "REJECTED") return 'REJECTED';
+  if (status == "CANCELLED") return 'CANCELLED';
+  if (status == "PAYMENT DECLINED") return 'PAYMENT DECLINED';
+  if (status != null && inProgressStatuses.contains(status)) return status;
+
+  return status ?? 'Unknown';
+}
+
 
   Widget _buildDetailsSection(ThemesProvider theme, dynamic mfdata) {
     return Column(
@@ -215,34 +236,32 @@ class _mforderdetscreen extends State<mforderdetscreen>
                 ? "Purchase"
                 : "Redemption",
             theme),
-       
+
         rowOfInfoData(
             "Order Type",
             mfdata.mforderdet?.data?[0].orderType == "NRM" ? "Lumpsum" : "SIP",
             theme),
-       
+
         rowOfInfoData("Amount",
             "${mfdata.mforderdet?.data?[0].orderVal ?? "0.00"}", theme),
-       
+
         // rowOfInfoData(
         //     "Units", "${mfdata.mforderdet?.data?[0].units ?? "0.00"}", theme),
         // const SizedBox(height: 10),
-       
-        
+
         // rowOfInfoData(
         //     "Date", "${mfdata.mforderdet?.data?[0].datetime ?? "N/A"}", theme),
-       
+
         rowOfInfoData("Date & Time",
             "${mfdata.mforderdet?.data?[0].datetime ?? "N/A"}", theme),
-        
+
         rowOfInfoData("Order No",
             "${mfdata.mforderdet?.data?[0].orderId ?? "N/A"}", theme),
-      
+
         rowOfInfoData(
             "Folio No",
             "${mfdata.mforderdet?.data?[0].folioNo?.isEmpty ?? true ? "---" : mfdata.mforderdet?.data?[0].folioNo}",
             theme),
-      
       ],
     );
   }
@@ -261,7 +280,6 @@ class _mforderdetscreen extends State<mforderdetscreen>
         Expanded(
           flex: 6,
           child: SizedBox(
-           
             width: double.infinity,
             child: ElevatedButton(
               onPressed: () async {
@@ -291,8 +309,9 @@ class _mforderdetscreen extends State<mforderdetscreen>
               child: TextWidget.subText(
                   align: TextAlign.right,
                   text: "Cancel Order",
-                  color:
-                      theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
+                  color: theme.isDarkMode
+                      ? colors.primaryDark
+                      : colors.primaryLight,
                   textOverflow: TextOverflow.ellipsis,
                   theme: theme.isDarkMode,
                   fw: 2),
@@ -303,7 +322,7 @@ class _mforderdetscreen extends State<mforderdetscreen>
     );
   }
 
-   Column rowOfInfoData(String title1, String value1, ThemesProvider theme) {
+  Column rowOfInfoData(String title1, String value1, ThemesProvider theme) {
     return Column(
       children: [
         const SizedBox(height: 12),

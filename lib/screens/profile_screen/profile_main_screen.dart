@@ -87,6 +87,8 @@ class UserAccountScreen extends ConsumerWidget {
 
     final filteredMenu = [
       {'title': 'Account Balance', 'type': 'balance'},
+      {'title': 'IPO'},
+      {'title': 'Bond'},
       {'title': 'Pledge & Unpledge'},
       {'title': 'Corporate Actions'},
       {'title': 'Reports'},
@@ -336,7 +338,13 @@ class UserAccountScreen extends ConsumerWidget {
                       // case "Account":
                       //   Navigator.pushNamed(context, Routes.myaccountScreen);
                       //   break;
-
+                      case "IPO":
+                        Navigator.pushNamed(context, Routes.ipo);
+                        break;
+                      case "Bond":
+                        await ref.read(bondsProvider).fetchAllBonds();
+                        Navigator.pushNamed(context, Routes.bonds);
+                        break;
                       case 'Corporate Actions':
                         // ledgerdate.fetchposition(context);
                         if (reportsprovider.holdingsAllData == null) {
@@ -706,19 +714,6 @@ class UserAccountScreen extends ConsumerWidget {
         'title': 'Mutual Fund',
         'icon': assets.mfIcon,
         'onTap': () => mf.mfApicallinit(context, 0)
-      },
-      {
-        'title': 'IPO',
-        'icon': assets.ipoIcon,
-        'onTap': () => Navigator.pushNamed(context, Routes.ipo)
-      },
-      {
-        'title': 'Bond',
-        'icon': assets.bondIcon,
-        'onTap': () async {
-          await ref.read(bondsProvider).fetchAllBonds();
-          Navigator.pushNamed(context, Routes.bonds);
-        }
       },
       {
         'title': 'OptionZ',
