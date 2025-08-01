@@ -2314,7 +2314,9 @@ class MFProvider extends DefaultChangeNotifier {
            
         }
       }else{
-        if (_upiApiresponse!.data!.responsestring!.contains('Could not validate payment create request due to')) {
+                        Navigator.pop(context);
+
+        // if (_upiApiresponse!.data!.responsestring!.contains('Could not validate payment create request due to')) {
           showModalBottomSheet(
               context: context,
               shape: const RoundedRectangleBorder(
@@ -2425,12 +2427,12 @@ class MFProvider extends DefaultChangeNotifier {
                   ],
                 );
               });
-        }else{
-               ScaffoldMessenger.of(context)
-              .showSnackBar(warningMessage(context, _upiApiresponse!.data!.responsestring!));
-        }
+        // }else{
+        //        ScaffoldMessenger.of(context)
+        //       .showSnackBar(warningMessage(context, _upiApiresponse!.data!.responsestring!));
+        // // }
        ispaymentcalled = false; 
-      Navigator.pop(context);
+      // Navigator.pop(context);
 
        
         // if (_upiApiresponse!.data!.responsestring!.contains('Could not validate payment create request due to')) {
