@@ -8,11 +8,12 @@ import '../../../models/ipo_model/ipo_order_book_model.dart';
 import '../../../models/ipo_model/ipo_place_order_model.dart';
 import '../../../provider/iop_provider.dart';
 import '../../../provider/thems.dart';
+import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 
 class IpoCancelAlert extends ConsumerWidget {
   final IpoOrderBookModel ipocancel;
-  
+
   const IpoCancelAlert({super.key, required this.ipocancel});
 
   static const Color _greyButtonColor = Color(0xffF1F3F8);
@@ -20,74 +21,101 @@ class IpoCancelAlert extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref.watch(themeProvider);
-    
+
     return AlertDialog(
-      backgroundColor: theme.isDarkMode
-          ? const Color.fromARGB(255, 18, 18, 18)
-          : colors.colorWhite,
+      backgroundColor: colors.colorWhite,
+      titlePadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
       shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(10))),
+          borderRadius: BorderRadius.all(Radius.circular(8))),
       scrollable: true,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-      insetPadding: const EdgeInsets.symmetric(horizontal: 24),
-      titlePadding: const EdgeInsets.all(0),
-      title: const Padding(
-        padding: EdgeInsets.all(10),
-        child: _CancelIcon(),
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: 12,
+        vertical: 12,
       ),
-      content: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        child: Column(
-          children: [
-            Text(
-                "Are you sure you want to cancel the (${ipocancel.symbol} order)",
-                textAlign: TextAlign.center,
-                style: _textStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    16,
-                    FontWeight.w600))
-          ],
-        ),
+      actionsPadding:
+          const EdgeInsets.only(bottom: 16, right: 16, left: 16, top: 8),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+      title: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Material(
+                color: Colors.transparent,
+                shape: const CircleBorder(),
+                child: InkWell(
+                  onTap: () async {
+                    await Future.delayed(const Duration(milliseconds: 150));
+                    Navigator.pop(context);
+                  },
+                  borderRadius: BorderRadius.circular(20),
+                  splashColor: theme.isDarkMode
+                      ? colors.splashColorDark
+                      : colors.splashColorLight,
+                  highlightColor: theme.isDarkMode
+                      ? colors.splashColorDark
+                      : colors.splashColorLight,
+                  child: Padding(
+                    padding: const EdgeInsets.all(6.0),
+                    child: Icon(
+                      Icons.close_rounded,
+                      size: 22,
+                      color: theme.isDarkMode
+                          ? colors.colorWhite
+                          : colors.colorBlack,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: MediaQuery.of(context).size.width,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const SizedBox(height: 10),
+                  TextWidget.subText(
+                    text:
+                        "Are you sure you want to cancel the (${ipocancel.symbol} order)",
+                    theme: theme.isDarkMode,
+                    color: theme.isDarkMode
+                        ? colors.textPrimaryDark
+                        : colors.textPrimaryLight,
+                    fw: 3,
+                    align: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
       actions: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Expanded(
-              child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    minimumSize: const Size(155, 40),
-                      elevation: 0,
-                      backgroundColor: _greyButtonColor,
-                      shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(50)),
-                      )),
-                  onPressed: () => Navigator.pop(context),
-                  child: Text("No",
-                      style: _textStyle(colors.colorGrey, 12, FontWeight.w500))),
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton(
+            onPressed: () {
+              _handleCancelOrder(context, ref);
+            },
+            style: OutlinedButton.styleFrom(
+              minimumSize: const Size(0, 40),
+              side: BorderSide(color: colors.btnOutlinedBorder),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(5),
+              ),
+              backgroundColor: colors.primaryDark,
             ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    minimumSize: const Size(155, 40),
-                      elevation: 0,
-                      backgroundColor: theme.isDarkMode
-                          ? colors.colorbluegrey
-                          : colors.colorBlack,
-                      shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(50)),
-                      )),
-                  onPressed: () => _handleCancelOrder(context, ref),
-                  child: Text("Yes",
-                      style: _textStyle(
-                          theme.isDarkMode
-                              ? colors.colorBlack
-                              : colors.colorWhite,
-                          12,
-                          FontWeight.w500))),
-            )
-          ],
+            child: TextWidget.titleText(
+                text: "Yes",
+                theme: theme.isDarkMode,
+                color:
+                    !theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                fw: 0),
+          ),
         ),
       ],
     );
@@ -109,14 +137,15 @@ class IpoCancelAlert extends ConsumerWidget {
     await ref
         .read(ipoProvide)
         .getipoplaceorder(context, menudata, iposbids, "");
-    
+
     if (context.mounted) {
       Navigator.pop(context);
       Navigator.pop(context);
     }
   }
 
-  static TextStyle _textStyle(Color color, double fontSize, FontWeight fWeight) {
+  static TextStyle _textStyle(
+      Color color, double fontSize, FontWeight fWeight) {
     return GoogleFonts.inter(
         textStyle:
             TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));

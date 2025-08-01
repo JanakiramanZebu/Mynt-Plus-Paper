@@ -438,12 +438,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                 color: theme.isDarkMode
                                     ? colors.colorBlack
                                     : colors.colorWhite,
-                                boxShadow: const [
-                                  BoxShadow(
-                                      color: Color(0xff999999),
-                                      blurRadius: 4.0,
-                                      offset: Offset(2.0, 0.0))
-                                ]),
+                               ),
                             child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 mainAxisAlignment: MainAxisAlignment.start,

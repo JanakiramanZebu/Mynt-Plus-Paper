@@ -194,10 +194,10 @@ class _MfOrderBookScreen extends State<MfOrderBookScreen>
             },
             child: ListTile(
                 contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
+                  horizontal: 16,vertical: 8
                 ),
                 title: Padding(
-                  padding: const EdgeInsets.only(bottom: 8.0),
+                  padding: const EdgeInsets.only(bottom: 8.0,),
                   child: Container(
                     margin: EdgeInsets.only(
                       right: MediaQuery.of(context).size.width * 0.1,
@@ -209,6 +209,7 @@ class _MfOrderBookScreen extends State<MfOrderBookScreen>
                             ? colors.textPrimaryDark
                             : colors.textPrimaryLight,
                         textOverflow: TextOverflow.ellipsis,
+                        maxLines: 2,
                         theme: theme.isDarkMode,
                         fw: 3),
                   ),

@@ -43,8 +43,41 @@ class _CreateBasketState extends ConsumerState<CreateBasket> {
         return;
       }
 
-      final List listofBasket =
-          pref.bsktList!.isEmpty ? [] : jsonDecode(pref.bsktList ?? '[]');
+      // Validate basket name length (minimum 2 characters, maximum 20 characters)
+      if (trimmedText.length < 2) {
+        setState(() => errorText = "Basket name must be at least 2 characters");
+        return;
+      }
+
+      if (trimmedText.length > 20) {
+        setState(() => errorText = "Basket name must be less than 20 characters");
+        return;
+      }
+
+      // Validate basket name contains only alphanumeric characters, spaces, and basic symbols
+      final RegExp validNamePattern = RegExp(r'^[a-zA-Z0-9\s\-_]+$');
+      if (!validNamePattern.hasMatch(trimmedText)) {
+        setState(() => errorText = "Basket name can only contain letters, numbers, spaces, hyphens and underscores");
+        return;
+      }
+
+      // Check both user-specific and general basket lists for duplicates
+      final userId = pref.clientId;
+      List listofBasket = [];
+      
+      if (userId != null && userId.isNotEmpty) {
+        // Check user-specific baskets
+        final userBaskets = pref.getBasketListForUser(userId) ?? "";
+        if (userBaskets.isNotEmpty) {
+          listofBasket = jsonDecode(userBaskets);
+        }
+      } else {
+        // Check general baskets
+        final generalBaskets = pref.bsktList ?? "";
+        if (generalBaskets.isNotEmpty) {
+          listofBasket = jsonDecode(generalBaskets);
+        }
+      }
 
       if (listofBasket.isNotEmpty) {
         for (var element in listofBasket) {
@@ -52,7 +85,7 @@ class _CreateBasketState extends ConsumerState<CreateBasket> {
         }
 
         if (bskt.contains(trimmedText.toLowerCase())) {
-          setState(() => errorText = "Basket name already exist");
+          setState(() => errorText = "Basket name already exists");
           return;
         }
       }

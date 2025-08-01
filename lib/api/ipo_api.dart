@@ -127,11 +127,11 @@ mixin IPOApi on ApiCore {
         headers: defaultHeaders,
       );
       final json = jsonDecode(res.body);
-      // log("mainstream ipo res=>${res.body} ");
+      log("mainstream ipo res=>${res.body} ");
 
       return MainStreamIpoModel.fromJson(json as Map<String, dynamic>);
     } catch (e) {
-      // print("object IPO $e");
+      print("object IPO::::::: $e");
       rethrow;
     }
   }
@@ -201,6 +201,7 @@ mixin IPOApi on ApiCore {
       rethrow;
     }
   }
+
   Future<Upcoming_ipo> fetchIpoUpcomingApi() async {
     try {
       final uri = Uri.parse(apiLinks.ipoupcomingurl);

@@ -1,15 +1,32 @@
+import 'dart:convert';
+
 class Upcoming_ipo {
   List<Upcoming>? upcoming;
   String? msg;
 
-  Upcoming_ipo({this.upcoming,this.msg});
+  Upcoming_ipo({this.upcoming, this.msg});
 
   Upcoming_ipo.fromJson(Map<String, dynamic> json) {
     if (json['upcoming'] != null) {
       upcoming = <Upcoming>[];
-      json['upcoming'].forEach((v) {
-        upcoming!.add(new Upcoming.fromJson(v));
-      });
+      // Check if upcoming is a List or String
+      if (json['upcoming'] is List) {
+        json['upcoming'].forEach((v) {
+          upcoming!.add(new Upcoming.fromJson(v));
+        });
+      } else if (json['upcoming'] is String) {
+        // If upcoming is a string, try to parse it as JSON
+        try {
+          final parsedList = jsonDecode(json['upcoming'] as String);
+          if (parsedList is List) {
+            parsedList.forEach((v) {
+              upcoming!.add(new Upcoming.fromJson(v));
+            });
+          }
+        } catch (e) {
+          print("Error parsing upcoming string: $e");
+        }
+      }
     }
     msg = json["msg"];
   }

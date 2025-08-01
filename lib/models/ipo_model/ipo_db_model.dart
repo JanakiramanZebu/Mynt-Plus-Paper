@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 class DashbordIposIPOS {
   List<Data>? data;
 
@@ -6,9 +8,24 @@ class DashbordIposIPOS {
   DashbordIposIPOS.fromJson(Map<String, dynamic> json) {
     if (json['data'] != null) {
       data = <Data>[];
-      json['data'].forEach((v) {
-        data!.add(Data.fromJson(v));
-      });
+      // Check if data is a List or String
+      if (json['data'] is List) {
+        json['data'].forEach((v) {
+          data!.add(Data.fromJson(v));
+        });
+      } else if (json['data'] is String) {
+        // If data is a string, try to parse it as JSON
+        try {
+          final parsedList = jsonDecode(json['data'] as String);
+          if (parsedList is List) {
+            parsedList.forEach((v) {
+              data!.add(Data.fromJson(v));
+            });
+          }
+        } catch (e) {
+          print("Error parsing data string: $e");
+        }
+      }
     }
   }
 
@@ -76,9 +93,24 @@ class Data {
     biddingStartDate = json['biddingStartDate'];
     if (json['categoryDetails'] != null) {
       categoryDetails = <CategoryDetails>[];
-      json['categoryDetails'].forEach((v) {
-        categoryDetails!.add(CategoryDetails.fromJson(v));
-      });
+      // Check if categoryDetails is a List or String
+      if (json['categoryDetails'] is List) {
+        json['categoryDetails'].forEach((v) {
+          categoryDetails!.add(CategoryDetails.fromJson(v));
+        });
+      } else if (json['categoryDetails'] is String) {
+        // If categoryDetails is a string, try to parse it as JSON
+        try {
+          final parsedList = jsonDecode(json['categoryDetails'] as String);
+          if (parsedList is List) {
+            parsedList.forEach((v) {
+              categoryDetails!.add(CategoryDetails.fromJson(v));
+            });
+          }
+        } catch (e) {
+          print("Error parsing categoryDetails string: $e");
+        }
+      }
     }
     closedatetime = json['closedatetime'];
     companyName = json['company_name'];
@@ -110,9 +142,24 @@ class Data {
     seriesDetails = json['seriesDetails'];
     if (json['subCategorySettings'] != null) {
       subCategorySettings = <SubCategorySettings>[];
-      json['subCategorySettings'].forEach((v) {
-        subCategorySettings!.add(SubCategorySettings.fromJson(v));
-      });
+      // Check if subCategorySettings is a List or String
+      if (json['subCategorySettings'] is List) {
+        json['subCategorySettings'].forEach((v) {
+          subCategorySettings!.add(SubCategorySettings.fromJson(v));
+        });
+      } else if (json['subCategorySettings'] is String) {
+        // If subCategorySettings is a string, try to parse it as JSON
+        try {
+          final parsedList = jsonDecode(json['subCategorySettings'] as String);
+          if (parsedList is List) {
+            parsedList.forEach((v) {
+              subCategorySettings!.add(SubCategorySettings.fromJson(v));
+            });
+          }
+        } catch (e) {
+          print("Error parsing subCategorySettings string: $e");
+        }
+      }
     }
     subType = json['subType'];
     symbol = json['symbol'];

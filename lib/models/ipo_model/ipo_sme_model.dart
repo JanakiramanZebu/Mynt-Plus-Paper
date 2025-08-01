@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 class SmeIpoModel {
   String? msg;
   List<SMEIPO>? sMEIPO;
@@ -8,9 +10,24 @@ class SmeIpoModel {
     msg = json['msg'];
     if (json['SMEIPO'] != null) {
       sMEIPO = <SMEIPO>[];
-      json['SMEIPO'].forEach((v) {
-        sMEIPO!.add(SMEIPO.fromJson(v));
-      });
+      // Check if SMEIPO is a List or String
+      if (json['SMEIPO'] is List) {
+        json['SMEIPO'].forEach((v) {
+          sMEIPO!.add(SMEIPO.fromJson(v));
+        });
+      } else if (json['SMEIPO'] is String) {
+        // If SMEIPO is a string, try to parse it as JSON
+        try {
+          final parsedList = jsonDecode(json['SMEIPO'] as String);
+          if (parsedList is List) {
+            parsedList.forEach((v) {
+              sMEIPO!.add(SMEIPO.fromJson(v));
+            });
+          }
+        } catch (e) {
+          print("Error parsing SMEIPO string: $e");
+        }
+      }
     }
   }
 
@@ -73,7 +90,6 @@ class SMEIPO {
   String? imageLink;
   String? totalsub;
 
-
   SMEIPO(
       {this.asbanonasba,
       this.biddingEndDate,
@@ -128,9 +144,24 @@ class SMEIPO {
     biddingStartDate = json['biddingStartDate'].toString();
     if (json['categoryDetails'] != null) {
       categoryDetails = <CategoryDetails>[];
-      json['categoryDetails'].forEach((v) {
-        categoryDetails!.add(CategoryDetails.fromJson(v));
-      });
+      // Check if categoryDetails is a List or String
+      if (json['categoryDetails'] is List) {
+        json['categoryDetails'].forEach((v) {
+          categoryDetails!.add(CategoryDetails.fromJson(v));
+        });
+      } else if (json['categoryDetails'] is String) {
+        // If categoryDetails is a string, try to parse it as JSON
+        try {
+          final parsedList = jsonDecode(json['categoryDetails'] as String);
+          if (parsedList is List) {
+            parsedList.forEach((v) {
+              categoryDetails!.add(CategoryDetails.fromJson(v));
+            });
+          }
+        } catch (e) {
+          print("Error parsing categoryDetails string: $e");
+        }
+      }
     }
     closedatetime = json['closedatetime'].toString();
     companyName = json['company_name'].toString();
@@ -161,9 +192,24 @@ class SMEIPO {
     seriesDetails = json['seriesDetails'].toString();
     if (json['subCategorySettings'] != null) {
       subCategorySettings = <SubCategorySettings>[];
-      json['subCategorySettings'].forEach((v) {
-        subCategorySettings!.add(SubCategorySettings.fromJson(v));
-      });
+      // Check if subCategorySettings is a List or String
+      if (json['subCategorySettings'] is List) {
+        json['subCategorySettings'].forEach((v) {
+          subCategorySettings!.add(SubCategorySettings.fromJson(v));
+        });
+      } else if (json['subCategorySettings'] is String) {
+        // If subCategorySettings is a string, try to parse it as JSON
+        try {
+          final parsedList = jsonDecode(json['subCategorySettings'] as String);
+          if (parsedList is List) {
+            parsedList.forEach((v) {
+              subCategorySettings!.add(SubCategorySettings.fromJson(v));
+            });
+          }
+        } catch (e) {
+          print("Error parsing subCategorySettings string: $e");
+        }
+      }
     }
     subType = json['subType'].toString();
     symbol = json['symbol'].toString();
@@ -179,8 +225,7 @@ class SMEIPO {
     key = json['key'].toString();
     totalsub = json["total_sub"];
     imageLink = json["image_link"];
-    ipostatus="Live";
-
+    ipostatus = "Live";
   }
 
   Map<String, dynamic> toJson() {

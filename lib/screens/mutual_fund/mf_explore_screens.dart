@@ -122,7 +122,9 @@ class _ExploreScreensState extends ConsumerState<MFExploreScreens>
             decoration: BoxDecoration(
               border: Border(
                 bottom: BorderSide(
-                  color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+                  color: theme.isDarkMode
+                      ? colors.darkColorDivider
+                      : colors.colorDivider,
                   width: 0,
                 ),
               ),
@@ -148,7 +150,8 @@ class _ExploreScreensState extends ConsumerState<MFExploreScreens>
                         });
                         _tabController.animateTo(tab);
                       },
-                      child: _tabConstruct(tablistitems[tab]['title'].toString(), theme, tab),
+                      child: _tabConstruct(
+                          tablistitems[tab]['title'].toString(), theme, tab),
                     ),
                   ),
                 ),

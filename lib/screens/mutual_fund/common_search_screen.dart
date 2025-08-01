@@ -15,6 +15,7 @@ import '../../sharedWidget/custom_back_btn.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
 import '../../sharedWidget/functions.dart';
 import '../../sharedWidget/list_divider.dart';
+import 'mf_stock_detail_screen.dart';
 
 class MfCommonSearch extends ConsumerStatefulWidget {
   const MfCommonSearch({super.key});
@@ -233,11 +234,32 @@ class _MfCommonSearchState extends ConsumerState<MfCommonSearch> {
                                         mfData.fetchmatchisan(fund.iSIN!);
                                         if (mfData.factSheetDataModel?.stat !=
                                             "Not Ok") {
-                                          Navigator.pushNamed(
-                                            context,
-                                            Routes.mfStockDetail,
-                                            arguments: fund,
+                                          showModalBottomSheet(
+                                            isScrollControlled: true,
+                                            shape: const RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.only(
+                                                topLeft: Radius.circular(16),
+                                                topRight: Radius.circular(16),
+                                              ),
+                                            ),
+                                            isDismissible: true,
+                                            enableDrag: false,
+                                            useSafeArea: true,
+                                            context: context,
+                                            builder: (context) => Container(
+                                                padding: EdgeInsets.only(
+                                                  bottom: MediaQuery.of(context)
+                                                      .viewInsets
+                                                      .bottom,
+                                                ),
+                                                child: MFStockDetailScreen(
+                                                    mfStockData: fund)),
                                           );
+                                          // Navigator.pushNamed(
+                                          //   context,
+                                          //   Routes.mfStockDetail,
+                                          //   arguments: fund,
+                                          // );
                                         } else {
                                           ScaffoldMessenger.of(context)
                                               .showSnackBar(
@@ -269,7 +291,7 @@ class _MfCommonSearchState extends ConsumerState<MfCommonSearch> {
                                             "Error loading fund details"),
                                       );
                                     }
-                                    },
+                                  },
                                   child: ListTile(
                                     //  visualDensity:const VisualDensity(horizontal: -4, vertical: 0),
                                     contentPadding: const EdgeInsets.symmetric(
@@ -281,18 +303,23 @@ class _MfCommonSearchState extends ConsumerState<MfCommonSearch> {
                                       ),
                                     ),
                                     title: Container(
-                                      margin:  EdgeInsets.only(right: MediaQuery.of(context).size.width *0.1,),
-                                        padding: const EdgeInsets.only(bottom: 4,),
-                                        child: TextWidget.subText(
-                                          text: fund.mfsearchnamename ?? "",
-                                          theme: theme.isDarkMode,
-                                          color: theme.isDarkMode
-                                              ? colors.textPrimaryDark
-                                              : colors.textPrimaryLight,
-                                          textOverflow: TextOverflow.ellipsis,
-                                          // softWrap: true,
-                                          maxLines: 2,
-                                        
+                                      margin: EdgeInsets.only(
+                                        right:
+                                            MediaQuery.of(context).size.width *
+                                                0.1,
+                                      ),
+                                      padding: const EdgeInsets.only(
+                                        bottom: 4,
+                                      ),
+                                      child: TextWidget.subText(
+                                        text: fund.mfsearchnamename ?? "",
+                                        theme: theme.isDarkMode,
+                                        color: theme.isDarkMode
+                                            ? colors.textPrimaryDark
+                                            : colors.textPrimaryLight,
+                                        textOverflow: TextOverflow.ellipsis,
+                                        // softWrap: true,
+                                        maxLines: 2,
                                       ),
                                     ),
                                     subtitle: Padding(
@@ -318,8 +345,7 @@ class _MfCommonSearchState extends ConsumerState<MfCommonSearch> {
                                             Colors.grey.withOpacity(0.2),
                                         onTap: () async {
                                           if (fund.iSIN != null) {
-                                            await mfData
-                                                .fetchcommonsearchWadd(
+                                            await mfData.fetchcommonsearchWadd(
                                               fund.iSIN!,
                                               fund.isAdd == true
                                                   ? "delete"

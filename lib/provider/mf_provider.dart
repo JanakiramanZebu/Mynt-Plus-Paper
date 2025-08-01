@@ -739,11 +739,11 @@ class MFProvider extends DefaultChangeNotifier {
   //  MF SIP
 
   // TextEditingController instalmentAmt = TextEditingController();
-
   final TextEditingController mfsearchcontroller = TextEditingController();
 
   // MF Holdings Search Variables
-  final TextEditingController mfHoldingSearchController = TextEditingController();
+  final TextEditingController mfHoldingSearchController =
+      TextEditingController();
   bool _showMfHoldingSearch = false;
   bool get showMfHoldingSearch => _showMfHoldingSearch;
   List<dynamic>? _mfHoldingSearchItems = [];
@@ -945,13 +945,13 @@ class MFProvider extends DefaultChangeNotifier {
   //   }
   //   notifyListeners();
   // }
-  invertfun(String isin, String schemeCode,BuildContext context) async{
+  invertfun(String isin, String schemeCode, BuildContext context) async {
     _singleloader = true;
     await fetchMFSipData(isin, schemeCode);
 
     await fetchMFMandateDetail();
     // fetchBankDetail();
-    await fetchUpiDetail('',context);
+    await fetchUpiDetail('', context);
     await chngMandate("Lumpsum");
     _singleloader = false;
   }
@@ -1088,16 +1088,18 @@ class MFProvider extends DefaultChangeNotifier {
     if (value.isNotEmpty) {
       _mfHoldingSearchItems = [];
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
-      
+
       // Search in the holdings data
       if (_mfholdingnew?.data != null) {
         _mfHoldingSearchItems = _mfholdingnew!.data!
-            .where((element) => 
-                (element.name?.toUpperCase().contains(value.toUpperCase()) ?? false) ||
-                (element.iSIN?.toUpperCase().contains(value.toUpperCase()) ?? false))
+            .where((element) =>
+                (element.name?.toUpperCase().contains(value.toUpperCase()) ??
+                    false) ||
+                (element.iSIN?.toUpperCase().contains(value.toUpperCase()) ??
+                    false))
             .toList();
       }
-      
+
       if (_mfHoldingSearchItems!.isEmpty) {
         ScaffoldMessenger.of(context)
             .showSnackBar(warningMessage(context, 'No Data Found'));
@@ -1374,7 +1376,7 @@ class MFProvider extends DefaultChangeNotifier {
     }
   }
 
-   Future<void> fetchmfsipnotlivelist() async {
+  Future<void> fetchmfsipnotlivelist() async {
     try {
       _bestmfloader = true;
       _mfnotlivesiporderlist = await api.getSiplist('notlive');
@@ -2020,7 +2022,7 @@ class MFProvider extends DefaultChangeNotifier {
     }
   }
 
-  Future cancelsiporder(BuildContext context, orderno,scode) async {
+  Future cancelsiporder(BuildContext context, orderno, scode) async {
     // print("WWWWWW{${orderno},1111${siprefno},22222222!!${droupreason}!!,33333333${rejectsip.text}}");
     if (droupreason != "") {
       toggleLoadingOn(true);
@@ -2030,35 +2032,34 @@ class MFProvider extends DefaultChangeNotifier {
           toggleLoadingOn(true);
 
           _mfsipcancelmess = await api.cancelsipapi(
-              orderno, droupreason, rejectsip.text,scode);
+              orderno, droupreason, rejectsip.text, scode);
           // print("@@@1111111111111111$_mfLumpSumOrderbook");
           // Navigator.pop(context);
           if (_mfsipcancelmess?.stat == "Not_Ok") {
             toggleLoadingOn(false);
-             Navigator.pop(context);
+            Navigator.pop(context);
             ScaffoldMessenger.of(context).showSnackBar(
                 warningMessage(context, "${_mfsipcancelmess?.bSERemarks}"));
             Navigator.pop(context);
           }
           if (_mfsipcancelmess?.stat == "Ok") {
-          fetchmfsiplist();
+            fetchmfsiplist();
 
             toggleLoadingOn(false);
             Navigator.pop(context);
 
-            ScaffoldMessenger.of(context).showSnackBar(
-                successMessage(context, "Sip successfully ${_mfsipcancelmess?.status}"));
+            ScaffoldMessenger.of(context).showSnackBar(successMessage(
+                context, "Sip successfully ${_mfsipcancelmess?.status}"));
             Navigator.pop(context);
           }
           fetchmfsiplist();
-
         } catch (e) {
           toggleLoadingOn(false);
           Navigator.pop(context);
           ScaffoldMessenger.of(context)
               .showSnackBar(warningMessage(context, "Something Went Wrong"));
           log("Failed to Create Mandate :: ${e.toString()}");
-           Navigator.pop(context);
+          Navigator.pop(context);
           notifyListeners();
         }
       } catch (e) {
@@ -2083,7 +2084,8 @@ class MFProvider extends DefaultChangeNotifier {
     cleartext();
   }
 
-  Future pausesiporder(BuildContext context, orderno, freqty, nxtdate,scode) async {
+  Future pausesiporder(
+      BuildContext context, orderno, freqty, nxtdate, scode) async {
     // print(
     //     "@@@@@@@@{${orderno},${pausesip.text},freqty${freqty},nxtdate${nxtdate}}");
     if (pausesip.text != "") {
@@ -2093,8 +2095,8 @@ class MFProvider extends DefaultChangeNotifier {
 
         try {
           toggleLoadingOn(true);
-          _mfsippause =
-              await api.pausesipapi(orderno, pausesip.text, freqty, nxtdate,scode);
+          _mfsippause = await api.pausesipapi(
+              orderno, pausesip.text, freqty, nxtdate, scode);
           // print("function coming");
           // print("pausee sip${_mfsippause?.toJson()}");
           // print("pausee sip${_mfsippause?.toString()}");
@@ -2107,12 +2109,10 @@ class MFProvider extends DefaultChangeNotifier {
             Navigator.pop(context);
           }
           if (_mfsippause?.stat == "Ok") {
-            ScaffoldMessenger.of(context)
-                .showSnackBar(warningMessage(context, " ${_mfsippause?.status}"));
+            ScaffoldMessenger.of(context).showSnackBar(
+                warningMessage(context, " ${_mfsippause?.status}"));
             Navigator.pop(context);
           }
-            
-
         } catch (e) {
           toggleLoadingOn(false);
           Navigator.pop(context);
@@ -2309,9 +2309,8 @@ class MFProvider extends DefaultChangeNotifier {
       if (_upiApiresponse?.stat != "Not Ok") {
         if (_upiApiresponse?.stat == "Ok") {
           _loadingMessage = "Initiated";
-          _triggerfromMF = true; 
-          notifyListeners(); 
-           
+          _triggerfromMF = true;
+          notifyListeners();
         }
       }else{
                         Navigator.pop(context);
@@ -2326,104 +2325,101 @@ class MFProvider extends DefaultChangeNotifier {
               builder: (context) {
                 return Wrap(
                   children: [
-                 const SizedBox(
+                    const SizedBox(
                       height: 24,
                     ),
                     Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(16),
-                                color:   colors.colorWhite,
-                                boxShadow: const [
-                BoxShadow(
-                    color: Color(0xff999999),
-                    blurRadius: 4.0,
-                    offset: Offset(2.0, 0.0))
-                                ]),
-                            child:  
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Container(
-                alignment: Alignment.center,
-                child: Column(
-                  children: [
-                    const CustomDragHandler(),
-                    Icon(
-                        Icons.cancel_rounded,
-                      //
-                      color:  colors.kColorRedButton,
-                      size: 70,
-                    ),
-                    const SizedBox(
-                      height: 16,
-                    ),
-                    TextWidget.subText(
-                      text: "UPI ID not liked with bank",
-                      theme: false,
-                      color:   colors.textPrimaryLight,
-                    ),
-                    const SizedBox(
-                      height: 5,
-                    ),
-                    TextWidget.paraText(
-                      text:   "Payment trigger fail",
-                      theme: false,
-                      color: colors.textSecondaryLight,
-                    ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    // TextWidget.custmText(
-                    //     text: "",
-                    //     theme: false,
-                    //     color:  colors.colorBlack,
-                    //     fs: 40),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    // TextWidget.paraText(
-                    //   text: "${widget.upiData?["datetime"]}",
-                    //   theme: false,
-                    //   color: colors.textSecondaryLight,
-                    // ),
-                  ],
-                ),
-                                ),
-                                
-                                Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: SizedBox(
-                  width: MediaQuery.of(context).size.width,
-                  child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        elevation: 0,
-                        minimumSize: const Size(0, 40),
-                        backgroundColor:   colors.primaryLight,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                      ),
-                      onPressed: () {
-                        // Clear the amount text field
-                        Navigator.pop(context);
-                        FocusScope.of(context).unfocus();
-                      },
-                      child: TextWidget.subText(
-                          text: 'Done',
-                          theme: false,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(16),
                           color: colors.colorWhite,
-                          fw: 2)),
-                ),
+                          boxShadow: const [
+                            BoxShadow(
+                                color: Color(0xff999999),
+                                blurRadius: 4.0,
+                                offset: Offset(2.0, 0.0))
+                          ]),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            alignment: Alignment.center,
+                            child: Column(
+                              children: [
+                                const CustomDragHandler(),
+                                Icon(
+                                  Icons.cancel_rounded,
+                                  //
+                                  color: colors.kColorRedButton,
+                                  size: 70,
                                 ),
                                 const SizedBox(
-                height: 20,
+                                  height: 16,
                                 ),
+                                TextWidget.subText(
+                                  text: "UPI ID not liked with bank",
+                                  theme: false,
+                                  color: colors.textPrimaryLight,
+                                ),
+                                const SizedBox(
+                                  height: 5,
+                                ),
+                                TextWidget.paraText(
+                                  text: "Payment trigger fail",
+                                  theme: false,
+                                  color: colors.textSecondaryLight,
+                                ),
+                                const SizedBox(
+                                  height: 10,
+                                ),
+                                // TextWidget.custmText(
+                                //     text: "",
+                                //     theme: false,
+                                //     color:  colors.colorBlack,
+                                //     fs: 40),
+                                const SizedBox(
+                                  height: 10,
+                                ),
+                                // TextWidget.paraText(
+                                //   text: "${widget.upiData?["datetime"]}",
+                                //   theme: false,
+                                //   color: colors.textSecondaryLight,
+                                // ),
                               ],
-                            )
-                            ,
+                            ),
                           ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            child: SizedBox(
+                              width: MediaQuery.of(context).size.width,
+                              child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    elevation: 0,
+                                    minimumSize: const Size(0, 40),
+                                    backgroundColor: colors.primaryLight,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(5),
+                                    ),
+                                  ),
+                                  onPressed: () {
+                                    // Clear the amount text field
+                                    Navigator.pop(context);
+                                    FocusScope.of(context).unfocus();
+                                  },
+                                  child: TextWidget.subText(
+                                      text: 'Done',
+                                      theme: false,
+                                      color: colors.colorWhite,
+                                      fw: 2)),
+                            ),
+                          ),
+                          const SizedBox(
+                            height: 20,
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
                 );
               });
@@ -2451,13 +2447,11 @@ class MFProvider extends DefaultChangeNotifier {
         //   );
         //   Navigator.pop(context); // Only po
         // }
-          notifyListeners(); 
-
-
+        notifyListeners();
       }
       _investloader = false;
       _loadingMessage = null;
-          notifyListeners(); 
+      notifyListeners();
 
       // Navigator.pop(context);
 
@@ -2669,7 +2663,7 @@ class MFProvider extends DefaultChangeNotifier {
         // toggleLoad(false);
         ScaffoldMessenger.of(context).showSnackBar(
             successMessage(context, "${_xsipOrderResponces!.remarks}"));
-      _investloader = false;
+        _investloader = false;
 
         // fetchAllPayment(
         //     context,
@@ -2685,16 +2679,15 @@ class MFProvider extends DefaultChangeNotifier {
         //     schemecode);
         Navigator.pop(context);
         notifyListeners();
-
       } else {
         // toggleLoadingOn(false);
         _loadingMessage = null;
         ScaffoldMessenger.of(context).showSnackBar(
             warningMessage(context, "${_xsipOrderResponces!.remarks}"));
-            _investloader = false;
+        _investloader = false;
 
         Navigator.pop(context);
-     
+
         notifyListeners();
       }
       fetchmfsiplist();
@@ -3163,22 +3156,19 @@ class MFProvider extends DefaultChangeNotifier {
   }
 
   // Fetching data from the api and stored in a variable
-  Future fetchUpiDetail(val,BuildContext context) async {
+  Future fetchUpiDetail(val, BuildContext context) async {
     if (val == 'repop') {
-        Navigator.pop(context);
-      
+      Navigator.pop(context);
     }
 
     try {
       _investloader = true;
       _paymentMethod = [];
       _upiDetailsModel = await api.getUPI();
-        _paymentMethod.add("UPI");
-        _paymentMethod.add("NET BANKING");
+      _paymentMethod.add("UPI");
+      _paymentMethod.add("NET BANKING");
       if (_upiDetailsModel!.stat == "Ok") {
-                upiId.text = _upiDetailsModel!.data![0].upiId.toString();
-
-        
+        upiId.text = _upiDetailsModel!.data![0].upiId.toString();
       }
       notifyListeners();
     } catch (e) {
@@ -3398,15 +3388,16 @@ class MFProvider extends DefaultChangeNotifier {
   }
 
   // MF Holdings Filter Method
-  void filterMFHoldings({required String sorting, required BuildContext context}) {
+  void filterMFHoldings(
+      {required String sorting, required BuildContext context}) {
     if (_mfholdingnew?.data == null) return;
 
     if (sorting == "NAMEASC") {
-      _mfholdingnew!.data!.sort((a, b) => 
-          (a.name ?? "").compareTo(b.name ?? ""));
+      _mfholdingnew!.data!
+          .sort((a, b) => (a.name ?? "").compareTo(b.name ?? ""));
     } else if (sorting == "NAMEDSC") {
-      _mfholdingnew!.data!.sort((a, b) => 
-          (b.name ?? "").compareTo(a.name ?? ""));
+      _mfholdingnew!.data!
+          .sort((a, b) => (b.name ?? "").compareTo(a.name ?? ""));
     } else if (sorting == "NAVASC") {
       _mfholdingnew!.data!.sort((a, b) {
         double aNav = double.tryParse(a.curNav ?? "0.00") ?? 0.0;
@@ -3460,3 +3451,4 @@ class MFProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 }
+
