@@ -48,6 +48,8 @@ class MFOverview extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
+              // Fund Metrics
+              _buildFundMetrics(context, theme, mfProvide),
               // NAV Chart
               Container(
                 margin: const EdgeInsets.only(top: 14, bottom: 12),
@@ -146,15 +148,15 @@ class MFOverview extends ConsumerWidget {
                     size: 16,
                     color: colors.ltpgreen,
                   ),
-                  SizedBox(
-                    width: 10,
+                  const SizedBox(
+                    width: 6,
                   ),
                   TextWidget.paraText(
                       align: TextAlign.start,
                       text: "Benchmark",
                       color: theme.isDarkMode
-                          ? colors.textPrimaryDark
-                          : colors.textPrimaryLight,
+                          ? colors.textSecondaryDark
+                          : colors.textSecondaryLight,
                       textOverflow: TextOverflow.ellipsis,
                       theme: theme.isDarkMode,
                       fw: 3),
@@ -171,7 +173,7 @@ class MFOverview extends ConsumerWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 25),
+              const SizedBox(height: 16),
 
               // Returns Grid
               if (mfProvide.mfReturnsGridview.isNotEmpty)
@@ -196,7 +198,7 @@ class MFOverview extends ConsumerWidget {
                           color: isDarkMode
                               ? const Color(0xFF2A2A2A)
                               : Color(isNegative ? 0xffFFFCFB : 0xffFBFFFA),
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(5),
                           border: Border.all(
                               color: const Color(0xff999999), width: .2)),
                       child: Stack(
@@ -248,7 +250,7 @@ class MFOverview extends ConsumerWidget {
                                       ? 0xffFF1717
                                       : 0xff43A833),
                                   borderRadius: const BorderRadius.vertical(
-                                      bottom: Radius.circular(10))),
+                                      bottom: Radius.circular(5))),
                               child: 
                               TextWidget.paraText(
                                       align: TextAlign.start,
@@ -256,7 +258,7 @@ class MFOverview extends ConsumerWidget {
                                       color:   colors.textPrimaryDark,
                                       textOverflow: TextOverflow.ellipsis,
                                       theme: theme.isDarkMode,
-                                      fw: 1),
+                                      fw: 0),
                                      
                             ),
                           ),
@@ -355,5 +357,66 @@ class MFOverview extends ConsumerWidget {
                         : colors.colorDivider)
               ]))
         ]);
+  }
+
+  Widget _buildFundMetrics(BuildContext context, ThemesProvider theme, MFProvider mfData) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        _buildMetricColumn(
+            "Aum (cr)", _formatAum(mfStockData.aUM), theme),
+        _buildMetricColumn(
+            "NAV",
+            _formatValue(mfData.factSheetDataModel?.data?.currentNAV),
+            theme),
+        _buildMetricColumn("Min. Inv",
+            _formatValue(mfStockData.minimumPurchaseAmount), theme),
+        _buildMetricColumn("5Yr CAGR",
+            _formatYearData(mfStockData.fIVEYEARDATA), theme),
+      ],
+    );
+  }
+
+  Widget _buildMetricColumn(String title, String value, ThemesProvider theme) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TextWidget.subText(
+            text: title,
+            color: theme.isDarkMode
+                ? colors.textPrimaryDark
+                : colors.textPrimaryLight,
+            textOverflow: TextOverflow.ellipsis,
+            theme: theme.isDarkMode,
+            fw: 3),
+        const SizedBox(height: 6),
+        TextWidget.subText(
+            text: value,
+            color: theme.isDarkMode
+                ? colors.textSecondaryDark
+                : colors.textPrimaryLight,
+            textOverflow: TextOverflow.ellipsis,
+            theme: theme.isDarkMode,
+            fw: 3),
+      ],
+    );
+  }
+
+  String _formatAum(String? aum) {
+    if (aum == null || aum.isEmpty) return "0.00";
+    try {
+      return double.parse(aum).toStringAsFixed(2);
+    } catch (e) {
+      return "0.00";
+    }
+  }
+
+  String _formatValue(String? value) {
+    return value?.isEmpty ?? true ? "0.00" : value!;
+  }
+
+  String _formatYearData(String? yearData) {
+    if (yearData == null || yearData.isEmpty) return "0.00";
+    return "$yearData%";
   }
 }

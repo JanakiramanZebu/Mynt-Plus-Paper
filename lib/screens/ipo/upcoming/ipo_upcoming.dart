@@ -124,7 +124,7 @@ class _UpcomingIPOItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: Expanded(child: _buildCompanyInfo()),
+      child: _buildCompanyInfo(),
     );
   }
 

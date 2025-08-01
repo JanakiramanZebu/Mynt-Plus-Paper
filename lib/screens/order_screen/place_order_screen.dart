@@ -150,7 +150,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
             }[widget.orderArg.prd] ??
             "Delivery"
         : checkRawValue // ② old logic
-            ? {"B": "CO - BO", "H": "CO - BO", "F": "MTF"}[orderRawValue['prd']] ?? "Delivery"
+            ? {"B": "CO - BO", "H": "CO - BO", "I" : "Intraday", "F": "MTF"}[orderRawValue['prd']] ?? "Delivery"
             : isUserOrderPreferenceAvailable
                 ? (["Delivery", "Intraday", "MTF"].contains(userOrderPreference['prd'])
                     ? userOrderPreference['prd']
@@ -2897,122 +2897,122 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                         child: Column(
                                           crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
-                                            if (isAvbSecu) ...[
-                                              AnimatedBuilder(
-                                                animation: anibuildctrl,
-                                                builder: (context, child) {
-                                                  return Transform.translate(
-                                                    offset: Offset(
-                                                        _shakeAnimation.value *
-                                                            sin(DateTime.now().millisecondsSinceEpoch * 0.01),
-                                                        0),
-                                                    child: GestureDetector(
-                                                      onTap: () {
-                                                        final dynamic tooltip = tooltipKey.currentState;
-                                                        tooltip?.ensureTooltipVisible(); // Manually show tooltip on tap
-                                                      },
-                                                      child: AnimatedContainer(
-                                                          duration: const Duration(milliseconds: 300),
-                                                          curve: Curves.easeInCubic,
-                                                          margin: const EdgeInsets.only(right: 16, top: 16, bottom: 0),
-                                                          padding: const EdgeInsets.all(0),
-                                                          decoration: BoxDecoration(
-                                                            color: const Color(0xffFFF6E6),
-                                                            borderRadius: BorderRadius.circular(6),
-                                                            border: Border.all(
-                                                              color: anibuildctrl.isAnimating
-                                                                  ? colors.darkred
-                                                                  : const Color(0xffFFF6E6), // Border color
-                                                              width: anibuildctrl.isAnimating
-                                                                  ? 1.0
-                                                                  : 0.0, // Border width (1px)
-                                                            ),
-                                                            boxShadow: anibuildctrl.isAnimating
-                                                                ? [
-                                                                    BoxShadow(
-                                                                      color: colors.darkred.withOpacity(0.6),
-                                                                      blurRadius: 10,
-                                                                      spreadRadius: 3,
-                                                                      offset: const Offset(0, 0),
-                                                                    ),
-                                                                  ]
-                                                                : [],
-                                                          ),
-                                                          child: Row(
-                                                            mainAxisAlignment: MainAxisAlignment.start,
-                                                            children: [
-                                                              IconButton(
-                                                                  onPressed: () {
-                                                                    setState(() {
-                                                                      isSecu = !isSecu;
-                                                                    });
-                                                                  },
-                                                                  icon: SvgPicture.asset(
-                                                                      isSecu ? assets.checkedbox : assets.checkbox)),
-                                                              Expanded(
-                                                                  // Ensures text takes available space and wraps
-                                                                  child: Column(
-                                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                                children: [
-                                                                  RichText(
-                                                                    text: TextSpan(
-                                                                      style: textStyle(
-                                                                        const Color(0xffB37702),
-                                                                        13,
-                                                                        FontWeight.w500,
-                                                                      ),
-                                                                      children: [
-                                                                        const WidgetSpan(
-                                                                          child: Icon(Icons.warning_outlined,
-                                                                              color: Color.fromARGB(190, 255, 170, 0),
-                                                                              size: 16),
-                                                                        ),
-                                                                        const TextSpan(
-                                                                            text:
-                                                                                " Exchange surveillance active — confirm to proceed with your order."),
-                                                                        WidgetSpan(
-                                                                          child: Tooltip(
-                                                                            key: tooltipKey,
-                                                                            // enableTapToDismiss: false,
-                                                                            preferBelow: false,
-                                                                            message: quotemsg,
-                                                                            textStyle: const TextStyle(
-                                                                              color: Colors.white,
-                                                                              fontSize: 13,
-                                                                            ),
-                                                                            padding: const EdgeInsets.symmetric(
-                                                                                vertical: 8, horizontal: 16),
-                                                                            margin: const EdgeInsets.symmetric(
-                                                                                horizontal: 16),
-                                                                            decoration: BoxDecoration(
-                                                                              color: Colors.black,
-                                                                              borderRadius: BorderRadius.circular(8),
-                                                                            ),
-                                                                            child: Text(
-                                                                              " Know more",
-                                                                              style: textStyle(
-                                                                                !theme.isDarkMode
-                                                                                    ? colors.colorBlue
-                                                                                    : colors.colorLightBlue,
-                                                                                13,
-                                                                                FontWeight.w500,
-                                                                              ),
-                                                                            ),
-                                                                          ),
-                                                                        ),
-                                                                      ],
-                                                                    ),
-                                                                    softWrap: true,
-                                                                  ),
-                                                                ],
-                                                              ))
-                                                            ],
-                                                          )),
-                                                    ),
-                                                  );
-                                                },
-                                              ),
-                                            ],
+                                            // if (isAvbSecu) ...[
+                                            //   AnimatedBuilder(
+                                            //     animation: anibuildctrl,
+                                            //     builder: (context, child) {
+                                            //       return Transform.translate(
+                                            //         offset: Offset(
+                                            //             _shakeAnimation.value *
+                                            //                 sin(DateTime.now().millisecondsSinceEpoch * 0.01),
+                                            //             0),
+                                            //         child: GestureDetector(
+                                            //           onTap: () {
+                                            //             final dynamic tooltip = tooltipKey.currentState;
+                                            //             tooltip?.ensureTooltipVisible(); // Manually show tooltip on tap
+                                            //           },
+                                            //           child: AnimatedContainer(
+                                            //               duration: const Duration(milliseconds: 300),
+                                            //               curve: Curves.easeInCubic,
+                                            //               margin: const EdgeInsets.only(right: 16, top: 16, bottom: 0),
+                                            //               padding: const EdgeInsets.all(0),
+                                            //               decoration: BoxDecoration(
+                                            //                 color: const Color(0xffFFF6E6),
+                                            //                 borderRadius: BorderRadius.circular(6),
+                                            //                 border: Border.all(
+                                            //                   color: anibuildctrl.isAnimating
+                                            //                       ? colors.darkred
+                                            //                       : const Color(0xffFFF6E6), // Border color
+                                            //                   width: anibuildctrl.isAnimating
+                                            //                       ? 1.0
+                                            //                       : 0.0, // Border width (1px)
+                                            //                 ),
+                                            //                 boxShadow: anibuildctrl.isAnimating
+                                            //                     ? [
+                                            //                         BoxShadow(
+                                            //                           color: colors.darkred.withOpacity(0.6),
+                                            //                           blurRadius: 10,
+                                            //                           spreadRadius: 3,
+                                            //                           offset: const Offset(0, 0),
+                                            //                         ),
+                                            //                       ]
+                                            //                     : [],
+                                            //               ),
+                                            //               child: Row(
+                                            //                 mainAxisAlignment: MainAxisAlignment.start,
+                                            //                 children: [
+                                            //                   IconButton(
+                                            //                       onPressed: () {
+                                            //                         setState(() {
+                                            //                           isSecu = !isSecu;
+                                            //                         });
+                                            //                       },
+                                            //                       icon: SvgPicture.asset(
+                                            //                           isSecu ? assets.checkedbox : assets.checkbox)),
+                                            //                   Expanded(
+                                            //                       // Ensures text takes available space and wraps
+                                            //                       child: Column(
+                                            //                     crossAxisAlignment: CrossAxisAlignment.start,
+                                            //                     children: [
+                                            //                       RichText(
+                                            //                         text: TextSpan(
+                                            //                           style: textStyle(
+                                            //                             const Color(0xffB37702),
+                                            //                             13,
+                                            //                             FontWeight.w500,
+                                            //                           ),
+                                            //                           children: [
+                                            //                             const WidgetSpan(
+                                            //                               child: Icon(Icons.warning_outlined,
+                                            //                                   color: Color.fromARGB(190, 255, 170, 0),
+                                            //                                   size: 16),
+                                            //                             ),
+                                            //                             const TextSpan(
+                                            //                                 text:
+                                            //                                     " Exchange surveillance active — confirm to proceed with your order."),
+                                            //                             WidgetSpan(
+                                            //                               child: Tooltip(
+                                            //                                 key: tooltipKey,
+                                            //                                 // enableTapToDismiss: false,
+                                            //                                 preferBelow: false,
+                                            //                                 message: quotemsg,
+                                            //                                 textStyle: const TextStyle(
+                                            //                                   color: Colors.white,
+                                            //                                   fontSize: 13,
+                                            //                                 ),
+                                            //                                 padding: const EdgeInsets.symmetric(
+                                            //                                     vertical: 8, horizontal: 16),
+                                            //                                 margin: const EdgeInsets.symmetric(
+                                            //                                     horizontal: 16),
+                                            //                                 decoration: BoxDecoration(
+                                            //                                   color: Colors.black,
+                                            //                                   borderRadius: BorderRadius.circular(8),
+                                            //                                 ),
+                                            //                                 child: Text(
+                                            //                                   " Know more",
+                                            //                                   style: textStyle(
+                                            //                                     !theme.isDarkMode
+                                            //                                         ? colors.colorBlue
+                                            //                                         : colors.colorLightBlue,
+                                            //                                     13,
+                                            //                                     FontWeight.w500,
+                                            //                                   ),
+                                            //                                 ),
+                                            //                               ),
+                                            //                             ),
+                                            //                           ],
+                                            //                         ),
+                                            //                         softWrap: true,
+                                            //                       ),
+                                            //                     ],
+                                            //                   ))
+                                            //                 ],
+                                            //               )),
+                                            //         ),
+                                            //       );
+                                            //     },
+                                            //   ),
+                                            // ],
                                             SingleChildScrollView(
                                               padding: const EdgeInsets.all(0),
                                               scrollDirection: Axis.horizontal,
@@ -4420,7 +4420,8 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
         }
         if (!isSecu) {
           placeorder = false;
-          anibuildctrl.forward();
+          // anibuildctrl.forward();
+          _showSurveillanceBottomSheet(orderInput, isSliceOrd, theme);
         }
 
         if (placeorder) {
@@ -4453,6 +4454,8 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
         } else if (frezQtyOrderSliceMaxLimit < quantity) {
           ScaffoldMessenger.of(context).showSnackBar(warningMessage(context,
               "Quantity can only be split into a maximum of $frezQtyOrderSliceMaxLimit slice. (Ex: $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQty * frezQtyOrderSliceMaxLimit})"));
+        } else if (!isSecu) {
+          _showSurveillanceBottomSheet(orderInput, isSliceOrd, theme);
         } else {
           showModalBottomSheet(
             isScrollControlled: true,
@@ -4513,6 +4516,103 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
         trantype: isBuy! ? "B" : "S",
         tsym: "${widget.scripInfo.tsym}");
     ref.read(orderProvider).fetchGetBrokerage(brokerageInput, context);
+  }
+
+  void _showSurveillanceBottomSheet(OrderInputProvider orderInput, bool isSliceOrd, ThemesProvider theme) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Container(
+              decoration: BoxDecoration(
+                color: ref.read(themeProvider).isDarkMode ? colors.darkGrey : Colors.white,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(5)),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        margin: const EdgeInsets.only(bottom: 20),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[300],
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                      const Icon(Icons.warning_outlined,
+                                      color: Color.fromARGB(190, 255, 170, 0), size: 24),
+                                  Expanded(child: Text(
+                                        " Exchange surveillance active",
+                                        style: textStyle(
+                                          theme.isDarkMode ? colors.textPrimary : colors.textPrimaryLight,
+                                          16,
+                                          FontWeight.w600,
+                                        ),
+                                    overflow: TextOverflow.ellipsis,)),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                               TextWidget.subText(
+                                        text: quotemsg,
+                                        theme: theme.isDarkMode,
+                                        
+                                        lineHeight:1.6),
+                                  
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 48,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            isSecu = true; 
+                            });
+                          Navigator.pop(context);
+                          placeOrder(orderInput, isSliceOrd, theme);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: colors.colorBlue,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: Text(
+                          "Continue",
+                          style: textStyle(Colors.white, 16, FontWeight.w600),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: MediaQuery.of(context).viewInsets.bottom),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
   prepareToPlaceGttOrder(OrderInputProvider orderInput) async {

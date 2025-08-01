@@ -17,7 +17,8 @@ class CreateMandateDialogue extends ConsumerStatefulWidget {
   const CreateMandateDialogue({super.key});
 
   @override
-  ConsumerState<CreateMandateDialogue> createState() => _CreateMandateDialogueState();
+  ConsumerState<CreateMandateDialogue> createState() =>
+      _CreateMandateDialogueState();
 }
 
 class _CreateMandateDialogueState extends ConsumerState<CreateMandateDialogue> {
@@ -35,7 +36,7 @@ class _CreateMandateDialogueState extends ConsumerState<CreateMandateDialogue> {
     final theme = ref.watch(themeProvider);
     final fund = ref.watch(fundProvider);
     final mfOrder = ref.watch(mfProvider);
-    
+
     return Padding(
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -52,48 +53,46 @@ class _CreateMandateDialogueState extends ConsumerState<CreateMandateDialogue> {
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          children: [          
+          children: [
             // Title
             Padding(
-                padding: const EdgeInsets.symmetric(
-                        vertical: 8.0, horizontal: 16.0),
+              padding:
+                  const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
               child: Row(
-                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                 TextWidget.titleText(
-                          text: "Create Mandate",
-                          theme: theme.isDarkMode,
-                          fw: 1,
-                        ),
-                 
+                  TextWidget.titleText(
+                    text: "Create Mandate",
+                    theme: theme.isDarkMode,
+                    fw: 1,
+                  ),
                   Material(
-                          color: Colors.transparent,
-                          shape: const CircleBorder(),
-                          child: InkWell(
-                            onTap: () async {
-                              await Future.delayed(
-                                  const Duration(milliseconds: 150));
-                              Navigator.pop(context);
-                            },
-                            borderRadius: BorderRadius.circular(20),
-                            splashColor: theme.isDarkMode
-                                ? Colors.white.withOpacity(0.15)
-                                : Colors.black.withOpacity(0.15),
-                            highlightColor: theme.isDarkMode
-                                ? Colors.white.withOpacity(0.08)
-                                : Colors.black.withOpacity(0.08),
-                            child: Padding(
-                              padding: const EdgeInsets.all(6.0),
-                              child: Icon(
-                                Icons.close_rounded,
-                                size: 22,
-                                color: theme.isDarkMode
-                                    ? const Color(0xffBDBDBD)
-                                    : colors.colorGrey,
-                              ),
-                            ),
-                          ),
+                    color: Colors.transparent,
+                    shape: const CircleBorder(),
+                    child: InkWell(
+                      onTap: () async {
+                        await Future.delayed(const Duration(milliseconds: 150));
+                        Navigator.pop(context);
+                      },
+                      borderRadius: BorderRadius.circular(20),
+                      splashColor: theme.isDarkMode
+                          ? Colors.white.withOpacity(0.15)
+                          : Colors.black.withOpacity(0.15),
+                      highlightColor: theme.isDarkMode
+                          ? Colors.white.withOpacity(0.08)
+                          : Colors.black.withOpacity(0.08),
+                      child: Padding(
+                        padding: const EdgeInsets.all(6.0),
+                        child: Icon(
+                          Icons.close_rounded,
+                          size: 22,
+                          color: theme.isDarkMode
+                              ? const Color(0xffBDBDBD)
+                              : colors.colorGrey,
                         ),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -114,28 +113,27 @@ class _CreateMandateDialogueState extends ConsumerState<CreateMandateDialogue> {
                         margin: const EdgeInsets.symmetric(vertical: 8),
                         height: 44,
                         child: CustomTextFormField(
-                           keyboardType: TextInputType.number,
+                            keyboardType: TextInputType.number,
                             textAlign: TextAlign.start,
                             fillColor: theme.isDarkMode
                                 ? colors.darkGrey
-                                :  const Color(0xffF1F3F8),
+                                : const Color(0xffF1F3F8),
                             hintText: '0',
                             hintStyle: TextWidget.textStyle(
-                                color:  colors.textSecondary,  fontSize:  14, 
-                                
-                                theme: theme.isDarkMode,
-                                ),
+                              color: colors.textSecondary,
+                              fontSize: 14,
+                              theme: theme.isDarkMode,
+                            ),
                             inputFormate: [
                               FilteringTextInputFormatter.digitsOnly
                             ],
                             style: TextWidget.textStyle(
-                                color: theme.isDarkMode
-                                    ? colors.textPrimaryDark
-                                    : colors.textPrimaryLight,
-                                fontSize: 14,
-                                
-                                theme: theme.isDarkMode,
-                                ),
+                              color: theme.isDarkMode
+                                  ? colors.textPrimaryDark
+                                  : colors.textPrimaryLight,
+                              fontSize: 14,
+                              theme: theme.isDarkMode,
+                            ),
                             textCtrl: mfOrder.installmentAmt,
                             onChanged: (value) {
                               setState(() {
@@ -201,9 +199,8 @@ class _CreateMandateDialogueState extends ConsumerState<CreateMandateDialogue> {
                                               text: mfOrder.startDate,
                                               theme: theme.isDarkMode,
                                               color: theme.isDarkMode
-                                                ? colors.textPrimaryDark
-                                                : colors.textPrimaryLight,
-                                              
+                                                  ? colors.textPrimaryDark
+                                                  : colors.textPrimaryLight,
                                             ),
                                           ),
                                           Icon(
@@ -261,9 +258,8 @@ class _CreateMandateDialogueState extends ConsumerState<CreateMandateDialogue> {
                                               text: mfOrder.endDate,
                                               theme: theme.isDarkMode,
                                               color: theme.isDarkMode
-                                                ? colors.textPrimaryDark
-                                                : colors.textPrimaryLight,
-                                              
+                                                  ? colors.textPrimaryDark
+                                                  : colors.textPrimaryLight,
                                             ),
                                           ),
                                           Icon(
@@ -294,29 +290,29 @@ class _CreateMandateDialogueState extends ConsumerState<CreateMandateDialogue> {
               padding: const EdgeInsets.all(16),
               child: Row(
                 children: [
-                 
                   Expanded(
                     child: ElevatedButton(
-                        onPressed: () async {
-                          if (mfOrder.installmentAmt.text.trim().isEmpty) {
-                            return; // Error is shown inline below the field
-                          }
-                          
-                          int installmentAmount = double.parse(mfOrder.installmentAmt.text).toInt();
-                          if (installmentAmount >= 100) {
-                         await mfOrder.fetchCreateMandate(
-                                context,
-                                double.parse(mfOrder.installmentAmt.text)
-                                    .toInt()
-                                    .toString(),
-                                mfOrder.startDate,
-                                mfOrder.endDate);
-                            Navigator.pop(context);
-                          }
-                          // Error for low amount is shown inline below the field
-                        },
-                        style: ElevatedButton.styleFrom(
-                            elevation: 0,
+                      onPressed: () async {
+                        if (mfOrder.installmentAmt.text.trim().isEmpty) {
+                          return; // Error is shown inline below the field
+                        }
+
+                        int installmentAmount =
+                            double.parse(mfOrder.installmentAmt.text).toInt();
+                        if (installmentAmount >= 100) {
+                          await mfOrder.fetchCreateMandate(
+                              context,
+                              double.parse(mfOrder.installmentAmt.text)
+                                  .toInt()
+                                  .toString(),
+                              mfOrder.startDate,
+                              mfOrder.endDate);
+                          Navigator.pop(context);
+                        }
+                        // Error for low amount is shown inline below the field
+                      },
+                      style: ElevatedButton.styleFrom(
+                        elevation: 0,
                         minimumSize: const Size(0, 40), // width, height
 
                         backgroundColor: theme.isDarkMode
@@ -324,26 +320,28 @@ class _CreateMandateDialogueState extends ConsumerState<CreateMandateDialogue> {
                             : colors.primaryLight,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(5),
-                        ),),
-                            // padding: const EdgeInsets.symmetric(vertical: 12)),
-                        child: mfOrder.loading == true 
-                                    ? const SizedBox(
-                                        height: 15,
-                                        width: 15,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2.0,
-                                          valueColor: AlwaysStoppedAnimation<Color>(
-                                              Color.fromARGB(99, 48, 48, 48)),
-                                          backgroundColor:
-                                              Color.fromARGB(255, 255, 255, 255),
-                                        ),
-                                      )
-                                    :  TextWidget.subText(
+                        ),
+                      ),
+                      // padding: const EdgeInsets.symmetric(vertical: 12)),
+                      child: mfOrder.loading == true
+                          ? const SizedBox(
+                              height: 15,
+                              width: 15,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.0,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                    Color.fromARGB(99, 48, 48, 48)),
+                                backgroundColor:
+                                    Color.fromARGB(255, 255, 255, 255),
+                              ),
+                            )
+                          : TextWidget.subText(
                               text: "Submit",
                               color: colors.colorWhite,
                               theme: theme.isDarkMode,
                               fw: 2,
-                            ),),
+                            ),
+                    ),
                   ),
                 ],
               ),

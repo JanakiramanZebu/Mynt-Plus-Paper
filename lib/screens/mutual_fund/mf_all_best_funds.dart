@@ -16,6 +16,7 @@ import '../../sharedWidget/list_divider.dart';
 import '../../sharedWidget/loader_ui.dart';
 import '../../sharedWidget/no_data_found.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
+import 'mf_stock_detail_screen.dart';
 
 class SaveTaxesScreen extends ConsumerStatefulWidget {
   final String title;
@@ -413,8 +414,28 @@ class _SaveTaxesScreenState extends ConsumerState<SaveTaxesScreen>
                     Map<String, dynamic> jsonData = item.toJson();
                     MutualFundList bInstance =
                         MutualFundList.fromJson(jsonData);
-                    Navigator.pushNamed(context, Routes.mfStockDetail,
-                        arguments: bInstance);
+
+                         showModalBottomSheet(
+        isScrollControlled: true,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(16),
+            topRight: Radius.circular(16),
+          ),
+        ),
+        isDismissible: true,
+        enableDrag: false,
+        useSafeArea: true,
+        context: context,
+        builder: (context) => Container(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+            ),
+            child: MFStockDetailScreen(mfStockData: bInstance)),
+      );
+                        
+                    // Navigator.pushNamed(context, Routes.mfStockDetail,
+                    //     arguments: bInstance);
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
                         successMessage(context, "No Single Page Data"));

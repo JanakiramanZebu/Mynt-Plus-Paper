@@ -600,12 +600,12 @@ mixin LedgerApi on ApiCore {
 
       final json = jsonDecode((res.body));
       if (json['stat'] != 'Not Ok') {
-        final urival = Uri.parse('${apiLinks.reportsapi}${json['path']}');
+        // final urival = Uri.parse('${apiLinks.reportsapi}${json['path']}');
 
-        if (!await launchUrl(urival, mode: LaunchMode.externalApplication)) {
-          throw 'Could not launch';
-        }
-        return "File downloaded successfully";
+        // if (!await launchUrl(urival, mode: LaunchMode.externalApplication)) {
+        //   throw 'Could not launch';
+        // }
+        return "File Sent to mail successfully";
       } else {
         return json['msg'];
       }

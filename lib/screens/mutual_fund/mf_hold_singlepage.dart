@@ -45,21 +45,21 @@ class _mfholdsinlepage extends State<mfholdsinlepage>
     return value >= 0 ? Colors.green : Colors.red;
   }
 
-  //  MutualFundList _convertHoldingToMutualFundList(dynamic holdingData) {
-  //   return MutualFundList(
-  //     iSIN: holdingData.iSIN,
-  //     schemeCode: holdingData.sCHEMECODE,
-  //     schemeName: holdingData.name,
-  //     name: holdingData.name,
-  //     mfsearchnamename: holdingData.name,
-  //     aMCCode: holdingData.iSIN?.substring(0, 4), // Extract AMC code from ISIN
-  //     type: "Equity", // Default type
-  //     subtype: "Growth", // Default subtype
-  //     aUM: "0", // Default AUM
-  //     nETASSETVALUE: holdingData.curNav,
-  //     minimumRedemptionQty: holdingData.minRedemptionQty,
-  //   );
-  // }
+   MutualFundList _convertHoldingToMutualFundList(dynamic holdingData) {
+    return MutualFundList(
+      iSIN: holdingData.iSIN,
+      schemeCode: holdingData.sCHEMECODE,
+      schemeName: holdingData.name,
+      name: holdingData.name,
+      mfsearchnamename: holdingData.name,
+      aMCCode: holdingData.iSIN?.substring(0, 4), // Extract AMC code from ISIN
+      type: "Equity", // Default type
+      subtype: "Growth", // Default subtype
+      aUM: "0", // Default AUM
+      nETASSETVALUE: holdingData.curNav,
+      minimumRedemptionQty: holdingData.minRedemptionQty,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -141,25 +141,25 @@ class _mfholdsinlepage extends State<mfholdsinlepage>
                                                 : colors.highlightLight,
                                   onTap: () async {
                                     await Future.delayed(const Duration(milliseconds: 150));
-                                    // try {
-                                    //   final isin = data.iSIN;
-                                    //   if (isin != null) {
-                                    //     mfdata.loaderfun();
-                                    //     await mfdata.fetchFactSheet(isin);
-                                    //     mfdata.fetchmatchisan(isin);
-                                    //     Navigator.pushNamed(
-                                    //       context,
-                                    //       Routes.mfStockDetail,
-                                    //       arguments: _convertHoldingToMutualFundList(data),
-                                    //     );
-                                    //   } else {
-                                    //     ScaffoldMessenger.of(context).showSnackBar(
-                                    //         successMessage(context, "Missing fund information"));
-                                    //   }
-                                    // } catch (e) {
-                                    //   ScaffoldMessenger.of(context).showSnackBar(successMessage(
-                                    //       context, "Error loading fund details: ${e.toString()}"));
-                                    // }
+                                    try {
+                                      final isin = data.iSIN;
+                                      if (isin != null) {
+                                        mfdata.loaderfun();
+                                        await mfdata.fetchFactSheet(isin);
+                                        mfdata.fetchmatchisan(isin);
+                                        Navigator.pushNamed(
+                                          context,
+                                          Routes.mfStockDetail,
+                                          arguments: _convertHoldingToMutualFundList(data),
+                                        );
+                                      } else {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                            successMessage(context, "Missing fund information"));
+                                      }
+                                    } catch (e) {
+                                      ScaffoldMessenger.of(context).showSnackBar(successMessage(
+                                          context, "Error loading fund details: ${e.toString()}"));
+                                    }
                                   },
                                   child: Padding(
                                     padding: const EdgeInsets.all(8.0),
@@ -213,11 +213,11 @@ class _mfholdsinlepage extends State<mfholdsinlepage>
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
-                      _showBottomSheet(
-                        context,
-                        RedemptionBottomScreenNew(),
-                      );
                       mfdata.recdemevalu();
+                      Navigator.pushNamed(
+                        context,
+                        Routes.redeemNewBottomSheet,
+                      );
                     },
                     style: ElevatedButton.styleFrom(
                       elevation: 0,

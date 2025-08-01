@@ -1,8 +1,10 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:flutter/material.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:mynt_plus/locator/constant.dart';
 import 'package:mynt_plus/screens/mutual_fund/mf_timeline.dart';
 import 'package:mynt_plus/sharedWidget/functions.dart';
 import 'package:mynt_plus/sharedWidget/ipo_time_line.dart';
@@ -19,6 +21,8 @@ import '../mutual_fund_old/cancle_xsip_resone.dart';
 // import '../mutual_fund_old/mf_order_filter_sheet.dart';
 import '../portfolio_screens/mfHoldings/mf_holding_screen.dart';
 import '../mutual_fund/mf_cancel_alert.dart';
+import 'mf_order_bottomsheet.dart';
+import 'mf_processing_screen.dart';
 
 class mforderdetscreen extends StatefulWidget {
   const mforderdetscreen({super.key});
@@ -57,46 +61,182 @@ class _mforderdetscreen extends State<mforderdetscreen>
             return Scaffold(
               backgroundColor: Colors.transparent,
               body: hasData
-    ? Padding(
-        padding: const EdgeInsets.all(16),
-        child: SingleChildScrollView(
-          controller: scrollController,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildOrderHeader(theme, mfdata),
-              const SizedBox(height: 18),
-              _buildCancelButton(theme, mfdata, context),
-              const SizedBox(height: 24),
-              _buildDetailsSection(theme, mfdata),
-              const SizedBox(height: 20),
-              if (mfdata.mforderdet?.data![0].status != "PLACED") ...[
-                TextWidget.subText(
-                    align: TextAlign.right,
-                    text: "Reason",
-                    color: theme.isDarkMode
-                        ? colors.textSecondaryDark
-                        : colors.textSecondaryLight,
-                    textOverflow: TextOverflow.ellipsis,
-                    theme: theme.isDarkMode,
-                    fw: 3),
-                const SizedBox(height: 8),
-                TextWidget.subText(
-                    align: TextAlign.start,
-                    text:
-                        "${mfdata.mforderdet?.data![0].remarks ?? "No remarks available"}",
-                    color: colors.loss,
-                    textOverflow: TextOverflow.ellipsis,
-                    theme: theme.isDarkMode,
-                    maxLines: 3,
-                    fw: 3),
-              ],
-            ],
-          ),
-        ),
-      )
-    : const Center(child: NoDataFound()),
+                  ? Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: SingleChildScrollView(
+                        controller: scrollController,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildOrderHeader(theme, mfdata),
+                            const SizedBox(height: 18),
+                            // ElevatedButton(
+                            //   onPressed: () async {
+                                 
+                            //       final isUpi = mfdata.paymentName == 'UPI';
+                            //       final isNetBanking =
+                            //           mfdata.paymentName == 'NET BANKING';
+                            //       final isUpiValid =
+                            //           isUpi ? mfdata.upiError == '' : true;
 
+                            //       // mfdata.isValidUpiId(widget.data);
+                            //         await mfdata.fetchUpiDetail('repop' , context);
+                                    
+                            //         // Set loading state immediately when button is pressed
+                            //         showModalBottomSheet(
+                            //           context: context,
+                            //           isScrollControlled: true,
+                            //           isDismissible: mfdata.ispaymentcalled != true,
+                            //           enableDrag: false,
+                            //           shape: const RoundedRectangleBorder(
+                            //             borderRadius: BorderRadius.vertical(
+                            //               top: Radius.circular(15),
+                            //             ),
+                            //           ),
+                            //           builder: (context) => WillPopScope(
+                            //             onWillPop: () async => mfdata.ispaymentcalled != true,
+                            //             child: MfUPIProcessingScreen(
+                            //               data:  '',
+                            //             ),
+                            //           ),
+                            //         );
+                            //         await mfdata.upipaymenttrigger(
+                            //           context,
+                            //           mfdata.mforderdet?.data![0].orderId,
+                            //           mfdata.mforderdet?.data![0].orderVal,
+                            //           mfdata.upiId.text,
+                            //           mfdata.paymentName,
+                            //         );
+
+                            //         if (mfdata.upiApiresponse != null &&
+                            //             mfdata.upiApiresponse?.stat == "Ok") {
+                            //           if (isUpi) {
+                                        
+                            //           } 
+                            //           // else if (isNetBanking) {
+                            //           //   final url = Uri.parse(
+                            //           //     'https://v3.mynt.in/mfapi${mfdata.upiApiresponse!.file!}',
+                            //           //   );
+                            //           //   //  mfdata.IsPaymentCalled(false);
+                            //           //   // Navigator.pop(context);
+
+                            //           //   // Navigate to a new screen showing InAppWebView
+                            //           //   Navigator.of(context).push(
+                            //           //     MaterialPageRoute(
+                            //           //       builder: (context) => Scaffold(
+                            //           //         appBar: AppBar(
+                            //           //           title:
+                            //           //               const Text("Net Banking"),
+                            //           //           leading: IconButton(
+                            //           //             icon: const Icon(
+                            //           //                 Icons.arrow_back_ios_new),
+                            //           //             onPressed: () {
+                            //           //               Navigator.pop(context);
+                            //           //               mfdata.threeSecondTimer
+                            //           //                   ?.cancel();
+                            //           //               mfdata.autoPopTimer
+                            //           //                   ?.cancel();
+                            //           //             },
+                            //           //           ),
+                            //           //         ),
+                            //           //         body: WillPopScope(
+                            //           //           onWillPop: () async {
+                            //           //             Navigator.pop(context);
+                            //           //             mfdata.threeSecondTimer
+                            //           //                 ?.cancel();
+                            //           //             mfdata.autoPopTimer?.cancel();
+                            //           //             // print("objectobjectobjectobjectobjectobjectobjectobject");
+                            //           //             return true;
+                            //           //           },
+                            //           //           child: InAppWebView(
+                            //           //             initialUrlRequest: URLRequest(
+                            //           //               url: WebUri(url.toString()),
+                            //           //             ),
+                            //           //             initialOptions:
+                            //           //                 InAppWebViewGroupOptions(
+                            //           //               crossPlatform:
+                            //           //                   InAppWebViewOptions(),
+                            //           //             ),
+                            //           //             onWebViewCreated:
+                            //           //                 (InAppWebViewController
+                            //           //                     controller) {
+                            //           //               ConstantName
+                            //           //                       .webViewController =
+                            //           //                   controller;
+                            //           //             },
+                            //           //             onProgressChanged:
+                            //           //                 (InAppWebViewController
+                            //           //                         controller,
+                            //           //                     int progress) {
+                            //           //               // Optional: add loading logic or progress indicator
+                            //           //             },
+                            //           //           ),
+                            //           //         ),
+                            //           //       ),
+                            //           //     ),
+                            //           //   );
+                            //           // }
+                            //         }
+                                  
+                                 
+                            //   },
+                            //   style: ElevatedButton.styleFrom(
+                            //     elevation: 0,
+                            //     backgroundColor: colors.btnBg,
+                            //     foregroundColor:
+                            //         const Color.fromARGB(255, 0, 0, 0),
+                            //     side: BorderSide(
+                            //       color: colors.btnOutlinedBorder,
+                            //       width: 1,
+                            //     ),
+                            //     minimumSize:
+                            //         Size(double.infinity, 40), // height: 48
+                            //     shape: RoundedRectangleBorder(
+                            //       borderRadius: BorderRadius.circular(5),
+                            //     ),
+                            //   ),
+                            //   child: TextWidget.subText(
+                            //       align: TextAlign.right,
+                            //       text: "Re-Initiate Payment",
+                            //       color: theme.isDarkMode
+                            //           ? colors.primaryDark
+                            //           : colors.primaryLight,
+                            //       textOverflow: TextOverflow.ellipsis,
+                            //       theme: theme.isDarkMode,
+                            //       fw: 2),
+                            // ),
+                            // const SizedBox(height: 18),
+                            _buildCancelButton(theme, mfdata, context),
+                            const SizedBox(height: 24),
+                            _buildDetailsSection(theme, mfdata),
+                            const SizedBox(height: 20),
+                            if (mfdata.mforderdet?.data![0].status !=
+                                "PLACED") ...[
+                              TextWidget.subText(
+                                  align: TextAlign.right,
+                                  text: "Reason",
+                                  color: theme.isDarkMode
+                                      ? colors.textSecondaryDark
+                                      : colors.textSecondaryLight,
+                                  textOverflow: TextOverflow.ellipsis,
+                                  theme: theme.isDarkMode,
+                                  fw: 3),
+                              const SizedBox(height: 8),
+                              TextWidget.subText(
+                                  align: TextAlign.start,
+                                  text:
+                                      "${mfdata.mforderdet?.data![0].remarks ?? "No remarks available"}",
+                                  color: colors.loss,
+                                  textOverflow: TextOverflow.ellipsis,
+                                  theme: theme.isDarkMode,
+                                  maxLines: 3,
+                                  fw: 3),
+                            ],
+                          ],
+                        ),
+                      ),
+                    )
+                  : const Center(child: NoDataFound()),
             );
           });
         });
@@ -163,17 +303,17 @@ class _mforderdetscreen extends State<mforderdetscreen>
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
               color: mfdata.mforderdet?.data?[0].status == "ALLOCATED"
-                    ? colors.profit.withOpacity(0.1)
-                    : mfdata.mforderdet?.data?[0].status == "REJECTED" ||
-                            mfdata.mforderdet?.data?[0].status == "CANCELLED" ||
-                            mfdata.mforderdet?.data?[0].status ==
-                                "PAYMENT DECLINED"
-                        ? colors.loss.withOpacity(0.1)
-                        : mfdata.mforderdet?.data?[0].status ==
-                                inProgressStatuses.contains(
-                                    mfdata.mforderdet?.data?[0].status)
-                            ? colors.pending.withOpacity(0.1)
-                            : colors.pending.withOpacity(0.1), // default fallback
+                  ? colors.profit.withOpacity(0.1)
+                  : mfdata.mforderdet?.data?[0].status == "REJECTED" ||
+                          mfdata.mforderdet?.data?[0].status == "CANCELLED" ||
+                          mfdata.mforderdet?.data?[0].status ==
+                              "PAYMENT DECLINED"
+                      ? colors.loss.withOpacity(0.1)
+                      : mfdata.mforderdet?.data?[0].status ==
+                              inProgressStatuses
+                                  .contains(mfdata.mforderdet?.data?[0].status)
+                          ? colors.pending.withOpacity(0.1)
+                          : colors.pending.withOpacity(0.1), // default fallback
               borderRadius: BorderRadius.circular(4),
             ),
             child: TextWidget.paraText(
@@ -216,16 +356,15 @@ class _mforderdetscreen extends State<mforderdetscreen>
     return assets.warningIcon;
   }
 
-String _getListStatusText(String? status) {
-  if (status == "ALLOCATED") return 'ALLOCATED';
-  if (status == "REJECTED") return 'REJECTED';
-  if (status == "CANCELLED") return 'CANCELLED';
-  if (status == "PAYMENT DECLINED") return 'PAYMENT DECLINED';
-  if (status != null && inProgressStatuses.contains(status)) return status;
+  String _getListStatusText(String? status) {
+    if (status == "ALLOCATED") return 'ALLOCATED';
+    if (status == "REJECTED") return 'REJECTED';
+    if (status == "CANCELLED") return 'CANCELLED';
+    if (status == "PAYMENT DECLINED") return 'PAYMENT DECLINED';
+    if (status != null && inProgressStatuses.contains(status)) return status;
 
-  return status ?? 'Unknown';
-}
-
+    return status ?? 'Unknown';
+  }
 
   Widget _buildDetailsSection(ThemesProvider theme, dynamic mfdata) {
     return Column(

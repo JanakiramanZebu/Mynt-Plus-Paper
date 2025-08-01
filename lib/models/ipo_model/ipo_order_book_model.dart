@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 class IpoOrderBookModel {
   String? section;
   String? applicationNumber;
@@ -88,9 +90,24 @@ class IpoOrderBookModel {
     bidReferenceNumber = json['bidReferenceNumber'].toString();
     if (json['bid_detail'] != '' && json['bid_detail'] != null) {
       bidDetail = <BidDetail>[];
-      json['bid_detail'].forEach((v) {
-        bidDetail!.add(BidDetail.fromJson(v));
-      });
+      // Check if bid_detail is a List or String
+      if (json['bid_detail'] is List) {
+        json['bid_detail'].forEach((v) {
+          bidDetail!.add(BidDetail.fromJson(v));
+        });
+      } else if (json['bid_detail'] is String) {
+        // If bid_detail is a string, try to parse it as JSON
+        try {
+          final parsedList = jsonDecode(json['bid_detail'] as String);
+          if (parsedList is List) {
+            parsedList.forEach((v) {
+              bidDetail!.add(BidDetail.fromJson(v));
+            });
+          }
+        } catch (e) {
+          print("Error parsing bid_detail string: $e");
+        }
+      }
     }
     biddingendDate = json['biddingendDate'].toString();
     biddingenddate = json['biddingenddate'].toString();
@@ -121,17 +138,47 @@ class IpoOrderBookModel {
     respApplicationStringber = json['resp_applicationNumber'].toString();
     if (json['resp_bid'] != '' && json['resp_bid'] != null) {
       respBid = <RespBid>[];
-      json['resp_bid'].forEach((v) {
-        respBid!.add(RespBid.fromJson(v));
-      });
+      // Check if resp_bid is a List or String
+      if (json['resp_bid'] is List) {
+        json['resp_bid'].forEach((v) {
+          respBid!.add(RespBid.fromJson(v));
+        });
+      } else if (json['resp_bid'] is String) {
+        // If resp_bid is a string, try to parse it as JSON
+        try {
+          final parsedList = jsonDecode(json['resp_bid'] as String);
+          if (parsedList is List) {
+            parsedList.forEach((v) {
+              respBid!.add(RespBid.fromJson(v));
+            });
+          }
+        } catch (e) {
+          print("Error parsing resp_bid string: $e");
+        }
+      }
     }
     responseDatetime = json['response_datetime'].toString();
     responseJson = json['response_json'].toString();
     if (json['subcategorysettings'] != null) {
       subcategorysettings = <Subcategorysettings>[];
-      json['subcategorysettings'].forEach((v) {
-        subcategorysettings!.add(Subcategorysettings.fromJson(v));
-      });
+      // Check if subcategorysettings is a List or String
+      if (json['subcategorysettings'] is List) {
+        json['subcategorysettings'].forEach((v) {
+          subcategorysettings!.add(Subcategorysettings.fromJson(v));
+        });
+      } else if (json['subcategorysettings'] is String) {
+        // If subcategorysettings is a string, try to parse it as JSON
+        try {
+          final parsedList = jsonDecode(json['subcategorysettings'] as String);
+          if (parsedList is List) {
+            parsedList.forEach((v) {
+              subcategorysettings!.add(Subcategorysettings.fromJson(v));
+            });
+          }
+        } catch (e) {
+          print("Error parsing subcategorysettings string: $e");
+        }
+      }
     }
     symbol = json['symbol'].toString();
     type = json['type'].toString();
