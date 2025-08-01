@@ -1299,7 +1299,7 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                                     //     mfOrder.installmentAmtError == ""
                                     ) {
                                   if (mfOrder.mfOrderTpye == "One-time") {
-                    Navigator.pop(context);
+                            Navigator.pop(context);
 
                                     final startTime = DateTime.now();
                                     // print(mfOrder.isValidUpiId(widget.mfData));

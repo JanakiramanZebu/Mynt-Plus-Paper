@@ -221,10 +221,10 @@ mixin MutualFundApi on ApiCore {
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
           body: jsonEncode({"ClientCode": "${prefs.clientId}"}));
+          
       final res2 = {"client_code": "${prefs.clientId}"};
       final json = jsonDecode((res.body));
-      print("MF orderBook ==>${json}");
-      print("MF res2 ==>${res2}");
+      
       // log("MF orderBook ==>${json}");
 
       return MFOrderBookModel.fromJson(json as Map<String, dynamic>);

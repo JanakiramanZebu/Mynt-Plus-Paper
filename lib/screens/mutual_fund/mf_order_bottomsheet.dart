@@ -21,6 +21,7 @@ import '../../sharedWidget/fund_function.dart';
 import '../../sharedWidget/list_divider.dart';
 import '../../sharedWidget/snack_bar.dart';
 import '../mutual_fund_old/create_mandate_daialogue.dart';
+import '../profile_screen/fund_screen/upi_id_screens/mf_payment_resp_alert.dart';
 import '../profile_screen/fund_screen/upi_id_screens/upi_id_cancel_alert.dart';
 import 'mandate_selection_screen.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -738,6 +739,7 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                         mfOrder.setLoadingMessage(
                                             "Processing payment...");
                                         mfOrder.IsPaymentCalled(true);
+                                        
                                         await mfOrder.upipaymenttrigger(
                                           context,
                                           mfOrder
@@ -825,7 +827,7 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                         // Set loading state immediately when button is pressed
                                         // mfOrder.setLoadingMessage(
                                         //     "Processing SIP order...");
-                                        mfOrder.fetchXsipPlaceOrder(
+                                        await mfOrder.fetchXsipPlaceOrder(
                                             context,
                                             "${double.parse(mfOrder.installmentAmt.text).toInt() >= 200000 ? "${widget.data.schemeCode}-L1" : widget.data.schemeCode}",
                                             mfOrder.freqName == "Daily"
@@ -838,6 +840,22 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                                 ? "0"
                                                 : mfOrder.endDate,
                                             mfOrder.mandateId);
+                                            if (mfOrder.xsipOrderResponces?.stat == "Ok" || mfOrder.xsipOrderResponces?.stat == "Not_Ok" ) {
+                                              showModalBottomSheet(
+                                                context: context,
+                                                isScrollControlled: true,
+                                                enableDrag: false,
+                                                shape: const RoundedRectangleBorder(
+                                                  borderRadius: BorderRadius.vertical(
+                                                    top: Radius.circular(15),
+                                                  ),
+                                                ),
+                                                builder: (context) => MfPaymentRespAlert(
+                                                  upiData: mfOrder.xsipOrderResponces?.toJson(),
+                                                ),
+                                              );
+                                            }
+                                            
                                       }
                                     }
                                   },

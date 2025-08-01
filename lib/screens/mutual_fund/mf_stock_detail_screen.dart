@@ -143,7 +143,7 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
                             if (widget.mfStockData.sIPFLAG == "Y" &&
                                 isin != null &&
                                 schemeCode != null) {
-                              await mfData.invertfun(isin, schemeCode);
+                              await mfData.invertfun(isin, schemeCode,context);
                             }
                             Navigator.pushNamed(context, Routes.mforderScreen,
                                 arguments: widget.mfStockData);
@@ -198,7 +198,7 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
                           if (widget.mfStockData.sIPFLAG == "Y" &&
                               isin != null &&
                               schemeCode != null) {
-                            await mfData.invertfun(isin, schemeCode);
+                            await mfData.invertfun(isin, schemeCode,context);
                           }
                           Navigator.pushNamed(context, Routes.mforderScreen,
                               arguments: widget.mfStockData);
@@ -385,16 +385,16 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        _buildMetricColumn(
-            "AUM (CR)", _formatAum(widget.mfStockData.aUM), theme),
+        // _buildMetricColumn(
+        //     "AUM (CR)", _formatAum(widget.mfStockData.aUM), theme),
         _buildMetricColumn(
             "NAV",
             _formatValue(mfdatapro.factSheetDataModel?.data?.currentNAV),
             theme),
-        _buildMetricColumn("MIN. INV",
-            _formatValue(widget.mfStockData.minimumPurchaseAmount), theme),
-        _buildMetricColumn("5YR CAGR",
-            _formatYearData(widget.mfStockData.fIVEYEARDATA), theme),
+        // _buildMetricColumn("MIN. INV",
+        //     _formatValue(widget.mfStockData.minimumPurchaseAmount), theme),
+        // _buildMetricColumn("5YR CAGR",
+        //     _formatYearData(widget.mfStockData.fIVEYEARDATA), theme),
       ],
     );
   }

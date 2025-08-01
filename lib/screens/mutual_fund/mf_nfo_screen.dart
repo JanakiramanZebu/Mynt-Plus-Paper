@@ -68,7 +68,7 @@ class MFNFOScreen extends ConsumerWidget {
                   onTap: () async {
                     try {
                       mf.chngMandate("Lumpsum");
-                      await mf.fetchUpiDetail();
+                      await mf.fetchUpiDetail('',context);
                       // await mf.fetchBankDetail();
                 
                       if (nfoItem.sIPFLAG == "Y") {
