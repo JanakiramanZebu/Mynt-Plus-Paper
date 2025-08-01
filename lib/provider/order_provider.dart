@@ -474,6 +474,10 @@ class OrderProvider extends DefaultChangeNotifier {
     // Only update basket order status if we have order book data available
     if (_orderBookModel != null && _orderBookModel!.isNotEmpty) {
       updateBasketOrderStatus();
+      // Also validate and clean up stale orders immediately after loading
+      validateAllBasketOrderStatuses();
+      // Save the cleaned basket data back to preferences
+      await _saveBasketToPreferences(val);
     }
     
     if(!isOpt) {
@@ -1051,6 +1055,9 @@ class OrderProvider extends DefaultChangeNotifier {
 
       // Update basket order statuses after fetching order book
       updateBasketOrderStatus();
+      
+      // Validate and clean up stale basket order statuses
+      validateAllBasketOrderStatuses();
 
       toggleLoadingOn(false);
     }
@@ -1945,8 +1952,27 @@ class OrderProvider extends DefaultChangeNotifier {
   createBasketOrder(String val, BuildContext context) async {
     String curDate = convDateWithTime();
     getBasketName();
+    
+    // Check for duplicate basket names (case-insensitive)
+    final trimmedName = val.trim();
+    final lowerCaseName = trimmedName.toLowerCase();
+    
+    for (var basket in _bsktList) {
+      if (basket['bsketName'].toString().toLowerCase() == lowerCaseName) {
+        // Show error if duplicate found
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Basket name '$trimmedName' already exists"),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+        return; // Exit without creating duplicate
+      }
+    }
+    
     _bsktList.add({
-      "bsketName": val,
+      "bsketName": trimmedName,
       "createdDate": curDate,
       "max": '20',
       "curLength": '0'
@@ -2718,10 +2744,9 @@ class OrderProvider extends DefaultChangeNotifier {
               openCount++; // OPEN or other statuses
             }
           } else {
-            // Order not found in order book yet (might still be processing)
-            orderIdToStatus[orderId] = 'PLACED';
-            openCount++;
-            print("Order $orderId status: PLACED (not found in order book yet)");
+            // Order not found in order book - this means it's stale/expired
+            print("Order $orderId not found in current orderbook - will be cleaned up");
+            // Don't add to orderIdToStatus map - let it be cleaned up
           }
         }
         
@@ -2824,7 +2849,12 @@ class OrderProvider extends DefaultChangeNotifier {
         }
         
         // Set the primary status for this item (worst case scenario)
-        if (itemStatuses.contains('REJECTED')) {
+        if (itemStatuses.isEmpty) {
+          // No valid order found in orderbook, reset order status
+          print("DEBUG: Resetting order status for ${element['tsym']} - no valid orders found");
+          element['orderStatus'] = null;
+          element['orderDetails'] = null;
+        } else if (itemStatuses.contains('REJECTED')) {
           element['orderStatus'] = 'REJECTED';
         } else if (itemStatuses.contains('CANCELED')) {
           element['orderStatus'] = 'CANCELED';
@@ -2835,10 +2865,85 @@ class OrderProvider extends DefaultChangeNotifier {
         }
         
         // Store order details for UI display
-        element['orderDetails'] = itemOrderDetails;
+        if (itemStatuses.isNotEmpty) {
+          element['orderDetails'] = itemOrderDetails;
+        }
         
         print("Updated item ${element['tsym']}: status=${element['orderStatus']}, details=${itemOrderDetails}");
+      } else {
+        // No order IDs means the item was never placed, reset any existing status
+        element['orderStatus'] = null;
+        element['orderDetails'] = null;
       }
+    }
+  }
+
+  // Method to validate and clean up stale order statuses for all baskets
+  void validateAllBasketOrderStatuses() {
+    if (_orderBookModel == null || _orderBookModel!.isEmpty) {
+      return;
+    }
+
+    // Create map of all current order IDs in orderbook for fast lookup
+    Set<String> currentOrderIds = {};
+    for (var order in _orderBookModel!) {
+      if (order.norenordno != null) {
+        currentOrderIds.add(order.norenordno!);
+      }
+    }
+
+    // Check all basket items and reset status if order ID not found
+    for (var element in _bsktScripList) {
+      if (element['orderIds'] != null) {
+        List<String> itemOrderIds = List<String>.from(element['orderIds']);
+        
+        // Check if any of the order IDs still exist in orderbook
+        bool hasValidOrder = false;
+        for (String orderId in itemOrderIds) {
+          if (currentOrderIds.contains(orderId)) {
+            hasValidOrder = true;
+            break;
+          }
+        }
+        
+        // If no valid orders found, reset the status
+        if (!hasValidOrder) {
+          print("DEBUG: Found stale order for ${element['tsym']}, orderIds: $itemOrderIds");
+          print("DEBUG: Current orderbook has ${currentOrderIds.length} orders");
+          element['orderStatus'] = null;
+          element['orderDetails'] = null;
+          element['orderIds'] = null; // Also clear the order IDs
+          print("Reset stale order status for ${element['tsym']} - orders not found in current orderbook");
+        }
+      }
+    }
+    
+    notifyListeners();
+  }
+
+  // Method to save cleaned basket data back to preferences
+  Future<void> _saveBasketToPreferences(String basketName) async {
+    try {
+      final userId = pref.clientId;
+      if (userId != null && userId.isNotEmpty) {
+        // Update the basket data in memory
+        _bsktScrips[basketName] = _bsktScripList;
+        
+        // Save to user-specific preferences
+        final updatedBasketData = jsonEncode(_bsktScrips);
+        await pref.setBasketScripForUser(userId, updatedBasketData);
+        print("DEBUG: Saved cleaned basket data for user $userId, basket: $basketName");
+      } else {
+        // Update the basket data in memory
+        _bsktScrips[basketName] = _bsktScripList;
+        
+        // Save to general preferences
+        final updatedBasketData = jsonEncode(_bsktScrips);
+        await pref.setBasketScrip(updatedBasketData);
+        print("DEBUG: Saved cleaned basket data to general preferences, basket: $basketName");
+      }
+    } catch (e) {
+      print("ERROR: Failed to save cleaned basket data: $e");
     }
   }
 
