@@ -229,7 +229,8 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                             if ((widget.mfData.sIPFLAG == "Y" &&
                                 isin != null &&
                                 schemeCode != null)) {
-                              await mfOrder.invertfun(isin, schemeCode);
+                              await mfOrder.invertfun(
+                                  isin, schemeCode, context);
                             }
 
                             mfOrder.invAmt.text =
