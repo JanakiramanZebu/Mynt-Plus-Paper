@@ -73,7 +73,7 @@ class MFNFOScreen extends ConsumerWidget {
                       if ((nfoItem.sIPFLAG == "Y" &&
                           isin != null &&
                           schemeCode != null)) {
-                        mf.invertfun(isin, schemeCode);
+                        mf.invertfun(isin, schemeCode, context);
                       }
                       mf.invAmt.text = "${nfoItem.minimumPurchaseAmount}";
                       fund.fetchFunds(context);
