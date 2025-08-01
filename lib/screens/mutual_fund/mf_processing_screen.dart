@@ -69,20 +69,39 @@ class _MfUPIProcessingScreen extends ConsumerState<MfUPIProcessingScreen> {
         }
         ScaffoldMessenger.of(context)
             .showSnackBar(warningMessage(context, '$status'));
+            mfProv.fetchmfsiplist();
+      mfProv.fetchMfOrderbook(context);
       }
     });
 
-    _autoPopTimer = Timer(const Duration(minutes: 3), () {
+    _autoPopTimer = Timer(const Duration(minutes: 1), () {
       _timer?.cancel(); // Also stop periodic timer here as a fallback
       mfProv.setterformftrigger(false);
       ref.read(mfProvider).IsPaymentCalled(false);
 
       if (Navigator.of(context).canPop()) {
         Navigator.of(context).pop();
+        showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            enableDrag: false,
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.vertical(
+                top: Radius.circular(15),
+              ),
+            ),
+            builder: (context) => MfPaymentRespAlert(
+              upiData: mfProv.statusCheckUpi?.toJson(),
+              timeout : 'timeout'
+            ),
+          );
         ScaffoldMessenger.of(context)
             .showSnackBar(warningMessage(context, 'Timeout try again'));
+            mfProv.fetchmfsiplist();
+      mfProv.fetchMfOrderbook(context);
       }
     });
+    
   }
 
   @override
