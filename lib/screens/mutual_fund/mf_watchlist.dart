@@ -12,6 +12,7 @@ import '../../routes/route_names.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
 import '../../sharedWidget/functions.dart';
 import '../../sharedWidget/list_divider.dart';
+import 'mf_stock_detail_screen.dart';
 
 class MFWatchlistScreen extends ConsumerWidget {
   const MFWatchlistScreen({super.key});
@@ -58,23 +59,23 @@ class MFWatchlistScreen extends ConsumerWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           TextWidget.paraText(
-              align: TextAlign.left,
-              text: 'Funds',
-              color: theme.isDarkMode
-                  ? colors.textSecondaryDark
-                  : colors.textSecondaryLight,
-              textOverflow: TextOverflow.ellipsis,
-              theme: theme.isDarkMode,
-              ),
+            align: TextAlign.left,
+            text: 'Funds',
+            color: theme.isDarkMode
+                ? colors.textSecondaryDark
+                : colors.textSecondaryLight,
+            textOverflow: TextOverflow.ellipsis,
+            theme: theme.isDarkMode,
+          ),
           TextWidget.paraText(
-              align: TextAlign.right,
-              text: '3Y Returns',
-              color: theme.isDarkMode
-                  ? colors.textSecondaryDark
-                  : colors.textSecondaryLight,
-              textOverflow: TextOverflow.ellipsis,
-              theme: theme.isDarkMode,
-              ),
+            align: TextAlign.right,
+            text: '3Y Returns',
+            color: theme.isDarkMode
+                ? colors.textSecondaryDark
+                : colors.textSecondaryLight,
+            textOverflow: TextOverflow.ellipsis,
+            theme: theme.isDarkMode,
+          ),
         ],
       ),
     );
@@ -118,10 +119,28 @@ class MFWatchlistScreen extends ConsumerWidget {
                 if (isin != null) {
                   await mfData.fetchFactSheet(isin);
                   await mfData.fetchmatchisan(isin);
-                  Navigator.pushNamed(
-                    context,
-                    Routes.mfStockDetail,
-                    arguments: item,
+                  // Navigator.pushNamed(
+                  //   context,
+                  //   Routes.mfStockDetail,
+                  //   arguments: item,
+                  // );
+                  showModalBottomSheet(
+                    isScrollControlled: true,
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(16),
+                        topRight: Radius.circular(16),
+                      ),
+                    ),
+                    isDismissible: true,
+                    enableDrag: false,
+                    useSafeArea: true,
+                    context: context,
+                    builder: (context) => Container(
+                        padding: EdgeInsets.only(
+                          bottom: MediaQuery.of(context).viewInsets.bottom,
+                        ),
+                        child: MFStockDetailScreen(mfStockData: item)),
                   );
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -133,7 +152,7 @@ class MFWatchlistScreen extends ConsumerWidget {
               }
             },
             child: ListTile(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 8,),
               dense: false,
               leading: CircleAvatar(
                 backgroundImage: NetworkImage(
@@ -141,7 +160,9 @@ class MFWatchlistScreen extends ConsumerWidget {
                 ),
               ),
               title: Container(
-                 margin:  EdgeInsets.only(right: MediaQuery.of(context).size.width *0.1,),
+                margin: EdgeInsets.only(
+                  right: MediaQuery.of(context).size.width * 0.1,
+                ),
                 child: TextWidget.subText(
                   text: item.mfsearchnamename ?? "Unknown Scheme",
                   color: theme.isDarkMode
@@ -183,13 +204,13 @@ class MFWatchlistScreen extends ConsumerWidget {
                 ),
               ),
               trailing: TextWidget.subText(
-                  align: TextAlign.right,
-                  text: _formatReturns(item.tHREEYEARDATA),
-                  color: colors.colorBlack,
-                  // _getReturnColor(item.tHREEYEARDATA, theme.isDarkMode)
-                  textOverflow: TextOverflow.ellipsis,
-                  theme: theme.isDarkMode,
-                  ),
+                align: TextAlign.right,
+                text: _formatReturns(item.tHREEYEARDATA),
+                color: colors.colorBlack,
+                // _getReturnColor(item.tHREEYEARDATA, theme.isDarkMode)
+                textOverflow: TextOverflow.ellipsis,
+                theme: theme.isDarkMode,
+              ),
             )));
   }
 

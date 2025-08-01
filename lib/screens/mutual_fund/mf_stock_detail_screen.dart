@@ -14,6 +14,7 @@ import '../../provider/thems.dart';
 import '../../res/global_state_text.dart';
 import '../../res/res.dart';
 import '../../routes/route_names.dart';
+import '../../sharedWidget/custom_drag_handler.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
 import '../../sharedWidget/functions.dart';
 import '../../sharedWidget/loader_ui.dart';
@@ -54,96 +55,137 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
 
   @override
   void initState() {
-    tabController = TabController(length: tabList.length, vsync: this);
-    autoScrollController = AutoScrollController();
-    autoScrollController.addListener(() {
-      scrollPosition = autoScrollController.offset;
-    });
+     
     super.initState();
   }
 
   @override
   void dispose() {
-    tabController.dispose();
-    autoScrollController.dispose();
+    
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, WidgetRef ref, _) {
-      final theme = ref.watch(themeProvider);
-      final fund = ref.watch(fundProvider);
-      final mfData = ref.watch(mfProvider);
+    return GestureDetector(
+      onVerticalDragEnd: (details) {
+        if (details.primaryVelocity != null && details.primaryVelocity! > 400) {
+          Navigator.of(context).pop();
+        }
+      },
+      child: DraggableScrollableSheet(
+        expand: false,
+        initialChildSize: 0.88,
+        minChildSize: 0.05,
+        maxChildSize: 0.99,
+        builder: (context, scrollController) {
+          return Consumer(builder: (context, WidgetRef ref, _) {
+            final theme = ref.watch(themeProvider);
+            final fund = ref.watch(fundProvider);
+            final mfData = ref.watch(mfProvider);
 
-      return Scaffold(
-        backgroundColor: Colors.white,
-        bottomSheet:
-            SafeArea(child: _buildBottomActionButtons(context, theme, mfData)),
-        body: TransparentLoaderScreen(
-          isLoading: mfData.singleloader ?? false,
-          child: VerticalScrollableTabView(
-              autoScrollController: autoScrollController,
-              tabController: tabController,
-              listItemData: tabList,
-              slivers: [
-                _buildAppBar(context, theme, mfData),
-              ],
-              eachItemChild: (tabName, int index) {
-                switch (tabName) {
-                  case "Overview":
-                    return MFOverview(mfStockData: widget.mfStockData);
-                  case "Performance":
-                    return MFPerformance(mfStockData: widget.mfStockData);
-                  case "Scheme":
-                    return MFSchemeInfo(mfStockData: widget.mfStockData);
-                  case "Allocation":
-                    return MFAllocation(mfStockData: widget.mfStockData);
-                  default:
-                    return Container();
-                  // default:
-                  //   return MFComparison(mfStockData: widget.mfStockData);
-                }
-              }),
-        ),
-      );
-    });
+            return Scaffold(
+              backgroundColor: Colors.transparent,
+              body: Container(
+                decoration: BoxDecoration(
+                  color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(16),
+                    topRight: Radius.circular(16),
+                  ),
+                ),
+                child: TransparentLoaderScreen(
+                  isLoading: mfData.singleloader ?? false,
+                  child: Column(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          children: [
+                            const CustomDragHandler(),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Column(
+                                  children: [
+                                    Container(
+                                      decoration: BoxDecoration(
+                                        color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(16.0),
+                                        child: Column(
+                                          children: [
+                                            _buildFundHeader(theme, mfData),
+                                            const SizedBox(height: 16),
+                                            _buildBottomActionButtons(context, theme, mfData),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            // Tab Content - Scrollable
+                            Expanded(
+                              child: SingleChildScrollView(
+                                controller: scrollController,
+                                child: Column(
+                                  children: [
+                                    MFOverview(mfStockData: widget.mfStockData),
+                                    MFPerformance(mfStockData: widget.mfStockData),
+                                    MFSchemeInfo(mfStockData: widget.mfStockData),
+                                    MFAllocation(mfStockData: widget.mfStockData),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          });
+        },
+      ),
+    );
   }
 
   Widget _buildBottomActionButtons(
       BuildContext context, dynamic theme, dynamic mfData) {
-    return Container(
-      color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 14.0),
-      child: Row(
-        children: [
-          Expanded(
-              child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 10,
-                  ),
-                  child: SizedBox(
-                    width: MediaQuery.of(context).size.width,
-                    height: 45,
-                    child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                            elevation: 0,
-                            shadowColor: Colors.transparent,
-                            backgroundColor: theme.isDarkMode
-                                ? colors.primaryDark
-                                : colors.primaryLight,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(4),
-                            )),
-                        onPressed: () async {
-                          if (mfData.singleloader == false) {
-                            final isin = widget.mfStockData.iSIN;
-                            final schemeCode = widget.mfStockData.schemeCode;
+    return Row(
+      children: [
+        Expanded(
+            child: Container(
+                padding: const EdgeInsets.symmetric(
+                  vertical: 10,
+                ),
+                child: SizedBox(
+                  width: MediaQuery.of(context).size.width,
+                  height: 45,
+                  child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                          elevation: 0,
+                          shadowColor: Colors.transparent,
+                          backgroundColor: theme.isDarkMode
+                              ? colors.primaryDark
+                              : colors.primaryLight,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(4),
+                          )),
+                      onPressed: () async {
+                        if (mfData.singleloader == false) {
+                          final isin = widget.mfStockData.iSIN;
+                          final schemeCode = widget.mfStockData.schemeCode;
 
                             if (widget.mfStockData.sIPFLAG == "Y" &&
                                 isin != null &&
                                 schemeCode != null) {
-                              await mfData.invertfun(isin, schemeCode);
+                              await mfData.invertfun(isin, schemeCode,context);
                             }
                             Navigator.pushNamed(context, Routes.mforderScreen,
                                 arguments: widget.mfStockData);
@@ -198,49 +240,108 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
                           if (widget.mfStockData.sIPFLAG == "Y" &&
                               isin != null &&
                               schemeCode != null) {
-                            await mfData.invertfun(isin, schemeCode);
+                            await mfData.invertfun(isin, schemeCode,context);
                           }
                           Navigator.pushNamed(context, Routes.mforderScreen,
                               arguments: widget.mfStockData);
                           mfData.orderchangetitle("SIP");
                           mfData.chngOrderType("SIP");
                           mfData.orderpagetite("SDS");
-                           }
-                        },
-                        child:   mfData.singleloader == false ?  TextWidget.subText(
-                          text: "SIP",
-                          theme: false,
-                          color: colors.colorWhite,
-                          fw: 2,
-                          align: TextAlign.center,
-                        ) : const SizedBox(
-                                    height: 15,
-                                    width: 15,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2.0,
-                                      valueColor: AlwaysStoppedAnimation<Color>(
-                                          Color.fromARGB(99, 48, 48, 48)),
-                                      backgroundColor:
-                                          Color.fromARGB(255, 255, 255, 255),
-                                    ),
-                                  )),
-                  ))),
-        ],
-      ),
+                        }
+                      },
+                      child: mfData.singleloader == false
+                          ? TextWidget.subText(
+                              text: "SIP",
+                              theme: false,
+                              color: colors.colorWhite,
+                              fw: 2,
+                              align: TextAlign.center,
+                            )
+                          : const SizedBox(
+                              height: 15,
+                              width: 15,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.0,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                    Color.fromARGB(99, 48, 48, 48)),
+                                backgroundColor:
+                                    Color.fromARGB(255, 255, 255, 255),
+                              ),
+                            )),
+                ))),
+      ],
     );
   }
 
-  SliverAppBar _buildAppBar(
-      BuildContext context, dynamic theme, dynamic mfData) {
-    return SliverAppBar(
-      pinned: true,
-      elevation: 0,
-      leadingWidth: 41,
-      centerTitle: false,
-      titleSpacing: 2,
-      toolbarHeight: 68,
-      leading: CustomBackBtn(),
-      actions: [
+  Widget _buildFundHeader(dynamic theme, dynamic mfData) {
+    final amcCode = widget.mfStockData.aMCCode;
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            CircleAvatar(
+              backgroundImage: NetworkImage(
+                "https://v3.mynt.in/mfapi/static/images/mf/${amcCode ?? 'default'}.png",
+              ),
+            ),
+            const SizedBox(width: 8),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.6,
+                  child: TextWidget.titleText(
+                      align: TextAlign.start,
+                      text: _formatFundName(mfData),
+                      color: theme.isDarkMode
+                          ? colors.textPrimaryDark
+                          : colors.textPrimaryLight,
+                      textOverflow: TextOverflow.ellipsis,
+                      maxLines: 2,
+                      theme: theme.isDarkMode,
+                      fw: 1),
+                ),
+                const SizedBox(height: 8),
+                SizedBox(
+                  height: 18,
+                  child: ListView(
+                    shrinkWrap: true,
+                    scrollDirection: Axis.horizontal,
+                    children: [
+                      TextWidget.paraText(
+                        fw: 3,
+                        text: widget.mfStockData.type ?? "Unknown",
+                        textOverflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                        color: theme.isDarkMode
+                            ? colors.textSecondaryDark
+                            : colors.textSecondaryLight,
+                        theme: false,
+                      ),
+                      // Padding(
+                      //   padding: const EdgeInsets.only(left: 5),
+                      //   child: TextWidget.paraText(
+                      //     fw: 3,
+                      //     text: widget.mfStockData.subtype ?? "Unknown",
+                      //     textOverflow: TextOverflow.ellipsis,
+                      //     maxLines: 1,
+                      //     color: theme.isDarkMode
+                      //         ? colors.textSecondaryDark
+                      //         : colors.textSecondaryLight,
+                      //     theme: false,
+                      //   ),
+                      // ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
         Padding(
           padding: const EdgeInsets.only(right: 8),
           child: SizedBox(
@@ -279,97 +380,6 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
           ),
         ),
       ],
-      bottom: PreferredSize(
-        preferredSize: const Size.fromHeight(100),
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            children: [
-              Container(
-                color: theme.isDarkMode
-                    ? const Color.fromARGB(255, 0, 0, 0)
-                    : const Color.fromARGB(255, 250, 251, 255),
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Column(
-                    children: [
-                      _buildFundHeader(theme, mfData),
-                      const SizedBox(height: 8),
-                      _buildFundMetrics(theme, mfData),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildFundHeader(dynamic theme, dynamic mfData) {
-    final amcCode = widget.mfStockData.aMCCode;
-
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: [
-        CircleAvatar(
-          backgroundImage: NetworkImage(
-            "https://v3.mynt.in/mfapi/static/images/mf/${amcCode ?? 'default'}.png",
-          ),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              TextWidget.titleText(
-                  align: TextAlign.start,
-                  text: _formatFundName(mfData),
-                  color: theme.isDarkMode
-                      ? colors.textPrimaryDark
-                      : colors.textPrimaryLight,
-                  textOverflow: TextOverflow.ellipsis,
-                  theme: theme.isDarkMode,
-                  fw: 1),
-              const SizedBox(height: 8),
-              SizedBox(
-                height: 18,
-                child: ListView(
-                  shrinkWrap: true,
-                  scrollDirection: Axis.horizontal,
-                  children: [
-                    TextWidget.paraText(
-                      fw: 3,
-                      text: widget.mfStockData.type ?? "Unknown",
-                      textOverflow: TextOverflow.ellipsis,
-                      maxLines: 1,
-                      color: theme.isDarkMode
-                          ? colors.textSecondaryDark
-                          : colors.textSecondaryLight,
-                      theme: false,
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 5),
-                      child: TextWidget.paraText(
-                        fw: 3,
-                        text: widget.mfStockData.subtype ?? "Unknown",
-                        textOverflow: TextOverflow.ellipsis,
-                        maxLines: 1,
-                        color: theme.isDarkMode
-                            ? colors.textSecondaryDark
-                            : colors.textSecondaryLight,
-                        theme: false,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
     );
   }
 
@@ -385,16 +395,16 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        _buildMetricColumn(
-            "AUM (CR)", _formatAum(widget.mfStockData.aUM), theme),
+        // _buildMetricColumn(
+        //     "AUM (CR)", _formatAum(widget.mfStockData.aUM), theme),
         _buildMetricColumn(
             "NAV",
             _formatValue(mfdatapro.factSheetDataModel?.data?.currentNAV),
             theme),
-        _buildMetricColumn("MIN. INV",
-            _formatValue(widget.mfStockData.minimumPurchaseAmount), theme),
-        _buildMetricColumn("5YR CAGR",
-            _formatYearData(widget.mfStockData.fIVEYEARDATA), theme),
+        // _buildMetricColumn("MIN. INV",
+        //     _formatValue(widget.mfStockData.minimumPurchaseAmount), theme),
+        // _buildMetricColumn("5YR CAGR",
+        //     _formatYearData(widget.mfStockData.fIVEYEARDATA), theme),
       ],
     );
   }

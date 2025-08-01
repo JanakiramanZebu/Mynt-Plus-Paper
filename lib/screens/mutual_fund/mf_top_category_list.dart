@@ -16,13 +16,15 @@ import '../../sharedWidget/custom_back_btn.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
 import '../../sharedWidget/functions.dart';
 import '../../sharedWidget/list_divider.dart';
+import 'mf_stock_detail_screen.dart';
 
 class MFCategoryListScreen extends ConsumerStatefulWidget {
   final String title;
   const MFCategoryListScreen({super.key, required this.title});
 
   @override
-  ConsumerState<MFCategoryListScreen> createState() => _MFCategoryListScreenState();
+  ConsumerState<MFCategoryListScreen> createState() =>
+      _MFCategoryListScreenState();
 }
 
 class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
@@ -36,7 +38,7 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
   @override
   void initState() {
     super.initState();
-    
+
     // Initialize tab titles based on the category data
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeTabs();
@@ -46,7 +48,7 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
   void _initializeTabs() {
     final mfData = ref.read(mfProvider);
     final categoryData = mfData.mFCategoryTypesStatic;
-    
+
     // Find the matching category and get its sub-tabs
     for (var category in categoryData) {
       if (category['title'] == widget.title) {
@@ -60,11 +62,8 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
 
     // Initialize TabController after we have the tabs
     if (tabTitles.isNotEmpty) {
-      _tabController = TabController(
-        length: tabTitles.length, 
-        vsync: this, 
-        initialIndex: 0
-      );
+      _tabController =
+          TabController(length: tabTitles.length, vsync: this, initialIndex: 0);
       _scrollController = ScrollController();
       selectedTab = 0;
 
@@ -77,7 +76,9 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
           // Update the selected chip in provider
           if (newIndex < tabTitles.length) {
             ref.read(mfProvider).changetitle(tabTitles[newIndex]);
-            ref.read(mfProvider).fetchcatdatanew(widget.title, tabTitles[newIndex]);
+            ref
+                .read(mfProvider)
+                .fetchcatdatanew(widget.title, tabTitles[newIndex]);
           }
           // Scroll to center the active tab
           WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -106,9 +107,10 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
       final double totalWidthUpToIndex = _calculateTotalWidthUpToIndex(index);
       final double currentTabWidth = _calculateTabWidth(tabTitles[index]);
       final double screenWidth = MediaQuery.of(context).size.width;
-      
+
       // Calculate scroll position to center the active tab
-      final double scrollPosition = totalWidthUpToIndex - (screenWidth / 2) + (currentTabWidth / 2);
+      final double scrollPosition =
+          totalWidthUpToIndex - (screenWidth / 2) + (currentTabWidth / 2);
 
       _scrollController.animateTo(
         scrollPosition.clamp(0.0, _scrollController.position.maxScrollExtent),
@@ -201,9 +203,11 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
                                 _tabController.animateTo(tab);
                                 // Update the selected chip in your provider
                                 mfData.changetitle(tabTitles[tab]);
-                                mfData.fetchcatdatanew(widget.title, tabTitles[tab]);
+                                mfData.fetchcatdatanew(
+                                    widget.title, tabTitles[tab]);
                                 // Scroll to center the active tab
-                                WidgetsBinding.instance.addPostFrameCallback((_) {
+                                WidgetsBinding.instance
+                                    .addPostFrameCallback((_) {
                                   _scrollToActiveTab(tab);
                                 });
                               },
@@ -235,57 +239,57 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
                           theme: theme.isDarkMode,
                           fw: 3,
                         ),
-                         PopupMenuButton<String>(
-                        onSelected: (value) {
-                          setState(() {
-                            selectedReturn = value;
-                          });
-                        },
-                        itemBuilder: (context) => [
-                           PopupMenuItem(
-                              value: '1Y Returns', 
-                              child: TextWidget.paraText(
-                                text: '1Y Returns',
-                                color: theme.isDarkMode
-                                    ? colors.textSecondaryDark
-                                    : colors.textSecondaryLight,
-                                theme: theme.isDarkMode,
-                                fw: 3,
-                              )),
-                           PopupMenuItem(
-                              value: '2Y Returns', 
-                              child: TextWidget.paraText(
-                                text: '2Y Returns',
-                                color: theme.isDarkMode
-                                    ? colors.textSecondaryDark
-                                    : colors.textSecondaryLight,
-                                theme: theme.isDarkMode,
-                                fw: 3,
-                              )),
-                           PopupMenuItem(
-                              value: '3Y Returns', 
-                              child: TextWidget.paraText(
-                                text: '3Y Returns',
-                                color: theme.isDarkMode
-                                    ? colors.textSecondaryDark
-                                    : colors.textSecondaryLight,
-                                theme: theme.isDarkMode,
-                                fw: 3,
-                              )),
-                        ],
-                        child: InkWell(
-                          child: TextWidget.paraText(
-                            align: TextAlign.right,
-                            text: selectedReturn,
-                            color: theme.isDarkMode
-                                ? colors.textSecondaryDark
-                                : colors.textSecondaryLight,
-                            textOverflow: TextOverflow.ellipsis,
-                            theme: theme.isDarkMode,
-                            fw: 3,
+                        PopupMenuButton<String>(
+                          onSelected: (value) {
+                            setState(() {
+                              selectedReturn = value;
+                            });
+                          },
+                          itemBuilder: (context) => [
+                            PopupMenuItem(
+                                value: '1Y Returns',
+                                child: TextWidget.paraText(
+                                  text: '1Y Returns',
+                                  color: theme.isDarkMode
+                                      ? colors.textSecondaryDark
+                                      : colors.textSecondaryLight,
+                                  theme: theme.isDarkMode,
+                                  fw: 3,
+                                )),
+                            PopupMenuItem(
+                                value: '2Y Returns',
+                                child: TextWidget.paraText(
+                                  text: '2Y Returns',
+                                  color: theme.isDarkMode
+                                      ? colors.textSecondaryDark
+                                      : colors.textSecondaryLight,
+                                  theme: theme.isDarkMode,
+                                  fw: 3,
+                                )),
+                            PopupMenuItem(
+                                value: '3Y Returns',
+                                child: TextWidget.paraText(
+                                  text: '3Y Returns',
+                                  color: theme.isDarkMode
+                                      ? colors.textSecondaryDark
+                                      : colors.textSecondaryLight,
+                                  theme: theme.isDarkMode,
+                                  fw: 3,
+                                )),
+                          ],
+                          child: InkWell(
+                            child: TextWidget.paraText(
+                              align: TextAlign.right,
+                              text: selectedReturn,
+                              color: theme.isDarkMode
+                                  ? colors.textSecondaryDark
+                                  : colors.textSecondaryLight,
+                              textOverflow: TextOverflow.ellipsis,
+                              theme: theme.isDarkMode,
+                              fw: 3,
+                            ),
                           ),
-                        ),
-                      )
+                        )
                       ],
                     ),
                   ),
@@ -343,7 +347,8 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
     );
   }
 
-  Widget _buildFundList(String selectedTab, dynamic mfData, ThemesProvider theme, BuildContext context) {
+  Widget _buildFundList(String selectedTab, dynamic mfData,
+      ThemesProvider theme, BuildContext context) {
     // Sort the list based on s3Year in descending order
     final sortedList = mfData.catnewlist?.toList();
 
@@ -376,95 +381,120 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
     return Material(
       color: Colors.transparent,
       child: InkWell(
-         splashColor: theme.isDarkMode
-                ? Colors.white.withOpacity(0.15)
-                : Colors.black.withOpacity(0.15),
-            highlightColor: theme.isDarkMode
-                ? Colors.white.withOpacity(0.08)
-                : Colors.black.withOpacity(0.08),
-        onLongPress: () async {
-          try {
-            if (item.iSIN != null) {
-              await mfData.fetchMFWatchlist(
-                item.iSIN,
-                item.isAdd ?? false ? "delete" : "add",
-                context,
-                false,
-                "watch",
-              );
-            }
-          } catch (e) {
-            ScaffoldMessenger.of(context).showSnackBar(successMessage(
-                context, "Error updating watchlist: ${e.toString()}"));
-          }
-        },
-        onTap: () async {
-          try {
-            mfData.loaderfun();
-            if (item.iSIN != null) {
-              await mfData.fetchFactSheet(item.iSIN);
-      
-              if (mfData.factSheetDataModel?.stat != "Not Ok") {
-                Map<String, dynamic> jsonData = item.toJson();
-                MutualFundList bInstance = MutualFundList.fromJson(jsonData);
-                Navigator.pushNamed(
+          splashColor: theme.isDarkMode
+              ? Colors.white.withOpacity(0.15)
+              : Colors.black.withOpacity(0.15),
+          highlightColor: theme.isDarkMode
+              ? Colors.white.withOpacity(0.08)
+              : Colors.black.withOpacity(0.08),
+          onLongPress: () async {
+            try {
+              if (item.iSIN != null) {
+                await mfData.fetchMFWatchlist(
+                  item.iSIN,
+                  item.isAdd ?? false ? "delete" : "add",
                   context,
-                  Routes.mfStockDetail,
-                  arguments: bInstance,
+                  false,
+                  "watch",
                 );
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                    successMessage(context, "No Single Page Data"));
-                final jsondata = MutualFundList.fromJson(item.toJson());
-                Navigator.pushNamed(context, Routes.mforderScreen,
-                    arguments: jsondata);
-                mfData.orderchangetitle("One-time");
-                mfData.chngOrderType("One-time");
               }
-            } else {
-              ScaffoldMessenger.of(context).showSnackBar(
-                  successMessage(context, "Missing fund information"));
+            } catch (e) {
+              ScaffoldMessenger.of(context).showSnackBar(successMessage(
+                  context, "Error updating watchlist: ${e.toString()}"));
             }
-          } catch (e) {
-            ScaffoldMessenger.of(context).showSnackBar(successMessage(
-                context, "Error loading fund details: ${e.toString()}"));
-          }
-        },
-        child: ListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-          dense: false,
-          leading: CircleAvatar(
-                      backgroundImage: NetworkImage(
-                        "https://v3.mynt.in/mfapi/static/images/mf/${item.aMCCode ?? 'default'}.png",
+          },
+          onTap: () async {
+            try {
+              mfData.loaderfun();
+              if (item.iSIN != null) {
+                await mfData.fetchFactSheet(item.iSIN);
+
+                if (mfData.factSheetDataModel?.stat != "Not Ok") {
+                  Map<String, dynamic> jsonData = item.toJson();
+                  MutualFundList bInstance = MutualFundList.fromJson(jsonData);
+
+                  showModalBottomSheet(
+                    isScrollControlled: true,
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(16),
+                        topRight: Radius.circular(16),
                       ),
                     ),
-          title: Container(
-              margin:  EdgeInsets.only(right: MediaQuery.of(context).size.width *0.1,),
-            child: TextWidget.subText(
-              text: item.name ?? "Unknown Scheme",
-              color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                    isDismissible: true,
+                    enableDrag: false,
+                    useSafeArea: true,
+                    context: context,
+                    builder: (context) => Container(
+                        padding: EdgeInsets.only(
+                          bottom: MediaQuery.of(context).viewInsets.bottom,
+                        ),
+                        child: MFStockDetailScreen(mfStockData: bInstance)),
+                  );
+                  // Navigator.pushNamed(
+                  //   context,
+                  //   Routes.mfStockDetail,
+                  //   arguments: bInstance,
+                  // );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                      successMessage(context, "No Single Page Data"));
+                  final jsondata = MutualFundList.fromJson(item.toJson());
+                  Navigator.pushNamed(context, Routes.mforderScreen,
+                      arguments: jsondata);
+                  mfData.orderchangetitle("One-time");
+                  mfData.chngOrderType("One-time");
+                }
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                    successMessage(context, "Missing fund information"));
+              }
+            } catch (e) {
+              ScaffoldMessenger.of(context).showSnackBar(successMessage(
+                  context, "Error loading fund details: ${e.toString()}"));
+            }
+          },
+          child: ListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+            dense: false,
+            leading: CircleAvatar(
+              backgroundImage: NetworkImage(
+                "https://v3.mynt.in/mfapi/static/images/mf/${item.aMCCode ?? 'default'}.png",
+              ),
+            ),
+            title: Container(
+              margin: EdgeInsets.only(
+                right: MediaQuery.of(context).size.width * 0.1,
+              ),
+              child: TextWidget.subText(
+                text: item.name ?? "Unknown Scheme",
+                color: theme.isDarkMode
+                    ? colors.textPrimaryDark
+                    : colors.textPrimaryLight,
+                theme: theme.isDarkMode,
+                fw: 3,
+              ),
+            ),
+            subtitle: Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: TextWidget.paraText(
+                text: "${item.type ?? "Unknown"}",
+                color: theme.isDarkMode
+                    ? colors.textSecondaryDark
+                    : colors.textSecondaryLight,
+                theme: theme.isDarkMode,
+                fw: 3,
+              ),
+            ),
+            trailing: TextWidget.subText(
+              text: _formatReturns(item.s3Year),
+              color: theme.isDarkMode
+                  ? colors.textPrimaryDark
+                  : colors.textPrimaryLight,
               theme: theme.isDarkMode,
               fw: 3,
             ),
-          ),
-          subtitle: Padding(
-            padding: const EdgeInsets.only(top: 8),
-            child: TextWidget.paraText(
-              text: "${item.type ?? "Unknown"}",
-              color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-              theme: theme.isDarkMode,
-              fw: 3,
-            ),
-          ),
-
-          trailing: TextWidget.subText(
-            text: _formatReturns(item.s3Year),
-            color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-            theme: theme.isDarkMode,
-            fw: 3,
-          ),
-        )
-      ),
+          )),
     );
   }
 
@@ -489,4 +519,3 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
     }
   }
 }
-

@@ -214,10 +214,10 @@ class _OrderScreenbottomPage extends ConsumerState<OrderScreenbottomPage> {
                     style: OutlinedButton.styleFrom(
                       minimumSize: const Size(0, 40),
                       elevation: 0,
-                      side: BorderSide(
-                          color: ischecked == false
-                              ? colors.primaryLight
-                              : colors.primaryDark),
+                      // side: BorderSide(
+                      //     color: ischecked == false
+                      //         ? colors.primaryLight
+                      //         : colors.primaryDark),
                       backgroundColor: ischecked == false
                           ? colors.primaryLight.withOpacity(0.6)
                           : colors.primaryLight,

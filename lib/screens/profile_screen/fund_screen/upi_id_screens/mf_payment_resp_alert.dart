@@ -12,7 +12,9 @@ import '../../../../sharedWidget/list_divider.dart';
 
 class MfPaymentRespAlert extends StatefulWidget {
   final Map<String, dynamic>? upiData;
+  final String? timeout;
   const MfPaymentRespAlert({
+    this.timeout,
     this.upiData,
     super.key,
   });
@@ -44,7 +46,110 @@ class _MfPaymentRespAlertState extends State<MfPaymentRespAlert> {
                       blurRadius: 4.0,
                       offset: Offset(2.0, 0.0))
                 ]),
-            child: Column(
+            child: widget.timeout == 'timeout' ? 
+            
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  alignment: Alignment.center,
+                  child: Column(
+                    children: [
+                      const CustomDragHandler(),
+                      Icon(
+                        
+                             Icons.cancel_rounded,
+                        //
+                        color:   colors.kColorRedButton,
+                        size: 70,
+                      ),
+                      const SizedBox(
+                        height: 16,
+                      ),
+                      TextWidget.subText(
+                        text: "Request timeout",
+                        theme: false,
+                        color: theme.isDarkMode
+                            ? colors.textPrimaryDark
+                            : colors.textPrimaryLight,
+                      ),
+                      const SizedBox(
+                        height: 5,
+                      ),
+                      TextWidget.paraText(
+                        text: widget.upiData?["status"] == "PAYMENT COMPLETED"
+                            ? "Transaction Success"
+                            : "Transaction fail",
+                        theme: false,
+                        color: colors.textSecondaryLight,
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      TextWidget.custmText(
+                          text: "₹${widget.upiData?["OrderVal"] ?? widget.upiData?["InstallmentAmount"]}",
+                          theme: false,
+                          color: theme.isDarkMode
+                              ? colors.colorWhite
+                              : colors.colorBlack,
+                          fs: 40),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      TextWidget.paraText(
+                        text: "${widget.upiData?["datetime"]}",
+                        theme: false,
+                        color: colors.textSecondaryLight,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                // data("UPI Address", "${widget.upiData?["datetime"]}", theme),
+                if(widget.upiData?["OrderId"] != null || widget.upiData?["OrderId"] != 'null')
+                data("Order ID", "${widget.upiData?["OrderId"]}", theme),
+                if(widget.upiData?["OrderId"] == null || widget.upiData?["OrderId"] == 'null')
+                data("TransNo", "${widget.upiData?["TransNo"]}", theme),
+
+                data("UPI Transaction ID", "${widget.upiData?["TransNo"]}",
+                    theme),
+                data("Status Description", "Request Timeout reinitiate from orderbook",
+                    theme),
+                const SizedBox(height: 16),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: SizedBox(
+                    width: MediaQuery.of(context).size.width,
+                    child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          elevation: 0,
+                          minimumSize: const Size(0, 40),
+                          backgroundColor: theme.isDarkMode
+                              ? colors.primaryDark
+                              : colors.primaryLight,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                        ),
+                        onPressed: () {
+                          // Clear the amount text field
+                          Navigator.pop(context);
+                          FocusScope.of(context).unfocus();
+                        },
+                        child: TextWidget.subText(
+                            text: 'Done',
+                            theme: false,
+                            color: colors.colorWhite,
+                            fw: 2)),
+                  ),
+                ),
+                const SizedBox(
+                  height: 20,
+                ),
+              ],
+            ) : 
+            Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -87,7 +192,7 @@ class _MfPaymentRespAlertState extends State<MfPaymentRespAlert> {
                         height: 10,
                       ),
                       TextWidget.custmText(
-                          text: "₹${widget.upiData?["OrderVal"]}",
+                          text: "₹${widget.upiData?["OrderVal"] ?? widget.upiData?["InstallmentAmount"]}",
                           theme: false,
                           color: theme.isDarkMode
                               ? colors.colorWhite
@@ -106,7 +211,11 @@ class _MfPaymentRespAlertState extends State<MfPaymentRespAlert> {
                 ),
                 const SizedBox(height: 16),
                 // data("UPI Address", "${widget.upiData?["datetime"]}", theme),
+                if(widget.upiData?["OrderId"] != null || widget.upiData?["OrderId"] != 'null')
                 data("Order ID", "${widget.upiData?["OrderId"]}", theme),
+                if(widget.upiData?["OrderId"] == null || widget.upiData?["OrderId"] == 'null')
+                data("TransNo", "${widget.upiData?["TransNo"]}", theme),
+
                 data("UPI Transaction ID", "${widget.upiData?["TransNo"]}",
                     theme),
                 data("Status Description", "${widget.upiData?['Remarks']}",
@@ -143,7 +252,8 @@ class _MfPaymentRespAlertState extends State<MfPaymentRespAlert> {
                   height: 20,
                 ),
               ],
-            ),
+            )
+            ,
           );
         },
       ),

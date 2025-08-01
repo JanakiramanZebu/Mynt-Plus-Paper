@@ -147,7 +147,7 @@ class MFSipdetScreen extends ConsumerWidget {
                                 : colors.textPrimaryLight,
                             textOverflow: TextOverflow.ellipsis,
                             theme: theme.isDarkMode,
-                            maxLines: 1,
+                            maxLines: 2,
                             fw: 3),
                       ),
                       Container(
@@ -202,7 +202,7 @@ class MFSipdetScreen extends ConsumerWidget {
                       if (item.status == "ACTIVE" && item.startDate != null)
                         TextWidget.paraText(
                             align: TextAlign.start,
-                            text: "Due Date : ${item.startDate}",
+                            text: "Due Date : ${item.NextSIPDate}",
                             color: theme.isDarkMode
                                 ? colors.textPrimaryDark
                                 : colors.textPrimaryLight,

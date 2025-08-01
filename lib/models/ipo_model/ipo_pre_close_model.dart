@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 class IpoPreCloseModel {
   List<Msg> msg = [];
 
@@ -7,13 +9,27 @@ class IpoPreCloseModel {
     print("precloseresp:: $json");
     if (json['msg'] != "no data") {
       msg = <Msg>[];
-      json['msg'].forEach((v) {
-        msg.add(new Msg.fromJson(v));
-      });
-     
-    } else{
-          msg = <Msg>[];
+      // Check if msg is a List or String
+      if (json['msg'] is List) {
+        json['msg'].forEach((v) {
+          msg.add(new Msg.fromJson(v));
+        });
+      } else if (json['msg'] is String) {
+        // If msg is a string, try to parse it as JSON
+        try {
+          final parsedList = jsonDecode(json['msg'] as String);
+          if (parsedList is List) {
+            parsedList.forEach((v) {
+              msg.add(new Msg.fromJson(v));
+            });
+          }
+        } catch (e) {
+          print("Error parsing msg string: $e");
+        }
       }
+    } else {
+      msg = <Msg>[];
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -52,7 +68,6 @@ class Msg {
   String? year;
   String? ipostatus;
   String? totalsub;
-
 
   Msg(
       {this.companyName,
@@ -107,7 +122,7 @@ class Msg {
     scriptData = json['script_data'];
     year = json['year'];
     totalsub = json['total_sub'];
-    ipostatus="Closed";
+    ipostatus = "Closed";
   }
 
   Map<String, dynamic> toJson() {
@@ -140,10 +155,7 @@ class Msg {
     return data;
   }
 
- bool hasKey(){
-
-  return true;
- }
-
-
+  bool hasKey() {
+    return true;
+  }
 }

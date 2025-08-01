@@ -250,8 +250,7 @@ class _OptionChainSSState extends ConsumerState<OptionChainSS> {
                     ),
                   ),
 
-                  // Buy/Sell buttons (conditional) - only show when basket mode is OFF
-                  if (!isBasketMode) _ActionButtons(wlValue: widget.wlValue),
+                  // Buy/Sell buttons are hidden in option chain screen
                 ],
               ),
               

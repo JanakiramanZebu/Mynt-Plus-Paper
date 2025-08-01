@@ -321,7 +321,7 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
                                   ),
                                 )
                               : TextWidget.subText(
-                                  text: "Download",
+                                  text: "Sent to mail",
                                   theme: theme.isDarkMode,
                                   color: colors.colorWhite,
                                   fw: 2,

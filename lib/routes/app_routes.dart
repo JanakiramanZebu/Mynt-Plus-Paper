@@ -8,6 +8,7 @@ import 'package:mynt_plus/screens/mutual_fund/cagr_calculator_screen.dart';
 import 'package:mynt_plus/screens/mutual_fund/mf_hold_singlepage.dart';
 import 'package:mynt_plus/screens/mutual_fund/mf_sip_details_screen.dart';
 import 'package:mynt_plus/screens/mutual_fund/order_single_page.dart';
+import 'package:mynt_plus/screens/mutual_fund/redeem_new_bottomsheet.dart';
 import 'package:mynt_plus/screens/order_screen/order_confirmation_screen.dart';
 import 'package:mynt_plus/screens/profile_screen/app_webview/ipo_webview.dart';
 import '../main.dart'; // Import for FirebaseHelper
@@ -780,6 +781,12 @@ class AppRoutes {
       case Routes.mforderdetscreen:
         return _createRoute(
           pageBuilder: (_, __, ___) => const mforderdetscreen(),
+          beginOffset: const Offset(-1.0, 0.0),
+        );
+
+      case Routes.redeemNewBottomSheet:
+        return _createRoute(
+          pageBuilder: (_, __, ___) => const RedemptionBottomScreenNew(),
           beginOffset: const Offset(-1.0, 0.0),
         );
 

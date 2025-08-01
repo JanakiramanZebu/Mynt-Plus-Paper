@@ -438,6 +438,7 @@ class MfHoldNewScreen extends ConsumerWidget {
                                           ? colors.textPrimaryDark
                                           : colors.textPrimaryLight,
                                       textOverflow: TextOverflow.ellipsis,
+                                      maxLines: 2,
                                       theme: theme.isDarkMode,
                                     ),
                                   ),

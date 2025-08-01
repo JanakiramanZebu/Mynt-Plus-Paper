@@ -123,7 +123,7 @@ class MFSipOrderHistoryScreen extends ConsumerWidget {
                                 : colors.textPrimaryLight,
                             textOverflow: TextOverflow.ellipsis,
                             theme: theme.isDarkMode,
-                            maxLines: 1,
+                            maxLines: 2,
                             fw: 3),
                       ),
                       Container(
