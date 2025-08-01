@@ -57,9 +57,9 @@ class AuthProvider extends DefaultChangeNotifier {
   final api = locator<ApiExporter>();
   final Preferences pref = locator<Preferences>();
   final Ref ref;
-  final String _version = "1.0.86(03)";
+  final String _version = "1.0.86(25)";
   late final String _versiontext =
-      "Version 3.0.2 Build $_version Released on 7 July";
+      "Version 3.0.2 Build $_version Released on 1 Aug";
   String get versiontext => _versiontext;
 
   //  Text field controller for Login and otp screen
