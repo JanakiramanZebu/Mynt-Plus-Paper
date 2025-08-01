@@ -213,11 +213,11 @@ class _mfholdsinlepage extends State<mfholdsinlepage>
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
-                      _showBottomSheet(
-                        context,
-                        RedemptionBottomScreenNew(),
-                      );
                       mfdata.recdemevalu();
+                      Navigator.pushNamed(
+                        context,
+                        Routes.redeemNewBottomSheet,
+                      );
                     },
                     style: ElevatedButton.styleFrom(
                       elevation: 0,

@@ -18,7 +18,7 @@ class MFAllocation extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref.watch(themeProvider);
     final mfData = ref.watch(mfProvider).factSheetDataModel?.data;
-    
+
     // Early return if data is null
     if (mfData == null) {
       return const SizedBox();
@@ -28,180 +28,163 @@ class MFAllocation extends ConsumerWidget {
     final showMoreSectors = ref.watch(showMoreSectorsProvider);
     final showMoreHoldings = ref.watch(showMoreHoldingsProvider);
     final isDarkMode = theme.isDarkMode;
-    
+
     // Check for null or empty lists
     final hasSectors = mfData.sectors != null && mfData.sectors!.isNotEmpty;
     final hasHoldings = mfData.holdings != null && mfData.holdings!.isNotEmpty;
 
     return Container(
-      color: isDarkMode ? Colors.black : Colors.white,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            const SizedBox(height: 30),
-             TextWidget.titleText(
-                      align: TextAlign.right,
-                      text:  "Asset allocation and Holdings",
-                      color: theme.isDarkMode
-                          ? colors.textPrimaryDark
-                          : colors.textPrimaryLight,
-                      textOverflow: TextOverflow.ellipsis,
-                      theme: theme.isDarkMode,
-                      fw: 3),
-            
-            const SizedBox(height: 7),
-                 TextWidget.paraText(
-                      align: TextAlign.right,
-                      text:    "Equity allocation by Sector",
-                      color: theme.isDarkMode
-                          ? colors.textPrimaryDark
-                          : colors.textPrimaryLight,
-                      textOverflow: TextOverflow.ellipsis,
-                      theme: theme.isDarkMode,
-                      fw: 3),
-             
-            const SizedBox(height: 22),
-            
-            if (hasSectors) ...[
-              ListView.separated(
-                padding: EdgeInsets.zero,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: showMoreSectors
-                  ? mfData.sectors!.length
-                  : (mfData.sectors!.length > 5 ? 5 : mfData.sectors!.length),
-                itemBuilder: (BuildContext context, int index) {
-                  final sector = mfData.sectors![index];
-                  return progressBar(
-                    sector.sectorRating ?? "",
-                    sector.netAsset ?? "0.00",
-                    const Color(0xff2e8564),
-                    theme,
-                  );
-                },
-                separatorBuilder: (_, __) => const SizedBox(height: 18),
-              ),
-              
-              if (mfData.sectors!.length > 5)
-                TextButton(
-                  onPressed: () {
-                    ref.read(showMoreSectorsProvider.notifier).update((state) => !state);
-                  },
-                  child: 
-                  TextWidget.subText(
-                                                    align: TextAlign.right,
-                                                    text: showMoreSectors ? "Show Less" : "Show More",
-                                                    color: theme.isDarkMode
-                                                        ?  colors.primaryDark:
-                                                         colors.primaryLight 
-                                                             ,
-                                                    textOverflow:
-                                                        TextOverflow.ellipsis,
-                                                    theme: theme.isDarkMode,
-                                                    fw: 3),
-                  
-                  
-                ),
-            ],
-         
-            const SizedBox(height: 28),
+        color: isDarkMode ? Colors.black : Colors.white,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              const SizedBox(height: 16),
               TextWidget.titleText(
-                      align: TextAlign.right,
-                      text:  "Top Stock Holdings",
-                      color: theme.isDarkMode
-                          ? colors.textPrimaryDark
-                          : colors.textPrimaryLight,
-                      textOverflow: TextOverflow.ellipsis,
-                      theme: theme.isDarkMode,
-                      fw: 3),
-             
-            const SizedBox(height: 10),
-            
-            if (hasHoldings) ...[
-              ListView.separated(
-                padding: EdgeInsets.zero,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: showMoreHoldings
-                  ? mfData.holdings!.length
-                  : (mfData.holdings!.length > 5 ? 5 : mfData.holdings!.length),
-                itemBuilder: (BuildContext context, int index) {
-                  final holding = mfData.holdings![index];
-                  return progressBar(
-                    holding.holdings ?? "",
-                    holding.netAsset ?? "0.00",
-                    const Color(0xff7cd36f),
-                    theme,
-                  );
-                },
-                separatorBuilder: (_, __) => const SizedBox(height: 10),
-              ),
-              
-              if (mfData.holdings!.length > 5)
-                TextButton(
-                  onPressed: () {
-                    ref.read(showMoreHoldingsProvider.notifier).update((state) => !state);
+                  align: TextAlign.right,
+                  text: "Asset allocation and Holdings",
+                  color: theme.isDarkMode
+                      ? colors.textPrimaryDark
+                      : colors.textPrimaryLight,
+                  textOverflow: TextOverflow.ellipsis,
+                  theme: theme.isDarkMode,
+                  fw: 3),
+              const SizedBox(height: 7),
+              TextWidget.paraText(
+                  align: TextAlign.right,
+                  text: "Equity allocation by Sector",
+                  color: theme.isDarkMode
+                      ? colors.textPrimaryDark
+                      : colors.textPrimaryLight,
+                  textOverflow: TextOverflow.ellipsis,
+                  theme: theme.isDarkMode,
+                  fw: 3),
+              const SizedBox(height: 16),
+              if (hasSectors) ...[
+                ListView.separated(
+                  padding: EdgeInsets.zero,
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: showMoreSectors
+                      ? mfData.sectors!.length
+                      : (mfData.sectors!.length > 5
+                          ? 5
+                          : mfData.sectors!.length),
+                  itemBuilder: (BuildContext context, int index) {
+                    final sector = mfData.sectors![index];
+                    return progressBar(
+                      sector.sectorRating ?? "",
+                      sector.netAsset ?? "0.00",
+                      colors.profit,
+                      theme,
+                    );
                   },
-                  child: 
-                  TextWidget.subText(
-                                                    align: TextAlign.right,
-                                                    text: showMoreHoldings ? "Show Less" : "Show More",
-                                                    color: theme.isDarkMode
-                                                        ?  colors.primaryDark:
-                                                         colors.primaryLight 
-                                                             ,
-                                                    textOverflow:
-                                                        TextOverflow.ellipsis,
-                                                    theme: theme.isDarkMode,
-                                                    fw: 3),
-                   
+                  separatorBuilder: (_, __) => const SizedBox(height: 18),
                 ),
+                if (mfData.sectors!.length > 5)
+                  TextButton(
+                    onPressed: () {
+                      ref
+                          .read(showMoreSectorsProvider.notifier)
+                          .update((state) => !state);
+                    },
+                    child: TextWidget.subText(
+                        align: TextAlign.right,
+                        text: showMoreSectors ? "Show Less" : "Show More",
+                        color: theme.isDarkMode
+                            ? colors.primaryDark
+                            : colors.primaryLight,
+                        textOverflow: TextOverflow.ellipsis,
+                        theme: theme.isDarkMode,
+                        fw: 3),
+                  ),
+              ],
+              const SizedBox(height: 8),
+              TextWidget.titleText(
+                  align: TextAlign.right,
+                  text: "Top Stock Holdings",
+                  color: theme.isDarkMode
+                      ? colors.textPrimaryDark
+                      : colors.textPrimaryLight,
+                  textOverflow: TextOverflow.ellipsis,
+                  theme: theme.isDarkMode,
+                  fw: 3),
+              const SizedBox(height: 10),
+              if (hasHoldings) ...[
+                ListView.separated(
+                  padding: EdgeInsets.zero,
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: showMoreHoldings
+                      ? mfData.holdings!.length
+                      : (mfData.holdings!.length > 5
+                          ? 5
+                          : mfData.holdings!.length),
+                  itemBuilder: (BuildContext context, int index) {
+                    final holding = mfData.holdings![index];
+                    return progressBar(
+                      holding.holdings ?? "",
+                      holding.netAsset ?? "0.00",
+                      colors.profit,
+                      theme,
+                    );
+                  },
+                  separatorBuilder: (_, __) => const SizedBox(height: 10),
+                ),
+                if (mfData.holdings!.length > 5)
+                  TextButton(
+                    onPressed: () {
+                      ref
+                          .read(showMoreHoldingsProvider.notifier)
+                          .update((state) => !state);
+                    },
+                    child: TextWidget.subText(
+                        align: TextAlign.right,
+                        text: showMoreHoldings ? "Show Less" : "Show More",
+                        color: theme.isDarkMode
+                            ? colors.primaryDark
+                            : colors.primaryLight,
+                        textOverflow: TextOverflow.ellipsis,
+                        theme: theme.isDarkMode,
+                        fw: 3),
+                  ),
+              ],
             ],
-          ],
-        ),
-      )
-    );
+          ),
+        ));
   }
 
-  Column progressBar(String name, String val, Color color1, ThemesProvider theme) {
+  Column progressBar(
+      String name, String val, Color color1, ThemesProvider theme) {
     final isDarkMode = theme.isDarkMode;
     // Safely parse the value
     final double percentage = double.tryParse(val) ?? 0.0;
-    
+
     return Column(children: [
       Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
         const SizedBox(height: 25),
         Expanded(
-          child: 
-          TextWidget.paraText(
-                                                    align: TextAlign.start,
-                                                    text: name,
-                                                    color: theme.isDarkMode
-                                                        ?  colors.textPrimaryDark:
-                                                         colors.textPrimaryLight
-                                                             ,
-                                                    textOverflow:
-                                                        TextOverflow.ellipsis,
-                                                    theme: theme.isDarkMode,
-                                                    fw: 3),
-          
-          
+          child: TextWidget.subText(
+              align: TextAlign.start,
+              text: name,
+              color: theme.isDarkMode
+                  ? colors.textPrimaryDark
+                  : colors.textPrimaryLight,
+              textOverflow: TextOverflow.ellipsis,
+              theme: theme.isDarkMode,
+              fw: 3),
         ),
-        TextWidget.paraText(
-                                                    align: TextAlign.start,
-                                                    text: "$val%",
-                                                    color: theme.isDarkMode
-                                                        ?  colors.textPrimaryDark:
-                                                         colors.textPrimaryLight
-                                                             ,
-                                                    textOverflow:
-                                                        TextOverflow.ellipsis,
-                                                    theme: theme.isDarkMode,
-                                                    fw: 3),
-    
+        TextWidget.subText(
+            align: TextAlign.start,
+            text: "$val%",
+            color: theme.isDarkMode
+                ? colors.textPrimaryDark
+                : colors.textPrimaryLight,
+            textOverflow: TextOverflow.ellipsis,
+            theme: theme.isDarkMode,
+            fw: 3),
       ]),
       const SizedBox(height: 10),
       LinearPercentIndicator(

@@ -739,7 +739,6 @@ class MFProvider extends DefaultChangeNotifier {
   //  MF SIP
 
   // TextEditingController instalmentAmt = TextEditingController();
-
   final TextEditingController mfsearchcontroller = TextEditingController();
 
   // MF Holdings Search Variables
@@ -3450,3 +3449,4 @@ class MFProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 }
+
