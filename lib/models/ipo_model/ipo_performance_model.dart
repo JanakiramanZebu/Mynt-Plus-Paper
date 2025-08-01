@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 class IpoPerformanceModel {
   String? emsg;
   List<IpoScrip>? data;
@@ -8,9 +10,24 @@ class IpoPerformanceModel {
     emsg = json['emsg'];
     if (json['data'] != null) {
       data = <IpoScrip>[];
-      json['data'].forEach((v) {
-        data!.add(IpoScrip.fromJson(v));
-      });
+      // Check if data is a List or String
+      if (json['data'] is List) {
+        json['data'].forEach((v) {
+          data!.add(IpoScrip.fromJson(v));
+        });
+      } else if (json['data'] is String) {
+        // If data is a string, try to parse it as JSON
+        try {
+          final parsedList = jsonDecode(json['data'] as String);
+          if (parsedList is List) {
+            parsedList.forEach((v) {
+              data!.add(IpoScrip.fromJson(v));
+            });
+          }
+        } catch (e) {
+          print("Error parsing data string: $e");
+        }
+      }
     }
   }
 
@@ -39,7 +56,6 @@ class IpoScrip {
   String? token;
   String? exchange;
   String? ipostatus;
-
 
   IpoScrip({
     this.clsPric,
@@ -71,7 +87,7 @@ class IpoScrip {
     symbol = json['symbol'];
     token = json['token'];
     exchange = json['exchange'];
-    ipostatus="Listed";
+    ipostatus = "Listed";
   }
 
   Map<String, dynamic> toJson() {

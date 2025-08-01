@@ -412,28 +412,31 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                   color: colors.colorDivider,
                 ),
               ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  TextWidget.subText(
-                    text: "Collateral Additional",
-                    theme: false,
-                    color: theme.isDarkMode
-                        ? colors.textSecondaryDark
-                        : colors.textSecondaryLight,
-                    fw: 3,
-                  ),
-                  TextWidget.subText(
-                    text:
-                        "${getFormatter(value: _safeParseDouble("${funds.fundDetailModel?.brkcollamt ?? 0.00}"), v4d: false, noDecimal: false)}",
-                    theme: false,
-                    color: theme.isDarkMode
-                        ? colors.textPrimaryDark
-                        : colors.textPrimaryLight,
-                    fw: 3,
-                  ),
-                ],
-              ),
+              (funds.fundDetailModel?.brkcollamt == null &&
+                      funds.fundDetailModel?.brkcollamt != 0.00)
+                  ? Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        TextWidget.subText(
+                          text: "Collateral Additional",
+                          theme: false,
+                          color: theme.isDarkMode
+                              ? colors.textSecondaryDark
+                              : colors.textSecondaryLight,
+                          fw: 3,
+                        ),
+                        TextWidget.subText(
+                          text:
+                              "${getFormatter(value: _safeParseDouble("${funds.fundDetailModel?.brkcollamt ?? 0.00}"), v4d: false, noDecimal: false)}",
+                          theme: false,
+                          color: theme.isDarkMode
+                              ? colors.textPrimaryDark
+                              : colors.textPrimaryLight,
+                          fw: 3,
+                        ),
+                      ],
+                    )
+                  : const SizedBox.shrink(),
               filteredCredits.isNotEmpty
                   ? Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8),

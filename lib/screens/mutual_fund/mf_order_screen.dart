@@ -55,8 +55,11 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
   @override
   void initState() {
     setState(() {
-      ref.read(mfProvider).invAmt.text =
-          "${widget.mfData.minimumPurchaseAmount}";
+      // Only set invAmt if it's not already set from NFO screen
+      if (ref.read(mfProvider).invAmt.text.isEmpty) {
+        ref.read(mfProvider).invAmt.text =
+            "${widget.mfData.minimumPurchaseAmount}";
+      }
       ref.read(fundProvider).fetchFunds(context);
       ref.read(transcationProvider).initialdata(context);
 
@@ -108,98 +111,159 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                 ),
               ),
               title: Padding(
-                padding: const EdgeInsets.only(right: 16),
-                child: Column(
+                padding: const EdgeInsets.only(right: 0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
+                    Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        SizedBox(
-                          width: MediaQuery.of(context).size.width * 0.8,
-                          child: TextWidget.subText(
-                              text:
-                                  "${(mfOrder.orderpagetitle == "SDS" && mfOrder.factSheetDataModel!.data?.name != null) ? mfOrder.factSheetDataModel!.data?.name!.replaceAll(RegExp(r'(Reg \(G\)|\(G\))$'), ' ') : '${widget.mfData.fSchemeName}'}",
-                              textOverflow: TextOverflow.ellipsis,
-                              theme: theme.isDarkMode,
-                              color: theme.isDarkMode
-                                  ? colors.textPrimaryDark
-                                  : colors.textPrimaryLight,
-                              fw: 0),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            SizedBox(
+                              width: MediaQuery.of(context).size.width * 0.6,
+                              child: TextWidget.subText(
+                                  text:
+                                      "${(mfOrder.orderpagetitle == "SDS" && mfOrder.factSheetDataModel!.data?.name != null) ? mfOrder.factSheetDataModel!.data?.name!.replaceAll(RegExp(r'(Reg \(G\)|\(G\))$'), ' ') : (mfOrder.orderpagetitle == "NFO" ? '${widget.mfData.name}' : '${widget.mfData.fSchemeName}')}",
+                                  textOverflow: TextOverflow.ellipsis,
+                                  theme: theme.isDarkMode,
+                                  color: theme.isDarkMode
+                                      ? colors.textPrimaryDark
+                                      : colors.textPrimaryLight,
+                                  fw: 0),
+                            ),
+                          ],
+
+                          // children: [
+                          //   CircleAvatar(
+                          //       backgroundImage: NetworkImage(
+                          //           "https://v3.mynt.in/mf/static/images/mf/${widget.mfData.aMCCode}.png")),
+                          //   const SizedBox(width: 8),
+                          //   Expanded(
+                          //     child: Column(
+                          //       crossAxisAlignment: CrossAxisAlignment.start,
+                          //       mainAxisAlignment: MainAxisAlignment.start,
+                          //       children: [
+                          //         Text("${widget.mfData.fSchemeName}",
+                          //             maxLines: 1,
+                          //             overflow: TextOverflow.ellipsis,
+                          //             style: textStyle(
+                          //                 theme.isDarkMode
+                          //                     ? colors.colorWhite
+                          //                     : colors.colorBlack,
+                          //                 16,
+                          //                 FontWeight.w500)),
+                          //         const SizedBox(height: 10),
+                          //         SizedBox(
+                          //           height: 18,
+                          //           child: ListView(
+                          //             shrinkWrap: true,
+                          //             scrollDirection: Axis.horizontal,
+                          //             children: [
+                          //               CustomExchBadge(
+                          //                   exch: widget.mfData.schemeName!
+                          //                           .contains("GROWTH")
+                          //                       ? "GROWTH"
+                          //                       : widget.mfData.schemeName!
+                          //                               .contains("IDCW PAYOUT")
+                          //                           ? "IDCW PAYOUT"
+                          //                           : widget.mfData.schemeName!
+                          //                                   .contains(
+                          //                                       "IDCW REINVESTMENT")
+                          //                               ? "IDCW REINVESTMENT"
+                          //                               : widget.mfData.schemeName!
+                          //                                       .contains("IDCW")
+                          //                                   ? "IDCW"
+                          //                                   : "NORMAL"),
+                          //         const SizedBox(width: 7),
+                          //               CustomExchBadge(
+                          //                   exch: "${widget.mfData.schemeType}"),
+                          //         const SizedBox(width: 7),
+                          //               CustomExchBadge(
+                          //                   exch: widget.mfData.sCHEMESUBCATEGORY!
+                          //                       .replaceAll("Fund", '')
+                          //                       .replaceAll("Hybrid", "")
+                          //                       .toUpperCase()),
+                          //             ],
+                          //           ),
+                          //         ),
+                          //       ],
+                          //     ),
+                          //   ),
+                          // ],
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            TextWidget.paraText(
+                                text: "${mfOrder.mfOrderTpye}",
+                                textOverflow: TextOverflow.ellipsis,
+                                theme: theme.isDarkMode,
+                                color: theme.isDarkMode
+                                    ? colors.textSecondaryDark
+                                    : colors.textSecondaryLight,
+                                fw: 3),
+                          ],
                         ),
                       ],
-
-                      // children: [
-                      //   CircleAvatar(
-                      //       backgroundImage: NetworkImage(
-                      //           "https://v3.mynt.in/mf/static/images/mf/${widget.mfData.aMCCode}.png")),
-                      //   const SizedBox(width: 8),
-                      //   Expanded(
-                      //     child: Column(
-                      //       crossAxisAlignment: CrossAxisAlignment.start,
-                      //       mainAxisAlignment: MainAxisAlignment.start,
-                      //       children: [
-                      //         Text("${widget.mfData.fSchemeName}",
-                      //             maxLines: 1,
-                      //             overflow: TextOverflow.ellipsis,
-                      //             style: textStyle(
-                      //                 theme.isDarkMode
-                      //                     ? colors.colorWhite
-                      //                     : colors.colorBlack,
-                      //                 16,
-                      //                 FontWeight.w500)),
-                      //         const SizedBox(height: 10),
-                      //         SizedBox(
-                      //           height: 18,
-                      //           child: ListView(
-                      //             shrinkWrap: true,
-                      //             scrollDirection: Axis.horizontal,
-                      //             children: [
-                      //               CustomExchBadge(
-                      //                   exch: widget.mfData.schemeName!
-                      //                           .contains("GROWTH")
-                      //                       ? "GROWTH"
-                      //                       : widget.mfData.schemeName!
-                      //                               .contains("IDCW PAYOUT")
-                      //                           ? "IDCW PAYOUT"
-                      //                           : widget.mfData.schemeName!
-                      //                                   .contains(
-                      //                                       "IDCW REINVESTMENT")
-                      //                               ? "IDCW REINVESTMENT"
-                      //                               : widget.mfData.schemeName!
-                      //                                       .contains("IDCW")
-                      //                                   ? "IDCW"
-                      //                                   : "NORMAL"),
-                      //         const SizedBox(width: 7),
-                      //               CustomExchBadge(
-                      //                   exch: "${widget.mfData.schemeType}"),
-                      //         const SizedBox(width: 7),
-                      //               CustomExchBadge(
-                      //                   exch: widget.mfData.sCHEMESUBCATEGORY!
-                      //                       .replaceAll("Fund", '')
-                      //                       .replaceAll("Hybrid", "")
-                      //                       .toUpperCase()),
-                      //             ],
-                      //           ),
-                      //         ),
-                      //       ],
-                      //     ),
-                      //   ),
-                      // ],
                     ),
-                    const SizedBox(height: 4),
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        TextWidget.paraText(
-                            text: "${mfOrder.mfOrderTpye}",
-                            textOverflow: TextOverflow.ellipsis,
-                            theme: theme.isDarkMode,
+                        PopupMenuButton<String>(
+                          menuPadding: const EdgeInsets.all(8),
+                          splashRadius: 20,
+                          icon: Icon(
+                            Icons.more_vert,
                             color: theme.isDarkMode
-                                ? colors.textSecondaryDark
-                                : colors.textSecondaryLight,
-                            fw: 3),
+                                ? colors.textPrimaryDark
+                                : colors.textPrimaryLight,
+                          ),
+                          onSelected: (String selected) async {
+                            final isin = widget.mfData.iSIN;
+                            final schemeCode = widget.mfData.schemeCode;
+
+                            if ((widget.mfData.sIPFLAG == "Y" &&
+                                isin != null &&
+                                schemeCode != null)) {
+                              await mfOrder.invertfun(isin, schemeCode);
+                            }
+
+                            mfOrder.invAmt.text =
+                                "${widget.mfData.minimumPurchaseAmount}";
+                            ref.read(fundProvider).fetchFunds(context);
+                            ref.read(transcationProvider).initialdata(context);
+
+                            mfOrder.chngOrderType(selected);
+                            mfOrder.orderchangetitle(selected);
+
+                            if (mfOrder.orderpagetitle != "NFO") {
+                              mfOrder.orderpagetite("SDS");
+                            }
+                          },
+                          itemBuilder: (BuildContext context) {
+                            final isOneTime = mfOrder.mfOrderTpye == "One-time";
+                            final altText = isOneTime ? "SIP" : "One-time";
+
+                            return [
+                              PopupMenuItem<String>(
+                                value: altText,
+                                child: TextWidget.subText(
+                                  text: altText,
+                                  theme: theme.isDarkMode,
+                                  color: theme.isDarkMode
+                                      ? colors.textPrimaryDark
+                                      : colors.textPrimaryLight,
+                                ),
+                              ),
+                            ];
+                          },
+                        ),
                       ],
-                    ),
+                    )
                   ],
                 ),
               ),
@@ -1299,7 +1363,7 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                                     //     mfOrder.installmentAmtError == ""
                                     ) {
                                   if (mfOrder.mfOrderTpye == "One-time") {
-                    Navigator.pop(context);
+                                    Navigator.pop(context);
 
                                     final startTime = DateTime.now();
                                     // print(mfOrder.isValidUpiId(widget.mfData));
@@ -1315,7 +1379,8 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                                     showModalBottomSheet(
                                       context: context,
                                       isScrollControlled: true,
-                                      isDismissible: mfOrder.ispaymentcalled != true,
+                                      isDismissible:
+                                          mfOrder.ispaymentcalled != true,
                                       enableDrag: false,
                                       shape: const RoundedRectangleBorder(
                                         borderRadius: BorderRadius.vertical(
@@ -1323,7 +1388,8 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                                         ),
                                       ),
                                       builder: (context) => WillPopScope(
-                                        onWillPop: () async => mfOrder.ispaymentcalled != true,
+                                        onWillPop: () async =>
+                                            mfOrder.ispaymentcalled != true,
                                         child: MfOrderBottomsheet(
                                           data: widget.mfData,
                                         ),

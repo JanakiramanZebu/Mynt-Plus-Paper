@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 class MainStreamIpoModel {
   String? msg;
   List<MainIPO>? mainIPO;
@@ -8,9 +10,24 @@ class MainStreamIpoModel {
     msg = json['msg'];
     if (json['MainIPO'] != null) {
       mainIPO = <MainIPO>[];
-      json['MainIPO'].forEach((v) {
-        mainIPO!.add(MainIPO.fromJson(v));
-      });
+      // Check if MainIPO is a List or String
+      if (json['MainIPO'] is List) {
+        json['MainIPO'].forEach((v) {
+          mainIPO!.add(MainIPO.fromJson(v));
+        });
+      } else if (json['MainIPO'] is String) {
+        // If MainIPO is a string, try to parse it as JSON
+        try {
+          final parsedList = jsonDecode(json['MainIPO'] as String);
+          if (parsedList is List) {
+            parsedList.forEach((v) {
+              mainIPO!.add(MainIPO.fromJson(v));
+            });
+          }
+        } catch (e) {
+          print("Error parsing MainIPO string: $e");
+        }
+      }
     }
   }
 
@@ -125,9 +142,24 @@ class MainIPO {
     biddingStartDate = json['biddingStartDate'].toString();
     if (json['categoryDetails'] != null) {
       categoryDetails = <CategoryDetails>[];
-      json['categoryDetails'].forEach((v) {
-        categoryDetails!.add(CategoryDetails.fromJson(v));
-      });
+      // Check if categoryDetails is a List or String
+      if (json['categoryDetails'] is List) {
+        json['categoryDetails'].forEach((v) {
+          categoryDetails!.add(CategoryDetails.fromJson(v));
+        });
+      } else if (json['categoryDetails'] is String) {
+        // If categoryDetails is a string, try to parse it as JSON
+        try {
+          final parsedList = jsonDecode(json['categoryDetails'] as String);
+          if (parsedList is List) {
+            parsedList.forEach((v) {
+              categoryDetails!.add(CategoryDetails.fromJson(v));
+            });
+          }
+        } catch (e) {
+          print("Error parsing categoryDetails string: $e");
+        }
+      }
     }
     days_to_end_ipo = json["days_to_end_ipo"].toString();
     closedatetime = json['closedatetime'].toString();
@@ -160,9 +192,24 @@ class MainIPO {
     seriesDetails = json['seriesDetails'].toString();
     if (json['subCategorySettings'] != null) {
       subCategorySettings = <SubCategorySettings>[];
-      json['subCategorySettings'].forEach((v) {
-        subCategorySettings!.add(SubCategorySettings.fromJson(v));
-      });
+      // Check if subCategorySettings is a List or String
+      if (json['subCategorySettings'] is List) {
+        json['subCategorySettings'].forEach((v) {
+          subCategorySettings!.add(SubCategorySettings.fromJson(v));
+        });
+      } else if (json['subCategorySettings'] is String) {
+        // If subCategorySettings is a string, try to parse it as JSON
+        try {
+          final parsedList = jsonDecode(json['subCategorySettings'] as String);
+          if (parsedList is List) {
+            parsedList.forEach((v) {
+              subCategorySettings!.add(SubCategorySettings.fromJson(v));
+            });
+          }
+        } catch (e) {
+          print("Error parsing subCategorySettings string: $e");
+        }
+      }
     }
     subType = json['subType'].toString();
     symbol = json['symbol'].toString();

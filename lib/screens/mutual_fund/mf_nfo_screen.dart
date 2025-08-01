@@ -9,6 +9,7 @@ import '../../../provider/fund_provider.dart';
 import '../../../provider/mf_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../routes/route_names.dart';
+import '../../provider/transcation_provider.dart';
 import '../../res/global_state_text.dart';
 import '../../sharedWidget/custom_back_btn.dart';
 import '../../sharedWidget/list_divider.dart';
@@ -32,7 +33,7 @@ class MFNFOScreen extends ConsumerWidget {
           centerTitle: false,
           titleSpacing: 6,
           leading: const CustomBackBtn(),
-         title: TextWidget.titleText(
+          title: TextWidget.titleText(
             text: "New Fund Offer",
             theme: theme.isDarkMode,
             fw: 1,
@@ -41,13 +42,13 @@ class MFNFOScreen extends ConsumerWidget {
       ),
       body: TransparentLoaderScreen(
         isLoading: mf.investloader,
-        child: _buildContent(context, mf, theme),
+        child: _buildContent(context, mf, theme, ref, fund),
       ),
     );
   }
 
-  Widget _buildContent(
-      BuildContext context, MFProvider mf, ThemesProvider theme) {
+  Widget _buildContent(BuildContext context, MFProvider mf,
+      ThemesProvider theme, WidgetRef ref, FundProvider fund) {
     if (mf.mfNFOList!.mutualFundList!.isEmpty) {
       return const Center(child: NoDataFound());
     } else {
@@ -55,10 +56,10 @@ class MFNFOScreen extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
-             child: ListView.separated(
+            child: ListView.separated(
               shrinkWrap: true,
               physics: const AlwaysScrollableScrollPhysics(),
-                separatorBuilder: (_, __) => const ListDivider(),
+              separatorBuilder: (_, __) => const ListDivider(),
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               itemCount: mf.mfNFOList!.mutualFundList!.length,
               itemBuilder: (BuildContext context, int index) {
@@ -67,25 +68,26 @@ class MFNFOScreen extends ConsumerWidget {
                 return InkWell(
                   onTap: () async {
                     try {
-                      mf.chngMandate("Lumpsum");
-                      await mf.fetchUpiDetail();
-                      // await mf.fetchBankDetail();
-                
-                      if (nfoItem.sIPFLAG == "Y") {
-                        await mf.fetchMFSipData(
-                          nfoItem.iSIN!,
-                          nfoItem.schemeCode!,
-                        );
-                        await mf.fetchMFMandateDetail();
+                      final isin = nfoItem.iSIN;
+                      final schemeCode = nfoItem.schemeCode;
+                      if ((nfoItem.sIPFLAG == "Y" &&
+                          isin != null &&
+                          schemeCode != null)) {
+                        mf.invertfun(isin, schemeCode);
                       }
-                      mf.orderpagetite("NFO");
-                
+                      mf.invAmt.text = "${nfoItem.minimumPurchaseAmount}";
+                      fund.fetchFunds(context);
+                      ref.read(transcationProvider).initialdata(context);
+
                       if (context.mounted) {
                         Navigator.pushNamed(
                           context,
                           Routes.mforderScreen,
                           arguments: nfoItem,
                         );
+                        mf.chngOrderType("One-time");
+                        mf.orderchangetitle("One-time");
+                        mf.orderpagetite("NFO");
                       }
                     } catch (e) {
                       if (context.mounted) {
@@ -133,13 +135,6 @@ class MFNFOScreen extends ConsumerWidget {
                         theme: theme.isDarkMode,
                         fw: 3),
                   ),
-                  
-                  
-                  
-                  
-                  
-                  
-                 
                 );
               },
             ),

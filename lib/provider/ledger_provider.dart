@@ -1547,10 +1547,10 @@ class LDProvider extends DefaultChangeNotifier {
 
         _pdfresponse =
             await api.getpdffileapitaxpnl(eq, dercomcur, eqcharge, year);
-        if (_pdfresponse == 'File downloaded successfully') {
+        if (_pdfresponse == 'File Sent to mail successfully') {
           Navigator.pop(context);
           ScaffoldMessenger.of(context).showSnackBar(
-            successMessage(context, 'PDF Downloaded, Check Your Download'),
+            successMessage(context, 'File sent to mail successfully'),
           );
           _taxderloading = false;
         } else {
