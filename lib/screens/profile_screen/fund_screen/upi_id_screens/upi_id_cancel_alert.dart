@@ -40,41 +40,7 @@ class _UPIIDPaymentCancelAlertState
     final mfProv = ref.read(mfProvider);
     final txnProv = ref.read(transcationProvider);
 
-    if (mfProv.triggerfromMF == true) {
-      _timer = Timer.periodic(const Duration(seconds: 3), (timer) async {
-        await mfProv.getpaymentstatus(
-            widget.data, context); // Use await if async
-
-        final status = mfProv.statusCheckUpi?.status;
-        if (status == 'PAYMENT REJECTED' || status == 'PAYMENT COMPLETED') {
-          _timer?.cancel(); // This is safe even if already cancelled
-          _autoPopTimer?.cancel(); // Cancel auto-pop if running
-
-          mfProv.setterformftrigger(false);
-          ref.read(mfProvider).IsPaymentCalled(false);
-
-          if (Navigator.of(context).canPop()) {
-            Navigator.of(context).pop();
-          }
-          ScaffoldMessenger.of(context).showSnackBar(
-                warningMessage(context, '$status'));
-          }
-        
-      });
-
-      _autoPopTimer = Timer(const Duration(minutes: 3), () {
-        _timer?.cancel(); // Also stop periodic timer here as a fallback
-        mfProv.setterformftrigger(false);
-        ref.read(mfProvider).IsPaymentCalled(false);
-
-        if (Navigator.of(context).canPop()) {
-          Navigator.of(context).pop();
-          ScaffoldMessenger.of(context).showSnackBar(
-                warningMessage(context, 'Timeout try again'));
-          
-        }
-      });
-    } else {
+      
       _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
         final status = txnProv.hdfcpaymentstatus?.upiId?.status;
         if (status != "REJECTED" || status != "SUCCESS") {
@@ -85,7 +51,7 @@ class _UPIIDPaymentCancelAlertState
           );
         }
       });
-    }
+    
   }
 
   @override
@@ -97,19 +63,13 @@ class _UPIIDPaymentCancelAlertState
 
   void _triggerButtonAction() {
     // Clear the amount text field
-    if (ref.read(mfProvider).triggerfromMF == true) {
-      ref.read(mfProvider).setterformftrigger(false);
-      _timer?.cancel(); // This is safe even if already cancelled
-          _autoPopTimer?.cancel();
-      Navigator.pop(context);
-      ref.read(mfProvider).IsPaymentCalled(false);
-    } else {
+      
       ref.read(transcationProvider).amount.clear();
       Navigator.pop(context);
       _timer?.cancel();
       FocusScope.of(context).unfocus();
       ref.read(mfProvider).IsPaymentCalled(false);
-    }
+     
   }
 
   @override

@@ -221,7 +221,7 @@ mixin MutualFundApi on ApiCore {
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
           body: jsonEncode({"ClientCode": "${prefs.clientId}"}));
-          
+
       final res2 = {"client_code": "${prefs.clientId}"};
       final json = jsonDecode((res.body));
       
@@ -772,6 +772,7 @@ mixin MutualFundApi on ApiCore {
             "allow_loop_back": "Y"
           }));
       final json = jsonDecode((res.body));
+      print("mf======>${json}");
       return UpiIdOrderResponse.fromJson(json as Map<String, dynamic>);
     } catch (e) {
       rethrow;

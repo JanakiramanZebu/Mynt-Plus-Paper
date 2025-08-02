@@ -21,6 +21,8 @@ import '../mutual_fund_old/cancle_xsip_resone.dart';
 // import '../mutual_fund_old/mf_order_filter_sheet.dart';
 import '../portfolio_screens/mfHoldings/mf_holding_screen.dart';
 import '../mutual_fund/mf_cancel_alert.dart';
+import '../profile_screen/fund_screen/upi_id_screens/mf_payment_resp_alert.dart';
+import '../profile_screen/fund_screen/upi_id_screens/upi_id_cancel_alert.dart';
 import 'mf_order_bottomsheet.dart';
 import 'mf_processing_screen.dart';
 
@@ -70,142 +72,172 @@ class _mforderdetscreen extends State<mforderdetscreen>
                           children: [
                             _buildOrderHeader(theme, mfdata),
                             const SizedBox(height: 18),
-                            // ElevatedButton(
-                            //   onPressed: () async {
-                                 
-                            //       final isUpi = mfdata.paymentName == 'UPI';
-                            //       final isNetBanking =
-                            //           mfdata.paymentName == 'NET BANKING';
-                            //       final isUpiValid =
-                            //           isUpi ? mfdata.upiError == '' : true;
+                            if (mfdata.mforderdet?.data![0].status ==
+                                    'PAYMENT NOT INITIATED' ||
+                                mfdata.mforderdet?.data![0].status ==
+                                    'MODIFIED' ||
+                                mfdata.mforderdet?.data![0].status ==
+                                    'CANCEL ERROR' ||
+                                mfdata.mforderdet?.data![0].status ==
+                                    'MODIFY REJECTED' ||
+                                mfdata.mforderdet?.data![0].status ==
+                                    'PAYMENT REJECTED')
+                              ElevatedButton(
+                                onPressed: () async {
+                                  final isUpi = mfdata.paymentName == 'UPI';
+                                  final isNetBanking =
+                                      mfdata.paymentName == 'NET BANKING';
+                                  final isUpiValid =
+                                      isUpi ? mfdata.upiError == '' : true;
 
-                            //       // mfdata.isValidUpiId(widget.data);
-                            //         await mfdata.fetchUpiDetail('repop' , context);
+                                  // mfdata.isValidUpiId(widget.data);
+                                  // await mfdata.fetchUpiDetail('repop' , context);
+
+                                  // Navigator.pop(context);
+
+                                  // Set loading state immediately when button is pressed
+
+                                  await mfdata.upipaymenttrigger(
+                                    context,
+                                    mfdata.mforderdet?.data![0].orderId,
+                                    mfdata.mforderdet?.data![0].orderVal,
+                                    mfdata.mforderdet?.data![0].accVPA,
+                                    mfdata.mforderdet?.data![0].paymentType,
+                                  );
+
+                                  if (mfdata.upiApiresponse != null &&
+                                      mfdata.upiApiresponse?.stat == "Ok") {
                                     
-                            //         // Set loading state immediately when button is pressed
-                            //         showModalBottomSheet(
-                            //           context: context,
-                            //           isScrollControlled: true,
-                            //           isDismissible: mfdata.ispaymentcalled != true,
-                            //           enableDrag: false,
-                            //           shape: const RoundedRectangleBorder(
-                            //             borderRadius: BorderRadius.vertical(
-                            //               top: Radius.circular(15),
-                            //             ),
-                            //           ),
-                            //           builder: (context) => WillPopScope(
-                            //             onWillPop: () async => mfdata.ispaymentcalled != true,
-                            //             child: MfUPIProcessingScreen(
-                            //               data:  '',
-                            //             ),
-                            //           ),
-                            //         );
-                            //         await mfdata.upipaymenttrigger(
-                            //           context,
-                            //           mfdata.mforderdet?.data![0].orderId,
-                            //           mfdata.mforderdet?.data![0].orderVal,
-                            //           mfdata.upiId.text,
-                            //           mfdata.paymentName,
-                            //         );
+                                      showModalBottomSheet(
+                                        context: context,
+                                        isScrollControlled: true,
+                                        isDismissible: false,
+                                        enableDrag: false,
+                                        shape: const RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.vertical(
+                                            top: Radius.circular(15),
+                                          ),
+                                        ),
+                                        builder: (context) => WillPopScope(
+                                          onWillPop: () async =>
+                                              mfdata.ispaymentcalled != true,
+                                          child: MfUPIProcessingScreen(
+                                            data: '',
+                                          ),
+                                        ),
+                                      );
+                                    } else {
+                                      showModalBottomSheet(
+                                        context: context,
+                                        isScrollControlled: true,
+                                        isDismissible: false,
+                                        enableDrag: false,
+                                        shape: const RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.vertical(
+                                            top: Radius.circular(15),
+                                          ),
+                                        ),
+                                        builder: (context) => WillPopScope(
+                                          onWillPop: () async =>
+                                              mfdata.ispaymentcalled != true,
+                                          child: MfPaymentRespAlert(
+                                            upiData: mfdata.upiApiresponse!.data!.toJson(),
+                                            conditionval : 'reinitiateerror'
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                    // else if (isNetBanking) {
+                                    //   final url = Uri.parse(
+                                    //     'https://v3.mynt.in/mfapi${mfdata.upiApiresponse!.file!}',
+                                    //   );
+                                    //   //  mfdata.IsPaymentCalled(false);
+                                    //   // Navigator.pop(context);
 
-                            //         if (mfdata.upiApiresponse != null &&
-                            //             mfdata.upiApiresponse?.stat == "Ok") {
-                            //           if (isUpi) {
-                                        
-                            //           } 
-                            //           // else if (isNetBanking) {
-                            //           //   final url = Uri.parse(
-                            //           //     'https://v3.mynt.in/mfapi${mfdata.upiApiresponse!.file!}',
-                            //           //   );
-                            //           //   //  mfdata.IsPaymentCalled(false);
-                            //           //   // Navigator.pop(context);
-
-                            //           //   // Navigate to a new screen showing InAppWebView
-                            //           //   Navigator.of(context).push(
-                            //           //     MaterialPageRoute(
-                            //           //       builder: (context) => Scaffold(
-                            //           //         appBar: AppBar(
-                            //           //           title:
-                            //           //               const Text("Net Banking"),
-                            //           //           leading: IconButton(
-                            //           //             icon: const Icon(
-                            //           //                 Icons.arrow_back_ios_new),
-                            //           //             onPressed: () {
-                            //           //               Navigator.pop(context);
-                            //           //               mfdata.threeSecondTimer
-                            //           //                   ?.cancel();
-                            //           //               mfdata.autoPopTimer
-                            //           //                   ?.cancel();
-                            //           //             },
-                            //           //           ),
-                            //           //         ),
-                            //           //         body: WillPopScope(
-                            //           //           onWillPop: () async {
-                            //           //             Navigator.pop(context);
-                            //           //             mfdata.threeSecondTimer
-                            //           //                 ?.cancel();
-                            //           //             mfdata.autoPopTimer?.cancel();
-                            //           //             // print("objectobjectobjectobjectobjectobjectobjectobject");
-                            //           //             return true;
-                            //           //           },
-                            //           //           child: InAppWebView(
-                            //           //             initialUrlRequest: URLRequest(
-                            //           //               url: WebUri(url.toString()),
-                            //           //             ),
-                            //           //             initialOptions:
-                            //           //                 InAppWebViewGroupOptions(
-                            //           //               crossPlatform:
-                            //           //                   InAppWebViewOptions(),
-                            //           //             ),
-                            //           //             onWebViewCreated:
-                            //           //                 (InAppWebViewController
-                            //           //                     controller) {
-                            //           //               ConstantName
-                            //           //                       .webViewController =
-                            //           //                   controller;
-                            //           //             },
-                            //           //             onProgressChanged:
-                            //           //                 (InAppWebViewController
-                            //           //                         controller,
-                            //           //                     int progress) {
-                            //           //               // Optional: add loading logic or progress indicator
-                            //           //             },
-                            //           //           ),
-                            //           //         ),
-                            //           //       ),
-                            //           //     ),
-                            //           //   );
-                            //           // }
-                            //         }
-                                  
-                                 
-                            //   },
-                            //   style: ElevatedButton.styleFrom(
-                            //     elevation: 0,
-                            //     backgroundColor: colors.btnBg,
-                            //     foregroundColor:
-                            //         const Color.fromARGB(255, 0, 0, 0),
-                            //     side: BorderSide(
-                            //       color: colors.btnOutlinedBorder,
-                            //       width: 1,
-                            //     ),
-                            //     minimumSize:
-                            //         Size(double.infinity, 40), // height: 48
-                            //     shape: RoundedRectangleBorder(
-                            //       borderRadius: BorderRadius.circular(5),
-                            //     ),
-                            //   ),
-                            //   child: TextWidget.subText(
-                            //       align: TextAlign.right,
-                            //       text: "Re-Initiate Payment",
-                            //       color: theme.isDarkMode
-                            //           ? colors.primaryDark
-                            //           : colors.primaryLight,
-                            //       textOverflow: TextOverflow.ellipsis,
-                            //       theme: theme.isDarkMode,
-                            //       fw: 2),
-                            // ),
-                            // const SizedBox(height: 18),
+                                    //   // Navigate to a new screen showing InAppWebView
+                                    //   Navigator.of(context).push(
+                                    //     MaterialPageRoute(
+                                    //       builder: (context) => Scaffold(
+                                    //         appBar: AppBar(
+                                    //           title:
+                                    //               const Text("Net Banking"),
+                                    //           leading: IconButton(
+                                    //             icon: const Icon(
+                                    //                 Icons.arrow_back_ios_new),
+                                    //             onPressed: () {
+                                    //               Navigator.pop(context);
+                                    //               mfdata.threeSecondTimer
+                                    //                   ?.cancel();
+                                    //               mfdata.autoPopTimer
+                                    //                   ?.cancel();
+                                    //             },
+                                    //           ),
+                                    //         ),
+                                    //         body: WillPopScope(
+                                    //           onWillPop: () async {
+                                    //             Navigator.pop(context);
+                                    //             mfdata.threeSecondTimer
+                                    //                 ?.cancel();
+                                    //             mfdata.autoPopTimer?.cancel();
+                                    //             // print("objectobjectobjectobjectobjectobjectobjectobject");
+                                    //             return true;
+                                    //           },
+                                    //           child: InAppWebView(
+                                    //             initialUrlRequest: URLRequest(
+                                    //               url: WebUri(url.toString()),
+                                    //             ),
+                                    //             initialOptions:
+                                    //                 InAppWebViewGroupOptions(
+                                    //               crossPlatform:
+                                    //                   InAppWebViewOptions(),
+                                    //             ),
+                                    //             onWebViewCreated:
+                                    //                 (InAppWebViewController
+                                    //                     controller) {
+                                    //               ConstantName
+                                    //                       .webViewController =
+                                    //                   controller;
+                                    //             },
+                                    //             onProgressChanged:
+                                    //                 (InAppWebViewController
+                                    //                         controller,
+                                    //                     int progress) {
+                                    //               // Optional: add loading logic or progress indicator
+                                    //             },
+                                    //           ),
+                                    //         ),
+                                    //       ),
+                                    //     ),
+                                    //   );
+                                    // }
+                                   
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  elevation: 0,
+                                  backgroundColor: colors.btnBg,
+                                  foregroundColor:
+                                      const Color.fromARGB(255, 0, 0, 0),
+                                  side: BorderSide(
+                                    color: colors.btnOutlinedBorder,
+                                    width: 1,
+                                  ),
+                                  minimumSize:
+                                      Size(double.infinity, 40), // height: 48
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(5),
+                                  ),
+                                ),
+                                child: TextWidget.subText(
+                                    align: TextAlign.right,
+                                    text: "Re-Initiate Payment",
+                                    color: theme.isDarkMode
+                                        ? colors.primaryDark
+                                        : colors.primaryLight,
+                                    textOverflow: TextOverflow.ellipsis,
+                                    theme: theme.isDarkMode,
+                                    fw: 2),
+                              ),
+                            const SizedBox(height: 18),
                             _buildCancelButton(theme, mfdata, context),
                             const SizedBox(height: 24),
                             _buildDetailsSection(theme, mfdata),
