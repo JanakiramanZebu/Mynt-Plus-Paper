@@ -150,14 +150,12 @@ class FundProvider extends DefaultChangeNotifier {
 
   Future fetchOptionZ(String key, BuildContext context) async {
     try {
-      _optionZmodel = await api.getaOptionZ(key);
-      if (_optionZmodel!.stat == "Ok") {
+      String url = 
+          "https://be.mynt.in/SSONew/OAuthNew?vc=instaoptions&key=$key";
+
         Navigator.pushNamed(context, Routes.optionZWebView,
-            arguments: optionZmodel!.url);
-      } else {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(warningMessage(context, "${_optionZmodel!.emsg}"));
-      }
+            arguments: url);
+
     } catch (e) {
       rethrow;
     }
