@@ -199,7 +199,7 @@ class MFSipdetScreen extends ConsumerWidget {
                       //     maxLines: 2,
                       //     fw: 3),
                       // const SizedBox(width: 5),
-                      if (item.status == "ACTIVE" && item.startDate != null)
+                      if (item.status == "ACTIVE" && item.NextSIPDate != "")
                         TextWidget.paraText(
                             align: TextAlign.start,
                             text: "Due Date : ${item.NextSIPDate}",

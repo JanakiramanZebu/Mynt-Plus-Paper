@@ -2236,6 +2236,7 @@ class MFProvider extends DefaultChangeNotifier {
 //   final watchlistIsins = _mfWatchlist!.map((item) => item.iSIN).toSet();
 
 //   if (_factSheetDataModel!.data!. == isin) {
+
 //     _factSheetDataModel!.data!.isAdd = watchlistIsins.contains(isin);
 //   }
 // }

@@ -49,7 +49,7 @@ class ScripDepthInfo extends ConsumerStatefulWidget {
 
 class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
     with AutomaticKeepAliveClientMixin {
-  double initSize = 0.88;
+  double initSize = 0.95;
   ChartArgs? chartArgs;
   String regtoken = "";
   bool _isDisposed = false;
@@ -127,17 +127,17 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
 
   // Helper method to calculate safe initial size
   double _getSafeInitialSize(double desiredSize) {
-    double minSize = 0.05; // Updated to match new minChildSize
+    double minSize = 0.20; // Updated to match new minChildSize
     return desiredSize < minSize ? minSize : desiredSize;
   }
 
   void _initializeSize() {
     setState(() {
-      // Ensure initialChildSize is always >= minChildSize (0.05)
+      // Ensure initialChildSize is always >= minChildSize (0.20)
       initSize = (ref.read(marketWatchProvider).actDeptBtn != "Overview") ||
               ref.read(marketWatchProvider).scripsize == true
           ? 0.99
-          : 0.28;
+          : 0.35;
 
       chartArgs = ChartArgs(
         exch: widget.wlValue.exch,
@@ -427,7 +427,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                     },
                     child: DraggableScrollableSheet(
                         initialChildSize: initSize,
-                        minChildSize: 0.05,
+                        minChildSize: 0.20,
                         maxChildSize: 0.99,
                         expand: false,
                         builder: (BuildContext ctx,

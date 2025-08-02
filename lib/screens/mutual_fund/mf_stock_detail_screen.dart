@@ -135,8 +135,8 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
                                   children: [
                                     MFOverview(mfStockData: widget.mfStockData),
                                     MFPerformance(mfStockData: widget.mfStockData),
-                                    MFSchemeInfo(mfStockData: widget.mfStockData),
                                     MFAllocation(mfStockData: widget.mfStockData),
+                                    MFSchemeInfo(mfStockData: widget.mfStockData),
                                   ],
                                 ),
                               ),

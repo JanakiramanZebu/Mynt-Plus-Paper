@@ -85,7 +85,7 @@ class _RedemptionBottomScreenNewState extends State<RedemptionBottomScreenNew> {
                                     ? (mf.holssinglelist![0]?.name ??
                                         "Unknown Scheme")
                                     : "Unknown Scheme",
-                                maxLines: 1,
+                                maxLines: 2,
                                 textOverflow: TextOverflow.ellipsis,
                                 color: theme.isDarkMode
                                     ? colors.textPrimaryDark
