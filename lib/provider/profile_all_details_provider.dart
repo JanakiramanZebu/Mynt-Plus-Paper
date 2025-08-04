@@ -8,7 +8,8 @@ import 'package:mynt_plus/provider/core/default_change_notifier.dart';
 import 'package:mynt_plus/provider/fund_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-final profileAllDetailsProvider = ChangeNotifierProvider((ref) => ProfileProvider(ref));
+final profileAllDetailsProvider =
+    ChangeNotifierProvider((ref) => ProfileProvider(ref));
 
 class ProfileProvider extends DefaultChangeNotifier {
   final api = locator<ApiExporter>();
@@ -16,32 +17,27 @@ class ProfileProvider extends DefaultChangeNotifier {
   final Ref ref;
   ProfileProvider(this.ref);
 
-
-
   late ProfileAllDetails _clientAllDetails;
   ProfileAllDetails get clientAllDetails => _clientAllDetails;
 
-
-    final allDetailsSectionList = [
-      'Personal Info',
-      'Bank',
-      'Demat',
-      'Trading Preference',
-      'MTF',
-      'Annual Income',
-      'Nominee',
-      'Family Account',
-      'Closure',
-    ];
+  final allDetailsSectionList = [
+    'Personal Info',
+    'Bank',
+    'Demat',
+    'Trading Preference',
+    'MTF',
+    'Annual Income',
+    'Nominee',
+    'Family Account',
+    'Closure',
+  ];
 
   String _allDetailsSelectedSection = 'Personal Info';
   String get allDetailsSelectedSection => _allDetailsSelectedSection;
 
   set setAllDetailsSelectedSection(String selectedTab) {
-          _allDetailsSelectedSection=selectedTab;
-      }
-
-
+    _allDetailsSelectedSection = selectedTab;
+  }
 
 // On Personal Info Tab Section
   final TextEditingController newEmailController = TextEditingController();
@@ -51,26 +47,31 @@ class ProfileProvider extends DefaultChangeNotifier {
   final TextEditingController newMobOTPController = TextEditingController();
 
   final TextEditingController newAddressController = TextEditingController();
-  final TextEditingController newAddressPincodeController = TextEditingController();
-  final TextEditingController newAddressDistrictController = TextEditingController();
-  final TextEditingController newAddressStateController = TextEditingController();
-  final TextEditingController newAddressCountryController = TextEditingController();
-  final TextEditingController newAddressProofTypeController = TextEditingController();
+  final TextEditingController newAddressPincodeController =
+      TextEditingController();
+  final TextEditingController newAddressDistrictController =
+      TextEditingController();
+  final TextEditingController newAddressStateController =
+      TextEditingController();
+  final TextEditingController newAddressCountryController =
+      TextEditingController();
+  final TextEditingController newAddressProofTypeController =
+      TextEditingController();
 
 // On Bank Tab Section
   final TextEditingController newBankAccController = TextEditingController();
   final TextEditingController newBankIFSCController = TextEditingController();
   bool selectedBankTypeValue = false;
-  String? selectedBankProofTypeValue ;
+  String? selectedBankProofTypeValue;
 
 // On Annual Income Tab Section
-  final List<String>annualIncomeRangeList = [
-      'Below 1L',
-      '1L to 5L',
-      '5L to 10L',
-      '10L to 25L',
-      'Above 25L'
-    ];
+  final List<String> annualIncomeRangeList = [
+    'Below 1L',
+    '1L to 5L',
+    '5L to 10L',
+    '10L to 25L',
+    'Above 25L'
+  ];
   final int selectedAnnualIncomeRangeValue = 1;
   final TextEditingController newIncomeOTPController = TextEditingController();
 
@@ -81,114 +82,104 @@ class ProfileProvider extends DefaultChangeNotifier {
   final TextEditingController closureBOIDController = TextEditingController();
 
 // On family Account Tab Section
-  final TextEditingController newFamilyMemberIDController = TextEditingController();
-  final TextEditingController newFamilyRelationshipController = TextEditingController();
+  final TextEditingController newFamilyMemberIDController =
+      TextEditingController();
+  final TextEditingController newFamilyRelationshipController =
+      TextEditingController();
   final TextEditingController newFamilyPANController = TextEditingController();
   final TextEditingController newFamilyMobController = TextEditingController();
 
-
-String? _responseval = "" ;
+  String? _responseval = "";
   String? get responseval => _responseval;
 
-  String? _emilotpres = "" ;
+  String? _emilotpres = "";
   String? get emilotpres => _emilotpres;
 
-  String? _mobileotpo = "" ;
+  String? _mobileotpo = "";
   String? get mobileotp => _mobileotpo;
 
-  String? _mobileotpverres = "" ;
+  String? _mobileotpverres = "";
   String? get mobileotpverres => _mobileotpverres;
 
-  
-  String? _manualaddbank = "" ;
+  String? _manualaddbank = "";
   String? get manualaddbank => _manualaddbank;
 
-    String? _ddpiledgerbalace = "" ;
+  String? _ddpiledgerbalace = "";
   String? get ddpiledgerbalace => _ddpiledgerbalace;
 
-      String? _ddpiesignfile = "" ;
+  String? _ddpiesignfile = "";
   String? get ddpiesignfile => _ddpiesignfile;
 
-  String? _mtfenabrespoce = "" ;
+  String? _mtfenabrespoce = "";
   String? get mtfenabrespoce => _mtfenabrespoce;
 
-    String? _imcomeptsenres = "" ;
+  String? _imcomeptsenres = "";
   String? get imcomeptsenres => _imcomeptsenres;
 
-    String? _incomeotpverres = "" ;
+  String? _incomeotpverres = "";
   String? get incomeotpverres => _incomeotpverres;
 
-      String? _incomupdaqres = "" ;
+  String? _incomupdaqres = "";
   String? get incomupdaqres => _incomupdaqres;
 
-  String? _ifsccoderess = "" ;
+  String? _ifsccoderess = "";
   String? get ifsccoderess => _ifsccoderess;
 
-    String? _banksumbres = "" ;
+  String? _banksumbres = "";
   String? get banksumbres => _banksumbres;
 
-  
-    String? _familyaccress = "" ;
+  String? _familyaccress = "";
   String? get familyaccress => _familyaccress;
 
-Map<String, dynamic> _chackaccbalace = {};  
-Map<String, dynamic> get chackaccbalace => _chackaccbalace;
+  Map<String, dynamic> _chackaccbalace = {};
+  Map<String, dynamic> get chackaccbalace => _chackaccbalace;
   clearProfilePop(BuildContext context, String type) {
-    if(type == "email") {
+    if (type == "email") {
       _responseval = "";
       ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(content: Text("Some error occurred")),
-  );
+        SnackBar(content: Text("Some error occurred")),
+      );
     }
-    if(type == "emailotp"){
+    if (type == "emailotp") {
       _emilotpres = "";
     }
-      if(type == "mobile"){
+    if (type == "mobile") {
       _mobileotpo = "";
     }
 
-          if(type == "mobilotp"){
+    if (type == "mobilotp") {
       _mobileotpverres = "";
     }
 
-     if(type == "manbank"){
+    if (type == "manbank") {
       _manualaddbank = "";
     }
-      if(type == "ddpibalace"){
+    if (type == "ddpibalace") {
       _ddpiledgerbalace = "";
     }
-       if(type == "incomeotpres"){
+    if (type == "incomeotpres") {
       _imcomeptsenres = "";
     }
 
-    if(type == "bankifsc"){
+    if (type == "bankifsc") {
       _ifsccoderess = "";
     }
-    if(type == "accclose"){
+    if (type == "accclose") {
       _chackaccbalace = {};
     }
   }
 
+  validateChnageEmail() {}
 
-
-
-validateChnageEmail(){
-  
-}
-
-
-
-formateDataToDisplay(String data,int firstPart,int lastPart){
- if( data.length>1){
-  int remaining = data.length - lastPart;
-  return "${data.substring(0,firstPart)} ********* ${data.substring(remaining)}";
- }else{
-  return "";
- }
-  // profileprovider.clientAllDetails.bankData![index].bankAcNo?.length - 4 ;
-}
-
-
+  formateDataToDisplay(String data, int firstPart, int lastPart) {
+    if (data.length > 1) {
+      int remaining = data.length - lastPart;
+      return "${data.substring(0, firstPart)} ********* ${data.substring(remaining)}";
+    } else {
+      return "";
+    }
+    // profileprovider.clientAllDetails.bankData![index].bankAcNo?.length - 4 ;
+  }
 
 // void downloadFile(String url) {
 //    html.AnchorElement anchorElement =  new html.AnchorElement(href: url);
@@ -196,11 +187,12 @@ formateDataToDisplay(String data,int firstPart,int lastPart){
 //    anchorElement.click();
 // }
 
-
-void openInWebURL(BuildContext context,String urlArgs) async {
-   await ref.read(fundProvider).fetchHstoken(context);
-  debugPrint('$urlArgs  ==== ${pref.clientId} =====  ${ref.read(fundProvider).fundHstoken!.hstk}');
-    Uri uri = Uri.parse('https://profile.mynt.in/${urlArgs}/?sAccountId=${pref.clientId}&sToken=${ref.read(fundProvider).fundHstoken!.hstk}&src=app');
+  void openInWebURL(BuildContext context, String urlArgs) async {
+    await ref.read(fundProvider).fetchHstoken(context);
+    debugPrint(
+        '$urlArgs  ==== ${pref.clientId} =====  ${ref.read(fundProvider).fundHstoken!.hstk}');
+    Uri uri = Uri.parse(
+        'https://profile.mynt.in/${urlArgs}/?sAccountId=${pref.clientId}&sToken=${ref.read(fundProvider).fundHstoken!.hstk}&src=app');
     // debugPrint('$uri');
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
@@ -209,261 +201,269 @@ void openInWebURL(BuildContext context,String urlArgs) async {
     }
   }
 
+  // void openInWebURLtest(BuildContext context, String urlArgs) async {
+  //   await ref.read(fundProvider).fetchHstoken(context);
+  //   // debugPrint(
+  //   //     '$urlArgs  ==== ${pref.clientId} =====  ${ref.read(fundProvider).fundHstoken!.hstk}');
+  //   Uri uri = Uri.parse(
+  //       'http://192.168.5.107:8080/${urlArgs}/?sAccountId=${pref.clientId}&sToken=${ref.read(fundProvider).fundHstoken!.hstk}&type=email');
+  //   // debugPrint('$uri');
+  //   if (await canLaunchUrl(uri)) {
+  //     await launchUrl(uri, mode: LaunchMode.externalApplication);
+  //   } else {
+  //     throw 'Could not launch $uri';
+  //   }
+  // }
 
   Future getDetailsChangeCurrentStatus() async {
-    try {
-    }catch(e){}
-     notifyListeners();
-    }
-
+    try {} catch (e) {}
+    notifyListeners();
+  }
 
   Future fetchClientProfileAllDetails() async {
     try {
-        _clientAllDetails = await api.getClientProfileAllDetailsApi();
-    }catch(e){}
+      _clientAllDetails = await api.getClientProfileAllDetailsApi();
+    } catch (e) {}
+    notifyListeners();
+  }
+
+  Future emaileotpfun(String newEmail, String oldEmail, String clientName,
+      String dpcode) async {
+    try {
+      String response = await api.sendOTPtoChangeEmailApi(
+          newEmail, oldEmail, clientName, dpcode);
+      // _mobileotpo = response;
+      notifyListeners();
+
+      print("emaileotpfun ${response}");
+    } catch (e) {
+    } finally {
       notifyListeners();
     }
- 
-
-Future emaileotpfun(String newEmail,  String oldEmail , String clientName ,String dpcode) async {
-  try {
-    String response = await api.sendOTPtoChangeEmailApi(newEmail, oldEmail, clientName, dpcode);
-    // _mobileotpo = response;  
-    notifyListeners();
-
-    print("emaileotpfun ${response}");
-  } catch (e) {
-  } finally {
-    notifyListeners();
   }
-}
 
+  Future emailotpres(String otpres, String newemail) async {
+    try {
+      String response = await api.verifyOTPtoChangeEmailApi(otpres, newemail);
+      // _emilotpres = response;
+      notifyListeners();
 
-Future emailotpres(String otpres,  String newemail) async {
-  try {
-    String response = await api.verifyOTPtoChangeEmailApi(otpres, newemail);
-    // _emilotpres = response;  
-    notifyListeners();
-
-    print("object ${response}");
-  } catch (e) {
-  } finally {
-    notifyListeners();
+      print("object ${response}");
+    } catch (e) {
+    } finally {
+      notifyListeners();
+    }
   }
-}
 
+  Future mobileotpfun(
+      String newmo, String clemail, String oldmobilmo, fulldataprf) async {
+    try {
+      String response =
+          await api.mobileotpapifun(newmo, clemail, oldmobilmo, fulldataprf);
+      // _mobileotpo = response;
+      notifyListeners();
 
-Future mobileotpfun(String newmo,  String clemail , String oldmobilmo ,fulldataprf) async {
-  try {
-    String response = await api.mobileotpapifun(newmo, clemail , oldmobilmo,fulldataprf);
-    // _mobileotpo = response;  
-    notifyListeners();
-
-    print("mobileotpfun ${response}");
-  } catch (e) {
-    // debugPrint("$e");
-  } finally {
-    notifyListeners();
+      print("mobileotpfun ${response}");
+    } catch (e) {
+      // debugPrint("$e");
+    } finally {
+      notifyListeners();
+    }
   }
-}
 
-Future mobileotpverify(String newmo,  String mbotp , fulldataprf) async {
-  try {
-    String response = await api.mobileotpverify(newmo, mbotp , fulldataprf);
-    // _mobileotpverres = response;  
-    notifyListeners();
+  Future mobileotpverify(String newmo, String mbotp, fulldataprf) async {
+    try {
+      String response = await api.mobileotpverify(newmo, mbotp, fulldataprf);
+      // _mobileotpverres = response;
+      notifyListeners();
 
-    print("mobileotpverify ${response}");
-  } catch (e) {
-    // debugPrint("$e");
-  } finally {
-    notifyListeners();
+      print("mobileotpverify ${response}");
+    } catch (e) {
+      // debugPrint("$e");
+    } finally {
+      notifyListeners();
+    }
   }
-}
 
+  Future addmanbankverf(String newadd, String pincoderes, String dist,
+      String state, String county, String profty, fulldataprf, filepath) async {
+    try {
+      String response = await api.manaddbankapi(newadd, pincoderes, dist, state,
+          county, profty, fulldataprf, filepath);
+      // _manualaddbank = response;
+      notifyListeners();
 
-Future addmanbankverf(String newadd,  String pincoderes ,String dist,  String state ,String county,  String profty  ,fulldataprf, filepath) async {
-  try {
-    String response = await api.manaddbankapi(newadd, pincoderes , dist, state, county , profty ,fulldataprf , filepath);
-    // _manualaddbank = response;  
-    notifyListeners();
-
-    print("addmanbankverf ${response}");
-  } catch (e) {
-    // debugPrint("$e");
-  } finally {
-    notifyListeners();
+      print("addmanbankverf ${response}");
+    } catch (e) {
+      // debugPrint("$e");
+    } finally {
+      notifyListeners();
+    }
   }
-}
 
+  Future ddpiledgerbaapi() async {
+    try {
+      String response = await api.ledgerbalanceapi();
+      // _ddpiledgerbalace = response;
+      notifyListeners();
 
-Future ddpiledgerbaapi() async {
-  try {
-    String response = await api.ledgerbalanceapi();
-    // _ddpiledgerbalace = response;  
-    notifyListeners();
-
-    print("ddpiledgerbaapi ${response}");
-  } catch (e) {
-    // debugPrint("$e");
-  } finally {
-    notifyListeners();
+      print("ddpiledgerbaapi ${response}");
+    } catch (e) {
+      // debugPrint("$e");
+    } finally {
+      notifyListeners();
+    }
   }
-}
 
+  Future ddpifinalstep(fulldataprf) async {
+    try {
+      String response = await api.finalddpisubmitapi(fulldataprf);
+      // _ddpiesignfile = response;
+      notifyListeners();
 
-Future ddpifinalstep(fulldataprf) async {
-  try {
-    String response = await api.finalddpisubmitapi(fulldataprf);
-    // _ddpiesignfile = response;  
-    notifyListeners();
-
-    print("ddpifinalstep ${response}");
-  } catch (e) {
-    // debugPrint("$e");
-  } finally {
-    notifyListeners();
+      print("ddpifinalstep ${response}");
+    } catch (e) {
+      // debugPrint("$e");
+    } finally {
+      notifyListeners();
+    }
   }
-}
 
+  Future mtfenbprovi(fulldataprf) async {
+    try {
+      String response = await api.mtfenabapipage(fulldataprf);
+      // _mtfenabrespoce = response;
+      notifyListeners();
 
-Future mtfenbprovi(fulldataprf) async {
-  try {
-    String response = await api.mtfenabapipage(fulldataprf);
-    // _mtfenabrespoce = response;  
-    notifyListeners();
-
-    print("mtfenbprovi ${response}");
-  } catch (e) {
-    // debugPrint("$e");
-  } finally {
-    notifyListeners();
+      print("mtfenbprovi ${response}");
+    } catch (e) {
+      // debugPrint("$e");
+    } finally {
+      notifyListeners();
+    }
   }
-}
 
+  Future incomeotpsenpro(mobilno) async {
+    try {
+      String response = await api.incomeotesendapi(mobilno);
+      // _imcomeptsenres = response;
+      notifyListeners();
 
-Future incomeotpsenpro(mobilno) async {
-  try {
-    String response = await api.incomeotesendapi(mobilno);
-    // _imcomeptsenres = response;  
-    notifyListeners();
-
-    print("incomeotpsenpro ${response}");
-  } catch (e) {
-    // debugPrint("$e");
-  } finally {
-    notifyListeners();
+      print("incomeotpsenpro ${response}");
+    } catch (e) {
+      // debugPrint("$e");
+    } finally {
+      notifyListeners();
+    }
   }
-}
 
-Future incomeotpverpro(otpno,fulldataprf,chipval,file,proftye) async {
-  try {
-    String response = await api.incomeotpverfapi(otpno,fulldataprf,chipval,file,proftye);
-    // _incomeotpverres = response;  
-    notifyListeners();
+  Future incomeotpverpro(otpno, fulldataprf, chipval, file, proftye) async {
+    try {
+      String response = await api.incomeotpverfapi(
+          otpno, fulldataprf, chipval, file, proftye);
+      // _incomeotpverres = response;
+      notifyListeners();
 
-    print("incomeotpverpro ${response}");
-  } catch (e) {
-    // debugPrint("$e");
-  } finally {
-    notifyListeners();
+      print("incomeotpverpro ${response}");
+    } catch (e) {
+      // debugPrint("$e");
+    } finally {
+      notifyListeners();
+    }
   }
-}
 
+  Future incomupprov(
+      fulldataprf, String chipval, String filepath, String proftye) async {
+    try {
+      String response =
+          await api.incomeupdateaapi(fulldataprf, chipval, filepath, proftye);
+      // _incomupdaqres = response;
+      notifyListeners();
 
-Future incomupprov(fulldataprf,String chipval,   String filepath ,String proftye) async {
-  try {
-    String response = await api.incomeupdateaapi(fulldataprf, chipval,    filepath , proftye);
-    // _incomupdaqres = response;  
-    notifyListeners();
-
-    print("incomupprov ${response}");
-  } catch (e) {
-    // debugPrint("$e");
-  } finally {
-    notifyListeners();
+      print("incomupprov ${response}");
+    } catch (e) {
+      // debugPrint("$e");
+    } finally {
+      notifyListeners();
+    }
   }
-}
 
+  Future ifscapiporov(String ifsccode) async {
+    try {
+      String response = await api.ifsccodecheckapi(ifsccode);
+      // _ifsccoderess = response;
+      notifyListeners();
 
-Future ifscapiporov(String ifsccode) async {
-  try {
-    String response = await api.ifsccodecheckapi(ifsccode);
-    // _ifsccoderess = response;  
-    notifyListeners();
-
-    print("ifscapiporov ${response}");
-  } catch (e) {
-    // debugPrint("$e");
-  } finally {
-    notifyListeners();
+      print("ifscapiporov ${response}");
+    } catch (e) {
+      // debugPrint("$e");
+    } finally {
+      notifyListeners();
+    }
   }
-}
 
+  Future addbankprovui(
+      String banacc,
+      String bankifc,
+      String filepath,
+      String profftype,
+      String setpri,
+      String accty,
+      fulldataprf,
+      bankdata) async {
+    try {
+      String response = await api.addbankapi(banacc, bankifc, filepath,
+          profftype, setpri, accty, fulldataprf, bankdata);
+      // _banksumbres = response;
+      notifyListeners();
 
-Future addbankprovui(String banacc, String bankifc, String filepath, String profftype , String setpri , String accty , fulldataprf,bankdata) async {
-  try {
-    String response = await api.addbankapi( banacc,  bankifc,  filepath,  profftype ,  setpri ,  accty , fulldataprf,bankdata);
-    // _banksumbres = response;  
-    notifyListeners();
-
-    print("addbankprovui ${response}");
-  } catch (e) {
-    // debugPrint("$e");
-  } finally {
-    notifyListeners();
+      print("addbankprovui ${response}");
+    } catch (e) {
+      // debugPrint("$e");
+    } finally {
+      notifyListeners();
+    }
   }
-}
 
+  Future addfamilaccprov(String menid, String relation, String menpan,
+      String mobilno, fulldataprf) async {
+    try {
+      String response = await api.addfamilaccapi(
+          menid, relation, menpan, mobilno, fulldataprf);
+      // _banksumbres = response;
+      notifyListeners();
 
-Future addfamilaccprov(String menid, String relation, String menpan, String mobilno ,  fulldataprf) async {
-  try {
-    String response = await api.addfamilaccapi( menid,  relation,  menpan,  mobilno ,  fulldataprf);
-    // _banksumbres = response;  
-    notifyListeners();
-
-    print("addfamilaccprov ${response}");
-  } catch (e) {
-    // debugPrint("$e");
-  } finally {
-    notifyListeners();
+      print("addfamilaccprov ${response}");
+    } catch (e) {
+      // debugPrint("$e");
+    } finally {
+      notifyListeners();
+    }
   }
-}
 
-Future closeaccnalprov(String resaqon, fulldataprf) async {
-  try {
-    dynamic _chackaccbalace = await api.closeacbalapi(resaqon, fulldataprf);  
-    notifyListeners();
-    print("_banksumbres ${_chackaccbalace}");
-  } catch (e) {
-    debugPrint("$e");
-  } finally {
-    notifyListeners();
+  Future closeaccnalprov(String resaqon, fulldataprf) async {
+    try {
+      dynamic _chackaccbalace = await api.closeacbalapi(resaqon, fulldataprf);
+      notifyListeners();
+      print("_banksumbres ${_chackaccbalace}");
+    } catch (e) {
+      debugPrint("$e");
+    } finally {
+      notifyListeners();
+    }
   }
-}
 
-Future closeaccfinalspro(String dpid, String boid, String filepath, String reason, fulldataprf, bankdata) async {
-  try {
-    dynamic _chackaccClosureResp = await api.acccloserapi(dpid,boid,filepath,reason, fulldataprf,bankdata);  
-    notifyListeners();
-    print("_banksumbres ${_chackaccClosureResp}");
-  } catch (e) {
-    debugPrint("$e");
-  } finally {
-    notifyListeners();
+  Future closeaccfinalspro(String dpid, String boid, String filepath,
+      String reason, fulldataprf, bankdata) async {
+    try {
+      dynamic _chackaccClosureResp = await api.acccloserapi(
+          dpid, boid, filepath, reason, fulldataprf, bankdata);
+      notifyListeners();
+      print("_banksumbres ${_chackaccClosureResp}");
+    } catch (e) {
+      debugPrint("$e");
+    } finally {
+      notifyListeners();
+    }
   }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
 }

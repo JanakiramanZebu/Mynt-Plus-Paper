@@ -224,7 +224,7 @@ mixin MutualFundApi on ApiCore {
 
       final res2 = {"client_code": "${prefs.clientId}"};
       final json = jsonDecode((res.body));
-      
+
       // log("MF orderBook ==>${json}");
 
       return MFOrderBookModel.fromJson(json as Map<String, dynamic>);
@@ -284,7 +284,7 @@ mixin MutualFundApi on ApiCore {
     }
   }
 
-  pausesipapi(orderno, notext, freqty, nxtdate,scode) async {
+  pausesipapi(orderno, notext, freqty, nxtdate, scode) async {
     // print("pausee ordermo ${orderno} ,siprefno ${notext}");
     try {
       final uri = Uri.parse(apiLinks.mfsippausenew);
@@ -407,6 +407,8 @@ mixin MutualFundApi on ApiCore {
             "placed_by": prefs.clientId,
             "source": "MOB"
           }));
+
+      print("MF X-sip PlaceOrder ==>${res.body}");
 
       final json = jsonDecode((res.body));
 

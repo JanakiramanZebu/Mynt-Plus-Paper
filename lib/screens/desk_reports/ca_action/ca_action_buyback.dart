@@ -327,11 +327,7 @@ class _CABuybackState extends State<CABuyback> with TickerProviderStateMixin {
                 ),
                 const ListDivider(),
                 datalist.isEmpty
-                    ? const Center(
-                        child: Padding(
-                        padding: EdgeInsets.only(top: 60),
-                        child: NoDataFound(),
-                      ))
+                    ? const Expanded(child: Center(child: NoDataFound()))
                     : Expanded(
                         child: SingleChildScrollView(
                         child: ListView.separated(
@@ -405,13 +401,17 @@ class _CABuybackState extends State<CABuyback> with TickerProviderStateMixin {
                                           MainAxisAlignment.spaceBetween,
                                       children: [
                                         SizedBox(
-                                          width: screenWidth * 0.40,
+                                          width: MediaQuery.of(context)
+                                                  .size
+                                                  .width *
+                                              0.6,
                                           child: TextWidget.subText(
                                             text: "${dataval?.name}",
                                             color: theme.isDarkMode
                                                 ? colors.textPrimaryDark
                                                 : colors.textPrimaryLight,
                                             textOverflow: TextOverflow.ellipsis,
+                                            maxLines: 2,
                                             theme: theme.isDarkMode,
                                           ),
                                         ),

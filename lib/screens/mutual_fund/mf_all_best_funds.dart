@@ -234,8 +234,8 @@ class _SaveTaxesScreenState extends ConsumerState<SaveTaxesScreen>
                           });
                         },
                         itemBuilder: (context) => [
-                           PopupMenuItem(
-                              value: '1Y Returns', 
+                          PopupMenuItem(
+                              value: '1Y Returns',
                               child: TextWidget.paraText(
                                 text: '1Y Returns',
                                 color: theme.isDarkMode
@@ -244,20 +244,20 @@ class _SaveTaxesScreenState extends ConsumerState<SaveTaxesScreen>
                                 theme: theme.isDarkMode,
                                 fw: 3,
                               )),
-                           PopupMenuItem(
-                              value: '2Y Returns', 
+                          PopupMenuItem(
+                              value: '3Y Returns',
                               child: TextWidget.paraText(
-                                text: '2Y Returns',
+                                text: '3Y Returns',
                                 color: theme.isDarkMode
                                     ? colors.textSecondaryDark
                                     : colors.textSecondaryLight,
                                 theme: theme.isDarkMode,
                                 fw: 3,
                               )),
-                           PopupMenuItem(
-                              value: '3Y Returns', 
+                          PopupMenuItem(
+                              value: '5Y Returns',
                               child: TextWidget.paraText(
-                                text: '3Y Returns',
+                                text: '5Y Returns',
                                 color: theme.isDarkMode
                                     ? colors.textSecondaryDark
                                     : colors.textSecondaryLight,
@@ -286,7 +286,8 @@ class _SaveTaxesScreenState extends ConsumerState<SaveTaxesScreen>
                   child: TabBarView(
                     controller: _tabController,
                     children: tabTitles.map((tabTitle) {
-                      return buildFundList(tabTitle, mf, theme, context);
+                      return buildFundList(
+                          tabTitle, mf, theme, context, selectedReturn);
                     }).toList(),
                   ),
                 ),
@@ -326,8 +327,8 @@ class _SaveTaxesScreenState extends ConsumerState<SaveTaxesScreen>
           duration: const Duration(milliseconds: 250),
           curve: Curves.easeInOut,
           height: 2,
-          width: isActive ? (tabWidth - 12) : 0, 
-          margin: const EdgeInsets.only(top: 6), 
+          width: isActive ? (tabWidth - 12) : 0,
+          margin: const EdgeInsets.only(top: 6),
           decoration: BoxDecoration(
             color: colors.colorBlue,
             borderRadius: BorderRadius.circular(2),
@@ -338,7 +339,7 @@ class _SaveTaxesScreenState extends ConsumerState<SaveTaxesScreen>
   }
 
   Widget buildFundList(String selectedTab, MFProvider mf, ThemesProvider theme,
-      BuildContext context) {
+      BuildContext context, String selectedReturn) {
     dynamic newlisst;
 
     // Get the appropriate basket based on selected tab
@@ -369,11 +370,33 @@ class _SaveTaxesScreenState extends ConsumerState<SaveTaxesScreen>
       newlisst = null;
     }
 
-    // Sort by 3-year data if available
+    // Sort by selected return period
     final sortedList = newlisst != null ? List.from(newlisst) : null;
     if (sortedList != null) {
-      sortedList.sort((a, b) => (double.tryParse(b.s3Year ?? "0") ?? 0)
-          .compareTo(double.tryParse(a.s3Year ?? "0") ?? 0));
+      sortedList.sort((a, b) {
+        String? aValue, bValue;
+
+        switch (selectedReturn) {
+          case '1Y Returns':
+            aValue = a.s1Year;
+            bValue = b.s1Year;
+            break;
+          case '3Y Returns':
+            aValue = a.s3Year;
+            bValue = b.s3Year;
+            break;
+          case '5Y Returns':
+            aValue = a.s5Year;
+            bValue = b.s5Year;
+            break;
+          default:
+            aValue = a.s3Year;
+            bValue = b.s3Year;
+        }
+
+        return (double.tryParse(bValue ?? "0") ?? 0)
+            .compareTo(double.tryParse(aValue ?? "0") ?? 0);
+      });
     }
 
     if (sortedList == null || sortedList.isEmpty) {
@@ -390,12 +413,26 @@ class _SaveTaxesScreenState extends ConsumerState<SaveTaxesScreen>
         final isin = item.iSIN;
         final type = item.schemeType ?? "";
         final subType = item.subType ?? "";
-        final threeYearData = item.s3Year ?? "0.00";
 
-        // Parse 3-year performance data safely
+        // Get the appropriate return data based on selected period
+        String returnData;
+        switch (selectedReturn) {
+          case '1Y Returns':
+            returnData = item.s1Year ?? "0.00";
+            break;
+          case '3Y Returns':
+            returnData = item.s3Year ?? "0.00";
+            break;
+          case '5Y Returns':
+            returnData = item.s5Year ?? "0.00";
+            break;
+          default:
+            returnData = item.s3Year ?? "0.00";
+        }
+
+        // Parse performance data safely
         final performanceValue =
-            double.tryParse(threeYearData.isEmpty ? "0.00" : threeYearData) ??
-                0.0;
+            double.tryParse(returnData.isEmpty ? "0.00" : returnData) ?? 0.0;
 
         // Determine if performance is positive or negative
         final isPositive = performanceValue >= 0;
@@ -498,7 +535,7 @@ class _SaveTaxesScreenState extends ConsumerState<SaveTaxesScreen>
                 color: theme.isDarkMode
                     ? colors.textPrimaryDark
                     : colors.textPrimaryLight,
-                text: "$threeYearData%",
+                text: "$returnData%",
                 textOverflow: TextOverflow.ellipsis,
                 theme: theme.isDarkMode,
                 fw: 3,
