@@ -80,6 +80,7 @@ class _IpoCloseOrderDetailsState extends ConsumerState<IpoCloseOrderDetails> {
                                       color: theme.isDarkMode
                                           ? colors.colorWhite
                                           : colors.colorBlack,
+                                      maxLines: 2,
                                       fw: 0,
                                       textOverflow: TextOverflow.ellipsis,
                                     ),

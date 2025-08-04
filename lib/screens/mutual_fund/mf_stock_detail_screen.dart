@@ -55,13 +55,11 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
 
   @override
   void initState() {
-     
     super.initState();
   }
 
   @override
   void dispose() {
-    
     super.dispose();
   }
 
@@ -88,7 +86,8 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
               backgroundColor: Colors.transparent,
               body: Container(
                 decoration: BoxDecoration(
-                  color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                  color:
+                      theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
                   borderRadius: const BorderRadius.only(
                     topLeft: Radius.circular(16),
                     topRight: Radius.circular(16),
@@ -109,7 +108,9 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
                                   children: [
                                     Container(
                                       decoration: BoxDecoration(
-                                        color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                                        color: theme.isDarkMode
+                                            ? colors.colorBlack
+                                            : colors.colorWhite,
                                         borderRadius: BorderRadius.circular(8),
                                       ),
                                       child: Padding(
@@ -118,7 +119,8 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
                                           children: [
                                             _buildFundHeader(theme, mfData),
                                             const SizedBox(height: 16),
-                                            _buildBottomActionButtons(context, theme, mfData),
+                                            _buildBottomActionButtons(
+                                                context, theme, mfData),
                                           ],
                                         ),
                                       ),
@@ -134,9 +136,12 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
                                 child: Column(
                                   children: [
                                     MFOverview(mfStockData: widget.mfStockData),
-                                    MFPerformance(mfStockData: widget.mfStockData),
-                                    MFAllocation(mfStockData: widget.mfStockData),
-                                    MFSchemeInfo(mfStockData: widget.mfStockData),
+                                    MFPerformance(
+                                        mfStockData: widget.mfStockData),
+                                    MFAllocation(
+                                        mfStockData: widget.mfStockData),
+                                    MFSchemeInfo(
+                                        mfStockData: widget.mfStockData),
                                   ],
                                 ),
                               ),
@@ -182,65 +187,72 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
                           final isin = widget.mfStockData.iSIN;
                           final schemeCode = widget.mfStockData.schemeCode;
 
-                            if (widget.mfStockData.sIPFLAG == "Y" &&
-                                isin != null &&
-                                schemeCode != null) {
-                              await mfData.invertfun(isin, schemeCode,context);
-                            }
-                            Navigator.pushNamed(context, Routes.mforderScreen,
-                                arguments: widget.mfStockData);
-                            mfData.orderchangetitle("One-time");
-                            mfData.orderpagetite("SDS");
-                            mfData.chngOrderType("One-time");
+                          if (widget.mfStockData.sIPFLAG == "Y" &&
+                              isin != null &&
+                              schemeCode != null) {
+                            await mfData.invertfun(isin, schemeCode, context);
+                            String amt =
+                                widget.mfStockData.minimumPurchaseAmount ?? "0";
+                            mfData.invAmt.text = amt.split('.').first;
                           }
-                          
-                        },
-                        child: mfData.singleloader == false ? TextWidget.subText(
-                          text: "One-time",
-                          theme: false,
-                          color: colors.colorWhite,
-                          fw: 2,
-                          align: TextAlign.center,
-                        ) : const SizedBox(
-                                    height: 15,
-                                    width: 15,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2.0,
-                                      valueColor: AlwaysStoppedAnimation<Color>(
-                                          Color.fromARGB(99, 48, 48, 48)),
-                                      backgroundColor:
-                                          Color.fromARGB(255, 255, 255, 255),
-                                    ),
-                                  )),
-                  ))),
-          const SizedBox(width: 10),
-          Expanded(
-              child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 10,
-                  ),
-                  child: SizedBox(
-                    width: MediaQuery.of(context).size.width,
-                    height: 45,
-                    child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                            elevation: 0,
-                            shadowColor: Colors.transparent,
-                            backgroundColor: theme.isDarkMode
-                                ? colors.primaryDark
-                                : colors.primaryLight,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(4),
+                          Navigator.pushNamed(context, Routes.mforderScreen,
+                              arguments: widget.mfStockData);
+                          mfData.orderchangetitle("One-time");
+                          mfData.orderpagetite("SDS");
+                          mfData.chngOrderType("One-time");
+                        }
+                      },
+                      child: mfData.singleloader == false
+                          ? TextWidget.subText(
+                              text: "One-time",
+                              theme: false,
+                              color: colors.colorWhite,
+                              fw: 2,
+                              align: TextAlign.center,
+                            )
+                          : const SizedBox(
+                              height: 15,
+                              width: 15,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.0,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                    Color.fromARGB(99, 48, 48, 48)),
+                                backgroundColor:
+                                    Color.fromARGB(255, 255, 255, 255),
+                              ),
                             )),
-                        onPressed: () async {
-                           if (mfData.singleloader == false) {
+                ))),
+        const SizedBox(width: 10),
+        Expanded(
+            child: Container(
+                padding: const EdgeInsets.symmetric(
+                  vertical: 10,
+                ),
+                child: SizedBox(
+                  width: MediaQuery.of(context).size.width,
+                  height: 45,
+                  child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                          elevation: 0,
+                          shadowColor: Colors.transparent,
+                          backgroundColor: theme.isDarkMode
+                              ? colors.primaryDark
+                              : colors.primaryLight,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(4),
+                          )),
+                      onPressed: () async {
+                        if (mfData.singleloader == false) {
                           final isin = widget.mfStockData.iSIN;
                           final schemeCode = widget.mfStockData.schemeCode;
 
                           if (widget.mfStockData.sIPFLAG == "Y" &&
                               isin != null &&
                               schemeCode != null) {
-                            await mfData.invertfun(isin, schemeCode,context);
+                            await mfData.invertfun(isin, schemeCode, context);
+                            String amt =
+                                widget.mfStockData.minimumPurchaseAmount ?? "0";
+                            mfData.installmentAmt.text = amt.split('.').first;
                           }
                           Navigator.pushNamed(context, Routes.mforderScreen,
                               arguments: widget.mfStockData);

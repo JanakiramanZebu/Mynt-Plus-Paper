@@ -202,7 +202,7 @@ class _OpenOrderItem extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            _buildTopRow(),
+            _buildTopRow(context),
             const SizedBox(height: 16),
             _buildBottomRow(),
           ],
@@ -211,12 +211,12 @@ class _OpenOrderItem extends StatelessWidget {
     );
   }
 
-  Widget _buildTopRow() {
+  Widget _buildTopRow(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         SizedBox(
-          width: 250,
+          width: MediaQuery.of(context).size.width * 0.6,
           child: TextWidget.subText(
             text: order.companyName.toString(),
             theme: false,
@@ -224,6 +224,7 @@ class _OpenOrderItem extends StatelessWidget {
                 ? colors.textPrimaryDark
                 : colors.textPrimaryLight,
             textOverflow: TextOverflow.ellipsis,
+            maxLines: 2,
           ),
         ),
         Row(

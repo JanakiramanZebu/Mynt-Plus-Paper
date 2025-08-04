@@ -85,7 +85,7 @@ class _CloseOrderItem extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            _buildTopRow(),
+            _buildTopRow(context),
             const SizedBox(height: 16),
             _buildBottomRow(),
           ],
@@ -94,18 +94,19 @@ class _CloseOrderItem extends StatelessWidget {
     );
   }
 
-  Widget _buildTopRow() {
+  Widget _buildTopRow(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         SizedBox(
-          width: 250,
+          width: MediaQuery.of(context).size.width * 0.6,
           child: TextWidget.subText(
             text: order.companyName.toString(),
             theme: false,
             color: theme.isDarkMode
                 ? colors.textPrimaryDark
                 : colors.textPrimaryLight,
+            maxLines: 2,
             textOverflow: TextOverflow.ellipsis,
           ),
         ),

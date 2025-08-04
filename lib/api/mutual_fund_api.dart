@@ -409,6 +409,8 @@ mixin MutualFundApi on ApiCore {
             "source": "MOB"
           }));
 
+      print("MF X-sip PlaceOrder ==>${res.body}");
+
       final json = jsonDecode((res.body));
 
       log("MF X-sip PlaceOrder ==>$json");

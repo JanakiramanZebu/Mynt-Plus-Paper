@@ -257,9 +257,9 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
                                   fw: 3,
                                 )),
                             PopupMenuItem(
-                                value: '2Y Returns',
+                                value: '3Y Returns',
                                 child: TextWidget.paraText(
-                                  text: '2Y Returns',
+                                  text: '3Y Returns',
                                   color: theme.isDarkMode
                                       ? colors.textSecondaryDark
                                       : colors.textSecondaryLight,
@@ -267,9 +267,9 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
                                   fw: 3,
                                 )),
                             PopupMenuItem(
-                                value: '3Y Returns',
+                                value: '5Y Returns',
                                 child: TextWidget.paraText(
-                                  text: '3Y Returns',
+                                  text: '5Y Returns',
                                   color: theme.isDarkMode
                                       ? colors.textSecondaryDark
                                       : colors.textSecondaryLight,
@@ -298,7 +298,8 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
                     child: TabBarView(
                       controller: _tabController,
                       children: tabTitles.map((tabTitle) {
-                        return _buildFundList(tabTitle, mfData, theme, context);
+                        return _buildFundList(
+                            tabTitle, mfData, theme, context, selectedReturn);
                       }).toList(),
                     ),
                   ),
@@ -348,15 +349,35 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
   }
 
   Widget _buildFundList(String selectedTab, dynamic mfData,
-      ThemesProvider theme, BuildContext context) {
-    // Sort the list based on s3Year in descending order
+      ThemesProvider theme, BuildContext context, String selectedReturn) {
+    // Sort the list based on selected return period
     final sortedList = mfData.catnewlist?.toList();
 
     if (sortedList != null) {
       sortedList.sort((a, b) {
-        final aValue = double.tryParse(a.s3Year ?? '0.00') ?? 0.00;
-        final bValue = double.tryParse(b.s3Year ?? '0.00') ?? 0.00;
-        return bValue.compareTo(aValue); // Sort in descending order
+        String? aValue, bValue;
+
+        switch (selectedReturn) {
+          case '1Y Returns':
+            aValue = a.s1Year;
+            bValue = b.s1Year;
+            break;
+          case '3Y Returns':
+            aValue = a.s3Year;
+            bValue = b.s3Year;
+            break;
+          case '5Y Returns':
+            aValue = a.s5Year;
+            bValue = b.s5Year;
+            break;
+          default:
+            aValue = a.s3Year;
+            bValue = b.s3Year;
+        }
+
+        final aDouble = double.tryParse(aValue ?? '0.00') ?? 0.00;
+        final bDouble = double.tryParse(bValue ?? '0.00') ?? 0.00;
+        return bDouble.compareTo(aDouble); // Sort in descending order
       });
     }
 
@@ -371,13 +392,13 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
         final item = sortedList[index];
         if (item == null) return const SizedBox.shrink();
 
-        return _buildListItem(context, item, theme, mfData);
+        return _buildListItem(context, item, theme, mfData, selectedReturn);
       },
     );
   }
 
   Widget _buildListItem(BuildContext context, dynamic item,
-      ThemesProvider theme, dynamic mfData) {
+      ThemesProvider theme, dynamic mfData, String selectedReturn) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -496,6 +517,19 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
             ),
           )),
     );
+  }
+
+  String _getReturnValue(dynamic item, String selectedReturn) {
+    switch (selectedReturn) {
+      case '1Y Returns':
+        return item.s1Year ?? "0.00";
+      case '3Y Returns':
+        return item.s3Year ?? "0.00";
+      case '5Y Returns':
+        return item.s5Year ?? "0.00";
+      default:
+        return item.s3Year ?? "0.00";
+    }
   }
 
   String _formatReturns(String? returns) {

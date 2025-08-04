@@ -952,7 +952,7 @@ class MFProvider extends DefaultChangeNotifier {
     await fetchMFMandateDetail();
     // fetchBankDetail();
     await fetchUpiDetail('', context);
-    await chngMandate("Lumpsum");
+    await chngMandate(mandateId);
     _singleloader = false;
   }
 
@@ -2313,125 +2313,124 @@ class MFProvider extends DefaultChangeNotifier {
           _triggerfromMF = true;
           notifyListeners();
         }
-      }else{
-                        // Navigator.pop(context);
+      } else {
+        // Navigator.pop(context);
 
         // if (_upiApiresponse!.data!.responsestring!.contains('Could not validate payment create request due to')) {
-          // showModalBottomSheet(
-          //     context: context,
-          //     shape: const RoundedRectangleBorder(
-          //       borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-          //     ),
-          //     isScrollControlled: true,
-          //     builder: (context) {
-          //       return Wrap(
-          //         children: [
-          //           const SizedBox(
-          //             height: 24,
-          //           ),
-          //           Container(
-          //             padding: const EdgeInsets.symmetric(horizontal: 16),
-          //             decoration: BoxDecoration(
-          //                 borderRadius: BorderRadius.circular(16),
-          //                 color: colors.colorWhite,
-          //                 boxShadow: const [
-          //                   BoxShadow(
-          //                       color: Color(0xff999999),
-          //                       blurRadius: 4.0,
-          //                       offset: Offset(2.0, 0.0))
-          //                 ]),
-          //             child: Column(
-          //               crossAxisAlignment: CrossAxisAlignment.start,
-          //               mainAxisSize: MainAxisSize.min,
-          //               children: [
-          //                 Container(
-          //                   alignment: Alignment.center,
-          //                   child: Column(
-          //                     children: [
-          //                       const CustomDragHandler(),
-          //                       Icon(
-          //                         Icons.cancel_rounded,
-          //                         //
-          //                         color: colors.kColorRedButton,
-          //                         size: 70,
-          //                       ),
-          //                       const SizedBox(
-          //                         height: 16,
-          //                       ),
-          //                       TextWidget.subText(
-          //                         text: "UPI ID not liked with bank",
-          //                         theme: false,
-          //                         color: colors.textPrimaryLight,
-          //                       ),
-          //                       const SizedBox(
-          //                         height: 5,
-          //                       ),
-          //                       TextWidget.paraText(
-          //                         text: "Payment trigger fail",
-          //                         theme: false,
-          //                         color: colors.textSecondaryLight,
-          //                       ),
-          //                       const SizedBox(
-          //                         height: 10,
-          //                       ),
-          //                       // TextWidget.custmText(
-          //                       //     text: "",
-          //                       //     theme: false,
-          //                       //     color:  colors.colorBlack,
-          //                       //     fs: 40),
-          //                       const SizedBox(
-          //                         height: 10,
-          //                       ),
-          //                       // TextWidget.paraText(
-          //                       //   text: "${widget.upiData?["datetime"]}",
-          //                       //   theme: false,
-          //                       //   color: colors.textSecondaryLight,
-          //                       // ),
-          //                     ],
-          //                   ),
-          //                 ),
-          //                 Padding(
-          //                   padding: const EdgeInsets.symmetric(horizontal: 8),
-          //                   child: SizedBox(
-          //                     width: MediaQuery.of(context).size.width,
-          //                     child: ElevatedButton(
-          //                         style: ElevatedButton.styleFrom(
-          //                           elevation: 0,
-          //                           minimumSize: const Size(0, 40),
-          //                           backgroundColor: colors.primaryLight,
-          //                           shape: RoundedRectangleBorder(
-          //                             borderRadius: BorderRadius.circular(5),
-          //                           ),
-          //                         ),
-          //                         onPressed: () {
-          //                           // Clear the amount text field
-          //                           Navigator.pop(context);
-          //                           FocusScope.of(context).unfocus();
-          //                         },
-          //                         child: TextWidget.subText(
-          //                             text: 'Done',
-          //                             theme: false,
-          //                             color: colors.colorWhite,
-          //                             fw: 2)),
-          //                   ),
-          //                 ),
-          //                 const SizedBox(
-          //                   height: 20,
-          //                 ),
-          //               ],
-          //             ),
-          //           ),
-          //         ],
-          //       );
-          //     });
+        // showModalBottomSheet(
+        //     context: context,
+        //     shape: const RoundedRectangleBorder(
+        //       borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        //     ),
+        //     isScrollControlled: true,
+        //     builder: (context) {
+        //       return Wrap(
+        //         children: [
+        //           const SizedBox(
+        //             height: 24,
+        //           ),
+        //           Container(
+        //             padding: const EdgeInsets.symmetric(horizontal: 16),
+        //             decoration: BoxDecoration(
+        //                 borderRadius: BorderRadius.circular(16),
+        //                 color: colors.colorWhite,
+        //                 boxShadow: const [
+        //                   BoxShadow(
+        //                       color: Color(0xff999999),
+        //                       blurRadius: 4.0,
+        //                       offset: Offset(2.0, 0.0))
+        //                 ]),
+        //             child: Column(
+        //               crossAxisAlignment: CrossAxisAlignment.start,
+        //               mainAxisSize: MainAxisSize.min,
+        //               children: [
+        //                 Container(
+        //                   alignment: Alignment.center,
+        //                   child: Column(
+        //                     children: [
+        //                       const CustomDragHandler(),
+        //                       Icon(
+        //                         Icons.cancel_rounded,
+        //                         //
+        //                         color: colors.kColorRedButton,
+        //                         size: 70,
+        //                       ),
+        //                       const SizedBox(
+        //                         height: 16,
+        //                       ),
+        //                       TextWidget.subText(
+        //                         text: "UPI ID not liked with bank",
+        //                         theme: false,
+        //                         color: colors.textPrimaryLight,
+        //                       ),
+        //                       const SizedBox(
+        //                         height: 5,
+        //                       ),
+        //                       TextWidget.paraText(
+        //                         text: "Payment trigger fail",
+        //                         theme: false,
+        //                         color: colors.textSecondaryLight,
+        //                       ),
+        //                       const SizedBox(
+        //                         height: 10,
+        //                       ),
+        //                       // TextWidget.custmText(
+        //                       //     text: "",
+        //                       //     theme: false,
+        //                       //     color:  colors.colorBlack,
+        //                       //     fs: 40),
+        //                       const SizedBox(
+        //                         height: 10,
+        //                       ),
+        //                       // TextWidget.paraText(
+        //                       //   text: "${widget.upiData?["datetime"]}",
+        //                       //   theme: false,
+        //                       //   color: colors.textSecondaryLight,
+        //                       // ),
+        //                     ],
+        //                   ),
+        //                 ),
+        //                 Padding(
+        //                   padding: const EdgeInsets.symmetric(horizontal: 8),
+        //                   child: SizedBox(
+        //                     width: MediaQuery.of(context).size.width,
+        //                     child: ElevatedButton(
+        //                         style: ElevatedButton.styleFrom(
+        //                           elevation: 0,
+        //                           minimumSize: const Size(0, 40),
+        //                           backgroundColor: colors.primaryLight,
+        //                           shape: RoundedRectangleBorder(
+        //                             borderRadius: BorderRadius.circular(5),
+        //                           ),
+        //                         ),
+        //                         onPressed: () {
+        //                           // Clear the amount text field
+        //                           Navigator.pop(context);
+        //                           FocusScope.of(context).unfocus();
+        //                         },
+        //                         child: TextWidget.subText(
+        //                             text: 'Done',
+        //                             theme: false,
+        //                             color: colors.colorWhite,
+        //                             fw: 2)),
+        //                   ),
+        //                 ),
+        //                 const SizedBox(
+        //                   height: 20,
+        //                 ),
+        //               ],
+        //             ),
+        //           ),
+        //         ],
+        //       );
+        //     });
         // }else{
         //        ScaffoldMessenger.of(context)
         //       .showSnackBar(warningMessage(context, _upiApiresponse!.data!.responsestring!));
         // // }
-       ispaymentcalled = false; 
-      // Navigator.pop(context);
+        ispaymentcalled = false;
+        // Navigator.pop(context);
 
-       
         // if (_upiApiresponse!.data!.responsestring!.contains('Could not validate payment create request due to')) {
         //   ScaffoldMessenger.of(context).showSnackBar(
         //     warningMessage(context, 'UPI ID not liked with bank'),
@@ -3452,4 +3451,3 @@ class MFProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 }
-

@@ -18,13 +18,13 @@ import '../../sharedWidget/loader_ui.dart';
 import '../portfolio_screens/mfHoldings/mf_holding_screen.dart';
 import 'order_single_page.dart';
 
-class MfOrderBookScreen extends StatefulWidget {
+class MfOrderBookScreen extends ConsumerStatefulWidget {
   const MfOrderBookScreen({super.key});
   @override
-  State<MfOrderBookScreen> createState() => _MfOrderBookScreen();
+  ConsumerState<MfOrderBookScreen> createState() => _MfOrderBookScreen();
 }
 
-class _MfOrderBookScreen extends State<MfOrderBookScreen>
+class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final tablistitems = [
@@ -47,6 +47,9 @@ class _MfOrderBookScreen extends State<MfOrderBookScreen>
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(mfProvider).fetchMfOrderbook(context);
+    });
     _tabController = TabController(length: 2, vsync: this, initialIndex: 0);
   }
 
@@ -125,19 +128,24 @@ class _MfOrderBookScreen extends State<MfOrderBookScreen>
       MFProvider mforderbook, ThemesProvider theme, BuildContext context) {
     return TransparentLoaderScreen(
       isLoading: mforderbook.mforderloader,
-      child: SingleChildScrollView(
-        child: Column(
-          children: [
-            if (mforderbook.mfOrderbookfilter == "All" &&
-                mforderbook.mflumpsumorderbook?.data != null &&
-                mforderbook.mflumpsumorderbook?.stat != "Not Ok")
-              _buildOrderList(mforderbook, theme, context)
-            else
-              const Padding(
-                padding: EdgeInsets.only(top: 300),
-                child: Center(child: NoDataFound()),
-              ),
-          ],
+      child: RefreshIndicator(
+        onRefresh: () async {
+          await mforderbook.fetchMfOrderbook(context);
+        },
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              if (mforderbook.mfOrderbookfilter == "All" &&
+                  mforderbook.mflumpsumorderbook?.data != null &&
+                  mforderbook.mflumpsumorderbook?.stat != "Not Ok")
+                _buildOrderList(mforderbook, theme, context)
+              else
+                const Padding(
+                  padding: EdgeInsets.only(top: 300),
+                  child: Center(child: NoDataFound()),
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -193,11 +201,12 @@ class _MfOrderBookScreen extends State<MfOrderBookScreen>
               }
             },
             child: ListTile(
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,vertical: 8
-                ),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 title: Padding(
-                  padding: const EdgeInsets.only(bottom: 8.0,),
+                  padding: const EdgeInsets.only(
+                    bottom: 8.0,
+                  ),
                   child: Container(
                     margin: EdgeInsets.only(
                       right: MediaQuery.of(context).size.width * 0.1,
@@ -280,15 +289,17 @@ class _MfOrderBookScreen extends State<MfOrderBookScreen>
                           horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         color: orderData.status == "ALLOCATED"
-                              ? colors.profit.withOpacity(0.1)
-                              : orderData.status == "REJECTED" ||
-                                      orderData.status == "CANCELLED" || orderData.status == "PAYMENT DECLINED"
-                                  ? colors.loss.withOpacity(0.1)
-                                  : orderData.status ==
-                                          inProgressStatuses
-                                              .contains(orderData.status)
-                                      ? colors.pending.withOpacity(0.1)
-                                      : colors.pending.withOpacity(0.1), // default fallback
+                            ? colors.profit.withOpacity(0.1)
+                            : orderData.status == "REJECTED" ||
+                                    orderData.status == "CANCELLED" ||
+                                    orderData.status == "PAYMENT DECLINED"
+                                ? colors.loss.withOpacity(0.1)
+                                : orderData.status ==
+                                        inProgressStatuses
+                                            .contains(orderData.status)
+                                    ? colors.pending.withOpacity(0.1)
+                                    : colors.pending
+                                        .withOpacity(0.1), // default fallback
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: TextWidget.paraText(
@@ -297,7 +308,8 @@ class _MfOrderBookScreen extends State<MfOrderBookScreen>
                           color: orderData.status == "ALLOCATED"
                               ? colors.profit
                               : orderData.status == "REJECTED" ||
-                                      orderData.status == "CANCELLED" || orderData.status == "PAYMENT DECLINED"
+                                      orderData.status == "CANCELLED" ||
+                                      orderData.status == "PAYMENT DECLINED"
                                   ? colors.loss
                                   : orderData.status ==
                                           inProgressStatuses

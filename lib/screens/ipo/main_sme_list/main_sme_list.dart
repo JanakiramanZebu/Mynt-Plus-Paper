@@ -322,13 +322,14 @@ class _IPOListItem extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SizedBox(
-                width: 250,
+                width: MediaQuery.of(context).size.width * 0.6,
                 child: TextWidget.subText(
                   text: toTitleCase(ipo.name ?? ""),
                   theme: false,
                   color: theme.isDarkMode
                       ? colors.textPrimaryDark
                       : colors.textPrimaryLight,
+                  maxLines: 2,
                   textOverflow: TextOverflow.ellipsis,
                 ),
               ),
