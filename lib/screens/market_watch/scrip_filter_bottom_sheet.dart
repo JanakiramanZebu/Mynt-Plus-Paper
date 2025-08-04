@@ -193,7 +193,7 @@ class _WatchlistsBottomSheetState
                                       ? colors.textSecondaryDark
                                       : colors.textSecondaryLight,
                               theme: theme.isDarkMode,
-                              fw: currentSortType == "scrip" ? 0 : null),
+                              fw: currentSortType == "scrip" ? 2 : null),
                         )
                       ],
                     ),
@@ -249,7 +249,7 @@ class _WatchlistsBottomSheetState
                                       ? colors.textSecondaryDark
                                       : colors.textSecondaryLight,
                               theme: theme.isDarkMode,
-                              fw: currentSortType == "price" ? 0 : null),
+                              fw: currentSortType == "price" ? 2 : null),
                         )
                       ],
                     ),
@@ -295,7 +295,7 @@ class _WatchlistsBottomSheetState
                                       ? colors.textSecondaryDark
                                       : colors.textSecondaryLight,
                               theme: theme.isDarkMode,
-                              fw: currentSortType == "perchng" ? 0 : null),
+                              fw: currentSortType == "perchng" ? 2 : null),
                         )
                       ],
                     ),

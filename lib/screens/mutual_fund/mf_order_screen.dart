@@ -834,7 +834,7 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                                             color: theme.isDarkMode
                                                 ? colors.primaryDark
                                                 : colors.primaryLight,
-                                            fw: 0),
+                                            fw: 2),
                                         Icon(
                                           Icons.keyboard_arrow_down_outlined,
                                           size: 20,

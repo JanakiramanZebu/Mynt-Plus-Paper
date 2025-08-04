@@ -42,13 +42,7 @@ class _ContractCalendarScreenState extends State<ContractCalendarScreen> {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(16),
                 color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-                boxShadow: const [
-                  BoxShadow(
-                    color: Color(0xff999999),
-                    blurRadius: 4.0,
-                    offset: Offset(2.0, 0.0),
-                  )
-                ],
+                
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -62,6 +56,7 @@ class _ContractCalendarScreenState extends State<ContractCalendarScreen> {
                         TextWidget.titleText(
                           text: "Contract Note",
                           theme: theme.isDarkMode,
+                            color : theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
                           fw: 1,
                         ),
                         Material(
@@ -85,9 +80,7 @@ class _ContractCalendarScreenState extends State<ContractCalendarScreen> {
                               child: Icon(
                                 Icons.close_rounded,
                                 size: 22,
-                                color: theme.isDarkMode
-                                    ? const Color(0xffBDBDBD)
-                                    : colors.colorGrey,
+                                color: colors.colorGrey,
                               ),
                             ),
                           ),

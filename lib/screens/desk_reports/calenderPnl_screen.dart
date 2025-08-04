@@ -186,7 +186,7 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                             color: theme.isDarkMode
                                 ? colors.secondaryDark
                                 : colors.secondaryLight,
-                            fw: 0),
+                            fw: 2),
                         tabs: ledgerprovider.availableSegments
                             .map((e) => Tab(text: e))
                             .toList(),
@@ -466,6 +466,7 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                                                                             TextOverflow.ellipsis,
                                                                         theme: theme
                                                                             .isDarkMode,
+                                                                        fw: 2,
                                                                       ),
                                                                     ),
                                                                   ),

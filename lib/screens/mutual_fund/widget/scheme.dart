@@ -172,13 +172,13 @@ class MFSchemeInfo extends ConsumerWidget {
                       color: colors.primaryLight,
                       fontSize: 12,
                       theme: false,
-                      fw:0
+                      fw:2
                     ),
                     lessStyle: TextWidget.textStyle(
                       color: colors.primaryLight,
                       fontSize: 12,
                       theme: false,
-                      fw:0
+                      fw:2
                     ),
                     colorClickableText: const Color(0xff0037B7),
                     trimMode: TrimMode.Line,

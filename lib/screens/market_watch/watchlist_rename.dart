@@ -55,23 +55,18 @@ class _WatchListRenameState extends ConsumerState<WatchListRename> {
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
-          color: theme.isDarkMode ? Colors.black : Colors.white,
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0xff999999),
-              blurRadius: 4.0,
-              offset: Offset(2.0, 0.0),
-            )
-          ],
+          color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+         
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            const CustomDragHandler(),
+            // const CustomDragHandler(),
             Container(
-              padding: const EdgeInsets.only(left: 16.0, right: 8),
+            padding: const EdgeInsets.symmetric(
+                        vertical: 8.0, horizontal: 16.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.center,

@@ -104,6 +104,7 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                                 ? colors.secondaryDark
                                                 : colors.secondaryLight,
                                             theme: theme.isDarkMode,
+                                            fw: 2,
                                           ),
                                         ]))),
                               )
@@ -194,6 +195,10 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                                 ? colors.secondaryDark
                                                 : colors.secondaryLight,
                                         theme: theme.isDarkMode,
+                                        fw: widget.currentWLName !=
+                                                watchlist[index]
+                                            ? null
+                                            : 2,
                                       ),
                                     ),
                                     trailing: watchlist.length > 1
@@ -577,10 +582,13 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                         fontSize: 14,
                                         color: isSelected
                                             ? (theme.isDarkMode
-                                                ? colors.colorWhite
-                                                : colors.colorBlack)
-                                            : colors.colorGrey,
+                                                ? colors.secondaryDark
+                                                : colors.secondaryLight)
+                                            : theme.isDarkMode
+                                                ? colors.textSecondaryDark
+                                                : colors.textSecondaryLight,
                                         theme: theme.isDarkMode,
+                                        fw: isSelected ? 2 : null,
                                       ),
                                     ),
                                   ),

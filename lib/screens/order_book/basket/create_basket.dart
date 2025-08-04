@@ -113,28 +113,24 @@ class _CreateBasketState extends ConsumerState<CreateBasket> {
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
-          color: theme.isDarkMode ? Colors.black : Colors.white,
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0xff999999),
-              blurRadius: 4.0,
-              offset: Offset(2.0, 0.0),
-            )
-          ],
+          color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+         
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            const CustomDragHandler(),
+            // const CustomDragHandler(),
             Container(
-              padding: const EdgeInsets.only(left: 16.0, right: 8),
+              padding: const EdgeInsets.symmetric(
+                        vertical: 8.0, horizontal: 16.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   TextWidget.titleText(
                     text: 'Create Basket',
+                    color : theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
                     theme: theme.isDarkMode,
                     fw: 1,
                   ),
@@ -158,9 +154,8 @@ class _CreateBasketState extends ConsumerState<CreateBasket> {
                         child: Icon(
                           Icons.close_rounded,
                           size: 22,
-                          color: theme.isDarkMode
-                              ? const Color(0xffBDBDBD)
-                              : colors.colorGrey,
+                          color: 
+                               colors.colorGrey,
                         ),
                       ),
                     ),
@@ -199,15 +194,19 @@ class _CreateBasketState extends ConsumerState<CreateBasket> {
                       ],
                       style: TextWidget.textStyle(
                         fontSize: 14,
+                        color: theme.isDarkMode
+                            ? colors.textPrimaryDark
+                            : colors.textPrimaryLight,
                         theme: theme.isDarkMode,
                       ),
                       decoration: InputDecoration(
                         hintText: "Enter basket name",
-                        hintStyle: TextWidget.textStyle(
+                       hintStyle: TextWidget.textStyle(
                           fontSize: 14,
-                          color: const Color(0xff666666),
                           theme: theme.isDarkMode,
-                          fw: 0,
+                          color: theme.isDarkMode
+                              ? colors.textPrimaryDark
+                              : colors.textPrimaryLight,
                         ),
                         contentPadding: const EdgeInsets.symmetric(
                             horizontal: 16, vertical: 14),
@@ -236,7 +235,7 @@ class _CreateBasketState extends ConsumerState<CreateBasket> {
                         text: errorText!,
                         color: colors.darkred,
                         theme: theme.isDarkMode,
-                        fw: 0,
+                       
                       ),
                     ),
                   ],
@@ -263,18 +262,16 @@ class _CreateBasketState extends ConsumerState<CreateBasket> {
                             )
                           : TextWidget.subText(
                               text: "Create",
-                              color: !theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : colors.colorBlack,
+                              color: colors.colorWhite
+                                 ,
                               theme: theme.isDarkMode,
-                              fw: 0,
+                              fw: 2,
                             ),
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 24),
           ],
         ),
       ),

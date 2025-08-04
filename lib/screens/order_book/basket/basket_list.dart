@@ -808,7 +808,7 @@ class BasketScripList extends ConsumerWidget {
                                                             .textPrimaryLight,
                                                     textOverflow:
                                                         TextOverflow.ellipsis),
-                                                const SizedBox(width: 4),
+                                                // const SizedBox(width: 4),
                                                 TextWidget.subText(
                                                     text:
                                                         "${basket.bsktScripList[index]['option']} ",
@@ -1033,7 +1033,7 @@ class BasketScripList extends ConsumerWidget {
                       ),
                     ),
                   Container(
-                height: 80,
+                height: 70,
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color:
@@ -1124,11 +1124,11 @@ class BasketScripList extends ConsumerWidget {
       case 'rejected':
       case 'canceled':
       case 'failed':
-        return colors.darkred;
+        return colors.loss;
       case 'open':
       case 'partial':
       case 'trigger_pending':
-        return Colors.orange;
+        return  colors.pending;
       default:
         return colors.colorGrey;
     }

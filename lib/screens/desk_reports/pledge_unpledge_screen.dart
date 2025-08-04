@@ -662,7 +662,7 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                                                                       .secondaryDark
                                                                   : colors
                                                                       .secondaryLight,
-                                                              fw: 3,
+                                                              fw: 2,
                                                             ),
                                                           ),
                                                         ),
