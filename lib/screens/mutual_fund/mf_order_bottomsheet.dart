@@ -779,9 +779,11 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                             //           data: ''),
                                             //     ),
                                             //   );
-                                            // } else 
+                                            // } else
                                             if (isNetBanking) {
                                               // Net Banking Success – open WebView
+                                              // Navigator.pop(context);
+
                                               final url = Uri.parse(
                                                   'https://v3.mynt.in/mfapi${upiResponse.file!}');
                                               Navigator.of(context).push(
@@ -797,6 +799,8 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                                         onPressed: () {
                                                           Navigator.pop(
                                                               context);
+                                                              Navigator.pop(
+                                                              context);
                                                           mfOrder
                                                               .threeSecondTimer
                                                               ?.cancel();
@@ -808,6 +812,8 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                                     body: WillPopScope(
                                                       onWillPop: () async {
                                                         Navigator.pop(context);
+                                                        Navigator.pop(
+                                                              context);
                                                         mfOrder.threeSecondTimer
                                                             ?.cancel();
                                                         mfOrder.autoPopTimer

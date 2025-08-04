@@ -52,7 +52,9 @@ class Data {
   String? changePercent;
   String? closeEnded;
   String? corpus;
-  String? currentNAV;
+  String? currentNAV; 
+  String? fiveYear;
+  
   String? exitLoad;
   String? expenseRatio;
   String? factSheetDate;
@@ -89,6 +91,9 @@ class Data {
   String? weekLowDate;
   String? ytm;
   bool?isAdd;
+  String? AUM; 
+  String? amccode; 
+
 
   Data(
       {this.d10Year,
@@ -124,6 +129,7 @@ class Data {
       this.closeEnded,
       this.corpus,
       this.currentNAV,
+      this.fiveYear,
       this.exitLoad,
       this.expenseRatio,
       this.factSheetDate,
@@ -158,7 +164,10 @@ class Data {
       this.weekLowDate,
       this.ytm,
       this.overview1,
-      this.overview2,this.isAdd});
+      this.overview2,this.isAdd
+      ,this.AUM
+      ,this.amccode
+      });
 
   Data.fromJson(Map<String, dynamic> json) {
     d10Year = json['10Year'].toString();
@@ -210,7 +219,10 @@ class Data {
     changePercent = json['changePercent'].toString();
     closeEnded = json['closeEnded'].toString();
     corpus = json['corpus'].toString();
+    AUM = json['AUM'].toString();
+    amccode = json['AMC_Code'].toString();
     currentNAV = json['currentNAV'].toString();
+    fiveYear = json['5Year'].toString();
     exitLoad = json['exitLoad'].toString();
     expenseRatio = json['expenseRatio'].toString();
     factSheetDate = json['factSheetDate'].toString();
@@ -306,6 +318,9 @@ class Data {
     data['closeEnded'] = closeEnded;
     data['corpus'] = corpus;
     data['currentNAV'] = currentNAV;
+    data['5Year'] = fiveYear;
+    data['AUM'] = AUM;
+    data['AMC_Code'] = amccode;
     data['exitLoad'] = exitLoad;
     data['expenseRatio'] = expenseRatio;
     data['factSheetDate'] = factSheetDate;

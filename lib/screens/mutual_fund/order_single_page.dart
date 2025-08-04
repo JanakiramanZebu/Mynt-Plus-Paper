@@ -122,7 +122,7 @@ class _mforderdetscreen extends State<mforderdetscreen>
                                           onWillPop: () async =>
                                               mfdata.ispaymentcalled != true,
                                           child: MfUPIProcessingScreen(
-                                            data: '',
+                                            data: mfdata.mforderdet?.data![0].orderId,
                                           ),
                                         ),
                                       );
@@ -141,7 +141,7 @@ class _mforderdetscreen extends State<mforderdetscreen>
                                           onWillPop: () async =>
                                               mfdata.ispaymentcalled != true,
                                           child: MfPaymentRespAlert(
-                                            upiData: mfdata.upiApiresponse!.data!.toJson(),
+                                            upiData: mfdata.upiApiresponse?.emsg == '' ? mfdata.upiApiresponse!.data!.toJson() : mfdata.upiApiresponse!.toJson() ,
                                             conditionval : 'reinitiateerror'
                                           ),
                                         ),

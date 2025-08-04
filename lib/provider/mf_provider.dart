@@ -2290,13 +2290,13 @@ class MFProvider extends DefaultChangeNotifier {
     });
 
     // Start 1-minute auto pop timer
-    _autoPopTimer = Timer(const Duration(minutes: 1), () {
-      _threeSecondTimer?.cancel(); // Stop the repeating timer
-      if (Navigator.of(context).canPop()) {
-        Navigator.of(context).pop(); // Auto pop after 1 minute
-        _triggerfromMF = false;
-      }
-    });
+    // _autoPopTimer = Timer(const Duration(minutes: 1), () {
+    //   _threeSecondTimer?.cancel(); // Stop the repeating timer
+    //   if (Navigator.of(context).canPop()) {
+    //     Navigator.of(context).pop(); // Auto pop after 1 minute
+    //     _triggerfromMF = false;
+    //   }
+    // });
   }
 
   Future upipaymenttrigger(
@@ -2727,7 +2727,7 @@ class MFProvider extends DefaultChangeNotifier {
       if ((_statusCheckUpi != null) &&
           (_statusCheckUpi!.status == 'PAYMENT REJECTED' ||
               _statusCheckUpi!.status == 'PAYMENT COMPLETED')) {
-        setterformftrigger(false);
+        setterformftrigger(false);  
         if (context.mounted) {
           // Navigator.pop(context);
           // showModalBottomSheet(
@@ -3367,9 +3367,10 @@ class MFProvider extends DefaultChangeNotifier {
 
       _redemptionData = await api.getMFRedemption(scheme, qty);
       if (_redemptionData!.stat == "Ok") {
+        
         fetchMfOrderbook(context);
         ScaffoldMessenger.of(context)
-            .showSnackBar(successMessage(context, "${_redemptionData!.msg}"));
+            .showSnackBar(successMessage(context, "${_redemptionData!.remarks}"));
         Navigator.pop(context);
       } else {
         redemptionOrderError = _redemptionData!.emsg;

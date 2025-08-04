@@ -297,7 +297,7 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
           children: [
             CircleAvatar(
               backgroundImage: NetworkImage(
-                "https://v3.mynt.in/mfapi/static/images/mf/${amcCode ?? 'default'}.png",
+                "https://v3.mynt.in/mfapi/static/images/mf/${mfData.factSheetDataModel?.data?.amccode ?? 'default'}.png",
               ),
             ),
             const SizedBox(width: 8),
