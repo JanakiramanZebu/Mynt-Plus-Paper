@@ -95,7 +95,9 @@ class _BondsOrderbookMainScreenState
           child: TextWidget.subText(
             text: title,
             theme: theme.isDarkMode,
-            color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+            color: theme.isDarkMode
+                ? colors.textPrimaryDark
+                : colors.textPrimaryLight,
             fw: 0,
           ),
         ),

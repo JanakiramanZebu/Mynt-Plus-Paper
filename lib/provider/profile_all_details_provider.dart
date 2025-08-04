@@ -6,6 +6,7 @@ import 'package:mynt_plus/locator/preference.dart';
 import 'package:mynt_plus/models/client_profile_all_details/profile_all_details_model.dart';
 import 'package:mynt_plus/provider/core/default_change_notifier.dart';
 import 'package:mynt_plus/provider/fund_provider.dart';
+import 'package:mynt_plus/screens/profile_screen/in_app_webview_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 final profileAllDetailsProvider =
@@ -201,19 +202,22 @@ class ProfileProvider extends DefaultChangeNotifier {
     }
   }
 
-  // void openInWebURLtest(BuildContext context, String urlArgs) async {
-  //   await ref.read(fundProvider).fetchHstoken(context);
-  //   // debugPrint(
-  //   //     '$urlArgs  ==== ${pref.clientId} =====  ${ref.read(fundProvider).fundHstoken!.hstk}');
-  //   Uri uri = Uri.parse(
-  //       'http://192.168.5.107:8080/${urlArgs}/?sAccountId=${pref.clientId}&sToken=${ref.read(fundProvider).fundHstoken!.hstk}&type=email');
-  //   // debugPrint('$uri');
-  //   if (await canLaunchUrl(uri)) {
-  //     await launchUrl(uri, mode: LaunchMode.externalApplication);
-  //   } else {
-  //     throw 'Could not launch $uri';
-  //   }
-  // }
+  void openInWebURLtest(BuildContext context, String urlArgs) async {
+    await ref.read(fundProvider).fetchHstoken(context);
+
+    // debugPrint(
+    //     '$urlArgs  ==== ${pref.clientId} =====  ${ref.read(fundProvider).fundHstoken!.hstk}');
+    String url =
+        'http://192.168.5.107:8080/${urlArgs}/?uid=${pref.clientId}&token=${pref.token}&type=email';
+    debugPrint('weburl ::: $url');
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => InAppWebViewScreen(url: url),
+      ),
+    );
+  }
 
   Future getDetailsChangeCurrentStatus() async {
     try {} catch (e) {}

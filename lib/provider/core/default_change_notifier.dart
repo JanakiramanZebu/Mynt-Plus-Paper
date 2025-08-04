@@ -6,6 +6,7 @@ abstract class DefaultChangeNotifier extends ChangeNotifier {
   bool fundisLoad = false;
   bool _disposed = false;
   bool fundLoading = false;
+  bool orderLoad = false;
 
   /// Flag indicating if this notifier has been disposed
   bool get disposed => _disposed;
@@ -27,6 +28,11 @@ abstract class DefaultChangeNotifier extends ChangeNotifier {
   // ignore: avoid_positional_boolean_parameters
   void toggleLoad(bool on) {
     isLoad = on;
+    notifyListeners();
+  }
+
+  void toggleOrderLoad(bool on) {
+    orderLoad = on;
     notifyListeners();
   }
 

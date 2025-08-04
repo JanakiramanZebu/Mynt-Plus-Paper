@@ -701,6 +701,7 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                                 //     : '${widget.mfData.faceValue}',
                                 hintStyle: textStyle(const Color(0xff666666),
                                     15, FontWeight.w400),
+                                keyboardType: TextInputType.number,
                                 inputFormate: [
                                   FilteringTextInputFormatter.digitsOnly
                                 ],

@@ -372,56 +372,56 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                                                             child: Row(
                                                               mainAxisAlignment:
                                                                   MainAxisAlignment
-                                                                      .spaceBetween,
+                                                                      .end,
                                                               children: [
-                                                                Padding(
-                                                                  padding:
-                                                                      const EdgeInsets
-                                                                          .only(
-                                                                          right:
-                                                                              10),
-                                                                  child: Row(
-                                                                    children: [
-                                                                      Material(
-                                                                        color: Colors
-                                                                            .transparent,
-                                                                        shape:
-                                                                            const CircleBorder(),
-                                                                        clipBehavior:
-                                                                            Clip.hardEdge,
-                                                                        child:
-                                                                            InkWell(
-                                                                          customBorder:
-                                                                              const CircleBorder(),
-                                                                          splashColor: theme.isDarkMode
-                                                                              ? colors.splashColorDark
-                                                                              : colors.splashColorLight,
-                                                                          highlightColor: theme.isDarkMode
-                                                                              ? colors.highlightDark
-                                                                              : colors.highlightLight,
-                                                                          onTap:
-                                                                              () {
-                                                                            Future.delayed(const Duration(milliseconds: 150),
-                                                                                () {
-                                                                              ledgerprovider.showProfiossSearch(true);
-                                                                            });
-                                                                          },
-                                                                          child:
-                                                                              Padding(
-                                                                            padding:
-                                                                                const EdgeInsets.all(8.0),
-                                                                            child:
-                                                                                SvgPicture.asset(
-                                                                              assets.searchIcon,
-                                                                              color: colors.textPrimaryLight,
-                                                                              width: 18,
-                                                                            ),
-                                                                          ),
-                                                                        ),
-                                                                      ),
-                                                                    ],
-                                                                  ),
-                                                                ),
+                                                                // Padding(
+                                                                //   padding:
+                                                                //       const EdgeInsets
+                                                                //           .only(
+                                                                //           right:
+                                                                //               10),
+                                                                //   child: Row(
+                                                                //     children: [
+                                                                //       Material(
+                                                                //         color: Colors
+                                                                //             .transparent,
+                                                                //         shape:
+                                                                //             const CircleBorder(),
+                                                                //         clipBehavior:
+                                                                //             Clip.hardEdge,
+                                                                //         child:
+                                                                //             InkWell(
+                                                                //           customBorder:
+                                                                //               const CircleBorder(),
+                                                                //           splashColor: theme.isDarkMode
+                                                                //               ? colors.splashColorDark
+                                                                //               : colors.splashColorLight,
+                                                                //           highlightColor: theme.isDarkMode
+                                                                //               ? colors.highlightDark
+                                                                //               : colors.highlightLight,
+                                                                //           onTap:
+                                                                //               () {
+                                                                //             Future.delayed(const Duration(milliseconds: 150),
+                                                                //                 () {
+                                                                //               ledgerprovider.showProfiossSearch(true);
+                                                                //             });
+                                                                //           },
+                                                                //           child:
+                                                                //               Padding(
+                                                                //             padding:
+                                                                //                 const EdgeInsets.all(8.0),
+                                                                //             child:
+                                                                //                 SvgPicture.asset(
+                                                                //               assets.searchIcon,
+                                                                //               color: colors.textPrimaryLight,
+                                                                //               width: 18,
+                                                                //             ),
+                                                                //           ),
+                                                                //         ),
+                                                                //       ),
+                                                                //     ],
+                                                                //   ),
+                                                                // ),
                                                                 Material(
                                                                   color: Colors
                                                                       .transparent,
