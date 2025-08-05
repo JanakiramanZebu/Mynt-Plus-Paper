@@ -3905,12 +3905,9 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                         style: ElevatedButton.styleFrom(
                                           padding: const EdgeInsets.symmetric(vertical: 15),
                                           backgroundColor:
-                                              // orderType == "SIP"
-                                              //     ? theme.isDarkMode
-                                              //         ? colors.primary
-                                              //         : colors.primary
-                                              //     :
-                                              isBuy! ? colors.primary : colors.tertiary,
+                                              (widget.isBasket == "Basket" || widget.isBasket == "BasketEdit" || widget.isBasket == "BasketMode")
+                                                  ? colors.primary // Use primary color for basket mode
+                                                  : isBuy! ? colors.primary : colors.tertiary,
                                           // shape: const StadiumBorder()
                                         ),
                                         child: orderProvide.orderloader
@@ -3921,7 +3918,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                     CircularProgressIndicator(strokeWidth: 2, color: Color(0xffffffff)),
                                               )
                                             : Text(
-                                                (widget.isBasket == "Basket" || widget.isBasket == "BasketEdit")
+                                                (widget.isBasket == "Basket" || widget.isBasket == "BasketEdit" || widget.isBasket == "BasketMode")
                                                     ? widget.isBasket == "BasketEdit"
                                                         ? "Edit to Basket"
                                                         : "Add to Basket"
@@ -4692,45 +4689,77 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
 
     List scripList = data[bsktName] ?? [];
 
-    // Check if basket already has 20 items
-    if (scripList.length >= 20) {
+    // Calculate splits needed for current order
+    List<int> splitQuantities = [];
+    final freezeQty = frezQty;
+    final orderProv = ref.read(orderProvider);
+    final frezQtyOrderSliceMaxLimit = orderProv.frezQtyOrderSliceMaxLimit;
+    
+    if (widget.scripInfo.frzqty != null && quantity > freezeQty) {
+      // Calculate number of full splits and remainder
+      final fullSplits = quantity ~/ freezeQty; // Integer division
+      final remainder = quantity % freezeQty;
+      
+      // Add full splits
+      for (int i = 0; i < fullSplits; i++) {
+        splitQuantities.add(freezeQty);
+      }
+      
+      // Add remainder if exists
+      if (remainder > 0) {
+        splitQuantities.add(remainder);
+      }
+    } else {
+      // No split needed
+      splitQuantities.add(quantity);
+    }
+
+    // Check if total orders in basket would exceed limit
+    int currentBasketOrders = scripList.length; // Each item in basket counts as 1 order
+    int newOrders = splitQuantities.length;
+    
+    if (currentBasketOrders + newOrders > frezQtyOrderSliceMaxLimit) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: const Text("Basket limit reached. Please create a new basket as you are exceeding the 20 item limit."),
+        content: Text("Cannot add to basket. Total orders would be ${currentBasketOrders + newOrders}, which exceeds the maximum limit of $frezQtyOrderSliceMaxLimit orders."),
         backgroundColor: colors.darkred,
         duration: const Duration(seconds: 3),
       ));
-      return; // Exit the function without adding the script
+      return; // Exit the function without adding to basket
     }
 
-    scripList.add({
-      "dname": "${widget.scripInfo.dname}",
-      "token": widget.scripInfo.token,
-      "date": curDate,
-      "amo": _afterMarketOrder ? "Yes" : "",
-      "blprc": orderType == "CO - BO" ? stopLossCtrl.text : '',
-      "bpprc": orderType == "CO - BO" && _isBracketOrderEnabled ? targetCtrl.text : '',
-      "dscqty": discQtyCtrl.text,
-      "exch": widget.scripInfo.exch!,
-      "prc": ordPrice,
-      "prctype": orderInput.prcType,
-      "prd": orderInput.orderType,
-      "ordType": orderInput.orderType == "I"
-          ? "MIS"
-          : orderInput.orderType == "C"
-              ? "CNC"
-              : orderInput.orderType == "M"
-                  ? "NRML"
-                  : orderInput.orderType == "H"
-                      ? "CO"
-                      : "BO",
-      "qty": qtyCtrl.text,
-      "ret": validityType,
-      "trailprc": '',
-      "trantype": isBuy! ? 'B' : 'S',
-      "trgprc": priceType == "SL Limit" || priceType == "SL MKT" ? triggerPriceCtrl.text : "",
-      "tsym": widget.scripInfo.tsym!,
-      "mktProt": priceType == "Market" || priceType == "SL MKT" ? mktProtCtrl.text : ''
-    });
+    // Add each split as separate entry to basket
+    for (int splitQty in splitQuantities) {
+      scripList.add({
+        "dname": "${widget.scripInfo.dname}",
+        "token": widget.scripInfo.token,
+        "frzqty": widget.scripInfo.frzqty?.toString() ?? "0",
+        "date": curDate,
+        "amo": _afterMarketOrder ? "Yes" : "",
+        "blprc": orderType == "CO - BO" ? stopLossCtrl.text : '',
+        "bpprc": orderType == "CO - BO" && _isBracketOrderEnabled ? targetCtrl.text : '',
+        "dscqty": discQtyCtrl.text,
+        "exch": widget.scripInfo.exch!,
+        "prc": ordPrice,
+        "prctype": orderInput.prcType,
+        "prd": orderInput.orderType,
+        "ordType": orderInput.orderType == "I"
+            ? "MIS"
+            : orderInput.orderType == "C"
+                ? "CNC"
+                : orderInput.orderType == "M"
+                    ? "NRML"
+                    : orderInput.orderType == "H"
+                        ? "CO"
+                        : "BO",
+        "qty": splitQty.toString(), // Use the split quantity instead of original quantity
+        "ret": validityType,
+        "trailprc": '',
+        "trantype": isBuy! ? 'B' : 'S',
+        "trgprc": priceType == "SL Limit" || priceType == "SL MKT" ? triggerPriceCtrl.text : "",
+        "tsym": widget.scripInfo.tsym!,
+        "mktProt": priceType == "Market" || priceType == "SL MKT" ? mktProtCtrl.text : ''
+      });
+    }
 
     data.addAll({bsktName: scripList});
 
@@ -4763,7 +4792,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
     await ref.read(orderProvider).getBasketName();
 
     // Ensure WebSocket subscription for the updated basket
-    final orderProv = ref.read(orderProvider);
+    // final orderProv = ref.read(orderProvider);
     if (orderProv.selectedBsktName == bsktName) {
       // Re-subscribe to ensure new items get real-time updates
       await orderProv.chngBsktName(bsktName, context, true);

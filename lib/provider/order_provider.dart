@@ -2257,7 +2257,7 @@ class OrderProvider extends DefaultChangeNotifier {
     }
   }
 
-  addToBasket(String basketName, Map<String, dynamic> basketItem) async {
+  addToBasket(String basketName, Map<String, dynamic> basketItem, {BuildContext? context}) async {
     try {
       print("=== DEBUG ADD TO BASKET ===");
       print("Adding to basket: $basketName");
@@ -2281,8 +2281,64 @@ class OrderProvider extends DefaultChangeNotifier {
       List currentScripts = data[basketName] ?? [];
       print("Current scripts count: ${currentScripts.length}");
       
-      // Add the new item to the basket
-      currentScripts.add(basketItem);
+      // Check basket limit (20 items max)
+      if (currentScripts.length >= 20) {
+        if (context != null) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: const Text("Basket limit reached. Cannot add more than 20 items to a basket."),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ));
+        }
+        return false; // Return false to indicate failure
+      }
+      
+      // Calculate splits needed for the new item
+      final currentQty = int.parse(basketItem['qty'].toString());
+      final currentFrzQty = basketItem['frzqty'] != null ? int.parse(basketItem['frzqty'].toString()) : null;
+      
+      List<Map<String, dynamic>> itemsToAdd = [];
+      
+      if (currentFrzQty != null && currentQty > currentFrzQty) {
+        // Calculate number of full splits and remainder
+        final fullSplits = currentQty ~/ currentFrzQty; // Integer division
+        final remainder = currentQty % currentFrzQty;
+        
+        // Add full splits
+        for (int i = 0; i < fullSplits; i++) {
+          Map<String, dynamic> splitItem = Map.from(basketItem);
+          splitItem['qty'] = currentFrzQty.toString();
+          itemsToAdd.add(splitItem);
+        }
+        
+        // Add remainder if exists
+        if (remainder > 0) {
+          Map<String, dynamic> remainderItem = Map.from(basketItem);
+          remainderItem['qty'] = remainder.toString();
+          itemsToAdd.add(remainderItem);
+        }
+      } else {
+        // No split needed
+        itemsToAdd.add(basketItem);
+      }
+      
+      // Check if total orders in basket would exceed limit
+      int currentBasketOrders = currentScripts.length;
+      int newOrders = itemsToAdd.length;
+      
+      if (currentBasketOrders + newOrders > frezQtyOrderSliceMaxLimit) {
+        if (context != null) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text("Cannot add to basket. Total orders would be ${currentBasketOrders + newOrders}, which exceeds the maximum limit of $frezQtyOrderSliceMaxLimit orders."),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ));
+        }
+        return false; // Return false to indicate failure
+      }
+      
+      // Add all split items to the basket
+      currentScripts.addAll(itemsToAdd);
       print("After adding: ${currentScripts.length}");
       
       // Update the data
@@ -2312,10 +2368,12 @@ class OrderProvider extends DefaultChangeNotifier {
       // Refresh basket data
       await getBasketName();
       notifyListeners();
+      return true; // Return true to indicate success
     } catch (e) {
       print("Error adding to basket: $e");
       await getBasketName();
       notifyListeners();
+      return false; // Return false to indicate failure
     }
   }
 

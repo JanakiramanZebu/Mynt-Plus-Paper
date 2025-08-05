@@ -2059,10 +2059,12 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
     await ref.read(marketWatchProvider).fetchScripInfo(
         widget.wlValue.token, widget.wlValue.exch, context, true);
     
-    // **FIX: Use lot size from scripInfoModel if depthData doesn't have it**
-    final lotSize = depthData.ls?.isNotEmpty == true 
-        ? depthData.ls 
-        : ref.read(marketWatchProvider).scripInfoModel?.ls.toString();
+    // **FIX: Use lot size from scripInfoModel if in basket mode, otherwise use existing logic**
+    final lotSize = widget.isBasket == "BasketMode" 
+        ? ref.read(marketWatchProvider).scripInfoModel?.ls?.toString() ?? depthData.ls ?? "1"
+        : (depthData.ls?.isNotEmpty == true 
+            ? depthData.ls 
+            : ref.read(marketWatchProvider).scripInfoModel?.ls.toString());
     
     OrderScreenArgs orderArgs = OrderScreenArgs(
         exchange: widget.wlValue.exch,
