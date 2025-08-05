@@ -217,8 +217,23 @@ class BondsProvider extends DefaultChangeNotifier {
     if (value.isNotEmpty) {
       try {
         var quantity = double.parse(value).toInt();
-        // Only update if it's a valid number
-        bondDetails.quantityController.text = quantity.toString();
+        // Only update if the value has actually changed to avoid cursor jumping
+        if (bondDetails.quantityController.text != quantity.toString()) {
+          // Store current cursor position
+          int cursorPosition =
+              bondDetails.quantityController.selection.baseOffset;
+
+          // Update the text
+          bondDetails.quantityController.text = quantity.toString();
+
+          // Restore cursor position if it was within the text length
+          if (cursorPosition <= quantity.toString().length) {
+            bondDetails.quantityController.selection =
+                TextSelection.fromPosition(
+              TextPosition(offset: cursorPosition),
+            );
+          }
+        }
         bondDetails.minrequriedprice =
             (quantity * int.parse(bondDetails.bidpricecontroller.text)).toInt();
       } catch (e) {

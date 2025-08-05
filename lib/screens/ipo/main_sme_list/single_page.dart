@@ -496,7 +496,7 @@ class _IPODetailsSection extends StatelessWidget {
                         color: theme.isDarkMode
                             ? colors.primaryDark
                             : colors.primaryLight,
-                        fw: 0),
+                        fw: 2),
                   ),
                 ),
               ],

@@ -743,8 +743,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                   style: TextWidget.textStyle(
                     fontSize: 12,
                     color: _getBottomNavColor(theme, isSelected),
-                    theme: theme.isDarkMode, 
-                    // fw: isSelected ? 1 : 00
+                    theme: theme.isDarkMode,
+                    fw: isSelected ? 2 : null
                   ),
                   textAlign: TextAlign.center,
                   // softWrap: true,
@@ -762,11 +762,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   // Helper for nav item color
   Color _getBottomNavColor(ThemesProvider theme, bool isSelected) {
     if (theme.isDarkMode && isSelected) {
-      return colors.colorLightBlue;
+      return colors.secondaryDark;
     } else if (isSelected) {
-      return colors.colorBlue;
+      return colors.secondaryLight;
     } else {
-      return colors.colorGrey;
+      return colors.textSecondaryLight;
     }
   }
 

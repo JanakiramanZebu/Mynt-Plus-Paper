@@ -640,7 +640,7 @@ class _PositionDetailScreenState extends ConsumerState<PositionDetailScreen> {
                                                       TextWidget.subText(
                                                         text:
                                                             "Convert Position",
-                                                        // fw: 2,
+                                                        fw: 2,
                                                         color:
                                                             colors.primaryLight,
                                                         theme: false,

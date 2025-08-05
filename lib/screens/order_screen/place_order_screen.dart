@@ -2643,12 +2643,12 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                           child: Row(
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
-                                              Text('Advance',
-                                                  style: textStyle(
-                                                    colors.colorBlue,
-                                                    14,
-                                                    FontWeight.w600,
-                                                  )),
+                                              TextWidget.subText(text: 'Advance',
+                                                  color: theme.isDarkMode
+                                                      ? colors.secondaryDark
+                                                      : colors.secondaryLight,
+                                                  theme: theme.isDarkMode,
+                                                  fw: 2),
                                               Padding(
                                                 padding: const EdgeInsets.only(left: 4),
                                                 child: Icon(
@@ -3046,9 +3046,12 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                                   });
                                                             },
                                                       widget: Row(children: [
-                                                        Text("Required ",
-                                                            style: textStyle(
-                                                                const Color(0xff666666), 12, FontWeight.w500)),
+                                                        TextWidget.paraText(text: "Required ",
+                                                            color: theme.isDarkMode
+                                                                ? colors.textSecondaryDark
+                                                                : colors.textSecondaryLight,
+                                                            theme: theme.isDarkMode,
+                                                            ),
                                                         Text(
                                                             "${orderProvide.orderMarginModel == null ? 0.00 : orderProvide.orderMarginModel!.ordermargin}  + ${orderProvide.getBrokerageModel == null ? 0.00 : orderProvide.getBrokerageModel!.brkageAmt ?? 0.00}",
                                                             style: textStyle(
@@ -3056,7 +3059,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                                     ? colors.colorBlue
                                                                     : colors.colorLightBlue,
                                                                 12,
-                                                                FontWeight.w600)),
+                                                                FontWeight.bold)),
                                                         Icon(Icons.arrow_drop_down,
                                                             color: !theme.isDarkMode
                                                                 ? colors.colorBlue
@@ -3117,15 +3120,12 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                                   // ),
 
                                                                   // "+ Add fund" text in blue
-                                                                  Text(
-                                                                    '+ Add fund',
-                                                                    style: textStyle(
-                                                                        !theme.isDarkMode
-                                                                            ? colors.colorBlue
-                                                                            : colors.colorLightBlue,
-                                                                        12,
-                                                                        FontWeight.w600),
-                                                                  ),
+                                                                  TextWidget.subText(text: '+ Add fund',
+                                                                      color: theme.isDarkMode
+                                                                          ? colors.secondaryDark
+                                                                          : colors.secondaryLight,
+                                                                      theme: theme.isDarkMode,
+                                                                      fw: 2),
                                                                   const SizedBox(width: 8),
                                                                 ],
                                                               ),

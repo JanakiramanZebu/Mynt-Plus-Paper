@@ -124,6 +124,18 @@ class _CPActionOrderScreen extends State<CPActionOrderScreen> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
+                            SizedBox(
+                              width: screenWidth * 0.60,
+                              child: TextWidget.titleText(
+                                text: "${widget.data?.name}",
+                                color: theme.isDarkMode
+                                    ? colors.textPrimaryDark
+                                    : colors.textPrimaryLight,
+                                textOverflow: TextOverflow.ellipsis,
+                                theme: theme.isDarkMode,
+                                fw: 1,
+                              ),
+                            ),
                             TextWidget.titleText(
                               text: (((profiledetails.clientAllDetails
                                                       .clientData?.pOA ==
@@ -136,7 +148,8 @@ class _CPActionOrderScreen extends State<CPActionOrderScreen> {
                                                   'null'))) ||
                                       (ledgerprovider.selectvalueofcpaction ==
                                           'OFS')
-                                  ? _getTypeLabel(widget.data?.issueType)
+                                  // ? _getTypeLabel(widget.data?.issueType)
+                                  ? ''
                                   : 'Need e-DIS',
                               textOverflow: TextOverflow.ellipsis,
                               theme: theme.isDarkMode,
@@ -204,18 +217,6 @@ class _CPActionOrderScreen extends State<CPActionOrderScreen> {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-                                        SizedBox(
-                                          width: screenWidth * 0.60,
-                                          child: TextWidget.subText(
-                                            text: "${widget.data?.name}",
-                                            color: theme.isDarkMode
-                                                ? colors.textPrimaryDark
-                                                : colors.textPrimaryLight,
-                                            textOverflow: TextOverflow.ellipsis,
-                                            theme: theme.isDarkMode,
-                                            fw: 0,
-                                          ),
-                                        ),
                                         if (ledgerprovider
                                                 .selectvalueofcpaction !=
                                             'OFS') ...[
@@ -224,7 +225,7 @@ class _CPActionOrderScreen extends State<CPActionOrderScreen> {
                                                 const EdgeInsets.only(top: 4.0),
                                             child: TextWidget.paraText(
                                               text:
-                                                  "${widget.data?.biddingStartDate} : ${widget.data?.biddingEndDate}",
+                                                  "Open ${widget.data?.biddingStartDate} / Close ${widget.data?.biddingEndDate}",
                                               color: theme.isDarkMode
                                                   ? colors.textSecondaryDark
                                                   : colors.textSecondaryLight,

@@ -701,6 +701,7 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                                 //     : '${widget.mfData.faceValue}',
                                 hintStyle: textStyle(const Color(0xff666666),
                                     15, FontWeight.w400),
+                                keyboardType: TextInputType.number,
                                 inputFormate: [
                                   FilteringTextInputFormatter.digitsOnly
                                 ],
@@ -833,7 +834,7 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                                             color: theme.isDarkMode
                                                 ? colors.primaryDark
                                                 : colors.primaryLight,
-                                            fw: 0),
+                                            fw: 2),
                                         Icon(
                                           Icons.keyboard_arrow_down_outlined,
                                           size: 20,

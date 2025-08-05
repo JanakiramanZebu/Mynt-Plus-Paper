@@ -318,7 +318,8 @@ const SizedBox(height: 10,),
                                       color: theme.isDarkMode
                                           ? colors.secondaryDark
                                           : colors.secondaryLight,
-                                      align: TextAlign.center),
+                                      align: TextAlign.center,
+                                      fw: 2),
                                 ),
                               ),
                             ),
@@ -460,7 +461,8 @@ const SizedBox(height: 10,),
                                             color: !theme.isDarkMode
                                                 ? colors.errorLight
                                                 : colors.errorDark,
-                                            align: TextAlign.center),
+                                            align: TextAlign.center,
+                                            fw: 2),
                                       ),
                                     ),
                                   ),

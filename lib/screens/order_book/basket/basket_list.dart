@@ -808,7 +808,7 @@ class BasketScripList extends ConsumerWidget {
                                                             .textPrimaryLight,
                                                     textOverflow:
                                                         TextOverflow.ellipsis),
-                                                const SizedBox(width: 4),
+                                                // const SizedBox(width: 4),
                                                 TextWidget.subText(
                                                     text:
                                                         "${basket.bsktScripList[index]['option']} ",
@@ -1017,7 +1017,8 @@ class BasketScripList extends ConsumerWidget {
                   if (basket.bsktScripList.isNotEmpty &&
                       _hasMultipleExchanges(basket.bsktScripList))
                     Container(
-                      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 8, horizontal: 12),
                       decoration: BoxDecoration(
                         color: colors.loss,
                       ),
@@ -1025,7 +1026,8 @@ class BasketScripList extends ConsumerWidget {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           TextWidget.paraText(
-                            text: "Basket should contain orders of only 1 segment",
+                            text:
+                                "Basket should contain orders of only 1 segment",
                             theme: false,
                             color: colors.colorWhite,
                           ),
@@ -1033,74 +1035,76 @@ class BasketScripList extends ConsumerWidget {
                       ),
                     ),
                   Container(
-                height: 80,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color:
-                      theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-                ),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: _hasOrdersPlacedInBasket(bsktName, basket)
-                      ? OutlinedButton.icon(
-                          onPressed: () {
-                            basket.resetBasketOrderTracking(bsktName);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: const Text(
-                                    "Basket reset. You can place orders again."),
-                                backgroundColor: colors.ltpgreen,
-                                duration: const Duration(seconds: 2),
-                              ),
-                            );
-                          },
-                          label: TextWidget.subText(
-                            text: "Reset Orders",
-                            theme: false,
-                            color: theme.isDarkMode
-                                ? colors.primaryDark
-                                : colors.primaryLight,
-                            fw: 2,
-                          ),
-                          style: OutlinedButton.styleFrom(
-                              minimumSize: const Size(0, 40),
-                              side: BorderSide(
+                    height: 70,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: theme.isDarkMode
+                          ? colors.colorBlack
+                          : colors.colorWhite,
+                    ),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: _hasOrdersPlacedInBasket(bsktName, basket)
+                          ? OutlinedButton.icon(
+                              onPressed: () {
+                                basket.resetBasketOrderTracking(bsktName);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: const Text(
+                                        "Basket reset. You can place orders again."),
+                                    backgroundColor: colors.ltpgreen,
+                                    duration: const Duration(seconds: 2),
+                                  ),
+                                );
+                              },
+                              label: TextWidget.subText(
+                                text: "Reset Orders",
+                                theme: false,
                                 color: theme.isDarkMode
-                                    ? colors.colorGrey
+                                    ? colors.primaryDark
                                     : colors.primaryLight,
+                                fw: 2,
                               ),
-                              shape: const RoundedRectangleBorder(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(5)))),
-                        )
-                      : ElevatedButton.icon(
-                          onPressed: _hasMultipleExchanges(basket.bsktScripList)
-                              ? null
-                              : () async {
-                                  await basket.placeBasketOrder(context,
-                                      navigateToOrderBook: false);
-                                },
-                          label: TextWidget.subText(
-                            text: "Place Order",
-                            theme: false,
-                            color: colors.colorWhite,
-                            fw: 2,
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            minimumSize: const Size(0, 40),
-                            backgroundColor:
-                                _hasMultipleExchanges(basket.bsktScripList)
-                                    ? Colors.grey
-                                    : (theme.isDarkMode
-                                        ? colors.primaryDark
-                                        : colors.primaryLight),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(5),
+                              style: OutlinedButton.styleFrom(
+                                  minimumSize: const Size(0, 40),
+                                  side: BorderSide(
+                                    color: theme.isDarkMode
+                                        ? colors.colorGrey
+                                        : colors.primaryLight,
+                                  ),
+                                  shape: const RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.all(
+                                          Radius.circular(5)))),
+                            )
+                          : ElevatedButton.icon(
+                              onPressed:
+                                  _hasMultipleExchanges(basket.bsktScripList)
+                                      ? null
+                                      : () async {
+                                          await basket.placeBasketOrder(context,
+                                              navigateToOrderBook: false);
+                                        },
+                              label: TextWidget.subText(
+                                text: "Place Order",
+                                theme: false,
+                                color: colors.colorWhite,
+                                fw: 2,
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                minimumSize: const Size(0, 40),
+                                backgroundColor:
+                                    _hasMultipleExchanges(basket.bsktScripList)
+                                        ? Colors.grey
+                                        : (theme.isDarkMode
+                                            ? colors.primaryDark
+                                            : colors.primaryLight),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(5),
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
-                ),
-              ),
+                    ),
+                  ),
                 ],
               ));
   }
@@ -1124,11 +1128,11 @@ class BasketScripList extends ConsumerWidget {
       case 'rejected':
       case 'canceled':
       case 'failed':
-        return colors.darkred;
+        return colors.loss;
       case 'open':
       case 'partial':
       case 'trigger_pending':
-        return Colors.orange;
+        return colors.pending;
       default:
         return colors.colorGrey;
     }

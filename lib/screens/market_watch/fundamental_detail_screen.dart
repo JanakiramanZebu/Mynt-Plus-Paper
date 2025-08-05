@@ -153,18 +153,22 @@ class _FundamentalDetailScreenState
       physics: const BouncingScrollPhysics(),
       labelColor: theme.isDarkMode ? colors.colorLightBlue : colors.colorBlue,
       unselectedLabelColor:
-          theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-      indicatorColor: colors.colorBlue,
+          theme.isDarkMode
+            ? colors.textSecondaryDark
+            : colors.textSecondaryLight,
+      indicatorColor: theme.isDarkMode
+          ? colors.secondaryDark
+          : colors.secondaryLight,
       indicatorSize: TabBarIndicatorSize.tab,
       labelStyle: TextWidget.textStyle(
-        fontSize: 12,
+        fontSize: 14,
         theme: theme.isDarkMode,
-        fw: 1,
+        fw: 2,
       ),
       unselectedLabelStyle: TextWidget.textStyle(
-        fontSize: 12,
+        fontSize: 14,
         theme: theme.isDarkMode,
-        fw: 0,
+       
       ),
       tabs: _tabs
           .map((tab) => Tab(

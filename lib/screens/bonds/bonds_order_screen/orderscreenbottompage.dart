@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:mynt_plus/models/bonds_model/all_bonds_list_model.dart';
@@ -31,7 +32,7 @@ class _BondOrderScreenbottomPageState
 
   var ischecked = false;
 
-  String formatAmount( amount) {
+  String formatAmount(amount) {
     amount = double.parse(amount.toString());
     if (amount >= 10000000) {
       return "${(amount / 10000000).toStringAsFixed(1)}Cr"; // 1 Cr+
@@ -41,7 +42,6 @@ class _BondOrderScreenbottomPageState
       return amount.toString();
     }
   }
-
 
   @override
   void initState() {
@@ -215,6 +215,9 @@ class _BondOrderScreenbottomPageState
                             14,
                             FontWeight.w600),
                         keyboardType: TextInputType.number,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                        ],
                         controller: bondDetails.quantityController,
                         decoration: InputDecoration(
                           fillColor: theme.isDarkMode
@@ -352,14 +355,15 @@ class _BondOrderScreenbottomPageState
                           bonds.checkSufficientLedgerBal(bondDetails)
                               ? bonds.isBondPlaceOrderBtnActive
                                   ? () {
+                                      bonds.toggleOrderLoad(true);
                                       // place order function
                                       Map<String, dynamic> bondOrderData = {};
                                       bondOrderData["symbol"] =
                                           widget.bondInfo.symbol;
                                       bondOrderData["investmentValue"] =
                                           (bondDetails.faceValue *
-                                                  int.parse(
-                                                      bondDetails.quantityController.text))
+                                                  int.parse(bondDetails
+                                                      .quantityController.text))
                                               .toInt();
                                       bondOrderData["price"] =
                                           int.parse(bondDetails.bidprice);
@@ -367,12 +371,14 @@ class _BondOrderScreenbottomPageState
                                           context, bondOrderData);
                                       print(
                                           'bondOrderData ::::::::::::::; $bondOrderData');
+                                      bonds.toggleOrderLoad(false);
                                     }
                                   : () {
                                       // disable button on validation error
                                     }
                               : () async {
                                   // insufficeint fund redirect fund screen
+                                  bonds.toggleOrderLoad(true);
                                   TranctionProvider transaction;
                                   transaction = ref.read(transcationProvider);
                                   await transaction.fetchValidateToken(context);
@@ -392,6 +398,7 @@ class _BondOrderScreenbottomPageState
                                   Navigator.pushNamed(
                                       context, Routes.fundscreen,
                                       arguments: transaction);
+                                  bonds.toggleOrderLoad(false);
                                 },
                       style: OutlinedButton.styleFrom(
                         minimumSize: const Size(145, 40),
@@ -411,25 +418,33 @@ class _BondOrderScreenbottomPageState
                         ),
                         side: BorderSide.none,
                       ),
-                      child: bonds.checkSufficientLedgerBal(bondDetails)
-                          ? TextWidget.subText(
-                              text: "Continue",
-                              theme: theme.isDarkMode,
-                              color: !theme.isDarkMode
-                                  ? bonds.isBondPlaceOrderBtnActive == true
+                      child: bonds.orderLoad
+                          ? SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: colors.colorWhite,
+                              ))
+                          : bonds.checkSufficientLedgerBal(bondDetails)
+                              ? TextWidget.subText(
+                                  text: "Continue",
+                                  theme: theme.isDarkMode,
+                                  color: !theme.isDarkMode
+                                      ? bonds.isBondPlaceOrderBtnActive == true
+                                          ? colors.colorWhite
+                                          : const Color(0xff999999)
+                                      : bonds.isBondPlaceOrderBtnActive == true
+                                          ? colors.colorWhite
+                                          : colors.darkGrey,
+                                  fw: 2)
+                              : TextWidget.subText(
+                                  text: "Add Fund",
+                                  theme: theme.isDarkMode,
+                                  color: !theme.isDarkMode
                                       ? colors.colorWhite
-                                      : const Color(0xff999999)
-                                  : bonds.isBondPlaceOrderBtnActive == true
-                                      ? colors.colorWhite
-                                      : colors.darkGrey,
-                              fw: 2)
-                          : TextWidget.subText(
-                              text: "Add Fund",
-                              theme: theme.isDarkMode,
-                              color: !theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : colors.colorBlack,
-                              fw: 2)),
+                                      : colors.colorBlack,
+                                  fw: 2)),
                 ),
               ],
             ),

@@ -382,7 +382,7 @@ class _IPOListItem extends StatelessWidget {
               child: TextWidget.subText(
                 text: isPreOpen ? 'Pre Apply' : 'Apply',
                 theme: false,
-                fw: 0,
+                fw: 2,
                 color:
                     theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
               ),

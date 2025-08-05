@@ -19,28 +19,119 @@ class OrderbookFilterBottomSheet extends ConsumerStatefulWidget {
 class _OrderbookFilterBottomSheetState
     extends ConsumerState<OrderbookFilterBottomSheet> {
   Preferences pref = Preferences();
-  late bool scripisAscending;
-  late bool pricepisAscending;
-  late bool qtyisAscending;
-  late bool productisAscending;
-  late bool timeisAscending;
+  bool scripisAscending = true;
+  bool pricepisAscending = true;
+  bool qtyisAscending = true;
+  bool productisAscending = true;
+  bool timeisAscending = true;
+  String currentSortType = ""; // Track current sort type
 
   @override
   void initState() {
-    setState(() {
+    super.initState();
+    _initCurrentSort();
+  }
+
+  void _initCurrentSort() {
+    try {
+      // Get the current sort from provider
+      final lastOrderSortMethod = ref.read(orderProvider).lastOrderSortMethod;
+
+      // Reset all sort states to default when no sorting is active
+      if (lastOrderSortMethod.isEmpty) {
+        currentSortType = "";
+        scripisAscending = pref.isObScripname ?? true;
+        pricepisAscending = pref.isObPrice ?? true;
+        qtyisAscending = pref.isObqty ?? true;
+        productisAscending = pref.isObProduct ?? true;
+        timeisAscending = pref.isObtime ?? true;
+        return;
+      }
+
+      // Determine current sort type and direction based on the sort option
+      if (lastOrderSortMethod == "ASC" || lastOrderSortMethod == "DSC") {
+        currentSortType = "scrip";
+        scripisAscending = lastOrderSortMethod == "ASC";
+      } else if (lastOrderSortMethod == "LTPASC" || lastOrderSortMethod == "LTPDSC") {
+        currentSortType = "price";
+        pricepisAscending = lastOrderSortMethod == "LTPASC";
+      } else if (lastOrderSortMethod == "QTYASC" || lastOrderSortMethod == "QTYDSC") {
+        currentSortType = "qty";
+        qtyisAscending = lastOrderSortMethod == "QTYASC";
+      } else if (lastOrderSortMethod == "PRODUCTASC" || lastOrderSortMethod == "PRODUCTDSC") {
+        currentSortType = "product";
+        productisAscending = lastOrderSortMethod == "PRODUCTASC";
+      } else if (lastOrderSortMethod == "TIMEASC" || lastOrderSortMethod == "TIMEDSC") {
+        currentSortType = "time";
+        timeisAscending = lastOrderSortMethod == "TIMEASC";
+      }
+    } catch (e) {
+      print("Error initializing sort state: $e");
+      // Fallback to default values
+      currentSortType = "";
       scripisAscending = pref.isObScripname ?? true;
       pricepisAscending = pref.isObPrice ?? true;
       qtyisAscending = pref.isObqty ?? true;
       productisAscending = pref.isObProduct ?? true;
       timeisAscending = pref.isObtime ?? true;
+    }
+  }
+
+  // Apply sort directly and force UI update
+  void _applySortForType(String type) {
+    String sortingValue = "";
+
+    // Debug current values
+    print("Before sort - Current type: $currentSortType");
+    print("Before sort - Sort state: Scrip: $scripisAscending, Price: $pricepisAscending, Qty: $qtyisAscending, Product: $productisAscending, Time: $timeisAscending");
+
+    // Update current sort type
+    setState(() {
+      // If already using this type, toggle direction
+      if (currentSortType == type) {
+        if (type == "scrip") {
+          scripisAscending = !scripisAscending;
+        } else if (type == "price") {
+          pricepisAscending = !pricepisAscending;
+        } else if (type == "qty") {
+          qtyisAscending = !qtyisAscending;
+        } else if (type == "product") {
+          productisAscending = !productisAscending;
+        } else if (type == "time") {
+          timeisAscending = !timeisAscending;
+        }
+      } else {
+        // Set new sort type
+        currentSortType = type;
+      }
+
+      // Determine the sort string to apply
+      if (type == "scrip") {
+        sortingValue = scripisAscending ? "ASC" : "DSC";
+      } else if (type == "price") {
+        sortingValue = pricepisAscending ? "LTPASC" : "LTPDSC";
+      } else if (type == "qty") {
+        sortingValue = qtyisAscending ? "QTYASC" : "QTYDSC";
+      } else if (type == "product") {
+        sortingValue = productisAscending ? "PRODUCTASC" : "PRODUCTDSC";
+      } else if (type == "time") {
+        sortingValue = timeisAscending ? "TIMEASC" : "TIMEDSC";
+      }
     });
 
-    super.initState();
+    // Debug the resulting sort value
+    print("Applying sort value: $sortingValue");
+
+    // Apply the sort directly
+    ref.read(orderProvider).filterOrders(sorting: sortingValue);
+
+    // Close the sheet
+    Navigator.pop(context);
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = ref.read(themeProvider);
+    final theme = ref.watch(themeProvider);
     return SafeArea(
       child: Container(
         decoration: BoxDecoration(
@@ -72,19 +163,7 @@ class _OrderbookFilterBottomSheetState
                     ? colors.darkColorDivider
                     : colors.colorDivider),
             InkWell(
-              onTap: () {
-                setState(() {
-                  if (scripisAscending == true) {
-                    ref.read(orderProvider).filterOrders(sorting: "ASC");
-                  } else if (scripisAscending == false) {
-                    ref.read(orderProvider).filterOrders(sorting: "DSC");
-                  }
-
-                  scripisAscending = !scripisAscending;
-                  pref.setOBScrip(scripisAscending);
-                  Navigator.pop(context);
-                });
-              },
+              onTap: () => _applySortForType("scrip"),
               child: Column(
                 children: [
                   Padding(
@@ -93,20 +172,35 @@ class _OrderbookFilterBottomSheetState
                     child: Row(
                       children: [
                         Icon(
-                          pref.isObScripname == true
+                          scripisAscending
                               ? Icons.arrow_upward
                               : Icons.arrow_downward,
                           size: 20,
-                          color: colors.colorGrey,
+                          color: currentSortType == "scrip"
+                              ? theme.isDarkMode
+                                  ? colors.primaryDark
+                                  : colors.primaryLight
+                              : theme.isDarkMode
+                                  ? colors.textSecondaryDark
+                                  : colors.textSecondaryLight,
                         ),
                         const SizedBox(
                           width: 15,
                         ),
-                        TextWidget.subText(
-                            text: "Scrip Name",
-                            theme: false,
-                            color: colors.colorGrey,
-                            fw: 0),
+                        Text(
+                          "Scrip Name",
+                          style: TextWidget.textStyle(
+                              fontSize: 14,
+                              color: currentSortType == "scrip"
+                                  ? theme.isDarkMode
+                                      ? colors.primaryDark
+                                      : colors.primaryLight
+                                  : theme.isDarkMode
+                                      ? colors.textSecondaryDark
+                                      : colors.textSecondaryLight,
+                              theme: theme.isDarkMode,
+                              fw: currentSortType == "scrip" ? 2 : null),
+                        ),
                       ],
                     ),
                   ),
@@ -115,19 +209,7 @@ class _OrderbookFilterBottomSheetState
               ),
             ),
             InkWell(
-              onTap: () {
-                setState(() {
-                  if (productisAscending == true) {
-                    ref.read(orderProvider).filterOrders(sorting: "PRODUCTASC");
-                  } else if (productisAscending == false) {
-                    ref.read(orderProvider).filterOrders(sorting: "PRODUCTDSC");
-                  }
-
-                  productisAscending = !productisAscending;
-                  pref.setOBproduct(productisAscending);
-                  Navigator.pop(context);
-                });
-              },
+              onTap: () => _applySortForType("product"),
               child: Column(
                 children: [
                   Padding(
@@ -136,20 +218,35 @@ class _OrderbookFilterBottomSheetState
                     child: Row(
                       children: [
                         Icon(
-                          pref.isObProduct == true
+                          productisAscending
                               ? Icons.arrow_upward
                               : Icons.arrow_downward,
                           size: 20,
-                          color: colors.colorGrey,
+                          color: currentSortType == "product"
+                              ? theme.isDarkMode
+                                  ? colors.primaryDark
+                                  : colors.primaryLight
+                              : theme.isDarkMode
+                                  ? colors.textSecondaryDark
+                                  : colors.textSecondaryLight,
                         ),
                         const SizedBox(
                           width: 15,
                         ),
-                        TextWidget.subText(
-                            text: "Product",
-                            theme: false,
-                            color: colors.colorGrey,
-                            fw: 0),
+                        Text(
+                          "Product",
+                          style: TextWidget.textStyle(
+                              fontSize: 14,
+                              color: currentSortType == "product"
+                                  ? theme.isDarkMode
+                                      ? colors.primaryDark
+                                      : colors.primaryLight
+                                  : theme.isDarkMode
+                                      ? colors.textSecondaryDark
+                                      : colors.textSecondaryLight,
+                              theme: theme.isDarkMode,
+                              fw: currentSortType == "product" ? 2 : null),
+                        ),
                       ],
                     ),
                   ),
@@ -158,19 +255,7 @@ class _OrderbookFilterBottomSheetState
               ),
             ),
             InkWell(
-              onTap: () {
-                setState(() {
-                  if (qtyisAscending == true) {
-                    ref.read(orderProvider).filterOrders(sorting: "QTYDSC");
-                  } else if (qtyisAscending == false) {
-                    ref.read(orderProvider).filterOrders(sorting: "QTYASC");
-                  }
-
-                  qtyisAscending = !qtyisAscending;
-                  pref.setOBqty(qtyisAscending);
-                  Navigator.pop(context);
-                });
-              },
+              onTap: () => _applySortForType("qty"),
               child: Column(
                 children: [
                   Padding(
@@ -179,20 +264,35 @@ class _OrderbookFilterBottomSheetState
                     child: Row(
                       children: [
                         Icon(
-                          pref.isObqty == true
+                          qtyisAscending
                               ? Icons.arrow_upward
                               : Icons.arrow_downward,
                           size: 20,
-                          color: colors.colorGrey,
+                          color: currentSortType == "qty"
+                              ? theme.isDarkMode
+                                  ? colors.primaryDark
+                                  : colors.primaryLight
+                              : theme.isDarkMode
+                                  ? colors.textSecondaryDark
+                                  : colors.textSecondaryLight,
                         ),
                         const SizedBox(
                           width: 15,
                         ),
-                        TextWidget.subText(
-                            text: "Qty",
-                            theme: false,
-                            color: colors.colorGrey,
-                            fw: 0),
+                        Text(
+                          "Qty",
+                          style: TextWidget.textStyle(
+                              fontSize: 14,
+                              color: currentSortType == "qty"
+                                  ? theme.isDarkMode
+                                      ? colors.primaryDark
+                                      : colors.primaryLight
+                                  : theme.isDarkMode
+                                      ? colors.textSecondaryDark
+                                      : colors.textSecondaryLight,
+                              theme: theme.isDarkMode,
+                              fw: currentSortType == "qty" ? 2 : null),
+                        ),
                       ],
                     ),
                   ),
@@ -201,19 +301,7 @@ class _OrderbookFilterBottomSheetState
               ),
             ),
             InkWell(
-              onTap: () {
-                setState(() {
-                  if (pricepisAscending == true) {
-                    ref.read(orderProvider).filterOrders(sorting: "LTPDSC");
-                  } else if (pricepisAscending == false) {
-                    ref.read(orderProvider).filterOrders(sorting: "LTPASC");
-                  }
-
-                  pricepisAscending = !pricepisAscending;
-                  pref.setOBPrice(pricepisAscending);
-                  Navigator.pop(context);
-                });
-              },
+              onTap: () => _applySortForType("price"),
               child: Column(
                 children: [
                   Padding(
@@ -222,20 +310,35 @@ class _OrderbookFilterBottomSheetState
                     child: Row(
                       children: [
                         Icon(
-                          pref.isObPrice == true
+                          pricepisAscending
                               ? Icons.arrow_upward
                               : Icons.arrow_downward,
                           size: 20,
-                          color: colors.colorGrey,
+                          color: currentSortType == "price"
+                              ? theme.isDarkMode
+                                  ? colors.primaryDark
+                                  : colors.primaryLight
+                              : theme.isDarkMode
+                                  ? colors.textSecondaryDark
+                                  : colors.textSecondaryLight,
                         ),
                         const SizedBox(
                           width: 15,
                         ),
-                        TextWidget.subText(
-                            text: "LTP",
-                            theme: false,
-                            color: colors.colorGrey,
-                            fw: 0),
+                        Text(
+                          "LTP",
+                          style: TextWidget.textStyle(
+                              fontSize: 14,
+                              color: currentSortType == "price"
+                                  ? theme.isDarkMode
+                                      ? colors.primaryDark
+                                      : colors.primaryLight
+                                  : theme.isDarkMode
+                                      ? colors.textSecondaryDark
+                                      : colors.textSecondaryLight,
+                              theme: theme.isDarkMode,
+                              fw: currentSortType == "price" ? 2 : null),
+                        ),
                       ],
                     ),
                   ),
@@ -244,19 +347,7 @@ class _OrderbookFilterBottomSheetState
               ),
             ),
             InkWell(
-              onTap: () {
-                setState(() {
-                  if (timeisAscending == true) {
-                    ref.read(orderProvider).filterOrders(sorting: "TIMEDSC");
-                  } else if (timeisAscending == false) {
-                    ref.read(orderProvider).filterOrders(sorting: "TIMEASC");
-                  }
-
-                  timeisAscending = !timeisAscending;
-                  pref.setOBtime(timeisAscending);
-                  Navigator.pop(context);
-                });
-              },
+              onTap: () => _applySortForType("time"),
               child: Column(
                 children: [
                   Padding(
@@ -265,20 +356,35 @@ class _OrderbookFilterBottomSheetState
                     child: Row(
                       children: [
                         Icon(
-                          pref.isObtime == true
+                          timeisAscending
                               ? Icons.arrow_upward
                               : Icons.arrow_downward,
                           size: 20,
-                          color: colors.colorGrey,
+                          color: currentSortType == "time"
+                              ? theme.isDarkMode
+                                  ? colors.primaryDark
+                                  : colors.primaryLight
+                              : theme.isDarkMode
+                                  ? colors.textSecondaryDark
+                                  : colors.textSecondaryLight,
                         ),
                         const SizedBox(
                           width: 15,
                         ),
-                        TextWidget.subText(
-                            text: "Time",
-                            theme: false,
-                            color: colors.colorGrey,
-                            fw: 0),
+                        Text(
+                          "Time",
+                          style: TextWidget.textStyle(
+                              fontSize: 14,
+                              color: currentSortType == "time"
+                                  ? theme.isDarkMode
+                                      ? colors.primaryDark
+                                      : colors.primaryLight
+                                  : theme.isDarkMode
+                                      ? colors.textSecondaryDark
+                                      : colors.textSecondaryLight,
+                              theme: theme.isDarkMode,
+                              fw: currentSortType == "time" ? 2 : null),
+                        ),
                       ],
                     ),
                   ),

@@ -1420,7 +1420,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                                 : colors.secondaryLight,
                                                                             theme:
                                                                                 theme.isDarkMode,
-                                                                            // fw: 2,
+                                                                            fw: 2,
                                                                           ),
                                                                         ],
                                                                       ),
@@ -1533,7 +1533,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                                 : colors.secondaryLight,
                                                                             theme:
                                                                                 theme.isDarkMode,
-                                                                            // fw: 2,
+                                                                            fw: 2,
                                                                           ),
                                                                         ],
                                                                       ),
