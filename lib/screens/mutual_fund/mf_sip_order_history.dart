@@ -137,7 +137,7 @@ class MFSipOrderHistoryScreen extends ConsumerWidget {
                         ),
                         child: TextWidget.paraText(
                             // align: TextAlign.start,
-                            text: item.status == "ACTIVE" ? "Live" : item.status,
+                            text: item.status == "ACTIVE" ? "LIVE" : item.status,
                             color: item.status == "ACTIVE"
                               ? colors.profit  : item.status == "ACTIVE" ? colors.pending 
                               : colors.loss ,

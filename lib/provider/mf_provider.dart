@@ -159,6 +159,10 @@ class MFProvider extends DefaultChangeNotifier {
   List<MutualFundList>? _mutualFundsearchdata = [];
   List<MutualFundList>? get mutualFundsearchdata => _mutualFundsearchdata;
 
+  // Current MF Holdings sort option tracking
+  String _currentMFSortOption = "";
+  String get currentMFSortOption => _currentMFSortOption;
+
   List<TopSchemesModelData>? _topSchemesdata = [];
   List<TopSchemesModelData>? get topSchemesdata => _topSchemesdata;
 
@@ -3392,6 +3396,9 @@ class MFProvider extends DefaultChangeNotifier {
   void filterMFHoldings(
       {required String sorting, required BuildContext context}) {
     if (_mfholdingnew?.data == null) return;
+    
+    // Track current sort option
+    _currentMFSortOption = sorting;
 
     if (sorting == "NAMEASC") {
       _mfholdingnew!.data!

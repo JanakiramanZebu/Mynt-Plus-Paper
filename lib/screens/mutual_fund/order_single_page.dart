@@ -14,6 +14,7 @@ import '../../provider/mf_provider.dart';
 import '../../provider/thems.dart';
 import '../../res/global_state_text.dart';
 import '../../res/res.dart';
+import '../../sharedWidget/custom_drag_handler.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
 // import '../../sharedWidget/loader_ui.dart';
 import '../../sharedWidget/loader_ui.dart';
@@ -64,12 +65,14 @@ class _mforderdetscreen extends State<mforderdetscreen>
               backgroundColor: Colors.transparent,
               body: hasData
                   ? Padding(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: SingleChildScrollView(
                         controller: scrollController,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+      const CustomDragHandler(),
+
                             _buildOrderHeader(theme, mfdata),
                             const SizedBox(height: 18),
                             if (mfdata.mforderdet?.data![0].status ==
@@ -283,7 +286,6 @@ class _mforderdetscreen extends State<mforderdetscreen>
 
   Widget _buildOrderHeader(ThemesProvider theme, dynamic mfdata) {
     return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-      const SizedBox(width: 0),
       Expanded(
         child: Padding(
           padding: const EdgeInsets.only(top: 2),
@@ -291,6 +293,7 @@ class _mforderdetscreen extends State<mforderdetscreen>
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
+              
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.start,

@@ -252,10 +252,7 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                                         : colors.textSecondaryLight,
                                     unselectedLabelStyle: TextWidget.textStyle(
                                       fontSize: 14,
-                                      theme: false,
-                                      color: theme.isDarkMode
-                                          ? colors.textSecondaryDark
-                                          : colors.textSecondaryLight,
+                                      theme: false,                                    
                                       fw: 3,
                                     ),
                                     labelPadding: const EdgeInsets.symmetric(
@@ -272,7 +269,7 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                                         color: theme.isDarkMode
                                             ? colors.secondaryDark
                                             : colors.secondaryLight,
-                                        fw: 0),
+                                        fw: 2),
                                     tabs: chips.map((chip) {
                                       return Tab(
                                         child: TextWidget.subText(
@@ -385,7 +382,7 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                                                       TextWidget.subText(
                                                         text: "Delete",
                                                         theme: false,
-                                                        fw: 0,
+                                                        fw: 2,
                                                         color: colors.darkred,
                                                       ),
                                                     ],
@@ -825,7 +822,7 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                                         TextWidget.subText(
                                           text: "Add another bid",
                                           theme: false,
-                                          fw: 0,
+                                          fw: 2,
                                           color: theme.isDarkMode
                                               ? colors.primaryDark
                                               : colors.primaryLight,

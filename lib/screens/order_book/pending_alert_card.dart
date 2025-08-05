@@ -15,6 +15,7 @@ import '../../res/res.dart';
 import '../../routes/route_names.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
 import '../../sharedWidget/custom_text_form_field.dart';
+import '../../sharedWidget/list_divider.dart';
 import '../../sharedWidget/no_data_found.dart';
 import 'filter_alert_pending.dart';
 import '../../provider/order_provider.dart';
@@ -197,10 +198,7 @@ class _PendingAlertState extends ConsumerState<PendingAlert> {
             ),
           ),
           const SizedBox(height: 8),
-          Container(
-            color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
-            height: 1,
-          ),
+          ListDivider(),
           // Divider(
           //   color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
           //   thickness: 0,
@@ -386,10 +384,7 @@ class _PendingAlertState extends ConsumerState<PendingAlert> {
             ),
           ),
           const SizedBox(height: 8),
-          Container(
-            color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
-            height: 1,
-          ),
+          ListDivider(),
         ],
       ),
     );

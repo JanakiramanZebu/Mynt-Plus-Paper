@@ -1345,23 +1345,25 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.shopping_basket_outlined,
-            size: 48,
-            color: colors.colorGrey,
-          ),
-          const SizedBox(height: 16),
-          TextWidget.subText(
-            text: "No baskets found",
-            theme: theme.isDarkMode,
-            color: colors.colorGrey,
-          ),
+           Center(
+      child: Padding(
+        padding:  EdgeInsets.only(top: 225),
+        child: SizedBox(
+          height: MediaQuery.of(context).size.height - 140,
+          child:  Column(
+            children: [
+              NoDataFound(),
+          //       SizedBox(height: 16),
+          // TextWidget.subText(
+          //   text: "No baskets found",
+          //   theme: theme.isDarkMode,
+          //   color: colors.colorGrey,
+          // ),
           const SizedBox(height: 16),
           ElevatedButton(
             onPressed: () => _showCreateBasket(context),
             style: ElevatedButton.styleFrom(
-              backgroundColor: colors.ltpgreen,
-              foregroundColor: colors.colorWhite,
+              backgroundColor: colors.primaryLight,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             ),
             child: TextWidget.subText(
@@ -1370,6 +1372,12 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
               theme: false,
             ),
           ),
+            ],
+          ),
+        ),
+      ),
+    ),
+         
         ],
       ),
     );
@@ -1579,7 +1587,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                         color: _getItemStatusColor(script['orderStatus']),
                       ),
                       if (script['avgPrice'] != null)
-                        TextWidget.captionText(
+                        TextWidget.paraText(
                           text: " @ ₹${script['avgPrice']}",
                           theme: theme.isDarkMode,
                           color: _getItemStatusColor(script['orderStatus']),
@@ -2300,6 +2308,15 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                   final isDark = ref.read(themeProvider).isDarkMode;
 
                   return ListTile(
+                     minLeadingWidth: 25,
+                          leading: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              SvgPicture.asset(
+                                assets.basketdashboard,
+                              ),
+                            ],
+                          ),
                     title: Container(
                       margin: EdgeInsets.only(
                         right: MediaQuery.of(context).size.width * 0.1,
