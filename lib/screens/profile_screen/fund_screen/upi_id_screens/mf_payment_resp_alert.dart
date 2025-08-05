@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mynt_plus/provider/mf_provider.dart';
 
 import '../../../../provider/thems.dart';
 import '../../../../provider/transcation_provider.dart';
@@ -34,6 +35,7 @@ class _MfPaymentRespAlertState extends State<MfPaymentRespAlert> {
       child: Consumer(
         builder: (context, ref, child) { 
           final theme = ref.watch(themeProvider);
+          final mfpro = ref.watch(mfProvider);
           return Container(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             decoration: BoxDecoration(
@@ -106,9 +108,9 @@ class _MfPaymentRespAlertState extends State<MfPaymentRespAlert> {
                 ),
                 const SizedBox(height: 16),
                 // data("UPI Address", "${widget.upiData?["datetime"]}", theme),
-                if(widget.upiData?["OrderId"] != null || widget.upiData?["OrderId"] != 'null')
+                if(widget.upiData?["OrderId"] != null || widget.upiData?["OrderId"] != 'null' ||  widget.upiData?["OrderId"] != '')
                 data("Order ID", "${widget.upiData?["OrderId"]}", theme),
-                if(widget.upiData?["OrderId"] == null || widget.upiData?["OrderId"] == 'null')
+                if(widget.upiData?["OrderId"] == null || widget.upiData?["OrderId"] == 'null' || widget.upiData?["OrderId"] == '')
                 data("TransNo", "${widget.upiData?["TransNo"]}", theme),
 
                 data("UPI Transaction ID", "${widget.upiData?["TransNo"]}",
@@ -358,11 +360,11 @@ class _MfPaymentRespAlertState extends State<MfPaymentRespAlert> {
                     children: [
                       const CustomDragHandler(),
                       Icon(
-                        widget.upiData?["status"] == "PAYMENT COMPLETED"
-                            ? Icons.check_circle_rounded
-                            : Icons.cancel_rounded,
+                        widget.upiData?["status"] == "PAYMENT COMPLETED" || widget.upiData?["status"] == "REGISTERED"
+                            ? Icons.check_circle_rounded : widget.upiData?["status"] == "PAYMENT PROCESSING" ?
+                             Icons.schedule : Icons.cancel_rounded,
                         //
-                        color: widget.upiData?["status"] == "PAYMENT COMPLETED"
+                        color: widget.upiData?["status"] == "PAYMENT COMPLETED" || widget.upiData?["status"] == "REGISTERED"
                             ? colors.kColorGreenButton
                             : colors.kColorRedButton,
                         size: 70,
@@ -382,7 +384,7 @@ class _MfPaymentRespAlertState extends State<MfPaymentRespAlert> {
                       ),
                       TextWidget.paraText(
                         text: widget.upiData?["status"] == "PAYMENT COMPLETED"
-                            ? "Transaction Success"
+                            ? "Transaction Success" :  widget.upiData?["status"] == "PAYMENT PROCESSING" ?  "Transaction pending"
                             : "Transaction fail",
                         theme: false,
                         color: colors.textSecondaryLight,
@@ -410,10 +412,11 @@ class _MfPaymentRespAlertState extends State<MfPaymentRespAlert> {
                 ),
                 const SizedBox(height: 16),
                 // data("UPI Address", "${widget.upiData?["datetime"]}", theme),
-                if(widget.upiData?["OrderId"] != null || widget.upiData?["OrderId"] != 'null')
+                if(mfpro.mfOrderTpye != 'SIP')
                 data("Order ID", "${widget.upiData?["OrderId"]}", theme),
-                if(widget.upiData?["OrderId"] == null || widget.upiData?["OrderId"] == 'null')
-                data("TransNo", "${widget.upiData?["TransNo"]}", theme),
+                if(mfpro.mfOrderTpye == 'SIP')
+               
+                data("TransNo", "${widget.upiData?["OrderId"] ?? widget.upiData?["TransNo"]}", theme),
 
                 data("UPI Transaction ID", "${widget.upiData?["TransNo"]}",
                     theme),
