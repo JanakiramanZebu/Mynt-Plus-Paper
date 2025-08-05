@@ -206,6 +206,7 @@ class LDProvider extends DefaultChangeNotifier {
 
   String _dummyStartYear = "";
   String _pdfresponse = "";
+  String get pdfresponse => _pdfresponse;
 
   Timer? _timer;
   Timer? get timer => _timer;
@@ -529,6 +530,17 @@ class LDProvider extends DefaultChangeNotifier {
 
   bool _taxderloading = false;
   bool get taxderloading => _taxderloading;
+
+  bool _taxpnlloading = false;
+  bool get taxpnlloading => _taxpnlloading;
+
+  bool _istaxpnlclosed = false;
+  bool get istaxpnlclosed => _istaxpnlclosed;
+
+  setistaxpnlclosed(val) {
+    _istaxpnlclosed = val;
+    notifyListeners();
+  }
 
   bool _caeventloading = false;
   bool get caeventloading => _caeventloading;
@@ -1542,29 +1554,35 @@ class LDProvider extends DefaultChangeNotifier {
       BuildContext context, eq, dercomcur, eqcharge, year) async {
     if (year <= _yearforTaxpnlDummy) {
       try {
-        _taxderloading = true;
+        _taxpnlloading = true;
         notifyListeners();
 
         _pdfresponse =
             await api.getpdffileapitaxpnl(eq, dercomcur, eqcharge, year);
         if (_pdfresponse == 'File Sent to mail successfully') {
-          Navigator.pop(context);
-          ScaffoldMessenger.of(context).showSnackBar(
-            successMessage(context, 'File sent to mail successfully'),
-          );
-          _taxderloading = false;
+          if (_istaxpnlclosed == false) {
+            Navigator.pop(context);
+          }
+
+          Future.delayed(Duration(seconds: 1), () {
+            ScaffoldMessenger.of(context).showSnackBar(
+              successMessage(context, 'File sent to mail successfully'),
+            );
+          });
+          _taxpnlloading = false;
         } else {
-          // ScaffoldMessenger.of(context).showSnackBar(
-          //   warningMessage(context, '$_pdfresponse'),
-          // );
-          _taxderloading = false;
+          ScaffoldMessenger.of(context).showSnackBar(
+            warningMessage(context, '$_pdfresponse'),
+          );
+          Navigator.pop(context);
+          _taxpnlloading = false;
           throw _pdfresponse;
         }
 
-        _taxderloading = false;
+        _taxpnlloading = false;
         notifyListeners();
       } catch (e) {
-        _taxderloading = false;
+        _taxpnlloading = false;
         //  ScaffoldMessenger.of(context).showSnackBar(
         //   warningMessage(context, 'Error occurred try again later'),
         // );

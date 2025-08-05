@@ -940,7 +940,7 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
                                       color: theme.isDarkMode
                                           ? colors.secondaryDark
                                           : colors.secondaryLight,
-                                      // fw: 2,
+                                      fw: 2,
                                     ),
                                   ),
                                 ),
@@ -979,7 +979,7 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
                                     color: theme.isDarkMode
                                         ? colors.secondaryDark
                                         : colors.secondaryLight,
-                                    // fw: 2,
+                                    fw: 2,
                                   ),
                                 ),
                               ),
@@ -1014,7 +1014,7 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
                                     color: theme.isDarkMode
                                         ? colors.secondaryDark
                                         : colors.secondaryLight,
-                                    // fw: 2,
+                                    fw: 2,
                                   ),
                                 ),
                               ),

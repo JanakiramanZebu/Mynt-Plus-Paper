@@ -51,6 +51,8 @@ class Data {
   String? subOrderType;
   String? buySell;
   String? allRedeem;
+  String? accVPA;
+  String? paymentType;
 
   Data(
       {this.transCode,
@@ -75,7 +77,7 @@ class Data {
       this.orderType,
       this.subOrderType,
       this.buySell,
-      this.allRedeem});
+      this.allRedeem,this.accVPA,this.paymentType});
 
   Data.fromJson(Map<String, dynamic> json) {
     transCode = json['TransCode'];
@@ -101,6 +103,8 @@ class Data {
     subOrderType = json['SubOrderType'];
     buySell = json['buy_sell'];
     allRedeem = json['AllRedeem'];
+    accVPA = json['AccVPA'];
+    paymentType = json['PaymentType'];
   }
 
   Map<String, dynamic> toJson() {
@@ -128,6 +132,8 @@ class Data {
     data['SubOrderType'] = this.subOrderType;
     data['buy_sell'] = this.buySell;
     data['AllRedeem'] = this.allRedeem;
+    data['AccVPA'] = this.accVPA;
+    data['PaymentType'] = this.paymentType;
     return data;
   }
 }

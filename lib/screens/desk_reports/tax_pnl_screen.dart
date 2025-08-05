@@ -11,6 +11,7 @@ import 'package:mynt_plus/sharedWidget/functions.dart';
 import '../../provider/thems.dart';
 import '../../res/global_state_text.dart';
 import '../../sharedWidget/loader_ui.dart';
+import '../../sharedWidget/snack_bar.dart';
 import 'tax_pnl_screens/charges_value_screen.dart';
 import 'tax_pnl_screens/chart_for_tax_scree.dart';
 import 'tax_pnl_screens/pnl_value_screen.dart';
@@ -41,9 +42,9 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
     }
   ];
   late TabController _tabController;
-  bool isLoading = false;
   String? errorMessage;
   String? yearErrorMessage;
+  // bool isLoading = false;
 
   void showError(String message) {
     setState(() {
@@ -102,6 +103,7 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
                                 await Future.delayed(
                                     const Duration(milliseconds: 150));
                                 Navigator.pop(context);
+                                ledgerprovider.setistaxpnlclosed(true);
                               },
                               borderRadius: BorderRadius.circular(20),
                               splashColor: theme.isDarkMode
@@ -279,39 +281,47 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
                             ),
                             padding: EdgeInsets.zero,
                           ),
-                          onPressed: isLoading
-                              ? null
-                              : () async {
-                                  try {
-                                    setState(() {
-                                      isLoading = true;
-                                      errorMessage = null;
-                                    });
-                                    await ledgerprovider.pdfdownloadfortaxpnl(
-                                      context,
-                                      ledgerprovider.taxpnleq?.data?.toJson() ??
-                                          {},
-                                      ledgerprovider.taxpnldercomcur?.data
-                                              ?.toJson() ??
-                                          {},
-                                      ledgerprovider.taxpnleqCharge?.toJson() ??
-                                          {},
-                                      ledgerprovider.yearforTaxpnl,
-                                    );
-                                    setState(() {
-                                      errorMessage = null;
-                                    });
-                                  } catch (e) {
-                                    setState(() {
-                                      errorMessage = e.toString();
-                                    });
-                                  } finally {
-                                    setState(() {
-                                      isLoading = false;
-                                    });
-                                  }
-                                },
-                          child: isLoading
+                          onPressed: () async {
+                            // Check if already loading using provider state
+                            if (ledgerprovider.taxpnlloading) {
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                warningMessage(context,
+                                    'Previous request is still processing'),
+                              );
+                              return;
+                            }
+                            try {
+                              setState(() {
+                                errorMessage = null;
+                              });
+
+                              await ledgerprovider.pdfdownloadfortaxpnl(
+                                context,
+                                ledgerprovider.taxpnleq?.data?.toJson() ?? {},
+                                ledgerprovider.taxpnldercomcur?.data
+                                        ?.toJson() ??
+                                    {},
+                                ledgerprovider.taxpnleqCharge?.toJson() ?? {},
+                                ledgerprovider.yearforTaxpnl,
+                              );
+
+                              setState(() {
+                                errorMessage = null;
+                              });
+                            } catch (e) {
+                              // Show error in ScaffoldMessenger
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                warningMessage(
+                                    context, 'Error: ${e.toString()}'),
+                              );
+                              setState(() {
+                                errorMessage = e.toString();
+                              });
+                            }
+                          },
+                          child: ledgerprovider.taxpnlloading
                               ? SizedBox(
                                   width: 18,
                                   height: 20,

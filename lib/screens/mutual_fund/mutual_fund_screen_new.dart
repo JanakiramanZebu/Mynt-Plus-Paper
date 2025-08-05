@@ -610,7 +610,7 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
         ),
         title: TextWidget.subText(
           // align: TextAlign.right,
-          text: "Systematic Investment Plan (SIP)",
+          text: "SIP Calculator",
           color: theme.isDarkMode
               ? colors.textSecondaryDark
               : colors.textSecondaryLight,
@@ -637,7 +637,7 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
         ),
         title: TextWidget.subText(
           // align: TextAlign.right,
-          text: "Compund Annual Growth Rate (CAGR)",
+          text: "CAGR Calculator",
           color: theme.isDarkMode
               ? colors.textSecondaryDark
               : colors.textSecondaryLight,

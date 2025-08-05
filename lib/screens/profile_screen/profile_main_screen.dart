@@ -2022,6 +2022,15 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
       children: [
         _buildDetailRow("Name", clientData?.panName ?? "N/A", theme),
         _buildDetailRow("Email", clientData?.cLIENTIDMAIL ?? "N/A", theme),
+        // InkWell(
+        //   onTap: () {
+        //     profileDetails.openInWebURLtest(context, "profile");
+        //   },
+        //   child: Icon(
+        //     Icons.edit,
+        //     size: 20,
+        //   ),
+        // ),
         _buildDetailRow("Mobile", clientData?.mOBILENO ?? "N/A", theme),
         _buildDetailRow("PAN", clientData?.pANNO ?? "N/A", theme),
         _buildDetailRow(
@@ -3183,7 +3192,7 @@ class ReportsScreen extends ConsumerWidget {
                                 topRight: Radius.circular(16),
                               ),
                             ),
-                            isDismissible: true,
+                            isDismissible: false,
                             enableDrag: false,
                             useSafeArea: true,
                             context: context,

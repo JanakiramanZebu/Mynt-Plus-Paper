@@ -42,7 +42,7 @@ class _MfUPIProcessingScreen extends ConsumerState<MfUPIProcessingScreen> {
       await mfProv.getpaymentstatus(widget.data, context); // Use await if async
 
       final status = mfProv.statusCheckUpi?.status;
-      if ((status == 'PAYMENT REJECTED') || (status == 'PAYMENT COMPLETED')) {
+      if ( mfProv.statusCheckUpi?.stat == 'Not_Ok' || (status == 'PAYMENT REJECTED') || (status == 'PAYMENT COMPLETED' ||status ==  'PAYMENT PROCESSING')) {
         _timer?.cancel(); // This is safe even if already cancelled
         _autoPopTimer?.cancel(); // Cancel auto-pop if running
 
@@ -51,6 +51,10 @@ class _MfUPIProcessingScreen extends ConsumerState<MfUPIProcessingScreen> {
 
         if (Navigator.of(context).canPop()) {
           if (mfProv.paymentName == "UPI") {
+            Navigator.of(context).pop();
+          }
+          if (mfProv.paymentName == "NET BANKING") {
+            Navigator.of(context).pop();
             Navigator.of(context).pop();
           }
           showModalBottomSheet(
@@ -64,17 +68,18 @@ class _MfUPIProcessingScreen extends ConsumerState<MfUPIProcessingScreen> {
             ),
             builder: (context) => MfPaymentRespAlert(
               upiData: mfProv.statusCheckUpi?.toJson(),
+              conditionval : mfProv.statusCheckUpi?.stat == 'Not_Ok' ? mfProv.statusCheckUpi?.remarks : '',
             ),
           );
         }
         ScaffoldMessenger.of(context)
             .showSnackBar(warningMessage(context, '$status'));
             mfProv.fetchmfsiplist();
-      mfProv.fetchMfOrderbook(context);
+        mfProv.fetchMfOrderbook(context);
       }
     });
 
-    _autoPopTimer = Timer(const Duration(minutes: 1), () {
+    _autoPopTimer = Timer(const Duration(minutes: 3), () {
       _timer?.cancel(); // Also stop periodic timer here as a fallback
       mfProv.setterformftrigger(false);
       ref.read(mfProvider).IsPaymentCalled(false);
@@ -92,7 +97,7 @@ class _MfUPIProcessingScreen extends ConsumerState<MfUPIProcessingScreen> {
             ),
             builder: (context) => MfPaymentRespAlert(
               upiData: mfProv.statusCheckUpi?.toJson(),
-              timeout : 'timeout'
+              conditionval : 'timeout'
             ),
           );
         ScaffoldMessenger.of(context)

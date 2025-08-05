@@ -148,7 +148,7 @@ class MFAllocation extends ConsumerWidget {
                             : colors.primaryLight,
                         textOverflow: TextOverflow.ellipsis,
                         theme: theme.isDarkMode,
-                        fw: 3),
+                        fw: 2),
                   ),
               ],
             ],

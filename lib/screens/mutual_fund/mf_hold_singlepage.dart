@@ -25,6 +25,7 @@ import '../mutual_fund/mf_cancel_alert.dart';
 import '../../routes/route_names.dart';
 import '../../sharedWidget/snack_bar.dart';
 import '../../models/mf_model/mutual_fundmodel.dart';
+import 'mf_stock_detail_screen.dart';
 
 class mfholdsinlepage extends StatefulWidget {
   const mfholdsinlepage({super.key});
@@ -45,7 +46,7 @@ class _mfholdsinlepage extends State<mfholdsinlepage>
     return value >= 0 ? Colors.green : Colors.red;
   }
 
-   MutualFundList _convertHoldingToMutualFundList(dynamic holdingData) {
+  MutualFundList _convertHoldingToMutualFundList(dynamic holdingData) {
     return MutualFundList(
       iSIN: holdingData.iSIN,
       schemeCode: holdingData.sCHEMECODE,
@@ -133,60 +134,86 @@ class _mfholdsinlepage extends State<mfholdsinlepage>
                                 color: Colors.transparent,
                                 // shape: const CircleBorder(),
                                 child: InkWell(
-                                    splashColor: theme.isDarkMode
-                                                ? colors.splashColorDark
-                                                : colors.splashColorLight,
-                                            highlightColor: theme.isDarkMode
-                                                ? colors.highlightDark
-                                                : colors.highlightLight,
+                                  splashColor: theme.isDarkMode
+                                      ? colors.splashColorDark
+                                      : colors.splashColorLight,
+                                  highlightColor: theme.isDarkMode
+                                      ? colors.highlightDark
+                                      : colors.highlightLight,
                                   onTap: () async {
-                                    await Future.delayed(const Duration(milliseconds: 150));
+                                    await Future.delayed(
+                                        const Duration(milliseconds: 150));
                                     try {
                                       final isin = data.iSIN;
                                       if (isin != null) {
                                         mfdata.loaderfun();
                                         await mfdata.fetchFactSheet(isin);
                                         mfdata.fetchmatchisan(isin);
-                                        Navigator.pushNamed(
-                                          context,
-                                          Routes.mfStockDetail,
-                                          arguments: _convertHoldingToMutualFundList(data),
+
+                                        showModalBottomSheet(
+                                          isScrollControlled: true,
+                                          shape: const RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.only(
+                                              topLeft: Radius.circular(16),
+                                              topRight: Radius.circular(16),
+                                            ),
+                                          ),
+                                          isDismissible: true,
+                                          enableDrag: false,
+                                          useSafeArea: true,
+                                          context: context,
+                                          builder: (context) => Container(
+                                              padding: EdgeInsets.only(
+                                                bottom: MediaQuery.of(context)
+                                                    .viewInsets
+                                                    .bottom,
+                                              ),
+                                              child: MFStockDetailScreen(
+                                                  mfStockData:
+                                                      _convertHoldingToMutualFundList(
+                                                          data))),
                                         );
                                       } else {
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                            successMessage(context, "Missing fund information"));
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(successMessage(
+                                                context,
+                                                "Missing fund information"));
                                       }
                                     } catch (e) {
-                                      ScaffoldMessenger.of(context).showSnackBar(successMessage(
-                                          context, "Error loading fund details: ${e.toString()}"));
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(successMessage(context,
+                                              "Error loading fund details: ${e.toString()}"));
                                     }
                                   },
                                   child: Padding(
                                     padding: const EdgeInsets.all(8.0),
                                     child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
                                         SizedBox(
-                                          width: MediaQuery.of(context).size.width * 0.7,
+                                          width: MediaQuery.of(context)
+                                                  .size
+                                                  .width *
+                                              0.7,
                                           child: TextWidget.titleText(
                                               // align: TextAlign.start,
                                               text: data.name ?? "Unknown Fund",
                                               color: theme.isDarkMode
                                                   ? colors.textPrimaryDark
                                                   : colors.textPrimaryLight,
-                                              textOverflow: TextOverflow.ellipsis,
+                                              textOverflow:
+                                                  TextOverflow.ellipsis,
                                               theme: theme.isDarkMode,
                                               maxLines: 2,
                                               fw: 1),
                                         ),
-                                    
                                         SvgPicture.asset(
-                                                   assets.rightarrowcur,
-                                                   width: 20,
-                                                   height: 20,
-                                                   color: colors.iconColor,
-                                                 ),
-                                             
+                                          assets.rightarrowcur,
+                                          width: 20,
+                                          height: 20,
+                                          color: colors.iconColor,
+                                        ),
                                       ],
                                     ),
                                   ),
@@ -269,7 +296,7 @@ class _mfholdsinlepage extends State<mfholdsinlepage>
             theme,
           ),
 
-            rowOfInfoData(
+          rowOfInfoData(
             "NAV",
             "${data.curNav ?? '0'}",
             theme,

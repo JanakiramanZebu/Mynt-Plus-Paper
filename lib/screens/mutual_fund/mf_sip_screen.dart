@@ -31,13 +31,18 @@ class MFSipdetScreen extends ConsumerWidget {
             isLoading: mfData.bestmfloader ?? false,
             child: mfData.mfsiporderlist?.data?.isEmpty ?? true
                 ? const Center(child: NoDataFound())
-                : Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: _buildSipOrderList(context, mfData, theme),
-                      ),
-                    ],
+                : RefreshIndicator(
+                    onRefresh: () async {
+                      await mfData.fetchmfsipnotlivelist();
+                    },
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: _buildSipOrderList(context, mfData, theme),
+                        ),
+                      ],
+                    ),
                   ),
           ),
         ],
@@ -53,7 +58,6 @@ class MFSipdetScreen extends ConsumerWidget {
       // padding: const EdgeInsets.all(0),
       itemCount: (mfData.mfsiporderlist?.data?.length ?? 0) + 1,
       itemBuilder: (BuildContext context, int index) {
-       
         if (index == mfData.mfsiporderlist?.data?.length) {
           return InkWell(
             onTap: () {
@@ -91,7 +95,7 @@ class MFSipdetScreen extends ConsumerWidget {
             ),
           );
         }
-        
+
         final item = mfData.mfsiporderlist?.data?[index];
         if (item == null) return const SizedBox.shrink();
 
@@ -161,7 +165,8 @@ class MFSipdetScreen extends ConsumerWidget {
                         ),
                         child: TextWidget.paraText(
                             // align: TextAlign.start,
-                            text: item.status == "ACTIVE" ? "Live" : item.status,
+                            text:
+                                item.status == "ACTIVE" ? "LIVE" : item.status,
                             color: item.status == "ACTIVE"
                                 ? colors.profit
                                 : colors.loss,
@@ -199,7 +204,7 @@ class MFSipdetScreen extends ConsumerWidget {
                       //     maxLines: 2,
                       //     fw: 3),
                       // const SizedBox(width: 5),
-                      if (item.status == "ACTIVE" && item.startDate != null)
+                      if (item.status == "ACTIVE" && item.NextSIPDate != "")
                         TextWidget.paraText(
                             align: TextAlign.start,
                             text: "Due Date : ${item.NextSIPDate}",

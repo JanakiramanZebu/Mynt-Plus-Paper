@@ -364,15 +364,15 @@ class MFOverview extends ConsumerWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         _buildMetricColumn(
-            "Aum (cr)", _formatAum(mfStockData.aUM), theme),
+            "Aum (cr)", _formatAum(mfData.factSheetDataModel?.data?.AUM), theme),
         _buildMetricColumn(
             "NAV",
             _formatValue(mfData.factSheetDataModel?.data?.currentNAV),
             theme),
         _buildMetricColumn("Min. Inv",
-            _formatValue(mfStockData.minimumPurchaseAmount), theme),
+            _formatValue(mfData.factSheetDataModel?.data?.purchaseMinAmount), theme),
         _buildMetricColumn("5Yr CAGR",
-            _formatYearData(mfStockData.fIVEYEARDATA), theme),
+            _formatYearData(mfData.factSheetDataModel?.data?.fiveYear), theme),
       ],
     );
   }

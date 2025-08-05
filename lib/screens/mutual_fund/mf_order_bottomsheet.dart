@@ -731,15 +731,16 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
 
                                       mfOrder.isValidUpiId(widget.data);
 
-                                      if (isUpiValid &&
-                                              mfOrder.upiId.text.isNotEmpty ||
+                                      if ((isUpiValid &&
+                                              mfOrder.upiId.text.isNotEmpty) ||
                                           isNetBanking) {
-                                        // Set loading state immediately when button is pressed
+                                        // Show loading
                                         mfOrder.setInvestLoader(true);
                                         mfOrder.setLoadingMessage(
                                             "Processing payment...");
                                         mfOrder.IsPaymentCalled(true);
-                                        
+
+                                        // Call UPI Payment trigger
                                         await mfOrder.upipaymenttrigger(
                                           context,
                                           mfOrder
@@ -750,72 +751,120 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                           mfOrder.paymentName,
                                         );
 
-                                        if (mfOrder.upiApiresponse != null &&
-                                            mfOrder.upiApiresponse?.stat ==
-                                                "Ok") {
-                                          if (isUpi) {
-                                          } else if (isNetBanking) {
-                                            final url = Uri.parse(
-                                              'https://v3.mynt.in/mfapi${mfOrder.upiApiresponse!.file!}',
-                                            );
-                                            //  mfOrder.IsPaymentCalled(false);
-                                            // Navigator.pop(context);
+                                        final upiResponse =
+                                            mfOrder.upiApiresponse;
 
-                                            // Navigate to a new screen showing InAppWebView
-                                            Navigator.of(context).push(
-                                              MaterialPageRoute(
-                                                builder: (context) => Scaffold(
-                                                  appBar: AppBar(
-                                                    title: const Text(
-                                                        "Net Banking"),
-                                                    leading: IconButton(
-                                                      icon: const Icon(Icons
-                                                          .arrow_back_ios_new),
-                                                      onPressed: () {
+                                        if (upiResponse != null) {
+                                          if (upiResponse.stat == "Ok") {
+                                            // ✅ Success Case
+                                            // if (isUpi) {
+                                            //   // UPI Success – show processing bottom sheet
+                                            //   showModalBottomSheet(
+                                            //     context: context,
+                                            //     isScrollControlled: true,
+                                            //     isDismissible: false,
+                                            //     enableDrag: false,
+                                            //     shape:
+                                            //         const RoundedRectangleBorder(
+                                            //       borderRadius:
+                                            //           BorderRadius.vertical(
+                                            //               top: Radius.circular(
+                                            //                   15)),
+                                            //     ),
+                                            //     builder: (context) =>
+                                            //         WillPopScope(
+                                            //       onWillPop: () async =>
+                                            //           !mfOrder.ispaymentcalled,
+                                            //       child: MfUPIProcessingScreen(
+                                            //           data: ''),
+                                            //     ),
+                                            //   );
+                                            // } else
+                                            if (isNetBanking) {
+                                              // Net Banking Success – open WebView
+                                              // Navigator.pop(context);
+
+                                              final url = Uri.parse(
+                                                  'https://v3.mynt.in/mfapi${upiResponse.file!}');
+                                              Navigator.of(context).push(
+                                                MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      Scaffold(
+                                                    appBar: AppBar(
+                                                      title: const Text(
+                                                          "Net Banking"),
+                                                      leading: IconButton(
+                                                        icon: const Icon(Icons
+                                                            .arrow_back_ios_new),
+                                                        onPressed: () {
+                                                          Navigator.pop(
+                                                              context);
+                                                              Navigator.pop(
+                                                              context);
+                                                          mfOrder
+                                                              .threeSecondTimer
+                                                              ?.cancel();
+                                                          mfOrder.autoPopTimer
+                                                              ?.cancel();
+                                                        },
+                                                      ),
+                                                    ),
+                                                    body: WillPopScope(
+                                                      onWillPop: () async {
                                                         Navigator.pop(context);
+                                                        Navigator.pop(
+                                                              context);
                                                         mfOrder.threeSecondTimer
                                                             ?.cancel();
                                                         mfOrder.autoPopTimer
                                                             ?.cancel();
+                                                        return true;
                                                       },
+                                                      child: InAppWebView(
+                                                        initialUrlRequest:
+                                                            URLRequest(
+                                                                url: WebUri(url
+                                                                    .toString())),
+                                                        initialOptions:
+                                                            InAppWebViewGroupOptions(
+                                                          crossPlatform:
+                                                              InAppWebViewOptions(),
+                                                        ),
+                                                        onWebViewCreated:
+                                                            (controller) {
+                                                          ConstantName
+                                                                  .webViewController =
+                                                              controller;
+                                                        },
+                                                      ),
                                                     ),
                                                   ),
-                                                  body: WillPopScope(
-                                                    onWillPop: () async {
-                                                      Navigator.pop(context);
-                                                      mfOrder.threeSecondTimer
-                                                          ?.cancel();
-                                                      mfOrder.autoPopTimer
-                                                          ?.cancel();
-                                                      // print("objectobjectobjectobjectobjectobjectobjectobject");
-                                                      return true;
-                                                    },
-                                                    child: InAppWebView(
-                                                      initialUrlRequest:
-                                                          URLRequest(
-                                                        url: WebUri(
-                                                            url.toString()),
-                                                      ),
-                                                      initialOptions:
-                                                          InAppWebViewGroupOptions(
-                                                        crossPlatform:
-                                                            InAppWebViewOptions(),
-                                                      ),
-                                                      onWebViewCreated:
-                                                          (InAppWebViewController
-                                                              controller) {
-                                                        ConstantName
-                                                                .webViewController =
-                                                            controller;
-                                                      },
-                                                      onProgressChanged:
-                                                          (InAppWebViewController
-                                                                  controller,
-                                                              int progress) {
-                                                        // Optional: add loading logic or progress indicator
-                                                      },
-                                                    ),
-                                                  ),
+                                                ),
+                                              );
+                                            }
+                                          } else {
+                                            // ❌ Failure Case – show error bottom sheet
+                                            showModalBottomSheet(
+                                              context: context,
+                                              isScrollControlled: true,
+                                              isDismissible: false,
+                                              enableDrag: false,
+                                              shape:
+                                                  const RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.vertical(
+                                                        top: Radius.circular(
+                                                            15)),
+                                              ),
+                                              builder: (context) =>
+                                                  WillPopScope(
+                                                onWillPop: () async =>
+                                                    !mfOrder.ispaymentcalled,
+                                                child: MfPaymentRespAlert(
+                                                  upiData: upiResponse.data!
+                                                      .toJson(),
+                                                  conditionval:
+                                                      'reinitiateerror',
                                                 ),
                                               ),
                                             );
@@ -840,22 +889,28 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                                 ? "0"
                                                 : mfOrder.endDate,
                                             mfOrder.mandateId);
-                                            if (mfOrder.xsipOrderResponces?.stat == "Ok" || mfOrder.xsipOrderResponces?.stat == "Not_Ok" ) {
-                                              showModalBottomSheet(
-                                                context: context,
-                                                isScrollControlled: true,
-                                                enableDrag: false,
-                                                shape: const RoundedRectangleBorder(
-                                                  borderRadius: BorderRadius.vertical(
-                                                    top: Radius.circular(15),
-                                                  ),
-                                                ),
-                                                builder: (context) => MfPaymentRespAlert(
-                                                  upiData: mfOrder.xsipOrderResponces?.toJson(),
-                                                ),
-                                              );
-                                            }
-                                            
+                                        if (mfOrder.xsipOrderResponces?.stat ==
+                                                "Ok" ||
+                                            mfOrder.xsipOrderResponces?.stat ==
+                                                "Not_Ok") {
+                                          showModalBottomSheet(
+                                            context: context,
+                                            isScrollControlled: true,
+                                            enableDrag: false,
+                                            shape: const RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.vertical(
+                                                top: Radius.circular(15),
+                                              ),
+                                            ),
+                                            builder: (context) =>
+                                                MfPaymentRespAlert(
+                                                    upiData: mfOrder
+                                                        .xsipOrderResponces
+                                                        ?.toJson(),
+                                                    conditionval: ''),
+                                          );
+                                        }
                                       }
                                     }
                                   },

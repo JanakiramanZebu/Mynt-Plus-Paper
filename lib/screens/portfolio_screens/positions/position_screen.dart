@@ -401,7 +401,7 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
                               color: theme.isDarkMode
                                   ? colors.secondaryDark
                                   : colors.secondaryLight,
-                              // fw: 2,
+                              fw: 2,
                             ),
                           ),
                         ),

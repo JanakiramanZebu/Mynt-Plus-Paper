@@ -125,8 +125,6 @@ class _OrderHeader extends StatelessWidget {
               : colors.textPrimaryLight,
         ),
         _StatusBadge(order: order, theme: theme),
-
-      
       ],
     );
   }
@@ -158,11 +156,9 @@ class _OrderFooter extends StatelessWidget {
                   ? colors.textSecondaryDark
                   : colors.textSecondaryLight,
             ),
-             
           ],
         ),
-
-         TextWidget.paraText(
+        TextWidget.paraText(
           text: getFormatter(
             noDecimal: true,
             v4d: false,

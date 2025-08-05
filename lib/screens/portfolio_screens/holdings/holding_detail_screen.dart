@@ -806,7 +806,7 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
                                                   color:
                                                       colors.btnOutlinedBorder,
                                                   theme: false,
-                                                  // fw: 2
+                                                  fw: 2
                                                 ),
                                               ],
                                             ),

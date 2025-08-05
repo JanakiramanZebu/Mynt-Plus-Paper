@@ -232,9 +232,17 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                               await mfOrder.invertfun(
                                   isin, schemeCode, context);
                             }
+                            if (mfOrder.mfOrderTpye != "One-time") {
+                              String amt =
+                                  widget.mfData.minimumPurchaseAmount ?? "0";
+                              mfOrder.invAmt.text = amt.split('.').first;
+                            } else {
+                              String amt =
+                                  widget.mfData.minimumPurchaseAmount ?? "0";
+                              mfOrder.installmentAmt.text =
+                                  amt.split('.').first;
+                            }
 
-                            mfOrder.invAmt.text =
-                                "${widget.mfData.minimumPurchaseAmount}";
                             ref.read(fundProvider).fetchFunds(context);
                             ref.read(transcationProvider).initialdata(context);
 
@@ -688,11 +696,12 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                             child: CustomTextFormField(
                                 textAlign: TextAlign.start,
                                 fillColor: colors.btnBg,
-                                hintText: mfOrder.mfOrderTpye == "One-time"
-                                    ? '${widget.mfData.minimumPurchaseAmount}'
-                                    : '${widget.mfData.faceValue}',
+                                // hintText: mfOrder.mfOrderTpye == "One-time"
+                                //     ? '${widget.mfData.minimumPurchaseAmount}'
+                                //     : '${widget.mfData.faceValue}',
                                 hintStyle: textStyle(const Color(0xff666666),
                                     15, FontWeight.w400),
+                                keyboardType: TextInputType.number,
                                 inputFormate: [
                                   FilteringTextInputFormatter.digitsOnly
                                 ],
@@ -825,7 +834,7 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                                             color: theme.isDarkMode
                                                 ? colors.primaryDark
                                                 : colors.primaryLight,
-                                            fw: 0),
+                                            fw: 2),
                                         Icon(
                                           Icons.keyboard_arrow_down_outlined,
                                           size: 20,
@@ -1359,99 +1368,101 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                                 //     mfOrder.upiError == "" &&
                                 //     mfOrder.installmentAmtError == "" &&
                                 //     mfOrder.invDurationError == "") {
-                                if (mfOrder.invAmtError == ""
-                                    // &&
-                                    //     mfOrder.installmentAmtError == ""
-                                    ) {
-                                  if (mfOrder.mfOrderTpye == "One-time") {
-                                    Navigator.pop(context);
 
-                                    final startTime = DateTime.now();
-                                    // print(mfOrder.isValidUpiId(widget.mfData));
-                                    // print(widget.mfData);
-                                    // if (mfOrder.isValidUpiId(widget.mfData) == true) {
-                                    // await mfPlaceorder(widget.mfData, mfOrder, context);
+                                if (mfOrder.mfOrderTpye == "One-time" &&
+                                    mfOrder.invAmtError == "") {
+                                  Navigator.pop(context);
 
-                                    // CallUpiNetbanking(
-                                    // context, mfOrder, theme, widget.mfData);
-                                    // } else if (mfOrder.paymentName != "UPI") {
-                                    // mfPlaceorder(widget.mfData, mfOrder, context);
-                                    // }
-                                    showModalBottomSheet(
-                                      context: context,
-                                      isScrollControlled: true,
-                                      isDismissible:
+                                  final startTime = DateTime.now();
+                                  // print(mfOrder.isValidUpiId(widget.mfData));
+                                  // print(widget.mfData);
+                                  // if (mfOrder.isValidUpiId(widget.mfData) == true) {
+                                  // await mfPlaceorder(widget.mfData, mfOrder, context);
+
+                                  // CallUpiNetbanking(
+                                  // context, mfOrder, theme, widget.mfData);
+                                  // } else if (mfOrder.paymentName != "UPI") {
+                                  // mfPlaceorder(widget.mfData, mfOrder, context);
+                                  // }
+                                  showModalBottomSheet(
+                                    context: context,
+                                    isScrollControlled: true,
+                                    isDismissible:
+                                        mfOrder.ispaymentcalled != true,
+                                    enableDrag: false,
+                                    shape: const RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.vertical(
+                                        top: Radius.circular(15),
+                                      ),
+                                    ),
+                                    builder: (context) => WillPopScope(
+                                      onWillPop: () async =>
                                           mfOrder.ispaymentcalled != true,
-                                      enableDrag: false,
-                                      shape: const RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.vertical(
-                                          top: Radius.circular(15),
-                                        ),
+                                      child: MfOrderBottomsheet(
+                                        data: widget.mfData,
                                       ),
-                                      builder: (context) => WillPopScope(
-                                        onWillPop: () async =>
-                                            mfOrder.ispaymentcalled != true,
-                                        child: MfOrderBottomsheet(
-                                          data: widget.mfData,
-                                        ),
-                                      ),
-                                    );
+                                    ),
+                                  );
 
-                                    await mfPlaceorder(
-                                        widget.mfData, mfOrder, context);
+                                  await mfPlaceorder(
+                                      widget.mfData, mfOrder, context);
 
-                                    final elapsed =
-                                        DateTime.now().difference(startTime);
-                                    if (elapsed < const Duration(seconds: 2)) {
-                                      final remaining =
-                                          const Duration(seconds: 2) - elapsed;
-                                      await Future.delayed(remaining);
-                                    }
-
-                                    if (mfOrder.investloader == false) {
-                                      if (mfOrder.mfPlaceOrderResponces ==
-                                              null &&
-                                          mfOrder.mfPlaceOrderResponces?.stat !=
-                                              'Ok') {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(warningMessage(
-                                                context,
-                                                "${mfOrder.mfPlaceOrderResponces?.remarks}"));
-                                      }
-                                    }
-
-                                    // CallUpiNetbanking(
-                                    //     context, mfOrder, theme, widget.mfData);
-                                  } else {
-                                    _showBottomSheet(
-                                        context,
-                                        MfOrderBottomsheet(
-                                          data: widget.mfData,
-                                        ));
-                                    // if (mfOrder.mandateStatus != "APPROVED") {
-                                    //   ScaffoldMessenger.of(context).showSnackBar(
-                                    //       successMessage(context,
-                                    //           "Mandate is not Approved yet"));
-                                    // } else {
-                                    // mfOrder.fetchXsipPlaceOrder(
-                                    //     context,
-                                    //     "${double.parse(mfOrder.installmentAmt.text).toInt() >= 200000 ? "${widget.mfData.schemeCode}-L1" : widget.mfData.schemeCode}",
-                                    //     mfOrder.freqName == "Daily"
-                                    //         ? "0"
-                                    //         : mfOrder.dates,
-                                    //     mfOrder.freqName,
-                                    //     mfOrder.installmentAmt.text,
-                                    //     mfOrder.invDuration.text,
-                                    //     mfOrder.freqName == "Daily"
-                                    //         ? "0"
-                                    //         : mfOrder.endDate,
-                                    //     mfOrder.mandateId);
-                                    // }
+                                  final elapsed =
+                                      DateTime.now().difference(startTime);
+                                  if (elapsed < const Duration(seconds: 2)) {
+                                    final remaining =
+                                        const Duration(seconds: 2) - elapsed;
+                                    await Future.delayed(remaining);
                                   }
+
+                                  if (mfOrder.investloader == false) {
+                                    if (mfOrder.mfPlaceOrderResponces == null &&
+                                        mfOrder.mfPlaceOrderResponces?.stat !=
+                                            'Ok') {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(warningMessage(context,
+                                              "${mfOrder.mfPlaceOrderResponces?.remarks}"));
+                                    }
+                                  }
+
+                                  // CallUpiNetbanking(
+                                  //     context, mfOrder, theme, widget.mfData);
+                                } else if (mfOrder.mfOrderTpye == "SIP" &&
+                                    mfOrder.installmentAmtError == "") {
+                                  _showBottomSheet(
+                                      context,
+                                      MfOrderBottomsheet(
+                                        data: widget.mfData,
+                                      ));
+                                  // if (mfOrder.mandateStatus != "APPROVED") {
+                                  //   ScaffoldMessenger.of(context).showSnackBar(
+                                  //       successMessage(context,
+                                  //           "Mandate is not Approved yet"));
+                                  // } else {
+                                  // mfOrder.fetchXsipPlaceOrder(
+                                  //     context,
+                                  //     "${double.parse(mfOrder.installmentAmt.text).toInt() >= 200000 ? "${widget.mfData.schemeCode}-L1" : widget.mfData.schemeCode}",
+                                  //     mfOrder.freqName == "Daily"
+                                  //         ? "0"
+                                  //         : mfOrder.dates,
+                                  //     mfOrder.freqName,
+                                  //     mfOrder.installmentAmt.text,
+                                  //     mfOrder.invDuration.text,
+                                  //     mfOrder.freqName == "Daily"
+                                  //         ? "0"
+                                  //         : mfOrder.endDate,
+                                  //     mfOrder.mandateId);
+                                  // }
                                 } else {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                      warningMessage(context,
-                                          "Please check if you have entered all Data Correctly"));
+                                  if (mfOrder.mfOrderTpye == "One-time") {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                        warningMessage(context,
+                                            "Enter a valid minimum investment amount."));
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                        warningMessage(context,
+                                            "Enter a valid minimum installment amount."));
+                                  }
                                 }
                               }
                             },

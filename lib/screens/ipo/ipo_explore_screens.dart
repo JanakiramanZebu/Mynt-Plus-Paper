@@ -124,7 +124,7 @@ class _TabBarSection extends StatelessWidget {
           theme: false,
           color:
               theme.isDarkMode ? colors.secondaryDark : colors.secondaryLight,
-          fw: 0),
+          fw: 2),
       controller: tabController,
       tabs: tabItems,
     );
