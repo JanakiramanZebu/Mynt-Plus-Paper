@@ -30,7 +30,8 @@ import 'mf_processing_screen.dart';
 
 class MfOrderBottomsheet extends StatefulWidget {
   final dynamic data;
-  const MfOrderBottomsheet({super.key, required this.data});
+  final String? condval;
+  const MfOrderBottomsheet({super.key, required this.data, this.condval});
 
   @override
   State<MfOrderBottomsheet> createState() => _MfOrderBottomsheet();
@@ -157,7 +158,7 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                   SizedBox(
                     height: screenheight * 0.24,
                     child: MfUPIProcessingScreen(
-                      data: mfOrder.mfPlaceOrderResponces!.orderId,
+                      data: widget.data.orderId,
                     ),
                   ),
                 ] else ...[
@@ -625,7 +626,7 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                                   textCtrl: mfOrder.upiId,
                                                   onChanged: (value) {
                                                     mfOrder.isValidUpiId(
-                                                        widget.data);
+                                                        widget.data.accVPA, '');
                                                   },
                                                 ),
                                               ),
@@ -729,8 +730,9 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                       final isUpiValid =
                                           isUpi ? mfOrder.upiError == '' : true;
 
-                                      mfOrder.isValidUpiId(widget.data);
-
+                                      mfOrder.isValidUpiId(widget.data,
+                                          widget.condval.toString());
+                                      
                                       if ((isUpiValid &&
                                               mfOrder.upiId.text.isNotEmpty) ||
                                           isNetBanking) {
@@ -743,10 +745,8 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                         // Call UPI Payment trigger
                                         await mfOrder.upipaymenttrigger(
                                           context,
-                                          mfOrder
-                                              .mfPlaceOrderResponces!.orderId,
-                                          mfOrder
-                                              .mfPlaceOrderResponces!.orderVal,
+                                          widget.data.orderId!,
+                                          widget.data.orderVal!,
                                           mfOrder.upiId.text,
                                           mfOrder.paymentName,
                                         );
@@ -799,7 +799,7 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                                         onPressed: () {
                                                           Navigator.pop(
                                                               context);
-                                                              Navigator.pop(
+                                                          Navigator.pop(
                                                               context);
                                                           mfOrder
                                                               .threeSecondTimer
@@ -812,8 +812,7 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                                     body: WillPopScope(
                                                       onWillPop: () async {
                                                         Navigator.pop(context);
-                                                        Navigator.pop(
-                                                              context);
+                                                        Navigator.pop(context);
                                                         mfOrder.threeSecondTimer
                                                             ?.cancel();
                                                         mfOrder.autoPopTimer
