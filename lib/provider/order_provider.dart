@@ -1220,7 +1220,7 @@ class OrderProvider extends DefaultChangeNotifier {
 
   exitOrders(context) async {
     for (var element in _openOrder!) {
-      if (element.isExitSelection!) {
+      if (element.isExitSelection ?? false) {
         if ((element.sPrdtAli == "BO" || element.sPrdtAli == "CO") &&
             element.snonum != null) {
           await fetchExitSNOOrd(element.snonum.toString(),
