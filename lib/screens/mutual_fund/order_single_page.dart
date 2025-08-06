@@ -10,8 +10,10 @@ import 'package:mynt_plus/sharedWidget/functions.dart';
 import 'package:mynt_plus/sharedWidget/ipo_time_line.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 
+import '../../provider/fund_provider.dart';
 import '../../provider/mf_provider.dart';
 import '../../provider/thems.dart';
+import '../../provider/transcation_provider.dart';
 import '../../res/global_state_text.dart';
 import '../../res/res.dart';
 import '../../sharedWidget/custom_drag_handler.dart';
@@ -87,6 +89,10 @@ class _mforderdetscreen extends State<mforderdetscreen>
                                     'PAYMENT REJECTED')
                               ElevatedButton(
                                 onPressed: () async {
+                                   ref.read(fundProvider).fetchFunds(context);
+                                    ref.read(transcationProvider).initialdata(context);
+                                    mfdata.fetchUpiDetail('', context);
+
                                   final isUpi = mfdata.paymentName == 'UPI';
                                   final isNetBanking =
                                       mfdata.paymentName == 'NET BANKING';
@@ -99,57 +105,62 @@ class _mforderdetscreen extends State<mforderdetscreen>
                                   // Navigator.pop(context);
 
                                   // Set loading state immediately when button is pressed
+                                    Navigator.pop(context);
+                                 _showBottomSheet(
+                                        context,
+                                        MfOrderBottomsheet(
+                                          data: mfdata.mforderdet?.data![0],
+                                        ));
+                                  // await mfdata.upipaymenttrigger(
+                                  //   context,
+                                  //   mfdata.mforderdet?.data![0].orderId,
+                                  //   mfdata.mforderdet?.data![0].orderVal,
+                                  //   mfdata.mforderdet?.data![0].accVPA,
+                                  //   mfdata.mforderdet?.data![0].paymentType,
+                                  // );
 
-                                  await mfdata.upipaymenttrigger(
-                                    context,
-                                    mfdata.mforderdet?.data![0].orderId,
-                                    mfdata.mforderdet?.data![0].orderVal,
-                                    mfdata.mforderdet?.data![0].accVPA,
-                                    mfdata.mforderdet?.data![0].paymentType,
-                                  );
-
-                                  if (mfdata.upiApiresponse != null &&
-                                      mfdata.upiApiresponse?.stat == "Ok") {
+                                  // if (mfdata.upiApiresponse != null &&
+                                  //     mfdata.upiApiresponse?.stat == "Ok") {
                                     
-                                      showModalBottomSheet(
-                                        context: context,
-                                        isScrollControlled: true,
-                                        isDismissible: false,
-                                        enableDrag: false,
-                                        shape: const RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.vertical(
-                                            top: Radius.circular(15),
-                                          ),
-                                        ),
-                                        builder: (context) => WillPopScope(
-                                          onWillPop: () async =>
-                                              mfdata.ispaymentcalled != true,
-                                          child: MfUPIProcessingScreen(
-                                            data: mfdata.mforderdet?.data![0].orderId,
-                                          ),
-                                        ),
-                                      );
-                                    } else {
-                                      showModalBottomSheet(
-                                        context: context,
-                                        isScrollControlled: true,
-                                        isDismissible: false,
-                                        enableDrag: false,
-                                        shape: const RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.vertical(
-                                            top: Radius.circular(15),
-                                          ),
-                                        ),
-                                        builder: (context) => WillPopScope(
-                                          onWillPop: () async =>
-                                              mfdata.ispaymentcalled != true,
-                                          child: MfPaymentRespAlert(
-                                            upiData: mfdata.upiApiresponse?.emsg == '' ? mfdata.upiApiresponse!.data!.toJson() : mfdata.upiApiresponse!.toJson() ,
-                                            conditionval : 'reinitiateerror'
-                                          ),
-                                        ),
-                                      );
-                                    }
+                                  //     // showModalBottomSheet(
+                                  //     //   context: context,
+                                  //     //   isScrollControlled: true,
+                                  //     //   isDismissible: false,
+                                  //     //   enableDrag: false,
+                                  //     //   shape: const RoundedRectangleBorder(
+                                  //     //     borderRadius: BorderRadius.vertical(
+                                  //     //       top: Radius.circular(15),
+                                  //     //     ),
+                                  //     //   ),
+                                  //     //   builder: (context) => WillPopScope(
+                                  //     //     onWillPop: () async =>
+                                  //     //         mfdata.ispaymentcalled != true,
+                                  //     //     child: MfUPIProcessingScreen(
+                                  //     //       data: mfdata.mforderdet?.data![0].orderId,
+                                  //     //     ),
+                                  //     //   ),
+                                  //     // );
+                                  //   } else {
+                                  //     showModalBottomSheet(
+                                  //       context: context,
+                                  //       isScrollControlled: true,
+                                  //       isDismissible: false,
+                                  //       enableDrag: false,
+                                  //       shape: const RoundedRectangleBorder(
+                                  //         borderRadius: BorderRadius.vertical(
+                                  //           top: Radius.circular(15),
+                                  //         ),
+                                  //       ),
+                                  //       builder: (context) => WillPopScope(
+                                  //         onWillPop: () async =>
+                                  //             mfdata.ispaymentcalled != true,
+                                  //         child: MfPaymentRespAlert(
+                                  //           upiData: mfdata.upiApiresponse?.emsg == '' ? mfdata.upiApiresponse!.data!.toJson() : mfdata.upiApiresponse!.toJson() ,
+                                  //           conditionval : 'reinitiateerror'
+                                  //         ),
+                                  //       ),
+                                  //     );
+                                  //   }
                                     // else if (isNetBanking) {
                                     //   final url = Uri.parse(
                                     //     'https://v3.mynt.in/mfapi${mfdata.upiApiresponse!.file!}',
@@ -530,4 +541,20 @@ class _mforderdetscreen extends State<mforderdetscreen>
       ],
     );
   }
+}
+
+_showBottomSheet(BuildContext context, Widget bottomSheet) {
+  showModalBottomSheet(
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      useSafeArea: true,
+      isDismissible: true,
+      backgroundColor: Colors.white,
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => Container(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+          ),
+          child: bottomSheet));
 }

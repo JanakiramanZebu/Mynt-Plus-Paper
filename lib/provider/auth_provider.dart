@@ -86,6 +86,7 @@ class AuthProvider extends DefaultChangeNotifier {
 
     // Clear any existing OTP errors
     optError = null;
+    
     notifyListeners();
   }
 

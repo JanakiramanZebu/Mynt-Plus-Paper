@@ -787,7 +787,7 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                                     ? mfOrder.invAmt
                                     : mfOrder.installmentAmt,
                                 onChanged: (value) {
-                                  mfOrder.isValidUpiId(widget.mfData);
+                                  mfOrder.isValidUpiId(widget.mfData,'');
                                 })),
                         if (mfOrder.mfOrderTpye == "One-time") ...[
                           if (mfOrder.invAmtError != null) ...[
@@ -1133,7 +1133,7 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                                         FontWeight.w600),
                                     textCtrl: mfOrder.upiId,
                                     onChanged: (value) {
-                                      mfOrder.isValidUpiId(widget.mfData);
+                                      mfOrder.isValidUpiId(widget.mfData,'');
                                     })),
                             if (mfOrder.upiError != null) ...[
                               Text("${mfOrder.upiError}",
@@ -1400,6 +1400,7 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                                           mfOrder.ispaymentcalled != true,
                                       child: MfOrderBottomsheet(
                                         data: widget.mfData,
+                                        condval : 'reinit',
                                       ),
                                     ),
                                   );
@@ -1713,7 +1714,7 @@ void CallUpiNetbanking(BuildContext context, MFProvider mfOrder,
                   ),
                   textCtrl: mfOrder.upiId,
                   onChanged: (value) {
-                    mfOrder.isValidUpiId(mfData);
+                    mfOrder.isValidUpiId(mfData,'');
                   },
                 ),
               ),
