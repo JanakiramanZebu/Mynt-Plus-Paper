@@ -199,45 +199,14 @@ class _OptionChainSSState extends ConsumerState<OptionChainSS> {
               // Add delay for visual feedback
               await Future.delayed(const Duration(milliseconds: 150));
 
-              if (!isBasketMode) {
-                // Show the basket bottom sheet
-                showModalBottomSheet(
-                  isScrollControlled: true,
-                  shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(16),
-                      topRight: Radius.circular(16),
-                    ),
-                  ),
-                  isDismissible: true,
-                  enableDrag: true,
-                  useSafeArea: true,
-                  context: context,
-                  builder: (context) => DraggableScrollableSheet(
-                    expand: false,
-                    initialChildSize: 0.9,
-                    minChildSize: 0.5,
-                    maxChildSize: 0.95,
-                    builder: (context, scrollController) => Container(
-                      padding: EdgeInsets.only(
-                        bottom: MediaQuery.of(context).viewInsets.bottom,
-                      ),
-                      child: _BasketBottomSheet(
-                          scrollController: scrollController),
-                    ),
-                  ),
-                ).then((_) {
-                  // When the modal is dismissed, update the state
-                  setState(() {
-                    isBasketMode = false;
-                  });
-                });
+              // Show the basket bottom sheet
 
-                setState(() {
-                  isBasketMode = true;
-                });
+              setState(() {
+                isBasketMode = !isBasketMode;
+              });
 
-                // Load basket data when enabling basket mode
+              // Load basket data when enabling basket mode
+              if (isBasketMode) {
                 final orderProv = ref.read(orderProvider);
                 await orderProv.getBasketName();
 
@@ -291,6 +260,14 @@ class _OptionChainSSState extends ConsumerState<OptionChainSS> {
                   // Buy/Sell buttons are hidden in option chain screen
                 ],
               ),
+
+              if (isBasketMode)
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: _BasketBottomSheet(),
+                ),
 
               // Backdrop is handled by showModalBottomSheet
 
@@ -1026,9 +1003,7 @@ Future<void> _placeOrderInput(BuildContext context, WidgetRef ref,
 
 // Enhanced Basket Bottom Sheet Widget with full BasketScripList functionality
 class _BasketBottomSheet extends ConsumerStatefulWidget {
-  final ScrollController? scrollController;
-
-  const _BasketBottomSheet({Key? key, this.scrollController}) : super(key: key);
+  const _BasketBottomSheet({Key? key}) : super(key: key);
 
   @override
   ConsumerState<_BasketBottomSheet> createState() => _BasketBottomSheetState();
@@ -1036,7 +1011,16 @@ class _BasketBottomSheet extends ConsumerStatefulWidget {
 
 class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
     with TickerProviderStateMixin {
-  bool _isVisible = false;
+  double _sheetHeight = 260.0;
+  final double _minHeight = 260.0;
+  late double _maxHeight;
+  bool _isExpanded = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _maxHeight = MediaQuery.of(context).size.height * 0.8;
+  }
 
   @override
   void initState() {
@@ -1090,59 +1074,80 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
     final theme = ref.watch(themeProvider);
     final orderProv = ref.watch(orderProvider);
 
-    return Container(
-      decoration: BoxDecoration(
-        color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(16),
-          topRight: Radius.circular(16),
-        ),
-      ),
-      child: Column(
-        children: [
-          // Fixed header section
-          Column(
-            children: [
-              // Handle bar
-              const CustomDragHandler(),
+    return GestureDetector(
+      onPanUpdate: (details) {
+        setState(() {
+          _sheetHeight =
+              (_sheetHeight - details.delta.dy).clamp(_minHeight, _maxHeight);
+        });
+      },
+      onPanEnd: (details) {
+        // Snap to min or max based on velocity and position
+        double velocity = details.velocity.pixelsPerSecond.dy;
+        double position = _sheetHeight / _maxHeight;
 
-              // Header with current basket name and action icons
-              _buildBasketHeader(theme, orderProv),
-              ListDivider(),
-
-              // Margins section (if basket has items)
-            ],
+        setState(() {
+          if (velocity > 500 || position < 0.3) {
+            // Snap to minimum
+            _sheetHeight = _minHeight;
+            _isExpanded = false;
+          } else {
+            // Snap to maximum
+            _sheetHeight = _maxHeight;
+            _isExpanded = true;
+          }
+        });
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        height: _sheetHeight,
+        decoration: BoxDecoration(
+          color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(16),
+            topRight: Radius.circular(16),
           ),
-
-          // Scrollable content section
-          Expanded(
-            child: SingleChildScrollView(
-              controller: widget.scrollController,
-              child: Column(
-                children: [
-                  if (orderProv.selectedBsktName.isNotEmpty &&
-                      orderProv.bsktScripList.isNotEmpty)
-                    _buildMarginsSection(theme, orderProv),
-                  // Content
-                  orderProv.bsktList.isEmpty
-                      ? _buildCreateBasketView(theme, orderProv)
-                      : _buildBasketContent(theme, orderProv),
-
-                  // Exchange validation warning (if needed)
-
-                  // Place Order Button (if basket has items and is valid)
-
-                  if (orderProv.bsktScripList.isNotEmpty &&
-                      _hasMultipleExchanges(orderProv.bsktScripList))
-                    _buildMultiExchangeWarning(),
-                  if (orderProv.selectedBsktName.isNotEmpty &&
-                      orderProv.bsktScripList.isNotEmpty)
-                    _buildPlaceOrderButton(theme, orderProv),
-                ],
-              ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 10,
+              offset: const Offset(0, -2),
             ),
-          ),
-        ],
+          ],
+        ),
+        child: Column(
+          children: [
+            // Fixed header section
+            const CustomDragHandler(),
+
+            // Header with current basket name and action icons
+            _buildBasketHeader(theme, orderProv),
+            ListDivider(),
+
+            // Scrollable content section
+            if (orderProv.selectedBsktName.isNotEmpty &&
+                orderProv.bsktScripList.isNotEmpty)
+              _buildMarginsSection(theme, orderProv),
+            // Content
+
+            Expanded(
+              child: orderProv.bsktList.isEmpty
+                  ? _buildCreateBasketView(theme, orderProv)
+                  : _buildBasketContent(theme, orderProv),
+            ),
+
+            // Exchange validation warning (if needed)
+
+            // Place Order Button (if basket has items and is valid)
+
+            if (orderProv.bsktScripList.isNotEmpty &&
+                _hasMultipleExchanges(orderProv.bsktScripList))
+              _buildMultiExchangeWarning(),
+            if (orderProv.selectedBsktName.isNotEmpty &&
+                orderProv.bsktScripList.isNotEmpty)
+              _buildPlaceOrderButton(theme, orderProv),
+          ],
+        ),
       ),
     );
   }
@@ -1345,39 +1350,40 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-           Center(
-      child: Padding(
-        padding:  EdgeInsets.only(top: 225),
-        child: SizedBox(
-          height: MediaQuery.of(context).size.height - 140,
-          child:  Column(
-            children: [
-              NoDataFound(),
-          //       SizedBox(height: 16),
-          // TextWidget.subText(
-          //   text: "No baskets found",
-          //   theme: theme.isDarkMode,
-          //   color: colors.colorGrey,
-          // ),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: () => _showCreateBasket(context),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: colors.primaryLight,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            ),
-            child: TextWidget.subText(
-              text: "Create Basket",
-              color: colors.colorWhite,
-              theme: false,
+          Center(
+            child: Column(
+              children: [
+                SvgPicture.asset(assets.noDatafound,
+                    color: theme.isDarkMode
+                        ? colors.darkColorDivider
+                        : colors.colorDivider),
+                const SizedBox(height: 2),
+                Text("No Data Found",
+                    style: textStyle(
+                        const Color(0xff777777), 15, FontWeight.w500)),
+                //       SizedBox(height: 16),
+                // TextWidget.subText(
+                //   text: "No baskets found",
+                //   theme: theme.isDarkMode,
+                //   color: colors.colorGrey,
+                // ),
+                SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () => _showCreateBasket(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: colors.primaryLight,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 24, vertical: 12),
+                  ),
+                  child: TextWidget.subText(
+                    text: "Create Basket",
+                    color: colors.colorWhite,
+                    theme: false,
+                  ),
+                ),
+              ],
             ),
           ),
-            ],
-          ),
-        ),
-      ),
-    ),
-         
         ],
       ),
     );
@@ -1421,24 +1427,22 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Center(
-              child: Padding(
-                padding: const EdgeInsets.only(top: 225),
-                child: SizedBox(
-                  height: MediaQuery.of(context).size.height - 140,
-                  child: const Column(
-                    children: [
-                      NoDataFound(),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
+              child: Column(
+                children: [
+                  SvgPicture.asset(assets.noDatafound,
+                      color: theme.isDarkMode
+                          ? colors.darkColorDivider
+                          : colors.colorDivider),
+                 const SizedBox(height: 2),
             TextWidget.subText(
               text: "Basket is empty",
               theme: theme.isDarkMode,
               color: colors.colorGrey,
             ),
+                ],
+              ),
+            ),
+            
             const SizedBox(height: 8),
             TextWidget.subText(
               text: "Tap on options above to add them to basket",
@@ -2017,7 +2021,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
 
     // If order is placed/completed/etc, navigate to order book
     if (orderStatus != null && _isOrderPlaced(orderStatus)) {
-      _navigateToOrderBook(orderProvider, orderStatus);
+      // _navigateToOrderBook(orderProvider, orderStatus);
     } else {
       // If order not placed yet, allow editing
       _editScript(index, script, orderProvider);
@@ -2308,15 +2312,15 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                   final isDark = ref.read(themeProvider).isDarkMode;
 
                   return ListTile(
-                     minLeadingWidth: 25,
-                          leading: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              SvgPicture.asset(
-                                assets.basketdashboard,
-                              ),
-                            ],
-                          ),
+                    minLeadingWidth: 25,
+                    leading: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SvgPicture.asset(
+                          assets.basketdashboard,
+                        ),
+                      ],
+                    ),
                     title: Container(
                       margin: EdgeInsets.only(
                         right: MediaQuery.of(context).size.width * 0.1,
