@@ -304,7 +304,7 @@ class _TimmerScreenForUPI extends State<TimmerScreenForUPI> {
                   ),
                   textCtrl: mfOrder.upiId,
                   onChanged: (value) {
-                    mfOrder.isValidUpiId(widget.data);
+                    mfOrder.isValidUpiId(widget.data,'');
                   },
                 ),
               ),

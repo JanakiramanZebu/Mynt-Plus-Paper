@@ -2731,7 +2731,7 @@ class MFProvider extends DefaultChangeNotifier {
       if ((_statusCheckUpi != null) &&
           (_statusCheckUpi!.status == 'PAYMENT REJECTED' ||
               _statusCheckUpi!.status == 'PAYMENT COMPLETED')) {
-        setterformftrigger(false);  
+        setterformftrigger(false);
         if (context.mounted) {
           // Navigator.pop(context);
           // showModalBottomSheet(
@@ -3267,61 +3267,73 @@ class MFProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
-  bool isValidUpiId(MutualFundList mfData) {
-    // print("Change made");
+  bool isValidUpiId(dynamic mfData, String val) {
     final RegExp upiRegex =
         RegExp(r'^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+$', caseSensitive: false);
+    if (val == 'reinit') {
+      if (upiId.text.isEmpty) {
+        upiError = "Please enter UPI ID";
+      } else if (!upiRegex.hasMatch(upiId.text)) {
+        upiError = "Please enter valid UPI ID";
+      } else {
+        upiError = "";
+      }
+    } else {
+      if (mfOrderTpye == "One-time") {
+        if (invAmt.text.isEmpty) {
+          invAmtError = "Please enter Investment amount";
+        } else if (double.parse(invAmt.text) <
+            double.parse(mfData.minimumPurchaseAmount!)) {
+          invAmtError =
+              "Investment amount should not be less than ${mfData.minimumPurchaseAmount!}";
+        } else {
+          invAmtError = "";
+        }
+      } else {
+        if (invAmt.text.isEmpty) {
+          invAmtError = "Please enter Investment amount";
+        } else if (double.parse(invAmt.text) <
+                double.parse(mfData.minimumPurchaseAmount!) &&
+            isInitalPay) {
+          invAmtError =
+              "Investment amount should not be less than ${mfData.minimumPurchaseAmount!}";
+        } else {
+          invAmtError = "";
+        }
+
+        if (installmentAmt.text.isEmpty) {
+          installmentAmtError = "Please enter Installment amount";
+        } else if (double.parse(installmentAmt.text) <
+            double.parse(mfData.minimumPurchaseAmount!)) {
+          installmentAmtError =
+              "Installment amount should not be less than ${mfData.minimumPurchaseAmount!}";
+        } else {
+          installmentAmtError = "";
+        }
+      }
+
+      if (upiId.text.isEmpty) {
+        upiError = "Please enter UPI ID";
+      } else if (!upiRegex.hasMatch(upiId.text)) {
+        upiError = "Please enter valid UPI ID";
+      } else {
+        upiError = "";
+      }
+
+      if (invDuration.text.isEmpty) {
+        invDurationError = "Please enter Investment duration";
+      } else if (double.parse(invDuration.text) < double.parse(_sipDuration)) {
+        invDurationError =
+            "Installment Duration should not be less than $_sipDuration";
+      } else {
+        invDurationError = "";
+      }
+      notifyListeners();
+    }
+    // print("Change made");
+
     // print("mfOrderTpye${mfOrderTpye}");
-    if (mfOrderTpye == "One-time") {
-      if (invAmt.text.isEmpty) {
-        invAmtError = "Please enter Investment amount";
-      } else if (double.parse(invAmt.text) <
-          double.parse(mfData.minimumPurchaseAmount!)) {
-        invAmtError =
-            "Investment amount should not be less than ${mfData.minimumPurchaseAmount!}";
-      } else {
-        invAmtError = "";
-      }
-    } else {
-      if (invAmt.text.isEmpty) {
-        invAmtError = "Please enter Investment amount";
-      } else if (double.parse(invAmt.text) <
-              double.parse(mfData.minimumPurchaseAmount!) &&
-          isInitalPay) {
-        invAmtError =
-            "Investment amount should not be less than ${mfData.minimumPurchaseAmount!}";
-      } else {
-        invAmtError = "";
-      }
 
-      if (installmentAmt.text.isEmpty) {
-        installmentAmtError = "Please enter Installment amount";
-      } else if (double.parse(installmentAmt.text) <
-          double.parse(mfData.minimumPurchaseAmount!)) {
-        installmentAmtError =
-            "Installment amount should not be less than ${mfData.minimumPurchaseAmount!}";
-      } else {
-        installmentAmtError = "";
-      }
-    }
-
-    if (upiId.text.isEmpty) {
-      upiError = "Please enter UPI ID";
-    } else if (!upiRegex.hasMatch(upiId.text)) {
-      upiError = "Please enter valid UPI ID";
-    } else {
-      upiError = "";
-    }
-
-    if (invDuration.text.isEmpty) {
-      invDurationError = "Please enter Investment duration";
-    } else if (double.parse(invDuration.text) < double.parse(_sipDuration)) {
-      invDurationError =
-          "Installment Duration should not be less than $_sipDuration";
-    } else {
-      invDurationError = "";
-    }
-    notifyListeners();
     return invAmtError == "" &&
         upiError == "" &&
         installmentAmtError == "" &&
@@ -3371,10 +3383,9 @@ class MFProvider extends DefaultChangeNotifier {
 
       _redemptionData = await api.getMFRedemption(scheme, qty);
       if (_redemptionData!.stat == "Ok") {
-        
         fetchMfOrderbook(context);
-        ScaffoldMessenger.of(context)
-            .showSnackBar(successMessage(context, "${_redemptionData!.remarks}"));
+        ScaffoldMessenger.of(context).showSnackBar(
+            successMessage(context, "${_redemptionData!.remarks}"));
         Navigator.pop(context);
       } else {
         redemptionOrderError = _redemptionData!.emsg;
@@ -3396,7 +3407,7 @@ class MFProvider extends DefaultChangeNotifier {
   void filterMFHoldings(
       {required String sorting, required BuildContext context}) {
     if (_mfholdingnew?.data == null) return;
-    
+
     // Track current sort option
     _currentMFSortOption = sorting;
 
