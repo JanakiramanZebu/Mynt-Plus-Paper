@@ -48,6 +48,13 @@ class _CreatewatchListState extends ConsumerState<CreatewatchList> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
          color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+         boxShadow: const [
+              BoxShadow(
+                color: Color(0xff999999),
+                blurRadius: 4.0,
+                offset: Offset(2.0, 0.0),
+              )
+            ],
          
         ),
         child: Column(
@@ -59,6 +66,7 @@ class _CreatewatchListState extends ConsumerState<CreatewatchList> {
             Container(
              padding: const EdgeInsets.symmetric(
                         vertical: 8.0, horizontal: 16.0),
+                        
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [

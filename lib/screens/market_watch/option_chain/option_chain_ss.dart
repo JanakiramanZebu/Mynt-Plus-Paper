@@ -1082,19 +1082,18 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
         });
       },
       onPanEnd: (details) {
-        // Snap to min or max based on velocity and position
-        double velocity = details.velocity.pixelsPerSecond.dy;
-        double position = _sheetHeight / _maxHeight;
-
+        // Calculate the threshold height (30% of max height)
+        double thresholdHeight = _maxHeight * 0.3;
+        
         setState(() {
-          if (velocity > 500 || position < 0.3) {
-            // Snap to minimum
+          if (_sheetHeight < thresholdHeight) {
+            // Snap to minimum if below threshold
             _sheetHeight = _minHeight;
             _isExpanded = false;
           } else {
-            // Snap to maximum
-            _sheetHeight = _maxHeight;
-            _isExpanded = true;
+            // Keep the sheet at the current height where user released it
+            // Don't force snap to max - respect user's intended position
+            _isExpanded = _sheetHeight > _maxHeight * 0.7; // Update expanded state based on position
           }
         });
       },
@@ -1130,11 +1129,9 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
               _buildMarginsSection(theme, orderProv),
             // Content
 
-            Expanded(
-              child: orderProv.bsktList.isEmpty
-                  ? _buildCreateBasketView(theme, orderProv)
-                  : _buildBasketContent(theme, orderProv),
-            ),
+            orderProv.bsktList.isEmpty
+                ? _buildCreateBasketView(theme, orderProv)
+                : _buildBasketContent(theme, orderProv),
 
             // Exchange validation warning (if needed)
 
@@ -1350,39 +1347,37 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Center(
-            child: Column(
-              children: [
-                SvgPicture.asset(assets.noDatafound,
-                    color: theme.isDarkMode
-                        ? colors.darkColorDivider
-                        : colors.colorDivider),
-                const SizedBox(height: 2),
-                Text("No Data Found",
-                    style: textStyle(
-                        const Color(0xff777777), 15, FontWeight.w500)),
-                //       SizedBox(height: 16),
-                // TextWidget.subText(
-                //   text: "No baskets found",
-                //   theme: theme.isDarkMode,
-                //   color: colors.colorGrey,
-                // ),
-                SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: () => _showCreateBasket(context),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: colors.primaryLight,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 24, vertical: 12),
-                  ),
-                  child: TextWidget.subText(
-                    text: "Create Basket",
-                    color: colors.colorWhite,
-                    theme: false,
-                  ),
+          Column(
+            children: [
+              SvgPicture.asset(assets.noDatafound,
+                  color: theme.isDarkMode
+                      ? colors.darkColorDivider
+                      : colors.colorDivider),
+              const SizedBox(height: 2),
+              Text("No Data Found",
+                  style: textStyle(
+                      const Color(0xff777777), 15, FontWeight.w500)),
+              //       SizedBox(height: 16),
+              // TextWidget.subText(
+              //   text: "No baskets found",
+              //   theme: theme.isDarkMode,
+              //   color: colors.colorGrey,
+              // ),
+              SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () => _showCreateBasket(context),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: colors.primaryLight,
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 24, vertical: 12),
                 ),
-              ],
-            ),
+                child: TextWidget.subText(
+                  text: "Create Basket",
+                  color: colors.colorWhite,
+                  theme: false,
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -1393,13 +1388,19 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
       ThemesProvider theme, OrderProvider orderProvider) {
     // If no basket is selected, show basket selector
     if (orderProvider.selectedBsktName.isEmpty) {
-      return Center(
-        child: SizedBox(
-          height: MediaQuery.of(context).size.height - 140,
+      return Expanded(
+        child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              NoDataFound(),
+              SvgPicture.asset(assets.noDatafound,
+                  color: theme.isDarkMode
+                      ? colors.darkColorDivider
+                      : colors.colorDivider),
+              const SizedBox(height: 2),
+              Text("No Basket Selected",
+                  style: textStyle(
+                      const Color(0xff777777), 15, FontWeight.w500)),
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () => _showBasketSelector(context),
@@ -1422,34 +1423,29 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
 
     // If basket is selected but empty
     if (orderProvider.bsktScripList.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Center(
-              child: Column(
-                children: [
-                  SvgPicture.asset(assets.noDatafound,
-                      color: theme.isDarkMode
-                          ? colors.darkColorDivider
-                          : colors.colorDivider),
-                 const SizedBox(height: 2),
-            TextWidget.subText(
-              text: "Basket is empty",
-              theme: theme.isDarkMode,
-              color: colors.colorGrey,
-            ),
-                ],
+      return Expanded(
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SvgPicture.asset(assets.noDatafound,
+                  color: theme.isDarkMode
+                      ? colors.darkColorDivider
+                      : colors.colorDivider),
+              const SizedBox(height: 2),
+              TextWidget.subText(
+                text: "Basket is empty",
+                theme: theme.isDarkMode,
+                color: colors.colorGrey,
               ),
-            ),
-            
-            const SizedBox(height: 8),
-            TextWidget.subText(
-              text: "Tap on options above to add them to basket",
-              color: colors.colorGrey,
-              theme: theme.isDarkMode,
-            ),
-          ],
+              const SizedBox(height: 8),
+              TextWidget.subText(
+                text: "Tap on options above to add them to basket",
+                color: colors.colorGrey,
+                theme: theme.isDarkMode,
+              ),
+            ],
+          ),
         ),
       );
     }
@@ -1498,35 +1494,39 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
           }
         }
 
-        return ListView.separated(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: orderProvider.bsktScripList.length,
-          separatorBuilder: (_, __) => const ListDivider(),
-          itemBuilder: (context, index) {
-            final script = orderProvider.bsktScripList[index];
-
-            // Process script data for display
-            if (script['exch'] == "BFO" && script["dname"] != "null") {
-              List<String> splitVal = script["dname"].toString().split(" ");
-              script['symbol'] = splitVal[0];
-              script['expDate'] = "${splitVal[1]} ${splitVal[2]}";
-              script['option'] = splitVal.length > 4
-                  ? "${splitVal[3]} ${splitVal[4]}"
-                  : splitVal[3];
-            } else {
-              Map spilitSymbol = spilitTsym(value: "${script['tsym']}");
-              script['symbol'] = "${spilitSymbol["symbol"]}";
-              script['expDate'] = "${spilitSymbol["expDate"]}";
-              script['option'] = "${spilitSymbol["option"]}";
-            }
-
-            return InkWell(
-              onTap: () => _handleBasketItemTap(index, script, orderProvider),
-              onLongPress: () => _deleteScript(index, script, orderProvider),
-              child: _buildScriptCard(theme, script, index),
-            );
-          },
+        return Expanded(
+          child: SingleChildScrollView(
+            child: ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: orderProvider.bsktScripList.length,
+              separatorBuilder: (_, __) => const ListDivider(),
+              itemBuilder: (context, index) {
+                final script = orderProvider.bsktScripList[index];
+            
+                // Process script data for display
+                if (script['exch'] == "BFO" && script["dname"] != "null") {
+                  List<String> splitVal = script["dname"].toString().split(" ");
+                  script['symbol'] = splitVal[0];
+                  script['expDate'] = "${splitVal[1]} ${splitVal[2]}";
+                  script['option'] = splitVal.length > 4
+                      ? "${splitVal[3]} ${splitVal[4]}"
+                      : splitVal[3];
+                } else {
+                  Map spilitSymbol = spilitTsym(value: "${script['tsym']}");
+                  script['symbol'] = "${spilitSymbol["symbol"]}";
+                  script['expDate'] = "${spilitSymbol["expDate"]}";
+                  script['option'] = "${spilitSymbol["option"]}";
+                }
+            
+                return InkWell(
+                  onTap: () => _handleBasketItemTap(index, script, orderProvider),
+                  onLongPress: () => _deleteScript(index, script, orderProvider),
+                  child: _buildScriptCard(theme, script, index),
+                );
+              },
+            ),
+          ),
         );
       },
     );

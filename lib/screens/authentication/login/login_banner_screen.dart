@@ -244,9 +244,9 @@ class _LoginBannerScreenState extends ConsumerState<LoginBannerScreen> {
       },
       child: Scaffold(
         extendBodyBehindAppBar: true,
-        backgroundColor: const Color(0xffFFFFFF),
+        backgroundColor: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
         appBar: AppBar(
-          backgroundColor: const Color(0xffFFFFFF),
+          backgroundColor: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
           elevation: 0,
           centerTitle: true,
         ),
@@ -269,7 +269,7 @@ class _LoginBannerScreenState extends ConsumerState<LoginBannerScreen> {
                       width: 140,
                       fit: BoxFit.contain,
                     ),
-                    SizedBox(
+                    const SizedBox(
                       height: 20,
                     ),
                     FittedBox(
@@ -287,7 +287,7 @@ class _LoginBannerScreenState extends ConsumerState<LoginBannerScreen> {
                       ),
                     ),
 
-                    SizedBox(
+                   const SizedBox(
                       height: 8,
                     ),
 
@@ -304,7 +304,7 @@ class _LoginBannerScreenState extends ConsumerState<LoginBannerScreen> {
                         textAlign: TextAlign.center,
                       ),
                     ),
-                    SizedBox(
+                  const  SizedBox(
                       height: 44,
                     ),
 
@@ -362,7 +362,7 @@ class _LoginBannerScreenState extends ConsumerState<LoginBannerScreen> {
                             ? null
                             : () => _handleLoginToMynt(ref),
                         style: OutlinedButton.styleFrom(
-                          backgroundColor: colors.colorWhite,
+                          backgroundColor: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
                           minimumSize: const Size.fromHeight(46),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(5),

@@ -86,7 +86,6 @@ class AuthProvider extends DefaultChangeNotifier {
 
     // Clear any existing OTP errors
     optError = null;
-    
     notifyListeners();
   }
 
@@ -1288,9 +1287,7 @@ class AuthProvider extends DefaultChangeNotifier {
                         child: Icon(
                           Icons.close_rounded,
                           size: 22,
-                          color: theme.isDarkMode
-                              ? colors.colorWhite
-                              : colors.colorBlack,
+                          color: colors.colorBlack,
                         ),
                       ),
                     ),
@@ -1307,9 +1304,7 @@ class AuthProvider extends DefaultChangeNotifier {
                     TextWidget.subText(
                       text: "Authentication is required to proceed further!",
                       theme: theme.isDarkMode,
-                      color: theme.isDarkMode
-                          ? colors.textPrimaryDark
-                          : colors.textPrimaryLight,
+                      color:  colors.textPrimary,
                       fw: 3,
                       align: TextAlign.center,
                     ),
@@ -1349,10 +1344,8 @@ class AuthProvider extends DefaultChangeNotifier {
                 child: TextWidget.titleText(
                     text: "Try Again",
                     theme: theme.isDarkMode,
-                    color: !theme.isDarkMode
-                        ? colors.colorWhite
-                        : colors.colorBlack,
-                    fw: 0),
+                    color: colors.colorWhite,
+                    fw: 2),
               ),
             ),
           ],
@@ -1633,7 +1626,7 @@ class AuthProvider extends DefaultChangeNotifier {
                         child: Icon(
                           Icons.close_rounded,
                           size: 22,
-                          color: theme.isDarkMode
+                          color: !theme.isDarkMode
                               ? colors.colorWhite
                               : colors.colorBlack,
                         ),
@@ -1656,11 +1649,10 @@ class AuthProvider extends DefaultChangeNotifier {
                     //       : colors.textPrimaryLight,
                     //   fw: 3,
                     // ),
-                    const SizedBox(height: 10),
                     TextWidget.subText(
                       text: "An error occurred: $error",
                       theme: theme.isDarkMode,
-                      color: theme.isDarkMode
+                      color: !theme.isDarkMode
                           ? colors.textPrimaryDark
                           : colors.textPrimaryLight,
                       fw: 3,
@@ -1691,9 +1683,8 @@ class AuthProvider extends DefaultChangeNotifier {
                 child: TextWidget.titleText(
                   text: "Retry",
                   theme: theme.isDarkMode,
-                  color:
-                      !theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                  fw: 0,
+                  color: colors.colorWhite,
+                  fw: 2,
                 ),
               ),
             ),

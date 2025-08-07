@@ -277,7 +277,9 @@ class _ChangePassState extends ConsumerState<ChangePass> {
                           controller: changepassword.oldPassword,
                           decoration: InputDecoration(
                             filled: true,
-                            fillColor: const Color(0xffFFFFFF),
+                           fillColor: theme.isDarkMode
+                                              ? colors.colorBlack
+                                              : colors.colorWhite,
                             labelText: widget.isChangePass == "Yes"
                                 ? "Old Password"
                                 : "Generated Password",
@@ -399,7 +401,9 @@ class _ChangePassState extends ConsumerState<ChangePass> {
                           controller: changepassword.newPassword,
                           decoration: InputDecoration(
                             filled: true,
-                            fillColor: const Color(0xffFFFFFF),
+                             fillColor: theme.isDarkMode
+                                              ? colors.colorBlack
+                                              : colors.colorWhite,
                             labelText: "New Password",
                             floatingLabelBehavior: FloatingLabelBehavior.auto,
                             labelStyle: TextWidget.textStyle(
@@ -506,10 +510,10 @@ class _ChangePassState extends ConsumerState<ChangePass> {
                                       elevation: 0,
                                       backgroundColor: !theme.isDarkMode
                                           ? changepassword.isDisableChangepassbtn
-                                              ? const Color(0xFF0037B7).withOpacity(0.3)
+                                              ? colors.primaryLight.withOpacity(0.5)
                                       : colors.primaryLight
                                           : changepassword.isDisableChangepassbtn
-                                              ?  const Color(0xFF002A8F).withOpacity(0.3)
+                                              ?  colors.primaryDark.withOpacity(0.5)
                                       : colors.primaryDark,
                                       side: BorderSide.none,
                                       padding: const EdgeInsets.symmetric(
@@ -546,12 +550,12 @@ class _ChangePassState extends ConsumerState<ChangePass> {
                                           color: !theme.isDarkMode
                                               ? changepassword
                                                       .isDisableChangepassbtn
-                                                  ? const Color(0xffFFFFFF)
-                                                  : const Color(0xffFFFFFF)
+                                                  ? colors.colorWhite.withOpacity(0.5)
+                                                  : colors.colorWhite
                                               : changepassword
                                                       .isDisableChangepassbtn
-                                                  ? colors.darkGrey
-                                                  : colors.colorBlack,
+                                                  ? colors.colorWhite.withOpacity(0.5)
+                                                  : colors.colorWhite,
                                           fw: 2)),
                             )),
                         // const SizedBox(height: 50),
