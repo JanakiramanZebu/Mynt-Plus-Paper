@@ -307,7 +307,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
           isUserOrderPreferenceAvailable && userOrderPreference['validity'] == 'IOC' ? true : false;
 
       lotSize = int.parse("${widget.scripInfo.ls ?? 0}");
-      frezQty = ((sfq / lotSize).floor() * lotSize);
+      frezQty = sfq > 1 ? (sfq / lotSize).floor() * lotSize : lotSize;
       // 999999 1353220
       isBuy = widget.orderArg.transType;
       sipqtyctrl = TextEditingController(text: "1");
@@ -835,8 +835,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                         int sipQty = int.tryParse(sipqtyctrl.text) ?? multiplayer;
                                                         if (sipqtyctrl.text.isNotEmpty &&
                                                             sipQty <
-                                                                ((frezQtyOrderSliceMaxLimit * frezQty) ==
-                                                                        frezQtyOrderSliceMaxLimit
+                                                                (frezQty == lotSize
                                                                     ? 999999
                                                                     : frezQtyOrderSliceMaxLimit * frezQty)) {
                                                           sipqtyctrl.text = (sipQty + multiplayer).toString();
@@ -1197,7 +1196,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
 
                                               int number = int.tryParse(newValue) ?? 0;
                                               if (number >
-                                                  ((frezQtyOrderSliceMaxLimit * frezQty) == frezQtyOrderSliceMaxLimit
+                                                  (frezQty == lotSize
                                                       ? 999999
                                                       : frezQtyOrderSliceMaxLimit * frezQty)) {
                                                 orderInput.qtyCtrl.text = orderInput.qtyCtrl.text;
@@ -1664,7 +1663,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
 
                                                 int number = int.tryParse(newValue) ?? 0;
                                                 if (number >
-                                                    ((frezQtyOrderSliceMaxLimit * frezQty) == frezQtyOrderSliceMaxLimit
+                                                    (frezQty == lotSize
                                                         ? 999999
                                                         : frezQtyOrderSliceMaxLimit * frezQty)) {
                                                   orderInput.qtyCtrl.text = orderInput.qtyCtrl.text;
@@ -2472,8 +2471,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                         "Minimum Allowed Amount should be greater than $ltp"));
 
                                                   }else if (number >
-                                                      ((frezQtyOrderSliceMaxLimit * frezQty) ==
-                                                          frezQtyOrderSliceMaxLimit ? 999999
+                                                      (frezQty == lotSize ? 999999
                                                           : frezQtyOrderSliceMaxLimit * frezQty)) {
                                                            qtyCtrl.text = qtyCtrl.text;
 
@@ -3358,8 +3356,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                               ? "Quantity can not be 0"
                                                               : "Price can not be 0"));
                                                     } else if (int.parse(convertQtyOrAmtValue(qtyCtrl.text,_isQtyToAmount).trim()) >
-                                                        ((frezQtyOrderSliceMaxLimit * frezQty) ==
-                                                                frezQtyOrderSliceMaxLimit
+                                                        (frezQty == lotSize
                                                             ? 999999
                                                             : frezQtyOrderSliceMaxLimit * frezQty)) {
                                                       ScaffoldMessenger.of(context).showSnackBar(warningMessage(context,
