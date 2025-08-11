@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'dart:developer';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -17,12 +16,10 @@ import '../api/core/api_link.dart';
 import '../locator/constant.dart';
 import '../locator/locator.dart';
 import '../locator/preference.dart';
-import 'auth_provider.dart';
 import 'market_watch_provider.dart';
 import 'notification_provider.dart';
 
-final websocketProvider =
-    ChangeNotifierProvider((ref) => WebSocketProvider(ref));
+final websocketProvider = ChangeNotifierProvider((ref) => WebSocketProvider(ref));
 
 class WebSocketProvider extends ChangeNotifier {
   final Ref ref;
@@ -30,11 +27,9 @@ class WebSocketProvider extends ChangeNotifier {
 
   // Constants
   static const int _maxReconnectAttempts = 8; // Increased for poor networks
-  static const int _subscriptionTimeout =
-      10; // Increased timeout for slow networks
+  static const int _subscriptionTimeout = 10; // Increased timeout for slow networks
   static const Duration _reconnectDelay = Duration(seconds: 2);
-  static const Duration _lowBandwidthPingInterval =
-      Duration(seconds: 30); // Ping to keep connection alive
+  static const Duration _lowBandwidthPingInterval = Duration(seconds: 30); // Ping to keep connection alive
 
   // Network quality tracking
   Timer? _pingTimer;
@@ -48,10 +43,9 @@ class WebSocketProvider extends ChangeNotifier {
   bool _connecting = false;
   int _connectionCount = 0;
   bool _retryScreen = false;
-  bool _wsMount = true;
+  // Removed unused _wsMount field
   BuildContext? _context;
-  bool _reconnecting =
-      false; // Track if we're already in the reconnection process
+  bool _reconnecting = false; // Track if we're already in the reconnection process
   bool _reconnectionSuccess = false; // Track if we've successfully reconnected
 
   // WebSocket and subscription management
@@ -121,16 +115,14 @@ class WebSocketProvider extends ChangeNotifier {
     wsmount = mounted;
     _wsConnected = false;
     _connecting = false;
-    _reconnecting =
-        false; // Reset reconnection flag to ensure we can reconnect properly
+    _reconnecting = false; // Reset reconnection flag to ensure we can reconnect properly
 
     // Stop ping timer
     _stopPingTimer();
 
     // Cancel any outstanding connection completion
     if (_connectionCompleter != null && !_connectionCompleter!.isCompleted) {
-      _connectionCompleter!
-          .completeError("WebSocket connection closed intentionally");
+      _connectionCompleter!.completeError("WebSocket connection closed intentionally");
     }
 
     // Properly close channel
@@ -205,9 +197,7 @@ class WebSocketProvider extends ChangeNotifier {
       if (_wsConnected && _channel != null) {
         // If we haven't received a message in a while, send a ping
         final now = DateTime.now();
-        if (_lastMessageTime != null &&
-            now.difference(_lastMessageTime!).inSeconds >
-                _lowBandwidthPingInterval.inSeconds - 5) {
+        if (_lastMessageTime != null && now.difference(_lastMessageTime!).inSeconds > _lowBandwidthPingInterval.inSeconds - 5) {
           _sendPing();
         }
       } else {
@@ -270,9 +260,7 @@ class WebSocketProvider extends ChangeNotifier {
     if (_connecting) {
       try {
         // Use a shorter timeout for waiting on an existing connection attempt in low bandwidth
-        final timeout = _isLowBandwidth
-            ? const Duration(seconds: 20)
-            : const Duration(seconds: 10);
+        final timeout = _isLowBandwidth ? const Duration(seconds: 20) : const Duration(seconds: 10);
 
         await _connectionCompleter?.future.timeout(timeout, onTimeout: () {
           throw TimeoutException('Connection attempt timed out');
@@ -295,9 +283,7 @@ class WebSocketProvider extends ChangeNotifier {
 
     try {
       // Connect with a timeout appropriate for network conditions
-      final connectTimeout = _isLowBandwidth
-          ? const Duration(seconds: 15)
-          : const Duration(seconds: 10);
+      final connectTimeout = _isLowBandwidth ? const Duration(seconds: 15) : const Duration(seconds: 10);
 
       final uri = Uri.parse(ApiLinks.wsURL);
 
@@ -307,8 +293,7 @@ class WebSocketProvider extends ChangeNotifier {
       // Set up a timeout for connection
       final timeoutTimer = Timer(connectTimeout, () {
         if (_connecting && (_channel == null || !_wsConnected)) {
-          _handleConnectionError(
-              TimeoutException('WebSocket connection timed out'), context);
+          _handleConnectionError(TimeoutException('WebSocket connection timed out'), context);
         }
       });
 
@@ -342,23 +327,18 @@ class WebSocketProvider extends ChangeNotifier {
 
       final res = jsonDecode(event.toString());
 
-      if (res['s']?.toString().toLowerCase() == "ok" &&
-          res['t']?.toString() == "ck") {
+      if (res['s']?.toString().toLowerCase() == "ok" && res['t']?.toString() == "ck") {
         log("WebSocket connected successfully");
         _handleConnectionSuccess();
-      } else if (res['t']?.toString().toLowerCase() == "tf" ||
-          res['t']?.toString().toLowerCase() == "df") {
+      } else if (res['t']?.toString().toLowerCase() == "tf" || res['t']?.toString().toLowerCase() == "df") {
         // log("Socket Data: ${res.toString()}");
         _handleMarketData(res);
-      } else if (res['t']?.toString().toLowerCase() == "tk" ||
-          res['t']?.toString().toLowerCase() == "dk") {
+      } else if (res['t']?.toString().toLowerCase() == "tk" || res['t']?.toString().toLowerCase() == "dk") {
         // log("Socket Data: ${res.toString()}");
         _handleTokenData(res);
-      } else if (res['t']?.toString().toLowerCase() == "om" &&
-          _context != null) {
+      } else if (res['t']?.toString().toLowerCase() == "om" && _context != null) {
         _handleOrderMessage(res);
-      } else if (res['t']?.toString().toLowerCase() == "am" &&
-          _context != null) {
+      } else if (res['t']?.toString().toLowerCase() == "am" && _context != null) {
         _handleAlertMessage(res);
       } else if (res['t']?.toString().toLowerCase() == "h") {
         // Handle heartbeat/ping response
@@ -401,8 +381,7 @@ class WebSocketProvider extends ChangeNotifier {
     // Show alert message in a SnackBar
     if (res['dmsg'] != null && _context != null) {
       // Display the alert message to the user
-      ScaffoldMessenger.of(_context!)
-          .showSnackBar(successMessage(_context!, res['dmsg'].toString()));
+      ScaffoldMessenger.of(_context!).showSnackBar(successMessage(_context!, res['dmsg'].toString()));
 
       // Navigate to the alerts tab (tab index 6) when alert is triggered
       // This will take the user to the alerts tab even if they're on another screen
@@ -443,9 +422,7 @@ class WebSocketProvider extends ChangeNotifier {
 
       // Only trigger the portfolio update once after initialization
       // and only if we have valid price data
-      if (_socketDatas[key]['lp'] != null &&
-          _socketDatas[key]['lp'] != '0' &&
-          _socketDatas[key]['lp'] != '0.00') {
+      if (_socketDatas[key]['lp'] != null && _socketDatas[key]['lp'] != '0' && _socketDatas[key]['lp'] != '0.00') {
         ref.read(portfolioProvider).updateHoldingValues(key, _socketDatas[key]);
       }
 
@@ -477,8 +454,7 @@ class WebSocketProvider extends ChangeNotifier {
     ref.read(orderProvider).fetchGTTOrderBook(context, "");
     ref.read(fundProvider).fetchFunds(context);
 
-    Timer(const Duration(seconds: 1),
-        () => ref.read(portfolioProvider).fetchPositionBook(context, false));
+    Timer(const Duration(seconds: 1), () => ref.read(portfolioProvider).fetchPositionBook(context, false));
   }
 
   void _updateSocketData(String key, Map<String, dynamic> res) {
@@ -534,12 +510,7 @@ class WebSocketProvider extends ChangeNotifier {
 
       // Minimize portfolio recalculations by checking if this is a price update
       // and only update if we have valid price data
-      if ((res.containsKey('lp') ||
-              res.containsKey('pc') ||
-              res.containsKey('c')) &&
-          data["lp"] != null &&
-          data["lp"] != "0" &&
-          data["lp"] != "0.00") {
+      if ((res.containsKey('lp') || res.containsKey('pc') || res.containsKey('c')) && data["lp"] != null && data["lp"] != "0" && data["lp"] != "0.00") {
         ref.read(portfolioProvider).updateHoldingValues(key, data);
       }
     }
@@ -568,13 +539,10 @@ class WebSocketProvider extends ChangeNotifier {
 
     // Calculate change
     data["chng"] =
-        ((double.tryParse(data["lp"]?.toString() ?? '0.00') ?? 0.00) -
-                (double.tryParse(data["c"]?.toString() ?? '0.00') ?? 0.00))
-            .toStringAsFixed(2);
+        ((double.tryParse(data["lp"]?.toString() ?? '0.00') ?? 0.00) - (double.tryParse(data["c"]?.toString() ?? '0.00') ?? 0.00)).toStringAsFixed(2);
   }
 
-  void _initializeDepthData(
-      Map<String, dynamic> data, Map<String, dynamic> res) {
+  void _initializeDepthData(Map<String, dynamic> data, Map<String, dynamic> res) {
     // Initialize depth fields
     for (int i = 1; i <= 5; i++) {
       data["sp$i"] = res["sp$i"] ?? "0.00";
@@ -594,12 +562,9 @@ class WebSocketProvider extends ChangeNotifier {
     data["ltt"] = res["ltt"] ?? "0.0";
   }
 
-  void _handleSubscription(
-      String channelInput, String task, BuildContext context) {
+  void _handleSubscription(String channelInput, String task, BuildContext context) {
     // In low bandwidth mode, we filter out less critical subscriptions
-    if (_isLowBandwidth &&
-        task.toLowerCase() != "u" &&
-        channelInput.contains(',')) {
+    if (_isLowBandwidth && task.toLowerCase() != "u" && channelInput.contains(',')) {
       // If in low bandwidth mode, consider batching or prioritizing subscriptions
       // For example, we might only subscribe to the most important symbols
       final symbols = channelInput.split('#');
@@ -610,9 +575,7 @@ class WebSocketProvider extends ChangeNotifier {
       // }
     }
 
-    if (task.toLowerCase() != "u" &&
-        task.toLowerCase() != 'ud' &&
-        !channelInput.startsWith('|')) {
+    if (task.toLowerCase() != "u" && task.toLowerCase() != 'ud' && !channelInput.startsWith('|')) {
       _startSubscriptionTimer(channelInput, context);
     }
 
@@ -630,8 +593,7 @@ class WebSocketProvider extends ChangeNotifier {
     }
 
     if (_wsConnected && _channel != null) {
-      print(
-          "WebSocket: Sending ${task} request for ${input.split('#').length} symbols");
+      print("WebSocket: Sending ${task} request for ${input.split('#').length} symbols");
       _channel?.sink.add(jsonEncode({"t": task, "k": input}));
     } else {
       // If socket isn't ready yet, schedule a retry
@@ -641,8 +603,7 @@ class WebSocketProvider extends ChangeNotifier {
           print("WebSocket: Retrying subscription after delay");
           _channel?.sink.add(jsonEncode({"t": task, "k": input}));
         } else {
-          print(
-              "WebSocket: Still not connected after delay, attempting full reconnection");
+          print("WebSocket: Still not connected after delay, attempting full reconnection");
           if (_context != null) {
             establishConnection(
               channelInput: input,
@@ -713,9 +674,7 @@ class WebSocketProvider extends ChangeNotifier {
     // Use exponential backoff based on connection count
     // With longer delays for low bandwidth conditions
     final multiplier = _isLowBandwidth ? 2 : 1;
-    final backoffDelay = Duration(
-        seconds:
-            _reconnectDelay.inSeconds * (_connectionCount + 1) * multiplier);
+    final backoffDelay = Duration(seconds: _reconnectDelay.inSeconds * (_connectionCount + 1) * multiplier);
 
     // If retry screen is active, attempt immediate reconnection
     if (_retryScreen) {
@@ -788,14 +747,14 @@ class WebSocketProvider extends ChangeNotifier {
           notifyListeners();
         });
       });
-          } else {
-        // Reset reconnecting flag if no network is available
-        _reconnecting = false;
-        // Use post-frame callback to avoid modifying provider during build
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          notifyListeners();
-        });
-      }
+    } else {
+      // Reset reconnecting flag if no network is available
+      _reconnecting = false;
+      // Use post-frame callback to avoid modifying provider during build
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
+    }
   }
 
   @override
@@ -845,8 +804,7 @@ class WebSocketProvider extends ChangeNotifier {
       } catch (e) {
         // Silent catch - this can happen during app shutdown or page transitions
         // We don't want to crash the app if the provider is being disposed
-        print(
-            "Market watch provider access error (likely during transition): $e");
+        print("Market watch provider access error (likely during transition): $e");
       }
     } catch (e) {
       print("Error setting up notification to market watch provider: $e");

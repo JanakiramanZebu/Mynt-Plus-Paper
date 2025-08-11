@@ -45,34 +45,38 @@
 // }
 import 'dart:async';
 import 'package:awesome_notifications/awesome_notifications.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-final notificationservice =
-    ChangeNotifierProvider((ref) => NotificationService(ref));
+final notificationservice = ChangeNotifierProvider((ref) => NotificationService(ref));
 
 class NotificationService extends ChangeNotifier {
   final Ref ref;
   NotificationService(this.ref);
   static Future<void> initializeNotification() async {
+    if (kIsWeb) {
+      // Web: local notifications via awesome_notifications are not supported.
+      // Firebase Messaging will handle notifications.
+      return;
+    }
     await AwesomeNotifications().initialize(
       "resource://drawable/res_notification_app_icon",
       [
         NotificationChannel(
-          channelGroupKey: 'high_importance_channel',
-          channelKey: 'high_importance_channel',
-          channelName: 'Basic notifications',
-          channelDescription: 'Notification channel for basic tests',
-          defaultColor: Colors.blue.shade900,
-          ledColor: Colors.blue,
-          importance: NotificationImportance.Max,
-          channelShowBadge: true,
-          onlyAlertOnce: true,
-          playSound: true,
-          criticalAlerts: true,
-          icon: "resource://drawable/res_notification_app_icon"
-        )
+            channelGroupKey: 'high_importance_channel',
+            channelKey: 'high_importance_channel',
+            channelName: 'Basic notifications',
+            channelDescription: 'Notification channel for basic tests',
+            defaultColor: Colors.blue.shade900,
+            ledColor: Colors.blue,
+            importance: NotificationImportance.Max,
+            channelShowBadge: true,
+            onlyAlertOnce: true,
+            playSound: true,
+            criticalAlerts: true,
+            icon: "resource://drawable/res_notification_app_icon")
       ],
       channelGroups: [
         NotificationChannelGroup(
@@ -100,26 +104,22 @@ class NotificationService extends ChangeNotifier {
   }
 
   /// Use this method to detect when a new notification or a schedule is created
-  static Future<void> onNotificationCreatedMethod(
-      ReceivedNotification receivedNotification) async {
+  static Future<void> onNotificationCreatedMethod(ReceivedNotification receivedNotification) async {
     debugPrint('onNotificationCreatedMethod');
   }
 
   /// Use this method to detect every time that a new notification is displayed
-  static Future<void> onNotificationDisplayedMethod(
-      ReceivedNotification receivedNotification) async {
+  static Future<void> onNotificationDisplayedMethod(ReceivedNotification receivedNotification) async {
     debugPrint('onNotificationDisplayedMethod');
   }
 
   /// Use this method to detect if the user dismissed a notification
-  static Future<void> onDismissActionReceivedMethod(
-      ReceivedAction receivedAction) async {
+  static Future<void> onDismissActionReceivedMethod(ReceivedAction receivedAction) async {
     debugPrint('onDismissActionReceivedMethod');
   }
 
   /// Use this method to detect when the user taps on a notification or action button
-  static Future<void> onActionReceivedMethod(
-      ReceivedAction receivedAction) async {
+  static Future<void> onActionReceivedMethod(ReceivedAction receivedAction) async {
     debugPrint('onActionReceivedMethod');
     final payload = receivedAction.payload ?? {};
     debugPrint('payload $payload');
@@ -150,29 +150,34 @@ class NotificationService extends ChangeNotifier {
     assert(!scheduled || (scheduled && interval != null));
     final processedBody = body?.replaceAll('\n', '<br>');
 
+    if (kIsWeb) {
+      // On web we skip local notifications and rely on push/UI.
+      return;
+    }
+    // If a big picture is provided but layout is default, upgrade layout automatically
+    final layout = (bigPicture != null && notificationLayout == NotificationLayout.Default) ? NotificationLayout.BigPicture : notificationLayout;
+
     await AwesomeNotifications().createNotification(
       content: NotificationContent(
-        id: -1,
-        channelKey: 'high_importance_channel',
-        title: title,
-        body: processedBody,
-        actionType: actionType,
-        notificationLayout: notificationLayout,
-        autoDismissible: true,
-        showWhen: true,
-        summary: summary,
-        category: category,
-        payload: payload,
-        bigPicture: bigPicture,
-        // icon: "resource://drawable/res_notification_app_icon",
-        color:Colors.blue.shade900
-      ),
+          id: -1,
+          channelKey: 'high_importance_channel',
+          title: title,
+          body: processedBody,
+          actionType: actionType,
+          notificationLayout: layout,
+          autoDismissible: true,
+          showWhen: true,
+          summary: summary,
+          category: category,
+          payload: payload,
+          bigPicture: bigPicture,
+          // icon: "resource://drawable/res_notification_app_icon",
+          color: Colors.blue.shade900),
       actionButtons: actionButtons,
       schedule: scheduled
           ? NotificationInterval(
               interval: interval,
-              timeZone:
-                  await AwesomeNotifications().getLocalTimeZoneIdentifier(),
+              timeZone: await AwesomeNotifications().getLocalTimeZoneIdentifier(),
               preciseAlarm: true,
             )
           : null,

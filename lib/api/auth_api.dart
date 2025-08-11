@@ -1,5 +1,6 @@
 import 'dart:developer';
-import 'dart:io';
+// Import only the specific exceptions for non-web builds
+import 'dart:io' show SocketException, HttpException;
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -27,44 +28,28 @@ mixin AuthApi on ApiCore {
       final uri = Uri.parse(apiLinks.mobileLogin);
 
       Map data = password.isEmpty
-          ? {
-              "mobile_unique": uniqueId,
-              getInputType(mobileRclient): mobileRclient,
-              "imei": imei,
-              "TOTP": totp ? "TRUE" : ""
-            }
-          : {
-              "mobile_unique": uniqueId,
-              getInputType(mobileRclient): mobileRclient,
-              "password": password,
-              "imei": imei,
-              "TOTP": totp ? "TRUE" : ""
-            };
+          ? {"mobile_unique": uniqueId, getInputType(mobileRclient): mobileRclient, "imei": imei, "TOTP": totp ? "TRUE" : ""}
+          : {"mobile_unique": uniqueId, getInputType(mobileRclient): mobileRclient, "password": password, "imei": imei, "TOTP": totp ? "TRUE" : ""};
 
-      final res = await apiClient.post(uri,
-          headers: defaultHeaders, body: jsonEncode(data));
+      final res = await apiClient.post(uri, headers: defaultHeaders, body: jsonEncode(data));
 
       log("Mobile Login   => ${res.body}");
       final json = jsonDecode(res.body);
       if (res.statusCode == 200) {
         return MobileLoginModel.fromJson(json as Map<String, dynamic>);
-      } 
+      }
     } on SocketException catch (_) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          error(context, "Network error. Please check your connection."));
+      ScaffoldMessenger.of(context).showSnackBar(error(context, "Network error. Please check your connection."));
       return null;
     } on HttpException catch (_) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          error(context, "Network error. Unable to connect to server."));
+      ScaffoldMessenger.of(context).showSnackBar(error(context, "Network error. Unable to connect to server."));
       return null;
     } on TimeoutException catch (_) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          error(context, "Connection timed out. Please try again."));
+      ScaffoldMessenger.of(context).showSnackBar(error(context, "Connection timed out. Please try again."));
       return null;
     } catch (e) {
       debugPrint("Login error: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-          error(context, "An error occurred. Please try again."));
+      ScaffoldMessenger.of(context).showSnackBar(error(context, "An error occurred. Please try again."));
       return null;
     }
   }
@@ -72,45 +57,30 @@ mixin AuthApi on ApiCore {
 // Verify OTP
 
   Future<MobileOtpModel?> getMobileOtp(
-      {required String uniqueId,
-      required String mobileRclient,
-      required String imei,
-      required String otp,
-      required BuildContext context}) async {
+      {required String uniqueId, required String mobileRclient, required String imei, required String otp, required BuildContext context}) async {
     try {
       final uri = Uri.parse(apiLinks.mobileOtp);
 
-      Map data = {
-        "mobile_unique": uniqueId,
-        getInputType(mobileRclient): mobileRclient,
-        "otp": otp,
-        "source": ApiLinks.source,
-        "imei": imei
-      };
-      final res = await apiClient.post(uri,
-          headers: defaultHeaders, body: jsonEncode(data));
+      Map data = {"mobile_unique": uniqueId, getInputType(mobileRclient): mobileRclient, "otp": otp, "source": ApiLinks.source, "imei": imei};
+      final res = await apiClient.post(uri, headers: defaultHeaders, body: jsonEncode(data));
 
       log("Mobile OTP  => ${res.body}");
       final json = jsonDecode(res.body);
       if (res.statusCode == 200) {
         return MobileOtpModel.fromJson(json as Map<String, dynamic>);
-      } 
+      }
     } on SocketException catch (_) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          error(context, "Network error. Please check your connection."));
+      ScaffoldMessenger.of(context).showSnackBar(error(context, "Network error. Please check your connection."));
       return null;
     } on HttpException catch (_) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          error(context, "Network error. Unable to connect to server."));
+      ScaffoldMessenger.of(context).showSnackBar(error(context, "Network error. Unable to connect to server."));
       return null;
     } on TimeoutException catch (_) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          error(context, "Connection timed out. Please try again."));
+      ScaffoldMessenger.of(context).showSnackBar(error(context, "Connection timed out. Please try again."));
       return null;
     } catch (e) {
       debugPrint("OTP error: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-          error(context, "An error occurred. Please try again."));
+      ScaffoldMessenger.of(context).showSnackBar(error(context, "An error occurred. Please try again."));
       return null;
     }
   }
@@ -121,10 +91,7 @@ mixin AuthApi on ApiCore {
     try {
       final uri = Uri.parse(apiLinks.logout);
 
-      final res = await apiClient.post(uri,
-          headers: defaultHeaders,
-          body:
-              '''jData={"uid":"${prefs.clientId}" }&jKey=${prefs.clientSession}''');
+      final res = await apiClient.post(uri, headers: defaultHeaders, body: '''jData={"uid":"${prefs.clientId}" }&jKey=${prefs.clientSession}''');
 
       // log("Logout Model => ${res.body}");
       final json = jsonDecode(res.body);
@@ -144,34 +111,27 @@ mixin AuthApi on ApiCore {
 
 // Forgot password
 
-  Future<ForgetPasswordModel?> getForgetPassword(
-      String field, String value, BuildContext context) async {
+  Future<ForgetPasswordModel?> getForgetPassword(String field, String value, BuildContext context) async {
     try {
       final uri = Uri.parse(apiLinks.forgetPassword);
-      final res = await apiClient.post(uri,
-          headers: defaultHeaders,
-          body: jsonEncode({"field": getInputType(field), "value": value}));
+      final res = await apiClient.post(uri, headers: defaultHeaders, body: jsonEncode({"field": getInputType(field), "value": value}));
 
       // log("forgetPassword Res => ${res.body}");
       final json = jsonDecode(res.body);
 
       return ForgetPasswordModel.fromJson(json as Map<String, dynamic>);
     } on SocketException catch (_) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          error(context, "Network error. Please check your connection."));
+      ScaffoldMessenger.of(context).showSnackBar(error(context, "Network error. Please check your connection."));
       return null;
     } on HttpException catch (_) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          error(context, "Network error. Unable to connect to server."));
+      ScaffoldMessenger.of(context).showSnackBar(error(context, "Network error. Unable to connect to server."));
       return null;
     } on TimeoutException catch (_) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          error(context, "Connection timed out. Please try again."));
+      ScaffoldMessenger.of(context).showSnackBar(error(context, "Connection timed out. Please try again."));
       return null;
     } catch (e) {
       debugPrint("Forget password error: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-          error(context, "An error occurred. Please try again."));
+      ScaffoldMessenger.of(context).showSnackBar(error(context, "An error occurred. Please try again."));
       return null;
     }
   }
@@ -179,60 +139,46 @@ mixin AuthApi on ApiCore {
   Future setAppversion(Map data, BuildContext context) async {
     try {
       final uri = Uri.parse(apiLinks.weblog);
-      final res = await apiClient.post(uri,
-          headers: defaultHeaders, body: jsonEncode(data));
+      final res = await apiClient.post(uri, headers: defaultHeaders, body: jsonEncode(data));
       final json = jsonDecode(res.body);
 
       return json;
     } on SocketException catch (_) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          error(context, "Network error. Please check your connection."));
+      ScaffoldMessenger.of(context).showSnackBar(error(context, "Network error. Please check your connection."));
       return null;
     } on HttpException catch (_) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          error(context, "Network error. Unable to connect to server."));
+      ScaffoldMessenger.of(context).showSnackBar(error(context, "Network error. Unable to connect to server."));
       return null;
     } on TimeoutException catch (_) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          error(context, "Connection timed out. Please try again."));
+      ScaffoldMessenger.of(context).showSnackBar(error(context, "Connection timed out. Please try again."));
       return null;
     } catch (e) {
       debugPrint("App version error: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-          error(context, "An error occurred. Please try again."));
+      ScaffoldMessenger.of(context).showSnackBar(error(context, "An error occurred. Please try again."));
       return null;
     }
   }
 
   Future setOrderprefer(Map data, bool head, BuildContext context) async {
     try {
-      final uri = Uri.parse(head
-          ? apiLinks.setpref
-          : "${apiLinks.getpref}?clientid=${prefs.clientId}&source=MOB");
-      final res = head
-          ? await apiClient.post(uri,
-              headers: defaultHeaders, body: jsonEncode(data))
-          : await apiClient.get(uri, headers: defaultHeaders);
+      final uri = Uri.parse(head ? apiLinks.setpref : "${apiLinks.getpref}?clientid=${prefs.clientId}&source=MOB");
+      final res = head ? await apiClient.post(uri, headers: defaultHeaders, body: jsonEncode(data)) : await apiClient.get(uri, headers: defaultHeaders);
       final json = jsonDecode(res.body);
       // print("object pref $json");
 
       return json;
     } on SocketException catch (_) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          error(context, "Network error. Please check your connection."));
+      ScaffoldMessenger.of(context).showSnackBar(error(context, "Network error. Please check your connection."));
       return null;
     } on HttpException catch (_) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          error(context, "Network error. Unable to connect to server."));
+      ScaffoldMessenger.of(context).showSnackBar(error(context, "Network error. Unable to connect to server."));
       return null;
     } on TimeoutException catch (_) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          error(context, "Connection timed out. Please try again."));
+      ScaffoldMessenger.of(context).showSnackBar(error(context, "Connection timed out. Please try again."));
       return null;
     } catch (e) {
       debugPrint("Order preference error: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-          error(context, "An error occurred. Please try again."));
+      ScaffoldMessenger.of(context).showSnackBar(error(context, "An error occurred. Please try again."));
       return null;
     }
   }

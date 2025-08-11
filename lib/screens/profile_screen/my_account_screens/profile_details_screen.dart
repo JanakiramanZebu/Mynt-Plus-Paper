@@ -4,16 +4,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 // import 'package:flutter_svg/svg.dart';
 // import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/models/client_profile_all_details/profile_all_details_model.dart';
-import 'package:mynt_plus/provider/fund_provider.dart';
+// import 'package:mynt_plus/provider/fund_provider.dart';
 import 'package:mynt_plus/provider/profile_all_details_provider.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/res/global_state_text.dart';
-import 'package:mynt_plus/routes/route_names.dart';
+// import 'package:mynt_plus/routes/route_names.dart';
 import 'package:mynt_plus/sharedWidget/functions.dart';
 import '../../../res/res.dart';
 
-import 'dart:io' show Platform;
-
+// Avoid direct Platform checks for web builds
 
 class ProfileInfoDetails extends ConsumerStatefulWidget {
   const ProfileInfoDetails({super.key});
@@ -53,10 +52,8 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
       builder: (context, WidgetRef ref, _) {
         final profileprovider = ref.watch(profileAllDetailsProvider);
         final theme = ref.watch(themeProvider);
-        bool DDPIActive =
-            profileprovider.clientAllDetails.clientData!.dDPI == 'Y';
-        bool POAActive =
-            profileprovider.clientAllDetails.clientData!.pOA == 'Y';
+        bool DDPIActive = profileprovider.clientAllDetails.clientData!.dDPI == 'Y';
+        bool POAActive = profileprovider.clientAllDetails.clientData!.pOA == 'Y';
         // final incomeLabels = [
         //   "Latest 6 months Bank Statement",
         //   "Latest ITR Copy",
@@ -66,19 +63,13 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
         //   "Copy of Form 16 in case of salary income",
         // ];
 
-        final accountClosureReason = [
-          "Brokerage & Charges Issues",
-          "Platform Trading Issues",
-          "Financial & Transaction Issues",
-          "Support & Service Issues",
-          "Personal Reasons",
-
-          // 'High brokerage and charges',
-          // 'Annual maintenance charges',
-          // 'Faced losses',
-          // 'No time to focus on trading',
-          // 'Moving to other broker',
-        ];
+        // final accountClosureReason = [
+        //   "Brokerage & Charges Issues",
+        //   "Platform Trading Issues",
+        //   "Financial & Transaction Issues",
+        //   "Support & Service Issues",
+        //   "Personal Reasons",
+        // ];
 
         // final bankchip = [
         //   'Savings Account',
@@ -86,8 +77,7 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
         // ];
 
         return Scaffold(
-          backgroundColor:
-              theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+          backgroundColor: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
           // appBar: AppBar(
           //   backgroundColor:
           //       theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
@@ -125,16 +115,11 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                   children: [
                     Expanded(
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16.0, vertical: 16.0),
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            TextWidget.subText(
-                                text:
-                                    "UCC : ${profileprovider.clientAllDetails.clientData!.cLIENTID}",
-                                theme: theme.isDarkMode,
-                                fw: 1),
+                            TextWidget.subText(text: "UCC : ${profileprovider.clientAllDetails.clientData!.cLIENTID}", theme: theme.isDarkMode, fw: 1),
                             // Text(
                             //     "UCC : ${profileprovider.clientAllDetails.clientData!.cLIENTID}",
                             //     style: TextStyle(
@@ -143,9 +128,7 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                               height: 8,
                             ),
                             TextWidget.titleText(
-                                text: profileprovider
-                                        .clientAllDetails.clientData?.panName ??
-                                    "",
+                                text: profileprovider.clientAllDetails.clientData?.panName ?? "",
                                 textOverflow: TextOverflow.ellipsis,
                                 theme: theme.isDarkMode,
                                 fw: 2),
@@ -164,13 +147,9 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
                       child: CircleAvatar(
                         minRadius: 30,
-                        backgroundColor: theme.isDarkMode
-                            ? colors.colorbluegrey
-                            : const Color(0xffF1F3F8),
+                        backgroundColor: theme.isDarkMode ? colors.colorbluegrey : const Color(0xffF1F3F8),
                         child: TextWidget.custmText(
-                            text: profileprovider
-                                        .clientAllDetails.clientData?.panName !=
-                                    null
+                            text: profileprovider.clientAllDetails.clientData?.panName != null
                                 ? '${profileprovider.clientAllDetails.clientData?.panName![0]}'
                                 : "",
                             textOverflow: TextOverflow.ellipsis,
@@ -188,11 +167,7 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                   ],
                 ),
                 // SizedBox(height: 8),
-                Divider(
-                    thickness: 4,
-                    color: theme.isDarkMode
-                        ? colors.darkColorDivider
-                        : colors.colorDivider),
+                Divider(thickness: 4, color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider),
                 // SizedBox(height: 8),
                 // Divider(
                 //   thickness: 0.5,
@@ -204,11 +179,7 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                   theme: theme,
                 ),
                 // SizedBox(height: 8),
-                Divider(
-                    thickness: 4,
-                    color: theme.isDarkMode
-                        ? colors.darkColorDivider
-                        : colors.colorDivider),
+                Divider(thickness: 4, color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider),
                 // SizedBox(height: 8),
 
                 // const Padding(
@@ -217,22 +188,16 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                 // ),
 
                 Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 16.0, vertical: 16.0),
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      DematDetailsCard(
-                          profileprovider: profileprovider, theme: theme),
+                      DematDetailsCard(profileprovider: profileprovider, theme: theme),
                       if (!DDPIActive && !POAActive)
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            TextWidget.paraText(
-                                text:
-                                    "Do you want to sell your stocks without CDSL T-Pin",
-                                theme: theme.isDarkMode,
-                                fw: 1),
+                            TextWidget.paraText(text: "Do you want to sell your stocks without CDSL T-Pin", theme: theme.isDarkMode, fw: 1),
 
                             // Text(
                             //     "Do you want to sell your stocks without CDSL T-Pin",
@@ -244,26 +209,21 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                               //   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
                               //   backgroundColor: Colors.black,
                               // ),
-                              onPressed: () async{
+                              onPressed: () async {
                                 // if (Platform.isAndroid) {
                                 //     await ref.read(fundProvider).fetchHstoken(context);
                                 //       Navigator.pushNamed(
                                 //           context, Routes.profileWebViewApp,
                                 //           arguments: "deposltory");
 
-                                  // } else {
-                                    profileprovider.openInWebURL(context,"deposltory");
-                                  // }
-                                
-                                 
+                                // } else {
+                                profileprovider.openInWebURL(context, "deposltory");
+                                // }
                               },
                               style: ElevatedButton.styleFrom(
                                 elevation: 0,
                                 // minimumSize: Size(double.infinity, 30),
-                                backgroundColor:
-                                    ref.read(themeProvider).isDarkMode
-                                        ? colors.colorBlack
-                                        : colors.colorWhite,
+                                backgroundColor: ref.read(themeProvider).isDarkMode ? colors.colorBlack : colors.colorWhite,
                                 shape:
                                     // MaterialStateProperty.all(RoundedRectangleBorder( borderRadius: BorderRadius.circular(40) ))
                                     RoundedRectangleBorder(
@@ -271,15 +231,10 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                                 ),
                                 side: BorderSide(
                                   width: 1,
-                                  color: ref.read(themeProvider).isDarkMode
-                                      ? colors.colorWhite
-                                      : colors.colorBlack,
+                                  color: ref.read(themeProvider).isDarkMode ? colors.colorWhite : colors.colorBlack,
                                 ),
                               ),
-                              child: TextWidget.subText(
-                                  text: "Activate DDPI",
-                                  theme: theme.isDarkMode,
-                                  fw: 1),
+                              child: TextWidget.subText(text: "Activate DDPI", theme: theme.isDarkMode, fw: 1),
 
                               // Text("Activate DDPI",
                               //     style: textStyle(
@@ -295,31 +250,23 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                   ),
                 ),
                 // const SizedBox(height: 8),
-                Divider(
-                    thickness: 4,
-                    color: theme.isDarkMode
-                        ? colors.darkColorDivider
-                        : colors.colorDivider),
+                Divider(thickness: 4, color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider),
                 // const SizedBox(height: 8),
-                
-                 // MTF section
+
+                // MTF section
                 ExpansionPanelList(
                   elevation: 0,
-                  expandIconColor:
-                      !theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                  expandIconColor: !theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
                   expansionCallback: (panelIndex, expanded) {
                     mtfActive = !mtfActive;
                     setState(() {});
                   },
                   children: [
                     ExpansionPanel(
-                        backgroundColor: theme.isDarkMode
-                            ? colors.colorBlack
-                            : colors.colorWhite,
+                        backgroundColor: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
                         headerBuilder: (context, isExpanded) {
                           return ListTile(
-                            title: TextWidget.titleText(
-                                text: "Enable & Manage Margin Trading", theme: theme.isDarkMode, fw: 1),
+                            title: TextWidget.titleText(text: "Enable & Manage Margin Trading", theme: theme.isDarkMode, fw: 1),
 
                             // Text("Nominee",
                             //     style: TextStyle(
@@ -335,27 +282,20 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                   ],
                 ),
 
-
                 // Trading Prefference section
                 ExpansionPanelList(
                   elevation: 0,
-                  expandIconColor:
-                      !theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                  expandIconColor: !theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
                   expansionCallback: (panelIndex, expanded) {
                     tradingPreferenceActive = !tradingPreferenceActive;
                     setState(() {});
                   },
                   children: [
                     ExpansionPanel(
-                        backgroundColor: theme.isDarkMode
-                            ? colors.colorBlack
-                            : colors.colorWhite,
+                        backgroundColor: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
                         headerBuilder: (context, isExpanded) {
                           return ListTile(
-                            title: TextWidget.titleText(
-                                text: "Customize Trading Preferences",
-                                theme: theme.isDarkMode,
-                                fw: 1),
+                            title: TextWidget.titleText(text: "Customize Trading Preferences", theme: theme.isDarkMode, fw: 1),
 
                             // Text("Nominee",
                             //     style: TextStyle(
@@ -382,27 +322,20 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                 //         : colors.colorDivider),
                 // const SizedBox(height: 8),
 
-               
                 // Nominee section
                 ExpansionPanelList(
                   elevation: 0,
-                  expandIconColor:
-                      !theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                  expandIconColor: !theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
                   expansionCallback: (panelIndex, expanded) {
                     nomineeActive = !nomineeActive;
                     setState(() {});
                   },
                   children: [
                     ExpansionPanel(
-                        backgroundColor: theme.isDarkMode
-                            ? colors.colorBlack
-                            : colors.colorWhite,
+                        backgroundColor: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
                         headerBuilder: (context, isExpanded) {
                           return ListTile(
-                            title: TextWidget.titleText(
-                                text: "Manage Nominee Details",
-                                theme: theme.isDarkMode,
-                                fw: 1),
+                            title: TextWidget.titleText(text: "Manage Nominee Details", theme: theme.isDarkMode, fw: 1),
 
                             // Text("Nominee",
                             //     style: TextStyle(
@@ -421,20 +354,16 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                 // Form Download section
                 ExpansionPanelList(
                   elevation: 0,
-                  expandIconColor:
-                      !theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                  expandIconColor: !theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
                   expansionCallback: (panelIndex, expanded) async {
-                              //  if (Platform.isAndroid) {
-                              //       await ref.read(fundProvider).fetchHstoken(context);
-                              //         Navigator.pushNamed(
-                              //             context, Routes.profileWebViewApp,
-                              //             arguments: "formdownload");
-                              //     } else {
-                                    profileprovider.openInWebURL(context,"formdownload");
-                                  // }
-                                
-
-
+                    //  if (Platform.isAndroid) {
+                    //       await ref.read(fundProvider).fetchHstoken(context);
+                    //         Navigator.pushNamed(
+                    //             context, Routes.profileWebViewApp,
+                    //             arguments: "formdownload");
+                    //     } else {
+                    profileprovider.openInWebURL(context, "formdownload");
+                    // }
 
                     // await ref.read(fundProvider).fetchHstoken(context);
                     // Navigator.pushNamed(context, Routes.profileWebViewApp,arguments: "formdownload");
@@ -444,32 +373,26 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                   },
                   children: [
                     ExpansionPanel(
-                        backgroundColor: theme.isDarkMode
-                            ? colors.colorBlack
-                            : colors.colorWhite,
+                        backgroundColor: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
                         headerBuilder: (context, isExpanded) {
                           return ListTile(
-                            title: TextWidget.titleText(
-                                text: "Form Download",
-                                theme: theme.isDarkMode,
-                                fw: 1),
+                            title: TextWidget.titleText(text: "Form Download", theme: theme.isDarkMode, fw: 1),
 
                             // Text("Nominee",
                             //     style: TextStyle(
                             //         fontSize: 15, fontWeight: FontWeight.w500)),
                           );
                         },
-                        body: 
-                        // Container(
-                        //   child:ElevatedButton(
-                        //     onPressed: (){
-                        //      profileprovider.downloadFile("https://rekycbe.mynt.in/report/static/cmr/2025-03-13/1208040000444330.pdf");
-                        //     },
-                        //     child: Text("Download"),),
-                        // ),
-                        
-                        
-                        UserNomineeInfoCard(
+                        body:
+                            // Container(
+                            //   child:ElevatedButton(
+                            //     onPressed: (){
+                            //      profileprovider.downloadFile("https://rekycbe.mynt.in/report/static/cmr/2025-03-13/1208040000444330.pdf");
+                            //     },
+                            //     child: Text("Download"),),
+                            // ),
+
+                            UserNomineeInfoCard(
                           profileprovider: profileprovider,
                           theme: theme,
                         ),
@@ -480,8 +403,7 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
 
                 // Account Closure
                 ExpansionPanelList(
-                  expandIconColor:
-                      !theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                  expandIconColor: !theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
                   elevation: 0,
                   expansionCallback: (panelIndex, expanded) {
                     active = !active;
@@ -489,15 +411,10 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                   },
                   children: [
                     ExpansionPanel(
-                        backgroundColor: theme.isDarkMode
-                            ? colors.colorBlack
-                            : colors.colorWhite,
+                        backgroundColor: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
                         headerBuilder: (context, isExpanded) {
                           return ListTile(
-                            title: TextWidget.titleText(
-                                text: "Request Account Closure",
-                                theme: theme.isDarkMode,
-                                fw: 1),
+                            title: TextWidget.titleText(text: "Request Account Closure", theme: theme.isDarkMode, fw: 1),
 
                             // const Text("Closure",
                             //     style: TextStyle(
@@ -518,12 +435,10 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                               //           FontWeight.bold),
                               // ),
 
-                              if (profileprovider.chackaccbalace['stage'] ==
-                                  null) ...{
+                              if (profileprovider.chackaccbalace['stage'] == null) ...{
                                 // SizedBox(height: 20),
                                 TextWidget.subText(
-                                  text:
-                                      "* Closing your account is a permanent and irreversible action",
+                                  text: "* Closing your account is a permanent and irreversible action",
                                   theme: theme.isDarkMode,
                                 ),
 
@@ -621,18 +536,15 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                                       flex: 1,
                                       child: ElevatedButton(
                                         onPressed: () async {
+                                          // if (Platform.isAndroid) {
+                                          //     await ref.read(fundProvider).fetchHstoken(context);
+                                          //       Navigator.pushNamed(
+                                          //           context, Routes.profileWebViewApp,
+                                          //           arguments: "closure");
 
-                                // if (Platform.isAndroid) {
-                                //     await ref.read(fundProvider).fetchHstoken(context);
-                                //       Navigator.pushNamed(
-                                //           context, Routes.profileWebViewApp,
-                                //           arguments: "closure");
-
-                                //   } else {
-                                    profileprovider.openInWebURL(context,"closure");
-                                  // }
-                                
-
+                                          //   } else {
+                                          profileprovider.openInWebURL(context, "closure");
+                                          // }
 
                                           // await context
                                           //     .read(fundProvider)
@@ -654,20 +566,13 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                                         },
                                         style: ElevatedButton.styleFrom(
                                           elevation: 0,
-                                          backgroundColor: theme.isDarkMode
-                                              ? colors.colorWhite
-                                              : colors.colorBlack,
-                                          padding: const EdgeInsets.symmetric(
-                                              vertical: 12, horizontal: 12),
+                                          backgroundColor: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                                          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
                                           shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(25),
+                                            borderRadius: BorderRadius.circular(25),
                                           ),
                                         ),
-                                        child: TextWidget.subText(
-                                            text: 'Close Account',
-                                            theme: !theme.isDarkMode,
-                                            fw: 1),
+                                        child: TextWidget.subText(text: 'Close Account', theme: !theme.isDarkMode, fw: 1),
                                       ),
                                     ),
                                   ],
@@ -929,8 +834,7 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
     );
   }
 
-  Widget changeEmailBottomSheetWidget(
-      ProfileProvider profileprovider, ThemesProvider theme) {
+  Widget changeEmailBottomSheetWidget(ProfileProvider profileprovider, ThemesProvider theme) {
     return SingleChildScrollView(
       child: Container(
         padding: EdgeInsets.all(16),
@@ -945,22 +849,16 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 20),
-              Text("Old email id",
-                  style: textStyle(
-                      const Color.fromARGB(255, 0, 0, 0), 14, FontWeight.w600)),
+              Text("Old email id", style: textStyle(const Color.fromARGB(255, 0, 0, 0), 14, FontWeight.w600)),
               TextFormField(
-                initialValue:
-                    profileprovider.clientAllDetails.clientData?.cLIENTIDMAIL ??
-                        "",
+                initialValue: profileprovider.clientAllDetails.clientData?.cLIENTIDMAIL ?? "",
                 readOnly: true, // Makes the field non-editable
                 decoration: const InputDecoration(
                   border: UnderlineInputBorder(),
                 ),
               ),
               SizedBox(height: 20),
-              Text("New email id *",
-                  style: textStyle(
-                      const Color.fromARGB(255, 0, 0, 0), 16, FontWeight.w600)),
+              Text("New email id *", style: textStyle(const Color.fromARGB(255, 0, 0, 0), 16, FontWeight.w600)),
               TextFormField(
                 controller: profileprovider.newEmailController,
                 //  autovalidate: true,
@@ -968,11 +866,7 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
 
                 validator: (input) {
                   print("INPUT :: $input");
-                  return RegExp(
-                              r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
-                          .hasMatch(input ?? "")
-                      ? null
-                      : "Enter a valid email";
+                  return RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(input ?? "") ? null : "Enter a valid email";
                 },
                 // onChanged: (value) {
                 //       print("value :: $value");
@@ -1017,11 +911,9 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                         profileprovider.newEmailOTPController.clear();
                       },
                       style: OutlinedButton.styleFrom(
-                        side: BorderSide(
-                            color: colors.colorBlack), // Border color
+                        side: BorderSide(color: colors.colorBlack), // Border color
                         backgroundColor: Colors.white, // Background color
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 12, horizontal: 12),
+                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(25),
                         ),
@@ -1047,22 +939,15 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
 
                           profileprovider.emaileotpfun(
                             enteredText,
-                            (profileprovider
-                                    .clientAllDetails.clientData?.cLIENTIDMAIL)
-                                .toString(),
-                            (profileprovider
-                                    .clientAllDetails.clientData?.cLIENTNAME)
-                                .toString(),
-                            (profileprovider
-                                    .clientAllDetails.clientData?.cLIENTDPCODE)
-                                .toString(),
+                            (profileprovider.clientAllDetails.clientData?.cLIENTIDMAIL).toString(),
+                            (profileprovider.clientAllDetails.clientData?.cLIENTNAME).toString(),
+                            (profileprovider.clientAllDetails.clientData?.cLIENTDPCODE).toString(),
                           );
                         },
                         style: ElevatedButton.styleFrom(
                           elevation: 0,
                           backgroundColor: colors.colorBlack,
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 12, horizontal: 12),
+                          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(25),
                           ),
@@ -1091,8 +976,7 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                         style: ElevatedButton.styleFrom(
                           elevation: 0,
                           backgroundColor: colors.colorBlack,
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 12, horizontal: 12),
+                          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(25),
                           ),
@@ -1109,8 +993,7 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
     );
   }
 
-  Widget changeMobileBottomSheetWidget(
-      ProfileProvider profileprovider, ThemesProvider theme) {
+  Widget changeMobileBottomSheetWidget(ProfileProvider profileprovider, ThemesProvider theme) {
     return SingleChildScrollView(
       child: Container(
         padding: EdgeInsets.all(16),
@@ -1130,21 +1013,16 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
             ),
             SizedBox(height: 30),
 
-            Text("Present Number",
-                style: textStyle(
-                    const Color.fromARGB(255, 0, 0, 0), 17, FontWeight.w600)),
+            Text("Present Number", style: textStyle(const Color.fromARGB(255, 0, 0, 0), 17, FontWeight.w600)),
             TextFormField(
-              initialValue:
-                  profileprovider.clientAllDetails.clientData?.mOBILENO ?? "",
+              initialValue: profileprovider.clientAllDetails.clientData?.mOBILENO ?? "",
               readOnly: true, // Makes the field non-editable
               decoration: const InputDecoration(
                 border: UnderlineInputBorder(),
               ),
             ),
             SizedBox(height: 20),
-            Text("New Mobile number  *",
-                style: textStyle(
-                    const Color.fromARGB(255, 0, 0, 0), 17, FontWeight.w600)),
+            Text("New Mobile number  *", style: textStyle(const Color.fromARGB(255, 0, 0, 0), 17, FontWeight.w600)),
             TextFormField(
               controller: profileprovider.newMobController,
               onChanged: (value) {
@@ -1188,11 +1066,9 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                       Navigator.pop(context);
                     },
                     style: OutlinedButton.styleFrom(
-                      side:
-                          BorderSide(color: colors.colorBlack), // Border color
+                      side: BorderSide(color: colors.colorBlack), // Border color
                       backgroundColor: Colors.white, // Background color
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 12, horizontal: 12),
+                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(25),
                       ),
@@ -1211,24 +1087,15 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                     flex: 1, // Takes 50% width
                     child: ElevatedButton(
                       onPressed: () {
-                        String newmobilenotext =
-                            profileprovider.newMobOTPController.text;
+                        String newmobilenotext = profileprovider.newMobOTPController.text;
 
-                        profileprovider.mobileotpfun(
-                            newmobilenotext,
-                            (profileprovider
-                                    .clientAllDetails.clientData?.cLIENTIDMAIL)
-                                .toString(),
-                            (profileprovider
-                                    .clientAllDetails.clientData?.mOBILENO)
-                                .toString(),
-                            (profileprovider.clientAllDetails.clientData));
+                        profileprovider.mobileotpfun(newmobilenotext, (profileprovider.clientAllDetails.clientData?.cLIENTIDMAIL).toString(),
+                            (profileprovider.clientAllDetails.clientData?.mOBILENO).toString(), (profileprovider.clientAllDetails.clientData));
                       },
                       style: ElevatedButton.styleFrom(
                         elevation: 0,
                         backgroundColor: colors.colorBlack,
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 12, horizontal: 12),
+                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(25),
                         ),
@@ -1242,10 +1109,8 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                     flex: 1, // Takes 50% width
                     child: ElevatedButton(
                       onPressed: () {
-                        String newmobilenotext =
-                            profileprovider.newMobController.text;
-                        String mobileotptext =
-                            profileprovider.newMobOTPController.text;
+                        String newmobilenotext = profileprovider.newMobController.text;
+                        String mobileotptext = profileprovider.newMobOTPController.text;
                         profileprovider.mobileotpverify(
                           newmobilenotext,
                           mobileotptext,
@@ -1255,8 +1120,7 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                       style: ElevatedButton.styleFrom(
                         elevation: 0,
                         backgroundColor: colors.colorBlack,
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 12, horizontal: 12),
+                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(25),
                         ),
@@ -1272,8 +1136,7 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
     );
   }
 
-  Widget changeAddressBottomSheetWidget(
-      ProfileProvider profileprovider, ThemesProvider theme) {
+  Widget changeAddressBottomSheetWidget(ProfileProvider profileprovider, ThemesProvider theme) {
     return SingleChildScrollView(
       child: Container(
         padding: EdgeInsets.all(16),
@@ -1286,13 +1149,10 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 30),
-            Text("Old Address",
-                style: textStyle(
-                    const Color.fromARGB(255, 0, 0, 0), 15, FontWeight.w600)),
+            Text("Old Address", style: textStyle(const Color.fromARGB(255, 0, 0, 0), 15, FontWeight.w600)),
             SizedBox(height: 10),
             Text(
-              "${profileprovider.clientAllDetails.clientData?.cLRESIADD1}, ${profileprovider.clientAllDetails.clientData?.cLRESIADD2}, ${profileprovider.clientAllDetails.clientData?.cLRESIADD3}" ??
-                  "",
+              "${profileprovider.clientAllDetails.clientData?.cLRESIADD1 ?? ''}, ${profileprovider.clientAllDetails.clientData?.cLRESIADD2 ?? ''}, ${profileprovider.clientAllDetails.clientData?.cLRESIADD3 ?? ''}",
               style: const TextStyle(
                 color: Color(0xff666666),
                 fontSize: 12,
@@ -1373,8 +1233,7 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                         ), // Text color
                       ),
                       TextFormField(
-                        controller:
-                            profileprovider.newAddressDistrictController,
+                        controller: profileprovider.newAddressDistrictController,
                         onChanged: (value) {
                           // context
                           //         .read(districtprov)
@@ -1507,8 +1366,7 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
               style: ElevatedButton.styleFrom(
                 elevation: 0,
                 backgroundColor: colors.colorBlack,
-                padding:
-                    const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(25),
                 ),
@@ -1526,11 +1384,9 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                       Navigator.pop(context);
                     },
                     style: OutlinedButton.styleFrom(
-                      side:
-                          BorderSide(color: colors.colorBlack), // Border color
+                      side: BorderSide(color: colors.colorBlack), // Border color
                       backgroundColor: Colors.white, // Background color
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 12, horizontal: 12),
+                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(25),
                       ),
@@ -1596,8 +1452,7 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                     style: ElevatedButton.styleFrom(
                       elevation: 0,
                       backgroundColor: colors.colorBlack,
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 12, horizontal: 12),
+                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(25),
                       ),
@@ -1650,18 +1505,13 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
 //                                             ),
 //                                           );
 //       }
-
-
-
-
 }
 
 class UserInfoCard extends StatelessWidget {
   final ProfileProvider profileprovider;
   final ThemesProvider theme;
 
-  const UserInfoCard(
-      {super.key, required this.profileprovider, required this.theme});
+  const UserInfoCard({super.key, required this.profileprovider, required this.theme});
 
   @override
   Widget build(BuildContext context) {
@@ -1677,8 +1527,7 @@ class UserInfoCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                TextWidget.titleText(
-                    text: "Manage Personal Information", theme: theme.isDarkMode, fw: 1),
+                TextWidget.titleText(text: "Manage Personal Information", theme: theme.isDarkMode, fw: 1),
 
                 // const Text("Personal Details",
                 //     style:
@@ -1688,36 +1537,27 @@ class UserInfoCard extends StatelessWidget {
                   visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
                   iconSize: 17,
                   splashRadius: 20,
-                    onPressed: () async {
-                            // if (Platform.isAndroid) {
-                                    // await ref.read(fundProvider).fetchHstoken(context);
-                                    //   Navigator.pushNamed(
-                                    //       context, Routes.profileWebViewApp,
-                                    //       arguments: "profile");
+                  onPressed: () async {
+                    // if (Platform.isAndroid) {
+                    // await ref.read(fundProvider).fetchHstoken(context);
+                    //   Navigator.pushNamed(
+                    //       context, Routes.profileWebViewApp,
+                    //       arguments: "profile");
 
-                                  // } else {
-                                    profileprovider.openInWebURL(context,"profile");
-                                  // }
-                                
+                    // } else {
+                    profileprovider.openInWebURL(context, "profile");
+                    // }
 
-
-
-                      // await ref.read(fundProvider).fetchHstoken(context);
-                      // Navigator.pushNamed(context, Routes.profileWebViewApp,
-                      //     arguments: "profile");
-                      // profileprovider.openInWebURL(context,"profile");
-
-                    },
-                    icon: Icon(
-                      Icons.edit,
-                      color: theme.isDarkMode
-                          ? colors.colorLightBlue
-                          : colors.colorBlue,
-                      
-                    ),
-                 
+                    // await ref.read(fundProvider).fetchHstoken(context);
+                    // Navigator.pushNamed(context, Routes.profileWebViewApp,
+                    //     arguments: "profile");
+                    // profileprovider.openInWebURL(context,"profile");
+                  },
+                  icon: Icon(
+                    Icons.edit,
+                    color: theme.isDarkMode ? colors.colorLightBlue : colors.colorBlue,
+                  ),
                 ),
-
 
                 // InkWell(
                 //   onTap: () async {
@@ -1746,27 +1586,15 @@ class UserInfoCard extends StatelessWidget {
                 Flexible(
                     child: UserInfoColumn(
                         label: "PAN",
-                        value:profileprovider.formateDataToDisplay(profileprovider.clientAllDetails.clientData?.pANNO??"",0,3),
-                            // '*******${profileprovider.clientAllDetails.clientData?.pANNO?.substring(7)}',
+                        value: profileprovider.formateDataToDisplay(profileprovider.clientAllDetails.clientData?.pANNO ?? "", 0, 3),
+                        // '*******${profileprovider.clientAllDetails.clientData?.pANNO?.substring(7)}',
                         theme: theme)),
                 Flexible(
-                  child: UserInfoColumn(
-                      label: "Mobile",
-                      value: profileprovider
-                              .clientAllDetails.clientData?.mOBILENO ??
-                          "",
-                      theme: theme,
-                      editable: false),
+                  child: UserInfoColumn(label: "Mobile", value: profileprovider.clientAllDetails.clientData?.mOBILENO ?? "", theme: theme, editable: false),
                 ),
               ],
             ),
-            UserInfoColumn(
-                label: "Email",
-                value:
-                    profileprovider.clientAllDetails.clientData?.cLIENTIDMAIL ??
-                        "",
-                theme: theme,
-                editable: false),
+            UserInfoColumn(label: "Email", value: profileprovider.clientAllDetails.clientData?.cLIENTIDMAIL ?? "", theme: theme, editable: false),
             UserInfoColumn(
               label: "Address",
               value:
@@ -1777,9 +1605,7 @@ class UserInfoCard extends StatelessWidget {
             ),
             UserInfoColumn(
                 label: "Annual Income",
-                value:
-                    profileprovider.clientAllDetails.clientData?.aNNUALINCOME ??
-                        "",
+                value: profileprovider.clientAllDetails.clientData?.aNNUALINCOME ?? "",
                 theme: theme,
                 section: "annualincome",
                 editable: false)
@@ -1794,19 +1620,12 @@ class UserNomineeInfoCard extends StatelessWidget {
   final ProfileProvider profileprovider;
   final ThemesProvider theme;
 
-  const UserNomineeInfoCard(
-      {super.key, required this.profileprovider, required this.theme});
+  const UserNomineeInfoCard({super.key, required this.profileprovider, required this.theme});
 
   @override
   Widget build(BuildContext context) {
-    List<String> formatPart = profileprovider
-            .clientAllDetails.clientData?.nomineeDOB
-            ?.split(" ")[0]
-            .split("-") ??
-        [];
-    String nomineeDOB = formatPart.length == 3
-        ? '${formatPart[2]}-${formatPart[1]}-${formatPart[0]}'
-        : "";
+    List<String> formatPart = profileprovider.clientAllDetails.clientData?.nomineeDOB?.split(" ")[0].split("-") ?? [];
+    String nomineeDOB = formatPart.length == 3 ? '${formatPart[2]}-${formatPart[1]}-${formatPart[0]}' : "";
     return Card(
       color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -1816,9 +1635,7 @@ class UserNomineeInfoCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (profileprovider.clientAllDetails.clientData?.nomineeName ==
-                    null ||
-                profileprovider.clientAllDetails.clientData?.nomineeName == "")
+            if (profileprovider.clientAllDetails.clientData?.nomineeName == null || profileprovider.clientAllDetails.clientData?.nomineeName == "")
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: Column(
@@ -1839,11 +1656,8 @@ class UserNomineeInfoCard extends StatelessWidget {
                         //                   arguments: "nominee");
 
                         //           } else {
-                                    profileprovider.openInWebURL(context,"nominee");
-                                  // }
-                                
-
-
+                        profileprovider.openInWebURL(context, "nominee");
+                        // }
 
                         // profileprovider.openInWebURL(context,"nominee");
                         // await ref.read(fundProvider).fetchHstoken(context);
@@ -1853,9 +1667,7 @@ class UserNomineeInfoCard extends StatelessWidget {
                       style: ElevatedButton.styleFrom(
                         elevation: 0,
                         minimumSize: Size(double.infinity, 30),
-                        backgroundColor: theme.isDarkMode
-                            ? colors.colorBlack
-                            : colors.colorWhite,
+                        backgroundColor: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
                         shape:
                             // MaterialStateProperty.all(RoundedRectangleBorder( borderRadius: BorderRadius.circular(40) ))
                             RoundedRectangleBorder(
@@ -1863,9 +1675,7 @@ class UserNomineeInfoCard extends StatelessWidget {
                         ),
                         side: BorderSide(
                           width: 1,
-                          color: theme.isDarkMode
-                              ? colors.colorWhite
-                              : colors.colorBlack,
+                          color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
                         ),
                       ),
                       child: TextWidget.titleText(
@@ -1885,9 +1695,7 @@ class UserNomineeInfoCard extends StatelessWidget {
                 ),
               ),
 
-            if (profileprovider.clientAllDetails.clientData?.nomineeName !=
-                    null ||
-                profileprovider.clientAllDetails.clientData?.nomineeName != "")
+            if (profileprovider.clientAllDetails.clientData?.nomineeName != null || profileprovider.clientAllDetails.clientData?.nomineeName != "")
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -1900,12 +1708,11 @@ class UserNomineeInfoCard extends StatelessWidget {
                   //     style:
                   //         TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
 
-            IconButton(
-                  visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
-                  iconSize: 17,
-                  splashRadius: 20,
+                  IconButton(
+                    visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
+                    iconSize: 17,
+                    splashRadius: 20,
                     onPressed: () async {
-
                       //  if (Platform.isAndroid) {
                       //               await ref.read(fundProvider).fetchHstoken(context);
                       //                 Navigator.pushNamed(
@@ -1913,26 +1720,19 @@ class UserNomineeInfoCard extends StatelessWidget {
                       //                     arguments: "nominee");
 
                       //             } else {
-                                    profileprovider.openInWebURL(context,"nominee");
-                                  // }
-                                
+                      profileprovider.openInWebURL(context, "nominee");
+                      // }
 
-                    //  await ref.read(fundProvider).fetchHstoken(context);
-                    //   Navigator.pushNamed(context, Routes.profileWebViewApp,
-                    //       arguments: "nominee");
-                    //  profileprovider.openInWebURL(context,"nominee");
+                      //  await ref.read(fundProvider).fetchHstoken(context);
+                      //   Navigator.pushNamed(context, Routes.profileWebViewApp,
+                      //       arguments: "nominee");
+                      //  profileprovider.openInWebURL(context,"nominee");
                     },
                     icon: Icon(
                       Icons.edit,
-                      color: theme.isDarkMode
-                          ? colors.colorLightBlue
-                          : colors.colorBlue,
-                      
+                      color: theme.isDarkMode ? colors.colorLightBlue : colors.colorBlue,
                     ),
-                 
-                ),
-
-
+                  ),
 
                   // InkWell(
                   //   onTap: () async {
@@ -1962,39 +1762,26 @@ class UserNomineeInfoCard extends StatelessWidget {
                   children: [
                     Flexible(
                       // fit: FlexFit.tight,
-                        child: UserInfoColumn(
-                            label: "Nominee Name",
-                            value: profileprovider.clientAllDetails.clientData
-                                    ?.nomineeName ??
-                                "",
-                            theme: theme,
-                            expandable: true),),
-                       const SizedBox(width: 10,),
+                      child: UserInfoColumn(
+                          label: "Nominee Name", value: profileprovider.clientAllDetails.clientData?.nomineeName ?? "", theme: theme, expandable: true),
+                    ),
+                    const SizedBox(
+                      width: 10,
+                    ),
                     Flexible(
                       child: UserInfoColumn(
-                          label: "Nominee Relation",
-                          value: profileprovider.clientAllDetails.clientData
-                                  ?.nomineeRelation ??
-                              "",
-                          theme: theme,
-                          editable: false),
+                          label: "Nominee Relation", value: profileprovider.clientAllDetails.clientData?.nomineeRelation ?? "", theme: theme, editable: false),
                     ),
                   ],
                 ),
                 Row(
                   children: [
+                    Flexible(child: UserInfoColumn(label: "Nominee DOB", value: nomineeDOB, theme: theme)),
+                    const SizedBox(
+                      width: 10,
+                    ),
                     Flexible(
-                        child: UserInfoColumn(
-                            label: "Nominee DOB",
-                            value: nomineeDOB,
-                            theme: theme)),
-                     const SizedBox(width: 10,),
-                    Flexible(
-                      child: UserInfoColumn(
-                          label: "Nominee Percentage",
-                          value: "",
-                          theme: theme,
-                          editable: false),
+                      child: UserInfoColumn(label: "Nominee Percentage", value: "", theme: theme, editable: false),
                     ),
                   ],
                 ),
@@ -2030,8 +1817,7 @@ class DematDetailsCard extends StatelessWidget {
   final ProfileProvider profileprovider;
   final ThemesProvider theme;
 
-  const DematDetailsCard(
-      {super.key, required this.profileprovider, required this.theme});
+  const DematDetailsCard({super.key, required this.profileprovider, required this.theme});
 
   @override
   Widget build(BuildContext context) {
@@ -2053,16 +1839,14 @@ class DematDetailsCard extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                TextWidget.titleText(
-                    text: "Demat (CDSL)", theme: theme.isDarkMode, fw: 1),
+                TextWidget.titleText(text: "Demat (CDSL)", theme: theme.isDarkMode, fw: 1),
                 // const Text("Demat (CDSL)",
                 //         style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
                 Row(
                   children: [
                     Container(
                       margin: const EdgeInsets.symmetric(horizontal: 4),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 6, vertical: 3),
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(2),
                         color: theme.isDarkMode
@@ -2076,17 +1860,11 @@ class DematDetailsCard extends StatelessWidget {
                       child: Text("DDPI",
                           overflow: TextOverflow.ellipsis,
                           // maxLines: 1,
-                          style: textStyle(
-                              theme.isDarkMode
-                                  ? const Color(0xffFFFFFF)
-                                  : const Color(0xff666666),
-                              12,
-                              FontWeight.w600)),
+                          style: textStyle(theme.isDarkMode ? const Color(0xffFFFFFF) : const Color(0xff666666), 12, FontWeight.w600)),
                     ),
                     Container(
                       margin: const EdgeInsets.symmetric(horizontal: 4),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 6, vertical: 3),
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(2),
                         color: theme.isDarkMode
@@ -2100,12 +1878,7 @@ class DematDetailsCard extends StatelessWidget {
                       child: Text("POA",
                           overflow: TextOverflow.ellipsis,
                           // maxLines: 1,
-                          style: textStyle(
-                              theme.isDarkMode
-                                  ? const Color(0xffFFFFFF)
-                                  : const Color(0xff666666),
-                              12,
-                              FontWeight.w600)),
+                          style: textStyle(theme.isDarkMode ? const Color(0xffFFFFFF) : const Color(0xff666666), 12, FontWeight.w600)),
                     ),
                   ],
                 ),
@@ -2119,22 +1892,10 @@ class DematDetailsCard extends StatelessWidget {
           Row(
             children: [
               Flexible(
-                child: UserInfoColumn(
-                    label: "DP ID",
-                    value: profileprovider
-                            .clientAllDetails.clientData?.cLIENTDPCODE!
-                            .substring(0, 8) ??
-                        "",
-                    theme: theme),
+                child: UserInfoColumn(label: "DP ID", value: profileprovider.clientAllDetails.clientData?.cLIENTDPCODE!.substring(0, 8) ?? "", theme: theme),
               ),
               Flexible(
-                child: UserInfoColumn(
-                    label: "BO ID",
-                    value: profileprovider
-                            .clientAllDetails.clientData?.cLIENTDPCODE!
-                            .substring(8) ??
-                        "",
-                    theme: theme),
+                child: UserInfoColumn(label: "BO ID", value: profileprovider.clientAllDetails.clientData?.cLIENTDPCODE!.substring(8) ?? "", theme: theme),
               ),
             ],
           ),
@@ -2226,11 +1987,11 @@ class DematDetailsCard extends StatelessWidget {
           //   ),
           // ),
           UserInfoColumn(
-              label: "DP Name",
-              value: profileprovider.clientAllDetails.clientData?.dPNAME ?? "",
-              theme: theme,
-              expandable: true,
-              ),
+            label: "DP Name",
+            value: profileprovider.clientAllDetails.clientData?.dPNAME ?? "",
+            theme: theme,
+            expandable: true,
+          ),
         ],
       ),
     );
@@ -2245,8 +2006,7 @@ class TradingPreferencesCard extends StatelessWidget {
   final ProfileProvider profileprovider;
   final ThemesProvider theme;
 
-  const TradingPreferencesCard(
-      {super.key, required this.profileprovider, required this.theme});
+  const TradingPreferencesCard({super.key, required this.profileprovider, required this.theme});
 
   @override
   Widget build(BuildContext context) {
@@ -2273,35 +2033,27 @@ class TradingPreferencesCard extends StatelessWidget {
                   visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
                   iconSize: 17,
                   splashRadius: 20,
-                    onPressed: () async {
+                  onPressed: () async {
+                    //  if (Platform.isAndroid) {
+                    //               await ref.read(fundProvider).fetchHstoken(context);
+                    //                 Navigator.pushNamed(
+                    //                     context, Routes.profileWebViewApp,
+                    //                     arguments: "segment");
 
-                      //  if (Platform.isAndroid) {
-                      //               await ref.read(fundProvider).fetchHstoken(context);
-                      //                 Navigator.pushNamed(
-                      //                     context, Routes.profileWebViewApp,
-                      //                     arguments: "segment");
-
-                      //             } else {
-                                    profileprovider.openInWebURL(context,"segment");
-                                  // }
-                                
+                    //             } else {
+                    profileprovider.openInWebURL(context, "segment");
+                    // }
 
                     //  await ref.read(fundProvider).fetchHstoken(context);
                     // Navigator.pushNamed(context, Routes.profileWebViewApp,
                     //     arguments: "segment");
                     //  profileprovider.openInWebURL(context,"segment");
-                    },
-                    icon: Icon(
-                      Icons.edit,
-                      color: theme.isDarkMode
-                          ? colors.colorLightBlue
-                          : colors.colorBlue,
-                      
-                    ),
-                 
+                  },
+                  icon: Icon(
+                    Icons.edit,
+                    color: theme.isDarkMode ? colors.colorLightBlue : colors.colorBlue,
+                  ),
                 ),
-
-
 
                 // InkWell(
                 //   onTap: () async {
@@ -2324,27 +2076,19 @@ class TradingPreferencesCard extends StatelessWidget {
             ),
             CustomTFExchBadge(
                 label: "Equities",
-                exch: profileprovider.clientAllDetails.clientData!.segmentsData
-                        ?.where((segment) => ['BSE_CASH', 'NSE_CASH']
-                            .contains(segment.cOMPANYCODE)) ??
+                exch: profileprovider.clientAllDetails.clientData!.segmentsData?.where((segment) => ['BSE_CASH', 'NSE_CASH'].contains(segment.cOMPANYCODE)) ??
                     []),
             CustomTFExchBadge(
                 label: "F&O",
-                exch: profileprovider.clientAllDetails.clientData!.segmentsData
-                        ?.where((segment) => ['NSE_FNO', 'BSE_FNO']
-                            .contains(segment.cOMPANYCODE)) ??
-                    []),
+                exch:
+                    profileprovider.clientAllDetails.clientData!.segmentsData?.where((segment) => ['NSE_FNO', 'BSE_FNO'].contains(segment.cOMPANYCODE)) ?? []),
             CustomTFExchBadge(
                 label: "Currency",
-                exch: profileprovider.clientAllDetails.clientData!.segmentsData
-                        ?.where((segment) => ['CD_NSE', 'CD_BSE']
-                            .contains(segment.cOMPANYCODE)) ??
-                    []),
+                exch: profileprovider.clientAllDetails.clientData!.segmentsData?.where((segment) => ['CD_NSE', 'CD_BSE'].contains(segment.cOMPANYCODE)) ?? []),
             CustomTFExchBadge(
                 label: "Commodities",
                 exch: profileprovider.clientAllDetails.clientData!.segmentsData
-                        ?.where((segment) => ['MCX', 'NSE_COM', 'BSE_COM']
-                            .contains(segment.cOMPANYCODE)) ??
+                        ?.where((segment) => ['MCX', 'NSE_COM', 'BSE_COM'].contains(segment.cOMPANYCODE)) ??
                     []),
           ],
         ),
@@ -2361,13 +2105,7 @@ class UserInfoColumn extends StatelessWidget {
   final bool editable;
   final bool expandable;
   const UserInfoColumn(
-      {super.key,
-      required this.theme,
-      required this.label,
-      required this.value,
-      this.section = "profile",
-      this.editable = false,
-      this.expandable = false});
+      {super.key, required this.theme, required this.label, required this.value, this.section = "profile", this.editable = false, this.expandable = false});
 
   @override
   Widget build(BuildContext context) {
@@ -2401,7 +2139,7 @@ class UserInfoColumn extends StatelessWidget {
 
             decoration: InputDecoration(
               enabled: editable ? true : false,
-              
+
               // isDense: true,
               // suffix: editable
               //     ? InkWell(
@@ -2420,9 +2158,7 @@ class UserInfoColumn extends StatelessWidget {
             ),
             style: TextStyle(
               overflow: TextOverflow.ellipsis,
-              color: theme.isDarkMode
-                  ? colors.colorWhite
-                  : colors.colorBlack,
+              color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
               fontSize: 16,
               fontWeight: FontWeight.w600,
             ),
@@ -2468,18 +2204,10 @@ class CustomTFExchBadge extends ConsumerWidget {
                         ? Color.fromARGB(255, 9, 255, 0).withOpacity(.1)
                         : const Color(0xff666666).withOpacity(.1),
               ),
-              child: Text(
-                  ['CD_BSE', 'CD_NSE'].contains(segment.cOMPANYCODE)
-                      ? segment.cOMPANYCODE!.split("_")[1]
-                      : segment.cOMPANYCODE!.split("_")[0],
+              child: Text(['CD_BSE', 'CD_NSE'].contains(segment.cOMPANYCODE) ? segment.cOMPANYCODE!.split("_")[1] : segment.cOMPANYCODE!.split("_")[0],
                   overflow: TextOverflow.ellipsis,
                   // maxLines: 1,
-                  style: textStyle(
-                      theme.isDarkMode
-                          ? const Color(0xffFFFFFF)
-                          : const Color(0xff666666),
-                      12,
-                      FontWeight.w600)),
+                  style: textStyle(theme.isDarkMode ? const Color(0xffFFFFFF) : const Color(0xff666666), 12, FontWeight.w600)),
             );
           }).toList()),
         ],
@@ -2496,16 +2224,14 @@ class MTFSection extends ConsumerWidget {
   final ProfileProvider profileprovider;
   final ThemesProvider theme;
 
-  const MTFSection(
-      {super.key, required this.profileprovider, required this.theme});
+  const MTFSection({super.key, required this.profileprovider, required this.theme});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     bool DDPIActive = profileprovider.clientAllDetails.clientData!.dDPI == 'Y';
     bool POAActive = profileprovider.clientAllDetails.clientData!.pOA == 'Y';
     bool mtfCl = profileprovider.clientAllDetails.clientData!.mTFCl == 'Y';
-    bool mtfClAuto =
-        profileprovider.clientAllDetails.clientData!.mTFClAuto == "Y";
+    bool mtfClAuto = profileprovider.clientAllDetails.clientData!.mTFClAuto == "Y";
 
     return Card(
       elevation: 0,
@@ -2528,8 +2254,7 @@ class MTFSection extends ConsumerWidget {
                   children: [
                     Container(
                       margin: const EdgeInsets.symmetric(horizontal: 4),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 6, vertical: 3),
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(2),
                         color: theme.isDarkMode
@@ -2543,17 +2268,11 @@ class MTFSection extends ConsumerWidget {
                       child: Text("DDPI",
                           overflow: TextOverflow.ellipsis,
                           // maxLines: 1,
-                          style: textStyle(
-                              theme.isDarkMode
-                                  ? const Color(0xffFFFFFF)
-                                  : const Color(0xff666666),
-                              12,
-                              FontWeight.w600)),
+                          style: textStyle(theme.isDarkMode ? const Color(0xffFFFFFF) : const Color(0xff666666), 12, FontWeight.w600)),
                     ),
                     Container(
                       margin: const EdgeInsets.symmetric(horizontal: 4),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 6, vertical: 3),
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(2),
                         color: theme.isDarkMode
@@ -2567,12 +2286,7 @@ class MTFSection extends ConsumerWidget {
                       child: Text("POA",
                           overflow: TextOverflow.ellipsis,
                           // maxLines: 1,
-                          style: textStyle(
-                              theme.isDarkMode
-                                  ? const Color(0xffFFFFFF)
-                                  : const Color(0xff666666),
-                              12,
-                              FontWeight.w600)),
+                          style: textStyle(theme.isDarkMode ? const Color(0xffFFFFFF) : const Color(0xff666666), 12, FontWeight.w600)),
                     ),
                   ],
                 ),
@@ -2593,7 +2307,7 @@ class MTFSection extends ConsumerWidget {
               Padding(
                 padding: const EdgeInsets.only(top: 16.0),
                 child: TextWidget.subText(
-                    text:"You need to enable DDPI before you can proceed with processing MTF (Margin Trading Facility).",
+                    text: "You need to enable DDPI before you can proceed with processing MTF (Margin Trading Facility).",
                     theme: theme.isDarkMode,
                     fw: 1,
                     color: colors.kColorRedText),
@@ -2605,36 +2319,29 @@ class MTFSection extends ConsumerWidget {
                 children: [
                   // const SizedBox(height: 16,),
                   Padding(
-                   padding: const EdgeInsets.only(top: 16.0),
+                    padding: const EdgeInsets.only(top: 16.0),
                     child: TextWidget.subText(
-                        text:
-                            "You have activated the Margin Trading Facility (MTF) on your account ",
-                        theme: theme.isDarkMode,
-                        ),
+                      text: "You have activated the Margin Trading Facility (MTF) on your account ",
+                      theme: theme.isDarkMode,
+                    ),
                   ),
                   Column(
                     children: [
                       Padding(
                         padding: const EdgeInsets.only(top: 16.0),
                         child: Chip(
-                          label: TextWidget.subText(
-                              text: 'MTF Enabled',
-                              theme: theme.isDarkMode,
-                              fw: 1),
-                              // labelPadding:EdgeInsets.symmetric(horizontal: 8,vertical: 5),
+                          label: TextWidget.subText(text: 'MTF Enabled', theme: theme.isDarkMode, fw: 1),
+                          // labelPadding:EdgeInsets.symmetric(horizontal: 8,vertical: 5),
                           backgroundColor: theme.isDarkMode
                               ? mtfCl && mtfClAuto
                                   ? const Color.fromARGB(255, 9, 163, 17)
                                   : colors.colorGrey
                               : mtfCl && mtfClAuto
                                   ? Color.fromARGB(255, 9, 255, 0).withOpacity(.1)
-                                  : const Color(0xff666666)
-                                      .withOpacity(.1), // Color(0xffecf8f1),
+                                  : const Color(0xff666666).withOpacity(.1), // Color(0xffecf8f1),
                           shape: RoundedRectangleBorder(
                             side: BorderSide(
-                              color: theme.isDarkMode
-                                  ? colors.colorBlack
-                                  : colors.colorWhite, // Color(0xffc1e7ba),
+                              color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite, // Color(0xffc1e7ba),
                             ),
                             borderRadius: BorderRadius.circular(32),
                           ),
@@ -2646,26 +2353,21 @@ class MTFSection extends ConsumerWidget {
               ),
             ],
 
-            if ((profileprovider.clientAllDetails.clientData!.mTFCl == 'N' &&
-                    profileprovider.clientAllDetails.clientData!.mTFClAuto ==
-                        'N') &&
-                (profileprovider.clientAllDetails.clientData!.dDPI == 'Y' ||
-                    profileprovider.clientAllDetails.clientData!.pOA == "Y"))
+            if ((profileprovider.clientAllDetails.clientData!.mTFCl == 'N' && profileprovider.clientAllDetails.clientData!.mTFClAuto == 'N') &&
+                (profileprovider.clientAllDetails.clientData!.dDPI == 'Y' || profileprovider.clientAllDetails.clientData!.pOA == "Y"))
               Padding(
                 padding: const EdgeInsets.only(top: 16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     TextWidget.subText(
-                        text:
-                            "Would you like to activate Margin Trading Facility (MTF) on your account ",
-                        theme: theme.isDarkMode,
-                        ),
+                      text: "Would you like to activate Margin Trading Facility (MTF) on your account ",
+                      theme: theme.isDarkMode,
+                    ),
                     Padding(
                       padding: const EdgeInsets.only(top: 16.0),
                       child: ElevatedButton(
                         onPressed: () async {
-
                           //  if (Platform.isAndroid) {
                           //           await ref.read(fundProvider).fetchHstoken(context);
                           //             Navigator.pushNamed(
@@ -2673,9 +2375,8 @@ class MTFSection extends ConsumerWidget {
                           //                 arguments: "mtf");
 
                           //         } else {
-                                    profileprovider.openInWebURL(context,"mtf");
-                                  // }
-                                
+                          profileprovider.openInWebURL(context, "mtf");
+                          // }
 
                           // await ref.read(fundProvider).fetchHstoken(context);
                           // Navigator.pushNamed(context, Routes.profileWebViewApp,
@@ -2684,33 +2385,20 @@ class MTFSection extends ConsumerWidget {
                         },
                         style: ElevatedButton.styleFrom(
                           elevation: 0,
-                          
-                          backgroundColor: theme.isDarkMode
-                              ? colors.colorBlack
-                              : colors.colorWhite,
-                          shape:
-                             
-                              RoundedRectangleBorder(
+                          backgroundColor: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                          shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(32),
                           ),
                           side: BorderSide(
                             width: 1,
-                            color: theme.isDarkMode
-                                ? colors.colorWhite
-                                : colors.colorBlack,
+                            color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
                           ),
                         ),
-                        child: TextWidget.subText(
-                            text: "Enable MTF",
-                            theme: theme.isDarkMode,
-                            fw: 1),
-                      
+                        child: TextWidget.subText(text: "Enable MTF", theme: theme.isDarkMode, fw: 1),
                       ),
                     ),
                   ],
                 ),
-
-             
               ),
           ],
         ),

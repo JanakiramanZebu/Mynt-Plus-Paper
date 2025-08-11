@@ -1,5 +1,8 @@
 import 'dart:developer';
-import 'dart:io';
+// Conditional import for HttpOverrides only on non-web platforms
+import 'package:flutter/foundation.dart' show kIsWeb, defaultTargetPlatform, TargetPlatform;
+// ignore: uri_does_not_exist
+import 'utils/http_overrides_stub.dart' if (dart.library.io) 'utils/http_overrides.dart';
 // import 'package:flutter/services.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
@@ -9,7 +12,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:mynt_plus/firebase_options.dart';
 import 'package:mynt_plus/locator/constant.dart';
 import 'package:rxdart/rxdart.dart';
-import 'package:flutter/foundation.dart';
+// Remove unused alias
 // import 'package:flutter_phoenix/flutter_phoenix.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
@@ -75,7 +78,8 @@ void handleNotificationMessage(RemoteMessage message) {
 
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
-  if (kDebugMode) {
+  if (!kIsWeb) {
+    // Debug logging handled via prints above when not web
     print("Handling a background message: ${message.messageId}");
     print('Message data: ${message.data}');
     print('Message notification: ${message.notification?.title}');
@@ -91,18 +95,16 @@ Future<void> initializeFirebaseAsync() async {
   try {
     // Initialize Firebase with appropriate platform options
     if (TargetPlatform.android == defaultTargetPlatform) {
-      await Firebase.initializeApp(
-          name: "dev project", options: DefaultFirebaseOptions.currentPlatform);
+      await Firebase.initializeApp(name: "dev project", options: DefaultFirebaseOptions.currentPlatform);
     } else {
-      await Firebase.initializeApp(
-          options: DefaultFirebaseOptions.currentPlatform);
+      await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
     }
 
     final coreInitTime = DateTime.now();
     final coreInitDuration = coreInitTime.difference(firebaseStartTime);
     print("Firebase core initialized in: ${coreInitDuration.inMilliseconds}ms");
 
-    final Preferences pref = locator<Preferences>();
+    // Pref is initialized during startup; skip re-fetch here to avoid unused var
 
     // Configure messaging
     final messaging = FirebaseMessaging.instance;
@@ -120,8 +122,10 @@ Future<void> initializeFirebaseAsync() async {
     ConstantName.msgToken = await messaging.getToken();
     log("Token ${ConstantName.msgToken}");
 
-    // Configure background messaging handler
-    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+    // Configure background messaging handler (not supported on web)
+    if (!kIsWeb) {
+      FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+    }
 
     // Handle notification click when app was terminated
     FirebaseMessaging.instance.getInitialMessage().then((message) async {
@@ -147,7 +151,7 @@ Future<void> initializeFirebaseAsync() async {
 
     // Handle foreground messages
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      if (kDebugMode) {
+      if (!kIsWeb) {
         print("Message $message");
         print('Handling a foreground message: ${message.messageId}');
         print('Message data: ${message.data}');
@@ -165,8 +169,7 @@ Future<void> initializeFirebaseAsync() async {
 
     final firebaseEndTime = DateTime.now();
     final totalFirebaseDuration = firebaseEndTime.difference(firebaseStartTime);
-    print(
-        "Firebase fully initialized in: ${totalFirebaseDuration.inMilliseconds}ms");
+    print("Firebase fully initialized in: ${totalFirebaseDuration.inMilliseconds}ms");
   } catch (e) {
     print("Firebase initialization error: $e");
     // Don't update the provider state if initialization fails
@@ -180,10 +183,12 @@ void main() async {
   print("App startup began at: $startTime");
 
   WidgetsFlutterBinding.ensureInitialized();
-  if (TargetPlatform.android == defaultTargetPlatform) {
+  if (!kIsWeb && TargetPlatform.android == defaultTargetPlatform) {
     await FlutterDisplayMode.setHighRefreshRate();
   }
-  HttpOverrides.global = MyHttpOverrides();
+  if (!kIsWeb) {
+    applyHttpOverrides();
+  }
   setupLocator();
   await NotificationService.initializeNotification();
 
@@ -195,10 +200,12 @@ void main() async {
   final startupDuration = beforeFirebase.difference(startTime);
   print("App ready to launch in: ${startupDuration.inMilliseconds}ms");
 
-  await SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown,
-  ]);
+  if (!kIsWeb) {
+    await SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+  }
 
   runApp(const ProviderScope(child: MyApp()));
 
@@ -231,11 +238,4 @@ class MyApp extends ConsumerWidget {
   }
 }
 
-class MyHttpOverrides extends HttpOverrides {
-  @override
-  HttpClient createHttpClient(SecurityContext? context) {
-    return super.createHttpClient(context)
-      ..badCertificateCallback =
-          (X509Certificate cert, String host, int port) => true;
-  }
-}
+// HttpOverrides implementation moved to `utils/http_overrides.dart` with a web stub

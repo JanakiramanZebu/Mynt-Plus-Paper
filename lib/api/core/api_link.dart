@@ -1,10 +1,12 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
+
 class ApiLinks {
 // UAT----
 
   // String get goMyntURL => "https://uat.mynt.in/NorenWClient";
   // static String wsURL = 'wss://uat.mynt.in/NorenWSMob/';
 
-  static String source = "MOB";
+  static String source = kIsWeb ? "WEB" : "MOB";
   static String otp = "";
   static String userName = "";
   static bool showAppTutorial = true;
@@ -167,8 +169,7 @@ class ApiLinks {
 
   // String tradeAction = "https://v3.mynt.in/equity/getadindicesAdvdec";
 
-  String get fundamentalDetail =>
-      '$dashBoardURL/equity/stockFundamentalDetails';
+  String get fundamentalDetail => '$dashBoardURL/equity/stockFundamentalDetails';
   String get topListStock => '$dashBoardURL/equity/TopList';
   String get getGlobalIndex => '$dashBoardURL/equity/getGlobalIndex';
   String get getadindices => '$dashBoardURL/equity/getadindices';
@@ -272,8 +273,7 @@ class ApiLinks {
 
   // ###### Profile All Details  #############
   String get profileDetailsURL => "https://rekycbe.mynt.in/";
-  String get detailschangecurrentstatusURL =>
-      '$profileDetailsURL/add_mob_email_stat';
+  String get detailschangecurrentstatusURL => '$profileDetailsURL/add_mob_email_stat';
   String get profileAllDetailsURL => '$profileDetailsURL/profile';
 
   // email change
@@ -336,16 +336,16 @@ class ApiLinks {
   String get mfholdingsnewapi => "$newvenketmfurl/order/holdings";
   String get mfnewbestMf => "$newvenketmfurl/dashboard/getMfBaskets";
   String get mfnfoMF => "$newvenketmfurl/dashboard/NFO_datas";
-  String get newmfallcatnewendpoit => "$newvenketmfurl/dashboard/getCategoryschemes"; 
-  String get mfnewwatchlist => "$newvenketmfurl/dashboard/watchlist_for_mobile"; 
-  String get mfnewsearch => "$newvenketmfurl/dashboard/mfsearch"; 
-  String get mfsinglepageapi => "$newvenketmfurl/singlepage/getFactSheetData"; 
-  String get mfsinglepagechartapi => "$newvenketmfurl/singlepage/getNavGraph"; 
-  String get mforderbookapi => "$newvenketmfurl/singlepage/getNavGraph"; 
-  String get mftemporderlinkget => "$dashBoardURL/mf/payment_gateway_link"; 
-  String get mflumsumorderplacenew => "$newvenketmfurl/order/PlaceLumpsumOrder"; 
-  String get mfallpaymentnew => "$newvenketmfurl/order/all_payment"; 
-  String get mfupipaymentchecknew => "$newvenketmfurl/order/get_payment_status"; 
+  String get newmfallcatnewendpoit => "$newvenketmfurl/dashboard/getCategoryschemes";
+  String get mfnewwatchlist => "$newvenketmfurl/dashboard/watchlist_for_mobile";
+  String get mfnewsearch => "$newvenketmfurl/dashboard/mfsearch";
+  String get mfsinglepageapi => "$newvenketmfurl/singlepage/getFactSheetData";
+  String get mfsinglepagechartapi => "$newvenketmfurl/singlepage/getNavGraph";
+  String get mforderbookapi => "$newvenketmfurl/singlepage/getNavGraph";
+  String get mftemporderlinkget => "$dashBoardURL/mf/payment_gateway_link";
+  String get mflumsumorderplacenew => "$newvenketmfurl/order/PlaceLumpsumOrder";
+  String get mfallpaymentnew => "$newvenketmfurl/order/all_payment";
+  String get mfupipaymentchecknew => "$newvenketmfurl/order/get_payment_status";
   String get mfSipNew => "$newvenketmfurl/order/sip_values";
   String get mfXSipordernew => "$newvenketmfurl/order/xsip_purchase";
   String get lumpsumOrderbooknew => "$newvenketmfurl/order/OrderBook";
@@ -353,6 +353,4 @@ class ApiLinks {
   String get mfsiplistnew => "$newvenketmfurl/order/FetchSIP";
   String get mfsipcancelnew => "$newvenketmfurl/order/xsip_cancel";
   String get mfsippausenew => "$newvenketmfurl/order/xsip_pause";
-  
-
 }

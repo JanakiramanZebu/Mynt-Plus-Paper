@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:ffi';
+// dart:ffi is not supported on web; remove import as it's unused
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -343,20 +343,7 @@ class LDProvider extends DefaultChangeNotifier {
   }
 
   String _monthName(int month) {
-    const months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec'
-    ];
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     return months[month - 1];
   }
 
@@ -423,20 +410,7 @@ class LDProvider extends DefaultChangeNotifier {
 
       // Helper to format date as '15 Jun 2025'
       String formatDate(DateTime date) {
-        const monthAbbrs = [
-          'Jan',
-          'Feb',
-          'Mar',
-          'Apr',
-          'May',
-          'Jun',
-          'Jul',
-          'Aug',
-          'Sep',
-          'Oct',
-          'Nov',
-          'Dec'
-        ];
+        const monthAbbrs = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
         return '${date.day.toString().padLeft(2, '0')} '
             '${monthAbbrs[date.month - 1]} '
             '${date.year}';
@@ -646,10 +620,8 @@ class LDProvider extends DefaultChangeNotifier {
     // Print in reverse order
     print(dateFormat.format(seventhDayBefore)); // 7th day before
     print(dateFormat.format(curDate)); // Current date
-    final date =
-        _curDate.day.toString().padLeft(2, '0'); // Ensures "01", "02", etc.
-    final month =
-        _curDate.month.toString().padLeft(2, '0'); // Ensures "04" for April
+    final date = _curDate.day.toString().padLeft(2, '0'); // Ensures "01", "02", etc.
+    final month = _curDate.month.toString().padLeft(2, '0'); // Ensures "04" for April
     final year = _curDate.year.toString();
 
     print("$date-$month-$year"); // Example Output: 20-04-2024
@@ -705,17 +677,10 @@ class LDProvider extends DefaultChangeNotifier {
                 child: Theme(
                   data: Theme.of(context).copyWith(
                     colorScheme: ColorScheme.light(
-                      primary: theme.isDarkMode
-                          ? Colors.white
-                          : colors
-                              .primaryLight, // Selected date highlight color
-                      onPrimary: theme.isDarkMode
-                          ? Colors.black
-                          : colors.colorWhite, // Selected text color
+                      primary: theme.isDarkMode ? Colors.white : colors.primaryLight, // Selected date highlight color
+                      onPrimary: theme.isDarkMode ? Colors.black : colors.colorWhite, // Selected text color
                       surface: theme.isDarkMode ? Colors.black : Colors.white,
-                      onSurface: theme.isDarkMode
-                          ? Colors.white
-                          : Colors.black, // Text color
+                      onSurface: theme.isDarkMode ? Colors.white : Colors.black, // Text color
                     ),
                   ),
                   child: CalendarDatePicker(
@@ -749,9 +714,7 @@ class LDProvider extends DefaultChangeNotifier {
                       elevation: 0,
                       // minimumSize: const Size(0, 40), // width, height
 
-                      backgroundColor: theme.isDarkMode
-                          ? colors.primaryDark
-                          : colors.primaryLight,
+                      backgroundColor: theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(5),
                       ),
@@ -759,8 +722,7 @@ class LDProvider extends DefaultChangeNotifier {
                     onPressed: () {
                       if (pickedDate != null) {
                         _pickedStartDate = pickedDate;
-                        _startDate =
-                            "${_pickedStartDate!.day}/${_pickedStartDate!.month}/${_pickedStartDate!.year}";
+                        _startDate = "${_pickedStartDate!.day}/${_pickedStartDate!.month}/${_pickedStartDate!.year}";
                         notifyListeners();
                       }
                       Navigator.pop(context);
@@ -816,16 +778,10 @@ class LDProvider extends DefaultChangeNotifier {
                 child: Theme(
                   data: Theme.of(context).copyWith(
                     colorScheme: ColorScheme.light(
-                      primary: theme.isDarkMode
-                          ? Colors.white
-                          : Colors.black, // Selected date highlight color
-                      onPrimary: theme.isDarkMode
-                          ? Colors.black
-                          : Colors.white, // Selected text color
+                      primary: theme.isDarkMode ? Colors.white : Colors.black, // Selected date highlight color
+                      onPrimary: theme.isDarkMode ? Colors.black : Colors.white, // Selected text color
                       surface: theme.isDarkMode ? Colors.black : Colors.white,
-                      onSurface: theme.isDarkMode
-                          ? Colors.white
-                          : Colors.black, // Text color
+                      onSurface: theme.isDarkMode ? Colors.white : Colors.black, // Text color
                     ),
                   ),
                   child: CalendarDatePicker(
@@ -858,8 +814,7 @@ class LDProvider extends DefaultChangeNotifier {
                     onPressed: () {
                       if (pickedDate != null) {
                         _endsDate = pickedDate;
-                        _endDate =
-                            "${_endsDate!.day}/${_endsDate!.month}/${_endsDate!.year}";
+                        _endDate = "${_endsDate!.day}/${_endsDate!.month}/${_endsDate!.year}";
                         notifyListeners();
                       }
                       Navigator.pop(context);
@@ -943,8 +898,7 @@ class LDProvider extends DefaultChangeNotifier {
   Future fetchcmrdownload(BuildContext context) async {
     try {
       _cmrdownload = await api.cmrdownload();
-      final Uri uri =
-          Uri.parse("https://rekycbe.mynt.in/${_cmrdownload!.path}");
+      final Uri uri = Uri.parse("https://rekycbe.mynt.in/${_cmrdownload!.path}");
       print("urilinks: $uri");
       if (await launchUrl(uri, mode: LaunchMode.externalApplication)) {
         throw 'Could not launch  ';
@@ -1168,8 +1122,7 @@ class LDProvider extends DefaultChangeNotifier {
         for (var y = 0; y < _holdingsAllData!.holdings!.length; y++) {
           final data2 = _holdingsAllData!.holdings![y];
           if (data.isin == data2['ISIN']) {
-            print(
-                "${data.isin} /////${data2['ISIN']} ............................data.isin == data2['ISIN']");
+            print("${data.isin} /////${data2['ISIN']} ............................data.isin == data2['ISIN']");
             data.eligibleornot = 'yes';
             data.havingqty = data2['NET'].toString();
             _isinlistforcopedisdata.add(data2['ISIN']);
@@ -1208,22 +1161,13 @@ class LDProvider extends DefaultChangeNotifier {
   }
 
   Future putordercopaction(
-      String tabval,
-      String sym,
-      String exchange,
-      String issueType,
-      String qty,
-      String price,
-      BuildContext context,
-      String ordertype,
-      String appno) async {
+      String tabval, String sym, String exchange, String issueType, String qty, String price, BuildContext context, String ordertype, String appno) async {
     try {
       _cpactionloader = true;
       notifyListeners();
 
       // Pop only after API result to avoid context issues
-      final res = await api.putorderapicopaction(
-          tabval, sym, exchange, issueType, qty, price, ordertype, appno);
+      final res = await api.putorderapicopaction(tabval, sym, exchange, issueType, qty, price, ordertype, appno);
 
       if (res.msg == 'success') {
         await ordercheckfunction();
@@ -1267,8 +1211,7 @@ class LDProvider extends DefaultChangeNotifier {
     }
   }
 
-  Future fetchsharingdata(
-      String from, String to, String seg, BuildContext context) async {
+  Future fetchsharingdata(String from, String to, String seg, BuildContext context) async {
     try {
       _sharingdatacalendar = await api.getsharingdata(from, to, seg);
       if (_sharingdatacalendar?.data != null) {
@@ -1295,18 +1238,14 @@ class LDProvider extends DefaultChangeNotifier {
     }
   }
 
-  Future sendsharing(String ucode, from, to, res, bool status, seg,
-      BuildContext context) async {
+  Future sendsharing(String ucode, from, to, res, bool status, seg, BuildContext context) async {
     try {
       _calendarpnlloading = true;
       notifyListeners();
 
-      _sharingturonandoff =
-          await api.senddharingdataapi(ucode, from, to, res, status, seg);
+      _sharingturonandoff = await api.senddharingdataapi(ucode, from, to, res, status, seg);
 
-      if (_sharingturonandoff != null &&
-          _sharingturonandoff!.data != null &&
-          _sharingturonandoff!.data!.uqCode != null) {
+      if (_sharingturonandoff != null && _sharingturonandoff!.data != null && _sharingturonandoff!.data!.uqCode != null) {
         notsharing = false;
         _calendarpnlloading = false;
 
@@ -1368,13 +1307,11 @@ class LDProvider extends DefaultChangeNotifier {
 
     if (input.isNotEmpty) {
       // lastScbTok(input);
-      await ref.read(websocketProvider).establishConnection(
-          channelInput: input, task: isSubscribe ? "t" : "u", context: context);
+      await ref.read(websocketProvider).establishConnection(channelInput: input, task: isSubscribe ? "t" : "u", context: context);
     }
   }
 
-  Future fetchpnldata(
-      BuildContext context, String from, String to, bool yrn) async {
+  Future fetchpnldata(BuildContext context, String from, String to, bool yrn) async {
     try {
       _pnlloading = true;
       _reportsloadingforcharges = true;
@@ -1471,8 +1408,7 @@ class LDProvider extends DefaultChangeNotifier {
   //   }
   // }
 
-  Future fetchtradebookdata(
-      BuildContext context, String from, String to) async {
+  Future fetchtradebookdata(BuildContext context, String from, String to) async {
     try {
       _tradebookloading = true;
       notifyListeners();
@@ -1493,8 +1429,7 @@ class LDProvider extends DefaultChangeNotifier {
     }
   }
 
-  Future pdfdownloadfunction(
-      BuildContext context, String recno, String filename) async {
+  Future pdfdownloadfunction(BuildContext context, String recno, String filename) async {
     try {
       _pdfdownloadloading = true;
       notifyListeners();
@@ -1538,15 +1473,13 @@ class LDProvider extends DefaultChangeNotifier {
     }
   }
 
-  Future pdfdownloadfortaxpnl(
-      BuildContext context, eq, dercomcur, eqcharge, year) async {
+  Future pdfdownloadfortaxpnl(BuildContext context, eq, dercomcur, eqcharge, year) async {
     if (year <= _yearforTaxpnlDummy) {
       try {
         _taxderloading = true;
         notifyListeners();
 
-        _pdfresponse =
-            await api.getpdffileapitaxpnl(eq, dercomcur, eqcharge, year);
+        _pdfresponse = await api.getpdffileapitaxpnl(eq, dercomcur, eqcharge, year);
         if (_pdfresponse == 'File Sent to mail successfully') {
           Navigator.pop(context);
           ScaffoldMessenger.of(context).showSnackBar(
@@ -1576,13 +1509,11 @@ class LDProvider extends DefaultChangeNotifier {
     }
   }
 
-  Future pdfdownloadforledger(
-      BuildContext context, res, dr, cr, op, clb, stdate, edate) async {
+  Future pdfdownloadforledger(BuildContext context, res, dr, cr, op, clb, stdate, edate) async {
     try {
       _ledgerloading = true;
       notifyListeners();
-      _pdfresponse =
-          await api.getpdffileapiledger(res, dr, cr, op, clb, stdate, edate);
+      _pdfresponse = await api.getpdffileapiledger(res, dr, cr, op, clb, stdate, edate);
       if (_pdfresponse == 'File downloaded successfully') {
         ScaffoldMessenger.of(context).showSnackBar(
           successMessage(context, 'PDF Downloaded, Check Your Download'),
@@ -1606,13 +1537,11 @@ class LDProvider extends DefaultChangeNotifier {
     }
   }
 
-  Future pdfdownloadforpnl(BuildContext context, res, stdate, edate, string,
-      notional, chargevalue) async {
+  Future pdfdownloadforpnl(BuildContext context, res, stdate, edate, string, notional, chargevalue) async {
     try {
       _pnlloading = true;
       notifyListeners();
-      _pdfresponse = await api.getpdffileapipnl(
-          res, stdate, edate, string, notional, chargevalue);
+      _pdfresponse = await api.getpdffileapipnl(res, stdate, edate, string, notional, chargevalue);
       if (_pdfresponse == 'File downloaded successfully') {
         ScaffoldMessenger.of(context).showSnackBar(
           successMessage(context, 'PDF Downloaded, Check Your Download'),
@@ -1646,9 +1575,7 @@ class LDProvider extends DefaultChangeNotifier {
 
       // Filter to show only Contract and CN documents
       if (_pdfdownload?.data != null) {
-        _pdfdownload!.data = _pdfdownload!.data!
-            .where((doc) => doc.docType == 'Contract' || doc.docType == 'CN')
-            .toList();
+        _pdfdownload!.data = _pdfdownload!.data!.where((doc) => doc.docType == 'Contract' || doc.docType == 'CN').toList();
       }
 
       _reportsloading = false;
@@ -1665,17 +1592,14 @@ class LDProvider extends DefaultChangeNotifier {
   }
 
   refreshforfilterdata() {
-    if (_pledgeandunpledge!.data != null &&
-        _pledgeandunpledge!.data!.isNotEmpty) {
+    if (_pledgeandunpledge!.data != null && _pledgeandunpledge!.data!.isNotEmpty) {
       for (var i = 0; i < _pledgeandunpledge!.data!.length; i++) {
         final value = _pledgeandunpledge!.data![i];
         print(
             "${value.initiated == "0" && value.status == 'Ok' && (double.parse(value.nSOHQTY.toString()).toInt()) + (double.parse(value.sOHQTY.toString()).toInt()) != 0}pledgevavavavava");
         if (value.initiated == "0" &&
             value.status == 'Ok' &&
-            (double.parse(value.nSOHQTY.toString()).toInt()) +
-                    (double.parse(value.sOHQTY.toString()).toInt()) !=
-                0) {
+            (double.parse(value.nSOHQTY.toString()).toInt()) + (double.parse(value.sOHQTY.toString()).toInt()) != 0) {
           print("pledgevavavavava");
         }
       }
@@ -1690,8 +1614,7 @@ class LDProvider extends DefaultChangeNotifier {
       _pledgesegmentcheck = await api.getsegforpledge();
       _listforpledge = [];
       if (_pledgesegmentcheck?.str != null) {}
-      _segresponse =
-          jsonDecode(decryptionFunction(_pledgesegmentcheck!.str.toString()));
+      _segresponse = jsonDecode(decryptionFunction(_pledgesegmentcheck!.str.toString()));
       print("$_segresponse response32e3423");
       // final dummy = [];
       // for (var i = 0; i < _pdfdownload!.data!.length; i++) {
@@ -1712,8 +1635,7 @@ class LDProvider extends DefaultChangeNotifier {
     }
   }
 
-  Future fetchcaeventsdata(
-      BuildContext context, String start, String end) async {
+  Future fetchcaeventsdata(BuildContext context, String start, String end) async {
     try {
       _caeventloading = true;
       notifyListeners();
@@ -1843,8 +1765,7 @@ class LDProvider extends DefaultChangeNotifier {
     }
   }
 
-  Future fetchBillDetails(BuildContext context, String sett, String mrktyp,
-      String comc, String tdate) async {
+  Future fetchBillDetails(BuildContext context, String sett, String mrktyp, String comc, String tdate) async {
     try {
       // _ledgerloading = true;
       notifyListeners();
@@ -1870,8 +1791,7 @@ class LDProvider extends DefaultChangeNotifier {
     }
   }
 
-  Future fetchpnlSummary(BuildContext context, String script, String comcode,
-      String from, String to) async {
+  Future fetchpnlSummary(BuildContext context, String script, String comcode, String from, String to) async {
     try {
       _pnlloading = true;
       notifyListeners();
@@ -1893,8 +1813,7 @@ class LDProvider extends DefaultChangeNotifier {
     }
   }
 
-  Future sendunpledgerequest(BuildContext context, String uccid, String boid,
-      String cname, List list) async {
+  Future sendunpledgerequest(BuildContext context, String uccid, String boid, String cname, List list) async {
     try {
       _pledgeloader = true;
       notifyListeners();
@@ -1961,8 +1880,7 @@ class LDProvider extends DefaultChangeNotifier {
     try {
       _reportsloadingforcharges = true;
       notifyListeners();
-      _pnlsegCharge =
-          await api.getpnlsegcharge(seg, _startDate, _today, _valforcheck);
+      _pnlsegCharge = await api.getpnlsegcharge(seg, _startDate, _today, _valforcheck);
       _pnlAllData!.expenseAmt = _pnlsegCharge!.expenseAmt;
       print("${_pnlsegCharge?.expenseAmt} expense");
       // if (_ledgerAllData!.stat == "Ok") {
@@ -2010,8 +1928,7 @@ class LDProvider extends DefaultChangeNotifier {
         debugPrint("$e");
       }
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(warningMessage(
-          context, 'Cant move already in ${_yearforTaxpnlDummy}'));
+      ScaffoldMessenger.of(context).showSnackBar(warningMessage(context, 'Cant move already in ${_yearforTaxpnlDummy}'));
     }
   }
 
@@ -2021,65 +1938,49 @@ class LDProvider extends DefaultChangeNotifier {
       originalList = List.from(_ledgerAllDataDummy!.fullStat ?? []);
       if (_ledgerAllDataDummy != null) {
         if (val == SingingCharacter.receipt) {
-          _ledgerAllData!.fullStat =
-              originalList.where((o) => o.tYPE == 'Reciept').toList();
+          _ledgerAllData!.fullStat = originalList.where((o) => o.tYPE == 'Reciept').toList();
           double totalCrAmt = 0.0;
 
           for (var i = 0; i < _ledgerAllData!.fullStat!.length; i++) {
-            totalCrAmt += double.tryParse(
-                    _ledgerAllData!.fullStat![i].cRAMT?.toString() ?? '0') ??
-                0.0;
+            totalCrAmt += double.tryParse(_ledgerAllData!.fullStat![i].cRAMT?.toString() ?? '0') ?? 0.0;
           }
 
           _ledgerAllData!.crAmt = totalCrAmt.toStringAsFixed(2);
           _ledgerAllData!.drAmt = '0.0';
           _ledgerAllData!.openingBalance = '0.0';
         } else if (val == SingingCharacter.journal) {
-          _ledgerAllData!.fullStat =
-              originalList.where((o) => o.tYPE == 'Journal').toList();
+          _ledgerAllData!.fullStat = originalList.where((o) => o.tYPE == 'Journal').toList();
           double totalCrAmt = 0.0;
           double totalDrAmt = 0.0;
 
           for (var i = 0; i < _ledgerAllData!.fullStat!.length; i++) {
-            totalCrAmt += double.tryParse(
-                    _ledgerAllData!.fullStat![i].cRAMT?.toString() ?? '0') ??
-                0.0;
-            totalDrAmt += double.tryParse(
-                    _ledgerAllData!.fullStat![i].dRAMT?.toString() ?? '0') ??
-                0.0;
+            totalCrAmt += double.tryParse(_ledgerAllData!.fullStat![i].cRAMT?.toString() ?? '0') ?? 0.0;
+            totalDrAmt += double.tryParse(_ledgerAllData!.fullStat![i].dRAMT?.toString() ?? '0') ?? 0.0;
           }
           _ledgerAllData!.openingBalance = '0.0';
 
           _ledgerAllData!.crAmt = totalCrAmt.toStringAsFixed(2);
           _ledgerAllData!.drAmt = totalDrAmt.toStringAsFixed(2);
         } else if (val == SingingCharacter.payment) {
-          _ledgerAllData!.fullStat =
-              originalList.where((o) => o.tYPE == 'Payment').toList();
+          _ledgerAllData!.fullStat = originalList.where((o) => o.tYPE == 'Payment').toList();
           double totalCrAmt = 0.0;
           double totalDrAmt = 0.0;
 
           for (var i = 0; i < _ledgerAllData!.fullStat!.length; i++) {
-            totalDrAmt += double.tryParse(
-                    _ledgerAllData!.fullStat![i].dRAMT?.toString() ?? '0') ??
-                0.0;
+            totalDrAmt += double.tryParse(_ledgerAllData!.fullStat![i].dRAMT?.toString() ?? '0') ?? 0.0;
           }
           _ledgerAllData!.openingBalance = '0.0';
 
           _ledgerAllData!.crAmt = '0.0';
           _ledgerAllData!.drAmt = totalDrAmt.toStringAsFixed(2);
         } else if (val == SingingCharacter.systemjournal) {
-          _ledgerAllData!.fullStat =
-              originalList.where((o) => o.tYPE == 'Bill').toList();
+          _ledgerAllData!.fullStat = originalList.where((o) => o.tYPE == 'Bill').toList();
           double totalCrAmt = 0.0;
           double totalDrAmt = 0.0;
 
           for (var i = 0; i < _ledgerAllData!.fullStat!.length; i++) {
-            totalCrAmt += double.tryParse(
-                    _ledgerAllData!.fullStat![i].cRAMT?.toString() ?? '0') ??
-                0.0;
-            totalDrAmt += double.tryParse(
-                    _ledgerAllData!.fullStat![i].dRAMT?.toString() ?? '0') ??
-                0.0;
+            totalCrAmt += double.tryParse(_ledgerAllData!.fullStat![i].cRAMT?.toString() ?? '0') ?? 0.0;
+            totalDrAmt += double.tryParse(_ledgerAllData!.fullStat![i].dRAMT?.toString() ?? '0') ?? 0.0;
           }
           _ledgerAllData!.openingBalance = '0.0';
 
@@ -2092,12 +1993,8 @@ class LDProvider extends DefaultChangeNotifier {
           double totalDrAmt = 0.0;
 
           for (var i = 0; i < _ledgerAllData!.fullStat!.length; i++) {
-            totalCrAmt += double.tryParse(
-                    _ledgerAllData!.fullStat![i].cRAMT?.toString() ?? '0') ??
-                0.0;
-            totalDrAmt += double.tryParse(
-                    _ledgerAllData!.fullStat![i].dRAMT?.toString() ?? '0') ??
-                0.0;
+            totalCrAmt += double.tryParse(_ledgerAllData!.fullStat![i].cRAMT?.toString() ?? '0') ?? 0.0;
+            totalDrAmt += double.tryParse(_ledgerAllData!.fullStat![i].dRAMT?.toString() ?? '0') ?? 0.0;
           }
           _ledgerAllData!.openingBalance = _ledgerAllDataDummy!.openingBalance;
 
@@ -2110,25 +2007,19 @@ class LDProvider extends DefaultChangeNotifier {
         for (var i = 0; i < _ledgerAllData!.fullStat!.length; i++) {
           if (i == 0) {
             _ledgerAllData!.fullStat![i].nETAMT =
-                (double.parse(_ledgerAllData!.fullStat![i].cRAMT!) -
-                        double.parse(_ledgerAllData!.fullStat![i].dRAMT!))
-                    .toStringAsFixed(2);
+                (double.parse(_ledgerAllData!.fullStat![i].cRAMT!) - double.parse(_ledgerAllData!.fullStat![i].dRAMT!)).toStringAsFixed(2);
           } else {
-            _ledgerAllData!.fullStat![i].nETAMT =
-                (double.parse(_ledgerAllData!.fullStat![i - 1].nETAMT!) +
-                        (double.parse(_ledgerAllData!.fullStat![i].cRAMT!) -
-                            double.parse(_ledgerAllData!.fullStat![i].dRAMT!)))
-                    .toStringAsFixed(2);
+            _ledgerAllData!.fullStat![i].nETAMT = (double.parse(_ledgerAllData!.fullStat![i - 1].nETAMT!) +
+                    (double.parse(_ledgerAllData!.fullStat![i].cRAMT!) - double.parse(_ledgerAllData!.fullStat![i].dRAMT!)))
+                .toStringAsFixed(2);
           }
         }
         _ledgerAllData!.fullStat?.sort((a, b) {
           return int.parse(b.sortNo!).compareTo(int.parse(a.sortNo!));
         });
-        if (_ledgerAllData!.fullStat != null &&
-            _ledgerAllData!.fullStat!.isNotEmpty) {
+        if (_ledgerAllData!.fullStat != null && _ledgerAllData!.fullStat!.isNotEmpty) {
           if (_ledgerAllData!.fullStat![0].nETAMT != null) {
-            _ledgerAllData!.closingBalance =
-                _ledgerAllData!.fullStat![0].nETAMT!;
+            _ledgerAllData!.closingBalance = _ledgerAllData!.fullStat![0].nETAMT!;
           }
         } else {
           _ledgerAllData!.closingBalance = '0.00';
@@ -2149,69 +2040,45 @@ class LDProvider extends DefaultChangeNotifier {
           chargesforpnlseg(context, 'eq');
         }
         if (val == SingingCharacter.fno) {
-          _pnlAllData!.transactions = _pnlAllDatadummy!.transactions!
-              .where((o) =>
-                  o.companyCode == 'NSE_FNO' || o.companyCode == 'BSE_FNO')
-              .toList();
+          _pnlAllData!.transactions = _pnlAllDatadummy!.transactions!.where((o) => o.companyCode == 'NSE_FNO' || o.companyCode == 'BSE_FNO').toList();
           chargesforpnlseg(context, 'fno');
         }
         if (val == SingingCharacter.com) {
           _pnlAllData!.transactions = _pnlAllDatadummy!.transactions!
-              .where((o) =>
-                  o.companyCode == 'MCX' ||
-                  o.companyCode == 'NCDEX' ||
-                  o.companyCode == 'NSE_COM' ||
-                  o.companyCode == 'BSE_COM')
+              .where((o) => o.companyCode == 'MCX' || o.companyCode == 'NCDEX' || o.companyCode == 'NSE_COM' || o.companyCode == 'BSE_COM')
               .toList();
           chargesforpnlseg(context, 'comm');
         }
         if (val == SingingCharacter.cur) {
           _pnlAllData!.transactions = _pnlAllDatadummy!.transactions!
-              .where((o) =>
-                  o.companyCode == 'CD_NSE' ||
-                  o.companyCode == 'CD_MCX' ||
-                  o.companyCode == 'CD_USE' ||
-                  o.companyCode == 'CD_BSE')
+              .where((o) => o.companyCode == 'CD_NSE' || o.companyCode == 'CD_MCX' || o.companyCode == 'CD_USE' || o.companyCode == 'CD_BSE')
               .toList();
           chargesforpnlseg(context, 'curr');
         } else {
           // No filter selected, show all data
-          _pnlAllData!.transactions =
-              List.from(_pnlAllDatadummy!.transactions ?? []);
+          _pnlAllData!.transactions = List.from(_pnlAllDatadummy!.transactions ?? []);
           _pnlAllData!.expenseAmt = _pnlAllDatadummy!.expenseAmt;
         }
       }
     } else if (_currentfilterpage == 'tradebook') {
       if (_tradebookdata!.trades != null) {
         if (val == SingingCharacter.eq) {
-          _tradebookdata!.trades = _tradebookdataDummy!.trades!
-              .where((o) => o.cOMPANYCODE == 'NSE_CASH')
-              .toList();
+          _tradebookdata!.trades = _tradebookdataDummy!.trades!.where((o) => o.cOMPANYCODE == 'NSE_CASH').toList();
         }
         if (val == SingingCharacter.fno) {
-          _tradebookdata!.trades = (_tradebookdataDummy!.trades ?? [])
-              .where((o) => o.cOMPANYCODE == 'NSE_FNO')
-              .toList();
+          _tradebookdata!.trades = (_tradebookdataDummy!.trades ?? []).where((o) => o.cOMPANYCODE == 'NSE_FNO').toList();
         }
         if (val == SingingCharacter.com) {
-          _tradebookdata!.trades = (_tradebookdataDummy!.trades ?? [])
-              .where((o) => o.cOMPANYCODE == 'MCX')
-              .toList();
+          _tradebookdata!.trades = (_tradebookdataDummy!.trades ?? []).where((o) => o.cOMPANYCODE == 'MCX').toList();
         }
         if (val == SingingCharacter.cur) {
-          _tradebookdata!.trades = (_tradebookdataDummy!.trades ?? [])
-              .where((o) => o.cOMPANYCODE == 'CD_NSE')
-              .toList();
+          _tradebookdata!.trades = (_tradebookdataDummy!.trades ?? []).where((o) => o.cOMPANYCODE == 'CD_NSE').toList();
         }
         if (val == SingingCharacter.buy) {
-          _tradebookdata!.trades = (_tradebookdataDummy!.trades ?? [])
-              .where((o) => o.showtype == 'BUY')
-              .toList();
+          _tradebookdata!.trades = (_tradebookdataDummy!.trades ?? []).where((o) => o.showtype == 'BUY').toList();
         }
         if (val == SingingCharacter.sell) {
-          _tradebookdata!.trades = (_tradebookdataDummy!.trades ?? [])
-              .where((o) => o.showtype == 'SELL')
-              .toList();
+          _tradebookdata!.trades = (_tradebookdataDummy!.trades ?? []).where((o) => o.showtype == 'SELL').toList();
         } else {
           // No filter selected, show all data
           _tradebookdata!.trades = List.from(_tradebookdataDummy!.trades ?? []);
@@ -2219,33 +2086,19 @@ class LDProvider extends DefaultChangeNotifier {
       }
     } else if (_currentfilterpage == 'pdfdownload') {
       if (val == SingingCharacter.marginstatement) {
-        _pdfdownload!.data = (_pdfdaataDummy!.data ?? [])
-            .where((o) => o.docType == 'Margin Statement')
-            .toList();
+        _pdfdownload!.data = (_pdfdaataDummy!.data ?? []).where((o) => o.docType == 'Margin Statement').toList();
       } else if (val == SingingCharacter.contract) {
-        _pdfdownload!.data = (_pdfdaataDummy!.data ?? [])
-            .where((o) => o.docType == 'Contract')
-            .toList();
+        _pdfdownload!.data = (_pdfdaataDummy!.data ?? []).where((o) => o.docType == 'Contract').toList();
       } else if (val == SingingCharacter.weekstate) {
-        _pdfdownload!.data = (_pdfdaataDummy!.data ?? [])
-            .where((o) => o.docType == 'Weekly Statement')
-            .toList();
+        _pdfdownload!.data = (_pdfdaataDummy!.data ?? []).where((o) => o.docType == 'Weekly Statement').toList();
       } else if (val == SingingCharacter.rr) {
-        _pdfdownload!.data = (_pdfdaataDummy!.data ?? [])
-            .where((o) => o.docType == 'Retention Report')
-            .toList();
+        _pdfdownload!.data = (_pdfdaataDummy!.data ?? []).where((o) => o.docType == 'Retention Report').toList();
       } else if (val == SingingCharacter.agts) {
-        _pdfdownload!.data = (_pdfdaataDummy!.data ?? [])
-            .where((o) => o.docType == 'AGTS Report')
-            .toList();
+        _pdfdownload!.data = (_pdfdaataDummy!.data ?? []).where((o) => o.docType == 'AGTS Report').toList();
       } else if (val == SingingCharacter.ledgerdetails) {
-        _pdfdownload!.data = (_pdfdaataDummy!.data ?? [])
-            .where((o) => o.docType == 'Ledger Detail')
-            .toList();
+        _pdfdownload!.data = (_pdfdaataDummy!.data ?? []).where((o) => o.docType == 'Ledger Detail').toList();
       } else if (val == SingingCharacter.cn) {
-        _pdfdownload!.data = (_pdfdaataDummy!.data ?? [])
-            .where((o) => o.docType == 'CN')
-            .toList();
+        _pdfdownload!.data = (_pdfdaataDummy!.data ?? []).where((o) => o.docType == 'CN').toList();
       } else {
         // No filter selected, show all data
         _pdfdownload!.data = List.from(_pdfdaataDummy!.data ?? []);
@@ -2351,12 +2204,8 @@ class LDProvider extends DefaultChangeNotifier {
 
     // Apply bill margin filter
     List<FullStat> filteredList = value
-        ? originalList
-            .where((o) => o.billMargin == 'Yes')
-            .toList() // Show only entries with billMargin = Yes
-        : originalList
-            .where((o) => o.billMargin == 'No')
-            .toList(); // Show only entries with billMargin = No
+        ? originalList.where((o) => o.billMargin == 'Yes').toList() // Show only entries with billMargin = Yes
+        : originalList.where((o) => o.billMargin == 'No').toList(); // Show only entries with billMargin = No
 
     // Then apply any active type filters
     if (_selectedFilters.isNotEmpty) {
@@ -2385,12 +2234,8 @@ class LDProvider extends DefaultChangeNotifier {
     double totalDrAmt = 0.0;
 
     for (var i = 0; i < _ledgerAllData!.fullStat!.length; i++) {
-      totalCrAmt += double.tryParse(
-              _ledgerAllData!.fullStat![i].cRAMT?.toString() ?? '0') ??
-          0.0;
-      totalDrAmt += double.tryParse(
-              _ledgerAllData!.fullStat![i].dRAMT?.toString() ?? '0') ??
-          0.0;
+      totalCrAmt += double.tryParse(_ledgerAllData!.fullStat![i].cRAMT?.toString() ?? '0') ?? 0.0;
+      totalDrAmt += double.tryParse(_ledgerAllData!.fullStat![i].dRAMT?.toString() ?? '0') ?? 0.0;
     }
 
     _ledgerAllData!.openingBalance = _ledgerAllDataDummy!.openingBalance;
@@ -2405,15 +2250,11 @@ class LDProvider extends DefaultChangeNotifier {
     for (var i = 0; i < _ledgerAllData!.fullStat!.length; i++) {
       if (i == 0) {
         _ledgerAllData!.fullStat![i].nETAMT =
-            (double.parse(_ledgerAllData!.fullStat![i].cRAMT!) -
-                    double.parse(_ledgerAllData!.fullStat![i].dRAMT!))
-                .toStringAsFixed(2);
+            (double.parse(_ledgerAllData!.fullStat![i].cRAMT!) - double.parse(_ledgerAllData!.fullStat![i].dRAMT!)).toStringAsFixed(2);
       } else {
-        _ledgerAllData!.fullStat![i].nETAMT =
-            (double.parse(_ledgerAllData!.fullStat![i - 1].nETAMT!) +
-                    (double.parse(_ledgerAllData!.fullStat![i].cRAMT!) -
-                        double.parse(_ledgerAllData!.fullStat![i].dRAMT!)))
-                .toStringAsFixed(2);
+        _ledgerAllData!.fullStat![i].nETAMT = (double.parse(_ledgerAllData!.fullStat![i - 1].nETAMT!) +
+                (double.parse(_ledgerAllData!.fullStat![i].cRAMT!) - double.parse(_ledgerAllData!.fullStat![i].dRAMT!)))
+            .toStringAsFixed(2);
       }
     }
 
@@ -2421,10 +2262,8 @@ class LDProvider extends DefaultChangeNotifier {
       return int.parse(b.sortNo!).compareTo(int.parse(a.sortNo!));
     });
 
-    if (_ledgerAllData!.fullStat != null &&
-        _ledgerAllData!.fullStat!.isNotEmpty) {
-      _ledgerAllData!.closingBalance =
-          _ledgerAllData!.fullStat![0].nETAMT ?? '0.00';
+    if (_ledgerAllData!.fullStat != null && _ledgerAllData!.fullStat!.isNotEmpty) {
+      _ledgerAllData!.closingBalance = _ledgerAllData!.fullStat![0].nETAMT ?? '0.00';
     } else {
       _ledgerAllData!.closingBalance = '0.00';
     }
@@ -2511,10 +2350,8 @@ class LDProvider extends DefaultChangeNotifier {
   late DateTime selectedMonth;
   // late String selectnetpledge;
   TextEditingController selectnetpledge = TextEditingController();
-  TextEditingController selectedqtyforcpaction =
-      TextEditingController(text: '');
-  TextEditingController selectedpriceforcpaction =
-      TextEditingController(text: '');
+  TextEditingController selectedqtyforcpaction = TextEditingController(text: '');
+  TextEditingController selectedpriceforcpaction = TextEditingController(text: '');
 
   late bool pledgesubtn = true;
   late String pledgedropdown;
@@ -2560,15 +2397,11 @@ class LDProvider extends DefaultChangeNotifier {
 
     // If the selected FY is the current one, default to current month in Daily view;
     // otherwise, default to the FY start date.
-    selectedMonth = (startYear == currentFYStartYear)
-        ? DateTime(now.year, now.month, 1)
-        : startTaxDate;
+    selectedMonth = (startYear == currentFYStartYear) ? DateTime(now.year, now.month, 1) : startTaxDate;
 
     // Use cached data if available for this year/segment
-    final cacheKey =
-        calendarPnlCacheKey(selectedFinancialYear, selectedSegment);
-    if (calendarPnlCache.containsKey(cacheKey) &&
-        calendarPnlCache[cacheKey] != null) {
+    final cacheKey = calendarPnlCacheKey(selectedFinancialYear, selectedSegment);
+    if (calendarPnlCache.containsKey(cacheKey) && calendarPnlCache[cacheKey] != null) {
       _calenderpnlAllData = calendarPnlCache[cacheKey];
       _rebuildGroupedAndHeatmap(_calenderpnlAllData);
     }
@@ -2601,8 +2434,7 @@ class LDProvider extends DefaultChangeNotifier {
     selectedqtyforcpaction.text = qty;
 
     final int qtyInt = int.parse(qty);
-    final num priceNum =
-        price.contains('.') ? double.parse(price) : int.parse(price);
+    final num priceNum = price.contains('.') ? double.parse(price) : int.parse(price);
     selectedpriceforcpaction.text = priceNum.toString();
 
     final num requiredAmount = qtyInt * priceNum;
@@ -2644,8 +2476,7 @@ class LDProvider extends DefaultChangeNotifier {
     //     balance.contains('.') ? double.parse(balance) : int.parse(balance);
     final parsedPrice = price != '' ? int.parse(priceText) : 0;
 
-    _requiredamountforofs =
-        (parsedPrice * int.parse(selectedqtyforcpaction.text)).toString();
+    _requiredamountforofs = (parsedPrice * int.parse(selectedqtyforcpaction.text)).toString();
 
     if (priceText.isEmpty) {
       _cpactionerrormsg = 'Price cannot be empty';
@@ -2680,9 +2511,7 @@ class LDProvider extends DefaultChangeNotifier {
     selectedqtyforcpaction.text = qty;
     // Validate quantity input
     final int qtyInt = int.tryParse(qty) ?? 0;
-    final num priceNum = selectedpriceforcpaction.text.contains('.')
-        ? double.parse(selectedpriceforcpaction.text)
-        : int.parse(selectedpriceforcpaction.text);
+    final num priceNum = selectedpriceforcpaction.text.contains('.') ? double.parse(selectedpriceforcpaction.text) : int.parse(selectedpriceforcpaction.text);
     // final balanceDouble =
     //     balance.contains('.') ? double.parse(balance) : int.parse(balance);
 
@@ -2717,10 +2546,8 @@ class LDProvider extends DefaultChangeNotifier {
   }
 
   checkbalace(String req, String balance) {
-    final balanceDouble =
-        balance.contains('.') ? double.parse(balance) : int.parse(balance);
-    final requiredAmount =
-        req.contains('.') ? double.parse(req) : int.parse(req);
+    final balanceDouble = balance.contains('.') ? double.parse(balance) : int.parse(balance);
+    final requiredAmount = req.contains('.') ? double.parse(req) : int.parse(req);
 
     if (requiredAmount > 200000) {
       _captionforofs = 'Bid amount ₹$requiredAmount exceeds limit of ₹200,000';
@@ -2728,9 +2555,7 @@ class LDProvider extends DefaultChangeNotifier {
     } else if ((balanceDouble < requiredAmount)) {
       _captionforofs = 'Insufficient balance for bid';
       _cpactionsubtn = false;
-    } else if (balanceDouble >= requiredAmount &&
-        _qtyvalidcp == true &&
-        _pricevalidcp == true) {
+    } else if (balanceDouble >= requiredAmount && _qtyvalidcp == true && _pricevalidcp == true) {
       _captionforofs = 'Required amount for bid';
       _cpactionsubtn = true;
     } else {
@@ -2842,8 +2667,7 @@ class LDProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
-  void setCPActionPrice(
-      String setprice, double min, double max, String type, String balance) {
+  void setCPActionPrice(String setprice, double min, double max, String type, String balance) {
     if (type == 'OFS') {
       selectedpriceforcpaction.text = setprice;
 
@@ -2856,8 +2680,7 @@ class LDProvider extends DefaultChangeNotifier {
         if (parsedPrice != null && parsedPrice > 0) {
           if (parsedPrice < min) {
             _pricevalidcp = false;
-            _cpactionerrormsg =
-                'Price cannot be below base price (₹${min.toInt()})';
+            _cpactionerrormsg = 'Price cannot be below base price (₹${min.toInt()})';
           } else {
             _pricevalidcp = true;
             _cpactionerrormsg = '';
@@ -2912,8 +2735,7 @@ class LDProvider extends DefaultChangeNotifier {
         _cpactionsubtn = false;
       } else {
         // For non-OFS or when OFS has valid amount
-        if (_captionforofs.contains('exceeds') ||
-            _captionforofs.contains('Insufficient')) {
+        if (_captionforofs.contains('exceeds') || _captionforofs.contains('Insufficient')) {
           _cpactionsubtn = false;
         } else {
           _cpactionsubtn = true;
@@ -2933,8 +2755,7 @@ class LDProvider extends DefaultChangeNotifier {
     if (setnet != 'null') {
       print("setnet ${int.tryParse(setnet)} net ${int.tryParse(net)}");
 
-      if (((int.tryParse(setnet) != null ? int.tryParse(setnet)! : 0) <=
-              (int.tryParse(net) != null ? int.tryParse(net)! : 0)) &&
+      if (((int.tryParse(setnet) != null ? int.tryParse(setnet)! : 0) <= (int.tryParse(net) != null ? int.tryParse(net)! : 0)) &&
           int.tryParse(setnet) != 0 &&
           setnet != "") {
         _pledgeerrormsg = '';
@@ -3015,8 +2836,7 @@ class LDProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
-  Future beforecdsl(BuildContext context, String ccode, String boid,
-      String cname, List list) async {
+  Future beforecdsl(BuildContext context, String ccode, String boid, String cname, List list) async {
     try {
       _pledgeloader = true;
       notifyListeners();
@@ -3062,16 +2882,7 @@ class LDProvider extends DefaultChangeNotifier {
     }
   }
 
-  void listforpledgefunction(
-      BuildContext context,
-      String seg,
-      String sym,
-      String isin,
-      String value,
-      String qty,
-      String net,
-      String type,
-      dynamic index) {
+  void listforpledgefunction(BuildContext context, String seg, String sym, String isin, String value, String qty, String net, String type, dynamic index) {
     print("object");
     bool found = false;
     if (type == 'pledge') {
@@ -3166,8 +2977,7 @@ class LDProvider extends DefaultChangeNotifier {
 
   /// Aggregates daily P&L into monthly sums for the given [start] and [end] dates.
   /// The key format is "YYYY-MM".
-  Map<String, double> _aggregateMonthlyPnL(
-      Map<DateTime, double> data, DateTime start, DateTime end) {
+  Map<String, double> _aggregateMonthlyPnL(Map<DateTime, double> data, DateTime start, DateTime end) {
     final Map<String, double> result = {};
     data.forEach((date, pnl) {
       if (date.isBefore(start) || date.isAfter(end)) return;
@@ -3226,10 +3036,8 @@ class LDProvider extends DefaultChangeNotifier {
                 child: Theme(
                   data: Theme.of(context).copyWith(
                     colorScheme: ColorScheme.light(
-                      primary:
-                          theme.isDarkMode ? Colors.white : colors.primaryLight,
-                      onPrimary:
-                          theme.isDarkMode ? Colors.black : colors.colorWhite,
+                      primary: theme.isDarkMode ? Colors.white : colors.primaryLight,
+                      onPrimary: theme.isDarkMode ? Colors.black : colors.colorWhite,
                       surface: theme.isDarkMode ? Colors.black : Colors.white,
                       onSurface: theme.isDarkMode ? Colors.white : Colors.black,
                     ),
@@ -3251,25 +3059,19 @@ class LDProvider extends DefaultChangeNotifier {
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       elevation: 0,
-                      backgroundColor: theme.isDarkMode
-                          ? colors.primaryDark
-                          : colors.primaryLight,
+                      backgroundColor: theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(5),
                       ),
                     ),
                     onPressed: () {
                       // Set start date to first day of month
-                      final firstDay =
-                          DateTime(selectedDate.year, selectedDate.month, 1);
+                      final firstDay = DateTime(selectedDate.year, selectedDate.month, 1);
                       // Set end date to last day of month
-                      final lastDay = DateTime(
-                          selectedDate.year, selectedDate.month + 1, 0);
+                      final lastDay = DateTime(selectedDate.year, selectedDate.month + 1, 0);
 
-                      _startDate =
-                          "${firstDay.day.toString().padLeft(2, '0')}/${firstDay.month.toString().padLeft(2, '0')}/${firstDay.year}";
-                      _endDate =
-                          "${lastDay.day.toString().padLeft(2, '0')}/${lastDay.month.toString().padLeft(2, '0')}/${lastDay.year}";
+                      _startDate = "${firstDay.day.toString().padLeft(2, '0')}/${firstDay.month.toString().padLeft(2, '0')}/${firstDay.year}";
+                      _endDate = "${lastDay.day.toString().padLeft(2, '0')}/${lastDay.month.toString().padLeft(2, '0')}/${lastDay.year}";
 
                       notifyListeners();
                       Navigator.pop(context);
@@ -3292,13 +3094,11 @@ class LDProvider extends DefaultChangeNotifier {
 
   // Contract Calendar related variables
   Map<DateTime, List<String>> _contractDocumentDates = {};
-  Map<DateTime, List<String>> get contractDocumentDates =>
-      _contractDocumentDates;
+  Map<DateTime, List<String>> get contractDocumentDates => _contractDocumentDates;
 
   // Store full document details for each date
   Map<DateTime, List<DocumentDetail>> _contractDocumentDetails = {};
-  Map<DateTime, List<DocumentDetail>> get contractDocumentDetails =>
-      _contractDocumentDetails;
+  Map<DateTime, List<DocumentDetail>> get contractDocumentDetails => _contractDocumentDetails;
 
   String _selectedContractFilter = 'CN'; // Default to CN
   String get selectedContractFilter => _selectedContractFilter;
@@ -3323,8 +3123,7 @@ class LDProvider extends DefaultChangeNotifier {
 
       // Format dates for API (DD/MM/YYYY format)
       final startDate = "01/${month.toString().padLeft(2, '0')}/${year}";
-      final endDate =
-          "${DateTime(year, month + 1, 0).day.toString().padLeft(2, '0')}/${month.toString().padLeft(2, '0')}/${year}";
+      final endDate = "${DateTime(year, month + 1, 0).day.toString().padLeft(2, '0')}/${month.toString().padLeft(2, '0')}/${year}";
 
       // Call existing PDF download API
       _pdfdownload = await api.getpdfdownload(startDate, endDate);
@@ -3336,8 +3135,7 @@ class LDProvider extends DefaultChangeNotifier {
       // Parse response and populate document dates
       if (_pdfdownload?.data != null) {
         for (var doc in _pdfdownload!.data!) {
-          if (doc.docDate != null &&
-              (doc.docType == 'CN' || doc.docType == 'Contract')) {
+          if (doc.docDate != null && (doc.docType == 'CN' || doc.docType == 'Contract')) {
             // Parse date from DD/MM/YYYY format
             final dateParts = doc.docDate!.split('/');
             if (dateParts.length == 3) {
@@ -3376,8 +3174,7 @@ class LDProvider extends DefaultChangeNotifier {
   }
 
   void searchLedgerType(String value) {
-    if (_ledgerAllDataDummy == null || _ledgerAllDataDummy!.fullStat == null)
-      return;
+    if (_ledgerAllDataDummy == null || _ledgerAllDataDummy!.fullStat == null) return;
 
     if (value.isEmpty) {
       // Reset to original data
@@ -3397,8 +3194,7 @@ class LDProvider extends DefaultChangeNotifier {
   Set<SingingCharacter> _selectedFilters = {};
   Set<SingingCharacter> get selectedFilters => _selectedFilters;
 
-  void applyLedgerMultiFilter(
-      BuildContext context, List<SingingCharacter> filters) {
+  void applyLedgerMultiFilter(BuildContext context, List<SingingCharacter> filters) {
     _selectedFilters = Set.from(filters);
 
     if (_ledgerAllDataDummy == null) {
@@ -3407,8 +3203,7 @@ class LDProvider extends DefaultChangeNotifier {
       return;
     }
 
-    List<FullStat> originalList =
-        List.from(_ledgerAllDataDummy!.fullStat ?? []);
+    List<FullStat> originalList = List.from(_ledgerAllDataDummy!.fullStat ?? []);
     List<FullStat> filteredList = [];
 
     // If no filters selected, show no data
@@ -3424,10 +3219,8 @@ class LDProvider extends DefaultChangeNotifier {
 
     bool billMarginSelected = filters.contains(SingingCharacter.billmargin);
     // Count only the type filters (not billmargin)
-    int typeFilterCount =
-        filters.where((f) => f != SingingCharacter.billmargin).length;
-    bool allTypesSelected = (typeFilterCount == 4 && billMarginSelected) ||
-        (typeFilterCount == 4 && !billMarginSelected);
+    int typeFilterCount = filters.where((f) => f != SingingCharacter.billmargin).length;
+    bool allTypesSelected = (typeFilterCount == 4 && billMarginSelected) || (typeFilterCount == 4 && !billMarginSelected);
 
     bool matchesType(FullStat o) {
       return filters.any((filter) {
@@ -3453,9 +3246,7 @@ class LDProvider extends DefaultChangeNotifier {
       // All types + Bill Margin: show all entries
       filteredList = originalList;
     } else if (allTypesSelected) {
-      filteredList = originalList
-          .where((o) => o.tYPE != 'Bill-Margin' && matchesType(o))
-          .toList();
+      filteredList = originalList.where((o) => o.tYPE != 'Bill-Margin' && matchesType(o)).toList();
     }
     // else if (allTypesSelected && !billMarginSelected) {
     //   // All types, but not Bill Margin: show all non-margin entries
@@ -3479,10 +3270,8 @@ class LDProvider extends DefaultChangeNotifier {
     double totalDrAmt = 0.0;
 
     for (var i = 0; i < filteredList.length; i++) {
-      totalCrAmt +=
-          double.tryParse(filteredList[i].cRAMT?.toString() ?? '0') ?? 0.0;
-      totalDrAmt +=
-          double.tryParse(filteredList[i].dRAMT?.toString() ?? '0') ?? 0.0;
+      totalCrAmt += double.tryParse(filteredList[i].cRAMT?.toString() ?? '0') ?? 0.0;
+      totalDrAmt += double.tryParse(filteredList[i].dRAMT?.toString() ?? '0') ?? 0.0;
     }
 
     _ledgerAllData!.openingBalance = _ledgerAllDataDummy!.openingBalance;
@@ -3496,14 +3285,10 @@ class LDProvider extends DefaultChangeNotifier {
 
     for (var i = 0; i < filteredList.length; i++) {
       if (i == 0) {
-        filteredList[i].nETAMT = (double.parse(filteredList[i].cRAMT!) -
-                double.parse(filteredList[i].dRAMT!))
-            .toStringAsFixed(2);
+        filteredList[i].nETAMT = (double.parse(filteredList[i].cRAMT!) - double.parse(filteredList[i].dRAMT!)).toStringAsFixed(2);
       } else {
-        filteredList[i].nETAMT = (double.parse(filteredList[i - 1].nETAMT!) +
-                (double.parse(filteredList[i].cRAMT!) -
-                    double.parse(filteredList[i].dRAMT!)))
-            .toStringAsFixed(2);
+        filteredList[i].nETAMT =
+            (double.parse(filteredList[i - 1].nETAMT!) + (double.parse(filteredList[i].cRAMT!) - double.parse(filteredList[i].dRAMT!))).toStringAsFixed(2);
       }
     }
 
@@ -3527,9 +3312,7 @@ class LDProvider extends DefaultChangeNotifier {
   String calendarPnlCacheKey(String fy, String segment) => '$fy|$segment';
 
   /// Prefetch all years' data for the current segment (used on profile icon tap)
-  Future<void> prefetchAllCalendarPnlDataForSegment(
-      BuildContext context, String segment,
-      {List<String>? years}) async {
+  Future<void> prefetchAllCalendarPnlDataForSegment(BuildContext context, String segment, {List<String>? years}) async {
     final yearsToFetch = years ?? availableFinancialYears;
     for (final fy in yearsToFetch) {
       final key = calendarPnlCacheKey(fy, segment);
@@ -3560,15 +3343,11 @@ class LDProvider extends DefaultChangeNotifier {
   }
 
   // Modified loadOrFetchCalendarPnlData to use cache
-  Future<void> loadOrFetchCalendarPnlData(
-      BuildContext context, String from, String to, String type,
-      {bool force = false}) async {
+  Future<void> loadOrFetchCalendarPnlData(BuildContext context, String from, String to, String type, {bool force = false}) async {
     final fy = selectedFinancialYear;
     final segment = type;
     final cacheKey = calendarPnlCacheKey(fy, segment);
-    if (!force &&
-        calendarPnlCache.containsKey(cacheKey) &&
-        calendarPnlCache[cacheKey] != null) {
+    if (!force && calendarPnlCache.containsKey(cacheKey) && calendarPnlCache[cacheKey] != null) {
       // Use cached data
       _calenderpnlAllData = calendarPnlCache[cacheKey];
       // Ensure segment field is set for cached data
@@ -3582,14 +3361,11 @@ class LDProvider extends DefaultChangeNotifier {
       return;
     }
     // Otherwise, fetch and cache
-    await fetchcalenderpnldata(context, from, to, type,
-        force: true, cacheKey: cacheKey);
+    await fetchcalenderpnldata(context, from, to, type, force: true, cacheKey: cacheKey);
   }
 
   // Modified fetchcalenderpnldata to support caching
-  Future fetchcalenderpnldata(
-      BuildContext context, String from, String to, String type,
-      {bool force = false, String? cacheKey}) async {
+  Future fetchcalenderpnldata(BuildContext context, String from, String to, String type, {bool force = false, String? cacheKey}) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       _noticenewfeature = prefs.getString("notice").toString();
@@ -3627,9 +3403,7 @@ class LDProvider extends DefaultChangeNotifier {
               try {
                 DateFormat inputFormat = DateFormat("yyyy-MM-dd'T'HH:mm:ss");
                 DateTime parsedDate = inputFormat.parse(dateString);
-                _heatmapData[DateTime(
-                        parsedDate.year, parsedDate.month, parsedDate.day)] =
-                    double.parse(element.realisedpnl ?? "0.0");
+                _heatmapData[DateTime(parsedDate.year, parsedDate.month, parsedDate.day)] = double.parse(element.realisedpnl ?? "0.0");
               } catch (e) {
                 print("Error parsing date: $dateString - $e");
               }
@@ -3640,8 +3414,7 @@ class LDProvider extends DefaultChangeNotifier {
           for (var trade in _calenderpnlAllData!.data!) {
             DateFormat inputFormat = DateFormat("yyyy-MM-dd'T'HH:mm:ss");
             DateTime parsedDate = inputFormat.parse(trade.tRADEDATE!);
-            final dateKey =
-                DateTime(parsedDate.year, parsedDate.month, parsedDate.day);
+            final dateKey = DateTime(parsedDate.year, parsedDate.month, parsedDate.day);
             if (!grouped.containsKey(dateKey)) {
               grouped[dateKey] = [];
             }
@@ -3678,9 +3451,7 @@ class LDProvider extends DefaultChangeNotifier {
           try {
             DateFormat inputFormat = DateFormat("yyyy-MM-dd'T'HH:mm:ss");
             DateTime parsedDate = inputFormat.parse(dateString);
-            _heatmapData[DateTime(
-                    parsedDate.year, parsedDate.month, parsedDate.day)] =
-                double.parse(element.realisedpnl ?? "0.0");
+            _heatmapData[DateTime(parsedDate.year, parsedDate.month, parsedDate.day)] = double.parse(element.realisedpnl ?? "0.0");
           } catch (e) {
             print("Error parsing date: $dateString - $e");
           }
@@ -3691,8 +3462,7 @@ class LDProvider extends DefaultChangeNotifier {
       for (var trade in data.data!) {
         DateFormat inputFormat = DateFormat("yyyy-MM-dd'T'HH:mm:ss");
         DateTime parsedDate = inputFormat.parse(trade.tRADEDATE!);
-        final dateKey =
-            DateTime(parsedDate.year, parsedDate.month, parsedDate.day);
+        final dateKey = DateTime(parsedDate.year, parsedDate.month, parsedDate.day);
         if (!grouped.containsKey(dateKey)) {
           grouped[dateKey] = [];
         }
@@ -3701,8 +3471,7 @@ class LDProvider extends DefaultChangeNotifier {
     }
   }
 
-  Future<void> _fetchAndCacheCalenderPnlData(BuildContext context, String from,
-      String to, String type, String cacheKey) async {
+  Future<void> _fetchAndCacheCalenderPnlData(BuildContext context, String from, String to, String type, String cacheKey) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       _noticenewfeature = prefs.getString("notice").toString();
@@ -3724,9 +3493,7 @@ class LDProvider extends DefaultChangeNotifier {
               try {
                 DateFormat inputFormat = DateFormat("yyyy-MM-dd'T'HH:mm:ss");
                 DateTime parsedDate = inputFormat.parse(dateString);
-                _heatmapData[DateTime(
-                        parsedDate.year, parsedDate.month, parsedDate.day)] =
-                    double.parse(element.realisedpnl ?? "0.0");
+                _heatmapData[DateTime(parsedDate.year, parsedDate.month, parsedDate.day)] = double.parse(element.realisedpnl ?? "0.0");
               } catch (e) {
                 print("Error parsing date: $dateString - $e");
               }
@@ -3737,8 +3504,7 @@ class LDProvider extends DefaultChangeNotifier {
           for (var trade in _calenderpnlAllData!.data!) {
             DateFormat inputFormat = DateFormat("yyyy-MM-dd'T'HH:mm:ss");
             DateTime parsedDate = inputFormat.parse(trade.tRADEDATE!);
-            final dateKey =
-                DateTime(parsedDate.year, parsedDate.month, parsedDate.day);
+            final dateKey = DateTime(parsedDate.year, parsedDate.month, parsedDate.day);
             if (!grouped.containsKey(dateKey)) {
               grouped[dateKey] = [];
             }
