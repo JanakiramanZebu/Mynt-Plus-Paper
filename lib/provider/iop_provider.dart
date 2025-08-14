@@ -945,7 +945,7 @@ class IPOProvider extends DefaultChangeNotifier {
         for (var i = 0; i < element.subCategorySettings!.length; i++) {
           if (element.subCategorySettings![i].allowUpi!) {
             if (element.subCategorySettings![i].subCatCode == "IND") {
-              if (element.key == "SME") {
+              if (element.type == "BSE") {
                 ipoCategory.add({
                   "subCatCode": "Individual",
                   "upiLimit": "${element.subCategorySettings![i].maxUpiLimit}"
@@ -1012,7 +1012,7 @@ class IPOProvider extends DefaultChangeNotifier {
         for (var i = 0; i < element.subCategorySettings!.length; i++) {
           if (element.subCategorySettings![i].allowUpi!) {
             if (element.subCategorySettings![i].subCatCode == "IND") {
-              if (element.key == "BSE") {
+              if (element.type == "BSE") {
                 ipoCategory.add({
                   "subCatCode": "Individual",
                   "upiLimit": "${element.subCategorySettings![i].maxUpiLimit}"
