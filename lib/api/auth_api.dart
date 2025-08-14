@@ -61,7 +61,7 @@ mixin AuthApi on ApiCore {
     try {
       final uri = Uri.parse(apiLinks.mobileOtp);
 
-      Map data = {"mobile_unique": uniqueId, getInputType(mobileRclient): mobileRclient, "otp": otp, "source": ApiLinks.source, "imei": imei};
+      Map data = {"mobile_unique": uniqueId, getInputType(mobileRclient): mobileRclient, "otp": otp, "source": "MOB", "imei": imei};
       final res = await apiClient.post(uri, headers: defaultHeaders, body: jsonEncode(data));
 
       log("Mobile OTP  => ${res.body}");
