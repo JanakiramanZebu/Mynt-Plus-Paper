@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -615,9 +616,11 @@ class PortfolioProvider extends DefaultChangeNotifier {
             element.exchTsym![0].symbol = "${spilitSymbol["symbol"]}";
             element.exchTsym![0].expDate = "${spilitSymbol["expDate"]}";
             element.exchTsym![0].option = "${spilitSymbol["option"]}";
-            int qty = (int.parse("${element.npoadqty ?? 0}") +
+            int qty = (
+              // int.parse("${element.npoadqty ?? 0}") +
                     // int.parse("${element.brkcolqty ?? 0}") +
-                    int.parse("${element.npoadt1qty ?? 0}") +
+                    // int.parse("${element.npoadt1qty ?? 0}") +
+                    max(int.parse("${element.dpQty ?? 0}"), int.parse("${element.npoadqty ?? 0}"))+
                     int.parse("${element.holdqty ?? 0}") +
                     int.parse("${element.btstqty ?? 0}")) -
                 int.parse("${element.trdqty ?? 0}");
@@ -634,8 +637,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
             double avgCost = double.parse(
                 "${element.upldprc == "0.00" ? element.exchTsym![0].close ?? 0.0 : element.upldprc ?? 0.00}");
 
-            element.avgPrc = "${qty > 0 ? avgCost : 0.00}";
-            String avgPrc = "$avgCost";
+            element.avgPrc = "$avgCost";
             element.invested = (qty * avgCost).toStringAsFixed(2);
 
             invest += double.parse("${element.invested}");
@@ -649,10 +651,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
                     int.parse("${element.btstqty ?? 0}")) -
                 int.parse("${element.usedqty ?? 0}");
             if (element.sellAmt != null && element.sellAmt != "0.000000") {
-              element.rpnl = (double.parse("${element.sellAmt ?? 0.00}") -
-                      ((double.parse("${element.trdqty ?? 0.00}")) *
-                          (double.parse("${avgPrc ?? 0.00}"))))
-                  .toStringAsFixed(2);
+              element.rpnl = (double.parse("${element.sellAmt ?? 0.00}") - ((double.parse("${element.trdqty ?? 0.00}")) * (double.parse("${element.avgPrc ?? 0.00}")))).toStringAsFixed(2);
               // element.rpnl = (double.parse("${element.invested ?? 0.00}") - double.parse("${element.sellAmt ?? 0.00}")).toString();
             }
 
@@ -934,13 +933,10 @@ class PortfolioProvider extends DefaultChangeNotifier {
         final holding = holdingsModel![i];
 
         // Direct non-null access with fallbacks
-        final profitNloss =
-            double.tryParse(holding.exchTsym![0].profitNloss ?? '0.0') ?? 0.0;
-        final oneDayChg =
-            double.tryParse(holding.exchTsym![0].oneDayChg ?? '0.0') ?? 0.0;
+        final profitNloss = double.tryParse(holding.exchTsym![0].profitNloss ?? '0.0')! + double.tryParse(holding.rpnl ?? '0.0')!;
+        final oneDayChg = double.tryParse(holding.exchTsym![0].oneDayChg ?? '0.0') ?? 0.0;
         final invested = double.tryParse(holding.invested ?? '0.0') ?? 0.0;
-        final currentValue =
-            double.tryParse(holding.currentValue ?? '0.0') ?? 0.0;
+        final currentValue = double.tryParse(holding.currentValue ?? '0.0') ?? 0.0;
 
         // Accumulate totals
         totalPnl += profitNloss;
@@ -963,10 +959,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
         // Calculate percentages
         _oneDayChngPer = currentVal > 0 ? (dayChange / currentVal) * 100 : 0.0;
-        _totPnlPercHolding = invest > 0
-            ? ((totalPnl / invest) * 100).toStringAsFixed(2)
-            : '0.00';
-
+        _totPnlPercHolding = invest > 0 ? ((totalPnl / invest) * 100).toStringAsFixed(2) : '0.00';
         notifyListeners();
       }
     }
@@ -1821,7 +1814,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
   void _updateDerivedValues(HoldingsModel holding) {
     final qty = holding.currentQty ?? 0;
     final usedqty = int.parse(holding.usedqty ?? "0");
-    // if (qty <= 0) return; // Nothing to calculate for zero quantity
+    if (qty < 0) return; // Nothing to calculate for zero quantity
 
     final lpDouble = double.tryParse(holding.exchTsym![0].lp ?? '0.0') ?? 0.0;
     if (lpDouble <= 0) return; // Can't calculate with invalid price
@@ -1830,14 +1823,10 @@ class PortfolioProvider extends DefaultChangeNotifier {
     holding.currentValue = (qty * lpDouble).toStringAsFixed(2);
 
     // Get average cost with fallback to closing price
-    final closeVal =
-        double.tryParse(holding.exchTsym![0].close ?? "0.00") ?? 0.0;
+    final closeVal = double.tryParse(holding.exchTsym![0].close ?? "0.00") ?? 0.0;
     final avgCost = double.tryParse(holding.upldprc == "0.00"
-            ? (closeVal > 0
-                ? closeVal.toString()
-                : holding.exchTsym![0].close ?? '0.0')
-            : holding.upldprc ?? '0.00') ??
-        0.0;
+        ? (closeVal > 0 ? closeVal.toString() : holding.exchTsym![0].close ?? '0.0')
+        : holding.upldprc ?? '0.00') ?? 0.0;
 
     if (avgCost <= 0) return; // Can't calculate with invalid cost
 
@@ -1846,21 +1835,17 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
     // Calculate profit/loss
     final currentValue = double.tryParse(holding.currentValue ?? "0.00") ?? 0.0;
-    holding.exchTsym![0].profitNloss =
-        (currentValue - investedValue).toStringAsFixed(2);
-
+    holding.exchTsym![0].profitNloss = ((currentValue - investedValue) + double.tryParse(holding.rpnl ?? '0.0')!).toStringAsFixed(2);
+    
     // Calculate percentage change if invested amount exists
-    if (investedValue > 0.0) {
-      final profitValue =
-          double.tryParse(holding.exchTsym![0].profitNloss ?? "0.00") ?? 0.0;
-      holding.exchTsym![0].pNlChng =
-          ((profitValue / investedValue) * 100).toStringAsFixed(2);
+    if (investedValue > 0.0 || double.tryParse(holding.sellAmt ?? '0.0')! > 0) {
+      final profitValue = double.tryParse(holding.exchTsym![0].profitNloss ?? "0.00") ?? 0.0;
+      holding.exchTsym![0].pNlChng = ((profitValue / (investedValue + (double.tryParse(holding.sellAmt ?? '0.0')!) - profitValue)) * 100).toStringAsFixed(2);
     }
-
+    
     // Calculate one day change if close value is valid
     if (closeVal > 0) {
-      holding.exchTsym![0].oneDayChg =
-          (((lpDouble - closeVal) * (qty - usedqty))).toStringAsFixed(2);
+      holding.exchTsym![0].oneDayChg = ((lpDouble - closeVal) * qty).toStringAsFixed(2);
     }
 
     // Update totals

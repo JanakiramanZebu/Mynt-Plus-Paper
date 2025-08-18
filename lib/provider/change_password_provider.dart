@@ -122,7 +122,7 @@ class ChangePasswordProvider extends DefaultChangeNotifier {
 // If Change pass validation is successful, activate the button.
 
   activateChangePass() {
-    if (newPasswordError == "" && oldPasswordError == "") {
+    if ((newPasswordError == "" || newPasswordError == null) && (oldPasswordError == "" || oldPasswordError == null)) {
       _isDisableChangepassbtn = false;
     } else {
       _isDisableChangepassbtn = true;

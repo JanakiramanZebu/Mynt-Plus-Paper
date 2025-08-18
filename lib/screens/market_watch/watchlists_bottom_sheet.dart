@@ -35,6 +35,13 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
               color: theme.isDarkMode ? Colors.black : Colors.white,
+               boxShadow: const [
+              BoxShadow(
+                color: Color(0xff999999),
+                blurRadius: 4.0,
+                offset: Offset(2.0, 0.0),
+              )
+            ],
             ),
             child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

@@ -89,7 +89,7 @@ class _ModifyPlaceOrderScreenState extends ConsumerState<ModifyPlaceOrderScreen>
     int sfq = int.tryParse(widget.scripInfo.frzqty?.toString() ?? '1') ?? 1;
     lotSize = int.parse("${widget.scripInfo.ls ?? 0}");
 
-    frezQty = ((sfq / lotSize).floor() * lotSize);
+    frezQty = sfq > 1 ? (sfq / lotSize).floor() * lotSize : lotSize;
 
     setState(() {
       multiplayer = int.parse((widget.orderArg.exchange == "MCX" ? widget.scripInfo.prcqqty : widget.orderArg.lotSize).toString());
@@ -457,7 +457,7 @@ class _ModifyPlaceOrderScreenState extends ConsumerState<ModifyPlaceOrderScreen>
                                           String newValue = value.replaceAll(RegExp(r'[^0-9]'), '');
                                           int number = int.tryParse(newValue) ?? 0;
                                           if (number >
-                                              ((frezQtyOrderSliceMaxLimit * frezQty) == frezQtyOrderSliceMaxLimit
+                                              (frezQty == lotSize
                                                   ? 999999
                                                   : frezQtyOrderSliceMaxLimit * frezQty)) {
                                             qtyCtrl.text = qtyCtrl.text;
