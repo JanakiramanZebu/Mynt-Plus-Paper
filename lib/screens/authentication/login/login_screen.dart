@@ -116,6 +116,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         await pref.setImei(auth.loggedMobile[activeIndex].imei);
         await pref.setMobileLogin(true);
 
+        // Clear cache when switching accounts
+        ref.read(ledgerProvider).clearCalendarPnlCache();
+
         // Fetch account data
         await ref.read(authProvider).fetchMobileLogin(
             context,

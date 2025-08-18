@@ -17,10 +17,12 @@ import '../provider/auth_provider.dart';
 import '../provider/fund_provider.dart';
 import '../provider/index_list_provider.dart';
 import '../provider/market_watch_provider.dart';
+import '../provider/mf_provider.dart';
 import '../provider/network_state_provider.dart';
 import '../provider/notification_provider.dart';
 import '../provider/order_provider.dart';
 import '../provider/portfolio_provider.dart';
+import '../provider/stocks_provider.dart';
 import '../provider/thems.dart';
 import '../provider/transcation_provider.dart';
 import '../provider/user_profile_provider.dart';
@@ -659,13 +661,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
-          // _buildBottomNavItem(0, assets.home, "Home", selectedTab, theme),
+          _buildBottomNavItem(0, assets.home, "Home", selectedTab, theme),
           _buildBottomNavItem(
               1, assets.watchlistIcon, "Watchlists", selectedTab, theme),
           _buildBottomNavItem(
               2, assets.portfolioIcon, "Portfolio", selectedTab, theme),
-          _buildBottomNavItem(
-              3, assets.mfIcon, "Mutual Fund", selectedTab, theme),
+          // _buildBottomNavItem(
+          //     3, assets.mfIcon, "Mutual Fund", selectedTab, theme),
           _buildBottomNavItem(4, assets.profileIcon, uid, selectedTab, theme,
               useHeight: true, height: 18),
         ],
@@ -689,9 +691,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             // Always allow navigation taps regardless of internet status
             // This ensures UI stays interactive even during reconnection
             switch (index) {
-              // case 0:
-              //   _handleDashboardTap();
-              //   break;
+              case 0:
+                _handleDashboardTap();
+                break;
               case 1:
                 _handleWatchlistTap();
                 break;
@@ -741,11 +743,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                 Text(
                   label,
                   style: TextWidget.textStyle(
-                    fontSize: 12,
-                    color: _getBottomNavColor(theme, isSelected),
-                    theme: theme.isDarkMode,
-                    fw: isSelected ? 2 : null
-                  ),
+                      fontSize: 12,
+                      color: _getBottomNavColor(theme, isSelected),
+                      theme: theme.isDarkMode,
+                      fw: isSelected ? 2 : null),
                   textAlign: TextAlign.center,
                   // softWrap: true,
                   // maxLines: 1,
@@ -779,6 +780,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     final marketWatchList = ref.read(marketWatchProvider);
     final orderProviderRef = ref.read(orderProvider);
     final fundProviderRef = ref.read(fundProvider);
+    final reportsprovider = ref.read(ledgerProvider);
+
 
     indexProvide.bottomMenu(0, context);
     portfolio.cancelTimer();
@@ -798,8 +801,29 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
         // Funds data
         fundProviderRef.fetchFunds(context);
+        ref.read(stocksProvide).getNews();
+        ref.read(mfProvider).fetchEtfCategory();
       }
     });
+
+     reportsprovider.calendarProvider();
+    // Prefetch only the current financial year for all segments
+    final currentFY = reportsprovider.availableFinancialYears.first;
+    if ((reportsprovider.pnlAllData == null)) {
+      for (final segment in reportsprovider.availableSegments) {
+        reportsprovider.prefetchAllCalendarPnlDataForSegment(context, segment,
+            years: [currentFY]);
+      }
+    }
+    // Immediately set the default year and segment to show correct data from cache
+    reportsprovider.setFinancialYear(currentFY);
+    reportsprovider.setSegment(reportsprovider.availableSegments.first);
+    if (reportsprovider.ledgerAllData == null) {
+          await reportsprovider.getCurrentDate('else');
+          reportsprovider.fetchLegerData(
+              context, reportsprovider.startDate, reportsprovider.endDate);
+        }
+
   }
 
   void _handleWatchlistTap() async {
@@ -933,7 +957,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         fundProviderRef.fetchFunds(context);
 
         // IPOs
-        authProviderRef.setIposAPicalls();
+        // authProviderRef.setIposAPicalls();
         // mf
         authProviderRef.setmfapicalls(context);
 

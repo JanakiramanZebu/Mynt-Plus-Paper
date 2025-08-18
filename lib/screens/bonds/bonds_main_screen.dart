@@ -15,7 +15,8 @@ import '../../utils/no_emoji_inputformatter.dart';
 
 class BondsScreen extends ConsumerStatefulWidget {
   final int? initialTabIndex;
-  const BondsScreen({super.key, this.initialTabIndex});
+  final bool isBonds;
+  const BondsScreen({super.key, this.initialTabIndex, required this.isBonds});
 
   @override
   ConsumerState<BondsScreen> createState() => _BondsmainScreenState();
@@ -42,7 +43,6 @@ class _BondsmainScreenState extends ConsumerState<BondsScreen> {
           initialTabIndex = args;
         });
       }
-      ref.read(bondsProvider).fetchAllBonds();
     });
   }
 
@@ -51,10 +51,15 @@ class _BondsmainScreenState extends ConsumerState<BondsScreen> {
     final theme = ref.watch(themeProvider);
     final bonds = ref.watch(bondsProvider);
 
-    return SafeArea(
-      child: Scaffold(
-        appBar: _buildAppBar(context, theme, bonds),
-        body: BondsExploreScreens(theme: theme, initialTabIndex: initialTabIndex),
+    return GestureDetector(
+      onTap: () {
+        FocusScope.of(context).unfocus();
+      },
+      child: SafeArea(
+        child: Scaffold(
+          appBar: widget.isBonds ? _buildAppBar(context, theme, bonds) : null,
+          body: BondsExploreScreens(theme: theme, initialTabIndex: initialTabIndex),
+        ),
       ),
     );
   }

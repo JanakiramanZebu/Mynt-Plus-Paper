@@ -58,10 +58,12 @@ class _MfCommonSearchState extends ConsumerState<MfCommonSearch> {
     final deviceHeight = MediaQuery.of(context).size.height;
 
     return PopScope(
-      canPop: true, // Allows back navigation
+      canPop: false, // Allows back navigation
       onPopInvokedWithResult: (didPop, result) async {
+        Navigator.pop(context);
         mfData.mfsearchcontroller.clear();
         mfData.clearMfSearchResult();
+        FocusScope.of(context).unfocus();
       },
       child: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
@@ -85,9 +87,10 @@ class _MfCommonSearchState extends ConsumerState<MfCommonSearch> {
                       ? colors.highlightDark
                       : colors.highlightLight,
                   onTap: () {
-                    Navigator.pop(context);
-                    mfData.mfsearchcontroller.clear();
-                    mfData.fetchmfCommonsearch("", context);
+                   Navigator.pop(context);
+                  mfData.mfsearchcontroller.clear();
+                  mfData.clearMfSearchResult();
+                  FocusScope.of(context).unfocus();
                   },
                   child: Container(
                     width: 44, // Increased touch area
@@ -170,7 +173,9 @@ class _MfCommonSearchState extends ConsumerState<MfCommonSearch> {
                             onChanged: (value) async {
                               if (value.isNotEmpty) {
                                 mfData.fetchmfCommonsearch(value, context);
-                              }
+                               }else{
+                              mfData.clearMfSearchResult();
+                            }
                             }),
                       ),
           

@@ -3581,47 +3581,70 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                         : colors
                                                             .textPrimaryLight,
                                                   ),
-                                                  child: CheckboxListTile(
-                                                      title: TextWidget.subText(
-                                                        text: 'Stoploss order',
-                                                        theme: theme.isDarkMode,
-                                                        color: theme.isDarkMode
-                                                            ? colors
-                                                                .textPrimaryDark
-                                                            : colors
-                                                                .textPrimaryLight,
-                                                        fw: 0,
-                                                      ),
-                                                      value: _isStoplossOrder,
-                                                      onChanged: (bool? value) {
-                                                        setState(() {
-                                                          _isStoplossOrder =
-                                                              value!;
-                                                          updatePriceType();
-                                                          orderInput
-                                                              .chngPriceType(
-                                                                  priceType,
-                                                                  widget
-                                                                      .orderArg
-                                                                      .exchange);
-                                                          marginUpdate();
-                                                        });
-                                                      },
-                                                      controlAffinity:
-                                                          ListTileControlAffinity
-                                                              .trailing,
-                                                      activeColor: theme
-                                                              .isDarkMode
-                                                          ? colors.secondaryDark
-                                                          : colors
-                                                              .secondaryLight,
-                                                      checkboxShape:
-                                                          const RoundedRectangleBorder(
-                                                        borderRadius:
-                                                            BorderRadius.all(
-                                                                Radius.circular(
-                                                                    5)),
-                                                      )),
+                                                  child: GestureDetector(
+  behavior: HitTestBehavior.translucent, // Improves touch detection
+  onTap: () {
+    setState(() {
+      _isStoplossOrder = !_isStoplossOrder;
+      updatePriceType();
+      orderInput.chngPriceType(priceType, widget.orderArg.exchange);
+      marginUpdate();
+    });
+  },
+  child: Container(
+    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          'Stoploss order',
+          style: textStyle(
+            theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+            14,
+            FontWeight.w400,
+          ),
+        ),
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeOut,
+          width: 40,
+          height: 22,
+          padding: const EdgeInsets.symmetric(horizontal: 3),
+          decoration: BoxDecoration(
+            color: _isStoplossOrder
+                ? colors.colorBlue.withOpacity(0.25)
+                : (theme.isDarkMode ? Colors.grey[700] : Colors.grey[300]),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: AnimatedAlign(
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeOut,
+            alignment: _isStoplossOrder
+                ? Alignment.centerRight
+                : Alignment.centerLeft,
+            child: Container(
+              width: 16,
+              height: 16,
+              decoration: BoxDecoration(
+                color: _isStoplossOrder
+                    ? colors.colorBlue
+                    : Colors.grey[500],
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.25),
+                    blurRadius: 3,
+                    offset: const Offset(0, 1),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    ),
+  ),
+),
                                                 ),
                                                 if ((orderType == "Delivery" ||
                                                         orderType ==
@@ -3653,38 +3676,68 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                         : colors
                                                             .textPrimaryLight,
                                                   ),
-                                                  child: CheckboxListTile(
-                                                      title: TextWidget.subText(
-                                                        text:
-                                                            'After market order (AMO)',
-                                                        theme: theme.isDarkMode,
-                                                        color: theme.isDarkMode
-                                                            ? colors
-                                                                .textPrimaryDark
-                                                            : colors
-                                                                .textPrimaryLight,
-                                                        fw: 0,
-                                                      ),
-                                                      value: _afterMarketOrder,
-                                                      onChanged: (bool? value) {
-                                                        setState(() {
-                                                          _afterMarketOrder =
-                                                              value!;
-                                                          //   isAmo = !isAmo;
-                                                        });
-                                                      },
-                                                      controlAffinity:
-                                                          ListTileControlAffinity
-                                                              .trailing,
-                                                      activeColor:
-                                                          colors.colorBlue,
-                                                      checkboxShape:
-                                                          const RoundedRectangleBorder(
-                                                        borderRadius:
-                                                            BorderRadius.all(
-                                                                Radius.circular(
-                                                                    5)),
-                                                      )),
+                                                  child: GestureDetector(
+  behavior: HitTestBehavior.translucent, // Improves touch detection
+  onTap: () {
+    setState(() {
+      _afterMarketOrder = !_afterMarketOrder;
+      // isAmo = !isAmo; // if needed
+    });
+  },
+  child: Container(
+    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          'After market order (AMO)',
+          style: textStyle(
+            theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+            14,
+            FontWeight.w400,
+          ),
+        ),
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeOut,
+          width: 40,
+          height: 22,
+          padding: const EdgeInsets.symmetric(horizontal: 3),
+          decoration: BoxDecoration(
+            color: _afterMarketOrder
+                ? colors.colorBlue.withOpacity(0.25)
+                : (theme.isDarkMode ? Colors.grey[700] : Colors.grey[300]),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: AnimatedAlign(
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeOut,
+            alignment: _afterMarketOrder
+                ? Alignment.centerRight
+                : Alignment.centerLeft,
+            child: Container(
+              width: 16,
+              height: 16,
+              decoration: BoxDecoration(
+                color: _afterMarketOrder
+                    ? colors.colorBlue
+                    : Colors.grey[500],
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.25),
+                    blurRadius: 3,
+                    offset: const Offset(0, 1),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    ),
+  ),
+),
                                                 ),
                                                 Divider(
                                                     color: theme.isDarkMode
@@ -3699,38 +3752,67 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                         : colors
                                                             .textPrimaryLight,
                                                   ),
-                                                  child: CheckboxListTile(
-                                                    title: TextWidget.subText(
-                                                        text:
-                                                            'Add validity & Disclosed quantity',
-                                                        color: theme.isDarkMode
-                                                            ? colors
-                                                                .textPrimaryDark
-                                                            : colors
-                                                                .textPrimaryLight,
-                                                        theme: theme.isDarkMode,
-                                                        fw: 0),
-                                                    value:
-                                                        _addValidityAndDisclosedQty,
-                                                    onChanged: (bool? value) {
-                                                      setState(() {
-                                                        _addValidityAndDisclosedQty =
-                                                            value!;
-                                                      });
-                                                    },
-                                                    controlAffinity:
-                                                        ListTileControlAffinity
-                                                            .trailing,
-                                                    activeColor:
-                                                        colors.colorBlue,
-                                                    checkboxShape:
-                                                        const RoundedRectangleBorder(
-                                                      borderRadius:
-                                                          BorderRadius.all(
-                                                              Radius.circular(
-                                                                  5)),
-                                                    ),
-                                                  ),
+                                                  child: GestureDetector(
+  behavior: HitTestBehavior.translucent, // Improves touch detection
+  onTap: () {
+    setState(() {
+      _addValidityAndDisclosedQty = !_addValidityAndDisclosedQty;
+    });
+  },
+  child: Container(
+    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          'Add validity & Disclosed quantity',
+          style: textStyle(
+            theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+            14,
+            FontWeight.w400,
+          ),
+        ),
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeOut,
+          width: 40,
+          height: 22,
+          padding: const EdgeInsets.symmetric(horizontal: 3),
+          decoration: BoxDecoration(
+            color: _addValidityAndDisclosedQty
+                ? colors.colorBlue.withOpacity(0.25)
+                : (theme.isDarkMode ? Colors.grey[700] : Colors.grey[300]),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: AnimatedAlign(
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeOut,
+            alignment: _addValidityAndDisclosedQty
+                ? Alignment.centerRight
+                : Alignment.centerLeft,
+            child: Container(
+              width: 16,
+              height: 16,
+              decoration: BoxDecoration(
+                color: _addValidityAndDisclosedQty
+                    ? colors.colorBlue
+                    : Colors.grey[500],
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.25),
+                    blurRadius: 3,
+                    offset: const Offset(0, 1),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    ),
+  ),
+),
                                                 ),
                                                 if (_addValidityAndDisclosedQty) ...[
                                                   addValidityAndDisclosedQtyOption(

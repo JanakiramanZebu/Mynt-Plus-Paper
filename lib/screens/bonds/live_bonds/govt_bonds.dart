@@ -12,6 +12,7 @@ import 'package:mynt_plus/screens/bonds/bonds_order_screen/orderscreenbottompage
 import 'package:mynt_plus/sharedWidget/custom_exch_badge.dart';
 import 'package:mynt_plus/sharedWidget/functions.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
+import '../../../provider/stocks_provider.dart';
 import '../../../res/global_state_text.dart';
 
 class GovtBondsScreen extends StatelessWidget {
@@ -44,7 +45,7 @@ class GovtBondsScreen extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          _buildBondsList(context, bonds, theme),
+          _buildBondsList(context, bonds, theme, ref),
           _buildDivider(theme),
         ],
       );
@@ -52,18 +53,24 @@ class GovtBondsScreen extends StatelessWidget {
   }
 
   Widget _buildBondsList(
-      BuildContext context, BondsProvider bonds, ThemesProvider theme) {
+      BuildContext context, BondsProvider bonds, ThemesProvider theme, WidgetRef ref) {
+    // Safe null checks for bonds data
+    final govtBonds = bonds.govtBonds?.ncbGSec;
+    if (govtBonds == null || govtBonds.isEmpty) {
+      return const SizedBox();
+    }
+
     // Filter bonds based on search query
-    List<dynamic> filteredBonds = bonds.govtBonds!.ncbGSec!;
-    if (bonds.bondscommonsearchcontroller.text.isNotEmpty) {
-      filteredBonds = bonds.govtBonds!.ncbGSec!
+    List<dynamic> filteredBonds = govtBonds;
+    if (ref.watch(stocksProvide).searchController.text.isNotEmpty) {
+      filteredBonds = govtBonds
           .where((bond) => bonds.bondsCommonSearchList.contains(bond))
           .toList();
     }
 
-    if (filteredBonds.isEmpty) {
-      return const SizedBox();
-    }
+    // if (filteredBonds.isEmpty) {
+    //   return const SizedBox();
+    // }
 
     return ListView.separated(
       padding: EdgeInsets.zero,

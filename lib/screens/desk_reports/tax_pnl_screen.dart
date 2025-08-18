@@ -310,7 +310,7 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
                               });
                             } catch (e) {
                               // Show error in ScaffoldMessenger
-                              Navigator.pop(context);
+                              // Navigator.pop(context);
                               ScaffoldMessenger.of(context).showSnackBar(
                                 warningMessage(
                                     context, 'Error: ${e.toString()}'),

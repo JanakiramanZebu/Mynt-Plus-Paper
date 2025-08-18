@@ -787,24 +787,55 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
             
                                       //   ],
                                       // ),
-                                      if (addIpo[index]
-                                          .qualityerrortext
-                                          .isNotEmpty) ...[
-                                        const SizedBox(height: 6),
-                                        IpoErrorBadge(
-                                          errorName:
-                                              addIpo[index].qualityerrortext,
-                                        )
-                                      ],
-                                      if (addIpo[index]
-                                          .biderrortext
-                                          .isNotEmpty) ...[
-                                        const SizedBox(height: 6),
-                                        IpoErrorBadge(
-                                          errorName: addIpo[index].biderrortext,
-                                        )
-                                      ],
-                                    ]),
+                                     if (addIpo[index]
+                                            .qualityerrortext
+                                            .isNotEmpty ||
+                                        addIpo[index]
+                                            .biderrortext
+                                            .isNotEmpty) ...[
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Expanded(
+                                            child: TextWidget.captionText(
+                                              theme: false,
+                                              text:
+                                                  addIpo[index].qualityerrortext,
+                                              color: colors.error,
+                                              fw: 3,
+                                            ),
+                                          ),
+                                          Expanded(
+                                            child: TextWidget.captionText(
+                                              theme: false,
+                                              text: addIpo[index].biderrortext,
+                                              color: colors.error,
+                                              fw: 3,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+
+                                      // if (addIpo[index]
+                                      //     .qualityerrortext
+                                      //     .isNotEmpty) ...[
+                                      //   const SizedBox(height: 6),
+                                      //   IpoErrorBadge(
+                                      //     errorName:
+                                      //         addIpo[index].qualityerrortext,
+                                      //   )
+                                      // ],
+                                      // if (addIpo[index]
+                                      //     .biderrortext
+                                      //     .isNotEmpty) ...[
+                                      //   const SizedBox(height: 6),
+                                      //   IpoErrorBadge(
+                                      //     errorName: addIpo[index].biderrortext,
+                                      //   )
+                                      // ],
+                                    ],
+                                    ],
+                              ),
                               );
                             },
                           ),

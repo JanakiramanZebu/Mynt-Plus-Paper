@@ -146,13 +146,19 @@ class _OrderScreenbottomPage extends ConsumerState<OrderScreenbottomPage> {
                   const SizedBox(
                     height: 8,
                   ),
-                  IpoErrorBadge(
-                    errorName: upierrortext,
+                  TextWidget.captionText(
+                    theme: false,
+                    text: upierrortext,
+                    color: theme.isDarkMode ? colors.lossDark : colors.lossLight,
+                    fw: 3,
                   ),
                 ],
                 ipo.upivalid
-                    ? IpoErrorBadge(
-                        errorName: ipo.upierror,
+                    ? TextWidget.captionText(
+                        theme: false,
+                        text: ipo.upierror,
+                         color: theme.isDarkMode ? colors.lossDark : colors.lossLight,
+                          fw: 3,
                       )
                     : Container(),
                 const SizedBox(height: 16),

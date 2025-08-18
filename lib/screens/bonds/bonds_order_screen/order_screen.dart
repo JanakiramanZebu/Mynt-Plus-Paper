@@ -6,6 +6,7 @@ import 'package:mynt_plus/models/bonds_model/bonds_place_order_details_model.dar
 import 'package:mynt_plus/provider/bonds_provider.dart';
 import 'package:mynt_plus/sharedWidget/custom_exch_badge.dart';
 import '../../../provider/thems.dart';
+import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/ipo_error_widget.dart';
 
@@ -276,16 +277,22 @@ class _ApplyBondsScreenState extends ConsumerState<ApplyBondsScreen> {
                               const SizedBox(
                                 height: 6,
                               ),
-                              IpoErrorBadge(
-                                errorName: bondDetails.quantityerrortext,
+                              TextWidget.captionText(
+                                theme: false,
+                                text: bondDetails.quantityerrortext,
+                                color: colors.error,
+                                fw: 3,
                               )
                             ],
                             if (bondDetails.biderrortext.isNotEmpty) ...[
                               const SizedBox(
                                 height: 6,
                               ),
-                              IpoErrorBadge(
-                                errorName: bondDetails.biderrortext,
+                              TextWidget.captionText(
+                                theme: false,
+                                text: bondDetails.biderrortext,
+                                color: colors.error,
+                                fw: 3,
                               )
                             ],
                           ]),

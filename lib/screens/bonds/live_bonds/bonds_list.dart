@@ -11,6 +11,8 @@ import 'package:mynt_plus/screens/bonds/live_bonds/state_bonds.dart';
 import 'package:mynt_plus/screens/bonds/live_bonds/treasury_bonds.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 
+import '../../../provider/stocks_provider.dart';
+
 class BondsListScreen extends StatelessWidget {
   const BondsListScreen({super.key});
 
@@ -23,23 +25,21 @@ class BondsListScreen extends StatelessWidget {
       return SingleChildScrollView(
         child: Column(
           children: [
-            _buildContent(bonds, devHeight),
+            _buildContent(bonds, devHeight, ref),
           ],
         ),
       );
     });
   }
 
-  Widget _buildContent(BondsProvider bonds, double devHeight) {
+  Widget _buildContent(BondsProvider bonds, double devHeight, WidgetRef ref) {
     // Check if there's a search query
-    if (bonds.bondscommonsearchcontroller.text.isNotEmpty) {
+    if (ref.watch(stocksProvide).searchController.text.isNotEmpty) {
       return _buildSearchResults(bonds, devHeight);
     }
 
-    final bool isEmpty = bonds.govtBonds!.ncbGSec!.isEmpty &&
-        bonds.treasuryBonds!.ncbTBill!.isEmpty &&
-        bonds.stateBonds!.ncbSDL!.isEmpty &&
-        bonds.sovereignGoldBonds!.ncbSGB!.isEmpty;
+    // Safe null checks for all bond types
+    final bool isEmpty = _isBondsDataEmpty(bonds);
 
     if (isEmpty) {
       return _buildEmptyState(devHeight);
@@ -56,12 +56,25 @@ class BondsListScreen extends StatelessWidget {
     );
   }
 
+  bool _isBondsDataEmpty(BondsProvider bonds) {
+    // Safe null checks for all bond types
+    final govtBondsEmpty = bonds.govtBonds?.ncbGSec?.isEmpty ?? true;
+    final treasuryBondsEmpty = bonds.treasuryBonds?.ncbTBill?.isEmpty ?? true;
+    final stateBondsEmpty = bonds.stateBonds?.ncbSDL?.isEmpty ?? true;
+    final sovereignBondsEmpty = bonds.sovereignGoldBonds?.ncbSGB?.isEmpty ?? true;
+
+    return govtBondsEmpty && 
+           treasuryBondsEmpty && 
+           stateBondsEmpty && 
+           sovereignBondsEmpty;
+  }
+
   Widget _buildSearchResults(BondsProvider bonds, double devHeight) {
     if (bonds.bondsCommonSearchList.isEmpty) {
       return _buildNoSearchResults(devHeight);
     }
 
-    // Filter bonds by type and show only sections that have matching results
+    // Safe null checks for filtering bonds by type
     final hasGovtBonds = bonds.bondsCommonSearchList
         .any((bond) => bonds.govtBonds?.ncbGSec?.contains(bond) == true);
     final hasTreasuryBonds = bonds.bondsCommonSearchList

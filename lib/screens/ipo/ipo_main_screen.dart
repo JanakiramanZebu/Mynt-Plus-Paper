@@ -19,7 +19,8 @@ import '../../sharedWidget/no_data_found.dart';
 
 class IPOScreen extends StatefulWidget {
   final int? initialTabIndex;
-  const IPOScreen({super.key, this.initialTabIndex});
+  final bool? isIpo;
+  const IPOScreen({super.key, this.initialTabIndex, this.isIpo});
 
   @override
   State<IPOScreen> createState() => _IPOmainScreenState();
@@ -29,6 +30,7 @@ class _IPOmainScreenState extends State<IPOScreen> {
   @override
   void initState() {
     super.initState();
+   
   }
 
   @override
@@ -44,7 +46,9 @@ class _IPOmainScreenState extends State<IPOScreen> {
           },
           child: SafeArea(
             child: Scaffold(
-              appBar: _buildAppBar(context, theme, ipo),
+              appBar: widget.isIpo == true
+                  ? _buildAppBar(context, theme, ipo)
+                  : null,
               body: IpoExploreScreens(
                 theme: theme,
                 initialTabIndex: widget.initialTabIndex,

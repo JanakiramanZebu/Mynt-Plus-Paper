@@ -121,6 +121,7 @@ class _AddScripState extends ConsumerState<SearchScreen>
             }
             await searchScrip.searchClear();
             currentRouteName = 'homeScreen';
+            FocusScope.of(context).unfocus();
             // Navigator.pop(context);
           },
           child: SafeArea(
@@ -150,6 +151,7 @@ class _AddScripState extends ConsumerState<SearchScreen>
                             searchScrip.setpageName("");
                             currentRouteName = 'homeScreen';
                             Navigator.pop(context);
+                            FocusScope.of(context).unfocus();
                           },
                           child: Container(
                             width: 44,

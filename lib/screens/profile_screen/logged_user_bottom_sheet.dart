@@ -106,7 +106,9 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                     : colors.colorDivider,
                 height: 0,
               ),
-const SizedBox(height: 10,),
+              const SizedBox(
+                height: 10,
+              ),
               // --- Current Account ListView ---
               SizedBox(
                 height: 80,
@@ -151,8 +153,7 @@ const SizedBox(height: 10,),
                                 ),
                                 const SizedBox(width: 12),
                                 Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     TextWidget.subText(
                                       text: activeAccount.userName,
@@ -174,7 +175,7 @@ const SizedBox(height: 10,),
                                 ),
                               ],
                             ),
-                
+
                             // Right side with logout button
                             Material(
                               color: Colors.transparent,
@@ -183,7 +184,7 @@ const SizedBox(height: 10,),
                                   // Add delay for visual feedback
                                   await Future.delayed(
                                       const Duration(milliseconds: 150));
-                
+
                                   if (context.mounted) {
                                     showDialog(
                                       context: context,
@@ -237,18 +238,20 @@ const SizedBox(height: 10,),
                                                               20),
                                                       splashColor: theme
                                                               .isDarkMode
-                                                          ? colors.splashColorDark
+                                                          ? colors
+                                                              .splashColorDark
                                                           : colors
                                                               .splashColorLight,
                                                       highlightColor: theme
                                                               .isDarkMode
-                                                          ? colors.splashColorDark
+                                                          ? colors
+                                                              .splashColorDark
                                                           : colors
                                                               .splashColorLight,
                                                       child: Padding(
                                                         padding:
-                                                            const EdgeInsets.all(
-                                                                6.0),
+                                                            const EdgeInsets
+                                                                .all(6.0),
                                                         child: Icon(
                                                           Icons.close_rounded,
                                                           size: 22,
@@ -302,7 +305,8 @@ const SizedBox(height: 10,),
                                                           .btnOutlinedBorder),
                                                   shape: RoundedRectangleBorder(
                                                     borderRadius:
-                                                        BorderRadius.circular(5),
+                                                        BorderRadius.circular(
+                                                            5),
                                                   ),
                                                   backgroundColor:
                                                       colors.primaryDark,
@@ -370,7 +374,7 @@ const SizedBox(height: 10,),
                               userProfile.profileloaderfun(true);
                               // portfolio.clearAllportfolio();
                               // orders.clearAllorders();
-                              // ledgerprovider.setterfornullallSwitch = null;
+                              await ledgerprovider.clearCalendarPnlCache();
                               ref.read(fundProvider).clearFunds();
 
                               userProfile.clearUserData();

@@ -677,7 +677,7 @@ class AuthProvider extends DefaultChangeNotifier {
         clearTextField();
         pref.setMobileLogin(false);
         pref.setLogout(true);
-        ref.read(indexListProvider).bottomMenu(1, context);
+        ref.read(indexListProvider).bottomMenu(0, context);
         loginMethCtrl.text = pref.clientId!;
         if (currentRouteName != Routes.loginScreen) {
           Navigator.pushNamedAndRemoveUntil(
@@ -923,7 +923,7 @@ class AuthProvider extends DefaultChangeNotifier {
         ref.read(fundProvider).clearFunds();
 
         // Update UI state
-        ref.read(indexListProvider).bottomMenu(1, context);
+        ref.read(indexListProvider).bottomMenu(0, context);
 
         // Pre-fill login field with last client ID for convenience
         if (pref.clientId != null && pref.clientId!.isNotEmpty) {
@@ -1717,7 +1717,7 @@ class AuthProvider extends DefaultChangeNotifier {
       ConstantName.timer =
           Timer.periodic(const Duration(seconds: 1), (timer) {});
       ConstantName.timer!.cancel();
-      ref.read(indexListProvider).bottomMenu(s.isEmpty ? 1 : 4, context);
+      ref.read(indexListProvider).bottomMenu(s.isEmpty ? 0 : 4, context);
 
       if (s.isNotEmpty || pref.clientSession!.isNotEmpty) {
         ref.read(websocketProvider).closeSocket(true);
@@ -1756,7 +1756,7 @@ class AuthProvider extends DefaultChangeNotifier {
           ref.read(userProfileProvider).fetchUserDetail(context);
           ref.read(portfolioProvider).fetchPosGroupSymbol("", false);
           ref.read(transcationProvider).fetchc(context);
-          ref.read(ipoProvide).getDashboardIpos();
+          // ref.read(ipoProvide).getDashboardIpos();
 
           // FirebaseAnalytics.instance.setUserId(id: pref.clientId);
           // // IPOs
@@ -1858,7 +1858,7 @@ class AuthProvider extends DefaultChangeNotifier {
     pref.setMobileLogin(false);
 
     // Update UI state
-    ref.read(indexListProvider).bottomMenu(1, context);
+    ref.read(indexListProvider).bottomMenu(0, context);
 
     // If we have client ID, prefill the login field
     if (pref.clientId != null && pref.clientId!.isNotEmpty) {

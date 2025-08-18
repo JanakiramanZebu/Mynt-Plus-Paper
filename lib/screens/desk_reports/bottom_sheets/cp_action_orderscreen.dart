@@ -902,9 +902,9 @@ class _CPActionOrderScreen extends State<CPActionOrderScreen> {
                                           ),
                                         ),
                                         onPressed: () {
+                                          ledgerprovider.showofserrormsg('');
                                           ledgerprovider.putordercopaction(
-                                            ledgerprovider
-                                                .selectvalueofcpaction,
+                                            ledgerprovider.selectvalueofcpaction,
                                             widget.data?.symbol ?? '',
                                             widget.data?.exchange ?? '',
                                             widget.data?.issueType ?? '',

@@ -32,17 +32,25 @@ class CalenderpnlScreen extends ConsumerStatefulWidget {
 }
 
 class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
-    with TickerProviderStateMixin {
+    with TickerProviderStateMixin, WidgetsBindingObserver {
   late TabController _tabController;
   int activeTab = 0;
+  bool _isInitialized = false;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _tabController = TabController(length: 4, vsync: this);
     _tabController.animation!.addListener(_onTabChanged);
     // Fetch data only if not loaded for this year/segment
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeData();
+    });
+  }
+
+  void _initializeData() {
+    if (!_isInitialized) {
       final ledgerprovider = ref.read(ledgerProvider);
       ledgerprovider.loadOrFetchCalendarPnlData(
         context,
@@ -50,7 +58,44 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
         ledgerprovider.today,
         ledgerprovider.selectedSegment,
       );
-    });
+      _isInitialized = true;
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Ensure data is fetched when screen becomes active again
+    final ledgerprovider = ref.read(ledgerProvider);
+    if (_isInitialized &&
+        (ledgerprovider.calenderpnlAllData == null ||
+            ledgerprovider.calenderpnlAllData?.segment !=
+                ledgerprovider.selectedSegment)) {
+      // If data is null or segment doesn't match, fetch data again
+      ledgerprovider.loadOrFetchCalendarPnlData(
+        context,
+        ledgerprovider.startDate,
+        ledgerprovider.today,
+        ledgerprovider.selectedSegment,
+        force: true,
+      );
+    }
+  }
+
+  // Method to refresh data when screen becomes visible
+  void _refreshDataOnVisibility() {
+    final ledgerprovider = ref.read(ledgerProvider);
+    if (_isInitialized) {
+      // Reset loading state first to ensure loader is shown
+      ledgerprovider.resetCalendarPnlLoading();
+      ledgerprovider.loadOrFetchCalendarPnlData(
+        context,
+        ledgerprovider.startDate,
+        ledgerprovider.today,
+        ledgerprovider.selectedSegment,
+        force: true,
+      );
+    }
   }
 
   void _onTabChanged() {
@@ -64,8 +109,18 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _tabController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.resumed) {
+      // Refresh data when app becomes active again
+      _refreshDataOnVisibility();
+    }
   }
 
   @override
@@ -118,8 +173,9 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
           canPop: true,
           onPopInvokedWithResult: (didPop, result) {
             if (didPop) {
-              ledgerprovider.falseloader('calpnl');
+              // ledgerprovider.falseloader('calpnl');
               ledgerprovider.setSegment("Equity");
+              ledgerprovider.setFinancialYear("");
 
               ledgerprovider.showProfiossSearch(false);
             }
@@ -147,7 +203,7 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                                                   ? colors.highlightDark
                                                   : colors.highlightLight,
                         onTap: () {
-                          ledgerprovider.falseloader('calpnl');
+                      // ledgerprovider.falseloader('calpnl');
                           ledgerprovider.setSegment("Equity");
                           ledgerprovider.setFinancialYear("");
                           ledgerprovider.showProfiossSearch(false);
@@ -221,32 +277,13 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                                 ledgerprovider.availableSegments[index];
                             ledgerprovider.setSegment(selectedSegment);
                             // Check if data is cached for this segment and year
-                            final cacheKey = ledgerprovider.calendarPnlCacheKey(
-                              ledgerprovider.selectedFinancialYear,
-                              selectedSegment,
-                            );
-                            if (!ledgerprovider.calendarPnlCache
-                                    .containsKey(cacheKey) ||
-                                ledgerprovider.calendarPnlCache[cacheKey] ==
-                                    null) {
-                              // Show loader and fetch data
-                              ledgerprovider.loadOrFetchCalendarPnlData(
-                                context,
-                                ledgerprovider.formattedStartDate,
-                                ledgerprovider.formattedendDate,
-                                selectedSegment,
-                                force: true,
-                              );
-                            } else {
-                              // Use cached data
-                              ledgerprovider.loadOrFetchCalendarPnlData(
-                                context,
-                                ledgerprovider.formattedStartDate,
-                                ledgerprovider.formattedendDate,
-                                selectedSegment,
-                                force: false,
-                              );
-                            }
+                            ledgerprovider.loadOrFetchCalendarPnlData(
+                            context,
+                            ledgerprovider.formattedStartDate,
+                            ledgerprovider.formattedendDate,
+                            selectedSegment,
+                            force: false,
+                          );
                           },
                         ),
                       ],

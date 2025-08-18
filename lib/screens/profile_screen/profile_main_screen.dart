@@ -87,8 +87,8 @@ class UserAccountScreen extends ConsumerWidget {
 
     final filteredMenu = [
       {'title': 'Account Balance', 'type': 'balance'},
-      {'title': 'IPO'},
-      {'title': 'Bond'},
+      // {'title': 'IPO'},
+      // {'title': 'Bond'},
       {'title': 'Pledge & Unpledge'},
       {'title': 'Corporate Actions'},
       {'title': 'Reports'},
@@ -352,7 +352,8 @@ class UserAccountScreen extends ConsumerWidget {
                         break;
                       case 'Corporate Actions':
                         // ledgerdate.fetchposition(context);
-                        if (reportsprovider.holdingsAllData == null) {
+                        if (reportsprovider.holdingsAllData == null ||
+                            reportsprovider.cpactiondata == null) {
                           await reportsprovider.getCurrentDate('else');
                           Navigator.pushNamed(context, Routes.cabuyback,
                               arguments: "DDDDD");
@@ -2090,24 +2091,17 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
 
     return Column(
       children: [
-        _buildDetailRow("Name", clientData?.panName ?? "N/A", theme),
-        _buildDetailRow("Email", clientData?.cLIENTIDMAIL ?? "N/A", theme),
-        // InkWell(
-        //   onTap: () {
-        //     profileDetails.openInWebURLtest(context, "profile");
-        //   },
-        //   child: Icon(
-        //     Icons.edit,
-        //     size: 20,
-        //   ),
-        // ),
-        _buildDetailRow("Mobile", clientData?.mOBILENO ?? "N/A", theme),
-        _buildDetailRow("PAN", clientData?.pANNO ?? "N/A", theme),
+        _buildDetailRow("Name", clientData?.panName ?? "N/A", theme, ref),
+        _buildDetailRow("PAN", clientData?.pANNO ?? "N/A", theme, ref),
+        _buildDetailRow("Email", clientData?.cLIENTIDMAIL ?? "N/A", theme, ref),
+
+        _buildDetailRow("Mobile", clientData?.mOBILENO ?? "N/A", theme, ref),
         _buildDetailRow(
             "Address",
             "${clientData?.cLRESIADD1} ${clientData?.cLRESIADD2} ${clientData?.cLRESIADD3}" ??
                 "N/A",
-            theme),
+            theme,
+            ref),
         // _buildDetailRow("DP ID", clientData?.cLIENTDPCODE ?? "N/A", theme),
       ],
     );
@@ -2154,7 +2148,8 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                   // Add delay for visual feedback
                   await Future.delayed(const Duration(milliseconds: 150));
 
-                  profileDetails.openInWebURL(context, "bank");
+                  profileDetails.openInWebURL(
+                      context, "bank");
                 },
                 borderRadius: BorderRadius.circular(20),
                 splashColor: theme.isDarkMode
@@ -2261,6 +2256,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                         ),
 
                         Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
                             if (bank.defaultAc == "Yes")
                               Container(
@@ -2277,6 +2273,45 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                                     theme: theme.isDarkMode,
                                     color: colors.colorWhite),
                               ),
+                            // if (bank.defaultAc != "Yes")
+                            //   PopupMenuButton<String>(
+                            //     padding: EdgeInsets.zero,
+                            //     constraints:
+                            //         const BoxConstraints(minWidth: 160),
+                            //     shape: RoundedRectangleBorder(
+                            //       borderRadius: BorderRadius.circular(8),
+                            //     ),
+                            //     onSelected: (value) {
+                            //       if (value == 'set_primary') {
+                            //         profileDetails.openInWebURL(
+                            //           context,
+                            //           "bank",
+                                      
+                            //         );
+                            //       } else if (value == 'delete') {
+                            //         profileDetails.openInWebURL(
+                            //           context,
+                            //           "bank",
+                                      
+                            //         );
+                            //       }
+                            //     },
+                            //     itemBuilder: (ctx) => const [
+                            //       PopupMenuItem<String>(
+                            //         value: 'set_primary',
+                            //         child: Text('Set primary'),
+                            //       ),
+                            //       PopupMenuItem<String>(
+                            //         value: 'delete',
+                            //         child: Text('Delete'),
+                            //       ),
+                            //     ],
+                            //     child: Icon(
+                            //       Icons.more_vert,
+                            //       size: 18,
+                            //       color: colors.iconColor,
+                            //     ),
+                            //   ),
                             SizedBox(height: 4),
                             Material(
                               color: Colors.transparent,
@@ -2285,8 +2320,8 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                                   // Add delay for visual feedback
                                   await Future.delayed(
                                       const Duration(milliseconds: 150));
-
-                                  profileDetails.openInWebURL(context, "bank");
+                                  profileDetails.openInWebURL(context,
+                                      "bank");
                                 },
                                 borderRadius: BorderRadius.circular(20),
                                 splashColor: theme.isDarkMode
@@ -2791,12 +2826,12 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
             ),
             const SizedBox(height: 1),
             _buildDetailRow(
-                "Nominee Name", clientData?.nomineeName ?? "N/A", theme),
+                "Nominee Name", clientData?.nomineeName ?? "N/A", theme, ref),
             _buildDetailRow("Nominee Relation",
-                clientData?.nomineeRelation ?? "N/A", theme),
+                clientData?.nomineeRelation ?? "N/A", theme, ref),
             if (clientData?.nomineeDOB != null)
               _buildDetailRow("Nominee DOB",
-                  formatNomineeDOB(clientData!.nomineeDOB!), theme),
+                  formatNomineeDOB(clientData!.nomineeDOB!), theme, ref),
           ],
         ],
       ),
@@ -2998,19 +3033,53 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
   }
 
   /// Helper for consistent styling of profile detail rows (using data widget from holding_detail_screen)
-  Widget _buildDetailRow(String label, String value, ThemesProvider theme) {
+  Widget _buildDetailRow(
+      String label, String value, ThemesProvider theme, WidgetRef ref) {
     return Column(
       children: [
         const SizedBox(height: 12),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            TextWidget.subText(
-              text: label,
-              theme: false,
-              color: theme.isDarkMode
-                  ? colors.textSecondaryDark
-                  : colors.textSecondaryLight,
+            Row(
+              children: [
+                SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.20,
+                  child: TextWidget.subText(
+                    text: label,
+                    theme: false,
+                    color: theme.isDarkMode
+                        ? colors.textSecondaryDark
+                        : colors.textSecondaryLight,
+                  ),
+                ),
+                // if (label == "Email" || label == "Mobile" || label == "Address")
+                //   Material(
+                //     color: Colors.transparent,
+                //     shape: const CircleBorder(),
+                //     child: InkWell(
+                //       customBorder: const CircleBorder(),
+                //       splashColor: theme.isDarkMode
+                //           ? colors.splashColorDark
+                //           : colors.splashColorLight,
+                //       highlightColor: theme.isDarkMode
+                //           ? colors.highlightDark
+                //           : colors.highlightLight,
+                //       onTap: () {
+                //         ref.read(profileAllDetailsProvider).openInWebURLtest(
+                //             context, "profile", label.toLowerCase());
+                //       },
+                //       child: Padding(
+                //         padding: const EdgeInsets.all(4.0),
+                //         child: Icon(
+                //           Icons.edit_outlined,
+                //           color: colors.iconColor,
+                //           size: 20,
+                //         ),
+                //       ),
+                //     ),
+                //   ),
+              ],
             ),
             SizedBox(
               width: MediaQuery.of(context).size.width * 0.6,

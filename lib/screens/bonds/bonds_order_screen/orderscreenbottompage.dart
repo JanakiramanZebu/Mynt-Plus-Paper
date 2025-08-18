@@ -296,96 +296,105 @@ class _BondOrderScreenbottomPageState
                                       //   bonds.setMainIPOPlaceOrderRequiredMaxPrice =
                                       //       bondDetails;
 
-                                      // });
-                                    },
-                              child: SvgPicture.asset(
-                                  theme.isDarkMode
-                                      ? assets.darkAdd
-                                      : assets.addIcon,
-                                  fit: BoxFit.scaleDown),
-                            ),
-                            prefixIcon: InkWell(
-                              onTap: bondDetails.quantityController.text ==
-                                      bondDetails.quantitytext
-                                  ? null
-                                  : bonds.loading
-                                      ? null
-                                      : () {
-                                          bonds.substractQuantity(bondDetails);
-                                          // setState(() {
-                                          //   ipo.setMainIPOPlaceOrderRequiredMaxPrice =
-                                          //       addIpo;
-                                          //   // maxValue = addIpo
-                                          //   //     .map((map) => map
-                                          //   //         .requriedprice)
-                                          //   //     .reduce((a,
-                                          //   //             b) =>
-                                          //   //         a > b
-                                          //   //             ? a
-                                          //   //             : b);
-                                          // });
-                                        },
-                              child: SvgPicture.asset(
-                                  theme.isDarkMode
-                                      ? assets.darkCMinus
-                                      : assets.minusIcon,
-                                  fit: BoxFit.scaleDown),
-                            ),
+                                    // });
+                                  },
+                            child: SvgPicture.asset(
+                                theme.isDarkMode
+                                    ? assets.darkAdd
+                                    : assets.addIcon,
+                                fit: BoxFit.scaleDown),
                           ),
-                          onChanged: (value) {
-                            bonds.quantityOnchange(bondDetails, value);
-                            // setState(() {
-                            //   ipo.setMainIPOPlaceOrderRequiredMaxPrice =
-                            //       addIpo;
-                            // });
-                          },
+                          prefixIcon: InkWell(
+                            onTap: bondDetails.quantityController.text ==
+                                    bondDetails.quantitytext
+                                ? null
+                                : bonds.loading
+                                    ? null
+                                    : () {
+                                        bonds.substractQuantity(bondDetails);
+                                        // setState(() {
+                                        //   ipo.setMainIPOPlaceOrderRequiredMaxPrice =
+                                        //       addIpo;
+                                        //   // maxValue = addIpo
+                                        //   //     .map((map) => map
+                                        //   //         .requriedprice)
+                                        //   //     .reduce((a,
+                                        //   //             b) =>
+                                        //   //         a > b
+                                        //   //             ? a
+                                        //   //             : b);
+                                        // });
+                                      },
+                            child: SvgPicture.asset(
+                                theme.isDarkMode
+                                    ? assets.darkCMinus
+                                    : assets.minusIcon,
+                                fit: BoxFit.scaleDown),
+                          ),
                         ),
-                      ),
-                      if (bondDetails.quantityerrortext.isNotEmpty) ...[
-                        const SizedBox(
-                          height: 8,
-                        ),
-                        IpoErrorBadge(
-                          errorName: bondDetails.quantityerrortext,
-                        )
-                      ],
-                      if (bondDetails.biderrortext.isNotEmpty) ...[
-                        const SizedBox(
-                          height: 8,
-                        ),
-                        IpoErrorBadge(
-                          errorName: bondDetails.biderrortext,
-                        )
-                      ],
-                    ]),
-              ),
-              const SizedBox(
-                height: 8,
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (bondDetails.ledgerBalErrorText.isNotEmpty) ...[
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: IpoErrorBadge(
-                        errorName: bondDetails.ledgerBalErrorText,
+                        onChanged: (value) {
+                          bonds.quantityOnchange(bondDetails, value);
+                          // setState(() {
+                          //   ipo.setMainIPOPlaceOrderRequiredMaxPrice =
+                          //       addIpo;
+                          // });
+                        },
                       ),
                     ),
-                    SizedBox(
-                      height: 8,
+                    if (bondDetails.quantityerrortext.isNotEmpty) ...[
+                      const SizedBox(
+                        height: 8,
+                      ),
+                      TextWidget.captionText(
+                        theme: false,
+                        text: bondDetails.quantityerrortext,
+                        color: colors.error,
+                        fw: 3,
+                      )
+                    ],
+                    if (bondDetails.biderrortext.isNotEmpty) ...[
+                      const SizedBox(
+                        height: 8,
+                      ),
+                      TextWidget.captionText(
+                        theme: false,
+                        text: bondDetails.biderrortext,
+                        color: colors.error,
+                        fw: 3,
+                      )
+                    ],
+                  ]),
+            ),
+            const SizedBox(
+              height: 8,
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (bondDetails.ledgerBalErrorText.isNotEmpty) ...[
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: TextWidget.captionText(
+                      theme: false,
+                      text: bondDetails.ledgerBalErrorText,
+                      color: colors.error,
+                      fw: 3,
                     ),
-                  ],
-                  //  Align(
-                  //    alignment: Alignment.center,
-                  //    child: Text("Ledger Balance : ${bonds.ledgerBalModel!.total}",
-                  //                                style: textStyle(
-                  //     theme.isDarkMode
-                  //         ? colors.colorWhite
-                  //         : colors.colorBlack,
-                  //     12,
-                  //     FontWeight.w600)),
-                  //  ),
+                  ),
+                  SizedBox(
+                    height: 8,
+                  ),
+                ],
+                //  Align(
+                //    alignment: Alignment.center,
+                //    child: Text("Ledger Balance : ${bonds.ledgerBalModel!.total}",
+                //                                style: textStyle(
+                //     theme.isDarkMode
+                //         ? colors.colorWhite
+                //         : colors.colorBlack,
+                //     12,
+                //     FontWeight.w600)),
+                //  ),
 
                   ListTile(
                     title: 

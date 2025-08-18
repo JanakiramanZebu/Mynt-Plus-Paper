@@ -252,7 +252,7 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                                 //           arguments: "deposltory");
 
                                   // } else {
-                                    profileprovider.openInWebURL(context,"deposltory");
+                                    profileprovider.openInWebURL(context,"deposltory" );
                                   // }
                                 
                                  
@@ -430,7 +430,7 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                               //             context, Routes.profileWebViewApp,
                               //             arguments: "formdownload");
                               //     } else {
-                                    profileprovider.openInWebURL(context,"formdownload");
+                                    profileprovider.openInWebURL(context,"formdownload" );
                                   // }
                                 
 
@@ -629,7 +629,7 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                                 //           arguments: "closure");
 
                                 //   } else {
-                                    profileprovider.openInWebURL(context,"closure");
+                                    profileprovider.openInWebURL(context,"closure" );
                                   // }
                                 
 
@@ -1696,7 +1696,7 @@ class UserInfoCard extends StatelessWidget {
                                     //       arguments: "profile");
 
                                   // } else {
-                                    profileprovider.openInWebURL(context,"profile");
+                                    profileprovider.openInWebURL(context,"profile" );
                                   // }
                                 
 
@@ -1839,7 +1839,7 @@ class UserNomineeInfoCard extends StatelessWidget {
                         //                   arguments: "nominee");
 
                         //           } else {
-                                    profileprovider.openInWebURL(context,"nominee");
+                                    profileprovider.openInWebURL(context,"nominee" );
                                   // }
                                 
 
@@ -1913,7 +1913,7 @@ class UserNomineeInfoCard extends StatelessWidget {
                       //                     arguments: "nominee");
 
                       //             } else {
-                                    profileprovider.openInWebURL(context,"nominee");
+                                    profileprovider.openInWebURL(context,"nominee" );
                                   // }
                                 
 
@@ -2282,7 +2282,7 @@ class TradingPreferencesCard extends StatelessWidget {
                       //                     arguments: "segment");
 
                       //             } else {
-                                    profileprovider.openInWebURL(context,"segment");
+                                    profileprovider.openInWebURL(context,"segment" );
                                   // }
                                 
 
@@ -2673,7 +2673,7 @@ class MTFSection extends ConsumerWidget {
                           //                 arguments: "mtf");
 
                           //         } else {
-                                    profileprovider.openInWebURL(context,"mtf");
+                                    profileprovider.openInWebURL(context,"mtf" );
                                   // }
                                 
 

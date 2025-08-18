@@ -414,6 +414,7 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
   Widget _buildTab(int tab, ThemesProvider theme) {
     return ElevatedButton(
       onPressed: () {
+        FocusScope.of(context).unfocus();
         setState(() {
           activeTab = tab;
         });

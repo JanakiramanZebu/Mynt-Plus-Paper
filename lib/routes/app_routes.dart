@@ -109,8 +109,11 @@ import '../screens/profile_screen/setting_screen/settingmaincscreen.dart';
 import '../screens/profile_screen/setting_screen/window_settings.dart';
 import '../screens/profile_screen/settingui.dart' as settingUI;
 import '../screens/splash_screen.dart';
+import '../screens/stocks/explore/stocks/broker_calculator.dart';
 import '../screens/stocks/explore/stocks/indices/all_index_screen.dart';
+import '../screens/stocks/explore/stocks/margin_calculator.dart';
 import '../screens/stocks/explore/stocks/news/news_listdata.dart';
+import '../screens/stocks/explore/stocks/portfolio_analysis.dart';
 import '../screens/stocks/explore/stocks/stock_screens.dart';
 import '../screens/stocks/explore/stocks/trade_action/all_trade.dart';
 import '../screens/stocks/explore/stocks/trade_action/sector_themeatic_details.dart';
@@ -667,7 +670,7 @@ class AppRoutes {
 
       case Routes.ipo:
         return _createRoute(
-          pageBuilder: (_, __, ___) => IPOScreen(initialTabIndex: args as int?),
+          pageBuilder: (_, __, ___) => IPOScreen(initialTabIndex: args as int?, isIpo: true),
           beginOffset: const Offset(-1.0, 0.0),
         );
 
@@ -732,7 +735,7 @@ class AppRoutes {
 
       case Routes.bonds:
         return _createRoute(
-          pageBuilder: (_, __, ___) => const BondsScreen(),
+          pageBuilder: (_, __, ___) => const BondsScreen(isBonds: true),
           beginOffset: const Offset(-1.0, 0.0),
         );
       case Routes.mfmainscreen:
@@ -754,6 +757,21 @@ class AppRoutes {
       case Routes.mfsipcalscreen:
         return _createRoute(
           pageBuilder: (_, __, ___) => const MFSIPSCREEN(),
+          beginOffset: const Offset(-1.0, 0.0),
+        );
+      case Routes.brokerCalculator:
+        return _createRoute(
+          pageBuilder: (_, __, ___) =>  BrokerageCalculatorScreen(),
+          beginOffset: const Offset(-1.0, 0.0),
+        );
+      case Routes.marginCalculator:
+        return _createRoute(
+          pageBuilder: (_, __, ___) =>  MarginCalculatorScreen(),
+          beginOffset: const Offset(-1.0, 0.0),
+        );
+      case Routes.portfolioDashboard:
+        return _createRoute(
+          pageBuilder: (_, __, ___) => const PortfolioDashboardScreen(),
           beginOffset: const Offset(-1.0, 0.0),
         );
       case Routes.mfcagrcalss:

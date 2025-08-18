@@ -6,6 +6,7 @@ import 'package:mynt_plus/screens/ipo/upcoming/ipo_upcoming.dart';
 import '../../../provider/auth_provider.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/loader_ui.dart';
+import '../../provider/iop_provider.dart';
 import '../../res/global_state_text.dart';
 import 'main_sme_list/main_sme_list.dart';
 
@@ -104,6 +105,10 @@ class _ExploreScreensState extends ConsumerState<IpoExploreScreens>
                           selectedTab = tab;
                         });
                         _tabController.animateTo(tab);
+                        
+                        ref.read(ipoProvide).clearCommonIpoSearch();
+                        ref.read(ipoProvide).setIpoSearchQuery("");
+                        FocusScope.of(context).unfocus();
                       },
                       child: _tabConstruct(
                           tablistitems[tab]['title'].toString(), theme, tab),
