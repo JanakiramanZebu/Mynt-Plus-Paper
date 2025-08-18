@@ -42,11 +42,13 @@ class _IPOmainScreenState extends State<IPOScreen> {
           onTap: () {
             FocusScope.of(context).unfocus();
           },
-          child: Scaffold(
-            appBar: _buildAppBar(context, theme, ipo),
-            body: IpoExploreScreens(
-              theme: theme,
-              initialTabIndex: widget.initialTabIndex,
+          child: SafeArea(
+            child: Scaffold(
+              appBar: _buildAppBar(context, theme, ipo),
+              body: IpoExploreScreens(
+                theme: theme,
+                initialTabIndex: widget.initialTabIndex,
+              ),
             ),
           ),
         );
@@ -74,7 +76,7 @@ class _IPOmainScreenState extends State<IPOScreen> {
             child: Icon(
               Icons.arrow_back_ios_outlined,
               size: 18,
-              color: theme.isDarkMode ? colors.colorGrey : colors.colorBlack,
+              color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
             ),
           ),
         ),
@@ -82,13 +84,13 @@ class _IPOmainScreenState extends State<IPOScreen> {
       elevation: 0,
       centerTitle: false,
       titleSpacing: -8,
-      title: TextWidget.heroText(
+      title: TextWidget.titleText(
           text: "IPO",
           theme: theme.isDarkMode,
           color: theme.isDarkMode
               ? colors.textPrimaryDark
               : colors.textPrimaryLight,
-          fw: 0),
+          fw: 1),
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(50),
         child: _SearchBarSection(
@@ -122,10 +124,12 @@ class _SearchBarSection extends StatelessWidget {
             child: TextFormField(
               controller: ipo.ipocommonsearchcontroller,
               style: TextWidget.textStyle(
-                fontSize: 14,
-                theme: theme.isDarkMode,
-                fw: 1,
-              ),
+                  fontSize: 16,
+                  color: theme.isDarkMode
+                      ? colors.textPrimaryDark
+                      : colors.textPrimaryLight,
+                  theme: theme.isDarkMode,
+                ),
               keyboardType: TextInputType.text,
               textCapitalization: TextCapitalization.characters,
               inputFormatters: [
@@ -135,17 +139,21 @@ class _SearchBarSection extends StatelessWidget {
               ],
               decoration: InputDecoration(
                   hintText: "Search",
-                  hintStyle: TextWidget.textStyle(
-                      fontSize: 14,
-                      theme: theme.isDarkMode,
-                      fw: 0,
-                      color: colors.textSecondaryLight),
-                  fillColor: colors.searchBg,
+                   hintStyle: TextWidget.textStyle(
+                                      fontSize: 14,
+                                      theme: theme.isDarkMode,
+                                     color: theme.isDarkMode
+                                ? colors.textSecondaryDark
+                                : colors.textSecondaryLight,
+                                    ),
+                  fillColor: theme.isDarkMode
+                        ? colors.searchBgDark
+                        : colors.searchBg,
                   filled: true,
                   prefixIcon: Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: SvgPicture.asset(assets.searchIcon,
-                        color: colors.textPrimaryLight,
+                        color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                         fit: BoxFit.scaleDown,
                         width: 20),
                   ),
@@ -171,7 +179,7 @@ class _SearchBarSection extends StatelessWidget {
                               });
                             },
                             child: SvgPicture.asset(assets.removeIcon,
-                                fit: BoxFit.scaleDown, width: 20),
+                                fit: BoxFit.scaleDown, width: 20, color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,),
                           ),
                         )
                       : const SizedBox.shrink(),

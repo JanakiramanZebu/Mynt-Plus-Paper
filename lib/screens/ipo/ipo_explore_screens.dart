@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:mynt_plus/provider/iop_provider.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/screens/ipo/ipo_orderbook_screen/ipo_order_book_main_screen.dart';
 import 'package:mynt_plus/screens/ipo/upcoming/ipo_upcoming.dart';
@@ -10,9 +7,7 @@ import '../../../provider/auth_provider.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/loader_ui.dart';
 import '../../res/global_state_text.dart';
-import 'ipo_performance/ipo_performance_screen.dart';
 import 'main_sme_list/main_sme_list.dart';
-import 'preclose_ipo/preclose_ipo_screen.dart';
 
 class IpoExploreScreens extends ConsumerStatefulWidget {
   final ThemesProvider theme;
@@ -27,12 +22,21 @@ class IpoExploreScreens extends ConsumerStatefulWidget {
 class _ExploreScreensState extends ConsumerState<IpoExploreScreens>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  final List<Tab> tabItems = [
-    const Tab(text: "Open"),
-    const Tab(text: "Upcoming"),
-    const Tab(text: "My Bids"),
+  final tablistitems = [
+    {
+      "title": "Open",
+      "index": 0,
+    },
+    {
+      "title": "Upcoming", 
+      "index": 1,
+    },
+    {
+      "title": "My Bids",
+      "index": 2,
+    }
   ];
-  int activeTab = 0;
+  int selectedTab = 0;
 
   @override
   void initState() {
@@ -44,9 +48,9 @@ class _ExploreScreensState extends ConsumerState<IpoExploreScreens>
 
   void _onTabChanged() {
     final newIndex = _tabController.animation!.value.round();
-    if (activeTab != newIndex) {
+    if (selectedTab != newIndex) {
       setState(() {
-        activeTab = newIndex;
+        selectedTab = newIndex;
       });
     }
   }
@@ -67,14 +71,47 @@ class _ExploreScreensState extends ConsumerState<IpoExploreScreens>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _TabBarSection(
-            tabController: _tabController,
-            theme: widget.theme,
-            tabItems: tabItems,
-          ),
-          Divider(
-            height: 1,
-            color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
+          Container(
+            width: MediaQuery.of(context).size.width,
+            padding: const EdgeInsets.only(top: 8),
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: theme.isDarkMode
+                      ? colors.darkColorDivider
+                      : colors.colorDivider,
+                  width: 0,
+                ),
+              ),
+            ),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: List.generate(
+                  tablistitems.length,
+                  (tab) => Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      splashColor: theme.isDarkMode
+                          ? Colors.white.withOpacity(0.05)
+                          : Colors.black.withOpacity(0.05),
+                      highlightColor: theme.isDarkMode
+                          ? Colors.white.withOpacity(0.01)
+                          : Colors.black.withOpacity(0.01),
+                      onTap: () {
+                        setState(() {
+                          selectedTab = tab;
+                        });
+                        _tabController.animateTo(tab);
+                      },
+                      child: _tabConstruct(
+                          tablistitems[tab]['title'].toString(), theme, tab),
+                    ),
+                  ),
+                ),
+              ),
+            ),
           ),
           Expanded(
             child: _TabBarViewSection(tabController: _tabController),
@@ -83,50 +120,43 @@ class _ExploreScreensState extends ConsumerState<IpoExploreScreens>
       ),
     );
   }
-}
 
-class _TabBarSection extends StatelessWidget {
-  final TabController tabController;
-  final ThemesProvider theme;
-  final List<Tab> tabItems;
-
-  const _TabBarSection({
-    required this.tabController,
-    required this.theme,
-    required this.tabItems,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return TabBar(
-      tabAlignment: TabAlignment.start,
-      indicatorSize: TabBarIndicatorSize.tab,
-      isScrollable: true,
-      indicatorColor:
-          theme.isDarkMode ? colors.secondaryDark : colors.secondaryLight,
-      unselectedLabelColor: theme.isDarkMode
-          ? colors.textSecondaryDark
-          : colors.textSecondaryLight,
-      unselectedLabelStyle: TextWidget.textStyle(
-        fontSize: 14,
-        theme: false,
-        color: theme.isDarkMode
-            ? colors.textSecondaryDark
-            : colors.textSecondaryLight,
-        fw: 3,
-      ),
-      labelPadding: const EdgeInsets.symmetric(horizontal: 16),
-      indicatorPadding: const EdgeInsets.symmetric(horizontal: 16),
-      labelColor:
-          theme.isDarkMode ? colors.secondaryDark : colors.secondaryLight,
-      labelStyle: TextWidget.textStyle(
-          fontSize: 14,
-          theme: false,
-          color:
-              theme.isDarkMode ? colors.secondaryDark : colors.secondaryLight,
-          fw: 2),
-      controller: tabController,
-      tabs: tabItems,
+  Widget _tabConstruct(String title, ThemesProvider theme, int tab) {
+    final isActive = selectedTab == tab;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 100,
+          alignment: Alignment.center,
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          child: TextWidget.subText(
+            text: title,
+            color: isActive
+                ? theme.isDarkMode
+                    ? colors.secondaryDark
+                    : colors.secondaryLight
+                : theme.isDarkMode
+                    ? colors.textSecondaryDark
+                    : colors.textSecondaryLight,
+            textOverflow: TextOverflow.ellipsis,
+            maxLines: 1,
+            theme: theme.isDarkMode,
+            fw: isActive ? 2 : null,
+          ),
+        ),
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeInOut,
+          height: 2,
+          width: isActive ? 82 : 0,
+          margin: const EdgeInsets.only(top: 1),
+          decoration: BoxDecoration(
+            color: colors.colorBlue,
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
+      ],
     );
   }
 }

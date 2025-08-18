@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../models/order_book_model/order_book_model.dart';
 import '../../provider/thems.dart';
 import '../../provider/websocket_provider.dart';
+import '../../res/global_state_text.dart';
 import '../../res/res.dart';
 
 class OrderScreenHeader extends ConsumerWidget {
@@ -40,29 +41,34 @@ class OrderScreenHeader extends ConsumerWidget {
         final perChange = headerData.perChange ?? "0.00";
         
         // Determine color for percentage change
-        Color percentageColor = colors.colorGrey;
+        Color percentageColor = theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight;
         if (perChange.isNotEmpty) {
           if (perChange.startsWith("-")) {
-            percentageColor = colors.darkred;
+            percentageColor = theme.isDarkMode ? colors.lossDark : colors.lossLight;
           } else if (perChange != "0.00") {
-            percentageColor = colors.ltpgreen;
+            percentageColor = theme.isDarkMode ? colors.profitDark : colors.profitLight;
           }
         }
         
         return Row(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            Text(
-              "${ltp} ",
-               style: textStyle(percentageColor, 16, FontWeight.w500)
-            ),
-            Text(
-              " (${perChange}%)",
-              style: textStyle(
-                theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                12,
-                FontWeight.w400),
-            ),
+            TextWidget.paraText(text: "${ltp} ", theme: theme.isDarkMode, color: percentageColor, fw: 3, ),
+
+
+            // Text(
+            //   "${ltp} ",
+            //    style: textStyle(percentageColor, 16, FontWeight.w500)
+            // ),
+
+            TextWidget.paraText(text: " (${perChange}%)", theme: theme.isDarkMode, color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight, fw: 3, ),
+            // Text(
+            //   " (${perChange}%)",
+            //   style: textStyle(
+            //     theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+            //     12,
+            //     FontWeight.w400),
+            // ),
           ],
         );
       }

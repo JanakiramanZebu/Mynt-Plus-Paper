@@ -140,8 +140,8 @@ class _PendingAlertState extends ConsumerState<PendingAlert> {
   Widget _buildTriggeredAlertCard(BrokerMessage alert, theme) {
     return Container(
       color: theme.isDarkMode
-          ? colors.listItembg.withOpacity(0.4)
-          : colors.listItembg.withOpacity(0.4),
+          ? colors.textSecondaryDark.withOpacity(0.2)
+          : colors.textSecondaryLight.withOpacity(0.2),
       child: Column(
         children: [
           // Divider(
@@ -241,14 +241,14 @@ class _PendingAlertState extends ConsumerState<PendingAlert> {
                       text: "${alert.tsym?.replaceAll("-EQ", "")} ",
                       theme: theme.isDarkMode,
                       color: theme.isDarkMode
-                          ? colors.textPrimary
+                          ? colors.textPrimaryDark
                           : colors.textPrimaryLight,
                       fw: 0,
                       textOverflow: TextOverflow.ellipsis,
                     ),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
+                          horizontal: 8, vertical: 2),
                       decoration: BoxDecoration(
                         color: colors.pending.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(4),
@@ -257,7 +257,7 @@ class _PendingAlertState extends ConsumerState<PendingAlert> {
                         text: "PENDING",
                         theme: false,
                         color: colors.pending,
-                        fw: 0,
+                        fw: 3,
                       ),
                     ),
                   ],
@@ -390,9 +390,5 @@ class _PendingAlertState extends ConsumerState<PendingAlert> {
     );
   }
 
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
-  }
+ 
 }

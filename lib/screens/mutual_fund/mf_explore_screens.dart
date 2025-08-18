@@ -193,7 +193,9 @@ class _ExploreScreensState extends ConsumerState<MFExploreScreens>
                 ? theme.isDarkMode
                     ? colors.secondaryDark
                     : colors.secondaryLight
-                : colors.textSecondaryLight,
+                : theme.isDarkMode
+                    ? colors.textSecondaryDark
+                    : colors.textSecondaryLight,
             textOverflow: TextOverflow.ellipsis,
             maxLines: 1,
             theme: theme.isDarkMode,

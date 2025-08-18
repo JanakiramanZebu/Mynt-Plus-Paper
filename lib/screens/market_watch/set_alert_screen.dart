@@ -100,38 +100,52 @@ class _SetAlertState extends State<SetAlert> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               TextWidget.subText(
-                                  text: 'Type', theme: theme.isDarkMode, fw: 0),
+                                  text: 'Type',
+                                  color: theme.isDarkMode
+                                      ? colors.textPrimaryDark
+                                      : colors.textPrimaryLight,
+                                  theme: theme.isDarkMode,
+                                  fw: 0),
                               const SizedBox(height: 8),
                               SizedBox(
-                                height: 44,
+                                height: 45,
                                 child: DropdownButtonHideUnderline(
-                                  child: DropdownButton2(
-                                    dropdownStyleData: DropdownStyleData(
-                                        decoration: BoxDecoration(
-                                            borderRadius:
-                                                BorderRadius.circular(10),
-                                            color: !theme.isDarkMode
-                                                ? colors.colorWhite
-                                                : const Color.fromARGB(
-                                                    255, 16, 16, 16))),
-                                    buttonStyleData: ButtonStyleData(
+                                                                     child: DropdownButton2(
+                                     dropdownStyleData: DropdownStyleData(
+                                         decoration: BoxDecoration(
+                                             borderRadius:
+                                                 BorderRadius.circular(10),
+                                             color: theme.isDarkMode
+                                                 ? colors.colorBlack
+                                                 : colors.colorWhite,
+                                             border: Border.all(
+                                                 color: theme.isDarkMode
+                                                     ? colors.darkColorDivider
+                                                     : colors.colorDivider,
+                                             ),
+                                         )),
+                                     buttonStyleData: ButtonStyleData(
                                         height: 44,
                                         decoration: BoxDecoration(
                                             color: theme.isDarkMode
                                                 ? colors.darkGrey
                                                 : const Color(0xffF1F3F8),
                                             border: Border.all(
-                                                color: colors.colorBlue),
+                                                color: colors.primary),
                                             borderRadius:
                                                 const BorderRadius.all(
                                                     Radius.circular(5)))),
                                     isExpanded: true,
                                     style: TextWidget.textStyle(
                                         fontSize: 14,
+                                        color: theme.isDarkMode
+                                            ? colors.textPrimaryDark
+                                            : colors.textPrimaryLight,
                                         theme: theme.isDarkMode,
                                         fw: 0),
                                     hint: TextWidget.subText(
                                         text: alertTypeVal,
+                                        
                                         textOverflow: TextOverflow.ellipsis,
                                         theme: theme.isDarkMode,
                                         fw: 0),
@@ -146,6 +160,9 @@ class _SetAlertState extends State<SetAlert> {
                                                     text: item,
                                                     textOverflow:
                                                         TextOverflow.ellipsis,
+                                                    color: theme.isDarkMode
+                                                        ? colors.textPrimaryDark
+                                                        : colors.textPrimaryLight,
                                                     theme: theme.isDarkMode,
                                                     fw: 0),
                                               ),
@@ -172,39 +189,53 @@ class _SetAlertState extends State<SetAlert> {
                             children: [
                               TextWidget.subText(
                                   text: 'Alert me',
+                                  color: theme.isDarkMode
+                                      ? colors.textPrimaryDark
+                                      : colors.textPrimaryLight,
                                   theme: theme.isDarkMode,
                                   fw: 0),
                               const SizedBox(height: 8),
                               SizedBox(
-                                height: 44,
+                                height: 45,
                                 child: DropdownButtonHideUnderline(
-                                  child: DropdownButton2<String>(
-                                    dropdownStyleData: DropdownStyleData(
-                                        decoration: BoxDecoration(
-                                            borderRadius:
-                                                BorderRadius.circular(10),
-                                            color: !theme.isDarkMode
-                                                ? colors.colorWhite
-                                                : const Color.fromARGB(
-                                                    255, 16, 16, 16))),
-                                    buttonStyleData: ButtonStyleData(
-                                        height: 44,
+                                                                     child: DropdownButton2<String>(
+                                     dropdownStyleData: DropdownStyleData(
+                                         decoration: BoxDecoration(
+                                             borderRadius:
+                                                 BorderRadius.circular(10),
+                                             color: theme.isDarkMode
+                                                 ? colors.colorBlack
+                                                 : colors.colorWhite,
+                                             border: Border.all(
+                                                 color: theme.isDarkMode
+                                                     ? colors.darkColorDivider
+                                                     : colors.colorDivider,
+                                             ),
+                                         )),
+                                     buttonStyleData: ButtonStyleData(
+                                        height: 45,
                                         decoration: BoxDecoration(
                                             color: theme.isDarkMode
                                                 ? colors.darkGrey
                                                 : const Color(0xffF1F3F8),
                                             border: Border.all(
-                                                color: colors.colorBlue),
+                                                color: colors.primary),
                                             borderRadius:
                                                 const BorderRadius.all(
                                                     Radius.circular(5)))),
                                     isExpanded: true,
                                     style: TextWidget.textStyle(
                                         fontSize: 14,
+                                        color: theme.isDarkMode
+                                            ? colors.textPrimaryDark
+                                            : colors.textPrimaryLight,
                                         theme: theme.isDarkMode,
                                         fw: 0),
                                     hint: TextWidget.subText(
                                         text: alertValue,
+                                        color: theme.isDarkMode
+                                            ? colors.textSecondaryDark
+                                            : colors.textSecondaryLight,
                                         textOverflow: TextOverflow.ellipsis,
                                         theme: theme.isDarkMode,
                                         fw: 0),
@@ -242,10 +273,15 @@ class _SetAlertState extends State<SetAlert> {
                     const SizedBox(height: 16),
                     // ENTER VALUE FIELD
                     TextWidget.subText(
-                        text: 'Enter Value', theme: theme.isDarkMode, fw: 0),
+                        text: 'Enter Value',
+                        color: theme.isDarkMode
+                            ? colors.textPrimaryDark
+                            : colors.textPrimaryLight,
+                        theme: theme.isDarkMode,
+                        fw: 0),
                     const SizedBox(height: 8),
                     SizedBox(
-                      height: 44,
+                      height: 45,
                       child: CustomTextFormField(
                         fillColor: theme.isDarkMode
                             ? colors.darkGrey
@@ -261,23 +297,34 @@ class _SetAlertState extends State<SetAlert> {
                         },
                         hintText: "0",
                         hintStyle: TextWidget.textStyle(
-                            fontSize: 16,
-                            color: const Color(0xff666666),
+                            fontSize: 14,
                             theme: theme.isDarkMode,
-                            fw: 1),
+                            color: theme.isDarkMode
+                                ? colors.textSecondaryDark
+                                : colors.textSecondaryLight,
+                        ),
                         keyboardType: TextInputType.number,
                         style: TextWidget.textStyle(
-                            fontSize: 14, theme: theme.isDarkMode, fw: 0),
+                            fontSize: 16,
+                            color: theme.isDarkMode
+                                ? colors.textPrimaryDark
+                                : colors.textPrimaryLight,
+                            theme: theme.isDarkMode,
+                        ),
                         textCtrl: valueCtrl,
                         textAlign: TextAlign.start,
                         prefixIcon: SvgPicture.asset(assets.ruppeIcon,
-                            fit: BoxFit.scaleDown),
+                            fit: BoxFit.scaleDown,
+                            color: theme.isDarkMode
+                                ? colors.textSecondaryDark
+                                : colors.textSecondaryLight),
                       ),
                     ),
                     if (errorText.isNotEmpty) ...[
+                      const SizedBox(height: 4),
                       TextWidget.captionText(
                           text: errorText,
-                          color: colors.darkred,
+                          color: theme.isDarkMode ? colors.errorDark : colors.errorLight,
                           theme: theme.isDarkMode,
                           fw: 0),
                     ],
@@ -294,12 +341,19 @@ class _SetAlertState extends State<SetAlert> {
                             : const Color(0xffF1F3F8),
                         hintText: "Remark",
                         hintStyle: TextWidget.textStyle(
-                          fontSize: 16,
-                          color: const Color(0xff666666),
+                          fontSize: 14,
                           theme: theme.isDarkMode,
+                          color: theme.isDarkMode
+                              ? colors.textSecondaryDark
+                              : colors.textSecondaryLight,
                         ),
                         style: TextWidget.textStyle(
-                            fontSize: 14, theme: theme.isDarkMode, fw: 0),
+                            fontSize: 16,
+                            color: theme.isDarkMode
+                                ? colors.textPrimaryDark
+                                : colors.textPrimaryLight,
+                            theme: theme.isDarkMode,
+                        ),
                         textCtrl: remark,
                         textAlign: TextAlign.start,
                       ),
@@ -321,7 +375,9 @@ class _SetAlertState extends State<SetAlert> {
                 style: ElevatedButton.styleFrom(
                   elevation: 0,
                   backgroundColor: errorText.isNotEmpty
-                      ? Colors.grey
+                      ? theme.isDarkMode
+                          ? colors.primaryDark.withOpacity(0.5)
+                          : colors.primaryLight.withOpacity(0.5)
                       : (theme.isDarkMode
                           ? colors.primaryDark
                           : colors.primaryLight),
@@ -389,7 +445,13 @@ class _SetAlertState extends State<SetAlert> {
                       )
                     : TextWidget.subText(
                         text: 'Set alert',
-                        color: colors.colorWhite,
+                        color: !theme.isDarkMode
+                            ? errorText.isNotEmpty
+                                ? colors.colorWhite.withOpacity(0.5)
+                                : colors.colorWhite
+                            : errorText.isNotEmpty
+                                ? colors.colorWhite.withOpacity(0.5)
+                                : colors.colorWhite,
                         theme: theme.isDarkMode,
                         fw: 2),
               ),

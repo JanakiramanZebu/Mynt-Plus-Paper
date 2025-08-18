@@ -101,19 +101,40 @@ class _CPActionOrderScreen extends State<CPActionOrderScreen> {
                 "objectobjectobjectobjectobjectobjectobjectobject ${screenheight * 0.00038}");
             return true;
           },
-          child: SingleChildScrollView(
+          child: SafeArea(
             child: Padding(
               padding: EdgeInsets.only(
                   bottom: MediaQuery.of(context).viewInsets.bottom),
               child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(16),
-                    topRight: Radius.circular(16),
-                  ),
-                  color:
-                      theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-                ),
+                  decoration: BoxDecoration(
+           borderRadius: const BorderRadius.only(
+      topLeft: Radius.circular(16),
+      topRight: Radius.circular(16),
+    ),
+         color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+         border: Border(
+                                  top: BorderSide(
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                            .withOpacity(0.5)
+                                        : colors.colorWhite,
+                                  ),
+                                  left: BorderSide(
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                            .withOpacity(0.5)
+                                        : colors.colorWhite,
+                                  ),
+                                  right: BorderSide(
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                            .withOpacity(0.5)
+                                        : colors.colorWhite,
+                                  ),
+                                ),
+
+         
+        ),
                 child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
@@ -136,7 +157,7 @@ class _CPActionOrderScreen extends State<CPActionOrderScreen> {
                                 fw: 1,
                               ),
                             ),
-                            TextWidget.titleText(
+                            TextWidget.subText(
                               text: (((profiledetails.clientAllDetails
                                                       .clientData?.pOA ==
                                                   'Y' ||
@@ -154,9 +175,9 @@ class _CPActionOrderScreen extends State<CPActionOrderScreen> {
                               textOverflow: TextOverflow.ellipsis,
                               theme: theme.isDarkMode,
                               color: theme.isDarkMode
-                                  ? colors.textPrimaryDark
-                                  : colors.textPrimaryLight,
-                              fw: 1,
+                                  ? colors.textSecondaryDark
+                                  : colors.textSecondaryLight,
+                              fw: 0,
                             ),
                             Material(
                               color: Colors.transparent,
@@ -180,8 +201,8 @@ class _CPActionOrderScreen extends State<CPActionOrderScreen> {
                                     Icons.close_rounded,
                                     size: 22,
                                     color: theme.isDarkMode
-                                        ? colors.colorWhite
-                                        : colors.colorGrey,
+                                        ? colors.textSecondaryDark
+                                        : colors.textSecondaryLight,
                                   ),
                                 ),
                               ),
@@ -189,12 +210,7 @@ class _CPActionOrderScreen extends State<CPActionOrderScreen> {
                           ],
                         ),
                       ),
-                      Divider(
-                        color: theme.isDarkMode
-                            ? colors.darkColorDivider
-                            : colors.colorDivider,
-                        height: 0,
-                      ),
+                        ListDivider(),
                       if ((profiledetails.clientAllDetails.clientData?.pOA ==
                                   'Y' ||
                               profiledetails
@@ -366,16 +382,20 @@ class _CPActionOrderScreen extends State<CPActionOrderScreen> {
                                                       LengthLimitingTextInputFormatter(
                                                           10), // Limit to 10 characters
                                                     ],
-                                                    hintStyle: textStyle(
-                                                        const Color(0xff666666),
-                                                        15,
-                                                        FontWeight.w400),
-                                                    style: textStyle(
-                                                        theme.isDarkMode
-                                                            ? colors.colorWhite
-                                                            : colors.colorBlack,
-                                                        16,
-                                                        FontWeight.w600),
+                                                    hintStyle: TextWidget.textStyle(
+                                      fontSize: 14,
+                                      theme: theme.isDarkMode,
+                                     color: theme.isDarkMode
+                                ? colors.textSecondaryDark
+                                : colors.textSecondaryLight,
+                                    ),
+                                                    style: TextWidget.textStyle(
+                                    fontSize: 16,
+                                    color: theme.isDarkMode
+                                        ? colors.textPrimaryDark
+                                        : colors.textPrimaryLight,
+                                    theme: theme.isDarkMode,
+                                  ),
                                                     textCtrl: ledgerprovider
                                                         .selectedqtyforcpaction,
                                                     onChanged: (value) {
@@ -415,7 +435,7 @@ class _CPActionOrderScreen extends State<CPActionOrderScreen> {
                                                 child: TextWidget.captionText(
                                                     text: ledgerprovider
                                                         .cpactionerrormsgqty,
-                                                    color: colors.kColorRedText,
+                                                    color: theme.isDarkMode ? colors.lossDark : colors.lossLight,
                                                     textOverflow:
                                                         TextOverflow.ellipsis,
                                                     theme: theme.isDarkMode,
@@ -446,16 +466,20 @@ class _CPActionOrderScreen extends State<CPActionOrderScreen> {
                                                       LengthLimitingTextInputFormatter(
                                                           10), // Limit to 10 characters
                                                     ],
-                                                    hintStyle: textStyle(
-                                                        const Color(0xff666666),
-                                                        15,
-                                                        FontWeight.w400),
-                                                    style: textStyle(
-                                                        theme.isDarkMode
-                                                            ? colors.colorWhite
-                                                            : colors.colorBlack,
-                                                        16,
-                                                        FontWeight.w600),
+                                                    hintStyle: TextWidget.textStyle(
+                                      fontSize: 14,
+                                      theme: theme.isDarkMode,
+                                     color: theme.isDarkMode
+                                ? colors.textSecondaryDark
+                                : colors.textSecondaryLight,
+                                    ),
+                                                     style: TextWidget.textStyle(
+                                    fontSize: 16,
+                                    color: theme.isDarkMode
+                                        ? colors.textPrimaryDark
+                                        : colors.textPrimaryLight,
+                                    theme: theme.isDarkMode,
+                                  ),
                                                     textCtrl: ledgerprovider
                                                         .selectedqtyforcpaction,
                                                     onChanged: (value) {
@@ -568,16 +592,20 @@ class _CPActionOrderScreen extends State<CPActionOrderScreen> {
                                                       LengthLimitingTextInputFormatter(
                                                           10), // Limit to 10 characters
                                                     ],
-                                                    hintStyle: textStyle(
-                                                        const Color(0xff666666),
-                                                        15,
-                                                        FontWeight.w400),
-                                                    style: textStyle(
-                                                        theme.isDarkMode
-                                                            ? colors.colorWhite
-                                                            : colors.colorBlack,
-                                                        16,
-                                                        FontWeight.w600),
+                                                     hintStyle: TextWidget.textStyle(
+                                      fontSize: 14,
+                                      theme: theme.isDarkMode,
+                                     color: theme.isDarkMode
+                                ? colors.textSecondaryDark
+                                : colors.textSecondaryLight,
+                                    ),
+                                                    style: TextWidget.textStyle(
+                                    fontSize: 16,
+                                    color: theme.isDarkMode
+                                        ? colors.textPrimaryDark
+                                        : colors.textPrimaryLight,
+                                    theme: theme.isDarkMode,
+                                  ),
                                                     textCtrl: ledgerprovider
                                                         .selectedpriceforcpaction,
                                                     onChanged: (value) {
@@ -613,7 +641,7 @@ class _CPActionOrderScreen extends State<CPActionOrderScreen> {
                                                 child: TextWidget.captionText(
                                                     text: ledgerprovider
                                                         .cpactionerrormsg,
-                                                    color: colors.kColorRedText,
+                                                    color: theme.isDarkMode ? colors.lossDark : colors.lossLight,
                                                     textOverflow:
                                                         TextOverflow.ellipsis,
                                                     theme: theme.isDarkMode,
@@ -652,16 +680,20 @@ class _CPActionOrderScreen extends State<CPActionOrderScreen> {
                                                       LengthLimitingTextInputFormatter(
                                                           10), // Limit to 10 characters
                                                     ],
-                                                    hintStyle: textStyle(
-                                                        const Color(0xff666666),
-                                                        15,
-                                                        FontWeight.w400),
-                                                    style: textStyle(
-                                                        theme.isDarkMode
-                                                            ? colors.colorWhite
-                                                            : colors.colorBlack,
-                                                        16,
-                                                        FontWeight.w600),
+                                                    hintStyle: TextWidget.textStyle(
+                                      fontSize: 14,
+                                      theme: theme.isDarkMode,
+                                     color: theme.isDarkMode
+                                ? colors.textSecondaryDark
+                                : colors.textSecondaryLight,
+                                    ),
+                                                   style: TextWidget.textStyle(
+                                    fontSize: 16,
+                                    color: theme.isDarkMode
+                                        ? colors.textPrimaryDark
+                                        : colors.textPrimaryLight,
+                                    theme: theme.isDarkMode,
+                                  ),
                                                     textCtrl: ledgerprovider
                                                         .selectedpriceforcpaction,
                                                     onChanged: (value) {
@@ -763,10 +795,14 @@ class _CPActionOrderScreen extends State<CPActionOrderScreen> {
                                                     ? assets.checkedbox
                                                     : assets.checkbox)),
                                         Text("Cut off price ",
-                                            style: textStyle(
-                                                const Color(0xff666666),
-                                                14,
-                                                FontWeight.w500)),
+                                            style: TextWidget.textStyle(
+                                      fontSize: 14,
+                                      theme: theme.isDarkMode,
+                                     color: theme.isDarkMode
+                                ? colors.textSecondaryDark
+                                : colors.textSecondaryLight,
+                                    ),
+                                    ),
                                       ]),
                                     ),
                                 ],
@@ -792,7 +828,7 @@ class _CPActionOrderScreen extends State<CPActionOrderScreen> {
                                         style: OutlinedButton.styleFrom(
                                           elevation: 0,
                                           minimumSize: const Size(
-                                              0, 40), // width, height
+                                              0, 45), // width, height
 
                                           backgroundColor:
                                               colors.btnOutlinedBorder,
@@ -856,7 +892,7 @@ class _CPActionOrderScreen extends State<CPActionOrderScreen> {
                                         style: OutlinedButton.styleFrom(
                                           elevation: 0,
                                           minimumSize: const Size(
-                                              0, 40), // width, height
+                                              0, 45), // width, height
 
                                           backgroundColor:
                                               colors.btnOutlinedBorder,
@@ -924,7 +960,7 @@ class _CPActionOrderScreen extends State<CPActionOrderScreen> {
                                       style: OutlinedButton.styleFrom(
                                         elevation: 0,
                                         minimumSize:
-                                            const Size(0, 40), // width, height
+                                            const Size(0, 45), // width, height
 
                                         backgroundColor:
                                             colors.btnOutlinedBorder,
@@ -950,12 +986,12 @@ class _CPActionOrderScreen extends State<CPActionOrderScreen> {
                                         //     context);
                                       },
                                       child: ledgerprovider.loading
-                                          ? const SizedBox(
+                                          ?  SizedBox(
                                               width: 16,
                                               height: 16,
                                               child: CircularProgressIndicator(
                                                 strokeWidth: 2,
-                                                color: Colors.white,
+                                                color: colors.colorWhite,
                                               ),
                                             )
                                           : TextWidget.subText(

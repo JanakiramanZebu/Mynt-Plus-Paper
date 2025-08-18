@@ -11,6 +11,7 @@ import '../../provider/market_watch_provider.dart';
 import '../../provider/thems.dart';
 import '../../res/global_state_text.dart';
 import '../../res/res.dart';
+import '../../sharedWidget/cust_text_formfield.dart';
 import '../../sharedWidget/custom_back_btn.dart';
 import '../../sharedWidget/custom_drag_handler.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
@@ -108,599 +109,648 @@ class _PendingAlertDetailsState extends ConsumerState<PendingAlertDetails> {
           maxChildSize: 0.99,
           builder: (context, scrollController) {
             return Consumer(builder: (context, ref, _) {
-              return Scaffold(
-                backgroundColor: Colors.transparent,
-                body: Container(
-                  decoration: BoxDecoration(
-                    color: theme.isDarkMode
-                        ? colors.colorBlack
-                        : colors.colorWhite,
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(16),
-                      topRight: Radius.circular(16),
-                    ),
-                  ),
-                  child: Column(
-                    children: [
-                      Expanded(
-                        child: SingleChildScrollView(
-                          controller: scrollController,
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const CustomDragHandler(),
-                                  Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.start,
-                                      children: [
-                                        const SizedBox(height: 16),
-                                        Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Row(
-                                                children: [
-                                                  TextWidget.headText(
-                                                      text:
-                                                          "${widget.alert.tsym?.replaceAll("-EQ", "")} ",
-                                                      theme: theme.isDarkMode,
-                                                      color: theme.isDarkMode
-                                                          ? colors
-                                                              .textPrimaryDark
-                                                          : colors
-                                                              .textPrimaryLight,
-                                                      fw: 0,
-                                                      textOverflow: TextOverflow
-                                                          .ellipsis),
-                                                  CustomExchBadge(
-                                                      exch:
-                                                          "${widget.alert.exch}"),
-                                                ],
-                                              ),
-                                              const SizedBox(height: 4),
-                                              TextWidget.titleText(
-                                                  text:
-                                                      "${widget.alert.ltp ?? widget.alert.close ?? 0.00}",
-                                                  theme: theme.isDarkMode,
-                                                  color: widget.alert.change ==
-                                                          null
-                                                      ? theme.isDarkMode
-                                                          ? colors
-                                                              .textSecondaryDark
-                                                          : colors
-                                                              .textSecondaryLight
-                                                      : widget.alert.change!
-                                                              .startsWith("-")
-                                                          ? theme.isDarkMode
-                                                              ? colors.lossDark
-                                                              : colors.lossLight
-                                                          : widget.alert
-                                                                      .change ==
-                                                                  "0.00"
-                                                              ? theme.isDarkMode
-                                                                  ? colors
-                                                                      .textSecondaryDark
-                                                                  : colors
-                                                                      .textSecondaryLight
-                                                              : theme.isDarkMode
-                                                                  ? colors
-                                                                      .profitDark
-                                                                  : colors
-                                                                      .profitLight,
-                                                  fw: 3),
-                                              const SizedBox(height: 4),
-                                              TextWidget.paraText(
-                                                  text:
-                                                      "${widget.alert.perChange ?? 0.00}%",
-                                                  theme: false,
-                                                  color: theme.isDarkMode
-                                                      ? colors.textSecondaryDark
-                                                      : colors
-                                                          .textSecondaryLight,
-                                                  fw: 0),
-                                            ]),
-                                        const SizedBox(height: 16),
-                                      ]),
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Column(
-                                        children: [
-                                          Row(
-                                            children: [
-                                              Expanded(
-                                                child: Container(
-                                                  height: 45,
-                                                  decoration: BoxDecoration(
-                                                    color: colors.btnBg,
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            5),
-                                                    border: Border.all(
-                                                      color: colors
-                                                          .btnOutlinedBorder,
-                                                      width: 1,
-                                                    ),
-                                                  ),
-                                                  child: Material(
-                                                    color: Colors.transparent,
-                                                    shape:
-                                                        const BeveledRectangleBorder(),
-                                                    child: InkWell(
-                                                      customBorder:
-                                                          const BeveledRectangleBorder(),
-                                                      splashColor: theme
-                                                              .isDarkMode
-                                                          ? colors
-                                                              .splashColorDark
-                                                          : colors
-                                                              .splashColorLight,
-                                                      highlightColor: theme
-                                                              .isDarkMode
-                                                          ? colors.highlightDark
-                                                          : colors
-                                                              .highlightLight,
-                                                      onTap: isModifying ||
-                                                              isCancelling
-                                                          ? null
-                                                          : () async {
-                                                              setState(() {
-                                                                isCancelling =
-                                                                    true;
-                                                              });
-
-                                                              try {
-                                                                final String
-                                                                    alertId =
-                                                                    "${widget.alert.alId}";
-
-                                                                await ref
-                                                                    .read(
-                                                                        marketWatchProvider)
-                                                                    .fetchCancelAlert(
-                                                                        alertId,
-                                                                        context);
-
-                                                                await ref
-                                                                    .read(
-                                                                        marketWatchProvider)
-                                                                    .fetchPendingAlert(
-                                                                        context);
-
-                                                                if (mounted)
-                                                                  Navigator.pop(
-                                                                      context);
-                                                              } catch (e) {
-                                                                if (mounted) {
-                                                                  ScaffoldMessenger.of(
-                                                                          context)
-                                                                      .showSnackBar(
-                                                                    SnackBar(
-                                                                      content: Text(
-                                                                          "Failed to cancel alert: ${e.toString()}"),
-                                                                    ),
-                                                                  );
-                                                                }
-                                                              } finally {
-                                                                if (mounted) {
-                                                                  setState(() {
-                                                                    isCancelling =
-                                                                        false;
-                                                                  });
-                                                                }
-                                                              }
-                                                            },
-                                                      child: Center(
-                                                        child: isCancelling
-                                                            ? SizedBox(
-                                                                height: 20,
-                                                                width: 20,
-                                                                child:
-                                                                    CircularProgressIndicator(
-                                                                  strokeWidth:
-                                                                      2,
-                                                                  color: theme.isDarkMode
-                                                                      ? colors
-                                                                          .primaryDark
-                                                                      : colors
-                                                                          .primaryLight,
-                                                                ),
-                                                              )
-                                                            : TextWidget
-                                                                .subText(
-                                                                text:
-                                                                    "Cancel Alert",
-                                                                theme: false,
-                                                                color: theme.isDarkMode
-                                                                    ? colors
-                                                                        .primaryDark
-                                                                    : colors
-                                                                        .primaryLight,
-                                                                fw: 0,
-                                                              ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                              const SizedBox(width: 16),
-                                              Expanded(
-                                                child: Container(
-                                                  height: 45,
-                                                  decoration: BoxDecoration(
-                                                    color: colors.primaryLight,
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            5),
-                                                    // border: Border.all(
-                                                    //   color: colors
-                                                    //       .btnOutlinedBorder,
-                                                    //   width: 1,
-                                                    // ),
-                                                  ),
-                                                  child: Material(
-                                                    color: Colors.transparent,
-                                                    shape:
-                                                        const BeveledRectangleBorder(),
-                                                    child: InkWell(
-                                                      customBorder:
-                                                          const BeveledRectangleBorder(),
-                                                      splashColor: theme
-                                                              .isDarkMode
-                                                          ? colors
-                                                              .splashColorDark
-                                                          : colors
-                                                              .splashColorLight,
-                                                      highlightColor: theme
-                                                              .isDarkMode
-                                                          ? colors.highlightDark
-                                                          : colors
-                                                              .highlightLight,
-                                                      onTap: (isModifying ||
-                                                              isCancelling ||
-                                                              errorText
-                                                                  .isNotEmpty ||
-                                                              valueCtrl
-                                                                  .text.isEmpty)
-                                                          ? null
-                                                          : () async {
-                                                              setState(() {
-                                                                isModifying =
-                                                                    true;
-                                                              });
-
-                                                              try {
-                                                                await ref
-                                                                    .read(
-                                                                        marketWatchProvider)
-                                                                    .fetchmodifyalert(
-                                                                      "${widget.alert.exch}",
-                                                                      "${widget.alert.tsym}",
-                                                                      modifiedValue,
-                                                                      "${widget.alert.aiT}",
-                                                                      "${widget.alert.alId}",
-                                                                      context,
-                                                                    );
-
-                                                                await ref
-                                                                    .read(
-                                                                        marketWatchProvider)
-                                                                    .fetchPendingAlert(
-                                                                        context);
-
-                                                                if (mounted)
-                                                                  Navigator.pop(
-                                                                      context);
-                                                              } catch (e) {
-                                                                if (mounted) {
-                                                                  ScaffoldMessenger.of(
-                                                                          context)
-                                                                      .showSnackBar(
-                                                                    SnackBar(
-                                                                      content:
-                                                                          Text(
-                                                                        "Failed to modify alert: ${e.toString()}",
-                                                                      ),
-                                                                    ),
-                                                                  );
-                                                                }
-                                                              } finally {
-                                                                if (mounted) {
-                                                                  setState(() {
-                                                                    isModifying =
-                                                                        false;
-                                                                  });
-                                                                }
-                                                              }
-                                                            },
-                                                      child: Center(
-                                                        child: isModifying
-                                                            ? SizedBox(
-                                                                height: 20,
-                                                                width: 20,
-                                                                child:
-                                                                    CircularProgressIndicator(
-                                                                  strokeWidth:
-                                                                      2,
-                                                                  color: theme.isDarkMode
-                                                                      ? colors
-                                                                          .primaryDark
-                                                                      : colors
-                                                                          .primaryLight,
-                                                                ),
-                                                              )
-                                                            : TextWidget
-                                                                .subText(
-                                                                text:
-                                                                    "Modify Alert",
-                                                                theme: false,
-                                                                color: colors
-                                                                    .colorWhite,
-                                                                fw: 0,
-                                                              ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 20),
-                                    ],
+              return SafeArea(
+                child: Scaffold(
+                  backgroundColor: Colors.transparent,
+                  body: Container(
+                    decoration: BoxDecoration(
+                       borderRadius: const BorderRadius.only(
+      topLeft: Radius.circular(16),
+      topRight: Radius.circular(16),
+    ),
+         color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+         border: Border(
+                                  top: BorderSide(
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                            .withOpacity(0.5)
+                                        : colors.colorWhite,
                                   ),
-                                  alertData(
-                                      "Type",
-                                      widget.alert.aiT == "LTP_A"
-                                          ? "LTP"
-                                          : widget.alert.aiT == "LTP_B"
-                                              ? "LTP"
-                                              : widget.alert.aiT == "CH_PER_A"
-                                                  ? "Perc.Change"
-                                                  : "Perc.Change",
-                                      theme),
-                                  Column(children: [
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        TextWidget.subText(
-                                            text: "Condition",
-                                            theme: theme.isDarkMode,
-                                            color: theme.isDarkMode
-                                                ? colors.textSecondaryDark
-                                                : colors.textSecondaryLight,
-                                            fw: 3),
-                                        Row(
-                                          children: [
-                                            TextWidget.subText(
-                                                text: widget.alert.aiT ==
-                                                        "LTP_A"
-                                                    ? "Above"
-                                                    : widget.alert.aiT ==
-                                                            "LTP_B"
-                                                        ? "Below"
-                                                        : widget.alert.aiT ==
-                                                                "CH_PER_A"
-                                                            ? "above"
-                                                            : "Below",
-                                                theme: theme.isDarkMode,
-                                                color: theme.isDarkMode
-                                                    ? colors.textPrimaryDark
-                                                    : colors.textPrimaryLight,
-                                                fw: 3),
-                                            Transform.rotate(
-                                              angle: 55 * (pi / 180),
-                                              child: Icon(
-                                                  widget.alert.aiT == "LTP_A"
-                                                      ? Icons.arrow_upward
-                                                      : widget.alert.aiT ==
-                                                              "LTP_B"
-                                                          ? Icons.arrow_downward
-                                                          : widget.alert.aiT ==
-                                                                  "CH_PER_A"
-                                                              ? Icons
-                                                                  .arrow_upward
-                                                              : Icons
-                                                                  .arrow_downward,
-                                                  size: 18,
-                                                  color: widget.alert.aiT ==
-                                                          "LTP_A"
-                                                      ? colors.ltpgreen
-                                                      : widget.alert.aiT ==
-                                                              "LTP_B"
-                                                          ? colors.darkred
-                                                          : widget.alert.aiT ==
-                                                                  "CH_PER_A"
-                                                              ? colors.ltpgreen
-                                                              : colors.darkred),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(
-                                      height: 8,
-                                    ),
-                                    Divider(
-                                        color: theme.isDarkMode
-                                            ? colors.darkColorDivider
-                                            : colors.colorDivider)
-                                  ]),
-                                  alertData(
-                                      "Date&Time",
-                                      formatDateTime(
-                                          value: "${widget.alert.norentm}"),
-                                      theme),
-                                  Row(
-                                    children: [
-                                      TextWidget.subText(
-                                          text: "Modify Alert value",
-                                          theme: theme.isDarkMode,
-                                          color: theme.isDarkMode
-                                              ? colors.textSecondaryDark
-                                              : colors.textSecondaryLight,
-                                          fw: 3),
-                                      const SizedBox(
-                                        width: 50,
-                                      ),
-                                      Expanded(
-                                        child: SizedBox(
-                                          height: 40,
-                                          child: TextFormField(
-                                            //textAlign: TextAlign.right,
-                                            controller: valueCtrl,
-                                            inputFormatters: [
-                                              FilteringTextInputFormatter.allow(
-                                                  RegExp(r'[0-9.]')),
-                                            ],
-                                            style: TextWidget.textStyle(
-                                                fontSize: 14,
-                                                theme: theme.isDarkMode,
-                                                color: theme.isDarkMode
-                                                    ? colors.textPrimaryDark
-                                                    : colors.textPrimaryLight,
-                                                fw: 0),
-                                            keyboardType: TextInputType.number,
-                                            decoration: InputDecoration(
-                                                fillColor: theme.isDarkMode
-                                                    ? colors.darkGrey
-                                                    : const Color(0xffF1F3F8),
-                                                filled: true,
-                                                hintText: "0",
-                                                hintStyle: TextWidget.textStyle(
-                                                    fontSize: 14,
+                                  left: BorderSide(
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                            .withOpacity(0.5)
+                                        : colors.colorWhite,
+                                  ),
+                                  right: BorderSide(
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                            .withOpacity(0.5)
+                                        : colors.colorWhite,
+                                  ),
+                                ),
+
+                    ),
+                    child: Column(
+                      children: [
+                        Expanded(
+                          child: SingleChildScrollView(
+                            controller: scrollController,
+                            child: Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 16),
+                              child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const CustomDragHandler(),
+                                    Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
+                                        children: [
+                                          const SizedBox(height: 16),
+                                          Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Row(
+                                                  children: [
+                                                    TextWidget.titleText(
+                                                        text:
+                                                            "${widget.alert.tsym?.replaceAll("-EQ", "")} ",
+                                                        theme: theme.isDarkMode,
+                                                        color: theme.isDarkMode
+                                                            ? colors
+                                                                .textPrimaryDark
+                                                            : colors
+                                                                .textPrimaryLight,
+                                                        fw: 1,
+                                                        textOverflow:
+                                                            TextOverflow
+                                                                .ellipsis),
+                                                    const SizedBox(width: 4),
+                                                    CustomExchBadge(
+                                                        exch:
+                                                            "${widget.alert.exch}"),
+                                                  ],
+                                                ),
+                                                const SizedBox(height: 4),
+                                                TextWidget.subText(
+                                                    text:
+                                                        "${widget.alert.ltp ?? widget.alert.close ?? 0.00}",
                                                     theme: theme.isDarkMode,
+                                                    color: widget
+                                                                .alert.change ==
+                                                            null
+                                                        ? theme.isDarkMode
+                                                            ? colors
+                                                                .textSecondaryDark
+                                                            : colors
+                                                                .textSecondaryLight
+                                                        : widget.alert.change!
+                                                                .startsWith("-")
+                                                            ? theme.isDarkMode
+                                                                ? colors
+                                                                    .lossDark
+                                                                : colors
+                                                                    .lossLight
+                                                            : widget.alert
+                                                                        .change ==
+                                                                    "0.00"
+                                                                ? theme
+                                                                        .isDarkMode
+                                                                    ? colors
+                                                                        .textSecondaryDark
+                                                                    : colors
+                                                                        .textSecondaryLight
+                                                                : theme
+                                                                        .isDarkMode
+                                                                    ? colors
+                                                                        .profitDark
+                                                                    : colors
+                                                                        .profitLight,
+                                                    fw: 3),
+                                                const SizedBox(height: 4),
+                                                TextWidget.paraText(
+                                                    text:
+                                                        "${widget.alert.perChange ?? 0.00}%",
+                                                    theme: false,
                                                     color: theme.isDarkMode
                                                         ? colors
                                                             .textSecondaryDark
                                                         : colors
                                                             .textSecondaryLight,
                                                     fw: 0),
-                                                contentPadding:
-                                                    const EdgeInsets.symmetric(
-                                                        vertical: 8,
-                                                        horizontal: 16),
-                                                prefixIconColor:
-                                                    colors.iconColor,
-                                                prefixIcon: widget.alert.aiT == "CH_PER_A" ||
-                                                        widget.alert.aiT ==
-                                                            "CH_PER_B"
-                                                    ? const Icon(
-                                                        Icons.percent_outlined,
-                                                        size: 18,
-                                                      )
-                                                    : SvgPicture.asset(assets.ruppeIcon,
-                                                        fit: BoxFit.scaleDown),
-                                                enabledBorder: OutlineInputBorder(
-                                                    borderSide: BorderSide.none,
-                                                    borderRadius: BorderRadius.circular(
-                                                        30)),
-                                                disabledBorder:
-                                                    InputBorder.none,
-                                                focusedBorder: OutlineInputBorder(
-                                                    borderSide: BorderSide.none,
-                                                    borderRadius: BorderRadius.circular(30)),
-                                                border: OutlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.circular(30))),
-                                            onChanged: (value) {
-                                              // Don't block the input operation, apply validation after the text change
-                                              Future.microtask(() {
-                                                if (mounted) {
-                                                  setState(() {
-                                                    // Handle validation
-                                                    validateAlertValue(value);
-                                                  });
-                                                }
-                                              });
-                                            },
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  if (errorText.isNotEmpty) ...[
-                                    Padding(
-                                      padding: const EdgeInsets.only(
-                                          left: 16, right: 16, top: 4),
-                                      child: TextWidget.captionText(
-                                          text: errorText,
-                                          theme: false,
-                                          color: colors.lossDark,
-                                          fw: 0),
-                                    ),
-                                  ],
-                                  const SizedBox(
-                                    height: 8,
-                                  ),
-                                  widget.alert.remarks == ""
-                                      ? Container()
-                                      : Column(
+                                              ]),
+                                          const SizedBox(height: 16),
+                                        ]),
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Column(
                                           children: [
-                                            Divider(
-                                                color: theme.isDarkMode
-                                                    ? colors.darkColorDivider
-                                                    : colors.colorDivider),
-                                            const SizedBox(height: 8),
                                             Row(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.center,
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment
-                                                      .spaceBetween,
                                               children: [
-                                                TextWidget.subText(
-                                                    text: "Remark",
-                                                    theme: theme.isDarkMode,
-                                                    color: theme.isDarkMode
-                                                        ? colors
-                                                            .textSecondaryDark
-                                                        : colors
-                                                            .textSecondaryLight,
-                                                    fw: 3),
-                                                const SizedBox(
-                                                  height: 5,
-                                                ),
-                                                SizedBox(
-                                                  width: MediaQuery.of(context)
-                                                          .size
-                                                          .width *
-                                                      0.5,
-                                                  child: TextWidget.subText(
-                                                      text:
-                                                          "${widget.alert.remarks}",
-                                                      theme: theme.isDarkMode,
+                                                Expanded(
+                                                  child: Container(
+                                                    height: 45,
+                                                    decoration: BoxDecoration(
                                                       color: theme.isDarkMode
                                                           ? colors
-                                                              .textPrimaryDark
-                                                          : colors
-                                                              .textPrimaryLight,
-                                                      fw: 3,
-                                                      softWrap: true,
-                                                      align: TextAlign.end),
+                                                              .textSecondaryDark
+                                                              .withOpacity(0.6)
+                                                          : colors.btnBg,
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              5),
+                                                      border: theme.isDarkMode
+                                                          ? null
+                                                          : Border.all(
+                                                              color: colors
+                                                                  .primaryLight,
+                                                              width: 1),
+                                                    ),
+                                                    child: Material(
+                                                      color: Colors.transparent,
+                                                      shape:
+                                                          const BeveledRectangleBorder(),
+                                                      child: InkWell(
+                                                        customBorder:
+                                                            const BeveledRectangleBorder(),
+                                                        splashColor: theme
+                                                                .isDarkMode
+                                                            ? colors
+                                                                .splashColorDark
+                                                            : colors
+                                                                .splashColorLight,
+                                                        highlightColor: theme
+                                                                .isDarkMode
+                                                            ? colors
+                                                                .highlightDark
+                                                            : colors
+                                                                .highlightLight,
+                                                        onTap: isModifying ||
+                                                                isCancelling
+                                                            ? null
+                                                            : () async {
+                                                                setState(() {
+                                                                  isCancelling =
+                                                                      true;
+                                                                });
+
+                                                                try {
+                                                                  final String
+                                                                      alertId =
+                                                                      "${widget.alert.alId}";
+
+                                                                  await ref
+                                                                      .read(
+                                                                          marketWatchProvider)
+                                                                      .fetchCancelAlert(
+                                                                          alertId,
+                                                                          context);
+
+                                                                  await ref
+                                                                      .read(
+                                                                          marketWatchProvider)
+                                                                      .fetchPendingAlert(
+                                                                          context);
+
+                                                                  if (mounted)
+                                                                    Navigator.pop(
+                                                                        context);
+                                                                } catch (e) {
+                                                                  if (mounted) {
+                                                                    ScaffoldMessenger.of(
+                                                                            context)
+                                                                        .showSnackBar(
+                                                                      SnackBar(
+                                                                        content:
+                                                                            Text("Failed to cancel alert: ${e.toString()}"),
+                                                                      ),
+                                                                    );
+                                                                  }
+                                                                } finally {
+                                                                  if (mounted) {
+                                                                    setState(
+                                                                        () {
+                                                                      isCancelling =
+                                                                          false;
+                                                                    });
+                                                                  }
+                                                                }
+                                                              },
+                                                        child: Center(
+                                                          child: isCancelling
+                                                              ? SizedBox(
+                                                                  height: 20,
+                                                                  width: 20,
+                                                                  child:
+                                                                      CircularProgressIndicator(
+                                                                    strokeWidth:
+                                                                        2,
+                                                                    color: theme.isDarkMode
+                                                                        ? colors
+                                                                            .colorWhite
+                                                                        : colors
+                                                                            .primaryLight,
+                                                                  ),
+                                                                )
+                                                              : TextWidget
+                                                                  .subText(
+                                                                  text:
+                                                                      "Cancel Alert",
+                                                                  theme: false,
+                                                                  color: theme.isDarkMode
+                                                                      ? colors
+                                                                          .colorWhite
+                                                                      : colors
+                                                                          .primaryLight,
+                                                                  fw: 2,
+                                                                ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 16),
+                                                Expanded(
+                                                  child: Container(
+                                                    height: 45,
+                                                    decoration: BoxDecoration(
+                                                      color:
+                                                          colors.primaryLight,
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              5),
+                                                      // border: Border.all(
+                                                      //   color: colors
+                                                      //       .btnOutlinedBorder,
+                                                      //   width: 1,
+                                                      // ),
+                                                    ),
+                                                    child: Material(
+                                                      color: Colors.transparent,
+                                                      shape:
+                                                          const BeveledRectangleBorder(),
+                                                      child: InkWell(
+                                                        customBorder:
+                                                            const BeveledRectangleBorder(),
+                                                        splashColor: theme
+                                                                .isDarkMode
+                                                            ? colors
+                                                                .splashColorDark
+                                                            : colors
+                                                                .splashColorLight,
+                                                        highlightColor: theme
+                                                                .isDarkMode
+                                                            ? colors
+                                                                .highlightDark
+                                                            : colors
+                                                                .highlightLight,
+                                                        onTap: (isModifying ||
+                                                                isCancelling ||
+                                                                errorText
+                                                                    .isNotEmpty ||
+                                                                valueCtrl.text
+                                                                    .isEmpty)
+                                                            ? null
+                                                            : () async {
+                                                                setState(() {
+                                                                  isModifying =
+                                                                      true;
+                                                                });
+
+                                                                try {
+                                                                  await ref
+                                                                      .read(
+                                                                          marketWatchProvider)
+                                                                      .fetchmodifyalert(
+                                                                        "${widget.alert.exch}",
+                                                                        "${widget.alert.tsym}",
+                                                                        modifiedValue,
+                                                                        "${widget.alert.aiT}",
+                                                                        "${widget.alert.alId}",
+                                                                        context,
+                                                                      );
+
+                                                                  await ref
+                                                                      .read(
+                                                                          marketWatchProvider)
+                                                                      .fetchPendingAlert(
+                                                                          context);
+
+                                                                  if (mounted)
+                                                                    Navigator.pop(
+                                                                        context);
+                                                                } catch (e) {
+                                                                  if (mounted) {
+                                                                    ScaffoldMessenger.of(
+                                                                            context)
+                                                                        .showSnackBar(
+                                                                      SnackBar(
+                                                                        content:
+                                                                            Text(
+                                                                          "Failed to modify alert: ${e.toString()}",
+                                                                        ),
+                                                                      ),
+                                                                    );
+                                                                  }
+                                                                } finally {
+                                                                  if (mounted) {
+                                                                    setState(
+                                                                        () {
+                                                                      isModifying =
+                                                                          false;
+                                                                    });
+                                                                  }
+                                                                }
+                                                              },
+                                                        child: Center(
+                                                          child: isModifying
+                                                              ? SizedBox(
+                                                                  height: 20,
+                                                                  width: 20,
+                                                                  child:
+                                                                      CircularProgressIndicator(
+                                                                    strokeWidth:
+                                                                        2,
+                                                                    color:
+                                                                         colors
+                                                                            .colorWhite
+                                                                        
+                                                                  ),
+                                                                )
+                                                              : TextWidget
+                                                                  .subText(
+                                                                  text:
+                                                                      "Modify Alert",
+                                                                  theme: false,
+                                                                  color: colors
+                                                                      .colorWhite,
+                                                                  fw: 2,
+                                                                ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
                                                 ),
                                               ],
                                             ),
-                                            const SizedBox(height: 8),
                                           ],
                                         ),
-                                  Divider(
-                                      color: theme.isDarkMode
-                                          ? colors.darkColorDivider
-                                          : colors.colorDivider),
-                                  const SizedBox(
-                                    height: 8,
-                                  ),
-                                ]),
+                                        const SizedBox(height: 20),
+                                      ],
+                                    ),
+                                    alertData(
+                                        "Type",
+                                        widget.alert.aiT == "LTP_A"
+                                            ? "LTP"
+                                            : widget.alert.aiT == "LTP_B"
+                                                ? "LTP"
+                                                : widget.alert.aiT == "CH_PER_A"
+                                                    ? "Perc.Change"
+                                                    : "Perc.Change",
+                                        theme),
+                                    Column(children: [
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          TextWidget.subText(
+                                              text: "Condition",
+                                              theme: theme.isDarkMode,
+                                              color: theme.isDarkMode
+                                                  ? colors.textSecondaryDark
+                                                  : colors.textSecondaryLight,
+                                              fw: 3),
+                                          Row(
+                                            children: [
+                                              TextWidget.subText(
+                                                  text: widget.alert.aiT ==
+                                                          "LTP_A"
+                                                      ? "Above"
+                                                      : widget.alert.aiT ==
+                                                              "LTP_B"
+                                                          ? "Below"
+                                                          : widget.alert.aiT ==
+                                                                  "CH_PER_A"
+                                                              ? "above"
+                                                              : "Below",
+                                                  theme: theme.isDarkMode,
+                                                  color: theme.isDarkMode
+                                                      ? colors.textPrimaryDark
+                                                      : colors.textPrimaryLight,
+                                                  fw: 3),
+                                              Transform.rotate(
+                                                angle: 55 * (pi / 180),
+                                                child: Icon(
+                                                    widget.alert.aiT == "LTP_A"
+                                                        ? Icons.arrow_upward
+                                                        : widget.alert.aiT ==
+                                                                "LTP_B"
+                                                            ? Icons
+                                                                .arrow_downward
+                                                            : widget.alert
+                                                                        .aiT ==
+                                                                    "CH_PER_A"
+                                                                ? Icons
+                                                                    .arrow_upward
+                                                                : Icons
+                                                                    .arrow_downward,
+                                                    size: 18,
+                                                    color: widget.alert.aiT ==
+                                                            "LTP_A"
+                                                        ? colors.ltpgreen
+                                                        : widget.alert.aiT ==
+                                                                "LTP_B"
+                                                            ? colors.darkred
+                                                            : widget.alert
+                                                                        .aiT ==
+                                                                    "CH_PER_A"
+                                                                ? colors
+                                                                    .ltpgreen
+                                                                : colors
+                                                                    .darkred),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(
+                                        height: 8,
+                                      ),
+                                      Divider(
+                                          color: theme.isDarkMode
+                                              ? colors.darkColorDivider
+                                              : colors.colorDivider)
+                                    ]),
+                                    alertData(
+                                        "Date&Time",
+                                        formatDateTime(
+                                            value: "${widget.alert.norentm}"),
+                                        theme),
+                                    Row(
+                                      children: [
+                                        TextWidget.subText(
+                                            text: "Modify Alert value",
+                                            theme: theme.isDarkMode,
+                                            color: theme.isDarkMode
+                                                ? colors.textSecondaryDark
+                                                : colors.textSecondaryLight,
+                                            fw: 3),
+                                        const SizedBox(
+                                          width: 50,
+                                        ),
+                                        Expanded(
+                                          child: SizedBox(
+                                            height: 40,
+                                            child: CustomTextFormField(
+                                              fillColor: theme.isDarkMode
+                                                  ? colors.darkGrey
+                                                  : const Color(0xffF1F3F8),
+                                              textCtrl: valueCtrl,
+                                              textAlign: TextAlign.start,
+                                              inputFormate: [
+                                                FilteringTextInputFormatter
+                                                    .allow(RegExp(r'[0-9.]')),
+                                              ],
+                                              style: TextWidget.textStyle(
+                                                fontSize: 16,
+                                                color: theme.isDarkMode
+                                                    ? colors.textPrimaryDark
+                                                    : colors.textPrimaryLight,
+                                                theme: theme.isDarkMode,
+                                              ),
+                                              keyboardType:
+                                                  TextInputType.number,
+                                              hintText: "0",
+                                              hintStyle:
+                                                  TextWidget.textStyle(
+                                                fontSize: 14,
+                                                theme: theme.isDarkMode,
+                                                color: theme.isDarkMode
+                                                    ? colors
+                                                        .textSecondaryDark
+                                                    : colors
+                                                        .textSecondaryLight,
+                                              ),
+                                              prefixIcon: widget.alert.aiT ==
+                                                          "CH_PER_A" ||
+                                                      widget.alert.aiT ==
+                                                          "CH_PER_B"
+                                                  ? Icon(
+                                                      Icons
+                                                          .percent_outlined,
+                                                      color: theme
+                                                              .isDarkMode
+                                                          ? colors
+                                                              .textSecondaryDark
+                                                          : colors
+                                                              .textSecondaryLight,
+                                                      size: 18,
+                                                    )
+                                                  : SvgPicture.asset(
+                                                      assets.ruppeIcon,
+                                                      color: theme.isDarkMode
+                                                          ? colors
+                                                              .textSecondaryDark
+                                                          : colors
+                                                              .textSecondaryLight,
+                                                      fit:
+                                                          BoxFit.scaleDown),
+                                              onChanged: (value) {
+                                                // Don't block the input operation, apply validation after the text change
+                                                Future.microtask(() {
+                                                  if (mounted) {
+                                                    setState(() {
+                                                      // Handle validation
+                                                      validateAlertValue(value);
+                                                    });
+                                                  }
+                                                });
+                                              },
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    if (errorText.isNotEmpty) ...[
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.end,
+                                        children: [
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                                left: 16, right: 16, top: 4),
+                                            child: TextWidget.captionText(
+                                                text: errorText,
+                                                theme: false,
+                                                color: colors.lossDark,
+                                                fw: 0),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                    const SizedBox(
+                                      height: 8,
+                                    ),
+                                    widget.alert.remarks == ""
+                                        ? Container()
+                                        : Column(
+                                            children: [
+                                              Divider(
+                                                  color: theme.isDarkMode
+                                                      ? colors.darkColorDivider
+                                                      : colors.colorDivider),
+                                              const SizedBox(height: 8),
+                                              Row(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.center,
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: [
+                                                  TextWidget.subText(
+                                                      text: "Remark",
+                                                      theme: theme.isDarkMode,
+                                                      color: theme.isDarkMode
+                                                          ? colors
+                                                              .textSecondaryDark
+                                                          : colors
+                                                              .textSecondaryLight,
+                                                      fw: 3),
+                                                  const SizedBox(
+                                                    height: 5,
+                                                  ),
+                                                  SizedBox(
+                                                    width:
+                                                        MediaQuery.of(context)
+                                                                .size
+                                                                .width *
+                                                            0.5,
+                                                    child: TextWidget.subText(
+                                                        text:
+                                                            "${widget.alert.remarks}",
+                                                        theme: theme.isDarkMode,
+                                                        color: theme.isDarkMode
+                                                            ? colors
+                                                                .textPrimaryDark
+                                                            : colors
+                                                                .textPrimaryLight,
+                                                        fw: 3,
+                                                        softWrap: true,
+                                                        align: TextAlign.end),
+                                                  ),
+                                                ],
+                                              ),
+                                              const SizedBox(height: 8),
+                                            ],
+                                          ),
+                                    Divider(
+                                        color: theme.isDarkMode
+                                            ? colors.darkColorDivider
+                                            : colors.colorDivider),
+                                    const SizedBox(
+                                      height: 8,
+                                    ),
+                                  ]),
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               );
@@ -740,9 +790,9 @@ class _PendingAlertDetailsState extends ConsumerState<PendingAlertDetails> {
           height: 8,
         ),
         Divider(
-            color: theme.isDarkMode
-                ? colors.darkColorDivider
-                : colors.colorDivider)
+          thickness: 0,
+          color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
+        )
       ]),
     );
   }

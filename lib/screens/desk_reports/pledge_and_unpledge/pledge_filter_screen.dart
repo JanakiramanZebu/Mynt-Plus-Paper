@@ -12,6 +12,7 @@ import '../../../models/desk_reports_model/pledge_unpledge_model.dart';
 import '../../../provider/thems.dart';
 import '../../../res/global_state_text.dart';
 import '../../../routes/route_names.dart';
+import '../../../sharedWidget/list_divider.dart';
 import '../../../sharedWidget/snack_bar.dart';
 import '../bottom_sheets/pledge_details.dart';
 import '../bottom_sheets/pledge_list.dart';
@@ -413,65 +414,46 @@ class _PledgeFilterState extends State<PledgeFilter>
                                   'Unpledged initiated so can\'t pledge'),
                             );
                           }
-                        }else if(widget.activetabe == '1'){
-                          if (value.deleteselected !=
-                                                                      'selected' &&
-                                                                  value.unPlegeQty ==
-                                                                      '') {
-                                                                if (ledgerprovider
-                                                                        .pledgeorunpledge !=
-                                                                    'pledge') {
-                                                                  ledgerprovider
-                                                                          .screenclickedpledge =
-                                                                      'unpledge';
-                                                                  String val =
-                                                                      "${double.parse(value.cOLQTY.toString()).toInt()}";
-                                                                  String val2 =
-                                                                      "${value.dummunpledgevalue != 'null' ? double.parse(value.dummunpledgevalue.toString()).toInt() : "null"}";
-                                                                  ledgerprovider.setselectnetpledge(
-                                                                      val2 == 'null'
-                                                                          ? val
-                                                                          : val2,
-                                                                      val2 == 'null'
-                                                                          ? val
-                                                                          : val2);
-                                                                  _showBottomSheet(
-                                                                      context,
-                                                                      PledgeDeytails(
-                                                                        data:
-                                                                            value,
-                                                                      ));
-                                                                  // ledgerprovider
-                                                                  //     .setselectnetpledge(
-                                                                  //         "${(double.parse(value.cOLQTY.toString()).toInt())}",
-                                                                  //         "${(double.parse(value.cOLQTY.toString()).toInt())}");
-                                                                } else {
-                                                                  ScaffoldMessenger.of(
-                                                                          context)
-                                                                      .showSnackBar(
-                                                                    warningMessage(
-                                                                        context,
-                                                                        'Pledged initiated so can\'t unpledge'),
-                                                                  );
-                                                                }
-                                                              } else {
-                                                                ScaffoldMessenger.of(
-                                                                        context)
-                                                                    .showSnackBar(
-                                                                  warningMessage(
-                                                                      context,
-                                                                      'Already pledged cant edit'),
-                                                                );
-                                                              }
+                        } else if (widget.activetabe == '1') {
+                          if (value.deleteselected != 'selected' &&
+                              value.unPlegeQty == '') {
+                            if (ledgerprovider.pledgeorunpledge != 'pledge') {
+                              ledgerprovider.screenclickedpledge = 'unpledge';
+                              String val =
+                                  "${double.parse(value.cOLQTY.toString()).toInt()}";
+                              String val2 =
+                                  "${value.dummunpledgevalue != 'null' ? double.parse(value.dummunpledgevalue.toString()).toInt() : "null"}";
+                              ledgerprovider.setselectnetpledge(
+                                  val2 == 'null' ? val : val2,
+                                  val2 == 'null' ? val : val2);
+                              _showBottomSheet(
+                                  context,
+                                  PledgeDeytails(
+                                    data: value,
+                                  ));
+                              // ledgerprovider
+                              //     .setselectnetpledge(
+                              //         "${(double.parse(value.cOLQTY.toString()).toInt())}",
+                              //         "${(double.parse(value.cOLQTY.toString()).toInt())}");
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                warningMessage(context,
+                                    'Pledged initiated so can\'t unpledge'),
+                              );
+                            }
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              warningMessage(
+                                  context, 'Already pledged cant edit'),
+                            );
+                          }
                         }
                       },
-                      child: Column(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(
-                              left: 16.0,
-                            ),
-                            child: Row(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          children: [
+                            Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Column(
@@ -496,8 +478,10 @@ class _PledgeFilterState extends State<PledgeFilter>
                                                           TextOverflow.ellipsis,
                                                       theme: theme.isDarkMode,
                                                       color: theme.isDarkMode
-                                                          ? colors.colorWhite
-                                                          : colors.colorBlack,
+                                                          ? colors
+                                                              .textPrimaryDark
+                                                          : colors
+                                                              .textPrimaryLight,
                                                       fw: 3),
                                                   SizedBox(width: 10.0),
                                                   //         ((((value.cashEqColl!.foCashEq != null
@@ -550,13 +534,18 @@ class _PledgeFilterState extends State<PledgeFilter>
                                                                   vertical: 3),
                                                           decoration: BoxDecoration(
                                                               borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                          5),
-                                                              color: const Color(
-                                                                      0xffB5C0CF)
-                                                                  .withOpacity(
-                                                                      .15)),
+                                                                  BorderRadius.circular(
+                                                                      5),
+                                                              color: theme
+                                                                      .isDarkMode
+                                                                  ? colors
+                                                                      .textSecondaryDark
+                                                                      .withOpacity(
+                                                                          0.2)
+                                                                  : colors
+                                                                      .textSecondaryLight
+                                                                      .withOpacity(
+                                                                          0.1)),
                                                           child: Text(
                                                               // ((value.cashEqColl!
                                                               //                     .foCashEq !=
@@ -590,13 +579,21 @@ class _PledgeFilterState extends State<PledgeFilter>
                                                                   TextOverflow
                                                                       .ellipsis,
                                                               maxLines: 1,
-                                                              style: textStyle(
-                                                                  value.status ==
-                                                                          'Not_ok'
+                                                              style: textStyle(value
+                                                                          .status ==
+                                                                      'Not_ok'
+                                                                  ? theme
+                                                                          .isDarkMode
                                                                       ? colors
-                                                                          .kColorRedButton
+                                                                          .lossDark
                                                                       : colors
-                                                                          .colorBlack,
+                                                                          .lossLight
+                                                                  : theme
+                                                                          .isDarkMode
+                                                                      ? colors
+                                                                          .textPrimaryDark
+                                                                      : colors
+                                                                          .textPrimaryLight,
                                                                   10,
                                                                   FontWeight
                                                                       .w500)),
@@ -742,17 +739,21 @@ class _PledgeFilterState extends State<PledgeFilter>
                                 ),
                                 widget.activetabe == '2'
                                     ? Container(
-                                        margin: const EdgeInsets.only(right: 8),
+                                        margin:
+                                            const EdgeInsets.only(right: 16),
                                         decoration: BoxDecoration(
                                             borderRadius:
-                                                BorderRadius.circular(6),
-                                            color: const Color.fromARGB(
-                                                255, 255, 255, 255)),
+                                                BorderRadius.circular(5),
+                                            color: theme.isDarkMode
+                                                ? colors.textSecondaryDark
+                                                    .withOpacity(0.2)
+                                                : colors.textSecondaryLight
+                                                    .withOpacity(0.1)),
                                         child: Padding(
-                                          padding: const EdgeInsets.all(8.0),
+                                          padding: const EdgeInsets.all(5.0),
                                           child: TextWidget.titleText(
                                             text:
-                                                "${value.dummvalue != 'null' ? "${value.dummvalue!} /" : ''} ${(double.parse(value.nSOHQTY.toString()).toInt()) + (double.parse(value.sOHQTY.toString()).toInt())}",
+                                                "${value.dummvalue != 'null' ? "${value.dummvalue!} /" : ''}${(double.parse(value.nSOHQTY.toString()).toInt()) + (double.parse(value.sOHQTY.toString()).toInt())}",
                                             textOverflow: TextOverflow.ellipsis,
                                             theme: theme.isDarkMode,
                                             color: value.dummvalue == 'null'
@@ -853,12 +854,12 @@ class _PledgeFilterState extends State<PledgeFilter>
                                                                             'selected'
                                                                     ? const Color(
                                                                         0xffFFC107)
-                                                                    : const Color
-                                                                        .fromARGB(
-                                                                        255,
-                                                                        255,
-                                                                        97,
-                                                                        97),
+                                                                    : theme
+                                                                            .isDarkMode
+                                                                        ? colors
+                                                                            .lossDark
+                                                                        : colors
+                                                                            .lossLight,
                                                                 fw: 1,
                                                               ),
                                                             ),
@@ -984,17 +985,24 @@ class _PledgeFilterState extends State<PledgeFilter>
                                                           borderRadius:
                                                               BorderRadius
                                                                   .circular(6),
-                                                          color: const Color
-                                                              .fromARGB(255,
-                                                              255, 255, 255)),
+                                                          color: theme
+                                                                  .isDarkMode
+                                                              ? colors
+                                                                  .textSecondaryDark
+                                                                  .withOpacity(
+                                                                      0.2)
+                                                              : colors
+                                                                  .textSecondaryLight
+                                                                  .withOpacity(
+                                                                      0.1)),
                                                       child: Padding(
                                                         padding:
                                                             const EdgeInsets
-                                                                .all(8.0),
+                                                                .all(5.0),
                                                         child: TextWidget
                                                             .titleText(
                                                           text:
-                                                              "${value.dummvalue != 'null' ? "${value.dummvalue!} /" : ''} ${(double.parse(value.nSOHQTY.toString()).toInt()) + (double.parse(value.sOHQTY.toString()).toInt())} +",
+                                                              "${value.dummvalue != 'null' ? "${value.dummvalue!} /" : ''}${(double.parse(value.nSOHQTY.toString()).toInt()) + (double.parse(value.sOHQTY.toString()).toInt())} +",
                                                           textOverflow:
                                                               TextOverflow
                                                                   .ellipsis,
@@ -1054,18 +1062,12 @@ class _PledgeFilterState extends State<PledgeFilter>
                                             : SizedBox(),
                               ],
                             ),
-                          ),
-                          widget.activetabe == '1'
-                              ? SizedBox(
-                                  height: 8.0,
-                                )
-                              : SizedBox(),
-                          Padding(
-                            padding: const EdgeInsets.only(
-                              left: 16.0,
-                              right: 16.0,
-                            ),
-                            child: Row(
+                            widget.activetabe == '1'
+                                ? SizedBox(
+                                    height: 8.0,
+                                  )
+                                : SizedBox(),
+                            Row(
                               children: [
                                 TextWidget.paraText(
                                     text: (double.parse(value.cOLQTY.toString())
@@ -1100,31 +1102,20 @@ class _PledgeFilterState extends State<PledgeFilter>
                                         ? "(${double.parse(value.estPercentage.toString()).toInt()}%)"
                                         : "0.0",
                                     color: theme.isDarkMode
-                                        ? colors.colorWhite
-                                        : colors.colorBlack,
+                                        ? colors.textSecondaryDark
+                                        : colors.textSecondaryLight,
                                     textOverflow: TextOverflow.ellipsis,
                                     theme: theme.isDarkMode,
                                     fw: 3),
                               ],
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     );
                   },
                   separatorBuilder: (BuildContext context, int index) {
-                    return Padding(
-                      padding: const EdgeInsets.only(
-                        top: 8.0,
-                        bottom: 0.0,
-                      ),
-                      child: Divider(
-                        color: theme.isDarkMode
-                            ? const Color(0xffB5C0CF).withOpacity(.15)
-                            : const Color(0xffF1F3F8),
-                        thickness: 1.0,
-                      ),
-                    );
+                    return ListDivider();
                   },
                 ),
               ),

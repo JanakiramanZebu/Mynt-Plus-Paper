@@ -51,9 +51,11 @@ class _BondsmainScreenState extends ConsumerState<BondsScreen> {
     final theme = ref.watch(themeProvider);
     final bonds = ref.watch(bondsProvider);
 
-    return Scaffold(
-      appBar: _buildAppBar(context, theme, bonds),
-      body: BondsExploreScreens(theme: theme, initialTabIndex: initialTabIndex),
+    return SafeArea(
+      child: Scaffold(
+        appBar: _buildAppBar(context, theme, bonds),
+        body: BondsExploreScreens(theme: theme, initialTabIndex: initialTabIndex),
+      ),
     );
   }
 
@@ -66,13 +68,13 @@ class _BondsmainScreenState extends ConsumerState<BondsScreen> {
       centerTitle: false,
       titleSpacing: 0,
       leading: const CustomBackBtn(),
-      title: TextWidget.heroText(
+      title: TextWidget.titleText(
           text: "Bonds",
           theme: theme.isDarkMode,
           color: theme.isDarkMode
               ? colors.textPrimaryDark
               : colors.textPrimaryLight,
-          fw: 0),
+          fw: 1),
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(50),
         child: _buildSearchBar(context, theme, bonds),
@@ -91,10 +93,12 @@ class _BondsmainScreenState extends ConsumerState<BondsScreen> {
               height: 40,
               child: TextFormField(
                 controller: bonds.bondscommonsearchcontroller,
-                style: TextWidget.textStyle(
-                  fontSize: 14,
+               style: TextWidget.textStyle(
+                  fontSize: 16,
+                  color: theme.isDarkMode
+                      ? colors.textPrimaryDark
+                      : colors.textPrimaryLight,
                   theme: theme.isDarkMode,
-                  fw: 1,
                 ),
                 keyboardType: TextInputType.text,
                 textCapitalization: TextCapitalization.characters,
@@ -105,17 +109,21 @@ class _BondsmainScreenState extends ConsumerState<BondsScreen> {
                 ],
                 decoration: InputDecoration(
                     hintText: "Search Bonds",
-                    hintStyle: TextWidget.textStyle(
-                        fontSize: 14,
-                        theme: theme.isDarkMode,
-                        fw: 0,
-                        color: colors.textSecondaryLight),
-                    fillColor: colors.searchBg,
+                   hintStyle: TextWidget.textStyle(
+                                      fontSize: 14,
+                                      theme: theme.isDarkMode,
+                                     color: theme.isDarkMode
+                                ? colors.textSecondaryDark
+                                : colors.textSecondaryLight,
+                                    ),
+                  fillColor: theme.isDarkMode
+                        ? colors.searchBgDark
+                        : colors.searchBg,
                     filled: true,
                     prefixIcon: Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: SvgPicture.asset(assets.searchIcon,
-                          color: colors.textPrimaryLight,
+                       color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                           fit: BoxFit.scaleDown,
                           width: 20),
                     ),
@@ -142,7 +150,7 @@ class _BondsmainScreenState extends ConsumerState<BondsScreen> {
                                     });
                                   },
                                   child: SvgPicture.asset(assets.removeIcon,
-                                      fit: BoxFit.scaleDown, width: 20),
+                                      fit: BoxFit.scaleDown, width: 20,   color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,),
                                 ),
                               )
                             : const SizedBox.shrink(),

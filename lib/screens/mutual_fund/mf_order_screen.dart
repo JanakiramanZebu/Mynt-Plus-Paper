@@ -79,1429 +79,1443 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
         onTap: () {
           FocusScope.of(context).unfocus();
         },
-        child: Scaffold(
-            appBar: AppBar(
-              leadingWidth: 41,
-              centerTitle: false,
-              titleSpacing: 6,
-              elevation: 0,
-              leading: Material(
-                color: Colors.transparent,
-                shape: const CircleBorder(),
-                clipBehavior: Clip.hardEdge,
-                child: InkWell(
-                  customBorder: const CircleBorder(),
-                  splashColor: theme.isDarkMode
-                      ? colors.splashColorDark
-                      : colors.splashColorLight,
-                  highlightColor: theme.isDarkMode
-                      ? colors.highlightDark
-                      : colors.highlightLight,
-                  onTap: () => Navigator.pop(context),
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Icon(
-                      Icons.arrow_back_ios_outlined,
-                      size: 18,
-                      color: theme.isDarkMode
-                          ? colors.colorGrey
-                          : colors.colorBlack,
+        child: SafeArea(
+          child: Scaffold(
+              appBar: AppBar(
+                leadingWidth: 41,
+                centerTitle: false,
+                titleSpacing: 6,
+                elevation: 0,
+                leading: Material(
+                  color: Colors.transparent,
+                  shape: const CircleBorder(),
+                  clipBehavior: Clip.hardEdge,
+                  child: InkWell(
+                    customBorder: const CircleBorder(),
+                    splashColor: theme.isDarkMode
+                        ? colors.splashColorDark
+                        : colors.splashColorLight,
+                    highlightColor: theme.isDarkMode
+                        ? colors.highlightDark
+                        : colors.highlightLight,
+                    onTap: () => Navigator.pop(context),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Icon(
+                        Icons.arrow_back_ios_outlined,
+                        size: 18,
+                        color: theme.isDarkMode
+                            ? colors.colorGrey
+                            : colors.colorBlack,
+                      ),
                     ),
                   ),
                 ),
-              ),
-              title: Padding(
-                padding: const EdgeInsets.only(right: 0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            SizedBox(
-                              width: MediaQuery.of(context).size.width * 0.6,
-                              child: TextWidget.subText(
-                                  text:
-                                      "${(mfOrder.orderpagetitle == "SDS" && mfOrder.factSheetDataModel!.data?.name != null) ? mfOrder.factSheetDataModel!.data?.name!.replaceAll(RegExp(r'(Reg \(G\)|\(G\))$'), ' ') : (mfOrder.orderpagetitle == "NFO" ? '${widget.mfData.name}' : '${widget.mfData.fSchemeName}')}",
+                title: Padding(
+                  padding: const EdgeInsets.only(right: 0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              SizedBox(
+                                width: MediaQuery.of(context).size.width * 0.6,
+                                child: TextWidget.subText(
+                                    text:
+                                        "${(mfOrder.orderpagetitle == "SDS" && mfOrder.factSheetDataModel!.data?.name != null) ? mfOrder.factSheetDataModel!.data?.name!.replaceAll(RegExp(r'(Reg \(G\)|\(G\))$'), ' ') : (mfOrder.orderpagetitle == "NFO" ? '${widget.mfData.name}' : '${widget.mfData.fSchemeName}')}",
+                                    textOverflow: TextOverflow.ellipsis,
+                                    theme: theme.isDarkMode,
+                                    color: theme.isDarkMode
+                                        ? colors.textPrimaryDark
+                                        : colors.textPrimaryLight,
+                                    fw: 0),
+                              ),
+                            ],
+          
+                            // children: [
+                            //   CircleAvatar(
+                            //       backgroundImage: NetworkImage(
+                            //           "https://v3.mynt.in/mf/static/images/mf/${widget.mfData.aMCCode}.png")),
+                            //   const SizedBox(width: 8),
+                            //   Expanded(
+                            //     child: Column(
+                            //       crossAxisAlignment: CrossAxisAlignment.start,
+                            //       mainAxisAlignment: MainAxisAlignment.start,
+                            //       children: [
+                            //         Text("${widget.mfData.fSchemeName}",
+                            //             maxLines: 1,
+                            //             overflow: TextOverflow.ellipsis,
+                            //             style: textStyle(
+                            //                 theme.isDarkMode
+                            //                     ? colors.colorWhite
+                            //                     : colors.colorBlack,
+                            //                 16,
+                            //                 FontWeight.w500)),
+                            //         const SizedBox(height: 10),
+                            //         SizedBox(
+                            //           height: 18,
+                            //           child: ListView(
+                            //             shrinkWrap: true,
+                            //             scrollDirection: Axis.horizontal,
+                            //             children: [
+                            //               CustomExchBadge(
+                            //                   exch: widget.mfData.schemeName!
+                            //                           .contains("GROWTH")
+                            //                       ? "GROWTH"
+                            //                       : widget.mfData.schemeName!
+                            //                               .contains("IDCW PAYOUT")
+                            //                           ? "IDCW PAYOUT"
+                            //                           : widget.mfData.schemeName!
+                            //                                   .contains(
+                            //                                       "IDCW REINVESTMENT")
+                            //                               ? "IDCW REINVESTMENT"
+                            //                               : widget.mfData.schemeName!
+                            //                                       .contains("IDCW")
+                            //                                   ? "IDCW"
+                            //                                   : "NORMAL"),
+                            //         const SizedBox(width: 7),
+                            //               CustomExchBadge(
+                            //                   exch: "${widget.mfData.schemeType}"),
+                            //         const SizedBox(width: 7),
+                            //               CustomExchBadge(
+                            //                   exch: widget.mfData.sCHEMESUBCATEGORY!
+                            //                       .replaceAll("Fund", '')
+                            //                       .replaceAll("Hybrid", "")
+                            //                       .toUpperCase()),
+                            //             ],
+                            //           ),
+                            //         ),
+                            //       ],
+                            //     ),
+                            //   ),
+                            // ],
+                          ),
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              TextWidget.paraText(
+                                  text: "${mfOrder.mfOrderTpye}",
                                   textOverflow: TextOverflow.ellipsis,
                                   theme: theme.isDarkMode,
                                   color: theme.isDarkMode
-                                      ? colors.textPrimaryDark
-                                      : colors.textPrimaryLight,
-                                  fw: 0),
+                                      ? colors.textSecondaryDark
+                                      : colors.textSecondaryLight,
+                                  fw: 3),
+                            ],
+                          ),
+                        ],
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          PopupMenuButton<String>(
+                             color: theme.isDarkMode
+                                ? colors.searchBgDark
+                                : colors.searchBg,
+                            menuPadding: const EdgeInsets.all(8),
+                            splashRadius: 20,
+                            icon: Icon(
+                              Icons.more_vert,
+                              color: theme.isDarkMode
+                                  ? colors.textSecondaryDark
+                                  : colors.textSecondaryLight,
                             ),
-                          ],
-
-                          // children: [
-                          //   CircleAvatar(
-                          //       backgroundImage: NetworkImage(
-                          //           "https://v3.mynt.in/mf/static/images/mf/${widget.mfData.aMCCode}.png")),
-                          //   const SizedBox(width: 8),
-                          //   Expanded(
-                          //     child: Column(
-                          //       crossAxisAlignment: CrossAxisAlignment.start,
-                          //       mainAxisAlignment: MainAxisAlignment.start,
-                          //       children: [
-                          //         Text("${widget.mfData.fSchemeName}",
-                          //             maxLines: 1,
-                          //             overflow: TextOverflow.ellipsis,
+                            onSelected: (String selected) async {
+                              final isin = widget.mfData.iSIN;
+                              final schemeCode = widget.mfData.schemeCode;
+          
+                              if ((widget.mfData.sIPFLAG == "Y" &&
+                                  isin != null &&
+                                  schemeCode != null)) {
+                                await mfOrder.invertfun(
+                                    isin, schemeCode, context);
+                              }
+                              if (mfOrder.mfOrderTpye != "One-time") {
+                                String amt =
+                                    widget.mfData.minimumPurchaseAmount ?? "0";
+                                mfOrder.invAmt.text = amt.split('.').first;
+                              } else {
+                                String amt =
+                                    widget.mfData.minimumPurchaseAmount ?? "0";
+                                mfOrder.installmentAmt.text =
+                                    amt.split('.').first;
+                              }
+          
+                              ref.read(fundProvider).fetchFunds(context);
+                              ref.read(transcationProvider).initialdata(context);
+          
+                              mfOrder.chngOrderType(selected);
+                              mfOrder.orderchangetitle(selected);
+          
+                              if (mfOrder.orderpagetitle != "NFO") {
+                                mfOrder.orderpagetite("SDS");
+                              }
+                            },
+                            itemBuilder: (BuildContext context) {
+                              final isOneTime = mfOrder.mfOrderTpye == "One-time";
+                              final altText = isOneTime ? "SIP" : "One-time";
+          
+                              return [
+                                PopupMenuItem<String>(
+                                  value: altText,
+                                  child: TextWidget.subText(
+                                    text: altText,
+                                    theme: theme.isDarkMode,
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                        : colors.textSecondaryLight,
+                                  ),
+                                ),
+                              ];
+                            },
+                          ),
+                        ],
+                      )
+                    ],
+                  ),
+                ),
+                // bottom: PreferredSize(
+                //     preferredSize: const Size.fromHeight(40),
+                //     child: Column(children: [
+                //       Padding(
+                //         padding: const EdgeInsets.all(8.0),
+                //         child: Container(
+                //           color: theme.isDarkMode
+                //               ? colors.colorBlack
+                //               : const Color.fromARGB(255, 250, 251, 255),
+                //           child: Padding(
+                //             padding: const EdgeInsets.all(8.0),
+                //             child: Column(
+                //               children: [
+                //                 Row(
+                //                   crossAxisAlignment: CrossAxisAlignment.start,
+                //                   mainAxisAlignment: MainAxisAlignment.start,
+                //                   children: [
+                //                     CircleAvatar(
+                //                       backgroundImage: NetworkImage(
+                //                         "https://v3.mynt.in/mfapi/static/images/mf/${widget.mfData.aMCCode}.png",
+                //                       ),
+                //                     ),
+                //                     const SizedBox(width: 8),
+                //                     Expanded(
+                //                       child: Column(
+                //                         crossAxisAlignment:
+                //                             CrossAxisAlignment.start,
+                //                         children: [
+                //                           const SizedBox(height: 8),
+                //                           SizedBox(
+                //                             height: 18,
+                //                             child: ListView(
+                //                               shrinkWrap: true,
+                //                               scrollDirection: Axis.horizontal,
+                //                               children: [
+                //                                 // CustomExchBadge(
+                //                                 //   exch: widget.mfData.schemeName!.contains("GROWTH")
+                //                                 //       ? "GROWTH"
+                //                                 //       : widget.mfData.schemeName!.contains("IDCW PAYOUT")
+                //                                 //           ? "IDCW PAYOUT"
+                //                                 //           : widget.mfData.schemeName!.contains("IDCW REINVESTMENT")
+                //                                 //               ? "IDCW REINVESTMENT"
+                //                                 //               : widget.mfData.schemeName!.contains("IDCW")
+                //                                 //                   ? "IDCW"
+                //                                 //                   : "NORMAL",
+                //                                 // ),
+                //                               ],
+                //                             ),
+                //                           ),
+                //                         ],
+                //                       ),
+                //                     ),
+                //                   ],
+                //                 ),
+                //                 // const SizedBox(height: 8),
+                //                 // Row(
+                //                 //   mainAxisAlignment:
+                //                 //       MainAxisAlignment.spaceBetween,
+                //                 //   children: [
+                //                 //     Column(
+                //                 //       crossAxisAlignment:
+                //                 //           CrossAxisAlignment.start,
+                //                 //       children: [
+                //                 //         const SizedBox(height: 7),
+                //                 //         Text(
+                //                 //           "AUM (CR)",
+                //                 //           style: textStyle(
+                //                 //               const Color(0xff999999),
+                //                 //               12,
+                //                 //               FontWeight.w500),
+                //                 //         ),
+                //                 //         const SizedBox(height: 3),
+                //                 //         Text(
+                //                 //           (double.parse(widget.mfData.aUM!.isEmpty
+                //                 //                   ? "0.00"
+                //                 //                   : widget.mfData.aUM!))
+                //                 //               .toStringAsFixed(2),
+                //                 //           style: textStyle(colors.colorBlack, 14,
+                //                 //               FontWeight.w600),
+                //                 //         ),
+                //                 //       ],
+                //                 //     ),
+                //                 //     Column(
+                //                 //       crossAxisAlignment:
+                //                 //           CrossAxisAlignment.start,
+                //                 //       children: [
+                //                 //         const SizedBox(height: 8),
+                //                 //         Text(
+                //                 //           "NAV",
+                //                 //           style: textStyle(
+                //                 //               const Color(0xff999999),
+                //                 //               12,
+                //                 //               FontWeight.w500),
+                //                 //         ),
+                //                 //         const SizedBox(height: 3),
+                //                 //         Text(
+                //                 //           widget.mfData.nETASSETVALUE!.isEmpty
+                //                 //               ? "0.00"
+                //                 //               : widget.mfData.nETASSETVALUE!,
+                //                 //           style: textStyle(colors.colorBlack, 14,
+                //                 //               FontWeight.w600),
+                //                 //         ),
+                //                 //       ],
+                //                 //     ),
+                //                 //     Column(
+                //                 //       crossAxisAlignment:
+                //                 //           CrossAxisAlignment.start,
+                //                 //       children: [
+                //                 //         const SizedBox(height: 8),
+                //                 //         Text(
+                //                 //           "MIN. INV",
+                //                 //           style: textStyle(
+                //                 //               const Color(0xff999999),
+                //                 //               12,
+                //                 //               FontWeight.w500),
+                //                 //         ),
+                //                 //         const SizedBox(height: 3),
+                //                 //         Text(
+                //                 //           widget.mfData.minimumPurchaseAmount!
+                //                 //                   .isEmpty
+                //                 //               ? "0.00"
+                //                 //               : widget
+                //                 //                   .mfData.minimumPurchaseAmount!,
+                //                 //           style: textStyle(colors.colorBlack, 14,
+                //                 //               FontWeight.w600),
+                //                 //         ),
+                //                 //       ],
+                //                 //     ),
+                //                 //     Column(
+                //                 //       crossAxisAlignment:
+                //                 //           CrossAxisAlignment.start,
+                //                 //       children: [
+                //                 //         const SizedBox(height: 8),
+                //                 //         Text(
+                //                 //           "5YR CAGR",
+                //                 //           style: textStyle(
+                //                 //               const Color(0xff999999),
+                //                 //               12,
+                //                 //               FontWeight.w500),
+                //                 //         ),
+                //                 //         const SizedBox(height: 3),
+                //                 //         Text(
+                //                 //           widget.mfData.fIVEYEARDATA?.isEmpty ??
+                //                 //                   true
+                //                 //               ? "0.00"
+                //                 //               : "${widget.mfData.fIVEYEARDATA}%",
+                //                 //           style: textStyle(colors.colorBlack, 14,
+                //                 //               FontWeight.w600),
+                //                 //         )
+                //                 //       ],
+                //                 //     ),
+                //                 //   ],
+                //                 // ),
+                //               ],
+                //             ),
+                //           ),
+                //         ),
+                //       ),
+                //       Container(
+                //           height: 46,
+                //           // decoration: BoxDecoration(
+                //           //     border: (Border(
+                //           //         top: BorderSide(
+                //           //             color: theme.isDarkMode
+                //           //                 ? colors.darkColorDivider
+                //           //                 : colors.colorDivider)))),
+                //           child: ListView.builder(
+                //               scrollDirection: Axis.horizontal,
+                //               itemBuilder: (context, index) {
+                //                 return InkWell(
+                //                     onTap: () {
+                //                       mfOrder.chngOrderType(
+                //                           mfOrder.mfOrderTpyes[index]);
+                //                       mfOrder.resetmfordervalidation();
+                //                       FocusScope.of(context).unfocus();
+                //                     },
+                //                     child: Container(
+                //                         alignment: Alignment.centerLeft,
+                //                         padding: const EdgeInsets.symmetric(
+                //                             horizontal: 15),
+                //                         decoration: BoxDecoration(
+                //                             border: mfOrder.mfOrderTpye ==
+                //                                     mfOrder.mfOrderTpyes[index]
+                //                                 ? Border(
+                //                                     bottom: BorderSide(
+                //                                         color: theme.isDarkMode
+                //                                             ? colors.primaryDark
+                //                                             : colors.primaryLight,
+                //                                         width: 2))
+                //                                 : null),
+                //                         child: Text(mfOrder.mfOrderTpyes[index],
+                //                             style: textStyle(
+                //                                 mfOrder.mfOrderTpye ==
+                //                                             mfOrder.mfOrderTpyes[
+                //                                                 index] &&
+                //                                         theme.isDarkMode
+                //                                     ? colors.colorWhite
+                //                                     : mfOrder.mfOrderTpye ==
+                //                                             mfOrder
+                //                                                 .mfOrderTpyes[index]
+                //                                         ? colors.colorBlack
+                //                                         : const Color(0xff666666),
+                //                                 14,
+                //                                 mfOrder.mfOrderTpye ==
+                //                                         mfOrder.mfOrderTpyes[index]
+                //                                     ? FontWeight.w600
+                //                                     : FontWeight.w500))));
+                //               },
+                //               itemCount: widget.mfData.sIPFLAG == "Y"
+                //                   ? mfOrder.mfOrderTpyes.length
+                //                   : 1))
+                //     ]))
+              ),
+              body: Column(
+                children: [
+                  Divider(
+                    color: theme.isDarkMode
+                        ? colors.dividerDark
+                        : colors.dividerLight,
+                    thickness: 1,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // if (mfOrder.mfOrderTpye != "One-time") ...[
+                          //   Text("Mandates",
+                          //       style: textStyle(
+                          //           theme.isDarkMode
+                          //               ? colors.colorWhite
+                          //               : colors.colorBlack,
+                          //           16,
+                          //           FontWeight.w600)),
+                          //   const SizedBox(height: 4),
+                          //   if (mfOrder.mandateData!.isNotEmpty) ...[
+                          //     DropdownButtonHideUnderline(
+                          //       child: DropdownButton2(
+                          //         menuItemStyleData: MenuItemStyleData(
+                          //           customHeights: mfOrder.mandateHeight(),
+                          //         ),
+                          //         buttonStyleData: ButtonStyleData(
+                          //           padding: const EdgeInsets.only(top: 4, left: 16),
+                          //           height: 50,
+                          //           width: MediaQuery.of(context).size.width,
+                          //           decoration: BoxDecoration(
+                          //             color: theme.isDarkMode
+                          //                 ? colors.darkGrey
+                          //                 : Color(0xffF1F3F8),
+                          //             borderRadius:
+                          //                 const BorderRadius.all(Radius.circular(32)),
+                          //           ),
+                          //         ),
+                          //         dropdownStyleData: DropdownStyleData(
+                          //             decoration: BoxDecoration(
+                          //                 borderRadius: BorderRadius.circular(4)),
+                          //             offset: const Offset(0, 1)),
+                          //         isExpanded: true,
+                          //         style: textStyle(
+                          //             theme.isDarkMode
+                          //                 ? colors.colorWhite
+                          //                 : const Color(0XFF000000),
+                          //             13,
+                          //             FontWeight.w500),
+                          //         hint: Text(
+                          //           mfOrder.mandateId ?? "Select a Mandate",
+                          //           style: textStyle(
+                          //               const Color(0XFF000000), 13, FontWeight.w500),
+                          //         ),
+                          //         items: mfOrder.mandateDividers(),
+                          //         value: mfOrder.mandateDividers().any(
+                          //                 (item) => item.value == mfOrder.mandateId)
+                          //             ? mfOrder.mandateId
+                          //             : null,
+                          //         onChanged: (value) async {
+                          //           if (value != null) {
+                          //             mfOrder.chngMandate("$value");
+                          //           }
+                          //         },
+                          //       ),
+                          //     ),
+                          //     const SizedBox(height: 8),
+                          //   ],
+                          //   const SizedBox(height: 8),
+          
+                          //   ElevatedButton(
+                          //       onPressed: () async {
+                          //         showDialog(
+                          //             context: context,
+                          //             builder: (BuildContext context) {
+                          //               return const CreateMandateDialogue();
+                          //             });
+                          //       },
+                          //       style: ElevatedButton.styleFrom(
+                          //           elevation: 0,
+                          //           backgroundColor: !theme.isDarkMode
+                          //               ? colors.primaryLight
+                          //               : colors.primaryDark,
+                          //           shape: RoundedRectangleBorder(
+                          //               borderRadius: BorderRadius.circular(5))),
+                          //       child: Text("Create mandate",
+                          //           style: GoogleFonts.inter(
+                          //               textStyle: textStyle(
+                          //                   !theme.isDarkMode
+                          //                       ? colors.colorWhite
+                          //                       : colors.colorBlack,
+                          //                   14,
+                          //                   FontWeight.w500)))),
+          
+                          //   // Row(
+                          //   //   children: [
+                          //   //     IconButton(
+                          //   //         splashRadius: 20,
+                          //   //         onPressed: () {
+                          //   //           setState(() {
+                          //   //             mfOrder.setInitialPay(!mfOrder.isInitalPay);
+                          //   //             mfOrder.isValidUpiId(widget.mfData);
+                          //   //           });
+                          //   //         },
+                          //   //         icon: SvgPicture.asset(theme.isDarkMode
+                          //   //             ? mfOrder.isInitalPay
+                          //   //                 ? assets.darkCheckedboxIcon
+                          //   //                 : assets.darkCheckboxIcon
+                          //   //             : mfOrder.isInitalPay
+                          //   //                 ? assets.checkedbox
+                          //   //                 : assets.checkbox)),
+                          //   //     Text("Pay initial investment now",
+                          //   //         style: textStyle(colors.colorGrey, 12, FontWeight.w500)),
+                          //   //   ],
+                          //   // ),
+                          //   // const SizedBox(height: 8),
+                          //   if (mfOrder.isInitalPay)
+                          //     SizedBox(
+                          //         height: 44,
+                          //         child: CustomTextFormField(
+                          //             textAlign: TextAlign.start,
+                          //             fillColor: theme.isDarkMode
+                          //                 ? colors.darkGrey
+                          //                 : const Color(0xffF1F3F8),
+                          //             hintText:
+                          //                 '${widget.mfData.minimumPurchaseAmount}',
+                          //             hintStyle: textStyle(const Color(0xff666666),
+                          //                 15, FontWeight.w400),
+                          //             inputFormate: [
+                          //               FilteringTextInputFormatter.digitsOnly
+                          //             ],
                           //             style: textStyle(
                           //                 theme.isDarkMode
                           //                     ? colors.colorWhite
                           //                     : colors.colorBlack,
                           //                 16,
-                          //                 FontWeight.w500)),
-                          //         const SizedBox(height: 10),
-                          //         SizedBox(
-                          //           height: 18,
-                          //           child: ListView(
-                          //             shrinkWrap: true,
-                          //             scrollDirection: Axis.horizontal,
-                          //             children: [
-                          //               CustomExchBadge(
-                          //                   exch: widget.mfData.schemeName!
-                          //                           .contains("GROWTH")
-                          //                       ? "GROWTH"
-                          //                       : widget.mfData.schemeName!
-                          //                               .contains("IDCW PAYOUT")
-                          //                           ? "IDCW PAYOUT"
-                          //                           : widget.mfData.schemeName!
-                          //                                   .contains(
-                          //                                       "IDCW REINVESTMENT")
-                          //                               ? "IDCW REINVESTMENT"
-                          //                               : widget.mfData.schemeName!
-                          //                                       .contains("IDCW")
-                          //                                   ? "IDCW"
-                          //                                   : "NORMAL"),
-                          //         const SizedBox(width: 7),
-                          //               CustomExchBadge(
-                          //                   exch: "${widget.mfData.schemeType}"),
-                          //         const SizedBox(width: 7),
-                          //               CustomExchBadge(
-                          //                   exch: widget.mfData.sCHEMESUBCATEGORY!
-                          //                       .replaceAll("Fund", '')
-                          //                       .replaceAll("Hybrid", "")
-                          //                       .toUpperCase()),
-                          //             ],
-                          //           ),
-                          //         ),
-                          //       ],
-                          //     ),
-                          //   ),
+                          //                 FontWeight.w600),
+                          //             // prefixIcon: InkWell(
+                          //             //   onTap: () {
+                          //             //     setState(() {
+                          //             //       if (fund.invAmt.text.isNotEmpty) {
+                          //             //         if (double.parse(fund.invAmt.text) > invAmt) {
+                          //             //           fund.invAmt.text =
+                          //             //               (double.parse(fund.invAmt.text) - invAmt)
+                          //             //                   .toString();
+                          //             //         }
+                          //             //       } else {
+                          //             //         fund.invAmt.text = (invAmt).toString();
+                          //             //       }
+                          //             //     });
+                          //             //   },
+                          //             //   child: SvgPicture.asset(
+                          //             //       theme.isDarkMode
+                          //             //           ? assets.darkCMinus
+                          //             //           : assets.minusIcon,
+                          //             //       fit: BoxFit.scaleDown),
+                          //             // ),
+                          //             // suffixIcon: InkWell(
+                          //             //     onTap: () {
+                          //             //       if (fund.invAmt.text.isNotEmpty) {
+                          //             //         fund.invAmt.text =
+                          //             //             (double.parse(fund.invAmt.text) + invAmt)
+                          //             //                 .toString();
+                          //             //       } else {
+                          //             //         fund.invAmt.text = (invAmt).toString();
+                          //             //       }
+                          //             //     },
+                          //             //     child: SvgPicture.asset(
+                          //             //         theme.isDarkMode
+                          //             //             ? assets.darkAdd
+                          //             //             : assets.addIcon,
+                          //             //         fit: BoxFit.scaleDown)),
+          
+                          //             textCtrl: mfOrder.invAmt,
+                          //             onChanged: (value) {
+                          //               mfOrder.isValidUpiId(widget.mfData);
+                          //             })),
+                          //   if (mfOrder.mfOrderTpye == "One-time" &&
+                          //       mfOrder.invAmtError != null) ...[
+                          //     const SizedBox(height: 6),
+                          //     TextWidget.captionText(
+                          //         text: "${mfOrder.invAmtError}",
+                          //         theme: theme.isDarkMode,
+                          //         color: colors.kColorRedText,
+                          //         fw: 3),
+                          //   ],
+                          //   const SizedBox(height: 8)
                           // ],
-                        ),
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            TextWidget.paraText(
-                                text: "${mfOrder.mfOrderTpye}",
-                                textOverflow: TextOverflow.ellipsis,
+                          const SizedBox(height: 16),
+                          TextWidget.subText(
+                              text: mfOrder.mfOrderTpye == "One-time"
+                                  ? "Investment amount"
+                                  : "Installment amount",
+                              theme: theme.isDarkMode,
+                              color: theme.isDarkMode
+                                  ? colors.textPrimaryDark
+                                  : colors.textPrimaryLight,
+                              fw: 0),
+                          const SizedBox(height: 7),
+                          Container(
+                              margin: const EdgeInsets.symmetric(vertical: 8),
+                              height: 44,
+                              child: CustomTextFormField(
+                                  textAlign: TextAlign.start,
+                                  fillColor: theme.isDarkMode
+                              ? colors.darkGrey
+                              : const Color(0xffF1F3F8),
+                                  // hintText: mfOrder.mfOrderTpye == "One-time"
+                                  //     ? '${widget.mfData.minimumPurchaseAmount}'
+                                  //     : '${widget.mfData.faceValue}',
+                                 hintStyle: TextWidget.textStyle(
+                                      fontSize: 14,
+                                      theme: theme.isDarkMode,
+                                     color: theme.isDarkMode
+                                ? colors.textSecondaryDark
+                                : colors.textSecondaryLight,
+                                    ),
+                                  keyboardType: TextInputType.number,
+                                  inputFormate: [
+                                    FilteringTextInputFormatter.digitsOnly
+                                  ],
+                                   style: TextWidget.textStyle(
+                                    fontSize: 16,
+                                    color: theme.isDarkMode
+                                        ? colors.textPrimaryDark
+                                        : colors.textPrimaryLight,
+                                    theme: theme.isDarkMode,
+                                  ),
+                                  //       prefixIcon: InkWell(
+                                  //         onTap: () {
+                                  //           setState(() {
+                                  //             if (mfOrder.mfOrderTpye == "One-time") {
+                                  //               if (fund.invAmt.text.isNotEmpty) {
+                                  //                 if (double.parse(fund.invAmt.text) > invAmt) {
+                                  //                   if((double.parse(fund.invAmt.text) - invAmt) < invAmt){
+                                  //                       ScaffoldMessenger.of(context).showSnackBar(successMessage(
+                                  // context, "Installment Amount should not be less than ${mfOrder.insAmt}"));
+                                  //                     }
+                                  //                     else{
+                                  //                   fund.invAmt.text =
+                                  //                       (double.parse(fund.invAmt.text) - invAmt)
+                                  //                           .toString();
+                                  //                     }
+                                  //                 }
+                                  //               } else {
+                                  //                 fund.invAmt.text = (invAmt).toString();
+                                  //               }
+                                  //             } else {
+                                  //               if (mfOrder.installmentAmt.text.isNotEmpty) {
+                                  //                 if (double.parse(mfOrder.installmentAmt.text) >
+                                  //                     double.parse(mfOrder.insAmt)) {
+                                  //                       if((double.parse(mfOrder.installmentAmt.text) -
+                                  //                     double.parse(mfOrder.insAmt)) < double.parse(mfOrder.insAmt)){
+                                  //                       ScaffoldMessenger.of(context).showSnackBar(successMessage(
+                                  // context, "Installment Amount should not be less than ${mfOrder.insAmt}"));
+                                  //                     }
+                                  //                     else{
+                                  //                   mfOrder.installmentAmt.text =
+                                  //                       (double.parse(mfOrder.installmentAmt.text) -
+                                  //                               double.parse(mfOrder.insAmt))
+                                  //                           .toString();
+                                  //                 }
+                                  //                     }
+                                  //               } else {
+                                  //                 mfOrder.installmentAmt.text = mfOrder.insAmt;
+                                  //               }
+                                  //             }
+                                  //           });
+                                  //         },
+                                  //         child: SvgPicture.asset(
+                                  //             theme.isDarkMode
+                                  //                 ? assets.darkCMinus
+                                  //                 : assets.minusIcon,
+                                  //             fit: BoxFit.scaleDown),
+                                  //       ),
+                                  //       // suffixIcon: InkWell(
+                                  //     onTap: () {
+                                  //       if (mfOrder.mfOrderTpye == "One-time") {
+                                  //         if (fund.invAmt.text.isNotEmpty) {
+                                  //           fund.invAmt.text =
+                                  //               (double.parse(fund.invAmt.text) + invAmt)
+                                  //                   .toString();
+                                  //         } else {
+                                  //           fund.invAmt.text = (invAmt).toString();
+                                  //         }
+                                  //       } else {
+                                  //         if (mfOrder.installmentAmt.text.isNotEmpty) {
+                                  //           mfOrder.installmentAmt.text =
+                                  //               (double.parse(mfOrder.installmentAmt.text) +
+                                  //                       double.parse(mfOrder.insAmt))
+                                  //                   .toString();
+                                  //         } else {
+                                  //           mfOrder.installmentAmt.text = mfOrder.insAmt;
+                                  //         }
+                                  //       }
+                                  //     },
+                                  //     child: SvgPicture.asset(
+                                  //         theme.isDarkMode ? assets.darkAdd : assets.addIcon,
+                                  //         fit: BoxFit.scaleDown)),
+          
+                                  textCtrl: mfOrder.mfOrderTpye == "One-time"
+                                      ? mfOrder.invAmt
+                                      : mfOrder.installmentAmt,
+                                  onChanged: (value) {
+                                    mfOrder.isValidUpiId(widget.mfData,'');
+                                  })),
+                          if (mfOrder.mfOrderTpye == "One-time") ...[
+                            if (mfOrder.invAmtError != null) ...[
+                              TextWidget.captionText(
+                                text: "${mfOrder.invAmtError}",
                                 theme: theme.isDarkMode,
-                                color: theme.isDarkMode
-                                    ? colors.textSecondaryDark
-                                    : colors.textSecondaryLight,
-                                fw: 3),
-                          ],
-                        ),
-                      ],
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        PopupMenuButton<String>(
-                          menuPadding: const EdgeInsets.all(8),
-                          splashRadius: 20,
-                          icon: Icon(
-                            Icons.more_vert,
-                            color: theme.isDarkMode
-                                ? colors.textPrimaryDark
-                                : colors.textPrimaryLight,
-                          ),
-                          onSelected: (String selected) async {
-                            final isin = widget.mfData.iSIN;
-                            final schemeCode = widget.mfData.schemeCode;
-
-                            if ((widget.mfData.sIPFLAG == "Y" &&
-                                isin != null &&
-                                schemeCode != null)) {
-                              await mfOrder.invertfun(
-                                  isin, schemeCode, context);
-                            }
-                            if (mfOrder.mfOrderTpye != "One-time") {
-                              String amt =
-                                  widget.mfData.minimumPurchaseAmount ?? "0";
-                              mfOrder.invAmt.text = amt.split('.').first;
-                            } else {
-                              String amt =
-                                  widget.mfData.minimumPurchaseAmount ?? "0";
-                              mfOrder.installmentAmt.text =
-                                  amt.split('.').first;
-                            }
-
-                            ref.read(fundProvider).fetchFunds(context);
-                            ref.read(transcationProvider).initialdata(context);
-
-                            mfOrder.chngOrderType(selected);
-                            mfOrder.orderchangetitle(selected);
-
-                            if (mfOrder.orderpagetitle != "NFO") {
-                              mfOrder.orderpagetite("SDS");
-                            }
-                          },
-                          itemBuilder: (BuildContext context) {
-                            final isOneTime = mfOrder.mfOrderTpye == "One-time";
-                            final altText = isOneTime ? "SIP" : "One-time";
-
-                            return [
-                              PopupMenuItem<String>(
-                                value: altText,
-                                child: TextWidget.subText(
-                                  text: altText,
-                                  theme: theme.isDarkMode,
-                                  color: theme.isDarkMode
-                                      ? colors.textPrimaryDark
-                                      : colors.textPrimaryLight,
-                                ),
+                                color: theme.isDarkMode ? colors.lossDark : colors.lossLight,
+                                fw: 0,
                               ),
-                            ];
-                          },
-                        ),
-                      ],
-                    )
-                  ],
-                ),
-              ),
-              // bottom: PreferredSize(
-              //     preferredSize: const Size.fromHeight(40),
-              //     child: Column(children: [
-              //       Padding(
-              //         padding: const EdgeInsets.all(8.0),
-              //         child: Container(
-              //           color: theme.isDarkMode
-              //               ? colors.colorBlack
-              //               : const Color.fromARGB(255, 250, 251, 255),
-              //           child: Padding(
-              //             padding: const EdgeInsets.all(8.0),
-              //             child: Column(
-              //               children: [
-              //                 Row(
-              //                   crossAxisAlignment: CrossAxisAlignment.start,
-              //                   mainAxisAlignment: MainAxisAlignment.start,
-              //                   children: [
-              //                     CircleAvatar(
-              //                       backgroundImage: NetworkImage(
-              //                         "https://v3.mynt.in/mfapi/static/images/mf/${widget.mfData.aMCCode}.png",
-              //                       ),
-              //                     ),
-              //                     const SizedBox(width: 8),
-              //                     Expanded(
-              //                       child: Column(
-              //                         crossAxisAlignment:
-              //                             CrossAxisAlignment.start,
-              //                         children: [
-              //                           const SizedBox(height: 8),
-              //                           SizedBox(
-              //                             height: 18,
-              //                             child: ListView(
-              //                               shrinkWrap: true,
-              //                               scrollDirection: Axis.horizontal,
-              //                               children: [
-              //                                 // CustomExchBadge(
-              //                                 //   exch: widget.mfData.schemeName!.contains("GROWTH")
-              //                                 //       ? "GROWTH"
-              //                                 //       : widget.mfData.schemeName!.contains("IDCW PAYOUT")
-              //                                 //           ? "IDCW PAYOUT"
-              //                                 //           : widget.mfData.schemeName!.contains("IDCW REINVESTMENT")
-              //                                 //               ? "IDCW REINVESTMENT"
-              //                                 //               : widget.mfData.schemeName!.contains("IDCW")
-              //                                 //                   ? "IDCW"
-              //                                 //                   : "NORMAL",
-              //                                 // ),
-              //                               ],
-              //                             ),
-              //                           ),
-              //                         ],
-              //                       ),
-              //                     ),
-              //                   ],
-              //                 ),
-              //                 // const SizedBox(height: 8),
-              //                 // Row(
-              //                 //   mainAxisAlignment:
-              //                 //       MainAxisAlignment.spaceBetween,
-              //                 //   children: [
-              //                 //     Column(
-              //                 //       crossAxisAlignment:
-              //                 //           CrossAxisAlignment.start,
-              //                 //       children: [
-              //                 //         const SizedBox(height: 7),
-              //                 //         Text(
-              //                 //           "AUM (CR)",
-              //                 //           style: textStyle(
-              //                 //               const Color(0xff999999),
-              //                 //               12,
-              //                 //               FontWeight.w500),
-              //                 //         ),
-              //                 //         const SizedBox(height: 3),
-              //                 //         Text(
-              //                 //           (double.parse(widget.mfData.aUM!.isEmpty
-              //                 //                   ? "0.00"
-              //                 //                   : widget.mfData.aUM!))
-              //                 //               .toStringAsFixed(2),
-              //                 //           style: textStyle(colors.colorBlack, 14,
-              //                 //               FontWeight.w600),
-              //                 //         ),
-              //                 //       ],
-              //                 //     ),
-              //                 //     Column(
-              //                 //       crossAxisAlignment:
-              //                 //           CrossAxisAlignment.start,
-              //                 //       children: [
-              //                 //         const SizedBox(height: 8),
-              //                 //         Text(
-              //                 //           "NAV",
-              //                 //           style: textStyle(
-              //                 //               const Color(0xff999999),
-              //                 //               12,
-              //                 //               FontWeight.w500),
-              //                 //         ),
-              //                 //         const SizedBox(height: 3),
-              //                 //         Text(
-              //                 //           widget.mfData.nETASSETVALUE!.isEmpty
-              //                 //               ? "0.00"
-              //                 //               : widget.mfData.nETASSETVALUE!,
-              //                 //           style: textStyle(colors.colorBlack, 14,
-              //                 //               FontWeight.w600),
-              //                 //         ),
-              //                 //       ],
-              //                 //     ),
-              //                 //     Column(
-              //                 //       crossAxisAlignment:
-              //                 //           CrossAxisAlignment.start,
-              //                 //       children: [
-              //                 //         const SizedBox(height: 8),
-              //                 //         Text(
-              //                 //           "MIN. INV",
-              //                 //           style: textStyle(
-              //                 //               const Color(0xff999999),
-              //                 //               12,
-              //                 //               FontWeight.w500),
-              //                 //         ),
-              //                 //         const SizedBox(height: 3),
-              //                 //         Text(
-              //                 //           widget.mfData.minimumPurchaseAmount!
-              //                 //                   .isEmpty
-              //                 //               ? "0.00"
-              //                 //               : widget
-              //                 //                   .mfData.minimumPurchaseAmount!,
-              //                 //           style: textStyle(colors.colorBlack, 14,
-              //                 //               FontWeight.w600),
-              //                 //         ),
-              //                 //       ],
-              //                 //     ),
-              //                 //     Column(
-              //                 //       crossAxisAlignment:
-              //                 //           CrossAxisAlignment.start,
-              //                 //       children: [
-              //                 //         const SizedBox(height: 8),
-              //                 //         Text(
-              //                 //           "5YR CAGR",
-              //                 //           style: textStyle(
-              //                 //               const Color(0xff999999),
-              //                 //               12,
-              //                 //               FontWeight.w500),
-              //                 //         ),
-              //                 //         const SizedBox(height: 3),
-              //                 //         Text(
-              //                 //           widget.mfData.fIVEYEARDATA?.isEmpty ??
-              //                 //                   true
-              //                 //               ? "0.00"
-              //                 //               : "${widget.mfData.fIVEYEARDATA}%",
-              //                 //           style: textStyle(colors.colorBlack, 14,
-              //                 //               FontWeight.w600),
-              //                 //         )
-              //                 //       ],
-              //                 //     ),
-              //                 //   ],
-              //                 // ),
-              //               ],
-              //             ),
-              //           ),
-              //         ),
-              //       ),
-              //       Container(
-              //           height: 46,
-              //           // decoration: BoxDecoration(
-              //           //     border: (Border(
-              //           //         top: BorderSide(
-              //           //             color: theme.isDarkMode
-              //           //                 ? colors.darkColorDivider
-              //           //                 : colors.colorDivider)))),
-              //           child: ListView.builder(
-              //               scrollDirection: Axis.horizontal,
-              //               itemBuilder: (context, index) {
-              //                 return InkWell(
-              //                     onTap: () {
-              //                       mfOrder.chngOrderType(
-              //                           mfOrder.mfOrderTpyes[index]);
-              //                       mfOrder.resetmfordervalidation();
-              //                       FocusScope.of(context).unfocus();
-              //                     },
-              //                     child: Container(
-              //                         alignment: Alignment.centerLeft,
-              //                         padding: const EdgeInsets.symmetric(
-              //                             horizontal: 15),
-              //                         decoration: BoxDecoration(
-              //                             border: mfOrder.mfOrderTpye ==
-              //                                     mfOrder.mfOrderTpyes[index]
-              //                                 ? Border(
-              //                                     bottom: BorderSide(
-              //                                         color: theme.isDarkMode
-              //                                             ? colors.primaryDark
-              //                                             : colors.primaryLight,
-              //                                         width: 2))
-              //                                 : null),
-              //                         child: Text(mfOrder.mfOrderTpyes[index],
-              //                             style: textStyle(
-              //                                 mfOrder.mfOrderTpye ==
-              //                                             mfOrder.mfOrderTpyes[
-              //                                                 index] &&
-              //                                         theme.isDarkMode
-              //                                     ? colors.colorWhite
-              //                                     : mfOrder.mfOrderTpye ==
-              //                                             mfOrder
-              //                                                 .mfOrderTpyes[index]
-              //                                         ? colors.colorBlack
-              //                                         : const Color(0xff666666),
-              //                                 14,
-              //                                 mfOrder.mfOrderTpye ==
-              //                                         mfOrder.mfOrderTpyes[index]
-              //                                     ? FontWeight.w600
-              //                                     : FontWeight.w500))));
-              //               },
-              //               itemCount: widget.mfData.sIPFLAG == "Y"
-              //                   ? mfOrder.mfOrderTpyes.length
-              //                   : 1))
-              //     ]))
-            ),
-            body: Column(
-              children: [
-                Divider(
-                  color: theme.isDarkMode
-                      ? colors.dividerDark
-                      : colors.dividerLight,
-                  thickness: 1,
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // if (mfOrder.mfOrderTpye != "One-time") ...[
-                        //   Text("Mandates",
-                        //       style: textStyle(
-                        //           theme.isDarkMode
-                        //               ? colors.colorWhite
-                        //               : colors.colorBlack,
-                        //           16,
-                        //           FontWeight.w600)),
-                        //   const SizedBox(height: 4),
-                        //   if (mfOrder.mandateData!.isNotEmpty) ...[
-                        //     DropdownButtonHideUnderline(
-                        //       child: DropdownButton2(
-                        //         menuItemStyleData: MenuItemStyleData(
-                        //           customHeights: mfOrder.mandateHeight(),
-                        //         ),
-                        //         buttonStyleData: ButtonStyleData(
-                        //           padding: const EdgeInsets.only(top: 4, left: 16),
-                        //           height: 50,
-                        //           width: MediaQuery.of(context).size.width,
-                        //           decoration: BoxDecoration(
-                        //             color: theme.isDarkMode
-                        //                 ? colors.darkGrey
-                        //                 : Color(0xffF1F3F8),
-                        //             borderRadius:
-                        //                 const BorderRadius.all(Radius.circular(32)),
-                        //           ),
-                        //         ),
-                        //         dropdownStyleData: DropdownStyleData(
-                        //             decoration: BoxDecoration(
-                        //                 borderRadius: BorderRadius.circular(4)),
-                        //             offset: const Offset(0, 1)),
-                        //         isExpanded: true,
-                        //         style: textStyle(
-                        //             theme.isDarkMode
-                        //                 ? colors.colorWhite
-                        //                 : const Color(0XFF000000),
-                        //             13,
-                        //             FontWeight.w500),
-                        //         hint: Text(
-                        //           mfOrder.mandateId ?? "Select a Mandate",
-                        //           style: textStyle(
-                        //               const Color(0XFF000000), 13, FontWeight.w500),
-                        //         ),
-                        //         items: mfOrder.mandateDividers(),
-                        //         value: mfOrder.mandateDividers().any(
-                        //                 (item) => item.value == mfOrder.mandateId)
-                        //             ? mfOrder.mandateId
-                        //             : null,
-                        //         onChanged: (value) async {
-                        //           if (value != null) {
-                        //             mfOrder.chngMandate("$value");
-                        //           }
-                        //         },
-                        //       ),
-                        //     ),
-                        //     const SizedBox(height: 8),
-                        //   ],
-                        //   const SizedBox(height: 8),
-
-                        //   ElevatedButton(
-                        //       onPressed: () async {
-                        //         showDialog(
-                        //             context: context,
-                        //             builder: (BuildContext context) {
-                        //               return const CreateMandateDialogue();
-                        //             });
-                        //       },
-                        //       style: ElevatedButton.styleFrom(
-                        //           elevation: 0,
-                        //           backgroundColor: !theme.isDarkMode
-                        //               ? colors.primaryLight
-                        //               : colors.primaryDark,
-                        //           shape: RoundedRectangleBorder(
-                        //               borderRadius: BorderRadius.circular(5))),
-                        //       child: Text("Create mandate",
-                        //           style: GoogleFonts.inter(
-                        //               textStyle: textStyle(
-                        //                   !theme.isDarkMode
-                        //                       ? colors.colorWhite
-                        //                       : colors.colorBlack,
-                        //                   14,
-                        //                   FontWeight.w500)))),
-
-                        //   // Row(
-                        //   //   children: [
-                        //   //     IconButton(
-                        //   //         splashRadius: 20,
-                        //   //         onPressed: () {
-                        //   //           setState(() {
-                        //   //             mfOrder.setInitialPay(!mfOrder.isInitalPay);
-                        //   //             mfOrder.isValidUpiId(widget.mfData);
-                        //   //           });
-                        //   //         },
-                        //   //         icon: SvgPicture.asset(theme.isDarkMode
-                        //   //             ? mfOrder.isInitalPay
-                        //   //                 ? assets.darkCheckedboxIcon
-                        //   //                 : assets.darkCheckboxIcon
-                        //   //             : mfOrder.isInitalPay
-                        //   //                 ? assets.checkedbox
-                        //   //                 : assets.checkbox)),
-                        //   //     Text("Pay initial investment now",
-                        //   //         style: textStyle(colors.colorGrey, 12, FontWeight.w500)),
-                        //   //   ],
-                        //   // ),
-                        //   // const SizedBox(height: 8),
-                        //   if (mfOrder.isInitalPay)
-                        //     SizedBox(
-                        //         height: 44,
-                        //         child: CustomTextFormField(
-                        //             textAlign: TextAlign.start,
-                        //             fillColor: theme.isDarkMode
-                        //                 ? colors.darkGrey
-                        //                 : const Color(0xffF1F3F8),
-                        //             hintText:
-                        //                 '${widget.mfData.minimumPurchaseAmount}',
-                        //             hintStyle: textStyle(const Color(0xff666666),
-                        //                 15, FontWeight.w400),
-                        //             inputFormate: [
-                        //               FilteringTextInputFormatter.digitsOnly
-                        //             ],
-                        //             style: textStyle(
-                        //                 theme.isDarkMode
-                        //                     ? colors.colorWhite
-                        //                     : colors.colorBlack,
-                        //                 16,
-                        //                 FontWeight.w600),
-                        //             // prefixIcon: InkWell(
-                        //             //   onTap: () {
-                        //             //     setState(() {
-                        //             //       if (fund.invAmt.text.isNotEmpty) {
-                        //             //         if (double.parse(fund.invAmt.text) > invAmt) {
-                        //             //           fund.invAmt.text =
-                        //             //               (double.parse(fund.invAmt.text) - invAmt)
-                        //             //                   .toString();
-                        //             //         }
-                        //             //       } else {
-                        //             //         fund.invAmt.text = (invAmt).toString();
-                        //             //       }
-                        //             //     });
-                        //             //   },
-                        //             //   child: SvgPicture.asset(
-                        //             //       theme.isDarkMode
-                        //             //           ? assets.darkCMinus
-                        //             //           : assets.minusIcon,
-                        //             //       fit: BoxFit.scaleDown),
-                        //             // ),
-                        //             // suffixIcon: InkWell(
-                        //             //     onTap: () {
-                        //             //       if (fund.invAmt.text.isNotEmpty) {
-                        //             //         fund.invAmt.text =
-                        //             //             (double.parse(fund.invAmt.text) + invAmt)
-                        //             //                 .toString();
-                        //             //       } else {
-                        //             //         fund.invAmt.text = (invAmt).toString();
-                        //             //       }
-                        //             //     },
-                        //             //     child: SvgPicture.asset(
-                        //             //         theme.isDarkMode
-                        //             //             ? assets.darkAdd
-                        //             //             : assets.addIcon,
-                        //             //         fit: BoxFit.scaleDown)),
-
-                        //             textCtrl: mfOrder.invAmt,
-                        //             onChanged: (value) {
-                        //               mfOrder.isValidUpiId(widget.mfData);
-                        //             })),
-                        //   if (mfOrder.mfOrderTpye == "One-time" &&
-                        //       mfOrder.invAmtError != null) ...[
-                        //     const SizedBox(height: 6),
-                        //     TextWidget.captionText(
-                        //         text: "${mfOrder.invAmtError}",
-                        //         theme: theme.isDarkMode,
-                        //         color: colors.kColorRedText,
-                        //         fw: 3),
-                        //   ],
-                        //   const SizedBox(height: 8)
-                        // ],
-                        const SizedBox(height: 16),
-                        TextWidget.subText(
-                            text: mfOrder.mfOrderTpye == "One-time"
-                                ? "Investment amount"
-                                : "Installment amount",
-                            theme: theme.isDarkMode,
-                            color: theme.isDarkMode
-                                ? colors.textPrimaryDark
-                                : colors.textPrimaryLight,
-                            fw: 0),
-                        const SizedBox(height: 7),
-                        Container(
-                            margin: const EdgeInsets.symmetric(vertical: 8),
-                            height: 44,
-                            child: CustomTextFormField(
-                                textAlign: TextAlign.start,
-                                fillColor: colors.btnBg,
-                                // hintText: mfOrder.mfOrderTpye == "One-time"
-                                //     ? '${widget.mfData.minimumPurchaseAmount}'
-                                //     : '${widget.mfData.faceValue}',
-                                hintStyle: textStyle(const Color(0xff666666),
-                                    15, FontWeight.w400),
-                                keyboardType: TextInputType.number,
-                                inputFormate: [
-                                  FilteringTextInputFormatter.digitsOnly
-                                ],
-                                style: textStyle(
-                                    theme.isDarkMode
-                                        ? colors.colorWhite
-                                        : colors.colorBlack,
-                                    16,
-                                    FontWeight.w600),
-                                //       prefixIcon: InkWell(
-                                //         onTap: () {
-                                //           setState(() {
-                                //             if (mfOrder.mfOrderTpye == "One-time") {
-                                //               if (fund.invAmt.text.isNotEmpty) {
-                                //                 if (double.parse(fund.invAmt.text) > invAmt) {
-                                //                   if((double.parse(fund.invAmt.text) - invAmt) < invAmt){
-                                //                       ScaffoldMessenger.of(context).showSnackBar(successMessage(
-                                // context, "Installment Amount should not be less than ${mfOrder.insAmt}"));
-                                //                     }
-                                //                     else{
-                                //                   fund.invAmt.text =
-                                //                       (double.parse(fund.invAmt.text) - invAmt)
-                                //                           .toString();
-                                //                     }
-                                //                 }
-                                //               } else {
-                                //                 fund.invAmt.text = (invAmt).toString();
-                                //               }
-                                //             } else {
-                                //               if (mfOrder.installmentAmt.text.isNotEmpty) {
-                                //                 if (double.parse(mfOrder.installmentAmt.text) >
-                                //                     double.parse(mfOrder.insAmt)) {
-                                //                       if((double.parse(mfOrder.installmentAmt.text) -
-                                //                     double.parse(mfOrder.insAmt)) < double.parse(mfOrder.insAmt)){
-                                //                       ScaffoldMessenger.of(context).showSnackBar(successMessage(
-                                // context, "Installment Amount should not be less than ${mfOrder.insAmt}"));
-                                //                     }
-                                //                     else{
-                                //                   mfOrder.installmentAmt.text =
-                                //                       (double.parse(mfOrder.installmentAmt.text) -
-                                //                               double.parse(mfOrder.insAmt))
-                                //                           .toString();
-                                //                 }
-                                //                     }
-                                //               } else {
-                                //                 mfOrder.installmentAmt.text = mfOrder.insAmt;
-                                //               }
-                                //             }
-                                //           });
-                                //         },
-                                //         child: SvgPicture.asset(
-                                //             theme.isDarkMode
-                                //                 ? assets.darkCMinus
-                                //                 : assets.minusIcon,
-                                //             fit: BoxFit.scaleDown),
-                                //       ),
-                                //       // suffixIcon: InkWell(
-                                //     onTap: () {
-                                //       if (mfOrder.mfOrderTpye == "One-time") {
-                                //         if (fund.invAmt.text.isNotEmpty) {
-                                //           fund.invAmt.text =
-                                //               (double.parse(fund.invAmt.text) + invAmt)
-                                //                   .toString();
-                                //         } else {
-                                //           fund.invAmt.text = (invAmt).toString();
-                                //         }
-                                //       } else {
-                                //         if (mfOrder.installmentAmt.text.isNotEmpty) {
-                                //           mfOrder.installmentAmt.text =
-                                //               (double.parse(mfOrder.installmentAmt.text) +
-                                //                       double.parse(mfOrder.insAmt))
-                                //                   .toString();
-                                //         } else {
-                                //           mfOrder.installmentAmt.text = mfOrder.insAmt;
-                                //         }
-                                //       }
-                                //     },
-                                //     child: SvgPicture.asset(
-                                //         theme.isDarkMode ? assets.darkAdd : assets.addIcon,
-                                //         fit: BoxFit.scaleDown)),
-
-                                textCtrl: mfOrder.mfOrderTpye == "One-time"
-                                    ? mfOrder.invAmt
-                                    : mfOrder.installmentAmt,
-                                onChanged: (value) {
-                                  mfOrder.isValidUpiId(widget.mfData,'');
-                                })),
-                        if (mfOrder.mfOrderTpye == "One-time") ...[
-                          if (mfOrder.invAmtError != null) ...[
-                            Text("${mfOrder.invAmtError}",
-                                style: textStyle(
-                                    colors.kColorRedText, 10, FontWeight.w500)),
-                            const SizedBox(height: 6)
+                              const SizedBox(height: 6)
+                            ],
+                          ] else ...[
+                            if (mfOrder.installmentAmtError != null) ...[
+                              Text("${mfOrder.installmentAmtError}",
+                                  style: textStyle(
+                                      colors.kColorRedText, 10, FontWeight.w500)),
+                              const SizedBox(height: 6)
+                            ],
                           ],
-                        ] else ...[
-                          if (mfOrder.installmentAmtError != null) ...[
-                            Text("${mfOrder.installmentAmtError}",
-                                style: textStyle(
-                                    colors.kColorRedText, 10, FontWeight.w500)),
-                            const SizedBox(height: 6)
-                          ],
-                        ],
-                        if (mfOrder.mfOrderTpye != "One-time") ...[
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Material(
-                                color: Colors.transparent,
-                                shape: const RoundedRectangleBorder(),
-                                child: InkWell(
-                                  customBorder: const RoundedRectangleBorder(),
-                                  splashColor: theme.isDarkMode
-                                      ? colors.splashColorDark
-                                      : colors.splashColorLight,
-                                  highlightColor: theme.isDarkMode
-                                      ? colors.highlightDark
-                                      : colors.highlightLight,
-                                  onTap: () {
-                                    _showCalendarDialog(
-                                        context, theme, mfOrder);
-                                  },
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Row(
-                                      children: [
-                                        TextWidget.subText(
-                                            text:
-                                                "Monthly on ${mfOrder.dates}${getDateSuffix(int.tryParse(mfOrder.dates) ?? 1)}",
-                                            theme: theme.isDarkMode,
+                          if (mfOrder.mfOrderTpye != "One-time") ...[
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Material(
+                                  color: Colors.transparent,
+                                  shape: const RoundedRectangleBorder(),
+                                  child: InkWell(
+                                    customBorder: const RoundedRectangleBorder(),
+                                    splashColor: theme.isDarkMode
+                                        ? colors.splashColorDark
+                                        : colors.splashColorLight,
+                                    highlightColor: theme.isDarkMode
+                                        ? colors.highlightDark
+                                        : colors.highlightLight,
+                                    onTap: () {
+                                      _showCalendarDialog(
+                                          context, theme, mfOrder);
+                                    },
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Row(
+                                        children: [
+                                          TextWidget.subText(
+                                              text:
+                                                  "Monthly on ${mfOrder.dates}${getDateSuffix(int.tryParse(mfOrder.dates) ?? 1)}",
+                                              theme: theme.isDarkMode,
+                                              color: theme.isDarkMode
+                                                  ? colors.primaryDark
+                                                  : colors.primaryLight,
+                                              fw: 2),
+                                          Icon(
+                                            Icons.keyboard_arrow_down_outlined,
+                                            size: 20,
                                             color: theme.isDarkMode
                                                 ? colors.primaryDark
                                                 : colors.primaryLight,
-                                            fw: 2),
-                                        Icon(
-                                          Icons.keyboard_arrow_down_outlined,
-                                          size: 20,
-                                          color: theme.isDarkMode
-                                              ? colors.primaryDark
-                                              : colors.primaryLight,
-                                        )
-                                      ],
+                                          )
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                            ],
-                          ),
-                        ],
-                        // Text(
-                        //     "Min. ₹${widget.mfData.minimumPurchaseAmount} (multiple of ${widget.mfData.purchaseAmountMultiplier})",
-                        //     style:
-                        //         textStyle(colors.colorGrey, 12, FontWeight.w500)),
-                        // if (mfOrder.mfOrderTpye != "One-time") ...[
-                        //   const SizedBox(height: 16),
-                        //   Row(
-                        //     children: [
-                        //       Expanded(
-                        //         child: Column(
-                        //           crossAxisAlignment: CrossAxisAlignment.start,
-                        //           children: [
-                        //             Text("Frequency",
-                        //                 style: textStyle(
-                        //                     theme.isDarkMode
-                        //                         ? colors.colorWhite
-                        //                         : colors.colorBlack,
-                        //                     16,
-                        //                     FontWeight.w600)),
-                        //             const SizedBox(height: 13),
-                        //             DropdownButtonHideUnderline(
-                        //                 child: DropdownButton2(
-                        //               menuItemStyleData: MenuItemStyleData(
-                        //                   customHeights: mfOrder.frqCustHeight()),
-                        //               buttonStyleData: ButtonStyleData(
-                        //                   height: 36,
-                        //                   decoration: BoxDecoration(
-                        //                       color: theme.isDarkMode
-                        //                           ? colors.darkGrey
-                        //                           : Color(0xffF1F3F8),
-                        //                       borderRadius: const BorderRadius.all(
-                        //                           Radius.circular(32)))),
-                        //               dropdownStyleData: DropdownStyleData(
-                        //                 padding:
-                        //                     const EdgeInsets.symmetric(vertical: 6),
-                        //                 decoration: BoxDecoration(
-                        //                   borderRadius: BorderRadius.circular(4),
-                        //                 ),
-                        //                 offset: const Offset(0, 8),
-                        //               ),
-                        //               isExpanded: true,
-                        //               style: textStyle(
-                        //                   theme.isDarkMode
-                        //                       ? colors.colorWhite
-                        //                       : const Color(0XFF000000),
-                        //                   13,
-                        //                   FontWeight.w500),
-                        //               hint: Text(mfOrder.freqName,
-                        //                   style: textStyle(
-                        //                       theme.isDarkMode
-                        //                           ? colors.colorWhite
-                        //                           : const Color(0XFF000000),
-                        //                       13,
-                        //                       FontWeight.w500)),
-                        //               items: mfOrder.addFrqDividers(),
-                        //               value: mfOrder.freqName,
-                        //               onChanged: (value) async {
-                        //                 mfOrder.chngFrequency("$value");
-                        //               },
-                        //             )),
-                        //           ],
-                        //         ),
-                        //       ),
-                        //       const SizedBox(width: 20),
-                        //       Expanded(
-                        //         child: Column(
-                        //           crossAxisAlignment: CrossAxisAlignment.start,
-                        //           children: [
-                        //             Text("Date",
-                        //                 style: textStyle(
-                        //                     theme.isDarkMode
-                        //                         ? colors.colorWhite
-                        //                         : colors.colorBlack,
-                        //                     16,
-                        //                     FontWeight.w600)),
-                        //             const SizedBox(height: 13),
-                        //             DropdownButtonHideUnderline(
-                        //                 child: DropdownButton2(
-                        //                     menuItemStyleData: MenuItemStyleData(
-                        //                         customHeights:
-                        //                             mfOrder.dateCustHeight()),
-                        //                     buttonStyleData: ButtonStyleData(
-                        //                         height: 36,
-                        //                         decoration: BoxDecoration(
-                        //                             color: theme.isDarkMode
-                        //                                 ? colors.darkGrey
-                        //                                 : Color(0xffF1F3F8),
-                        //                             borderRadius:
-                        //                                 const BorderRadius.all(
-                        //                                     Radius.circular(32)))),
-                        //                     dropdownStyleData: DropdownStyleData(
-                        //                       maxHeight: 250,
-                        //                       padding: const EdgeInsets.symmetric(
-                        //                           vertical: 6),
-                        //                       decoration: BoxDecoration(
-                        //                         borderRadius:
-                        //                             BorderRadius.circular(4),
-                        //                       ),
-                        //                       offset: const Offset(0, 8),
-                        //                     ),
-                        //                     isExpanded: true,
-                        //                     style: textStyle(
-                        //                         const Color(0XFF000000),
-                        //                         13,
-                        //                         FontWeight.w500),
-                        //                     hint: Text("",
-                        //                         style: textStyle(
-                        //                             const Color(0XFF000000),
-                        //                             13,
-                        //                             FontWeight.w500)),
-                        //                     items: mfOrder.addDateDividers(),
-                        //                     value: mfOrder.dates,
-                        //                     onChanged: mfOrder.dates == "DAILY"
-                        //                         ? null
-                        //                         : (value) async {
-                        //                             mfOrder.changeStartDate(value);
-                        //                           })),
-                        //           ],
-                        //         ),
-                        //       ),
-                        //     ],
-                        //   ),
-                        //   const SizedBox(height: 18),
-                        //   Row(
-                        //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        //     children: [
-                        //       Text("Investment duration",
-                        //           style: textStyle(
-                        //               theme.isDarkMode
-                        //                   ? colors.colorWhite
-                        //                   : colors.colorBlack,
-                        //               16,
-                        //               FontWeight.w600)),
-                        //       Text(
-                        //           "${mfOrder.invDuration.text} ${mfOrder.freqName == "DAILY" ? "Days" : mfOrder.freqName == "MONTHLY" ? "Months" : "Qtrs"}",
-                        //           style: textStyle(
-                        //               colors.kColorRedText, 16, FontWeight.w600)),
-                        //     ],
-                        //   ),
-                        //   Container(
-                        //       margin: const EdgeInsets.symmetric(vertical: 8),
-                        //       height: 44,
-                        //       child: CustomTextFormField(
-                        //           textAlign: TextAlign.start,
-                        //           fillColor: theme.isDarkMode
-                        //               ? colors.darkGrey
-                        //               : const Color(0xffF1F3F8),
-                        //           hintText: '0',
-                        //           hintStyle: textStyle(
-                        //               const Color(0xff666666), 15, FontWeight.w400),
-                        //           inputFormate: [
-                        //             FilteringTextInputFormatter.digitsOnly
-                        //           ],
-                        //           style: textStyle(
-                        //               theme.isDarkMode
-                        //                   ? colors.colorWhite
-                        //                   : colors.colorBlack,
-                        //               16,
-                        //               FontWeight.w600),
-                        //           textCtrl: mfOrder.invDuration,
-                        //           onChanged: (value) {
-                        //             mfOrder.isValidUpiId(widget.mfData);
-                        //           })),
-                        //   if (mfOrder.invDurationError != null) ...[
-                        //     Text("${mfOrder.invDurationError}",
-                        //         style: textStyle(
-                        //             colors.kColorRedText, 10, FontWeight.w500)),
-                        //     const SizedBox(height: 6)
-                        //   ]
-                        // ],
-                        if (mfOrder.isInitalPay &&
-                            mfOrder.mfOrderTpye != "One-time") ...[
-                          const SizedBox(height: 9),
-                          Text("Payment method",
-                              style: textStyle(
-                                  theme.isDarkMode
-                                      ? colors.colorWhite
-                                      : colors.colorBlack,
-                                  16,
-                                  FontWeight.w600)),
-                          const SizedBox(height: 14),
-                          DropdownButtonHideUnderline(
-                              child: DropdownButton2(
-                                  menuItemStyleData: MenuItemStyleData(
-                                      customHeights:
-                                          mfOrder.getCustItemsHeight()),
-                                  buttonStyleData: ButtonStyleData(
-                                      height: 36,
-                                      width: MediaQuery.of(context).size.width,
-                                      decoration: const BoxDecoration(
-                                          color: Color(0xffF1F3F8),
-                                          borderRadius: BorderRadius.all(
-                                              Radius.circular(32)))),
-                                  dropdownStyleData: DropdownStyleData(
-                                    padding:
-                                        const EdgeInsets.symmetric(vertical: 6),
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                    offset: const Offset(0, 8),
-                                  ),
-                                  isExpanded: true,
-                                  style: textStyle(const Color(0XFF000000), 13,
-                                      FontWeight.w500),
-                                  hint: Text(mfOrder.paymentName,
-                                      style: textStyle(const Color(0XFF000000),
-                                          13, FontWeight.w500)),
-                                  items: mfOrder.addDividers(),
-                                  value: mfOrder.paymentName,
-                                  onChanged: (value) async {
-                                    mfOrder.chngPayName("$value");
-                                  })),
-                          const SizedBox(height: 17),
-                          Text("Bank account",
-                              style: textStyle(
-                                  theme.isDarkMode
-                                      ? colors.colorWhite
-                                      : colors.colorBlack,
-                                  16,
-                                  FontWeight.w600)),
-                          const SizedBox(height: 14),
-                          DropdownButtonHideUnderline(
-                              child: DropdownButton2(
-                                  menuItemStyleData: MenuItemStyleData(
-                                      customHeights:
-                                          mfOrder.getBankCustItemsHeight()),
-                                  buttonStyleData: ButtonStyleData(
-                                      padding: const EdgeInsets.only(
-                                          top: 4, left: 16),
-                                      height: 50,
-                                      width: MediaQuery.of(context).size.width,
-                                      decoration: const BoxDecoration(
-                                          color: Color(0xffF1F3F8),
-                                          borderRadius: BorderRadius.all(
-                                              Radius.circular(32)))),
-                                  dropdownStyleData: DropdownStyleData(
-                                      decoration: BoxDecoration(
-                                          borderRadius:
-                                              BorderRadius.circular(4)),
-                                      offset: const Offset(0, 1)),
-                                  isExpanded: true,
-                                  style: textStyle(const Color(0XFF000000), 13,
-                                      FontWeight.w500),
-                                  hint: Text(mfOrder.accNum,
-                                      style: textStyle(const Color(0XFF000000),
-                                          13, FontWeight.w500)),
-                                  items: mfOrder.addBankDividers(),
-                                  value: mfOrder.accNum,
-                                  onChanged: (value) async {
-                                    mfOrder.chngBankAcc("$value");
-                                  })),
-                          const SizedBox(height: 8),
-                          if (mfOrder.paymentName == "UPI") ...[
-                            const SizedBox(height: 12),
-                            Text("UPI ID (Virtual payment address)",
+                              ],
+                            ),
+                          ],
+                          // Text(
+                          //     "Min. ₹${widget.mfData.minimumPurchaseAmount} (multiple of ${widget.mfData.purchaseAmountMultiplier})",
+                          //     style:
+                          //         textStyle(colors.colorGrey, 12, FontWeight.w500)),
+                          // if (mfOrder.mfOrderTpye != "One-time") ...[
+                          //   const SizedBox(height: 16),
+                          //   Row(
+                          //     children: [
+                          //       Expanded(
+                          //         child: Column(
+                          //           crossAxisAlignment: CrossAxisAlignment.start,
+                          //           children: [
+                          //             Text("Frequency",
+                          //                 style: textStyle(
+                          //                     theme.isDarkMode
+                          //                         ? colors.colorWhite
+                          //                         : colors.colorBlack,
+                          //                     16,
+                          //                     FontWeight.w600)),
+                          //             const SizedBox(height: 13),
+                          //             DropdownButtonHideUnderline(
+                          //                 child: DropdownButton2(
+                          //               menuItemStyleData: MenuItemStyleData(
+                          //                   customHeights: mfOrder.frqCustHeight()),
+                          //               buttonStyleData: ButtonStyleData(
+                          //                   height: 36,
+                          //                   decoration: BoxDecoration(
+                          //                       color: theme.isDarkMode
+                          //                           ? colors.darkGrey
+                          //                           : Color(0xffF1F3F8),
+                          //                       borderRadius: const BorderRadius.all(
+                          //                           Radius.circular(32)))),
+                          //               dropdownStyleData: DropdownStyleData(
+                          //                 padding:
+                          //                     const EdgeInsets.symmetric(vertical: 6),
+                          //                 decoration: BoxDecoration(
+                          //                   borderRadius: BorderRadius.circular(4),
+                          //                 ),
+                          //                 offset: const Offset(0, 8),
+                          //               ),
+                          //               isExpanded: true,
+                          //               style: textStyle(
+                          //                   theme.isDarkMode
+                          //                       ? colors.colorWhite
+                          //                       : const Color(0XFF000000),
+                          //                   13,
+                          //                   FontWeight.w500),
+                          //               hint: Text(mfOrder.freqName,
+                          //                   style: textStyle(
+                          //                       theme.isDarkMode
+                          //                           ? colors.colorWhite
+                          //                           : const Color(0XFF000000),
+                          //                       13,
+                          //                       FontWeight.w500)),
+                          //               items: mfOrder.addFrqDividers(),
+                          //               value: mfOrder.freqName,
+                          //               onChanged: (value) async {
+                          //                 mfOrder.chngFrequency("$value");
+                          //               },
+                          //             )),
+                          //           ],
+                          //         ),
+                          //       ),
+                          //       const SizedBox(width: 20),
+                          //       Expanded(
+                          //         child: Column(
+                          //           crossAxisAlignment: CrossAxisAlignment.start,
+                          //           children: [
+                          //             Text("Date",
+                          //                 style: textStyle(
+                          //                     theme.isDarkMode
+                          //                         ? colors.colorWhite
+                          //                         : colors.colorBlack,
+                          //                     16,
+                          //                     FontWeight.w600)),
+                          //             const SizedBox(height: 13),
+                          //             DropdownButtonHideUnderline(
+                          //                 child: DropdownButton2(
+                          //                     menuItemStyleData: MenuItemStyleData(
+                          //                         customHeights:
+                          //                             mfOrder.dateCustHeight()),
+                          //                     buttonStyleData: ButtonStyleData(
+                          //                         height: 36,
+                          //                         decoration: BoxDecoration(
+                          //                             color: theme.isDarkMode
+                          //                                 ? colors.darkGrey
+                          //                                 : Color(0xffF1F3F8),
+                          //                             borderRadius:
+                          //                                 const BorderRadius.all(
+                          //                                     Radius.circular(32)))),
+                          //                     dropdownStyleData: DropdownStyleData(
+                          //                       maxHeight: 250,
+                          //                       padding: const EdgeInsets.symmetric(
+                          //                           vertical: 6),
+                          //                       decoration: BoxDecoration(
+                          //                         borderRadius:
+                          //                             BorderRadius.circular(4),
+                          //                       ),
+                          //                       offset: const Offset(0, 8),
+                          //                     ),
+                          //                     isExpanded: true,
+                          //                     style: textStyle(
+                          //                         const Color(0XFF000000),
+                          //                         13,
+                          //                         FontWeight.w500),
+                          //                     hint: Text("",
+                          //                         style: textStyle(
+                          //                             const Color(0XFF000000),
+                          //                             13,
+                          //                             FontWeight.w500)),
+                          //                     items: mfOrder.addDateDividers(),
+                          //                     value: mfOrder.dates,
+                          //                     onChanged: mfOrder.dates == "DAILY"
+                          //                         ? null
+                          //                         : (value) async {
+                          //                             mfOrder.changeStartDate(value);
+                          //                           })),
+                          //           ],
+                          //         ),
+                          //       ),
+                          //     ],
+                          //   ),
+                          //   const SizedBox(height: 18),
+                          //   Row(
+                          //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          //     children: [
+                          //       Text("Investment duration",
+                          //           style: textStyle(
+                          //               theme.isDarkMode
+                          //                   ? colors.colorWhite
+                          //                   : colors.colorBlack,
+                          //               16,
+                          //               FontWeight.w600)),
+                          //       Text(
+                          //           "${mfOrder.invDuration.text} ${mfOrder.freqName == "DAILY" ? "Days" : mfOrder.freqName == "MONTHLY" ? "Months" : "Qtrs"}",
+                          //           style: textStyle(
+                          //               colors.kColorRedText, 16, FontWeight.w600)),
+                          //     ],
+                          //   ),
+                          //   Container(
+                          //       margin: const EdgeInsets.symmetric(vertical: 8),
+                          //       height: 44,
+                          //       child: CustomTextFormField(
+                          //           textAlign: TextAlign.start,
+                          //           fillColor: theme.isDarkMode
+                          //               ? colors.darkGrey
+                          //               : const Color(0xffF1F3F8),
+                          //           hintText: '0',
+                          //           hintStyle: textStyle(
+                          //               const Color(0xff666666), 15, FontWeight.w400),
+                          //           inputFormate: [
+                          //             FilteringTextInputFormatter.digitsOnly
+                          //           ],
+                          //           style: textStyle(
+                          //               theme.isDarkMode
+                          //                   ? colors.colorWhite
+                          //                   : colors.colorBlack,
+                          //               16,
+                          //               FontWeight.w600),
+                          //           textCtrl: mfOrder.invDuration,
+                          //           onChanged: (value) {
+                          //             mfOrder.isValidUpiId(widget.mfData);
+                          //           })),
+                          //   if (mfOrder.invDurationError != null) ...[
+                          //     Text("${mfOrder.invDurationError}",
+                          //         style: textStyle(
+                          //             colors.kColorRedText, 10, FontWeight.w500)),
+                          //     const SizedBox(height: 6)
+                          //   ]
+                          // ],
+                          if (mfOrder.isInitalPay &&
+                              mfOrder.mfOrderTpye != "One-time") ...[
+                            const SizedBox(height: 9),
+                            Text("Payment method",
                                 style: textStyle(
                                     theme.isDarkMode
                                         ? colors.colorWhite
                                         : colors.colorBlack,
                                     16,
                                     FontWeight.w600)),
-                            const SizedBox(height: 8),
-                            Container(
-                                margin: const EdgeInsets.symmetric(vertical: 8),
-                                height: 44,
-                                child: CustomTextFormField(
-                                    textAlign: TextAlign.start,
-                                    fillColor: theme.isDarkMode
-                                        ? colors.darkGrey
-                                        : const Color(0xffF1F3F8),
-                                    hintText: 'exmaple@upi',
-                                    hintStyle: textStyle(
-                                        const Color(0xff666666),
-                                        14,
-                                        FontWeight.w400),
-                                    style: textStyle(
-                                        theme.isDarkMode
-                                            ? colors.colorWhite
-                                            : colors.colorBlack,
-                                        14,
-                                        FontWeight.w600),
-                                    textCtrl: mfOrder.upiId,
-                                    onChanged: (value) {
-                                      mfOrder.isValidUpiId(widget.mfData,'');
+                            const SizedBox(height: 14),
+                            DropdownButtonHideUnderline(
+                                child: DropdownButton2(
+                                    menuItemStyleData: MenuItemStyleData(
+                                        customHeights:
+                                            mfOrder.getCustItemsHeight()),
+                                    buttonStyleData: ButtonStyleData(
+                                        height: 36,
+                                        width: MediaQuery.of(context).size.width,
+                                        decoration: const BoxDecoration(
+                                            color: Color(0xffF1F3F8),
+                                            borderRadius: BorderRadius.all(
+                                                Radius.circular(32)))),
+                                    dropdownStyleData: DropdownStyleData(
+                                      padding:
+                                          const EdgeInsets.symmetric(vertical: 6),
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      offset: const Offset(0, 8),
+                                    ),
+                                    isExpanded: true,
+                                    style: textStyle(const Color(0XFF000000), 13,
+                                        FontWeight.w500),
+                                    hint: Text(mfOrder.paymentName,
+                                        style: textStyle(const Color(0XFF000000),
+                                            13, FontWeight.w500)),
+                                    items: mfOrder.addDividers(),
+                                    value: mfOrder.paymentName,
+                                    onChanged: (value) async {
+                                      mfOrder.chngPayName("$value");
                                     })),
-                            if (mfOrder.upiError != null) ...[
-                              Text("${mfOrder.upiError}",
-                                  style: textStyle(colors.kColorRedText, 10,
-                                      FontWeight.w500)),
-                              const SizedBox(height: 6)
-                            ]
+                            const SizedBox(height: 17),
+                            Text("Bank account",
+                                style: textStyle(
+                                    theme.isDarkMode
+                                        ? colors.colorWhite
+                                        : colors.colorBlack,
+                                    16,
+                                    FontWeight.w600)),
+                            const SizedBox(height: 14),
+                            DropdownButtonHideUnderline(
+                                child: DropdownButton2(
+                                    menuItemStyleData: MenuItemStyleData(
+                                        customHeights:
+                                            mfOrder.getBankCustItemsHeight()),
+                                    buttonStyleData: ButtonStyleData(
+                                        padding: const EdgeInsets.only(
+                                            top: 4, left: 16),
+                                        height: 50,
+                                        width: MediaQuery.of(context).size.width,
+                                        decoration: const BoxDecoration(
+                                            color: Color(0xffF1F3F8),
+                                            borderRadius: BorderRadius.all(
+                                                Radius.circular(32)))),
+                                    dropdownStyleData: DropdownStyleData(
+                                        decoration: BoxDecoration(
+                                            borderRadius:
+                                                BorderRadius.circular(4)),
+                                        offset: const Offset(0, 1)),
+                                    isExpanded: true,
+                                    style: textStyle(const Color(0XFF000000), 13,
+                                        FontWeight.w500),
+                                    hint: Text(mfOrder.accNum,
+                                        style: textStyle(const Color(0XFF000000),
+                                            13, FontWeight.w500)),
+                                    items: mfOrder.addBankDividers(),
+                                    value: mfOrder.accNum,
+                                    onChanged: (value) async {
+                                      mfOrder.chngBankAcc("$value");
+                                    })),
+                            const SizedBox(height: 8),
+                            if (mfOrder.paymentName == "UPI") ...[
+                              const SizedBox(height: 12),
+                              Text("UPI ID (Virtual payment address)",
+                                  style: textStyle(
+                                      theme.isDarkMode
+                                          ? colors.colorWhite
+                                          : colors.colorBlack,
+                                      16,
+                                      FontWeight.w600)),
+                              const SizedBox(height: 8),
+                              Container(
+                                  margin: const EdgeInsets.symmetric(vertical: 8),
+                                  height: 44,
+                                  child: CustomTextFormField(
+                                      textAlign: TextAlign.start,
+                                      fillColor: theme.isDarkMode
+                                          ? colors.darkGrey
+                                          : const Color(0xffF1F3F8),
+                                      hintText: 'exmaple@upi',
+                                      hintStyle: textStyle(
+                                          const Color(0xff666666),
+                                          14,
+                                          FontWeight.w400),
+                                      style: textStyle(
+                                          theme.isDarkMode
+                                              ? colors.colorWhite
+                                              : colors.colorBlack,
+                                          14,
+                                          FontWeight.w600),
+                                      textCtrl: mfOrder.upiId,
+                                      onChanged: (value) {
+                                        mfOrder.isValidUpiId(widget.mfData,'');
+                                      })),
+                              if (mfOrder.upiError != null) ...[
+                                Text("${mfOrder.upiError}",
+                                    style: textStyle(colors.kColorRedText, 10,
+                                        FontWeight.w500)),
+                                const SizedBox(height: 6)
+                              ]
+                            ],
                           ],
-                        ],
-                        // else if (mfOrder.mfOrderTpye == "One-time") ...[
-                        //   const SizedBox(height: 14),
-                        //   Text("Payment method",
-                        //       style: textStyle(
-                        //           theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                        //           16,
-                        //           FontWeight.w600)),
-                        //   const SizedBox(height: 14),
-                        //   DropdownButtonHideUnderline(
-                        //       child: DropdownButton2<String>(
-                        //           dropdownStyleData: DropdownStyleData(
-                        //               decoration: BoxDecoration(
-                        //                   borderRadius: BorderRadius.circular(10),
-                        //                   color: theme.isDarkMode
-                        //                       ? colors.colorWhite
-                        //                       : const Color.fromARGB(255, 255, 255, 255))),
-                        //           buttonStyleData: ButtonStyleData(
-                        //               decoration: BoxDecoration(
-                        //                   color: theme.isDarkMode
-                        //                       ? const Color(0xffB5C0CF).withOpacity(.15)
-                        //                       : const Color(0xffF1F3F8),
-                        //                   // border: Border.all(color: Colors.grey),
-                        //                   borderRadius:
-                        //                       const BorderRadius.all(Radius.circular(32)))),
-                        //           menuItemStyleData: MenuItemStyleData(
-                        //               customHeights: mfOrder.getCustItemsHeight()),
-                        //           isExpanded: true,
-                        //           style: textStyle(const Color.fromARGB(255, 0, 0, 0), 13,
-                        //               FontWeight.w500),
-                        //           hint: Text(mfOrder.paymentName,
-                        //               style: textStyle(
-                        //                   const Color(0XFF000000), 13, FontWeight.w500)),
-                        //           items: mfOrder.investloader == false
-                        //               ? mfOrder.addDividers()
-                        //               : [],
-                        //           value: mfOrder.paymentName,
-                        //           onChanged: (value) async {
-                        //             mfOrder.chngPayName("$value");
-                        //           })),
-                        //   const SizedBox(height: 18),
-                        //   Text("Bank account",
-                        //       style: textStyle(
-                        //           theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                        //           16,
-                        //           FontWeight.w600)),
-                        //   const SizedBox(height: 12),
-                        //   DropdownButtonHideUnderline(
-                        //     child: DropdownButton2(
-                        //       menuItemStyleData: MenuItemStyleData(
-                        //         customHeights: mfOrder.getBankCustItemsHeight(),
-                        //       ),
-                        //       buttonStyleData: ButtonStyleData(
-                        //         padding: const EdgeInsets.only(top: 10, left: 16),
-                        //         height: 50,
-                        //         width: MediaQuery.of(context).size.width,
-                        //         decoration: BoxDecoration(
-                        //           color: theme.isDarkMode
-                        //               ? colors.darkGrey
-                        //               : const Color(0xffF1F3F8),
-                        //           borderRadius: const BorderRadius.all(Radius.circular(32)),
-                        //         ),
-                        //       ),
-                        //       dropdownStyleData: DropdownStyleData(
-                        //         decoration:
-                        //             BoxDecoration(borderRadius: BorderRadius.circular(4)),
-                        //         offset: const Offset(0, 1),
-                        //       ),
-                        //       isExpanded: true,
-                        //       style: textStyle(
-                        //         theme.isDarkMode
-                        //             ? colors.colorWhite
-                        //             : const Color(0XFF000000),
-                        //         13,
-                        //         FontWeight.w500,
-                        //       ),
-                        //       hint: Text(
-                        //         mfOrder.accNum,
-                        //         style: textStyle(
-                        //           theme.isDarkMode
-                        //               ? colors.colorWhite
-                        //               : const Color(0XFF000000),
-                        //           13,
-                        //           FontWeight.w500,
-                        //         ),
-                        //       ),
-                        //       items: mfOrder.addBankDividers(),
-                        //       value: mfOrder.accNum,
-                        //       onChanged: (value) async {
-                        //         mfOrder.chngBankAcc("$value");
-                        //       },
-                        //     ),
-                        //   ),
-                        //   const SizedBox(height: 8),
-                        //   if (mfOrder.paymentName == "UPI") ...[
-                        //     const SizedBox(height: 12),
-                        //     Text("UPI ID (Virtual payment address)",
-                        //         style: textStyle(
-                        //             theme.isDarkMode
-                        //                 ? colors.colorWhite
-                        //                 : colors.colorBlack,
-                        //             15,
-                        //             FontWeight.w600)),
-                        //     const SizedBox(height: 4),
-                        //     Container(
-                        //         margin: const EdgeInsets.symmetric(vertical: 8),
-                        //         height: 44,
-                        //         child: CustomTextFormField(
-                        //             textAlign: TextAlign.start,
-                        //             fillColor: theme.isDarkMode
-                        //                 ? colors.darkGrey
-                        //                 : const Color(0xffF1F3F8),
-                        //             hintText: 'exmaple@upi',
-                        //             hintStyle: textStyle(
-                        //                 const Color(0xff666666), 14, FontWeight.w400),
-                        //             style: textStyle(
-                        //                 theme.isDarkMode
-                        //                     ? colors.colorWhite
-                        //                     : colors.colorBlack,
-                        //                 14,
-                        //                 FontWeight.w600),
-                        //             textCtrl: mfOrder.upiId,
-                        //             onChanged: (value) {
-                        //               mfOrder.isValidUpiId(widget.mfData);
-                        //             })),
-                        //     if (mfOrder.upiError != null) ...[
-                        //       Text("${mfOrder.upiError}",
-                        //           style:
-                        //               textStyle(colors.kColorRedText, 10, FontWeight.w500)),
-                        //       const SizedBox(height: 6)
-                        //     ]
-                        //   ]
-                        // ],
-                        // const SizedBox(height: 11),
-                        // Row(
-                        //     crossAxisAlignment: CrossAxisAlignment.start,
-                        //     children: [
-                        //       SvgPicture.asset(assets.dInfo,
-                        //           color: colors.colorBlue),
-                        //       Expanded(
-                        //           child: Text(
-                        //               " NAV will be allotted on the day funds are realised at the clearing corporation.",
-                        //               style: textStyle(
-                        //                   colors.colorBlue, 13, FontWeight.w500)))
-                        //     ]),
-                        const SizedBox(
-                          height: 100,
-                        ),
-                      ]),
-                ),
-              ],
-            ),
-            bottomSheet: Container(
-                color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Container(
-                    //     height: 36,
-                    //     decoration: BoxDecoration(
-                    //         color: theme.isDarkMode
-                    //             ? colors.darkGrey
-                    //             : const Color(0xfffafbff),
-                    //         border: Border(
-                    //             top: BorderSide(
-                    //                 color: theme.isDarkMode
-                    //                     ? colors.darkColorDivider
-                    //                     : colors.colorDivider),
-                    //             bottom: BorderSide(
-                    //                 color: theme.isDarkMode
-                    //                     ? colors.darkColorDivider
-                    //                     : colors.colorDivider))),
-                    //     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    //     child:
-                    //      Row(
-                    //         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    //         children: [
-                    //           Row(children: [
-                    //             Text("AUM'': ",
-                    //                 style: textStyle(const Color.fromARGB(255, 0, 0, 0), 13,
-                    //                     FontWeight.w500)),
-                    //             Text(
-                    //                 "₹${(double.parse(widget.mfData.aUM!.isEmpty ? "0.00" : widget.mfData.aUM!) / 10000000).toStringAsFixed(2)}",
-                    //                 style: textStyle(
-                    //                     !theme.isDarkMode
-                    //                         ? colors.colorBlue
-                    //                         : colors.colorLightBlue,
-                    //                     12,
-                    //                     FontWeight.w600)),
-                    //             Text(" Cr.",
-                    //                 style: textStyle(const Color.fromARGB(255, 0, 0, 0), 13,
-                    //                     FontWeight.w500))
-                    //           ]),
-                    //           Row(children: [
-                    //             Text("NAV: ",
-                    //                 style: textStyle(const Color.fromARGB(255, 0, 0, 0), 13,
-                    //                     FontWeight.w500)),
-                    //             Text("₹${widget.mfData.nETASSETVALUE}",
-                    //                 style: textStyle(
-                    //                     !theme.isDarkMode
-                    //                         ? colors.colorBlue
-                    //                         : colors.colorLightBlue,
-                    //                     12,
-                    //                     FontWeight.w600))
-                    //           ]),
-                    //         ])),
-
-                    SafeArea(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 8),
-                        width: double.infinity,
-                        child: OutlinedButton(
-                            onPressed: () async {
-                              if (mfOrder.investloader == false) {
-                                print(mfOrder.invAmtError);
-                                print(mfOrder.upiError);
-
-                                print(mfOrder.installmentAmtError);
-                                print(mfOrder.invDurationError);
-
-                                // if (mfOrder.invAmtError == "" &&
-                                //     mfOrder.upiError == "" &&
-                                //     mfOrder.installmentAmtError == "" &&
-                                //     mfOrder.invDurationError == "") {
-
-                                if (mfOrder.mfOrderTpye == "One-time" &&
-                                    mfOrder.invAmtError == "") {
-                                  Navigator.pop(context);
-
-                                  final startTime = DateTime.now();
-                                  // print(mfOrder.isValidUpiId(widget.mfData));
-                                  // print(widget.mfData);
-                                  // if (mfOrder.isValidUpiId(widget.mfData) == true) {
-                                  // await mfPlaceorder(widget.mfData, mfOrder, context);
-
-                                  // CallUpiNetbanking(
-                                  // context, mfOrder, theme, widget.mfData);
-                                  // } else if (mfOrder.paymentName != "UPI") {
-                                  // mfPlaceorder(widget.mfData, mfOrder, context);
-                                  // }
-                                  showModalBottomSheet(
-                                    context: context,
-                                    isScrollControlled: true,
-                                    isDismissible:
-                                        mfOrder.ispaymentcalled != true,
-                                    enableDrag: false,
-                                    shape: const RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.vertical(
-                                        top: Radius.circular(15),
-                                      ),
-                                    ),
-                                    builder: (context) => WillPopScope(
-                                      onWillPop: () async =>
+                          // else if (mfOrder.mfOrderTpye == "One-time") ...[
+                          //   const SizedBox(height: 14),
+                          //   Text("Payment method",
+                          //       style: textStyle(
+                          //           theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                          //           16,
+                          //           FontWeight.w600)),
+                          //   const SizedBox(height: 14),
+                          //   DropdownButtonHideUnderline(
+                          //       child: DropdownButton2<String>(
+                          //           dropdownStyleData: DropdownStyleData(
+                          //               decoration: BoxDecoration(
+                          //                   borderRadius: BorderRadius.circular(10),
+                          //                   color: theme.isDarkMode
+                          //                       ? colors.colorWhite
+                          //                       : const Color.fromARGB(255, 255, 255, 255))),
+                          //           buttonStyleData: ButtonStyleData(
+                          //               decoration: BoxDecoration(
+                          //                   color: theme.isDarkMode
+                          //                       ? const Color(0xffB5C0CF).withOpacity(.15)
+                          //                       : const Color(0xffF1F3F8),
+                          //                   // border: Border.all(color: Colors.grey),
+                          //                   borderRadius:
+                          //                       const BorderRadius.all(Radius.circular(32)))),
+                          //           menuItemStyleData: MenuItemStyleData(
+                          //               customHeights: mfOrder.getCustItemsHeight()),
+                          //           isExpanded: true,
+                          //           style: textStyle(const Color.fromARGB(255, 0, 0, 0), 13,
+                          //               FontWeight.w500),
+                          //           hint: Text(mfOrder.paymentName,
+                          //               style: textStyle(
+                          //                   const Color(0XFF000000), 13, FontWeight.w500)),
+                          //           items: mfOrder.investloader == false
+                          //               ? mfOrder.addDividers()
+                          //               : [],
+                          //           value: mfOrder.paymentName,
+                          //           onChanged: (value) async {
+                          //             mfOrder.chngPayName("$value");
+                          //           })),
+                          //   const SizedBox(height: 18),
+                          //   Text("Bank account",
+                          //       style: textStyle(
+                          //           theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                          //           16,
+                          //           FontWeight.w600)),
+                          //   const SizedBox(height: 12),
+                          //   DropdownButtonHideUnderline(
+                          //     child: DropdownButton2(
+                          //       menuItemStyleData: MenuItemStyleData(
+                          //         customHeights: mfOrder.getBankCustItemsHeight(),
+                          //       ),
+                          //       buttonStyleData: ButtonStyleData(
+                          //         padding: const EdgeInsets.only(top: 10, left: 16),
+                          //         height: 50,
+                          //         width: MediaQuery.of(context).size.width,
+                          //         decoration: BoxDecoration(
+                          //           color: theme.isDarkMode
+                          //               ? colors.darkGrey
+                          //               : const Color(0xffF1F3F8),
+                          //           borderRadius: const BorderRadius.all(Radius.circular(32)),
+                          //         ),
+                          //       ),
+                          //       dropdownStyleData: DropdownStyleData(
+                          //         decoration:
+                          //             BoxDecoration(borderRadius: BorderRadius.circular(4)),
+                          //         offset: const Offset(0, 1),
+                          //       ),
+                          //       isExpanded: true,
+                          //       style: textStyle(
+                          //         theme.isDarkMode
+                          //             ? colors.colorWhite
+                          //             : const Color(0XFF000000),
+                          //         13,
+                          //         FontWeight.w500,
+                          //       ),
+                          //       hint: Text(
+                          //         mfOrder.accNum,
+                          //         style: textStyle(
+                          //           theme.isDarkMode
+                          //               ? colors.colorWhite
+                          //               : const Color(0XFF000000),
+                          //           13,
+                          //           FontWeight.w500,
+                          //         ),
+                          //       ),
+                          //       items: mfOrder.addBankDividers(),
+                          //       value: mfOrder.accNum,
+                          //       onChanged: (value) async {
+                          //         mfOrder.chngBankAcc("$value");
+                          //       },
+                          //     ),
+                          //   ),
+                          //   const SizedBox(height: 8),
+                          //   if (mfOrder.paymentName == "UPI") ...[
+                          //     const SizedBox(height: 12),
+                          //     Text("UPI ID (Virtual payment address)",
+                          //         style: textStyle(
+                          //             theme.isDarkMode
+                          //                 ? colors.colorWhite
+                          //                 : colors.colorBlack,
+                          //             15,
+                          //             FontWeight.w600)),
+                          //     const SizedBox(height: 4),
+                          //     Container(
+                          //         margin: const EdgeInsets.symmetric(vertical: 8),
+                          //         height: 44,
+                          //         child: CustomTextFormField(
+                          //             textAlign: TextAlign.start,
+                          //             fillColor: theme.isDarkMode
+                          //                 ? colors.darkGrey
+                          //                 : const Color(0xffF1F3F8),
+                          //             hintText: 'exmaple@upi',
+                          //             hintStyle: textStyle(
+                          //                 const Color(0xff666666), 14, FontWeight.w400),
+                          //             style: textStyle(
+                          //                 theme.isDarkMode
+                          //                     ? colors.colorWhite
+                          //                     : colors.colorBlack,
+                          //                 14,
+                          //                 FontWeight.w600),
+                          //             textCtrl: mfOrder.upiId,
+                          //             onChanged: (value) {
+                          //               mfOrder.isValidUpiId(widget.mfData);
+                          //             })),
+                          //     if (mfOrder.upiError != null) ...[
+                          //       Text("${mfOrder.upiError}",
+                          //           style:
+                          //               textStyle(colors.kColorRedText, 10, FontWeight.w500)),
+                          //       const SizedBox(height: 6)
+                          //     ]
+                          //   ]
+                          // ],
+                          // const SizedBox(height: 11),
+                          // Row(
+                          //     crossAxisAlignment: CrossAxisAlignment.start,
+                          //     children: [
+                          //       SvgPicture.asset(assets.dInfo,
+                          //           color: colors.colorBlue),
+                          //       Expanded(
+                          //           child: Text(
+                          //               " NAV will be allotted on the day funds are realised at the clearing corporation.",
+                          //               style: textStyle(
+                          //                   colors.colorBlue, 13, FontWeight.w500)))
+                          //     ]),
+                          const SizedBox(
+                            height: 100,
+                          ),
+                        ]),
+                  ),
+                ],
+              ),
+              bottomSheet: Container(
+                  color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Container(
+                      //     height: 36,
+                      //     decoration: BoxDecoration(
+                      //         color: theme.isDarkMode
+                      //             ? colors.darkGrey
+                      //             : const Color(0xfffafbff),
+                      //         border: Border(
+                      //             top: BorderSide(
+                      //                 color: theme.isDarkMode
+                      //                     ? colors.darkColorDivider
+                      //                     : colors.colorDivider),
+                      //             bottom: BorderSide(
+                      //                 color: theme.isDarkMode
+                      //                     ? colors.darkColorDivider
+                      //                     : colors.colorDivider))),
+                      //     padding: const EdgeInsets.symmetric(horizontal: 16),
+                      //     child:
+                      //      Row(
+                      //         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      //         children: [
+                      //           Row(children: [
+                      //             Text("AUM'': ",
+                      //                 style: textStyle(const Color.fromARGB(255, 0, 0, 0), 13,
+                      //                     FontWeight.w500)),
+                      //             Text(
+                      //                 "₹${(double.parse(widget.mfData.aUM!.isEmpty ? "0.00" : widget.mfData.aUM!) / 10000000).toStringAsFixed(2)}",
+                      //                 style: textStyle(
+                      //                     !theme.isDarkMode
+                      //                         ? colors.colorBlue
+                      //                         : colors.colorLightBlue,
+                      //                     12,
+                      //                     FontWeight.w600)),
+                      //             Text(" Cr.",
+                      //                 style: textStyle(const Color.fromARGB(255, 0, 0, 0), 13,
+                      //                     FontWeight.w500))
+                      //           ]),
+                      //           Row(children: [
+                      //             Text("NAV: ",
+                      //                 style: textStyle(const Color.fromARGB(255, 0, 0, 0), 13,
+                      //                     FontWeight.w500)),
+                      //             Text("₹${widget.mfData.nETASSETVALUE}",
+                      //                 style: textStyle(
+                      //                     !theme.isDarkMode
+                      //                         ? colors.colorBlue
+                      //                         : colors.colorLightBlue,
+                      //                     12,
+                      //                     FontWeight.w600))
+                      //           ]),
+                      //         ])),
+          
+                      SafeArea(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
+                          width: double.infinity,
+                          child: OutlinedButton(
+                              onPressed: () async {
+                                if (mfOrder.investloader == false) {
+                                  print(mfOrder.invAmtError);
+                                  print(mfOrder.upiError);
+          
+                                  print(mfOrder.installmentAmtError);
+                                  print(mfOrder.invDurationError);
+          
+                                  // if (mfOrder.invAmtError == "" &&
+                                  //     mfOrder.upiError == "" &&
+                                  //     mfOrder.installmentAmtError == "" &&
+                                  //     mfOrder.invDurationError == "") {
+          
+                                  if (mfOrder.mfOrderTpye == "One-time" &&
+                                      mfOrder.invAmtError == "") {
+                                    Navigator.pop(context);
+          
+                                    final startTime = DateTime.now();
+                                    // print(mfOrder.isValidUpiId(widget.mfData));
+                                    // print(widget.mfData);
+                                    // if (mfOrder.isValidUpiId(widget.mfData) == true) {
+                                    // await mfPlaceorder(widget.mfData, mfOrder, context);
+          
+                                    // CallUpiNetbanking(
+                                    // context, mfOrder, theme, widget.mfData);
+                                    // } else if (mfOrder.paymentName != "UPI") {
+                                    // mfPlaceorder(widget.mfData, mfOrder, context);
+                                    // }
+                                    showModalBottomSheet(
+                                      context: context,
+                                      isScrollControlled: true,
+                                      isDismissible:
                                           mfOrder.ispaymentcalled != true,
-                                      child: MfOrderBottomsheet(
-                                        data: widget.mfData,
-                                        condval : 'reinit',
+                                      enableDrag: false,
+                                      shape: const RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.vertical(
+                                          top: Radius.circular(15),
+                                        ),
                                       ),
-                                    ),
-                                  );
-
-                                  await mfPlaceorder(
-                                      widget.mfData, mfOrder, context);
-
-                                  final elapsed =
-                                      DateTime.now().difference(startTime);
-                                  if (elapsed < const Duration(seconds: 2)) {
-                                    final remaining =
-                                        const Duration(seconds: 2) - elapsed;
-                                    await Future.delayed(remaining);
-                                  }
-
-                                  if (mfOrder.investloader == false) {
-                                    if (mfOrder.mfPlaceOrderResponces == null &&
-                                        mfOrder.mfPlaceOrderResponces?.stat !=
-                                            'Ok') {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(warningMessage(context,
-                                              "${mfOrder.mfPlaceOrderResponces?.remarks}"));
+                                      builder: (context) => WillPopScope(
+                                        onWillPop: () async =>
+                                            mfOrder.ispaymentcalled != true,
+                                        child: MfOrderBottomsheet(
+                                          data: widget.mfData,
+                                          condval : 'reinit',
+                                        ),
+                                      ),
+                                    );
+          
+                                    await mfPlaceorder(
+                                        widget.mfData, mfOrder, context);
+          
+                                    final elapsed =
+                                        DateTime.now().difference(startTime);
+                                    if (elapsed < const Duration(seconds: 2)) {
+                                      final remaining =
+                                          const Duration(seconds: 2) - elapsed;
+                                      await Future.delayed(remaining);
+                                    }
+          
+                                    if (mfOrder.investloader == false) {
+                                      if (mfOrder.mfPlaceOrderResponces == null &&
+                                          mfOrder.mfPlaceOrderResponces?.stat !=
+                                              'Ok') {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(warningMessage(context,
+                                                "${mfOrder.mfPlaceOrderResponces?.remarks}"));
+                                      }
+                                    }
+          
+                                    // CallUpiNetbanking(
+                                    //     context, mfOrder, theme, widget.mfData);
+                                  } else if (mfOrder.mfOrderTpye == "SIP" &&
+                                      mfOrder.installmentAmtError == "") {
+                                    _showBottomSheet(
+                                        context,
+                                        MfOrderBottomsheet(
+                                          data: widget.mfData,
+                                        ));
+                                    // if (mfOrder.mandateStatus != "APPROVED") {
+                                    //   ScaffoldMessenger.of(context).showSnackBar(
+                                    //       successMessage(context,
+                                    //           "Mandate is not Approved yet"));
+                                    // } else {
+                                    // mfOrder.fetchXsipPlaceOrder(
+                                    //     context,
+                                    //     "${double.parse(mfOrder.installmentAmt.text).toInt() >= 200000 ? "${widget.mfData.schemeCode}-L1" : widget.mfData.schemeCode}",
+                                    //     mfOrder.freqName == "Daily"
+                                    //         ? "0"
+                                    //         : mfOrder.dates,
+                                    //     mfOrder.freqName,
+                                    //     mfOrder.installmentAmt.text,
+                                    //     mfOrder.invDuration.text,
+                                    //     mfOrder.freqName == "Daily"
+                                    //         ? "0"
+                                    //         : mfOrder.endDate,
+                                    //     mfOrder.mandateId);
+                                    // }
+                                  } else {
+                                    if (mfOrder.mfOrderTpye == "One-time") {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                          warningMessage(context,
+                                              "Enter a valid minimum investment amount."));
+                                    } else {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                          warningMessage(context,
+                                              "Enter a valid minimum installment amount."));
                                     }
                                   }
-
-                                  // CallUpiNetbanking(
-                                  //     context, mfOrder, theme, widget.mfData);
-                                } else if (mfOrder.mfOrderTpye == "SIP" &&
-                                    mfOrder.installmentAmtError == "") {
-                                  _showBottomSheet(
-                                      context,
-                                      MfOrderBottomsheet(
-                                        data: widget.mfData,
-                                      ));
-                                  // if (mfOrder.mandateStatus != "APPROVED") {
-                                  //   ScaffoldMessenger.of(context).showSnackBar(
-                                  //       successMessage(context,
-                                  //           "Mandate is not Approved yet"));
-                                  // } else {
-                                  // mfOrder.fetchXsipPlaceOrder(
-                                  //     context,
-                                  //     "${double.parse(mfOrder.installmentAmt.text).toInt() >= 200000 ? "${widget.mfData.schemeCode}-L1" : widget.mfData.schemeCode}",
-                                  //     mfOrder.freqName == "Daily"
-                                  //         ? "0"
-                                  //         : mfOrder.dates,
-                                  //     mfOrder.freqName,
-                                  //     mfOrder.installmentAmt.text,
-                                  //     mfOrder.invDuration.text,
-                                  //     mfOrder.freqName == "Daily"
-                                  //         ? "0"
-                                  //         : mfOrder.endDate,
-                                  //     mfOrder.mandateId);
-                                  // }
-                                } else {
-                                  if (mfOrder.mfOrderTpye == "One-time") {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                        warningMessage(context,
-                                            "Enter a valid minimum investment amount."));
-                                  } else {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                        warningMessage(context,
-                                            "Enter a valid minimum installment amount."));
-                                  }
                                 }
-                              }
-                            },
-                            style: OutlinedButton.styleFrom(
-                              minimumSize: const Size(0, 40),
-                              side: BorderSide(color: colors.btnOutlinedBorder),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(5),
+                              },
+                              style: OutlinedButton.styleFrom(
+                                minimumSize: const Size(0, 45),
+                                side: BorderSide(color: colors.btnOutlinedBorder),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(5),
+                                ),
+                                backgroundColor: colors.primaryDark,
                               ),
-                              backgroundColor: colors.primaryDark,
-                            ),
-                            child: mfOrder.investloader == true
-                                ? const SizedBox(
-                                    height: 15,
-                                    width: 15,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2.0,
-                                      valueColor: AlwaysStoppedAnimation<Color>(
-                                          Color.fromARGB(99, 48, 48, 48)),
-                                      backgroundColor:
-                                          Color.fromARGB(255, 255, 255, 255),
-                                    ),
-                                  )
-                                : TextWidget.subText(
-                                    text: mfOrder.mfOrderTpye == "SIP"
-                                        ? "Setup - SIP"
-                                        : "Pay - One Time",
-                                    theme: theme.isDarkMode,
-                                    color: theme.isDarkMode
-                                        ? colors.colorBlack
-                                        : colors.colorWhite,
-                                    fw: 2)),
+                              child: mfOrder.investloader == true
+                                  ? const SizedBox(
+                                      height: 15,
+                                      width: 15,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2.0,
+                                        valueColor: AlwaysStoppedAnimation<Color>(
+                                            Color.fromARGB(99, 48, 48, 48)),
+                                        backgroundColor:
+                                            Color.fromARGB(255, 255, 255, 255),
+                                      ),
+                                    )
+                                  : TextWidget.subText(
+                                      text: mfOrder.mfOrderTpye == "SIP"
+                                          ? "Setup - SIP"
+                                          : "Pay - One Time",
+                                      theme: theme.isDarkMode,
+                                      color: colors.colorWhite,
+                                      fw: 2)),
+                        ),
                       ),
-                    ),
-                    if (defaultTargetPlatform == TargetPlatform.iOS)
-                      const SizedBox(height: 18)
-                  ],
-                ))));
+                      if (defaultTargetPlatform == TargetPlatform.iOS)
+                        const SizedBox(height: 18)
+                    ],
+                  ))),
+        ));
   }
 }
 
@@ -1754,44 +1768,73 @@ void _showCalendarDialog(
     BuildContext context, dynamic theme, MFProvider mfOrder) {
   showModalBottomSheet(
       shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(5))),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
       useSafeArea: true,
       isDismissible: true,
       backgroundColor: Colors.white,
       context: context,
       isScrollControlled: true,
       builder: (BuildContext context) {
-        return Container(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  TextWidget.titleText(
-                    text: "Select SIP Installment Date",
-                    theme: theme.isDarkMode,
-                    color: theme.isDarkMode
-                        ? colors.textPrimaryDark
-                        : colors.textPrimaryLight,
-                    fw: 0,
-                  ),
-                ],
+        return SafeArea(
+          child: Container(
+            decoration: BoxDecoration(
+              color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(16),
+                topRight: Radius.circular(16),
               ),
-              const SizedBox(height: 12),
-              SizedBox(
-                height: 350,
-                child: _SIPCalendar(
-                  theme: theme,
-                  mfOrder: mfOrder,
-                  onConfirm: (int selectedDay) {
-                    mfOrder.changeStartDate(selectedDay.toString());
-                    Navigator.pop(context);
-                  },
+               border: Border(
+                                    top: BorderSide(
+                                      color: theme.isDarkMode
+                                          ? colors.textSecondaryDark
+                                              .withOpacity(0.5)
+                                          : colors.colorWhite,
+                                    ),
+                                    left: BorderSide(
+                                      color: theme.isDarkMode
+                                          ? colors.textSecondaryDark
+                                              .withOpacity(0.5)
+                                          : colors.colorWhite,
+                                    ),
+                                    right: BorderSide(
+                                      color: theme.isDarkMode
+                                          ? colors.textSecondaryDark
+                                              .withOpacity(0.5)
+                                          : colors.colorWhite,
+                                    ),
+                                  ),
+            ),
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    TextWidget.titleText(
+                      text: "Select SIP Installment Date",
+                      theme: theme.isDarkMode,
+                      color: theme.isDarkMode
+                          ? colors.textPrimaryDark
+                          : colors.textPrimaryLight,
+                      fw: 1,
+                    ),
+                  ],
                 ),
-              ),
-            ],
+                const SizedBox(height: 12),
+                SizedBox(
+                  height: 350,
+                  child: _SIPCalendar(
+                    theme: theme,
+                    mfOrder: mfOrder,
+                    onConfirm: (int selectedDay) {
+                      mfOrder.changeStartDate(selectedDay.toString());
+                      Navigator.pop(context);
+                    },
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       });
@@ -1927,7 +1970,7 @@ class _SIPCalendarState extends State<_SIPCalendar> {
               width: 12,
               height: 12,
               decoration: BoxDecoration(
-                color: const Color(0xffF1F3F8),
+                color: Color(0xffF1F3F8),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -1935,7 +1978,7 @@ class _SIPCalendarState extends State<_SIPCalendar> {
             TextWidget.captionText(
               text: "Available",
               theme: widget.theme.isDarkMode,
-              color: colors.colorBlack,
+              color: widget.theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
               fw: 3,
             ),
             const SizedBox(width: 16),
@@ -1951,7 +1994,7 @@ class _SIPCalendarState extends State<_SIPCalendar> {
             TextWidget.captionText(
               text: "Unavailable",
               theme: widget.theme.isDarkMode,
-              color: const Color(0xFFBDBDBD),
+              color: const Color(0xFFE0E0E0),
               fw: 3,
             ),
           ],
@@ -1969,7 +2012,7 @@ class _SIPCalendarState extends State<_SIPCalendar> {
                 : null,
             style: OutlinedButton.styleFrom(
               elevation: 0,
-              minimumSize: const Size(0, 40),
+              minimumSize: const Size(0, 45),
               backgroundColor: colors.btnOutlinedBorder,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(5),

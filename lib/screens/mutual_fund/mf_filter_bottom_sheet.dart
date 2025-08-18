@@ -125,8 +125,31 @@ class _MFFilterBottomSheetState extends ConsumerState<MFFilterBottomSheet> {
       return SafeArea(
         child: Container(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+            borderRadius: const BorderRadius.only(
+      topLeft: Radius.circular(16),
+      topRight: Radius.circular(16),
+    ),
+         color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+         border: Border(
+                                  top: BorderSide(
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                            .withOpacity(0.5)
+                                        : colors.colorWhite,
+                                  ),
+                                  left: BorderSide(
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                            .withOpacity(0.5)
+                                        : colors.colorWhite,
+                                  ),
+                                  right: BorderSide(
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                            .withOpacity(0.5)
+                                        : colors.colorWhite,
+                                  ),
+                                ),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -141,7 +164,7 @@ class _MFFilterBottomSheetState extends ConsumerState<MFFilterBottomSheet> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     TextWidget.titleText(
-                        text: "Sort by", theme: theme.isDarkMode, fw: 1),
+                        text: "Sort by", color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight, theme: theme.isDarkMode, fw: 1),
                   ],
                 ),
               ),

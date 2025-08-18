@@ -52,7 +52,12 @@ class _ConvertPositionDialogueState
   Widget build(BuildContext context) {
     final theme = ref.read(themeProvider);
     return AlertDialog(
-      backgroundColor: colors.colorWhite,
+       backgroundColor: theme
+                                                                        .isDarkMode
+                                                                    ? const Color(
+                                                                        0xFF121212)
+                                                                    : const Color(
+                                                                        0xFFF1F3F8),
       titlePadding:
           const EdgeInsets.only(left: 16, right: 8, top: 8, bottom: 0),
       shape: const RoundedRectangleBorder(
@@ -69,16 +74,16 @@ class _ConvertPositionDialogueState
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.end,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              TextWidget.subText(
+              TextWidget.titleText(
                 text:
                     "${widget.convertPosition.symbol} ${widget.convertPosition.option} ${widget.convertPosition.exch}",
                 theme: false,
                 color: theme.isDarkMode
                     ? colors.textPrimaryDark
                     : colors.textPrimaryLight,
-                fw: 3,
+                fw: 1,
                 textOverflow: TextOverflow.ellipsis,
               ),
               Material(
@@ -101,16 +106,13 @@ class _ConvertPositionDialogueState
                     child: Icon(
                       Icons.close_rounded,
                       size: 22,
-                      color: theme.isDarkMode
-                          ? colors.colorWhite
-                          : colors.colorBlack,
+                     color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                     ),
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
         ],
       ),
       content: SizedBox(
@@ -138,11 +140,12 @@ class _ConvertPositionDialogueState
                   child: TextWidget.subText(
                       text: "${widget.convertPosition.sPrdtAli}",
                       theme: false,
-                      color: colors.textSecondaryLight,
+                      color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                       fw: 0),
                 ),
                 SvgPicture.asset(
                   assets.rightarrow,
+                  color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                   width: 20,
                   height: 20,
                 ),
@@ -167,7 +170,7 @@ class _ConvertPositionDialogueState
                         fw: 0)),
               ],
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
             Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               TextWidget.subText(
                   text: "Quantity (${widget.convertPosition.ls})",
@@ -181,7 +184,9 @@ class _ConvertPositionDialogueState
                   height: 40,
                   child: TextFormField(
                       decoration: InputDecoration(
-                        fillColor: colors.btnBg,
+                         fillColor: theme.isDarkMode
+                              ? colors.darkGrey
+                              : const Color(0xffF1F3F8),
                         filled: true,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(5),
@@ -215,7 +220,7 @@ class _ConvertPositionDialogueState
                               ? colors.textPrimaryDark
                               : colors.textPrimaryLight,
                           theme: false,
-                          fw: 0),
+                          ),
                       onChanged: (value) {
                         if (value.isNotEmpty) {
                           int number = int.tryParse(qty.text) ?? 0;
@@ -243,7 +248,7 @@ class _ConvertPositionDialogueState
         SizedBox(
           width: double.infinity,
           child: Container(
-            height: 40,
+            height: 45,
             decoration: BoxDecoration(
               color: colors.primaryDark,
               borderRadius: BorderRadius.circular(5),
@@ -308,10 +313,8 @@ class _ConvertPositionDialogueState
                   child: TextWidget.titleText(
                     text: "Convert Position",
                     theme: false,
-                    color: theme.isDarkMode
-                        ? colors.colorBlack
-                        : colors.colorWhite,
-                    fw: 0,
+                    color: colors.colorWhite,
+                    fw: 2,
                   ),
                 ),
               ),

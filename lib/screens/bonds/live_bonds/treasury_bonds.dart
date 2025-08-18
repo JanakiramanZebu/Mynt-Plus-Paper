@@ -9,6 +9,7 @@ import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/screens/bonds/bonds_order_screen/orderscreenbottompage.dart';
 
 import '../../../res/global_state_text.dart';
+import '../../../sharedWidget/list_divider.dart';
 
 class TreasuryBondsScreen extends StatelessWidget {
   const TreasuryBondsScreen({super.key});
@@ -64,7 +65,7 @@ class TreasuryBondsScreen extends StatelessWidget {
       itemBuilder: (context, index) =>
           _buildBondItem(context, bonds, theme, index, filteredBonds),
       itemCount: filteredBonds.length,
-      separatorBuilder: (context, index) => _buildDivider(theme),
+      separatorBuilder: (context, index) => ListDivider(),
     );
   }
 

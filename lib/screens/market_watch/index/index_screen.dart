@@ -284,7 +284,7 @@ class OptimizedIndexItem extends ConsumerWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
             decoration: BoxDecoration(
-              color: theme.isDarkMode ? Colors.black : Colors.white,
+              color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
             ),
             width: itemWidth,
             child: Column(
@@ -384,6 +384,7 @@ class OptimizedIndexItem extends ConsumerWidget {
         await showModalBottomSheet(
             context: context,
             isScrollControlled: true,
+            useSafeArea: true,
             isDismissible: true,
             shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.only(
@@ -683,12 +684,14 @@ class _LivePriceWidgetState extends State<_LivePriceWidget> {
     final key = '$change|$perChange';
     return _colorCache.putIfAbsent(key, () {
       if (change.startsWith("-") || perChange.startsWith('-')) {
-        return colors.errorLight;
+        return widget.isDarkMode ? colors.lossDark : colors.lossLight;
       } else if ((change == "null" || perChange == "null") ||
           (change == "0.00" || perChange == "0.00")) {
-        return colors.textSecondaryLight;
+        return widget.isDarkMode
+            ? colors.textSecondaryDark
+            : colors.textSecondaryLight;
       } else {
-        return colors.successLight;
+        return widget.isDarkMode ? colors.profitDark : colors.profitLight;
       }
     });
   }

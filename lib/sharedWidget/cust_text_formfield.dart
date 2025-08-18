@@ -21,6 +21,7 @@ class CustomTextFormField extends StatelessWidget {
   final TextInputType? keyboardType;
   final Color? fillColor;
   final bool? isReadable;
+  final bool? autofocus;
   CustomTextFormField({
     super.key,
     this.hintText,
@@ -38,6 +39,7 @@ class CustomTextFormField extends StatelessWidget {
     this.fillColor,
     this.keyboardType,
     required this.textAlign,
+    this.autofocus,
     // required String type
   });
 
@@ -50,6 +52,7 @@ class CustomTextFormField extends StatelessWidget {
         keyboardType: keyboardType,
         textAlign: textAlign,
         inputFormatters: inputFormate,
+        autofocus: autofocus ?? false,
         decoration: InputDecoration(
             fillColor: fillColor ?? const Color(0xffF1F3F8),
             filled: true,

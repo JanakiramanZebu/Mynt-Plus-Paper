@@ -143,20 +143,49 @@ class _FundScreenState extends ConsumerState<FundScreen> {
     // This should show a dialog or navigate to a new screen with the UPI ID form
     showModalBottomSheet(
         enableDrag: false,
-        useSafeArea: true,
+        useSafeArea: false,
         isScrollControlled: true,
         shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
-        backgroundColor: const Color(0xffffffff),
+            
+        backgroundColor: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
         context: context,
         builder: (context) {
-          return Consumer(
-            builder: (context, ref, child) {
-              final fund = ref.watch(transcationProvider);
-              // Check if context is still mounted before building
-              if (!context.mounted) return const SizedBox.shrink();
-              return _buildUpiIdForm(fund, theme, colors, context, null);
-            },
+          return SafeArea(
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(16),
+                  topRight: Radius.circular(16),
+                ),
+                color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                border: Border(
+                  top: BorderSide(
+                    color: theme.isDarkMode
+                        ? colors.textSecondaryDark.withOpacity(0.5)
+                        : colors.colorWhite,
+                  ),
+                  left: BorderSide(
+                    color: theme.isDarkMode
+                        ? colors.textSecondaryDark.withOpacity(0.5)
+                        : colors.colorWhite,
+                  ),
+                  right: BorderSide(
+                    color: theme.isDarkMode
+                        ? colors.textSecondaryDark.withOpacity(0.5)
+                        : colors.colorWhite,
+                  ),
+                ),
+              ),
+              child: Consumer(
+                builder: (context, ref, child) {
+                  final fund = ref.watch(transcationProvider);
+                  // Check if context is still mounted before building
+                  if (!context.mounted) return const SizedBox.shrink();
+                  return _buildUpiIdForm(fund, theme, colors, context, null);
+                },
+              ),
+            ),
           );
         }).then((_) {
       // Reset loading state when sheet is dismissed
@@ -225,15 +254,15 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                 contentPadding:
                     const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
                 enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: colors.colorBlue),
-                    borderRadius: BorderRadius.circular(5)),
-                disabledBorder: InputBorder.none,
-                focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide.none,
-                    borderRadius: BorderRadius.circular(5)),
-                border: OutlineInputBorder(
-                    borderSide: BorderSide.none,
-                    borderRadius: BorderRadius.circular(5)),
+                borderSide: BorderSide(color: colors.colorBlue),
+                borderRadius: BorderRadius.circular(5)),
+            disabledBorder: InputBorder.none,
+            focusedBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: colors.colorBlue),
+                borderRadius: BorderRadius.circular(5)),
+            border: OutlineInputBorder(
+                borderSide: BorderSide.none,
+                borderRadius: BorderRadius.circular(5)),
                 fillColor: theme.isDarkMode
                     ? colors.darkGrey
                     : const Color(0xffF1F3F8),
@@ -246,11 +275,11 @@ class _FundScreenState extends ConsumerState<FundScreen> {
             ),
             if (fund.upiiderror != null && fund.upiiderror!.isNotEmpty)
               Padding(
-                padding: const EdgeInsets.only(top: 5),
-                child: TextWidget.paraText(
+                padding: const EdgeInsets.only(top: 8),
+                child: TextWidget.captionText(
                     text: "${fund.upiiderror}",
                     theme: false,
-                    color: colors.darkred,
+                    color: theme.isDarkMode ? colors.errorDark : colors.errorLight,
                     fw: 0,
                     align: TextAlign.left),
               ),
@@ -262,7 +291,7 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     elevation: 0,
-                    minimumSize: const Size(0, 40),
+                    minimumSize: const Size(0, 45),
                     backgroundColor: theme.isDarkMode
                         ? colors.primaryDark
                         : colors.primaryLight,
@@ -401,6 +430,9 @@ class _FundScreenState extends ConsumerState<FundScreen> {
               elevation: .2,
               title: TextWidget.titleText(
                 text: 'Add Money',
+                color: theme.isDarkMode
+                    ? colors.textPrimaryDark
+                    : colors.textPrimaryLight,
                 theme: theme.isDarkMode,
                 fw: 1,
               ),
@@ -487,7 +519,9 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                                 text:
                                     "₹ ${formatIndianCurrency(funds.fundDetailModel?.cash ?? "0.00")} Available",
                                 theme: theme.isDarkMode,
-                                color: colors.textPrimaryLight,
+                                color: theme.isDarkMode
+                                    ? colors.textPrimaryDark
+                                    : colors.textPrimaryLight,
                               ),
                               const SizedBox(height: 10),
                               TextFormField(
@@ -497,9 +531,12 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                                 ],
                                 keyboardType: TextInputType.number,
                                 style: TextWidget.textStyle(
-                                    theme: theme.isDarkMode,
-                                    fontSize: 25,
-                                    fw: 1),
+                                  theme: theme.isDarkMode,
+                                  fontSize: 25,
+                                  color: theme.isDarkMode
+                                      ? colors.textPrimaryDark
+                                      : colors.textPrimaryLight,
+                                ),
                                 controller: fund.amount,
                                 onChanged: (value) {
                                   fund.textFiledonChange(value);
@@ -525,20 +562,22 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                                   filled: true,
                                   hintText: "0",
                                   hintStyle: TextWidget.textStyle(
-                                      theme: false,
-                                      color: colors.colorGrey,
-                                      fontSize: 25,
-                                      fw: 1),
+                                    theme: false,
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                        : colors.textSecondaryLight,
+                                    fontSize: 25,
+                                  ),
                                   labelStyle: TextWidget.textStyle(
-                                      theme: theme.isDarkMode,
-                                      fontSize: 25,
-                                      fw: 1),
+                                    theme: theme.isDarkMode,
+                                    fontSize: 25,
+                                  ),
                                   prefixIcon: Padding(
                                     padding: const EdgeInsets.all(12.0),
                                     child: SvgPicture.asset(
                                       assets.ruppeIcon,
                                       color: theme.isDarkMode
-                                          ? colors.colorWhite
+                                          ? colors.textSecondaryDark
                                           : colors.textSecondaryLight,
                                     ),
                                   ),
@@ -549,21 +588,25 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                         ),
 
                         Padding(
-                            padding: const EdgeInsets.only(
-                              left: 16,
-                            ),
+                            padding: const EdgeInsets.only(left: 16, top: 8),
                             child:
                                 fund.amount.text.isEmpty || fund.intValue < 50
                                     ? TextWidget.captionText(
                                         text: fund.funderror,
                                         theme: false,
-                                        color: colors.darkred,
+                                        color: theme.isDarkMode
+                                                          ? colors.lossDark
+                                                          : colors.lossLight,
+                                        fw: 0,
                                       )
                                     : fund.intValue > 5000000
                                         ? TextWidget.captionText(
                                             text: fund.maxfunderror,
                                             theme: false,
-                                            color: colors.darkred,
+                                            color: theme.isDarkMode
+                                                          ? colors.lossDark
+                                                          : colors.lossLight,
+                                            fw: 0,
                                           )
                                         : const SizedBox.shrink()),
                         // Padding(
@@ -712,8 +755,8 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                                           text: fund.bankname,
                                           theme: theme.isDarkMode,
                                           color: theme.isDarkMode
-                                              ? colors.colorWhite
-                                              : colors.colorBlack,
+                                              ? colors.textPrimaryDark
+                                              : colors.textPrimaryLight,
                                         ),
                                       ),
                                       subtitle: Padding(
@@ -721,7 +764,9 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                                         child: TextWidget.paraText(
                                           text: hideAccountNumber(fund.accno),
                                           theme: theme.isDarkMode,
-                                          color: colors.colorGrey,
+                                          color: theme.isDarkMode
+                                              ? colors.textSecondaryDark
+                                              : colors.textSecondaryLight,
                                         ),
                                       ),
                                       trailing: Material(
@@ -748,9 +793,13 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                                             height: 32,
                                             width: 32,
                                             child: Center(
-                                              child: const Icon(Icons.more_vert,
-                                                  size: 22,
-                                                  color: Color(0xFF888888)),
+                                              child: Icon(
+                                                Icons.more_vert,
+                                                size: 22,
+                                                color: theme.isDarkMode
+                                                    ? colors.textSecondaryDark
+                                                    : colors.textSecondaryLight,
+                                              ),
                                             ),
                                           ),
                                         ),
@@ -774,7 +823,9 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                           child: TextWidget.subText(
                             text: "Payment method",
                             theme: false,
-                            color: colors.textPrimaryLight,
+                            color: theme.isDarkMode
+                                ? colors.textPrimaryDark
+                                : colors.textPrimaryLight,
                           ),
                         ),
                         const SizedBox(
@@ -851,6 +902,9 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                                             width: index == 0 && index == 1
                                                 ? 40
                                                 : 40,
+                                            color: index ==2 ? theme.isDarkMode
+                                                ? colors.textSecondaryDark
+                                                : colors.textSecondaryLight : null,
                                           ),
                                           const SizedBox(width: 20),
                                           Expanded(
@@ -867,14 +921,21 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                                                       text:
                                                           '${fund.defaultUpiapps[index]['name']}',
                                                       theme: theme.isDarkMode,
-                                                      color: colors
-                                                          .textPrimaryLight,
+                                                      color: theme.isDarkMode
+                                                          ? colors
+                                                              .textPrimaryDark
+                                                          : colors
+                                                              .textPrimaryLight,
                                                     ),
                                                     SvgPicture.asset(
                                                       assets.leftArrow,
                                                       width: 16,
                                                       height: 16,
-                                                      color: Colors.grey,
+                                                      color: theme.isDarkMode
+                                                          ? colors
+                                                              .textSecondaryDark
+                                                          : colors
+                                                              .textSecondaryLight,
                                                     )
                                                   ],
                                                 ),
@@ -883,13 +944,16 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                                                   Padding(
                                                     padding:
                                                         const EdgeInsets.only(
-                                                            top: 4),
+                                                            top: 8),
                                                     child:
                                                         TextWidget.captionText(
                                                       text:
                                                           "Not available for amount above ₹1,00,000",
                                                       theme: false,
-                                                      color: colors.darkred,
+                                                      color: theme.isDarkMode
+                                                          ? colors.lossDark
+                                                          : colors.lossLight,
+                                                      fw: 0,
                                                     ),
                                                   ),
                                               ],
@@ -1151,14 +1215,29 @@ class _FundScreenState extends ConsumerState<FundScreen> {
       builder: (BuildContext context) {
         return Container(
           decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-              boxShadow: const [
-                BoxShadow(
-                    color: Color(0xff999999),
-                    blurRadius: 4.0,
-                    offset: Offset(2.0, 0.0))
-              ]),
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(16),
+              topRight: Radius.circular(16),
+            ),
+            color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+            border: Border(
+              top: BorderSide(
+                color: theme.isDarkMode
+                    ? colors.textSecondaryDark.withOpacity(0.5)
+                    : colors.colorWhite,
+              ),
+              left: BorderSide(
+                color: theme.isDarkMode
+                    ? colors.textSecondaryDark.withOpacity(0.5)
+                    : colors.colorWhite,
+              ),
+              right: BorderSide(
+                color: theme.isDarkMode
+                    ? colors.textSecondaryDark.withOpacity(0.5)
+                    : colors.colorWhite,
+              ),
+            ),
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
@@ -1167,10 +1246,11 @@ class _FundScreenState extends ConsumerState<FundScreen> {
               const SizedBox(height: 10),
               Padding(
                 padding: const EdgeInsets.only(left: 16, bottom: 10),
-                child: TextWidget.subText(
-                  text: 'Choose an bank:',
+                child: TextWidget.titleText(
+                  text: 'Choose an bank',
                   theme: false,
-                  color: colors.textPrimaryLight,
+                  color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                  fw: 1,
                 ),
               ),
               ListView.builder(
@@ -1189,11 +1269,12 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 16, vertical: 15),
                       color: fund.bankdetails!.dATA![index][1] == fund.bankname
-                          ? const Color(0xff999999).withOpacity(0.2)
+                          ? theme.isDarkMode ? colors.textSecondaryDark.withOpacity(0.2) : colors.textSecondaryLight.withOpacity(0.2)
                           : Colors.transparent,
                       child: TextWidget.titleText(
                         text:
                             '${fund.bankdetails!.dATA![index][1]}-${hideAccountNumber(fund.bankdetails!.dATA![index][2])}',
+                        color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
                         theme: theme.isDarkMode,
                       ),
                     ),

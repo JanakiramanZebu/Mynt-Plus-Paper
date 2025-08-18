@@ -440,7 +440,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         shadowColor: isDarkMode ? colors.darkColorDivider : colors.colorDivider,
         elevation: 0,
         backgroundColor:
-            isDarkMode ? const Color(0xff121212) : colors.colorWhite,
+            isDarkMode ? colors.colorBlack : colors.colorWhite,
         automaticallyImplyLeading: false,
         title: null,
         bottom: _buildAppBarBottom(selectedTab),
@@ -763,7 +763,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   Color _getBottomNavColor(ThemesProvider theme, bool isSelected) {
     if (theme.isDarkMode && isSelected) {
       return colors.secondaryDark;
-    } else if (isSelected) {
+    } else if (theme.isDarkMode && !isSelected) {
+      return colors.textSecondaryDark;
+    } else if (!theme.isDarkMode && isSelected) {
       return colors.secondaryLight;
     } else {
       return colors.textSecondaryLight;
@@ -1078,7 +1080,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                 // Use ref.read where state is not needed for building the dialog
                 final theme = ref.read(themeProvider);
                 return AlertDialog(
-                    backgroundColor: colors.colorWhite,
+                   backgroundColor: theme
+                                                                        .isDarkMode
+                                                                    ? const Color(
+                                                                        0xFF121212)
+                                                                    : const Color(
+                                                                        0xFFF1F3F8),
                     titlePadding:
                         const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                     shape: const RoundedRectangleBorder(
@@ -1118,9 +1125,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                                   child: Icon(
                                     Icons.close_rounded,
                                     size: 22,
-                                    color: theme.isDarkMode
-                                        ? colors.colorWhite
-                                        : colors.colorBlack,
+                                   color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                                   ),
                                 ),
                               ),
@@ -1135,8 +1140,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                               text: "Do you want to Exit the App?",
                               theme: false,
                               color: theme.isDarkMode
-                                  ? colors.textPrimaryDark
-                                  : colors.textPrimaryLight,
+                                                                                ? colors.textSecondaryDark
+                                                                                : colors.textPrimaryLight,
                               fw: 3,
                             ),
                           ),
@@ -1149,7 +1154,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                         child: OutlinedButton(
                           onPressed: () => Navigator.of(context).pop(true),
                           style: OutlinedButton.styleFrom(
-                            minimumSize: const Size(0, 40), // width, height
+                            minimumSize: const Size(0, 45), // width, height
                             side: BorderSide(
                                 color: colors
                                     .btnOutlinedBorder), // Outline border color
@@ -1163,7 +1168,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                             text: "Exit",
                             color: colors.colorWhite,
                             theme: theme.isDarkMode,
-                            fw: 0,
+                            fw: 2,
                           ),
                         ),
                       ),

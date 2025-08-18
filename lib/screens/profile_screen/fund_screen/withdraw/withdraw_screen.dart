@@ -67,6 +67,7 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
         elevation: .2,
         title: TextWidget.titleText(
           text: 'Withdraw Fund',
+          color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
           theme: theme.isDarkMode,
           fw: 1,
         ),
@@ -89,7 +90,7 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
                       text:
                           "Withdrawable Amount ₹ ${widget.withdarw.payoutdetails!.withdrawAmount}",
                       theme: widget.theme.isDarkMode,
-                      color: colors.textPrimaryLight,
+                      color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
                     ),
                     const SizedBox(height: 10),
                     TextFormField(
@@ -107,7 +108,7 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
                       keyboardType:
                           const TextInputType.numberWithOptions(decimal: true),
                       style: TextWidget.textStyle(
-                          theme: widget.theme.isDarkMode, fontSize: 25, fw: 1),
+                          theme: widget.theme.isDarkMode, color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight, fontSize: 25,),
                       controller: widget.withdarw.withdrawamount,
                       onChanged: (value) {
                         // widget.withdarw.withdrawamount.text = value;
@@ -161,20 +162,21 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
                         hintText: "0",
                         hintStyle: TextWidget.textStyle(
                             theme: false,
-                            color: colors.colorGrey,
+                            color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                             fontSize: 25,
-                            fw: 1),
+                            ),
                         labelStyle: TextWidget.textStyle(
                             theme: widget.theme.isDarkMode,
                             fontSize: 25,
-                            fw: 1),
+                            ),
                         prefixIcon: Padding(
                           padding: const EdgeInsets.all(12.0),
                           child: SvgPicture.asset(
                             assets.ruppeIcon,
                             color: widget.theme.isDarkMode
-                                ? colors.colorWhite
-                                : colors.textSecondaryLight,
+                               ? colors.textSecondaryDark
+                                          : colors.textSecondaryLight,
+                                    
                           ),
                         ),
                       ),
@@ -193,7 +195,7 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
                       ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: SizedBox(
                   width: double.infinity,
                   child: OutlinedButton(
@@ -315,19 +317,19 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             SvgPicture.asset(assets.breakup,
-                                width: 14, height: 14),
+                                width: 14, height: 14, color: theme.isDarkMode ? colors.primaryDark : colors.primaryLight,),
                             const SizedBox(width: 6),
                             TextWidget.subText(
                               text: "Break up",
                               theme: false,
-                              color: colors.colorBlue,
+                              color: theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
                             ),
                             const SizedBox(width: 4),
                             Icon(
                               isBreakUpExpanded
                                   ? Icons.keyboard_arrow_up
                                   : Icons.keyboard_arrow_down,
-                              color: colors.colorBlue,
+                              color: theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
                               size: 16,
                             ),
                           ],
@@ -353,15 +355,16 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
                         text: "Open Request",
                         theme: false,
                         color: widget.theme.isDarkMode
-                            ? colors.colorWhite
-                            : colors.colorBlack,
+                            ? colors.textPrimaryDark
+                            : colors.textPrimaryLight,
+                            fw: 0
                       ),
                       const SizedBox(
                         height: 12,
                       ),
                       Container(
                         decoration: BoxDecoration(
-                            color: const Color(0xffFFF3E0).withOpacity(0.6),
+                            color: theme.isDarkMode ? colors.textSecondaryDark.withOpacity(0.6) : colors.textSecondaryLight.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(8)),
                         child: ListTile(
                           minLeadingWidth: 10,
@@ -374,21 +377,22 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
                               TextWidget.paraText(
                                 text: "Request on : ",
                                 theme: false,
-                                color: colors.colorBlack,
+                                color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
                               ),
                               TextWidget.paraText(
                                 text:
                                     "${widget.withdarw.withdrawstatus?[0].eNTRYTIME}",
                                 theme: false,
-                                color: colors.secondaryLight,
+                                color: theme.isDarkMode ? colors.secondaryDark : colors.secondaryLight,
                               ),
                             ],
                           ),
-                          trailing: TextWidget.subText(
+                          trailing: TextWidget.titleText(
                             text:
                                 "₹ ${widget.withdarw.withdrawstatus?[0].dUEAMT}",
                             theme: false,
-                            color: colors.textPrimaryLight,
+                            color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                            fw: 1
                           ),
                         ),
                       ),

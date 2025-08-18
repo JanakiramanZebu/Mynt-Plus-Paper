@@ -6,6 +6,7 @@ import 'package:mynt_plus/screens/authentication/password/forgot_pass_unblock_us
 import '../../../provider/thems.dart';
 import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
+import '../../../sharedWidget/custom_drag_handler.dart';
 import '../../../sharedWidget/list_divider.dart';
 import '../../../sharedWidget/no_data_found.dart';
 
@@ -32,24 +33,41 @@ class _LedgerBillBottomState extends State<LedgerBillBottom> {
         expand: false,
         builder: (BuildContext context, ScrollController scrollController) {
           return Container(
-            decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(30),
-                color: theme.isDarkMode
-                    ? Color.fromARGB(255, 0, 0, 0)
-                    : Color.fromARGB(255, 255, 255, 255)),
+           decoration: BoxDecoration(
+           borderRadius: const BorderRadius.only(
+      topLeft: Radius.circular(16),
+      topRight: Radius.circular(16),
+    ),
+         color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+         border: Border(
+                                  top: BorderSide(
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                            .withOpacity(0.5)
+                                        : colors.colorWhite,
+                                  ),
+                                  left: BorderSide(
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                            .withOpacity(0.5)
+                                        : colors.colorWhite,
+                                  ),
+                                  right: BorderSide(
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                            .withOpacity(0.5)
+                                        : colors.colorWhite,
+                                  ),
+                                ),
+
+         
+        ),
             child:
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Container(
-                    color: const Color.fromARGB(255, 219, 218, 218),
-                    width: 40,
-                    height: 4.0,
-                    padding: EdgeInsets.only(
-                        top: 10, bottom: 25, left: 20, right: 20),
-                    margin: EdgeInsets.only(top: 16),
-                  ),
+                   const CustomDragHandler(),
                 ],
               ),
               Padding(
@@ -58,6 +76,7 @@ class _LedgerBillBottomState extends State<LedgerBillBottom> {
                 child: TextWidget.titleText(
                     text: "Bill and Details",
                     textOverflow: TextOverflow.ellipsis,
+                    color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
                     theme: theme.isDarkMode,
                     fw: 1),
               ),
@@ -89,7 +108,7 @@ class _LedgerBillBottomState extends State<LedgerBillBottom> {
                                           mainAxisAlignment:
                                               MainAxisAlignment.spaceBetween,
                                           children: [
-                                            TextWidget.paraText(
+                                            TextWidget.subText(
                                                 text: "${item.sCRIPNAME}",
                                                 color:  theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                                                 textOverflow:
@@ -112,10 +131,7 @@ class _LedgerBillBottomState extends State<LedgerBillBottom> {
                                 ),
                               ),
                             ),
-                              Divider(
-                                        color: const Color.fromARGB(
-                                            255, 212, 212, 212),
-                                      ),
+                              ListDivider(),
                             ListView.separated(
                               physics: ScrollPhysics(),
                               itemCount: ledgerdata
@@ -123,30 +139,26 @@ class _LedgerBillBottomState extends State<LedgerBillBottom> {
                               shrinkWrap: true,
                               itemBuilder: (context, index) {
                                 return Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 16.0, vertical: 4.0),
+                                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
                                   child: Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
                                       Row(
                                         children: [
-                                          Padding(
-                                            padding:
-                                                const EdgeInsets.only(top: 8.0),
-                                            child: TextWidget.subText(
-                                                text: ledgerdata
-                                                    .ledgerBillData!
-                                                    .transactions![index]
-                                                    .sCRIPNAME!,
-                                                textOverflow:
-                                                    TextOverflow.ellipsis,
-                                                theme: theme.isDarkMode,
-                                                fw: 0),
-                                          ),
+                                          TextWidget.subText(
+                                              text: ledgerdata
+                                                  .ledgerBillData!
+                                                  .transactions![index]
+                                                  .sCRIPNAME!,
+                                              color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                                              textOverflow:
+                                                  TextOverflow.ellipsis,
+                                              theme: theme.isDarkMode,
+                                              fw: 3),
                                         ],
                                       ),
-                                       SizedBox(height: 4),
+                                       SizedBox(height: 8),
                                       Padding(
                                         padding:
                                             const EdgeInsets.only(top: 4.0),
@@ -158,7 +170,7 @@ class _LedgerBillBottomState extends State<LedgerBillBottom> {
                                               children: [
                                                 TextWidget.paraText(
                                                     text: "BQty : ",
-                                                    color: Color(0xFF696969),
+                                                    color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                                                     textOverflow:
                                                         TextOverflow.ellipsis,
                                                     theme: theme.isDarkMode,
@@ -174,7 +186,9 @@ class _LedgerBillBottomState extends State<LedgerBillBottom> {
                                                                     .bQTY!)!
                                                                 .toInt() >
                                                             0
-                                                        ? Colors.green
+                                                        ? theme.isDarkMode
+                                                            ? colors.profitDark
+                                                            : colors.profitLight
                                                         : double.tryParse(ledgerdata
                                                                         .ledgerBillData!
                                                                         .transactions![
@@ -182,8 +196,14 @@ class _LedgerBillBottomState extends State<LedgerBillBottom> {
                                                                         .bQTY!)!
                                                                     .toInt() <
                                                                 0
-                                                            ? Colors.red
-                                                            : Colors.black,
+                                                            ?  theme.isDarkMode
+                                                            ? colors.lossDark
+                                                            : colors.lossLight
+                                                            : theme.isDarkMode
+                                                        ? colors
+                                                            .textSecondaryDark
+                                                        : colors
+                                                            .textSecondaryLight,
                                                     textOverflow:
                                                         TextOverflow.ellipsis,
                                                     theme: theme.isDarkMode,
@@ -199,7 +219,9 @@ class _LedgerBillBottomState extends State<LedgerBillBottom> {
                                                                     .bQTY!)!
                                                                 .toInt() >
                                                             0
-                                                        ? Colors.green
+                                                        ? theme.isDarkMode
+                                                            ? colors.profitDark
+                                                            : colors.profitLight
                                                         : double.tryParse(ledgerdata
                                                                         .ledgerBillData!
                                                                         .transactions![
@@ -207,8 +229,12 @@ class _LedgerBillBottomState extends State<LedgerBillBottom> {
                                                                         .bQTY!)!
                                                                     .toInt() <
                                                                 0
-                                                            ? Colors.red
-                                                            : Colors.black,
+                                                            ?  theme.isDarkMode
+                                                            ? colors.lossDark
+                                                            : colors.lossLight
+                                                            : theme.isDarkMode
+                                                            ? colors.textSecondaryDark
+                                                            : colors.textSecondaryLight,
                                                     textOverflow:
                                                         TextOverflow.ellipsis,
                                                     theme: theme.isDarkMode,
@@ -237,7 +263,11 @@ class _LedgerBillBottomState extends State<LedgerBillBottom> {
                                               children: [
                                                 TextWidget.paraText(
                                                     text: "NQty :  ",
-                                                    color: Color(0xFF696969),
+                                                    color: theme.isDarkMode
+                                                        ? colors
+                                                            .textSecondaryDark
+                                                        : colors
+                                                            .textSecondaryLight,
                                                     textOverflow:
                                                         TextOverflow.ellipsis,
                                                     theme: theme.isDarkMode,
@@ -246,8 +276,8 @@ class _LedgerBillBottomState extends State<LedgerBillBottom> {
                                                     text:
                                                         "${double.tryParse((double.parse(ledgerdata.ledgerBillData!.transactions![index].bQTY!) - double.parse(ledgerdata.ledgerBillData!.transactions![index].sQTY!)).toString())!.toInt()} ",
                                                     color: theme.isDarkMode
-                                                        ? colors.colorWhite
-                                                        : colors.colorBlack,
+                                                        ? colors.textSecondaryDark
+                                                        : colors.textSecondaryLight,
                                                     textOverflow:
                                                         TextOverflow.ellipsis,
                                                     theme: theme.isDarkMode,
@@ -268,7 +298,11 @@ class _LedgerBillBottomState extends State<LedgerBillBottom> {
                                               children: [
                                                 TextWidget.paraText(
                                                     text: "SQty : ",
-                                                    color: Color(0xFF696969),
+                                                    color: theme.isDarkMode
+                                                        ? colors
+                                                            .textSecondaryDark
+                                                        : colors
+                                                            .textSecondaryLight,
                                                     textOverflow:
                                                         TextOverflow.ellipsis,
                                                     theme: theme.isDarkMode,
@@ -284,7 +318,9 @@ class _LedgerBillBottomState extends State<LedgerBillBottom> {
                                                                     .toString())!
                                                                 .toInt() >
                                                             0
-                                                        ? Colors.red
+                                                        ? theme.isDarkMode
+                                                            ? colors.lossDark
+                                                            : colors.lossLight
                                                         : double.tryParse(ledgerdata
                                                                         .ledgerBillData!
                                                                         .transactions![
@@ -293,12 +329,14 @@ class _LedgerBillBottomState extends State<LedgerBillBottom> {
                                                                         .toString())!
                                                                     .toInt() <
                                                                 0
-                                                            ? Colors.red
+                                                            ? theme.isDarkMode
+                                                            ? colors.lossDark
+                                                            : colors.lossLight
                                                             : theme.isDarkMode
                                                                 ? colors
-                                                                    .colorWhite
+                                                                    .textSecondaryDark
                                                                 : colors
-                                                                    .colorBlack,
+                                                                    .textSecondaryLight,
                                                     textOverflow:
                                                         TextOverflow.ellipsis,
                                                     theme: theme.isDarkMode,
@@ -309,7 +347,11 @@ class _LedgerBillBottomState extends State<LedgerBillBottom> {
                                               children: [
                                                 TextWidget.paraText(
                                                     text: "NAmt : ",
-                                                    color: Color(0xFF696969),
+                                                    color: theme.isDarkMode
+                                                        ? colors
+                                                            .textSecondaryDark
+                                                        : colors
+                                                            .textSecondaryLight,
                                                     textOverflow:
                                                         TextOverflow.ellipsis,
                                                     theme: theme.isDarkMode,
@@ -318,8 +360,8 @@ class _LedgerBillBottomState extends State<LedgerBillBottom> {
                                                     text:
                                                         "₹ ${double.tryParse(ledgerdata.ledgerBillData?.transactions?[index].nETAMT?.toString() ?? "0")?.toStringAsFixed(2) ?? "0.00"}",
                                                     color: theme.isDarkMode
-                                                        ? colors.colorWhite
-                                                        : colors.colorBlack,
+                                                        ? colors.textSecondaryDark
+                                                        : colors.textSecondaryLight,
                                                     textOverflow:
                                                         TextOverflow.ellipsis,
                                                     theme: theme.isDarkMode,
@@ -335,13 +377,7 @@ class _LedgerBillBottomState extends State<LedgerBillBottom> {
                               },
                               separatorBuilder:
                                   (BuildContext context, int index) {
-                                return Padding(
-                                  padding: const EdgeInsets.only(
-                                    top: 4.0,
-                                    bottom: 0.0,
-                                  ),
-                                  child:ListDivider(),
-                                );
+                                return ListDivider();
                               },
                             )
                           ],

@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../provider/thems.dart';
 import '../res/global_state_text.dart';
 import '../res/res.dart';
 import 'functions.dart';
 
-class IpoErrorBadge extends StatelessWidget {
+class IpoErrorBadge extends ConsumerWidget {
   final String errorName;
   const IpoErrorBadge({super.key, required this.errorName});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.watch(themeProvider);
     return Row(
       children: [
         //  Icon(
@@ -24,8 +27,8 @@ class IpoErrorBadge extends StatelessWidget {
           child: TextWidget.captionText(
             text: errorName,
             theme: false,
-            color: colors.error,
-            fw: 500,
+            color:  theme.isDarkMode ? colors.lossDark : colors.lossLight,
+            fw: 0,
           ),
         ),
       ],

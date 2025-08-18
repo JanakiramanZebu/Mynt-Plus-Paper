@@ -98,7 +98,12 @@ class AuthProvider extends DefaultChangeNotifier {
       builder: (BuildContext dialogContext) {
         final theme = ref.read(themeProvider);
         return AlertDialog(
-          backgroundColor: colors.colorWhite,
+           backgroundColor: theme
+                                                                        .isDarkMode
+                                                                    ? const Color(
+                                                                        0xFF121212)
+                                                                    : const Color(
+                                                                        0xFFF1F3F8),
           shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.all(Radius.circular(8)),
           ),
@@ -135,9 +140,7 @@ class AuthProvider extends DefaultChangeNotifier {
                         child: Icon(
                           Icons.close_rounded,
                           size: 22,
-                          color: theme.isDarkMode
-                              ? colors.colorWhite
-                              : colors.colorBlack,
+                          color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                         ),
                       ),
                     ),
@@ -153,9 +156,9 @@ class AuthProvider extends DefaultChangeNotifier {
                     TextWidget.subText(
                       text: "Do you like to remove this account from devices?",
                       theme: theme.isDarkMode,
-                      color: theme.isDarkMode
-                          ? colors.textPrimaryDark
-                          : colors.textPrimaryLight,
+                     color: theme.isDarkMode
+                                                                                ? colors.textSecondaryDark
+                                                                                : colors.textPrimaryLight,
                       fw: 3,
                       align: TextAlign.center,
                     ),
@@ -191,8 +194,8 @@ class AuthProvider extends DefaultChangeNotifier {
                   text: "Remove",
                   theme: theme.isDarkMode,
                   color:
-                      !theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                  fw: 0,
+                       colors.colorWhite ,
+                  fw: 2,
                 ),
               ),
             ),
@@ -1249,7 +1252,12 @@ class AuthProvider extends DefaultChangeNotifier {
       barrierDismissible: false,
       builder: (BuildContext dialogContext) {
         return AlertDialog(
-          backgroundColor: colors.colorWhite,
+          backgroundColor: theme
+                                                                      .isDarkMode
+                                                                  ? const Color(
+                                                                      0xFF121212)
+                                                                  : const Color(
+                                                                      0xFFF1F3F8),
           titlePadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
           shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.all(Radius.circular(8))),
@@ -1287,7 +1295,7 @@ class AuthProvider extends DefaultChangeNotifier {
                         child: Icon(
                           Icons.close_rounded,
                           size: 22,
-                          color: colors.colorBlack,
+                          color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                         ),
                       ),
                     ),
@@ -1304,7 +1312,9 @@ class AuthProvider extends DefaultChangeNotifier {
                     TextWidget.subText(
                       text: "Authentication is required to proceed further!",
                       theme: theme.isDarkMode,
-                      color:  colors.textPrimary,
+                     color: theme.isDarkMode
+                                                                              ? colors.textSecondaryDark
+                                                                              : colors.textPrimaryLight,
                       fw: 3,
                       align: TextAlign.center,
                     ),
@@ -1333,7 +1343,7 @@ class AuthProvider extends DefaultChangeNotifier {
                   });
                 },
                 style: OutlinedButton.styleFrom(
-                  minimumSize: const Size(0, 40), // width, height
+                  minimumSize: const Size(0, 45), // width, height
                   side: BorderSide(
                       color: colors.btnOutlinedBorder), // Outline border color
                   shape: RoundedRectangleBorder(
@@ -1655,6 +1665,7 @@ class AuthProvider extends DefaultChangeNotifier {
                       color: !theme.isDarkMode
                           ? colors.textPrimaryDark
                           : colors.textPrimaryLight,
+                          align: TextAlign.center,
                       fw: 3,
                     ),
                   ],

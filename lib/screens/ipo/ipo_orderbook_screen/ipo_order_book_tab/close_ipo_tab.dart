@@ -86,7 +86,7 @@ class _CloseOrderItem extends StatelessWidget {
         child: Column(
           children: [
             _buildTopRow(context),
-            const SizedBox(height: 16),
+            const SizedBox(height: 8),
             _buildBottomRow(),
           ],
         ),
@@ -111,7 +111,7 @@ class _CloseOrderItem extends StatelessWidget {
           ),
         ),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
           decoration: BoxDecoration(
             color: order.reponseStatus == "cancel success"
                 ? colors.pending.withOpacity(0.1)
@@ -120,12 +120,12 @@ class _CloseOrderItem extends StatelessWidget {
                     : colors.lossLight.withOpacity(0.1),
             borderRadius: BorderRadius.circular(5),
           ),
-          child: TextWidget.subText(
+          child: TextWidget.paraText(
             text: order.reponseStatus == "cancel success"
                 ? "Cancelled"
                 : "Failed",
             theme: false,
-            fw: 0,
+            fw: 3,
             color: order.reponseStatus == "cancel success"
                 ? theme.isDarkMode
                     ? colors.pending
@@ -153,7 +153,7 @@ class _CloseOrderItem extends StatelessWidget {
               ? colors.textSecondaryDark
               : colors.textSecondaryLight,
         ),
-        TextWidget.paraText(
+        TextWidget.subText(
           text: _getInvestedAmount(),
           theme: false,
           fw: 3,

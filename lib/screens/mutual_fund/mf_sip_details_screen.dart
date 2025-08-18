@@ -37,125 +37,171 @@ class _mfSipdetScren extends State<mfSipdetScren>
       return DraggableScrollableSheet(
           expand: false,
           initialChildSize: 0.88,
-          maxChildSize: 0.99,
+          maxChildSize: 0.88,
           builder: (context, scrollController) {
-            return Scaffold(
-                backgroundColor: Colors.transparent,
-                body: SingleChildScrollView(
-                  controller: scrollController,
+            return SafeArea(
+              child: Scaffold(
+                backgroundColor:
+                    theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                body: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(16),
+                      topRight: Radius.circular(16),
+                    ),
+                    color: theme.isDarkMode
+                        ? colors.colorBlack
+                        : colors.colorWhite,
+                    border: Border(
+                      top: BorderSide(
+                        color: theme.isDarkMode
+                            ? colors.textSecondaryDark.withOpacity(0.5)
+                            : colors.colorWhite,
+                      ),
+                      left: BorderSide(
+                        color: theme.isDarkMode
+                            ? colors.textSecondaryDark.withOpacity(0.5)
+                            : colors.colorWhite,
+                      ),
+                      right: BorderSide(
+                        color: theme.isDarkMode
+                            ? colors.textSecondaryDark.withOpacity(0.5)
+                            : colors.colorWhite,
+                      ),
+                    ),
+                  ),
                   child: TransparentLoaderScreen(
-                      isLoading: mfdata.bestmfloader ?? false,
-                      child: widget.data == null
-                          ? const Center(child: NoDataFound())
-                          : Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
-                              child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                      const CustomDragHandler(),
-                                    _buildHeaderSection(mfdata, theme),
-                                    const SizedBox(height: 20),
-
-                                     
-                                    if (widget.data?.status ==
-                                        "ACTIVE")
-                                        Row(
+                    isLoading: mfdata.bestmfloader ?? false,
+                    child: widget.data == null
+                        ? const Center(child: NoDataFound())
+                        : Column(
+                          children: [
+                            Expanded(
+                              child: Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(horizontal: 16),
+                                  child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        const CustomDragHandler(),
+                                        _buildHeaderSection(mfdata, theme),
+                                        const SizedBox(height: 20),
+                                                
+                                        if (widget.data?.status == "ACTIVE")
+                                          Row(
+                                            children: [
+                                              Expanded(
+                                                child: _buildPauseButton(
+                                                    context, mfdata, theme),
+                                              ),
+                                              const SizedBox(width: 12),
+                                              Expanded(
+                                                child: _buildCancelButton(
+                                                    context, mfdata, theme),
+                                              ),
+                                            ],
+                                          ),
+                                                
+                                        // if (widget.data?.invList !=
+                                        //         null &&
+                                        //     widget.data!.invList!
+                                        //         .isNotEmpty)
+                                       
+                              
+                                      Expanded(
+                                        child: SingleChildScrollView(
+                                        controller: scrollController,
+                                        child: Column(
                                           children: [
-                                            Expanded(
-                                              child: _buildPauseButton(context, mfdata, theme),
-                                            ),
-                                            const SizedBox(width: 12),
-                                            Expanded(
-                                              child: _buildCancelButton(context, mfdata, theme),
-                                            ),
-                                          ],
-                                        ),
-                                     
-                                    // if (widget.data?.invList !=
-                                    //         null &&
-                                    //     widget.data!.invList!
-                                    //         .isNotEmpty)
-                                      rowOfInfoData(
-                                          "SIP Register Date",
-                                          "${widget.data!.sIPRegnDate ?? ""}",
-                                          theme), 
-                                    rowOfInfoData(
-                                        "Amount",
-                                        "${widget.data!.installmentAmount ?? "0.00"}",
-                                        theme),  
+                                            rowOfInfoData(
+                                            "SIP Register Date",
+                                            "${widget.data!.sIPRegnDate ?? ""}",
+                                            theme),
+                                        rowOfInfoData(
+                                            "Amount",
+                                            "${widget.data!.installmentAmount ?? "0.00"}",
+                                            theme),
                                         rowOfInfoData(
                                             "Next Due Date",
                                             "${widget.data?.NextSIPDate ?? ""}",
                                             theme),
-                                            rowOfInfoData(
+                                        rowOfInfoData(
                                             "Start Date",
                                             "${widget.data?.startDate ?? ""}",
                                             theme),
-                                            rowOfInfoData(
-                                            "End Date",
-                                            "${widget.data?.endDate ?? ""}",
-                                            theme),
-                                            rowOfInfoData(
+                                        rowOfInfoData("End Date",
+                                            "${widget.data?.endDate ?? ""}", theme),
+                                        rowOfInfoData(
                                             "Sip Reg No",
                                             "${widget.data?.sIPRegnNo ?? ""}",
                                             theme),
-                                       rowOfInfoData(
+                                        rowOfInfoData(
                                             "Settlement Type",
                                             "${widget.data?.settType ?? ""}",
                                             theme),
-
-                                             rowOfInfoData(
+                                                
+                                        rowOfInfoData(
                                             "Frequency Type",
                                             "${widget.data?.frequencyType ?? ""}",
                                             theme),
-                                   
-                                    // TextWidget.subText(
-                                    //     align: TextAlign.right,
-                                    //     text: "SIP Status",
-                                    //     color: theme.isDarkMode
-                                    //         ? colors.textPrimaryDark
-                                    //         : colors.textPrimaryLight,
-                                    //     textOverflow: TextOverflow.ellipsis,
-                                    //     theme: theme.isDarkMode,
-                                    //     fw: 3),
+                                                
+                                        // TextWidget.subText(
+                                        //     align: TextAlign.right,
+                                        //     text: "SIP Status",
+                                        //     color: theme.isDarkMode
+                                        //         ? colors.textPrimaryDark
+                                        //         : colors.textPrimaryLight,
+                                        //     textOverflow: TextOverflow.ellipsis,
+                                        //     theme: theme.isDarkMode,
+                                        //     fw: 3),
+                                                
+                                        // const SizedBox(height: 15),
+                                                
+                                        // // Safely build the timeline list
+                                        // _buildTimelineList(mfdata),
+                                                
+                                        // if ((widget.data
+                                        //             ?.NextSIPDate ??
+                                        //         "")
+                                        //     .isEmpty) ...[
+                                        //   const SizedBox(height: 16),
+                                        //   TextWidget.subText(
+                                        //       // align: TextAlign.right,
+                                        //       text: "Rejected Reason",
+                                        //       color: theme.isDarkMode
+                                        //             ? colors.textSecondaryDark
+                                        //             : colors.textSecondaryLight,
+                                        //       textOverflow: TextOverflow.ellipsis,
+                                        //       theme: theme.isDarkMode,
+                                        //       fw: 3),
+                                        //   const SizedBox(height: 8),
+                                        //   if (widget.data?.invList !=
+                                        //           null &&
+                                        //       widget.data!.invList!
+                                        //           .isNotEmpty)
+                                        //     TextWidget.paraText(
+                                                
+                                        //         text:
+                                        //             "${widget.data!.invList![0]["orderremarks"] ?? "No reason provided"}",
+                                        //         color:colors.loss,
+                                        //         textOverflow: TextOverflow.ellipsis,
+                                        //         theme: theme.isDarkMode,
+                                        //         maxLines: 3,
+                                        //         fw: 3),
+                                        // ],
+                                          ],
+                                        ),
+                                      ),)
+                                      ]),
 
-                                    // const SizedBox(height: 15),
-
-                                    // // Safely build the timeline list
-                                    // _buildTimelineList(mfdata),
-
-                                    // if ((widget.data
-                                    //             ?.NextSIPDate ??
-                                    //         "")
-                                    //     .isEmpty) ...[
-                                    //   const SizedBox(height: 16),
-                                    //   TextWidget.subText(
-                                    //       // align: TextAlign.right,
-                                    //       text: "Rejected Reason",
-                                    //       color: theme.isDarkMode
-                                    //             ? colors.textSecondaryDark
-                                    //             : colors.textSecondaryLight,
-                                    //       textOverflow: TextOverflow.ellipsis,
-                                    //       theme: theme.isDarkMode,
-                                    //       fw: 3),
-                                    //   const SizedBox(height: 8),
-                                    //   if (widget.data?.invList !=
-                                    //           null &&
-                                    //       widget.data!.invList!
-                                    //           .isNotEmpty)
-                                    //     TextWidget.paraText(
-                                          
-                                    //         text:
-                                    //             "${widget.data!.invList![0]["orderremarks"] ?? "No reason provided"}",
-                                    //         color:colors.loss,
-                                    //         textOverflow: TextOverflow.ellipsis,
-                                    //         theme: theme.isDarkMode,
-                                    //         maxLines: 3,
-                                    //         fw: 3),
-                                    // ],
-                                    
-                                  ]))),
-                ));
+                                ),
+                            ),
+                          ],
+                        ),
+                  ),
+                ),
+              ),
+            );
           });
     });
   }
@@ -178,8 +224,7 @@ class _mfSipdetScren extends State<mfSipdetScren>
                     children: [
                       TextWidget.titleText(
                           // align: TextAlign.right,
-                          text: widget.data?.name ??
-                              "Unknown Scheme",
+                          text: widget.data?.name ?? "Unknown Scheme",
                           color: theme.isDarkMode
                               ? colors.textPrimaryDark
                               : colors.textPrimaryLight,
@@ -196,8 +241,8 @@ class _mfSipdetScren extends State<mfSipdetScren>
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: widget.data?.status == "ACTIVE"
-                        ? colors.profit.withOpacity(0.1)
-                        : colors.loss.withOpacity(0.1),
+                        ?  theme.isDarkMode ? colors.profitDark.withOpacity(0.1) : colors.profitLight.withOpacity(0.1)
+                        : theme.isDarkMode ? colors.lossDark.withOpacity(0.1) : colors.lossLight.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(3),
                   ),
                   child: TextWidget.paraText(
@@ -205,8 +250,8 @@ class _mfSipdetScren extends State<mfSipdetScren>
                         ? "LIVE"
                         : widget.data?.status,
                     color: widget.data?.status == "ACTIVE"
-                        ? colors.profit
-                        : colors.loss,
+                        ? theme.isDarkMode ? colors.profitDark : colors.profitLight
+                        : theme.isDarkMode ? colors.lossDark : colors.lossLight,
                     theme: theme.isDarkMode,
                     fw: 3,
                   ),
@@ -231,8 +276,7 @@ class _mfSipdetScren extends State<mfSipdetScren>
   }
 
   Widget _buildTimelineList(dynamic mfdata) {
-    if (widget.data?.invList == null ||
-        widget.data!.invList!.isEmpty) {
+    if (widget.data?.invList == null || widget.data!.invList!.isEmpty) {
       return const Center(child: Text("No timeline data available"));
     }
 
@@ -253,7 +297,7 @@ class _mfSipdetScren extends State<mfSipdetScren>
     );
   }
 
-    Widget _buildPauseButton(
+  Widget _buildPauseButton(
       BuildContext context, dynamic mfdata, dynamic theme) {
     return Row(
       children: [
@@ -263,31 +307,32 @@ class _mfSipdetScren extends State<mfSipdetScren>
             width: double.infinity,
             child: ElevatedButton(
               onPressed: () async {
-               await showDialog(
+                await showDialog(
                   context: context,
                   builder: (BuildContext context) {
                     return MfSipCancelalert(
                         mfcancels: widget.data?.name ?? "",
                         mforderno: widget.data?.sIPRegnNo ?? "",
                         mfscode: widget.data?.schemeCode ?? "",
-                         
                         message: "pause",
-                        mffreqtype:
-                            widget.data?.frequencyType ?? "",
-                        mfnextsipdate:
-                            widget.data?.NextSIPDate ?? "");
+                        mffreqtype: widget.data?.frequencyType ?? "",
+                        mfnextsipdate: widget.data?.NextSIPDate ?? "");
                   },
                 );
               },
               style: ElevatedButton.styleFrom(
                 elevation: 0,
-                backgroundColor: colors.btnBg,
-                foregroundColor: const Color.fromARGB(255, 0, 0, 0),
-                side: BorderSide(
-                  color: colors.btnOutlinedBorder,
-                  width: 1,
-                ),
-                minimumSize: Size(double.infinity, 40), // height: 48
+                backgroundColor: theme.isDarkMode
+                    ? colors.textSecondaryDark.withOpacity(0.6)
+                    : colors.btnBg,
+                // foregroundColor: const Color.fromARGB(255, 0, 0, 0),
+                side: theme.isDarkMode
+                    ? null
+                    : BorderSide(
+                        color: colors.primaryLight,
+                        width: 1,
+                      ),
+                minimumSize: Size(double.infinity, 45), // height: 48
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(5),
                 ),
@@ -296,7 +341,7 @@ class _mfSipdetScren extends State<mfSipdetScren>
                   align: TextAlign.right,
                   text: "Pause",
                   color: theme.isDarkMode
-                      ? colors.primaryDark
+                      ? colors.colorWhite
                       : colors.primaryLight,
                   textOverflow: TextOverflow.ellipsis,
                   theme: theme.isDarkMode,
@@ -326,24 +371,25 @@ class _mfSipdetScren extends State<mfSipdetScren>
                         mfcancels: widget.data?.name ?? "",
                         mforderno: widget.data?.sIPRegnNo ?? "",
                         mfscode: widget.data?.schemeCode ?? "",
-                         
                         message: "sip",
-                        mffreqtype:
-                            widget.data?.frequencyType ?? "",
-                        mfnextsipdate:
-                            widget.data?.NextSIPDate ?? "");
+                        mffreqtype: widget.data?.frequencyType ?? "",
+                        mfnextsipdate: widget.data?.NextSIPDate ?? "");
                   },
                 );
               },
               style: ElevatedButton.styleFrom(
                 elevation: 0,
-                backgroundColor: colors.btnBg,
-                foregroundColor: const Color.fromARGB(255, 0, 0, 0),
-                side: BorderSide(
-                  color: colors.btnOutlinedBorder,
-                  width: 1,
-                ),
-                minimumSize: Size(double.infinity, 40), // height: 48
+                backgroundColor: theme.isDarkMode
+                    ? colors.textSecondaryDark.withOpacity(0.6)
+                    : colors.btnBg,
+                // foregroundColor: const Color.fromARGB(255, 0, 0, 0),
+                side: theme.isDarkMode
+                    ? null
+                    : BorderSide(
+                        color: colors.primaryLight,
+                        width: 1,
+                      ),
+                minimumSize: Size(double.infinity, 45), // height: 48
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(5),
                 ),
@@ -352,7 +398,7 @@ class _mfSipdetScren extends State<mfSipdetScren>
                   align: TextAlign.right,
                   text: "Cancel SIP",
                   color: theme.isDarkMode
-                      ? colors.primaryDark
+                      ? colors.colorWhite
                       : colors.primaryLight,
                   textOverflow: TextOverflow.ellipsis,
                   theme: theme.isDarkMode,
@@ -374,13 +420,13 @@ class _mfSipdetScren extends State<mfSipdetScren>
               // align: TextAlign.right,
               text: title1,
               color: theme.isDarkMode
-                  ? colors.textPrimaryDark
-                  : colors.textPrimaryLight,
+                  ? colors.textSecondaryDark
+                  : colors.textSecondaryLight,
               textOverflow: TextOverflow.ellipsis,
               theme: theme.isDarkMode,
               fw: 3),
           SizedBox(
-            width: MediaQuery.of(context).size.width * 0.6,
+            width: MediaQuery.of(context).size.width * 0.4,
             child: TextWidget.subText(
                 align: TextAlign.right,
                 text: value1,

@@ -158,7 +158,7 @@ class _OrderFooter extends StatelessWidget {
             ),
           ],
         ),
-        TextWidget.paraText(
+        TextWidget.subText(
           text: getFormatter(
             noDecimal: true,
             v4d: false,
@@ -188,10 +188,10 @@ class _StatusBadge extends StatelessWidget {
     return Row(
       children: [
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
           decoration: BoxDecoration(
             color: order.reponseStatus == "Cancel Success"
-                ? colors.error.withOpacity(0.1)
+                ? colors.loss.withOpacity(0.1)
                 : colors.error.withOpacity(0.1),
             borderRadius: BorderRadius.circular(4),
           ),

@@ -110,249 +110,282 @@ class _TotpScreenState extends ConsumerState<TotpScreen> {
   Widget build(BuildContext context) {
     final theme = ref.watch(themeProvider);
     // final screenheight = MediaQuery.of(context).size.height;
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const CustomDragHandler(),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  child: TextWidget.titleText(
-                      text: 'Your TOTP',
-                      theme: false,
-                      color: theme.isDarkMode
-                          ? colors.colorWhite
-                          : colors.colorBlack,
-                      fw: 0),
-                ),
+    return SafeArea(
+      child: Container(
+        decoration: BoxDecoration(
+           borderRadius: const BorderRadius.only(
+      topLeft: Radius.circular(16),
+      topRight: Radius.circular(16),
+    ),
+         color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+         border: Border(
+                                  top: BorderSide(
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                            .withOpacity(0.5)
+                                        : colors.colorWhite,
+                                  ),
+                                  left: BorderSide(
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                            .withOpacity(0.5)
+                                        : colors.colorWhite,
+                                  ),
+                                  right: BorderSide(
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                            .withOpacity(0.5)
+                                        : colors.colorWhite,
+                                  ),
+                                ),
 
-                ListDivider(),
-                // const SizedBox(height: 16),
-
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: TextWidget.subText(
-                      text: 'Token',
+         
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const CustomDragHandler(),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    child: TextWidget.titleText(
+                        text: 'Your TOTP',
+                        theme: false,
+                        color: theme.isDarkMode
+                            ? colors.colorWhite
+                            : colors.colorBlack,
+                        fw: 0),
+                  ),
+        
+                  ListDivider(),
+                  // const SizedBox(height: 16),
+        
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: TextWidget.subText(
+                        text: 'Token',
+                        theme: false,
+                        color: theme.isDarkMode
+                            ? colors.textSecondaryDark
+                            : colors.textSecondaryLight,
+                        ),
+                  ),
+                  
+                  Material(
+                    color: Colors.transparent,
+                    clipBehavior: Clip.hardEdge,
+                    child: InkWell(
+                      // borderRadius: BorderRadius.circular(15),
+                      splashColor: theme.isDarkMode
+                          ? colors.splashColorDark
+                          : colors.splashColorLight,
+                      highlightColor: theme.isDarkMode
+                          ? colors.highlightDark
+                          : colors.highlightLight,
+                      onTap: () async {
+                        await Future.delayed(const Duration(milliseconds: 150));
+                        Clipboard.setData(ClipboardData(text: otp));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                            successMessage(context, "TOTP copied to clipboard"));
+        
+                        Navigator.pop(context);
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 6),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                TextWidget.titleText(
+                                    text:
+                                        "${otp.substring(0, 3)} ${otp.substring(3, 6)}",
+                                    color: theme.isDarkMode
+                                        ? colors.colorWhite
+                                        : colors.colorBlack,
+                                    fw: 0,
+                                    theme: false,
+                                    ),
+                                const SizedBox(width: 4),
+                                Material(
+                                  color: Colors.transparent,
+                                  shape: const CircleBorder(),
+                                  clipBehavior: Clip.hardEdge,
+                                  child: InkWell(
+                                    customBorder: const CircleBorder(),
+                                    splashColor: theme.isDarkMode
+                                        ? colors.splashColorDark
+                                        : colors.splashColorLight,
+                                    highlightColor: theme.isDarkMode
+                                        ? colors.highlightDark
+                                        : colors.highlightLight,
+                                    onTap: () async {
+                                      await Future.delayed(
+                                          const Duration(milliseconds: 150));
+                                      Clipboard.setData(ClipboardData(text: otp));
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                          successMessage(context, "TOTP copied to clipboard"));
+                                      Navigator.pop(context);
+                                    },
+                                    child: Container(
+                                      height: 32,
+                                      width: 32,
+                                      child: Center(
+                                        child: Icon(Icons.copy, size: 18, color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            // const SizedBox(height: 8),
+                            // const Icon(Icons.copy, size: 24),
+                            const SizedBox(height: 10),
+                            // LinearProgressIndicator(
+                            //   value: progressValue,
+                            //   backgroundColor: theme.isDarkMode
+                            //       ? colors.colorLightBlue.withOpacity(0.2)
+                            //       : colors.colorBlue.withOpacity(0.2),
+                            //   color: theme.isDarkMode
+                            //       ? colors.colorLightBlue
+                            //       : colors.colorBlue,
+                            //   minHeight: 6,
+                            // ),
+                            // const SizedBox(height: 14),
+                            TextWidget.subText(
+                                text: '$remainingSeconds sec',
+                                theme: false,
+                                color: theme.isDarkMode
+                                    ? colors.textSecondaryDark
+                                    : colors.textSecondaryLight,
+                                fw: 3),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  TextWidget.subText(
+                      text: 'Authenticator Key',
                       theme: false,
                       color: theme.isDarkMode
                           ? colors.textPrimaryDark
                           : colors.textPrimaryLight,
-                      ),
-                ),
-                
-                Material(
-                  color: Colors.transparent,
-                  clipBehavior: Clip.hardEdge,
-                  child: InkWell(
-                    // borderRadius: BorderRadius.circular(15),
-                    splashColor: theme.isDarkMode
-                        ? colors.splashColorDark
-                        : colors.splashColorLight,
-                    highlightColor: theme.isDarkMode
-                        ? colors.highlightDark
-                        : colors.highlightLight,
-                    onTap: () async {
-                      await Future.delayed(const Duration(milliseconds: 150));
-                      Clipboard.setData(ClipboardData(text: otp));
-                      ScaffoldMessenger.of(context).showSnackBar(
-                          successMessage(context, "TOTP copied to clipboard"));
-
-                      Navigator.pop(context);
-                    },
+                      fw: 0),
+                  const SizedBox(height: 16),
+                  Container(
+                    decoration: BoxDecoration(
+              color: theme.isDarkMode
+                              ? colors.darkGrey
+                              : const Color(0xffF1F3F8),
+                                borderRadius: BorderRadius.circular(5),
+                                border: Border.all(
+                                  color: colors.primaryLight,
+                                  width: 1,
+                                ),
+                     
+                    ),
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 6),
+                      padding: const EdgeInsets.all(14.0),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              TextWidget.titleText(
-                                  text:
-                                      "${otp.substring(0, 3)} ${otp.substring(3, 6)}",
-                                  color: theme.isDarkMode
-                                      ? colors.colorWhite
-                                      : colors.colorBlack,
-                                  fw: 0,
-                                  theme: false,
-                                  ),
-                              const SizedBox(width: 4),
-                              Material(
-                                color: Colors.transparent,
-                                shape: const CircleBorder(),
-                                clipBehavior: Clip.hardEdge,
-                                child: InkWell(
-                                  customBorder: const CircleBorder(),
-                                  splashColor: theme.isDarkMode
-                                      ? colors.splashColorDark
-                                      : colors.splashColorLight,
-                                  highlightColor: theme.isDarkMode
-                                      ? colors.highlightDark
-                                      : colors.highlightLight,
-                                  onTap: () async {
-                                    await Future.delayed(
-                                        const Duration(milliseconds: 150));
-                                    Clipboard.setData(ClipboardData(text: otp));
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                        successMessage(context, "TOTP copied to clipboard"));
-                                    Navigator.pop(context);
-                                  },
-                                  child: Container(
-                                    height: 32,
-                                    width: 32,
-                                    child: Center(
-                                      child: Icon(Icons.copy, size: 18),
-                                    ),
+                          Expanded(
+                            child: TextWidget.paraText(
+                                text: isObscure
+                                    ? "••••••••••••••••••••"
+                                    : widget.secretKey,
+                                theme: false,
+                                color: theme.isDarkMode
+                                    ? colors.textPrimaryDark
+                                    : colors.textPrimaryLight,
+                                
+                                textOverflow: TextOverflow.ellipsis),
+                          ),
+                          Material(
+                            color: Colors.transparent,
+                            shape: const CircleBorder(),
+                            clipBehavior: Clip.hardEdge,
+                            child: InkWell(
+                              customBorder: const CircleBorder(),
+                              splashColor: theme.isDarkMode
+                                  ? colors.splashColorDark
+                                  : colors.splashColorLight,
+                              highlightColor: theme.isDarkMode
+                                  ? colors.highlightDark
+                                  : colors.highlightLight,
+                              onTap: () async {
+                                await Future.delayed(
+                                    const Duration(milliseconds: 150));
+                                setState(() {
+                                  isObscure = !isObscure;
+                                });
+                              },
+                              child: Container(
+                                height: 32,
+                                width: 32,
+                                child: Center(
+                                  child: Icon(
+                                    isObscure ? Icons.visibility_off : Icons.visibility,
+                                    size: 18,
+                                    color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                                   ),
                                 ),
                               ),
-                            ],
+                            ),
                           ),
-                          // const SizedBox(height: 8),
-                          // const Icon(Icons.copy, size: 24),
-                          const SizedBox(height: 10),
-                          // LinearProgressIndicator(
-                          //   value: progressValue,
-                          //   backgroundColor: theme.isDarkMode
-                          //       ? colors.colorLightBlue.withOpacity(0.2)
-                          //       : colors.colorBlue.withOpacity(0.2),
-                          //   color: theme.isDarkMode
-                          //       ? colors.colorLightBlue
-                          //       : colors.colorBlue,
-                          //   minHeight: 6,
-                          // ),
-                          // const SizedBox(height: 14),
-                          TextWidget.subText(
-                              text: '$remainingSeconds sec',
-                              theme: false,
-                              color: theme.isDarkMode
-                                  ? colors.textSecondaryDark
-                                  : colors.textSecondaryLight,
-                              fw: 3),
+                          const SizedBox(width: 4),
+                          Material(
+                            color: Colors.transparent,
+                            shape: const CircleBorder(),
+                            clipBehavior: Clip.hardEdge,
+                            child: InkWell(
+                              customBorder: const CircleBorder(),
+                              splashColor: theme.isDarkMode
+                                  ? colors.splashColorDark
+                                  : colors.splashColorLight,
+                              highlightColor: theme.isDarkMode
+                                  ? colors.highlightDark
+                                  : colors.highlightLight,
+                              onTap: () async {
+                                await Future.delayed(
+                                    const Duration(milliseconds: 150));
+                                Clipboard.setData(
+                                    ClipboardData(text: widget.secretKey));
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                    successMessage(
+                                        context, "Auth key copied to clipboard"));
+                                Navigator.pop(context);
+                              },
+                              child: Container(
+                                height: 32,
+                                width: 32,
+                                child: Center(
+                                  child: Icon(Icons.copy, size: 18, color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,),
+                                ),
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                     ),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                TextWidget.subText(
-                    text: 'Authenticator Key',
-                    theme: false,
-                    color: theme.isDarkMode
-                        ? colors.textPrimaryDark
-                        : colors.textPrimaryLight,
-                    ),
-                const SizedBox(height: 16),
-                Container(
-                  decoration: BoxDecoration(
-                    color: !theme.isDarkMode
-                        ? Color(0xffF1F3F8)
-                        : colors.colorbluegrey,
-                    borderRadius: BorderRadius.circular(4),
-                    border: Border.all(
-                      color: colors.primaryLight,
-                      width: 1,
-                    ),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(14.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: TextWidget.paraText(
-                              text: isObscure
-                                  ? "••••••••••••••••••••"
-                                  : widget.secretKey,
-                              theme: false,
-                              color: theme.isDarkMode
-                                  ? colors.textPrimaryDark
-                                  : colors.textPrimaryLight,
-                              
-                              textOverflow: TextOverflow.ellipsis),
-                        ),
-                        Material(
-                          color: Colors.transparent,
-                          shape: const CircleBorder(),
-                          clipBehavior: Clip.hardEdge,
-                          child: InkWell(
-                            customBorder: const CircleBorder(),
-                            splashColor: theme.isDarkMode
-                                ? colors.splashColorDark
-                                : colors.splashColorLight,
-                            highlightColor: theme.isDarkMode
-                                ? colors.highlightDark
-                                : colors.highlightLight,
-                            onTap: () async {
-                              await Future.delayed(
-                                  const Duration(milliseconds: 150));
-                              setState(() {
-                                isObscure = !isObscure;
-                              });
-                            },
-                            child: Container(
-                              height: 32,
-                              width: 32,
-                              child: Center(
-                                child: Icon(
-                                  isObscure ? Icons.visibility_off : Icons.visibility,
-                                  size: 18,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                        Material(
-                          color: Colors.transparent,
-                          shape: const CircleBorder(),
-                          clipBehavior: Clip.hardEdge,
-                          child: InkWell(
-                            customBorder: const CircleBorder(),
-                            splashColor: theme.isDarkMode
-                                ? colors.splashColorDark
-                                : colors.splashColorLight,
-                            highlightColor: theme.isDarkMode
-                                ? colors.highlightDark
-                                : colors.highlightLight,
-                            onTap: () async {
-                              await Future.delayed(
-                                  const Duration(milliseconds: 150));
-                              Clipboard.setData(
-                                  ClipboardData(text: widget.secretKey));
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                  successMessage(
-                                      context, "Auth key copied to clipboard"));
-                              Navigator.pop(context);
-                            },
-                            child: Container(
-                              height: 32,
-                              width: 32,
-                              child: Center(
-                                child: Icon(Icons.copy, size: 18),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                )
-              ],
+                  )
+                ],
+              ),
             ),
-          ),
-          SizedBox(height: 30.0)
-        ],
+            SizedBox(height: 30.0)
+          ],
+        ),
       ),
     );
   }

@@ -39,71 +39,73 @@ class _NotificationpageState extends ConsumerState<Notificationpage>
   @override
   Widget build(BuildContext context) {
     final theme = ref.read(themeProvider);
-    return Scaffold(
-      appBar: AppBar(
-          elevation: .2,
-          centerTitle: false,
-          leadingWidth: 41,
-          titleSpacing: 6,
-          leading: const CustomBackBtn(),
-          title: TextWidget.titleText(
-            text: "Notificaton",
-            theme: false,
-            color: theme.isDarkMode
-                ? colors.textPrimaryDark
-                : colors.textPrimaryLight,
-            fw: 1,
-          )),
-      body: Consumer(builder: (context, WidgetRef ref, _) {
-        final notification = ref.watch(notificationprovider);
-        return Column(
-          children: [
-            Container(
-                decoration: BoxDecoration(
-                    border: Border(
-                        bottom: BorderSide(
-                            color: theme.isDarkMode
-                                ? colors.darkColorDivider
-                                : colors.colorDivider,
-                            width: 0))),
-                width: MediaQuery.of(context).size.width,
-                height: 46,
-                child: TabBar(
-                    indicatorSize: TabBarIndicatorSize.tab,
-                    indicatorColor: theme.isDarkMode
-                        ? colors.secondaryDark
-                        : colors.secondaryLight,
-                    unselectedLabelColor: colors.textSecondaryLight,
-                    unselectedLabelStyle: TextWidget.textStyle(
-                      fontSize: 14,
-                      theme: false,
-                      color: colors.textSecondaryLight,
-                  
-                    ),
-                    labelColor: theme.isDarkMode
-                                ? colors.secondaryDark
-                                : colors.secondaryLight,
-                    labelStyle: TextWidget.textStyle(
-                      fontSize: 14,
-                      theme: false,
-                      color:theme.isDarkMode
-                                ? colors.secondaryDark
-                                : colors.secondaryLight,
-                      fw: 2,
-                    ),
-                    controller: notification.notifytab,
-                    tabs: notification.notifyTabName)),
-            Expanded(
-                child: TabBarView(
-                    controller: notification.notifytab,
-                    children: const [
-                  BrokerMsg(),
-                  ExchangeMessage(),
-                  InformationMessage(),
-                ]))
-          ],
-        );
-      }),
+    return SafeArea(
+      child: Scaffold(
+        appBar: AppBar(
+            elevation: .2,
+            centerTitle: false,
+            leadingWidth: 41,
+            titleSpacing: 6,
+            leading: const CustomBackBtn(),
+            title: TextWidget.titleText(
+              text: "Notificaton",
+              theme: false,
+              color: theme.isDarkMode
+                  ? colors.textPrimaryDark
+                  : colors.textPrimaryLight,
+              fw: 1,
+            )),
+        body: Consumer(builder: (context, WidgetRef ref, _) {
+          final notification = ref.watch(notificationprovider);
+          return Column(
+            children: [
+              Container(
+                  decoration: BoxDecoration(
+                      border: Border(
+                          bottom: BorderSide(
+                              color: theme.isDarkMode
+                                  ? colors.darkColorDivider
+                                  : colors.colorDivider,
+                              width: 0))),
+                  width: MediaQuery.of(context).size.width,
+                  height: 46,
+                  child: TabBar(
+                      indicatorSize: TabBarIndicatorSize.tab,
+                      indicatorColor: theme.isDarkMode
+                          ? colors.secondaryDark
+                          : colors.secondaryLight,
+                      unselectedLabelColor: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                      unselectedLabelStyle: TextWidget.textStyle(
+                        fontSize: 14,
+                        theme: false,
+                        color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                    
+                      ),
+                      labelColor: theme.isDarkMode
+                                  ? colors.secondaryDark
+                                  : colors.secondaryLight,
+                      labelStyle: TextWidget.textStyle(
+                        fontSize: 14,
+                        theme: false,
+                        color:theme.isDarkMode
+                                  ? colors.secondaryDark
+                                  : colors.secondaryLight,
+                        fw: 2,
+                      ),
+                      controller: notification.notifytab,
+                      tabs: notification.notifyTabName)),
+              Expanded(
+                  child: TabBarView(
+                      controller: notification.notifytab,
+                      children: const [
+                    BrokerMsg(),
+                    ExchangeMessage(),
+                    InformationMessage(),
+                  ]))
+            ],
+          );
+        }),
+      ),
     );
   }
 }

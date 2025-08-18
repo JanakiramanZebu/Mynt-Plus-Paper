@@ -723,6 +723,7 @@ class _OrderItemState extends State<_OrderItem> {
                   child: TextWidget.subText(
                     text:
                         "${widget.orderItem.symbol?.replaceAll("-EQ", "")} ${widget.orderItem.expDate} ${widget.orderItem.option ?? ''}",
+                        
                     theme: widget.theme.isDarkMode,
                     fw: 3,
                     maxLines: 1,

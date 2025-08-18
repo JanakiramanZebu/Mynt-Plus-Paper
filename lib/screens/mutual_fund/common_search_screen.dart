@@ -65,425 +65,428 @@ class _MfCommonSearchState extends ConsumerState<MfCommonSearch> {
       },
       child: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
-        child: Scaffold(
-          appBar: AppBar(
-            elevation: 0,
-            leadingWidth: 48,
-            centerTitle: false,
-            titleSpacing: 0,
-            leading: Material(
-              color: Colors.transparent,
-              shape: const CircleBorder(),
-              clipBehavior: Clip.hardEdge,
-              child: InkWell(
-                customBorder: const CircleBorder(),
-                splashColor: theme.isDarkMode
-                    ? colors.splashColorDark
-                    : colors.splashColorLight,
-                highlightColor: theme.isDarkMode
-                    ? colors.highlightDark
-                    : colors.highlightLight,
-                onTap: () {
-                  Navigator.pop(context);
-                  mfData.mfsearchcontroller.clear();
-                  mfData.fetchmfCommonsearch("", context);
-                },
-                child: Container(
-                  width: 44, // Increased touch area
-                  height: 44,
-                  alignment: Alignment.center,
-                  child: Icon(
-                    Icons.arrow_back_ios_outlined,
-                    size: 18,
-                    color: theme.isDarkMode
-                        ? colors.colorWhite
-                        : colors.colorBlack,
+        child: SafeArea(
+          child: Scaffold(
+            appBar: AppBar(
+              elevation: 0,
+              leadingWidth: 48,
+              centerTitle: false,
+              titleSpacing: 0,
+              leading: Material(
+                color: Colors.transparent,
+                shape: const CircleBorder(),
+                clipBehavior: Clip.hardEdge,
+                child: InkWell(
+                  customBorder: const CircleBorder(),
+                  splashColor: theme.isDarkMode
+                      ? colors.splashColorDark
+                      : colors.splashColorLight,
+                  highlightColor: theme.isDarkMode
+                      ? colors.highlightDark
+                      : colors.highlightLight,
+                  onTap: () {
+                    Navigator.pop(context);
+                    mfData.mfsearchcontroller.clear();
+                    mfData.fetchmfCommonsearch("", context);
+                  },
+                  child: Container(
+                    width: 44, // Increased touch area
+                    height: 44,
+                    alignment: Alignment.center,
+                    child: Icon(
+                      Icons.arrow_back_ios_outlined,
+                      size: 18,
+                      color: theme.isDarkMode
+                          ? colors.colorWhite
+                          : colors.colorBlack,
+                    ),
                   ),
                 ),
               ),
-            ),
-            title: Container(
-              padding: const EdgeInsets.only(right: 12, top: 8, bottom: 7),
-              child: Container(
-                height: 40,
-                decoration: BoxDecoration(
-                  color: colors.searchBg,
-                  borderRadius: BorderRadius.circular(5),
-                  // border: Border.all(
-                  //   color: theme.isDarkMode ? const Color(0xFF2A2A2A) : const Color(0xFFEEEEEE),
-                  //   width: 1,
-                  // ),
-                ),
-                child: Row(
-                  children: [
-                    // Search icon
-                    const SizedBox(width: 12),
-                    SvgPicture.asset(
-                      assets.searchIcon,
-                      color: theme.isDarkMode
-                          ? colors.textPrimaryDark
-                          : colors.textPrimaryLight,
-                      width: 18,
-                      height: 18,
-                    ),
-                    const SizedBox(width: 8),
-                    // Text input
-                    Expanded(
-                      child: TextFormField(
-                          focusNode: searchFocusNode,
-                          controller: mfData.mfsearchcontroller,
-                          style: TextWidget.textStyle(
-                            fontSize: 14,
-                            color: theme.isDarkMode
-                                ? colors.textPrimaryDark
-                                : colors.textPrimaryLight,
-                            theme: theme.isDarkMode,
-                          ),
-                          // textCapitalization:
-                          //     TextCapitalization.characters,
-                          // inputFormatters: [
-                          //   UpperCaseTextFormatter(),
-                          //   NoEmojiInputFormatter(),
-                          //   FilteringTextInputFormatter.deny(
-                          //       RegExp('[π£•₹€℅™∆√¶/.,]'))
-                          // ],
-                          // keyboardType: TextInputType.text,
-                          decoration: InputDecoration(
-                            isCollapsed: true,
-                            border: InputBorder.none,
-                            enabledBorder: InputBorder.none,
-                            focusedBorder: InputBorder.none,
-                            hintText: "Search Mutual Fund",
-                            hintStyle: TextWidget.textStyle(
-                              fontSize: 14,
-                              theme: theme.isDarkMode,
+              title: Container(
+                padding: const EdgeInsets.only(right: 12, top: 8, bottom: 7),
+                child: Container(
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: theme.isDarkMode
+                  ? colors.searchBgDark
+                  : colors.searchBg,
+                    borderRadius: BorderRadius.circular(5),
+                    // border: Border.all(
+                    //   color: theme.isDarkMode ? const Color(0xFF2A2A2A) : const Color(0xFFEEEEEE),
+                    //   width: 1,
+                    // ),
+                  ),
+                  child: Row(
+                    children: [
+                      // Search icon
+                      const SizedBox(width: 12),
+                      SvgPicture.asset(
+                        assets.searchIcon,
+                        color: theme.isDarkMode
+                            ? colors.textSecondaryDark
+                            : colors.textSecondaryLight,
+                        width: 18,
+                        height: 18,
+                      ),
+                      const SizedBox(width: 8),
+                      // Text input
+                      Expanded(
+                        child: TextFormField(
+                            focusNode: searchFocusNode,
+                            controller: mfData.mfsearchcontroller,
+                            style: TextWidget.textStyle(
+                              fontSize: 16,
                               color: theme.isDarkMode
                                   ? colors.textPrimaryDark
                                   : colors.textPrimaryLight,
+                              theme: theme.isDarkMode,
                             ),
-                            contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 0, vertical: 12),
-                          ),
-                          onChanged: (value) async {
-                            if (value.isNotEmpty) {
-                              mfData.fetchmfCommonsearch(value, context);
-                            }
-                          }),
-                    ),
-
-                    // Clear button
-                    if (mfData.mfsearchcontroller.text.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: Material(
-                          color: Colors.transparent,
-                          shape: const CircleBorder(),
-                          child: InkWell(
-                            customBorder: const CircleBorder(),
-                            onTap: () {
-                              mfData.mfsearchcontroller.clear();
-                              // mfData.fetchmfCommonsearch("", context);
-                              mfData.clearMfSearchResult();
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: SvgPicture.asset(
-                                assets.removeIcon,
-                                width: 20,
-                                height: 20,
+                            // textCapitalization:
+                            //     TextCapitalization.characters,
+                            // inputFormatters: [
+                            //   UpperCaseTextFormatter(),
+                            //   NoEmojiInputFormatter(),
+                            //   FilteringTextInputFormatter.deny(
+                            //       RegExp('[π£•₹€℅™∆√¶/.,]'))
+                            // ],
+                            // keyboardType: TextInputType.text,
+                            decoration: InputDecoration(
+                              isCollapsed: true,
+                              border: InputBorder.none,
+                              enabledBorder: InputBorder.none,
+                              focusedBorder: InputBorder.none,
+                              hintText: "Search Mutual Fund",
+                              hintStyle: TextWidget.textStyle(
+                                fontSize: 14,
+                                theme: theme.isDarkMode,
+                                color: theme.isDarkMode
+                                    ? colors.textSecondaryDark
+                                    : colors.textSecondaryLight,
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 0, vertical: 12),
+                            ),
+                            onChanged: (value) async {
+                              if (value.isNotEmpty) {
+                                mfData.fetchmfCommonsearch(value, context);
+                              }
+                            }),
+                      ),
+          
+                      // Clear button
+                      if (mfData.mfsearchcontroller.text.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: Material(
+                            color: Colors.transparent,
+                            shape: const CircleBorder(),
+                            child: InkWell(
+                              customBorder: const CircleBorder(),
+                              onTap: () {
+                                mfData.mfsearchcontroller.clear();
+                                // mfData.fetchmfCommonsearch("", context);
+                                mfData.clearMfSearchResult();
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: SvgPicture.asset(
+                                  assets.removeIcon,
+                                  color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                                  width: 20,
+                                  height: 20,
+                                ),
                               ),
                             ),
                           ),
                         ),
-                      ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-          body: TransparentLoaderScreen(
-            isLoading: mfData.bestmfloader ?? false,
-            child: SingleChildScrollView(
+            body: TransparentLoaderScreen(
+              isLoading: mfData.bestmfloader ?? false,
               child: Column(
                 children: [
                   if (mfData.mutualFundsearchdata != null) ...[
                     mfData.mutualFundsearchdata!.isNotEmpty
-                        ? ListView.separated(
-                            shrinkWrap: true,
-                            // padding: const EdgeInsets.symmetric(horizontal: 8),
-                            separatorBuilder: (context, index) =>
-                                const ListDivider(),
-                            physics: const BouncingScrollPhysics(),
-                            itemCount: mfData.mutualFundsearchdata!.length,
-                            itemBuilder: (BuildContext context, int index) {
-                              final fund = mfData.mutualFundsearchdata![index];
-                              return Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  splashColor: theme.isDarkMode
-                                      ? Colors.white.withOpacity(0.15)
-                                      : Colors.black.withOpacity(0.15),
-                                  highlightColor: theme.isDarkMode
-                                      ? Colors.white.withOpacity(0.08)
-                                      : Colors.black.withOpacity(0.08),
-                                  onTap: () async {
-                                    try {
-                                      mfData.loaderfun();
-                                      if (fund.iSIN != null) {
-                                        await mfData.fetchFactSheet(fund.iSIN!);
-                                        mfData.fetchmatchisan(fund.iSIN!);
-                                        if (mfData.factSheetDataModel?.stat !=
-                                            "Not Ok") {
-                                          showModalBottomSheet(
-                                            isScrollControlled: true,
-                                            shape: const RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.only(
-                                                topLeft: Radius.circular(16),
-                                                topRight: Radius.circular(16),
-                                              ),
-                                            ),
-                                            isDismissible: true,
-                                            enableDrag: false,
-                                            useSafeArea: true,
-                                            context: context,
-                                            builder: (context) => Container(
-                                                padding: EdgeInsets.only(
-                                                  bottom: MediaQuery.of(context)
-                                                      .viewInsets
-                                                      .bottom,
+                        ? Expanded(
+                          child: ListView.separated(
+                              shrinkWrap: true,
+                              // padding: const EdgeInsets.symmetric(horizontal: 8),
+                              separatorBuilder: (context, index) =>
+                                  const ListDivider(),
+                              physics: const BouncingScrollPhysics(),
+                              itemCount: mfData.mutualFundsearchdata!.length,
+                              itemBuilder: (BuildContext context, int index) {
+                                final fund = mfData.mutualFundsearchdata![index];
+                                return Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                    splashColor: theme.isDarkMode
+                                        ? Colors.white.withOpacity(0.15)
+                                        : Colors.black.withOpacity(0.15),
+                                    highlightColor: theme.isDarkMode
+                                        ? Colors.white.withOpacity(0.08)
+                                        : Colors.black.withOpacity(0.08),
+                                    onTap: () async {
+                                      try {
+                                        mfData.loaderfun();
+                                        if (fund.iSIN != null) {
+                                          await mfData.fetchFactSheet(fund.iSIN!);
+                                          mfData.fetchmatchisan(fund.iSIN!);
+                                          if (mfData.factSheetDataModel?.stat !=
+                                              "Not Ok") {
+                                            showModalBottomSheet(
+                                              isScrollControlled: true,
+                                              shape: const RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.only(
+                                                  topLeft: Radius.circular(16),
+                                                  topRight: Radius.circular(16),
                                                 ),
-                                                child: MFStockDetailScreen(
-                                                    mfStockData: fund)),
-                                          );
-                                          // Navigator.pushNamed(
-                                          //   context,
-                                          //   Routes.mfStockDetail,
-                                          //   arguments: fund,
-                                          // );
+                                              ),
+                                              isDismissible: true,
+                                              enableDrag: false,
+                                              useSafeArea: true,
+                                              context: context,
+                                              builder: (context) => Container(
+                                                  padding: EdgeInsets.only(
+                                                    bottom: MediaQuery.of(context)
+                                                        .viewInsets
+                                                        .bottom,
+                                                  ),
+                                                  child: MFStockDetailScreen(
+                                                      mfStockData: fund)),
+                                            );
+                                            // Navigator.pushNamed(
+                                            //   context,
+                                            //   Routes.mfStockDetail,
+                                            //   arguments: fund,
+                                            // );
+                                          } else {
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              successMessage(
+                                                  context, "No Single Page Data"),
+                                            );
+                                            final jsondata =
+                                                MutualFundList.fromJson(
+                                                    fund.toJson());
+                                            Navigator.pushNamed(
+                                              context,
+                                              Routes.mforderScreen,
+                                              arguments: jsondata,
+                                            );
+                                            mfData.orderchangetitle("One-time");
+                                            mfData.chngOrderType("One-time");
+                                          }
                                         } else {
                                           ScaffoldMessenger.of(context)
                                               .showSnackBar(
                                             successMessage(
-                                                context, "No Single Page Data"),
+                                                context, "Invalid fund data"),
                                           );
-                                          final jsondata =
-                                              MutualFundList.fromJson(
-                                                  fund.toJson());
-                                          Navigator.pushNamed(
-                                            context,
-                                            Routes.mforderScreen,
-                                            arguments: jsondata,
-                                          );
-                                          mfData.orderchangetitle("One-time");
-                                          mfData.chngOrderType("One-time");
                                         }
-                                      } else {
+                                      } catch (e) {
                                         ScaffoldMessenger.of(context)
                                             .showSnackBar(
-                                          successMessage(
-                                              context, "Invalid fund data"),
+                                          successMessage(context,
+                                              "Error loading fund details"),
                                         );
                                       }
-                                    } catch (e) {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        successMessage(context,
-                                            "Error loading fund details"),
-                                      );
-                                    }
-                                  },
-                                  child: ListTile(
-                                    //  visualDensity:const VisualDensity(horizontal: -4, vertical: 0),
-                                    contentPadding: const EdgeInsets.symmetric(
-                                        horizontal: 8),
-                                    dense: false,
-                                    leading: CircleAvatar(
-                                      backgroundImage: NetworkImage(
-                                        "https://v3.mynt.in/mfapi/static/images/mf/${fund.aMCCode ?? "default"}.png",
+                                    },
+                                    child: ListTile(
+                                      //  visualDensity:const VisualDensity(horizontal: -4, vertical: 0),
+                                      contentPadding: const EdgeInsets.symmetric(
+                                          horizontal: 8),
+                                      dense: false,
+                                      leading: CircleAvatar(
+                                        backgroundImage: NetworkImage(
+                                          "https://v3.mynt.in/mfapi/static/images/mf/${fund.aMCCode ?? "default"}.png",
+                                        ),
                                       ),
-                                    ),
-                                    title: Container(
-                                      margin: EdgeInsets.only(
-                                        right:
-                                            MediaQuery.of(context).size.width *
-                                                0.1,
+                                      title: Container(
+                                        margin: EdgeInsets.only(
+                                          right:
+                                              MediaQuery.of(context).size.width *
+                                                  0.1,
+                                        ),
+                                        padding: const EdgeInsets.only(
+                                          bottom: 4,
+                                        ),
+                                        child: TextWidget.subText(
+                                          text: fund.mfsearchnamename ?? "",
+                                          theme: theme.isDarkMode,
+                                          color: theme.isDarkMode
+                                              ? colors.textPrimaryDark
+                                              : colors.textPrimaryLight,
+                                          textOverflow: TextOverflow.ellipsis,
+                                          // softWrap: true,
+                                          maxLines: 2,
+                                        ),
                                       ),
-                                      padding: const EdgeInsets.only(
-                                        bottom: 4,
+                                      subtitle: Padding(
+                                        padding: const EdgeInsets.only(top: 4),
+                                        child: TextWidget.paraText(
+                                          text: fund.type ?? "",
+                                          textOverflow: TextOverflow.ellipsis,
+                                          maxLines: 1,
+                                          color: theme.isDarkMode
+                                              ? colors.textSecondaryDark
+                                              : colors.textSecondaryLight,
+                                          theme: false,
+                                        ),
                                       ),
-                                      child: TextWidget.subText(
-                                        text: fund.mfsearchnamename ?? "",
-                                        theme: theme.isDarkMode,
-                                        color: theme.isDarkMode
-                                            ? colors.textPrimaryDark
-                                            : colors.textPrimaryLight,
-                                        textOverflow: TextOverflow.ellipsis,
-                                        // softWrap: true,
-                                        maxLines: 2,
-                                      ),
-                                    ),
-                                    subtitle: Padding(
-                                      padding: const EdgeInsets.only(top: 4),
-                                      child: TextWidget.paraText(
-                                        text: fund.type ?? "",
-                                        textOverflow: TextOverflow.ellipsis,
-                                        maxLines: 1,
-                                        color: theme.isDarkMode
-                                            ? colors.textSecondaryDark
-                                            : colors.textSecondaryLight,
-                                        theme: false,
-                                      ),
-                                    ),
-                                    trailing: Material(
-                                      color: Colors.transparent,
-                                      shape: const CircleBorder(),
-                                      child: InkWell(
-                                        customBorder: const CircleBorder(),
-                                        splashColor:
-                                            Colors.grey.withOpacity(0.3),
-                                        highlightColor:
-                                            Colors.grey.withOpacity(0.2),
-                                        onTap: () async {
-                                          if (fund.iSIN != null) {
-                                            await mfData.fetchcommonsearchWadd(
-                                              fund.iSIN!,
+                                      trailing: Material(
+                                        color: Colors.transparent,
+                                        shape: const CircleBorder(),
+                                        child: InkWell(
+                                          customBorder: const CircleBorder(),
+                                          splashColor:
+                                              Colors.grey.withOpacity(0.3),
+                                          highlightColor:
+                                              Colors.grey.withOpacity(0.2),
+                                          onTap: () async {
+                                            if (fund.iSIN != null) {
+                                              await mfData.fetchcommonsearchWadd(
+                                                fund.iSIN!,
+                                                fund.isAdd == true
+                                                    ? "delete"
+                                                    : "add",
+                                                context,
+                                                false,
+                                              );
+                                            }
+                                          },
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(8),
+                                            child: SvgPicture.asset(
+                                              color: fund.isAdd == true
+                                                  ? colors.colorBlue
+                                                  : colors.colorGrey,
                                               fund.isAdd == true
-                                                  ? "delete"
-                                                  : "add",
-                                              context,
-                                              false,
-                                            );
-                                          }
-                                        },
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(8),
-                                          child: SvgPicture.asset(
-                                            color: fund.isAdd == true
-                                                ? colors.colorBlue
-                                                : colors.colorGrey,
-                                            fund.isAdd == true
-                                                ? assets.bookmarkIcon
-                                                : assets.bookmarkedIcon,
+                                                  ? assets.bookmarkIcon
+                                                  : assets.bookmarkedIcon,
+                                            ),
                                           ),
                                         ),
                                       ),
                                     ),
+                          
+                                    // CustomExchBadge(
+                                    //         exch: fund.type ?? ""),
+                                    // const SizedBox(width: 5),
+                                    // CustomExchBadge(
+                                    //     exch: fund.subtype ?? ""),
                                   ),
-
-                                  // CustomExchBadge(
-                                  //         exch: fund.type ?? ""),
-                                  // const SizedBox(width: 5),
-                                  // CustomExchBadge(
-                                  //     exch: fund.subtype ?? ""),
-                                ),
-
-                                //  Container(
-                                //   padding: const EdgeInsets.all(8),
-                                //   child: Column(
-                                //     crossAxisAlignment:
-                                //         CrossAxisAlignment.start,
-                                //     children: [
-                                //       Row(
-                                //         mainAxisAlignment:
-                                //             MainAxisAlignment.spaceBetween,
-                                //         children: [
-                                //           CircleAvatar(
-                                //             backgroundImage: NetworkImage(
-                                //               "https://v3.mynt.in/mfapi/static/images/mf/${fund.aMCCode ?? "default"}.png",
-                                //             ),
-                                //           ),
-                                //           const SizedBox(width: 10),
-                                //           Expanded(
-                                //             child: Column(
-                                //               crossAxisAlignment:
-                                //                   CrossAxisAlignment.start,
-                                //               children: [
-                                //                 SizedBox(
-                                //                   width: MediaQuery.of(context)
-                                //                           .size
-                                //                           .width *
-                                //                       0.6,
-                                //                   child: Text(
-                                //                     fund.mfsearchnamename ?? "",
-                                //                     maxLines: 2,
-                                //                     overflow:
-                                //                         TextOverflow.ellipsis,
-                                //                     style: textStyles
-                                //                         .scripNameTxtStyle
-                                //                         .copyWith(
-                                //                       color: isDarkMode
-                                //                           ? colors.colorWhite
-                                //                           : colors.colorBlack,
-                                //                     ),
-                                //                   ),
-                                //                 ),
-                                //                 const SizedBox(height: 8),
-                                //                 SizedBox(
-                                //                   height: 18,
-                                //                   child: ListView(
-                                //                     scrollDirection:
-                                //                         Axis.horizontal,
-                                //                     children: [
-                                //                       CustomExchBadge(
-                                //                           exch:
-                                //                               fund.type ?? ""),
-                                //                       const SizedBox(width: 5),
-                                //                       CustomExchBadge(
-                                //                           exch: fund.subtype ??
-                                //                               ""),
-                                //                     ],
-                                //                   ),
-                                //                 ),
-                                //               ],
-                                //             ),
-                                //           ),
-                                //           IconButton(
-                                //             splashRadius: 20,
-                                //             onPressed: () async {
-                                //               if (fund.iSIN != null) {
-                                //                 await mfData
-                                //                     .fetchcommonsearchWadd(
-                                //                   fund.iSIN!,
-                                //                   fund.isAdd == true
-                                //                       ? "delete"
-                                //                       : "add",
-                                //                   context,
-                                //                   false,
-                                //                 );
-                                //               }
-                                //             },
-                                //             icon: SvgPicture.asset(
-                                //               color: colors.colorBlue,
-                                //               fund.isAdd == true
-                                //                   ? assets.bookmarkIcon
-                                //                   : assets.bookmarkedIcon,
-                                //             ),
-                                //           ),
-                                //         ],
-                                //       ),
-                                //       const SizedBox(height: 8),
-                                //       Divider(
-                                //         color: isDarkMode
-                                //             ? colors.darkColorDivider
-                                //             : colors.colorDivider,
-                                //         thickness: 1.0,
-                                //       ),
-                                //     ],
-                                //   ),
-                                // ),
-                              );
-                            },
-                          )
-                        : const Center(
-                            child: Padding(
-                              padding: EdgeInsets.only(top: 225),
+                          
+                                  //  Container(
+                                  //   padding: const EdgeInsets.all(8),
+                                  //   child: Column(
+                                  //     crossAxisAlignment:
+                                  //         CrossAxisAlignment.start,
+                                  //     children: [
+                                  //       Row(
+                                  //         mainAxisAlignment:
+                                  //             MainAxisAlignment.spaceBetween,
+                                  //         children: [
+                                  //           CircleAvatar(
+                                  //             backgroundImage: NetworkImage(
+                                  //               "https://v3.mynt.in/mfapi/static/images/mf/${fund.aMCCode ?? "default"}.png",
+                                  //             ),
+                                  //           ),
+                                  //           const SizedBox(width: 10),
+                                  //           Expanded(
+                                  //             child: Column(
+                                  //               crossAxisAlignment:
+                                  //                   CrossAxisAlignment.start,
+                                  //               children: [
+                                  //                 SizedBox(
+                                  //                   width: MediaQuery.of(context)
+                                  //                           .size
+                                  //                           .width *
+                                  //                       0.6,
+                                  //                   child: Text(
+                                  //                     fund.mfsearchnamename ?? "",
+                                  //                     maxLines: 2,
+                                  //                     overflow:
+                                  //                         TextOverflow.ellipsis,
+                                  //                     style: textStyles
+                                  //                         .scripNameTxtStyle
+                                  //                         .copyWith(
+                                  //                       color: isDarkMode
+                                  //                           ? colors.colorWhite
+                                  //                           : colors.colorBlack,
+                                  //                     ),
+                                  //                   ),
+                                  //                 ),
+                                  //                 const SizedBox(height: 8),
+                                  //                 SizedBox(
+                                  //                   height: 18,
+                                  //                   child: ListView(
+                                  //                     scrollDirection:
+                                  //                         Axis.horizontal,
+                                  //                     children: [
+                                  //                       CustomExchBadge(
+                                  //                           exch:
+                                  //                               fund.type ?? ""),
+                                  //                       const SizedBox(width: 5),
+                                  //                       CustomExchBadge(
+                                  //                           exch: fund.subtype ??
+                                  //                               ""),
+                                  //                     ],
+                                  //                   ),
+                                  //                 ),
+                                  //               ],
+                                  //             ),
+                                  //           ),
+                                  //           IconButton(
+                                  //             splashRadius: 20,
+                                  //             onPressed: () async {
+                                  //               if (fund.iSIN != null) {
+                                  //                 await mfData
+                                  //                     .fetchcommonsearchWadd(
+                                  //                   fund.iSIN!,
+                                  //                   fund.isAdd == true
+                                  //                       ? "delete"
+                                  //                       : "add",
+                                  //                   context,
+                                  //                   false,
+                                  //                 );
+                                  //               }
+                                  //             },
+                                  //             icon: SvgPicture.asset(
+                                  //               color: colors.colorBlue,
+                                  //               fund.isAdd == true
+                                  //                   ? assets.bookmarkIcon
+                                  //                   : assets.bookmarkedIcon,
+                                  //             ),
+                                  //           ),
+                                  //         ],
+                                  //       ),
+                                  //       const SizedBox(height: 8),
+                                  //       Divider(
+                                  //         color: isDarkMode
+                                  //             ? colors.darkColorDivider
+                                  //             : colors.colorDivider,
+                                  //         thickness: 1.0,
+                                  //       ),
+                                  //     ],
+                                  //   ),
+                                  // ),
+                                );
+                              },
+                            ),
+                        )
+                        : Expanded(
+                          child: const Center(
                               child: NoDataFound(),
                             ),
-                          )
+                        )
                   ] else ...[
-                    const Center(
-                      child: Padding(
-                        padding: EdgeInsets.only(top: 225),
+                    Expanded(
+                      child: const Center(
                         child: NoDataFound(),
                       ),
                     )

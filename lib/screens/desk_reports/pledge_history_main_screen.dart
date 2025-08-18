@@ -6,6 +6,7 @@ import 'package:mynt_plus/sharedWidget/functions.dart';
 
 import '../../provider/thems.dart';
 import '../../res/global_state_text.dart';
+import '../../sharedWidget/custom_back_btn.dart';
 import '../../sharedWidget/loader_ui.dart';
 import 'pledge_history_screen.dart';
 import 'tax_pnl_screens/pnl_value_screen.dart';
@@ -51,146 +52,150 @@ class _PledgeMainScreen extends State<PledgeHistoryMainScreen>
 
       final ledgerprovider = ref.watch(ledgerProvider);
 
-      return Scaffold(
-        appBar: AppBar(
-          // automaticallyImplyLeading: false,
-          elevation: 0.2,
-          title: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              TextWidget.heroText(
-                  text: "Pledge History",
-                  textOverflow: TextOverflow.ellipsis,
-                  theme: theme.isDarkMode,
-                  fw: 1),
-
-              // DropdownButtonHideUnderline(
-              //     child: DropdownButton2(
-              //         menuItemStyleData: MenuItemStyleData(
-              //             customHeights: ledgerprovider.getCustItemsHeight()),
-              //         buttonStyleData: ButtonStyleData(
-              //             height: 36,
-              //             width: MediaQuery.of(context).size.width,
-              //             decoration: const BoxDecoration(
-              //                 color: Color(0xffF1F3F8),
-              //                 borderRadius:
-              //                     BorderRadius.all(Radius.circular(32)))),
-              //         dropdownStyleData: DropdownStyleData(
-              //           padding: const EdgeInsets.symmetric(vertical: 6),
-              //           decoration: BoxDecoration(
-              //             borderRadius: BorderRadius.circular(4),
-              //           ),
-              //           offset: const Offset(0, 8),
-              //         ),
-              //         isExpanded: true,
-              //         style:
-              //             textStyle(const Color(0XFF000000), 13, FontWeight.w500),
-              //         hint: Text(mfOrder.paymentName,
-              //             style: textStyle(
-              //                 const Color(0XFF000000), 13, FontWeight.w500)),
-              //         items: mfOrder.addDividers(),
-              //         value: mfOrder.paymentName,
-              //         onChanged: (value) async {
-              //           mfOrder.chngPayName("$value");
-              //         })),
-            ],
+      return SafeArea(
+        child: Scaffold(
+          appBar: AppBar(
+            // automaticallyImplyLeading: false,
+            elevation: 0.2,
+            title: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                TextWidget.titleText(
+                    text: "Pledge History",
+                    textOverflow: TextOverflow.ellipsis,
+                    color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                    theme: theme.isDarkMode,
+                    fw: 1),
+        
+                // DropdownButtonHideUnderline(
+                //     child: DropdownButton2(
+                //         menuItemStyleData: MenuItemStyleData(
+                //             customHeights: ledgerprovider.getCustItemsHeight()),
+                //         buttonStyleData: ButtonStyleData(
+                //             height: 36,
+                //             width: MediaQuery.of(context).size.width,
+                //             decoration: const BoxDecoration(
+                //                 color: Color(0xffF1F3F8),
+                //                 borderRadius:
+                //                     BorderRadius.all(Radius.circular(32)))),
+                //         dropdownStyleData: DropdownStyleData(
+                //           padding: const EdgeInsets.symmetric(vertical: 6),
+                //           decoration: BoxDecoration(
+                //             borderRadius: BorderRadius.circular(4),
+                //           ),
+                //           offset: const Offset(0, 8),
+                //         ),
+                //         isExpanded: true,
+                //         style:
+                //             textStyle(const Color(0XFF000000), 13, FontWeight.w500),
+                //         hint: Text(mfOrder.paymentName,
+                //             style: textStyle(
+                //                 const Color(0XFF000000), 13, FontWeight.w500)),
+                //         items: mfOrder.addDividers(),
+                //         value: mfOrder.paymentName,
+                //         onChanged: (value) async {
+                //           mfOrder.chngPayName("$value");
+                //         })),
+              ],
+            ),
+             leading: const CustomBackBtn(),
+            // leading: InkWell(
+            //   onTap: () {
+        
+            //   },
+            //   child: Icon(Icons.ios_share)),
           ),
-          // leading: InkWell(
-          //   onTap: () {
-
-          //   },
-          //   child: Icon(Icons.ios_share)),
-        ),
-        body: TransparentLoaderScreen(
-          isLoading: ledgerprovider.pledgehistory,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Padding(
-              //   padding: const EdgeInsets.only(left : 16.0, top : 24.0),
-              //   child: BarChartWidget(),
-              // ),
-
-              Padding(
-                padding: const EdgeInsets.only(top: 8.0),
-                child: Container(
-                    width: MediaQuery.of(context).size.width,
-                    padding: const EdgeInsets.only(bottom: 0, left: 15, top: 2),
-                    decoration: BoxDecoration(
-                        border: Border(
-                            bottom: BorderSide(
-                                color: theme.isDarkMode
-                                    ? colors.darkColorDivider
-                                    : colors.colorDivider,
-                                width: 0.4))),
-                    // height: 60,
-                    child: 
-                    TabBar(
-              onTap: (index) {
-                setState(() {});
-              },
-              tabAlignment: TabAlignment.start,
-              indicatorSize: TabBarIndicatorSize.tab,
-              isScrollable: true,
-              indicatorColor: theme.isDarkMode
-                  ? colors.secondaryDark
-                  : colors.secondaryLight,
-              unselectedLabelColor: theme.isDarkMode
-                  ? colors.textSecondaryDark
-                  : colors.textSecondaryLight,
-              unselectedLabelStyle: TextWidget.textStyle(
-                fontSize: 14,
-                theme: false,
-                fw: 3,
+          body: TransparentLoaderScreen(
+            isLoading: ledgerprovider.pledgehistory,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Padding(
+                //   padding: const EdgeInsets.only(left : 16.0, top : 24.0),
+                //   child: BarChartWidget(),
+                // ),
+        
+                Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: Container(
+                      width: MediaQuery.of(context).size.width,
+                      padding: const EdgeInsets.only(bottom: 0, left: 15, top: 2),
+                      decoration: BoxDecoration(
+                          border: Border(
+                              bottom: BorderSide(
+                                  color: theme.isDarkMode
+                                      ? colors.darkColorDivider
+                                      : colors.colorDivider,
+                                  width: 0.4))),
+                      // height: 60,
+                      child: 
+                      TabBar(
+                onTap: (index) {
+                  setState(() {});
+                },
+                tabAlignment: TabAlignment.start,
+                indicatorSize: TabBarIndicatorSize.tab,
+                isScrollable: true,
+                indicatorColor: theme.isDarkMode
+                    ? colors.secondaryDark
+                    : colors.secondaryLight,
+                unselectedLabelColor: theme.isDarkMode
+                    ? colors.textSecondaryDark
+                    : colors.textSecondaryLight,
+                unselectedLabelStyle: TextWidget.textStyle(
+                  fontSize: 14,
+                  theme: false,
+                  fw: 3,
+                ),
+                labelColor: theme.isDarkMode
+                    ? colors.secondaryDark
+                    : colors.secondaryLight,
+                labelStyle:
+                    TextWidget.textStyle(fontSize: 14, theme: false, fw: 3),
+                controller: _tabController,
+                tabs: List.generate(tablistitems.length, (index) {
+                  final isSelected = _tabController.index == index;
+        
+                  final color = isSelected
+                      ? (theme.isDarkMode
+                          ? colors.secondaryDark
+                          : colors.secondaryLight)
+                      : (theme.isDarkMode
+                          ? colors.textSecondaryDark
+                          : colors.textSecondaryLight);
+        
+                  return Tab(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        TextWidget.subText(
+                          text: tablistitems[index]['title'].toString(),
+                          theme: false,
+                          color: color,
+                          fw: isSelected ? 2 : null,
+                        ),
+                        const SizedBox(width: 5),
+                         
+                      ],
+                    ),
+                  );
+                }),
               ),
-              labelColor: theme.isDarkMode
-                  ? colors.secondaryDark
-                  : colors.secondaryLight,
-              labelStyle:
-                  TextWidget.textStyle(fontSize: 14, theme: false, fw: 3),
-              controller: _tabController,
-              tabs: List.generate(tablistitems.length, (index) {
-                final isSelected = _tabController.index == index;
-
-                final color = isSelected
-                    ? (theme.isDarkMode
-                        ? colors.secondaryDark
-                        : colors.secondaryLight)
-                    : (theme.isDarkMode
-                        ? colors.textSecondaryDark
-                        : colors.textSecondaryLight);
-
-                return Tab(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      TextWidget.subText(
-                        text: tablistitems[index]['title'].toString(),
-                        theme: false,
-                        color: color,
-                        fw: isSelected ? 2 : null,
                       ),
-                      const SizedBox(width: 5),
-                       
+                ),
+        
+                Expanded(
+                  child: TabBarView( 
+                    controller: _tabController,
+                    children: [
+                      PledgeHistoryScreen(),
+                      UnpledgeHistoryScreen(),
                     ],
                   ),
-                );
-              }),
-            ),
-                    ),
-              ),
-
-              Expanded(
-                child: TabBarView( 
-                  controller: _tabController,
-                  children: [
-                    PledgeHistoryScreen(),
-                    UnpledgeHistoryScreen(),
-                  ],
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       );

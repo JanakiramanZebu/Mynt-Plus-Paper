@@ -174,8 +174,8 @@ class _OptionChainSSState extends ConsumerState<OptionChainSS> {
                     Icons.arrow_back_ios_outlined,
                     size: 18,
                     color: theme.isDarkMode
-                        ? colors.colorWhite
-                        : colors.colorBlack,
+                        ? colors.textSecondaryDark
+                        : colors.textSecondaryLight,
                   ),
                 ),
               ),
@@ -319,58 +319,70 @@ class _NewAppBarTitle extends ConsumerWidget {
               textOverflow: TextOverflow.ellipsis,
             ),
             const SizedBox(width: 8),
-            DropdownButtonHideUnderline(
-              child: DropdownButton<String>(
-                value: scripInfo.selectedExpDate,
-                isExpanded: false,
-                isDense: true,
-                icon: Icon(
-                  Icons.arrow_drop_down,
-                  color:
-                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                  size: 18,
+            Theme(
+              data: Theme.of(context).copyWith(
+                popupMenuTheme: PopupMenuThemeData(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
-                style: TextWidget.textStyle(
-                  fontSize: 14,
-                  color: theme.isDarkMode
-                      ? colors.textPrimaryDark
-                      : colors.textPrimaryLight,
-                  theme: theme.isDarkMode,
-                ),
-                items: scripInfo.sortDate.map((String date) {
-                  return DropdownMenuItem<String>(
-                    value: date,
-                    child: TextWidget.subText(
-                      text: date.replaceAll("-", " "),
-                      color: theme.isDarkMode
-                          ? colors.textPrimaryDark
-                          : colors.textPrimaryLight,
-                      theme: theme.isDarkMode,
-                    ),
-                  );
-                }).toList(),
-                onChanged: (String? newValue) async {
-                  if (newValue != null) {
-                    for (var i = 0; i < scripInfo.optExp!.length; i++) {
-                      if (newValue == scripInfo.optExp![i].exd) {
-                        scripInfo.selecTradSym("${scripInfo.optExp![i].tsym}");
-                        scripInfo.optExch("${scripInfo.optExp![i].exch}");
+              ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  value: scripInfo.selectedExpDate,
+                  isExpanded: false,
+                  isDense: true,
+                  dropdownColor: theme.isDarkMode 
+                      ? colors.colorBlack
+                      : colors.colorWhite,
+                  icon: Icon(
+                    Icons.arrow_drop_down,
+                    color:
+                        theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                    size: 18,
+                  ),
+                  style: TextWidget.textStyle(
+                    fontSize: 14,
+                    color: theme.isDarkMode
+                        ? colors.textPrimaryDark
+                        : colors.textPrimaryLight,
+                    theme: theme.isDarkMode,
+                  ),
+                  items: scripInfo.sortDate.map((String date) {
+                    return DropdownMenuItem<String>(
+                      value: date,
+                      child: TextWidget.subText(
+                        text: date.replaceAll("-", " "),
+                        color: theme.isDarkMode
+                            ? colors.textPrimaryDark
+                            : colors.textPrimaryLight,
+                        theme: theme.isDarkMode,
+                      ),
+                    );
+                  }).toList(),
+                  onChanged: (String? newValue) async {
+                    if (newValue != null) {
+                      for (var i = 0; i < scripInfo.optExp!.length; i++) {
+                        if (newValue == scripInfo.optExp![i].exd) {
+                          scripInfo.selecTradSym("${scripInfo.optExp![i].tsym}");
+                          scripInfo.optExch("${scripInfo.optExp![i].exch}");
+                        }
                       }
+                      scripInfo.selecexpDate(newValue);
+
+                      await ref.read(marketWatchProvider).fetchOPtionChain(
+                          context: context,
+                          exchange: scripInfo.optionExch!,
+                          numofStrike: scripInfo.numStrike,
+                          strPrc: scripInfo.optionStrPrc,
+                          tradeSym: scripInfo.selectedTradeSym!);
+
+                      Future.delayed(const Duration(milliseconds: 300), () {
+                        scrollToStrikePrice();
+                      });
                     }
-                    scripInfo.selecexpDate(newValue);
-
-                    await ref.read(marketWatchProvider).fetchOPtionChain(
-                        context: context,
-                        exchange: scripInfo.optionExch!,
-                        numofStrike: scripInfo.numStrike,
-                        strPrc: scripInfo.optionStrPrc,
-                        tradeSym: scripInfo.selectedTradeSym!);
-
-                    Future.delayed(const Duration(milliseconds: 300), () {
-                      scrollToStrikePrice();
-                    });
-                  }
-                },
+                  },
+                ),
               ),
             ),
           ],
@@ -422,8 +434,8 @@ class _NewAppBarTitle extends ConsumerWidget {
                   : Icons.shopping_basket_outlined,
               size: 18,
               color: isBasketMode
-                  ? colors.primaryLight
-                  : (theme.isDarkMode ? colors.colorWhite : colors.colorBlack),
+                  ?  colors.primaryLight
+                  : (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight),
             ),
           ),
         ),
@@ -475,93 +487,156 @@ void _showStrikeCountSelector(
       shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
       context: context,
-      builder: (context) => Container(
-          decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-              boxShadow: const [
-                BoxShadow(
-                    color: Color(0xff999999),
-                    blurRadius: 4.0,
-                    offset: Offset(2.0, 0.0))
-              ]),
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const CustomDragHandler(),
-                TextWidget.titleText(
-                    text: "Select Number of Strike",
-                    theme: theme.isDarkMode,
-                    fw: 1),
-                const SizedBox(height: 6),
-                Flexible(
-                    child: ListView.separated(
-                        physics: const ClampingScrollPhysics(),
-                        itemBuilder: (context, index) {
-                          return ListTile(
+      builder: (context) => SafeArea(
+        child: Container(
+             decoration: BoxDecoration(
+             borderRadius: const BorderRadius.only(
+        topLeft: Radius.circular(16),
+        topRight: Radius.circular(16),
+            ),
+           color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+           border: Border(
+                                    top: BorderSide(
+                                      color: theme.isDarkMode
+                                          ? colors.textSecondaryDark
+                                              .withOpacity(0.5)
+                                          : colors.colorWhite,
+                                    ),
+                                    left: BorderSide(
+                                      color: theme.isDarkMode
+                                          ? colors.textSecondaryDark
+                                              .withOpacity(0.5)
+                                          : colors.colorWhite,
+                                    ),
+                                    right: BorderSide(
+                                      color: theme.isDarkMode
+                                          ? colors.textSecondaryDark
+                                              .withOpacity(0.5)
+                                          : colors.colorWhite,
+                                    ),
+                                  ),
+        
+           
+          ),
+            child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // const CustomDragHandler(),
+                  Padding(
+                     padding: const EdgeInsets.symmetric(
+                          vertical: 8.0, horizontal: 16.0),
+                    child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        TextWidget.titleText(
+                            text: "Select Number of Strike",
+                            color :  theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                            theme: theme.isDarkMode,
+                            fw: 1),
+                             Material(
+                            color: Colors.transparent,
+                            shape: const CircleBorder(),
+                            child: InkWell(
                               onTap: () async {
-                                scripInfo.selecNumStrike(
-                                    scripInfo.numStrikes[index]);
-
-                                // First close the modal
+                                await Future.delayed(
+                                    const Duration(milliseconds: 150));
                                 Navigator.pop(context);
-
-                                // Then fetch data with the new strike count
-                                await ref
-                                    .read(marketWatchProvider)
-                                    .fetchOPtionChain(
-                                        context: context,
-                                        exchange: scripInfo.optionExch!,
-                                        numofStrike:
-                                            scripInfo.numStrikes[index],
-                                        strPrc: scripInfo.optionStrPrc,
-                                        tradeSym: scripInfo.selectedTradeSym!);
-
-                                // Use a longer delay to ensure data is loaded and widgets are built
-                                Future.delayed(
-                                    const Duration(milliseconds: 500), () {
-                                  if (context.mounted) {
-                                    // Use the callback to main screen's scroll method
-                                    scrollToStrikePrice();
-                                  }
-                                });
                               },
-                              contentPadding:
-                                  const EdgeInsets.symmetric(horizontal: 0),
-                              dense: true,
-                              title: TextWidget.subText(
-                                  text: scripInfo.numStrikes[index],
-                                  color: scripInfo.numStrike ==
-                                              scripInfo.numStrikes[index] &&
-                                          theme.isDarkMode
-                                      ? colors.colorLightBlue
-                                      : scripInfo.numStrike ==
-                                              scripInfo.numStrikes[index]
-                                          ? colors.colorBlue
-                                          : colors.colorGrey,
-                                  theme: theme.isDarkMode,
-                                  fw: scripInfo.numStrike ==
-                                          scripInfo.numStrikes[index]
-                                      ? 1
-                                      : 0),
-                              trailing: SvgPicture.asset(theme.isDarkMode
-                                  ? scripInfo.numStrike ==
-                                          scripInfo.numStrikes[index]
-                                      ? assets.darkActProductIcon
-                                      : assets.darkProductIcon
-                                  : scripInfo.numStrike ==
-                                          scripInfo.numStrikes[index]
-                                      ? assets.actProductIcon
-                                      : assets.productIcon));
-                        },
-                        separatorBuilder: (context, index) {
-                          return const ListDivider();
-                        },
-                        shrinkWrap: true,
-                        itemCount: scripInfo.numStrikes.length))
-              ])));
+                              borderRadius: BorderRadius.circular(20),
+                              splashColor: theme.isDarkMode
+                                  ? Colors.white.withOpacity(0.15)
+                                  : Colors.black.withOpacity(0.15),
+                              highlightColor: theme.isDarkMode
+                                  ? Colors.white.withOpacity(0.08)
+                                  : Colors.black.withOpacity(0.08),
+                              child: Padding(
+                                padding: const EdgeInsets.all(6.0),
+                                child: Icon(
+                                  Icons.close_rounded,
+                                  size: 22,
+                                  color: colors.colorGrey,
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                     Divider(
+                      color: theme.isDarkMode
+                          ? colors.darkColorDivider
+                          : colors.colorDivider,
+                      height: 0,
+                    ),
+                  Flexible(
+                      child: ListView.separated(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          physics: const ClampingScrollPhysics(),
+                          itemBuilder: (context, index) {
+                            return ListTile(
+                                onTap: () async {
+                                  scripInfo.selecNumStrike(
+                                      scripInfo.numStrikes[index]);
+        
+                                  // First close the modal
+                                  Navigator.pop(context);
+        
+                                  // Then fetch data with the new strike count
+                                  await ref
+                                      .read(marketWatchProvider)
+                                      .fetchOPtionChain(
+                                          context: context,
+                                          exchange: scripInfo.optionExch!,
+                                          numofStrike:
+                                              scripInfo.numStrikes[index],
+                                          strPrc: scripInfo.optionStrPrc,
+                                          tradeSym: scripInfo.selectedTradeSym!);
+        
+                                  // Use a longer delay to ensure data is loaded and widgets are built
+                                  Future.delayed(
+                                      const Duration(milliseconds: 500), () {
+                                    if (context.mounted) {
+                                      // Use the callback to main screen's scroll method
+                                      scrollToStrikePrice();
+                                    }
+                                  });
+                                },
+                                contentPadding:
+                                    const EdgeInsets.symmetric(horizontal: 0),
+                                dense: true,
+                                title: TextWidget.subText(
+                                    text: scripInfo.numStrikes[index],
+                                    color: scripInfo.numStrike ==
+                                                scripInfo.numStrikes[index] &&
+                                            theme.isDarkMode
+                                        ? colors.colorLightBlue
+                                        : scripInfo.numStrike ==
+                                                scripInfo.numStrikes[index]
+                                            ? colors.colorBlue
+                                            : colors.colorGrey,
+                                    theme: theme.isDarkMode,
+                                    fw: scripInfo.numStrike ==
+                                            scripInfo.numStrikes[index]
+                                        ? 1
+                                        : 0),
+                                trailing: SvgPicture.asset(theme.isDarkMode
+                                    ? scripInfo.numStrike ==
+                                            scripInfo.numStrikes[index]
+                                        ? assets.darkActProductIcon
+                                        : assets.darkProductIcon
+                                    : scripInfo.numStrike ==
+                                            scripInfo.numStrikes[index]
+                                        ? assets.actProductIcon
+                                        : assets.productIcon));
+                          },
+                          separatorBuilder: (context, index) {
+                            return const ListDivider();
+                          },
+                          shrinkWrap: true,
+                          itemCount: scripInfo.numStrikes.length))
+                ])),
+      ));
 }
 
 // Widget for column headers - updated to ConsumerWidget
@@ -586,7 +661,7 @@ class _ColumnHeaders extends ConsumerWidget {
       child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10),
           height: 36,
-          color: colors.colorWhite,
+          color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
           child:
               Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
             // Left arrow icon
@@ -700,6 +775,7 @@ class _PreDefinedWatchlistBanner extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final scripInfo = ref.watch(marketWatchProvider);
+    final theme = ref.read(themeProvider);
 
     if (scripInfo.isPreDefWLs == "Yes") {
       return const SizedBox.shrink();
@@ -709,13 +785,13 @@ class _PreDefinedWatchlistBanner extends ConsumerWidget {
       child: Container(
           padding: const EdgeInsets.symmetric(vertical: 6),
           decoration: BoxDecoration(
-              color: const Color(0xffe3f2fd),
-              borderRadius: BorderRadius.circular(6)),
+            color: theme.isDarkMode ? colors.primaryDark.withOpacity(0.3) : colors.primaryLight.withOpacity(0.3),
+          ),
           child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
             SvgPicture.asset(assets.dInfo, color: colors.colorBlue),
             TextWidget.captionText(
               text: " Long press to add Watchlist / Swipe to Trade",
-              color: colors.secondaryLight,
+              color: theme.isDarkMode ? colors.secondaryDark : colors.secondaryLight,
               theme: false,
             ),
           ])),
@@ -1084,7 +1160,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
       onPanEnd: (details) {
         // Calculate the threshold height (30% of max height)
         double thresholdHeight = _maxHeight * 0.3;
-        
+
         setState(() {
           if (_sheetHeight < thresholdHeight) {
             // Snap to minimum if below threshold
@@ -1093,7 +1169,8 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
           } else {
             // Keep the sheet at the current height where user released it
             // Don't force snap to max - respect user's intended position
-            _isExpanded = _sheetHeight > _maxHeight * 0.7; // Update expanded state based on position
+            _isExpanded = _sheetHeight >
+                _maxHeight * 0.7; // Update expanded state based on position
           }
         });
       },
@@ -1106,13 +1183,27 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
             topLeft: Radius.circular(16),
             topRight: Radius.circular(16),
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 10,
-              offset: const Offset(0, -2),
-            ),
-          ],
+           border: Border(
+                                  top: BorderSide(
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                            .withOpacity(0.5)
+                                        : colors.colorWhite,
+                                  ),
+                                  left: BorderSide(
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                            .withOpacity(0.5)
+                                        : colors.colorWhite,
+                                  ),
+                                  right: BorderSide(
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                            .withOpacity(0.5)
+                                        : colors.colorWhite,
+                                  ),
+                                ),
+
         ),
         child: Column(
           children: [
@@ -1203,7 +1294,9 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                       child: Icon(
                         Icons.swap_horiz,
                         size: 24,
-                        color: colors.textPrimary,
+                        color: theme.isDarkMode
+                            ? colors.textSecondaryDark
+                            : colors.textSecondaryLight,
                       ),
                     ),
                   ),
@@ -1232,7 +1325,9 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                       child: Icon(
                         Icons.refresh,
                         size: 22,
-                        color: colors.textPrimary,
+                        color: theme.isDarkMode
+                            ? colors.textSecondaryDark
+                            : colors.textSecondaryLight,
                       ),
                     ),
                   ),
@@ -1260,7 +1355,9 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                     child: Icon(
                       Icons.add_circle_outline,
                       size: 22,
-                      color: colors.textPrimary,
+                      color: theme.isDarkMode
+                          ? colors.textSecondaryDark
+                          : colors.textSecondaryLight,
                     ),
                   ),
                 ),
@@ -1284,7 +1381,9 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
               TextWidget.subText(
                 text: "Pre Trade Margin",
                 theme: false,
-                color: const Color(0xff5E6B7D),
+                color: theme.isDarkMode
+                    ? colors.textSecondaryDark
+                    : colors.textSecondaryLight,
                 fw: 0,
               ),
               const SizedBox(height: 6),
@@ -1294,7 +1393,9 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                     ? "0.00"
                     : "${orderProv.bsktOrderMargin!.marginusedtrade ?? 0.00}",
                 theme: theme.isDarkMode,
-                color: colors.textPrimary,
+                color: theme.isDarkMode
+                    ? colors.textPrimaryDark
+                    : colors.textPrimaryLight,
               ),
             ],
           ),
@@ -1304,7 +1405,9 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
               TextWidget.subText(
                 text: "Post Trade Margin",
                 theme: false,
-                color: colors.textSecondary,
+                color: theme.isDarkMode
+                    ? colors.textSecondaryDark
+                    : colors.textSecondaryLight,
               ),
               const SizedBox(height: 6),
               TextWidget.titleText(
@@ -1313,7 +1416,9 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                     ? "0.00"
                     : "${orderProv.bsktOrderMargin!.marginused ?? 0.00}",
                 theme: theme.isDarkMode,
-                color: colors.textPrimary,
+                color: theme.isDarkMode
+                    ? colors.textPrimaryDark
+                    : colors.textPrimaryLight,
               ),
             ],
           ),
@@ -1355,8 +1460,8 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                       : colors.colorDivider),
               const SizedBox(height: 2),
               Text("No Data Found",
-                  style: textStyle(
-                      const Color(0xff777777), 15, FontWeight.w500)),
+                  style:
+                      textStyle(const Color(0xff777777), 15, FontWeight.w500)),
               //       SizedBox(height: 16),
               // TextWidget.subText(
               //   text: "No baskets found",
@@ -1368,8 +1473,8 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                 onPressed: () => _showCreateBasket(context),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: colors.primaryLight,
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 24, vertical: 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 ),
                 child: TextWidget.subText(
                   text: "Create Basket",
@@ -1393,19 +1498,26 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              SvgPicture.asset(assets.noDatafound,
-                  color: theme.isDarkMode
-                      ? colors.darkColorDivider
-                      : colors.colorDivider),
+              SvgPicture.asset(
+                assets.noDatafound,
+                color: theme.isDarkMode
+                    ? colors.textSecondaryDark
+                    : colors.textSecondaryLight,
+              ),
               const SizedBox(height: 2),
-              Text("No Basket Selected",
-                  style: textStyle(
-                      const Color(0xff777777), 15, FontWeight.w500)),
+              TextWidget.subText(
+                  text: "No Basket Selected",
+                  color: theme.isDarkMode
+                      ? colors.textSecondaryDark
+                      : colors.textSecondaryLight,
+                  fw: 0,
+                  theme: theme.isDarkMode),
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () => _showBasketSelector(context),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: colors.primaryLight,
+                  minimumSize: const Size(0, 45),
                   padding:
                       const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 ),
@@ -1413,6 +1525,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                   text: "Choose Basket",
                   color: colors.colorWhite,
                   theme: false,
+                  fw: 2,
                 ),
               ),
             ],
@@ -1428,20 +1541,28 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              SvgPicture.asset(assets.noDatafound,
-                  color: theme.isDarkMode
-                      ? colors.darkColorDivider
-                      : colors.colorDivider),
+              SvgPicture.asset(
+                assets.noDatafound,
+                color: theme.isDarkMode
+                    ? colors.textSecondaryDark
+                    : colors.textSecondaryLight,
+              ),
               const SizedBox(height: 2),
               TextWidget.subText(
                 text: "Basket is empty",
                 theme: theme.isDarkMode,
-                color: colors.colorGrey,
+                color: theme.isDarkMode
+                    ? colors.textSecondaryDark
+                    : colors.textSecondaryLight,
+                fw: 0,
               ),
               const SizedBox(height: 8),
               TextWidget.subText(
                 text: "Tap on options above to add them to basket",
-                color: colors.colorGrey,
+                color: theme.isDarkMode
+                    ? colors.textSecondaryDark
+                    : colors.textSecondaryLight,
+                fw: 0,
                 theme: theme.isDarkMode,
               ),
             ],
@@ -1503,7 +1624,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
               separatorBuilder: (_, __) => const ListDivider(),
               itemBuilder: (context, index) {
                 final script = orderProvider.bsktScripList[index];
-            
+
                 // Process script data for display
                 if (script['exch'] == "BFO" && script["dname"] != "null") {
                   List<String> splitVal = script["dname"].toString().split(" ");
@@ -1518,10 +1639,12 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                   script['expDate'] = "${spilitSymbol["expDate"]}";
                   script['option'] = "${spilitSymbol["option"]}";
                 }
-            
+
                 return InkWell(
-                  onTap: () => _handleBasketItemTap(index, script, orderProvider),
-                  onLongPress: () => _deleteScript(index, script, orderProvider),
+                  onTap: () =>
+                      _handleBasketItemTap(index, script, orderProvider),
+                  onLongPress: () =>
+                      _deleteScript(index, script, orderProvider),
                   child: _buildScriptCard(theme, script, index),
                 );
               },
@@ -1792,7 +1915,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                       SnackBar(
                         content: const Text(
                             "Basket reset. You can place orders again."),
-                        backgroundColor: colors.ltpgreen,
+                        backgroundColor: colors.profit,
                         duration: const Duration(seconds: 2),
                       ),
                     );
@@ -1800,16 +1923,14 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                   label: TextWidget.subText(
                     text: "Reset Orders",
                     theme: false,
-                    color: theme.isDarkMode
-                        ? colors.primaryDark
-                        : colors.primaryLight,
+                    color: colors.primary,
                     fw: 2,
                   ),
                   style: OutlinedButton.styleFrom(
-                      minimumSize: const Size(0, 40),
+                      minimumSize: const Size(0, 45),
                       side: BorderSide(
                         color: theme.isDarkMode
-                            ? colors.colorGrey
+                            ? colors.primaryDark
                             : colors.primaryLight,
                       ),
                       shape: const RoundedRectangleBorder(
@@ -1824,7 +1945,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
     return Container(
       padding: const EdgeInsets.all(16),
       child: Container(
-        height: 40,
+        height: 45,
         decoration: BoxDecoration(
           color: hasMultipleExchanges
               ? Colors.grey
@@ -2118,7 +2239,9 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
       builder: (BuildContext context) {
         final theme = ref.read(themeProvider);
         return AlertDialog(
-          backgroundColor: colors.colorWhite,
+          backgroundColor: theme.isDarkMode
+              ? const Color(0xFF121212)
+              : const Color(0xFFF1F3F8),
           titlePadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
           shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.all(Radius.circular(8)),
@@ -2156,8 +2279,8 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                           Icons.close_rounded,
                           size: 22,
                           color: theme.isDarkMode
-                              ? colors.colorWhite
-                              : colors.colorBlack,
+                              ? colors.textSecondaryDark
+                              : colors.textSecondaryLight,
                         ),
                       ),
                     ),
@@ -2175,7 +2298,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                                 "Are you sure you want to delete this basket Scrip ${script['symbol']?.toString().replaceAll("-EQ", "")}",
                             theme: theme.isDarkMode,
                             color: theme.isDarkMode
-                                ? colors.textPrimaryDark
+                                ? colors.textSecondaryDark
                                 : colors.textPrimaryLight,
                             align: TextAlign.center),
                       ]))
@@ -2192,7 +2315,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                   Navigator.pop(context);
                 },
                 style: OutlinedButton.styleFrom(
-                  minimumSize: const Size(0, 40),
+                  minimumSize: const Size(0, 45),
                   side: BorderSide(color: colors.btnOutlinedBorder),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(5),
@@ -2202,9 +2325,8 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                 child: TextWidget.titleText(
                   text: "Yes",
                   theme: theme.isDarkMode,
-                  color:
-                      !theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                  fw: 0,
+                  color: colors.colorWhite,
+                  fw: 2,
                 ),
               ),
             ),
@@ -2242,6 +2364,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
 
   void _showBasketSelector(BuildContext context) {
     final orderProv = ref.read(orderProvider);
+    final theme = ref.read(themeProvider);
     showModalBottomSheet(
       context: context,
       // isScrollControlled: true,
@@ -2249,141 +2372,175 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (context) => Container(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // const CustomDragHandler(),
-            // const SizedBox(height: 8),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  TextWidget.titleText(
-                    text: "Select Basket",
-                    theme: ref.read(themeProvider).isDarkMode,
-                    color: ref.read(themeProvider).isDarkMode
-                        ? colors.textPrimaryDark
-                        : colors.textPrimaryLight,
-                    fw: 1,
-                  ),
-                  Material(
-                    color: Colors.transparent,
-                    shape: const CircleBorder(),
-                    child: InkWell(
+        decoration: BoxDecoration(
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(16),
+            topRight: Radius.circular(16),
+          ),
+          color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+          border: Border(
+                                  top: BorderSide(
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                            .withOpacity(0.5)
+                                        : colors.colorWhite,
+                                  ),
+                                  left: BorderSide(
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                            .withOpacity(0.5)
+                                        : colors.colorWhite,
+                                  ),
+                                  right: BorderSide(
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                            .withOpacity(0.5)
+                                        : colors.colorWhite,
+                                  ),
+                                ),
+
+        ),
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // const CustomDragHandler(),
+              // const SizedBox(height: 8),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    TextWidget.titleText(
+                      text: "Select Basket",
+                      theme: ref.read(themeProvider).isDarkMode,
+                      color: ref.read(themeProvider).isDarkMode
+                          ? colors.textPrimaryDark
+                          : colors.textPrimaryLight,
+                      fw: 1,
+                    ),
+                    ListDivider(),
+                    Material(
+                      color: Colors.transparent,
+                      shape: const CircleBorder(),
+                      child: InkWell(
+                        onTap: () async {
+                          await Future.delayed(const Duration(milliseconds: 150));
+                          Navigator.pop(context);
+                        },
+                        borderRadius: BorderRadius.circular(20),
+                        splashColor: ref.read(themeProvider).isDarkMode
+                            ? colors.splashColorDark
+                            : colors.splashColorLight,
+                        highlightColor: ref.read(themeProvider).isDarkMode
+                            ? colors.splashColorDark
+                            : colors.splashColorLight,
+                        child: Padding(
+                          padding: const EdgeInsets.all(6.0),
+                          child: Icon(
+                            Icons.close_rounded,
+                            size: 22,
+                            color: colors.colorGrey,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Divider(
+                color: ref.read(themeProvider).isDarkMode
+                    ? colors.darkColorDivider
+                    : colors.colorDivider,
+                height: 0,
+              ),
+              Expanded(
+                child: ListView.separated(
+                  itemCount: orderProv.bsktList.length,
+                  separatorBuilder: (_, __) => const ListDivider(),
+                  itemBuilder: (context, index) {
+                    final basket = orderProv.bsktList[index];
+                    final basketName = basket['bsketName'].toString();
+                    final isDark = ref.read(themeProvider).isDarkMode;
+          
+                    return ListTile(
+                      minLeadingWidth: 25,
+                      leading: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SvgPicture.asset(
+                            assets.basketdashboard,
+                            color: isDark
+                                ? colors.textSecondaryDark
+                                : colors.textSecondaryLight,
+                          ),
+                        ],
+                      ),
+                      title: Container(
+                        margin: EdgeInsets.only(
+                          right: MediaQuery.of(context).size.width * 0.1,
+                        ),
+                        child: TextWidget.subText(
+                          text: basketName,
+                          theme: isDark,
+                          color: isDark
+                              ? colors.textPrimaryDark
+                              : colors.textPrimaryLight,
+                          textOverflow: TextOverflow.ellipsis,
+                          maxLines: 2,
+                        ),
+                      ),
+                      subtitle: Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: TextWidget.paraText(
+                          text: "${basket['curLength']} / ${basket['max']} items",
+                          theme: isDark,
+                          textOverflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                          color: ref.read(themeProvider).isDarkMode
+                              ? colors.textSecondaryDark
+                              : colors.textSecondaryLight,
+                        ),
+                      ),
+                      trailing: basketName == orderProv.selectedBsktName
+                          ? Icon(Icons.check, color: colors.ltpgreen)
+                          : null,
                       onTap: () async {
-                        await Future.delayed(const Duration(milliseconds: 150));
+                        await orderProv.chngBsktName(basketName, context, true);
                         Navigator.pop(context);
                       },
-                      borderRadius: BorderRadius.circular(20),
-                      splashColor: ref.read(themeProvider).isDarkMode
-                          ? colors.splashColorDark
-                          : colors.splashColorLight,
-                      highlightColor: ref.read(themeProvider).isDarkMode
-                          ? colors.splashColorDark
-                          : colors.splashColorLight,
-                      child: Padding(
-                        padding: const EdgeInsets.all(6.0),
-                        child: Icon(
-                          Icons.close_rounded,
-                          size: 22,
-                          color: colors.colorGrey,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+                    );
+                  },
+                ),
               ),
-            ),
-            Divider(
-              color: ref.read(themeProvider).isDarkMode
-                  ? colors.darkColorDivider
-                  : colors.colorDivider,
-              height: 0,
-            ),
-            Expanded(
-              child: ListView.separated(
-                itemCount: orderProv.bsktList.length,
-                separatorBuilder: (_, __) => const ListDivider(),
-                itemBuilder: (context, index) {
-                  final basket = orderProv.bsktList[index];
-                  final basketName = basket['bsketName'].toString();
-                  final isDark = ref.read(themeProvider).isDarkMode;
-
-                  return ListTile(
-                    minLeadingWidth: 25,
-                    leading: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        SvgPicture.asset(
-                          assets.basketdashboard,
-                        ),
-                      ],
-                    ),
-                    title: Container(
-                      margin: EdgeInsets.only(
-                        right: MediaQuery.of(context).size.width * 0.1,
-                      ),
-                      child: TextWidget.subText(
-                        text: basketName,
-                        theme: isDark,
-                        color: isDark
-                            ? colors.textPrimaryDark
-                            : colors.textPrimaryLight,
-                        textOverflow: TextOverflow.ellipsis,
-                        maxLines: 2,
-                      ),
-                    ),
-                    subtitle: Padding(
-                      padding: const EdgeInsets.only(top: 8),
-                      child: TextWidget.paraText(
-                        text: "${basket['curLength']} / ${basket['max']} items",
-                        theme: isDark,
-                        textOverflow: TextOverflow.ellipsis,
-                        maxLines: 1,
-                        color: ref.read(themeProvider).isDarkMode
-                            ? colors.textSecondaryDark
-                            : colors.textSecondaryLight,
-                      ),
-                    ),
-                    trailing: basketName == orderProv.selectedBsktName
-                        ? Icon(Icons.check, color: colors.ltpgreen)
-                        : null,
-                    onTap: () async {
-                      await orderProv.chngBsktName(basketName, context, true);
-                      Navigator.pop(context);
-                    },
-                  );
-                },
-              ),
-            ),
-
-            // ...orderProv.bsktList.map<Widget>((basket) {
-            //   final basketName = basket['bsketName'].toString();
-            //   return ListTile(
-            //     title: TextWidget.subText(
-            //       text: basketName,
-            //       theme: ref.read(themeProvider).isDarkMode,
-            //       color: ref.read(themeProvider).isDarkMode
-            //           ? colors.colorWhite
-            //           : colors.colorBlack,
-            //     ),
-            //     subtitle: TextWidget.paraText(
-            //       text: "${basket['curLength']} / ${basket['max']} items",
-            //       theme: ref.read(themeProvider).isDarkMode,
-            //       color: colors.colorGrey,
-            //     ),
-            //     trailing: basketName == orderProv.selectedBsktName
-            //         ? Icon(Icons.check, color: colors.ltpgreen)
-            //         : null,
-            //     onTap: () async {
-            //       await orderProv.chngBsktName(basketName, context, true);
-            //       Navigator.pop(context);
-            //     },
-            //   );
-            // }).toList(),
-          ],
+          
+              // ...orderProv.bsktList.map<Widget>((basket) {
+              //   final basketName = basket['bsketName'].toString();
+              //   return ListTile(
+              //     title: TextWidget.subText(
+              //       text: basketName,
+              //       theme: ref.read(themeProvider).isDarkMode,
+              //       color: ref.read(themeProvider).isDarkMode
+              //           ? colors.colorWhite
+              //           : colors.colorBlack,
+              //     ),
+              //     subtitle: TextWidget.paraText(
+              //       text: "${basket['curLength']} / ${basket['max']} items",
+              //       theme: ref.read(themeProvider).isDarkMode,
+              //       color: colors.colorGrey,
+              //     ),
+              //     trailing: basketName == orderProv.selectedBsktName
+              //         ? Icon(Icons.check, color: colors.ltpgreen)
+              //         : null,
+              //     onTap: () async {
+              //       await orderProv.chngBsktName(basketName, context, true);
+              //       Navigator.pop(context);
+              //     },
+              //   );
+              // }).toList(),
+            ],
+          ),
         ),
       ),
     );

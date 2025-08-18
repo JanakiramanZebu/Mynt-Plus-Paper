@@ -117,39 +117,42 @@ class _MFSIPSCREENState extends State<MFSIPSCREEN> {
         ChartData('Investment', double.parse("${_investedAmount}"), colors.colorBlack)
       ];
 
-      return Scaffold(
-        appBar: PreferredSize(
-          preferredSize: const Size.fromHeight(50),
-          child: AppBar(
-            elevation: 0,
-            leadingWidth: 41,
-            centerTitle: false,
-            titleSpacing: 6,
-            leading: const CustomBackBtn(),
-            title: TextWidget.titleText(
-              text: "SIP Calculator",
-              theme: theme.isDarkMode,
-              fw: 1,
+      return SafeArea(
+        child: Scaffold(
+          appBar: PreferredSize(
+            preferredSize: const Size.fromHeight(50),
+            child: AppBar(
+              elevation: 0,
+              leadingWidth: 41,
+              centerTitle: false,
+              titleSpacing: 6,
+              leading: const CustomBackBtn(),
+              title: TextWidget.titleText(
+                text: "SIP Calculator",
+                color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                theme: theme.isDarkMode,
+                fw: 1,
+              ),
             ),
           ),
-        ),
-        body: Padding(
-          padding: const EdgeInsets.only(left: 16, right: 16, top: 16),
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildChartSection(theme, donutChart),
-                const SizedBox(height: 16),
-                _buildPrincipalSection(theme),
-                const SizedBox(height: 20),
-                _buildInterestRateSection(theme),
-                const SizedBox(height: 16),
-                _buildTenureSection(theme),
-                const SizedBox(height: 16),
-                _buildResultsSection(theme),
-                const SizedBox(height: 16),
-              ],
+          body: Padding(
+            padding: const EdgeInsets.only(left: 16, right: 16, top: 16),
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildChartSection(theme, donutChart),
+                  const SizedBox(height: 16),
+                  _buildPrincipalSection(theme),
+                  const SizedBox(height: 20),
+                  _buildInterestRateSection(theme),
+                  const SizedBox(height: 16),
+                  _buildTenureSection(theme),
+                  const SizedBox(height: 16),
+                  _buildResultsSection(theme),
+                  const SizedBox(height: 16),
+                ],
+              ),
             ),
           ),
         ),
@@ -215,7 +218,21 @@ class _MFSIPSCREENState extends State<MFSIPSCREEN> {
                 fillColor: theme.isDarkMode
                     ? colors.darkGrey
                     : const Color(0xffF1F3F8),
+                      style: TextWidget.textStyle(
+                                    fontSize: 16,
+                                    color: theme.isDarkMode
+                                        ? colors.textPrimaryDark
+                                        : colors.textPrimaryLight,
+                                    theme: theme.isDarkMode,
+                                  ),
                 hintText: '10000',
+                 hintStyle: TextWidget.textStyle(
+                                      fontSize: 14,
+                                      theme: theme.isDarkMode,
+                                     color: theme.isDarkMode
+                                ? colors.textSecondaryDark
+                                : colors.textSecondaryLight,
+                                    ),
                 textCtrl: _principalCtrl,
                 onChanged: (value) {
                   if (value.isNotEmpty) {
@@ -228,26 +245,13 @@ class _MFSIPSCREENState extends State<MFSIPSCREEN> {
                   }
                   calculateSIP();
                 },
-                style: TextWidget.textStyle(
-                  color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                  fontSize: 14,
-                  theme: theme.isDarkMode,
-                ),
-                prefixIcon: Container(
-                  margin: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(20),
-                    color: theme.isDarkMode
-                        ? const Color(0xff555555)
-                        : colors.colorWhite,
-                  ),
-                  child: SvgPicture.asset(
-                    color: theme.isDarkMode
-                        ? colors.colorWhite
-                        : colors.colorGrey,
-                    assets.ruppeIcon,
-                    fit: BoxFit.scaleDown,
-                  ),
+               
+                prefixIcon: SvgPicture.asset(
+                  color: theme.isDarkMode
+                      ? colors.textSecondaryDark
+                      : colors.textSecondaryLight,
+                  assets.ruppeIcon,
+                  fit: BoxFit.scaleDown,
                 ),
               ),
             )
@@ -257,9 +261,9 @@ class _MFSIPSCREENState extends State<MFSIPSCREEN> {
         SliderTheme(
           data: SliderTheme.of(context).copyWith(
             trackHeight: 4.0,
-            activeTrackColor: colors.primary,
-            inactiveTrackColor: const Color(0xFFEEEEEE),
-            thumbColor: colors.primary,
+            activeTrackColor:  theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
+            inactiveTrackColor: theme.isDarkMode ? colors.textSecondaryDark.withOpacity(0.3) :   colors.textSecondaryLight.withOpacity(0.1),
+            thumbColor: theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
             overlayColor: const Color(0xFFCCCCCC),
             thumbShape: const RoundSliderThumbShape(
               enabledThumbRadius: 8.0,
@@ -311,9 +315,9 @@ class _MFSIPSCREENState extends State<MFSIPSCREEN> {
         SliderTheme(
           data: SliderTheme.of(context).copyWith(
             trackHeight: 4.0,
-            activeTrackColor: colors.primary,
-            inactiveTrackColor: const Color(0xFFEEEEEE),
-            thumbColor: colors.primary,
+           activeTrackColor:  theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
+            inactiveTrackColor: theme.isDarkMode ? colors.textSecondaryDark.withOpacity(0.3) :   colors.textSecondaryLight.withOpacity(0.1),
+            thumbColor: theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
             overlayColor: const Color(0xFFCCCCCC),
             thumbShape: const RoundSliderThumbShape(
               enabledThumbRadius: 8.0,
@@ -362,9 +366,9 @@ class _MFSIPSCREENState extends State<MFSIPSCREEN> {
         SliderTheme(
           data: SliderTheme.of(context).copyWith(
             trackHeight: 4.0,
-            activeTrackColor: colors.primary,
-            inactiveTrackColor: const Color(0xFFEEEEEE),
-            thumbColor: colors.primary,
+           activeTrackColor:  theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
+            inactiveTrackColor: theme.isDarkMode ? colors.textSecondaryDark.withOpacity(0.3) :   colors.textSecondaryLight.withOpacity(0.1),
+            thumbColor: theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
             overlayColor: const Color(0xFFCCCCCC),
             thumbShape: const RoundSliderThumbShape(
               enabledThumbRadius: 8.0,
@@ -397,11 +401,12 @@ class _MFSIPSCREENState extends State<MFSIPSCREEN> {
           text: "Estimation",
           color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
           theme: theme.isDarkMode,
+          fw :0
           
         ),
         const SizedBox(height: 16),
         resultRow("Principal Amount", _investedAmount, const Color(0xff015FEC), theme),
-        resultRow("Total Interest", _returns, Colors.black, theme),
+        resultRow("Total Interest", _returns, const Color.fromARGB(255, 114, 192, 169), theme),
         resultRow("Total Amount", _totalAmount, const Color(0xff6eb94b), theme),
       ],
     );

@@ -54,16 +54,34 @@ class LoggedUserBottomSheet extends ConsumerWidget {
       builder: (_, controller) {
         return Container(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-            boxShadow: const [
-              BoxShadow(
-                color: Color(0xff999999),
-                blurRadius: 4.0,
-                offset: Offset(2.0, 0.0),
-              )
-            ],
-          ),
+           borderRadius: const BorderRadius.only(
+      topLeft: Radius.circular(16),
+      topRight: Radius.circular(16),
+    ),
+         color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+         border: Border(
+                                  top: BorderSide(
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                            .withOpacity(0.5)
+                                        : colors.colorWhite,
+                                  ),
+                                  left: BorderSide(
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                            .withOpacity(0.5)
+                                        : colors.colorWhite,
+                                  ),
+                                  right: BorderSide(
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                            .withOpacity(0.5)
+                                        : colors.colorWhite,
+                                  ),
+                                ),
+
+         
+        ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -109,8 +127,8 @@ const SizedBox(height: 10,),
                         padding: const EdgeInsets.only(
                             left: 16, right: 16, top: 16, bottom: 16),
                         color: theme.isDarkMode
-                            ? colors.colorWhite.withOpacity(0.05)
-                            : colors.colorBlack.withOpacity(0.05),
+                ? colors.textSecondaryLight.withOpacity(0.4)
+                : colors.textSecondaryLight.withOpacity(0.1),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -172,7 +190,12 @@ const SizedBox(height: 10,),
                                       barrierDismissible: false,
                                       builder: (BuildContext dialogContext) {
                                         return AlertDialog(
-                                          backgroundColor: colors.colorWhite,
+                                        backgroundColor: theme
+                                                                        .isDarkMode
+                                                                    ? const Color(
+                                                                        0xFF121212)
+                                                                    : const Color(
+                                                                        0xFFF1F3F8),
                                           titlePadding:
                                               const EdgeInsets.symmetric(
                                                   horizontal: 8, vertical: 8),
@@ -229,9 +252,7 @@ const SizedBox(height: 10,),
                                                         child: Icon(
                                                           Icons.close_rounded,
                                                           size: 22,
-                                                          color: theme.isDarkMode
-                                                              ? colors.colorWhite
-                                                              : colors.colorBlack,
+                                                          color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                                                         ),
                                                       ),
                                                     ),
@@ -253,9 +274,8 @@ const SizedBox(height: 10,),
                                                           "Are you sure you want to logout?",
                                                       theme: theme.isDarkMode,
                                                       color: theme.isDarkMode
-                                                          ? colors.textPrimaryDark
-                                                          : colors
-                                                              .textPrimaryLight,
+                                                                                ? colors.textSecondaryDark
+                                                                                : colors.textPrimaryLight,
                                                       fw: 3,
                                                       align: TextAlign.center,
                                                     ),
@@ -276,7 +296,7 @@ const SizedBox(height: 10,),
                                                       .fetchLogout(context);
                                                 },
                                                 style: OutlinedButton.styleFrom(
-                                                  minimumSize: const Size(0, 40),
+                                                  minimumSize: const Size(0, 45),
                                                   side: BorderSide(
                                                       color: colors
                                                           .btnOutlinedBorder),
@@ -290,10 +310,9 @@ const SizedBox(height: 10,),
                                                 child: TextWidget.titleText(
                                                   text: "Logout",
                                                   theme: theme.isDarkMode,
-                                                  color: !theme.isDarkMode
-                                                      ? colors.colorWhite
-                                                      : colors.colorBlack,
-                                                  fw: 0,
+                                                  color:
+                                                                                  colors.colorWhite,
+                                                  fw: 2,
                                                 ),
                                               ),
                                             ),
@@ -392,7 +411,7 @@ const SizedBox(height: 10,),
                                     child: Row(
                                       children: [
                                         CircleAvatar(
-                                          backgroundColor: colors.fundbuttonBg,
+                                          backgroundColor: theme.isDarkMode ?   colors.textSecondaryLight.withOpacity(0.4)  : colors.fundbuttonBg,
                                           child: TextWidget.titleText(
                                             text: acc.userName.isNotEmpty
                                                 ? acc.userName[0].toUpperCase()
@@ -459,8 +478,8 @@ const SizedBox(height: 10,),
                                             text: "Remove",
                                             theme: false,
                                             color: !theme.isDarkMode
-                                                ? colors.errorLight
-                                                : colors.errorDark,
+                                                ? colors.lossLight
+                                                : colors.lossDark,
                                             align: TextAlign.center,
                                             fw: 2),
                                       ),
@@ -523,6 +542,7 @@ const SizedBox(height: 10,),
                             : colors.primaryLight,
                       ),
                       padding: const EdgeInsets.symmetric(vertical: 10.5),
+                      minimumSize: Size(0, 45),
                       shape: const RoundedRectangleBorder(
                         borderRadius: BorderRadius.all(Radius.circular(4)),
                       ),
