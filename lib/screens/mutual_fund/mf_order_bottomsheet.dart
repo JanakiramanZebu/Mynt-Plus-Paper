@@ -158,7 +158,9 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                   SizedBox(
                     height: screenheight * 0.24,
                     child: MfUPIProcessingScreen(
-                      data: widget.data.orderId,
+                      data: widget.condval == 'reinitiatefromportfolio'
+                          ? widget.data.orderId
+                          : mfOrder.mfPlaceOrderResponces!.orderId,
                     ),
                   ),
                 ] else ...[
@@ -626,7 +628,8 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                                   textCtrl: mfOrder.upiId,
                                                   onChanged: (value) {
                                                     mfOrder.isValidUpiId(
-                                                        widget.data.accVPA, '');
+                                                        mfOrder.upiId.text,
+                                                        'reinitiatefromportfolio');
                                                   },
                                                 ),
                                               ),
@@ -730,9 +733,10 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                       final isUpiValid =
                                           isUpi ? mfOrder.upiError == '' : true;
 
-                                      mfOrder.isValidUpiId(widget.data,
+                                      mfOrder.isValidUpiId(
+                                          widget.data, // Use the correct value
                                           widget.condval.toString());
-                                      
+
                                       if ((isUpiValid &&
                                               mfOrder.upiId.text.isNotEmpty) ||
                                           isNetBanking) {
@@ -745,8 +749,16 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                         // Call UPI Payment trigger
                                         await mfOrder.upipaymenttrigger(
                                           context,
-                                          widget.data.orderId!,
-                                          widget.data.orderVal!,
+                                          widget.condval ==
+                                                  'reinitiatefromportfolio'
+                                              ? widget.data.orderId
+                                              : mfOrder.mfPlaceOrderResponces!
+                                                  .orderId,
+                                          widget.condval ==
+                                                  'reinitiatefromportfolio'
+                                              ? widget.data.orderVal
+                                              : mfOrder.mfPlaceOrderResponces!
+                                                  .orderVal,
                                           mfOrder.upiId.text,
                                           mfOrder.paymentName,
                                         );

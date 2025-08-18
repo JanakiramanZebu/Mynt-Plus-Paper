@@ -3270,7 +3270,7 @@ class MFProvider extends DefaultChangeNotifier {
   bool isValidUpiId(dynamic mfData, String val) {
     final RegExp upiRegex =
         RegExp(r'^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+$', caseSensitive: false);
-    if (val == 'reinit') {
+    if (val == 'reinitiatefromportfolio') {
       if (upiId.text.isEmpty) {
         upiError = "Please enter UPI ID";
       } else if (!upiRegex.hasMatch(upiId.text)) {

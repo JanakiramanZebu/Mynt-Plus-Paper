@@ -73,8 +73,7 @@ class _mforderdetscreen extends State<mforderdetscreen>
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-      const CustomDragHandler(),
-
+                            const CustomDragHandler(),
                             _buildOrderHeader(theme, mfdata),
                             const SizedBox(height: 18),
                             if (mfdata.mforderdet?.data![0].status ==
@@ -89,9 +88,11 @@ class _mforderdetscreen extends State<mforderdetscreen>
                                     'PAYMENT REJECTED')
                               ElevatedButton(
                                 onPressed: () async {
-                                   ref.read(fundProvider).fetchFunds(context);
-                                    ref.read(transcationProvider).initialdata(context);
-                                    mfdata.fetchUpiDetail('', context);
+                                  ref.read(fundProvider).fetchFunds(context);
+                                  ref
+                                      .read(transcationProvider)
+                                      .initialdata(context);
+                                  mfdata.fetchUpiDetail('', context);
 
                                   final isUpi = mfdata.paymentName == 'UPI';
                                   final isNetBanking =
@@ -105,12 +106,13 @@ class _mforderdetscreen extends State<mforderdetscreen>
                                   // Navigator.pop(context);
 
                                   // Set loading state immediately when button is pressed
-                                    Navigator.pop(context);
-                                 _showBottomSheet(
-                                        context,
-                                        MfOrderBottomsheet(
-                                          data: mfdata.mforderdet?.data![0],
-                                        ));
+                                  Navigator.pop(context);
+                                  _showBottomSheet(
+                                      context,
+                                      MfOrderBottomsheet(
+                                        data: mfdata.mforderdet?.data![0],
+                                        condval: 'reinitiatefromportfolio',
+                                      ));
                                   // await mfdata.upipaymenttrigger(
                                   //   context,
                                   //   mfdata.mforderdet?.data![0].orderId,
@@ -121,7 +123,7 @@ class _mforderdetscreen extends State<mforderdetscreen>
 
                                   // if (mfdata.upiApiresponse != null &&
                                   //     mfdata.upiApiresponse?.stat == "Ok") {
-                                    
+
                                   //     // showModalBottomSheet(
                                   //     //   context: context,
                                   //     //   isScrollControlled: true,
@@ -161,70 +163,69 @@ class _mforderdetscreen extends State<mforderdetscreen>
                                   //       ),
                                   //     );
                                   //   }
-                                    // else if (isNetBanking) {
-                                    //   final url = Uri.parse(
-                                    //     'https://v3.mynt.in/mfapi${mfdata.upiApiresponse!.file!}',
-                                    //   );
-                                    //   //  mfdata.IsPaymentCalled(false);
-                                    //   // Navigator.pop(context);
+                                  // else if (isNetBanking) {
+                                  //   final url = Uri.parse(
+                                  //     'https://v3.mynt.in/mfapi${mfdata.upiApiresponse!.file!}',
+                                  //   );
+                                  //   //  mfdata.IsPaymentCalled(false);
+                                  //   // Navigator.pop(context);
 
-                                    //   // Navigate to a new screen showing InAppWebView
-                                    //   Navigator.of(context).push(
-                                    //     MaterialPageRoute(
-                                    //       builder: (context) => Scaffold(
-                                    //         appBar: AppBar(
-                                    //           title:
-                                    //               const Text("Net Banking"),
-                                    //           leading: IconButton(
-                                    //             icon: const Icon(
-                                    //                 Icons.arrow_back_ios_new),
-                                    //             onPressed: () {
-                                    //               Navigator.pop(context);
-                                    //               mfdata.threeSecondTimer
-                                    //                   ?.cancel();
-                                    //               mfdata.autoPopTimer
-                                    //                   ?.cancel();
-                                    //             },
-                                    //           ),
-                                    //         ),
-                                    //         body: WillPopScope(
-                                    //           onWillPop: () async {
-                                    //             Navigator.pop(context);
-                                    //             mfdata.threeSecondTimer
-                                    //                 ?.cancel();
-                                    //             mfdata.autoPopTimer?.cancel();
-                                    //             // print("objectobjectobjectobjectobjectobjectobjectobject");
-                                    //             return true;
-                                    //           },
-                                    //           child: InAppWebView(
-                                    //             initialUrlRequest: URLRequest(
-                                    //               url: WebUri(url.toString()),
-                                    //             ),
-                                    //             initialOptions:
-                                    //                 InAppWebViewGroupOptions(
-                                    //               crossPlatform:
-                                    //                   InAppWebViewOptions(),
-                                    //             ),
-                                    //             onWebViewCreated:
-                                    //                 (InAppWebViewController
-                                    //                     controller) {
-                                    //               ConstantName
-                                    //                       .webViewController =
-                                    //                   controller;
-                                    //             },
-                                    //             onProgressChanged:
-                                    //                 (InAppWebViewController
-                                    //                         controller,
-                                    //                     int progress) {
-                                    //               // Optional: add loading logic or progress indicator
-                                    //             },
-                                    //           ),
-                                    //         ),
-                                    //       ),
-                                    //     ),
-                                    //   );
-                                    // }
-                                   
+                                  //   // Navigate to a new screen showing InAppWebView
+                                  //   Navigator.of(context).push(
+                                  //     MaterialPageRoute(
+                                  //       builder: (context) => Scaffold(
+                                  //         appBar: AppBar(
+                                  //           title:
+                                  //               const Text("Net Banking"),
+                                  //           leading: IconButton(
+                                  //             icon: const Icon(
+                                  //                 Icons.arrow_back_ios_new),
+                                  //             onPressed: () {
+                                  //               Navigator.pop(context);
+                                  //               mfdata.threeSecondTimer
+                                  //                   ?.cancel();
+                                  //               mfdata.autoPopTimer
+                                  //                   ?.cancel();
+                                  //             },
+                                  //           ),
+                                  //         ),
+                                  //         body: WillPopScope(
+                                  //           onWillPop: () async {
+                                  //             Navigator.pop(context);
+                                  //             mfdata.threeSecondTimer
+                                  //                 ?.cancel();
+                                  //             mfdata.autoPopTimer?.cancel();
+                                  //             // print("objectobjectobjectobjectobjectobjectobjectobject");
+                                  //             return true;
+                                  //           },
+                                  //           child: InAppWebView(
+                                  //             initialUrlRequest: URLRequest(
+                                  //               url: WebUri(url.toString()),
+                                  //             ),
+                                  //             initialOptions:
+                                  //                 InAppWebViewGroupOptions(
+                                  //               crossPlatform:
+                                  //                   InAppWebViewOptions(),
+                                  //             ),
+                                  //             onWebViewCreated:
+                                  //                 (InAppWebViewController
+                                  //                     controller) {
+                                  //               ConstantName
+                                  //                       .webViewController =
+                                  //                   controller;
+                                  //             },
+                                  //             onProgressChanged:
+                                  //                 (InAppWebViewController
+                                  //                         controller,
+                                  //                     int progress) {
+                                  //               // Optional: add loading logic or progress indicator
+                                  //             },
+                                  //           ),
+                                  //         ),
+                                  //       ),
+                                  //     ),
+                                  //   );
+                                  // }
                                 },
                                 style: ElevatedButton.styleFrom(
                                   elevation: 0,
@@ -304,7 +305,6 @@ class _mforderdetscreen extends State<mforderdetscreen>
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.start,
