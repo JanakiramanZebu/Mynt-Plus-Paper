@@ -164,7 +164,7 @@ class _AlgoCreateState extends ConsumerState<AlgoCreate> {
           // Time Settings Row
           Row(
             children: [
-              Expanded(
+              SizedBox(width: 100,
                 child: Consumer(
                   builder: (context, ref, child) {
                     return _buildTimeField(
@@ -175,18 +175,18 @@ class _AlgoCreateState extends ConsumerState<AlgoCreate> {
                   },
                 ),
               ),
-              SizedBox(width: 40),
-              Expanded(
-                child: Consumer(
-                  builder: (context, ref, child) {
-                    return _buildTimeField(
-                      'Exit\nTime',
-                      strategy.exitTime,
-                      (time) => strategy.setExitTime(time),
-                    );
-                  },
-                ),
-              ),
+              // SizedBox(width: 40),
+              // Expanded(
+              //   child: Consumer(
+              //     builder: (context, ref, child) {
+              //       return _buildTimeField(
+              //         'Exit\nTime',
+              //         strategy.exitTime,
+              //         (time) => strategy.setExitTime(time),
+              //       );
+              //     },
+              //   ),
+              // ),
             ],
           ),
         ],
@@ -238,7 +238,7 @@ class _AlgoCreateState extends ConsumerState<AlgoCreate> {
           Row(
             children: [
               
-              Expanded(
+              SizedBox(width: 100,
                 child: Consumer(
                   builder: (context, ref, child) {
                     return _buildTimeField(
@@ -646,7 +646,7 @@ strategy.overallTarget ? Expanded(child: Container(
                         children: [
                           Expanded(child: _buildLegBuilderField('Select segments', _buildSegmentButtons())),
                           SizedBox(width: 16),
-                          Expanded(child: _buildLegBuilderField('Total Lot', _buildTotalLotField())),
+                          Expanded(child: _buildLegBuilderField('Total Qty', _buildTotalLotField())),
                           SizedBox(width: 16),
                           Expanded(child: _buildLegBuilderField('Position', _buildPositionButtons())),
                         ],
@@ -761,7 +761,7 @@ strategy.overallTarget ? Expanded(child: Container(
             border: Border.all(color: Colors.grey[300]!),
             borderRadius: BorderRadius.circular(4),
           ),
-          child: Text(strategy.totalLot.toString()),
+          child: Text(strategy.totalQty.toString()),
         );
       },
     );
@@ -1003,7 +1003,7 @@ strategy.overallTarget ? Expanded(child: Container(
     final strategy = ref.watch(stocksProvide);
     final leg = {
       'segment': strategy.selectedSegment,
-      'totalLot': strategy.totalLot,
+      'totalQty': strategy.totalQty,
       'position': strategy.selectedPosition,
       'optionType': strategy.selectedOptionType,
       'expiry': strategy.selectedExpiry,

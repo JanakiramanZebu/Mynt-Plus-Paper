@@ -1249,7 +1249,7 @@ Future<SpanCalcResponse?> calculateSpanForSelection({
   List<StrategyLeg> _legs = [];
   bool _isLegBuilderCollapsed = false;
   String _selectedSegment = 'Options';
-  int _totalLot = 1;
+  String _totalQty = '1';
   String _selectedPosition = 'Buy';
   String _selectedOptionType = 'Call';
   String _selectedExpiry = 'Weekly';
@@ -1281,7 +1281,7 @@ Future<SpanCalcResponse?> calculateSpanForSelection({
   List<StrategyLeg> get legs => _legs;
   bool get isLegBuilderCollapsed => _isLegBuilderCollapsed;
   String get selectedSegment => _selectedSegment;
-  int get totalLot => _totalLot;
+  String get totalQty => _totalQty;
   String get selectedPosition => _selectedPosition;
   String get selectedOptionType => _selectedOptionType;
   String get selectedExpiry => _selectedExpiry;
@@ -1349,8 +1349,8 @@ Future<SpanCalcResponse?> calculateSpanForSelection({
     notifyListeners();
   }
 
-  void setTotalLot(int lot) {
-    _totalLot = lot;
+  void setTotalQty(String qty) {
+    _totalQty = qty;
     notifyListeners();
   }
 
@@ -1406,7 +1406,7 @@ Future<SpanCalcResponse?> calculateSpanForSelection({
       strike: _currentStrike,
       expiry: '28-AUG-2025', // This should be dynamic based on selection
       optionType: _selectedOptionType == 'Call' ? 'CE' : 'PE',
-      quantity: (_totalLot * 25).toString(), // Assuming 25 quantity per lot
+      quantity: (_totalQty).toString(), // Assuming 25 quantity per lot
       action: _selectedPosition == 'Buy' ? 'B' : 'S',
       prctype: 'MKT',
     );

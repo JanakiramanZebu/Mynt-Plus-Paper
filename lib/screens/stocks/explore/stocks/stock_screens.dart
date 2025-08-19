@@ -470,11 +470,11 @@ class _StockScreenState extends ConsumerState<StockScreen>
                             fw: 3,
                             color: colors.textSecondaryLight),
                         labelPadding: const EdgeInsets.symmetric(horizontal: 4),
-                        // onTap: (index) {
-                        //   if (index == 0) {
-                        //     Navigator.pushNamed(context, Routes.algoCreate);
-                        //   }
-                        // },
+                        onTap: (index) {
+                          if (index == 0) {
+                            Navigator.pushNamed(context, Routes.algoCreate);
+                          }
+                        },
                         tabs: const [
                           Tab(
                             child: Padding(
