@@ -797,76 +797,76 @@ class SettingsScreen extends ConsumerWidget {
       {'title': 'Freeze Account', 'section': 'Security'},
     ];
 
-    return SafeArea(
-      child: Scaffold(
-        appBar: AppBar(
-          backgroundColor: theme.isDarkMode ? Colors.black : Colors.white,
-          elevation: 0,
-          centerTitle: false,
-          leadingWidth: 48,
-          titleSpacing: 0,
-          leading: Material(
-            color: Colors.transparent,
-            shape: const CircleBorder(),
-            clipBehavior: Clip.hardEdge,
-            child: InkWell(
-              customBorder: const CircleBorder(),
-              splashColor: Colors.grey.withOpacity(0.4),
-              highlightColor: Colors.grey.withOpacity(0.2),
-              onTap: () {
-                Navigator.pop(context);
-              },
-              child: Container(
-                width: 44, // Increased touch area
-                height: 44,
-                alignment: Alignment.center,
-                child: Icon(
-                  Icons.arrow_back_ios_outlined,
-                  size: 18,
-                  color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                ),
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: theme.isDarkMode ? Colors.black : Colors.white,
+        elevation: 0,
+        centerTitle: false,
+        leadingWidth: 48,
+        titleSpacing: 0,
+        leading: Material(
+          color: Colors.transparent,
+          shape: const CircleBorder(),
+          clipBehavior: Clip.hardEdge,
+          child: InkWell(
+            customBorder: const CircleBorder(),
+            splashColor: Colors.grey.withOpacity(0.4),
+            highlightColor: Colors.grey.withOpacity(0.2),
+            onTap: () {
+              Navigator.pop(context);
+            },
+            child: Container(
+              width: 44, // Increased touch area
+              height: 44,
+              alignment: Alignment.center,
+              child: Icon(
+                Icons.arrow_back_ios_outlined,
+                size: 18,
+                color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
               ),
             ),
           ),
-          title: TextWidget.titleText(
-            text: "Settings",
-            theme: false,
-            color: !theme.isDarkMode
-                ? colors.textPrimaryLight
-                : colors.textPrimaryDark,
-            fw: 1,
-          ),
-          // actions: [
-          //   IconButton(
-          //     splashRadius: 20,
-          //     icon: SvgPicture.asset(
-          //       assets.qrIcon, // This is your asset path
-          //       height: 20,
-          //       width: 20,
-          //       // Optional: set color if your SVG supports it
-          //     ),
-          //     onPressed: () {
-          //       Navigator.pushNamed(context, Routes.qrscanner);
-          //     },
-          //   ),
-          //   IconButton(
-          //     splashRadius: 20,
-          //     icon: SvgPicture.asset(
-          //       assets.notifyIcon, // This is your asset path
-          //       height: 20,
-          //       width: 20,
-          //       color: colors
-          //           .colorGrey, // Optional: set color if your SVG supports it
-          //     ),
-          //     onPressed: () async {
-          //       await ref.read(notificationprovider).fetchexchagemsg(context);
-          //       await ref.read(notificationprovider).fetchbrokermsg(context);
-          //       Navigator.pushNamed(context, Routes.notificationpage);
-          //     },
-          //   ),
-          // ],
         ),
-        body: Column(
+        title: TextWidget.titleText(
+          text: "Settings",
+          theme: false,
+          color: !theme.isDarkMode
+              ? colors.textPrimaryLight
+              : colors.textPrimaryDark,
+          fw: 1,
+        ),
+        // actions: [
+        //   IconButton(
+        //     splashRadius: 20,
+        //     icon: SvgPicture.asset(
+        //       assets.qrIcon, // This is your asset path
+        //       height: 20,
+        //       width: 20,
+        //       // Optional: set color if your SVG supports it
+        //     ),
+        //     onPressed: () {
+        //       Navigator.pushNamed(context, Routes.qrscanner);
+        //     },
+        //   ),
+        //   IconButton(
+        //     splashRadius: 20,
+        //     icon: SvgPicture.asset(
+        //       assets.notifyIcon, // This is your asset path
+        //       height: 20,
+        //       width: 20,
+        //       color: colors
+        //           .colorGrey, // Optional: set color if your SVG supports it
+        //     ),
+        //     onPressed: () async {
+        //       await ref.read(notificationprovider).fetchexchagemsg(context);
+        //       await ref.read(notificationprovider).fetchbrokermsg(context);
+        //       Navigator.pushNamed(context, Routes.notificationpage);
+        //     },
+        //   ),
+        // ],
+      ),
+      body: SafeArea(
+        child: Column(
           children: [
             /// Profile Header
             ///  // showModalBottomSheet(
@@ -926,16 +926,16 @@ class SettingsScreen extends ConsumerWidget {
             //     ],
             //   ),
             // ),
-      
+            
             // Padding(
             //   padding: const EdgeInsets.symmetric(horizontal: 16),
             //   child: ListDivider(),
             // ),
-      
+            
             // const SizedBox(height: 12),
-      
+            
             // Settings Section
-      
+            
             // const SizedBox(height: 16),
             // Padding(
             //   padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -1048,7 +1048,7 @@ class SettingsScreen extends ConsumerWidget {
                                                         ),
                                             ],
                                           ),
-      
+            
                                             
                                               SizedBox(
                                           height: 115,
@@ -1126,8 +1126,8 @@ class SettingsScreen extends ConsumerWidget {
                                                   )
                                                 ]),
                                           )),
-      
-      
+            
+            
                                         ],
                                       ),
                                       
@@ -1147,13 +1147,13 @@ class SettingsScreen extends ConsumerWidget {
                     ),
                   )
                 : const SizedBox.shrink(),
-      
+            
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 16),
               child: ListDivider(),
             ),
             // const SizedBox(height: 16),
-      
+            
             // Security Section
             // Padding(
             //   padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -1168,7 +1168,7 @@ class SettingsScreen extends ConsumerWidget {
             //     ),
             //   ),
             // ),
-      
+            
             // const SizedBox(height: 16),
             // Padding(
             //   padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -1217,7 +1217,7 @@ class SettingsScreen extends ConsumerWidget {
              borderRadius: const BorderRadius.only(
         topLeft: Radius.circular(16),
         topRight: Radius.circular(16),
-      ),
+            ),
            color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
            border: Border(
                                     top: BorderSide(
@@ -1239,7 +1239,7 @@ class SettingsScreen extends ConsumerWidget {
                                           : colors.colorWhite,
                                     ),
                                   ),
-      
+            
            
           ),
                                 padding:
@@ -1504,7 +1504,7 @@ class SettingsScreen extends ConsumerWidget {
                             );
                           },
                         );
-      
+            
                         break;
                       case 'Change Password':
                         ref.read(changePasswordProvider).userIdController.text =
@@ -1530,7 +1530,7 @@ class SettingsScreen extends ConsumerWidget {
                         break;
                       case 'Generate TOTP':
                         await apikeys.fetchTotp();
-      
+            
                         showModalBottomSheet(
                             context: context,
                             isScrollControlled: true,
@@ -1554,9 +1554,9 @@ class SettingsScreen extends ConsumerWidget {
                 child: ListDivider(),
               ),
             ),
-      
+            
             const Spacer(),
-      
+            
             // Version
             Padding(
               padding: const EdgeInsets.only(bottom: 8),
@@ -1571,8 +1571,8 @@ class SettingsScreen extends ConsumerWidget {
             SizedBox(height: 8.0)
           ],
         ),
-        // bottomNavigationBar: buildBottomNav(4, theme, context, ref),
       ),
+      // bottomNavigationBar: buildBottomNav(4, theme, context, ref),
     );
   }
 
@@ -1864,54 +1864,54 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
     final theme = ref.watch(themeProvider);
     final userProfile = ref.watch(userProfileProvider);
 
-    return SafeArea(
-      child: Scaffold(
-        appBar: AppBar(
-          // title: TextWidget.subText(text: "My Accounts", theme: theme.isDarkMode, fw: 1),
-          backgroundColor: theme.isDarkMode ? Colors.black : Colors.white,
-          elevation: 0,
-          centerTitle: false,
-          leadingWidth: 48,
-          titleSpacing: 0,
-          leading: CustomBackBtn(),
-          title: TextWidget.titleText(
-            text: "Account",
-            theme: false,
-            color: theme.isDarkMode
-                ? colors.textPrimaryDark
-                : colors.textPrimaryLight,
-            fw: 1,
-          ),
-          // actions: [
-          //   IconButton(
-          //     splashRadius: 20,
-          //     icon: SvgPicture.asset(
-          //       assets.qrIcon, // This is your asset path
-          //       height: 20,
-          //       width: 20,
-          //       color: colors
-          //           .colorGrey, // Optional: set color if your SVG supports it
-          //     ),
-          //     onPressed: () => Navigator.pushNamed(context, Routes.qrscanner),
-          //   ),
-          //   IconButton(
-          //     splashRadius: 20,
-          //     icon: SvgPicture.asset(
-          //       assets.notifyIcon, // This is your asset path
-          //       height: 20,
-          //       width: 20,
-          //       color: colors
-          //           .colorGrey, // Optional: set color if your SVG supports it
-          //     ),
-          //     onPressed: () async {
-          //       await ref.read(notificationprovider).fetchexchagemsg(context);
-          //       await ref.read(notificationprovider).fetchbrokermsg(context);
-          //       Navigator.pushNamed(context, Routes.notificationpage);
-          //     },
-          //   ),
-          // ],
+    return Scaffold(
+      appBar: AppBar(
+        // title: TextWidget.subText(text: "My Accounts", theme: theme.isDarkMode, fw: 1),
+        backgroundColor: theme.isDarkMode ? Colors.black : Colors.white,
+        elevation: 0,
+        centerTitle: false,
+        leadingWidth: 48,
+        titleSpacing: 0,
+        leading: CustomBackBtn(),
+        title: TextWidget.titleText(
+          text: "Account",
+          theme: false,
+          color: theme.isDarkMode
+              ? colors.textPrimaryDark
+              : colors.textPrimaryLight,
+          fw: 1,
         ),
-        body: Padding(
+        // actions: [
+        //   IconButton(
+        //     splashRadius: 20,
+        //     icon: SvgPicture.asset(
+        //       assets.qrIcon, // This is your asset path
+        //       height: 20,
+        //       width: 20,
+        //       color: colors
+        //           .colorGrey, // Optional: set color if your SVG supports it
+        //     ),
+        //     onPressed: () => Navigator.pushNamed(context, Routes.qrscanner),
+        //   ),
+        //   IconButton(
+        //     splashRadius: 20,
+        //     icon: SvgPicture.asset(
+        //       assets.notifyIcon, // This is your asset path
+        //       height: 20,
+        //       width: 20,
+        //       color: colors
+        //           .colorGrey, // Optional: set color if your SVG supports it
+        //     ),
+        //     onPressed: () async {
+        //       await ref.read(notificationprovider).fetchexchagemsg(context);
+        //       await ref.read(notificationprovider).fetchbrokermsg(context);
+        //       Navigator.pushNamed(context, Routes.notificationpage);
+        //     },
+        //   ),
+        // ],
+      ),
+      body: SafeArea(
+        child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1965,13 +1965,13 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
               //   thickness: 1, // Optional: customize the thickness
               // ),
               // const SizedBox(height: 8),
-      
+            
               // const SizedBox(height: 10),
               // Divider(
               //   color: colors.fundbuttonBg, // Optional: customize the color
               //   thickness: 1, // Optional: customize the thickness
               // ),
-      
+            
               /// Expandable List View
               Expanded(
                 child: ListView.separated(
@@ -1979,7 +1979,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                   itemBuilder: (context, index) {
                     final item = accountItems[index];
                     final title = item['title']!;
-      
+            
                     return Theme(
                       data: Theme.of(context).copyWith(
                         dividerColor: theme.isDarkMode
@@ -2027,7 +2027,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                   separatorBuilder: (context, index) => const SizedBox(height: 0),
                 ),
               ),
-      
+            
               /// Version Text
               Center(
                 child: Padding(
@@ -2043,8 +2043,8 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
             ],
           ),
         ),
-        // bottomNavigationBar: buildBottomNav(selectedBtmIndx, theme),
       ),
+      // bottomNavigationBar: buildBottomNav(selectedBtmIndx, theme),
     );
   }
 
@@ -3186,24 +3186,24 @@ class ReportsScreen extends ConsumerWidget {
       // {'title': 'Pledge & Unpledge'},
     ];
 
-    return SafeArea(
-      child: Scaffold(
-        appBar: AppBar(
-          elevation: 0,
-          centerTitle: false,
-          leadingWidth: 48,
-          titleSpacing: 0,
-          leading: const CustomBackBtn(),
-          title: TextWidget.titleText(
-            text: "Reports",
-            theme: false,
-            color: !theme.isDarkMode
-                ? colors.textPrimaryLight
-                : colors.textPrimaryDark,
-            fw: 1,
-          ),
+    return Scaffold(
+      appBar: AppBar(
+        elevation: 0,
+        centerTitle: false,
+        leadingWidth: 48,
+        titleSpacing: 0,
+        leading: const CustomBackBtn(),
+        title: TextWidget.titleText(
+          text: "Reports",
+          theme: false,
+          color: !theme.isDarkMode
+              ? colors.textPrimaryLight
+              : colors.textPrimaryDark,
+          fw: 1,
         ),
-        body: Column(
+      ),
+      body: SafeArea(
+        child: Column(
           children: [
             /// Profile Header
             // Padding(
@@ -3249,7 +3249,7 @@ class ReportsScreen extends ConsumerWidget {
             //     ],
             //   ),
             // ),
-      
+            
             // Padding(
             //   padding: const EdgeInsets.symmetric(horizontal: 16),
             //   child: Divider(
@@ -3257,11 +3257,11 @@ class ReportsScreen extends ConsumerWidget {
             //     thickness: 1, // Optional: customize the thickness
             //   ),
             // ),
-      
+            
             // const SizedBox(height: 10),
-      
+            
             // Reports Section
-      
+            
             // const SizedBox(height: 10),
             // Padding(
             //   padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -3301,7 +3301,7 @@ class ReportsScreen extends ConsumerWidget {
                             await ledgerdate.getCurrentDate('pandu');
                             Navigator.pushNamed(context, Routes.calenderpnlScreen,
                                 arguments: "DDDDD");
-      
+            
                           case 'Tax P&L':
                             // await ledgerdate.getYearlistTaxpnl();
                             // if (ledgerdate.taxpnldercomcur == null &&
@@ -3310,15 +3310,15 @@ class ReportsScreen extends ConsumerWidget {
                             //   ledgerdate.getCurrentDate('');
                             //   ledgerdate.fetchtaxpnleqdata(
                             //       context, ledgerdate.yearforTaxpnl);
-      
+            
                             //   ledgerdate.taxpnlExTabchange(0);
                             //   ledgerdate.chargesforeqtaxpnl(
                             //       context, ledgerdate.yearforTaxpnl);
                             // }
-      
+            
                             // Navigator.pushNamed(context, Routes.taxpnlscreen,
                             //     arguments: "DDDDD");
-      
+            
                             await showModalBottomSheet(
                               isScrollControlled: true,
                               shape: const RoundedRectangleBorder(
@@ -3334,9 +3334,9 @@ class ReportsScreen extends ConsumerWidget {
                               builder: (context) => Container(
                                 decoration: BoxDecoration(
            borderRadius: const BorderRadius.only(
-      topLeft: Radius.circular(16),
-      topRight: Radius.circular(16),
-    ),
+            topLeft: Radius.circular(16),
+            topRight: Radius.circular(16),
+          ),
          color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
          border: Border(
                                   top: BorderSide(
@@ -3358,7 +3358,7 @@ class ReportsScreen extends ConsumerWidget {
                                         : colors.colorWhite,
                                   ),
                                 ),
-
+            
          
         ),
                                   padding: EdgeInsets.only(
@@ -3367,15 +3367,15 @@ class ReportsScreen extends ConsumerWidget {
                                   ),
                                   child: TaxPnlScreen()),
                             );
-      
+            
                             break;
                           case 'Ledger':
                             await ledgerdate.getCurrentDate('else');
-      
+            
                             Navigator.pushNamed(context, Routes.ledgerscreen,
                                 arguments: "DDDDD");
                             break;
-      
+            
                           case 'Client Master(CMR)':
                             await showModalBottomSheet(
                               isScrollControlled: true,
@@ -3390,140 +3390,142 @@ class ReportsScreen extends ConsumerWidget {
                               enableDrag: false,
                               useSafeArea: true,
                               context: context,
-                              builder: (context) => Container(
-                               decoration: BoxDecoration(
-           borderRadius: const BorderRadius.only(
-      topLeft: Radius.circular(16),
-      topRight: Radius.circular(16),
-    ),
-         color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-         border: Border(
-                                  top: BorderSide(
-                                    color: theme.isDarkMode
-                                        ? colors.textSecondaryDark
-                                            .withOpacity(0.5)
-                                        : colors.colorWhite,
+                              builder: (context) => SafeArea(
+                                child: Container(
+                                 decoration: BoxDecoration(
+                                           borderRadius: const BorderRadius.only(
+                                            topLeft: Radius.circular(16),
+                                            topRight: Radius.circular(16),
+                                          ),
+                                         color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                                         border: Border(
+                                    top: BorderSide(
+                                      color: theme.isDarkMode
+                                          ? colors.textSecondaryDark
+                                              .withOpacity(0.5)
+                                          : colors.colorWhite,
+                                    ),
+                                    left: BorderSide(
+                                      color: theme.isDarkMode
+                                          ? colors.textSecondaryDark
+                                              .withOpacity(0.5)
+                                          : colors.colorWhite,
+                                    ),
+                                    right: BorderSide(
+                                      color: theme.isDarkMode
+                                          ? colors.textSecondaryDark
+                                              .withOpacity(0.5)
+                                          : colors.colorWhite,
+                                    ),
                                   ),
-                                  left: BorderSide(
-                                    color: theme.isDarkMode
-                                        ? colors.textSecondaryDark
-                                            .withOpacity(0.5)
-                                        : colors.colorWhite,
-                                  ),
-                                  right: BorderSide(
-                                    color: theme.isDarkMode
-                                        ? colors.textSecondaryDark
-                                            .withOpacity(0.5)
-                                        : colors.colorWhite,
-                                  ),
-                                ),
-
-         
-        ),
-                                child: Padding(
-                                  padding: EdgeInsets.only(
-                                    bottom: 24 +
-                                        MediaQuery.of(context).viewInsets.bottom,
-                                  ),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            vertical: 8.0, horizontal: 16.0),
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            TextWidget.titleText(
-                                              text: "Client Master (CMR)",
-                                              theme: theme.isDarkMode,
-                                              fw: 1,
-                                            ),
-                                            Material(
-                                              color: Colors.transparent,
-                                              shape: const CircleBorder(),
-                                              child: InkWell(
-                                                onTap: () async {
-                                                  await Future.delayed(
-                                                      const Duration(
-                                                          milliseconds: 150));
-                                                  Navigator.pop(context);
-                                                },
-                                                borderRadius:
-                                                    BorderRadius.circular(20),
-                                                splashColor: theme.isDarkMode
-                                                    ? Colors.white
-                                                        .withOpacity(0.15)
-                                                    : Colors.black
-                                                        .withOpacity(0.15),
-                                                highlightColor: theme.isDarkMode
-                                                    ? Colors.white
-                                                        .withOpacity(0.08)
-                                                    : Colors.black
-                                                        .withOpacity(0.08),
-                                                child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(6.0),
-                                                  child: Icon(
-                                                    Icons.close_rounded,
-                                                    size: 22,
-                                                    color: theme.isDarkMode
-                                                        ? const Color(0xffBDBDBD)
-                                                        : colors.colorGrey,
+                                            
+                                         
+                                        ),
+                                  child: Padding(
+                                    padding: EdgeInsets.only(
+                                      bottom: 24 +
+                                          MediaQuery.of(context).viewInsets.bottom,
+                                    ),
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 8.0, horizontal: 16.0),
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              TextWidget.titleText(
+                                                text: "Client Master (CMR)",
+                                                theme: theme.isDarkMode,
+                                                fw: 1,
+                                              ),
+                                              Material(
+                                                color: Colors.transparent,
+                                                shape: const CircleBorder(),
+                                                child: InkWell(
+                                                  onTap: () async {
+                                                    await Future.delayed(
+                                                        const Duration(
+                                                            milliseconds: 150));
+                                                    Navigator.pop(context);
+                                                  },
+                                                  borderRadius:
+                                                      BorderRadius.circular(20),
+                                                  splashColor: theme.isDarkMode
+                                                      ? Colors.white
+                                                          .withOpacity(0.15)
+                                                      : Colors.black
+                                                          .withOpacity(0.15),
+                                                  highlightColor: theme.isDarkMode
+                                                      ? Colors.white
+                                                          .withOpacity(0.08)
+                                                      : Colors.black
+                                                          .withOpacity(0.08),
+                                                  child: Padding(
+                                                    padding:
+                                                        const EdgeInsets.all(6.0),
+                                                    child: Icon(
+                                                      Icons.close_rounded,
+                                                      size: 22,
+                                                      color: theme.isDarkMode
+                                                          ? const Color(0xffBDBDBD)
+                                                          : colors.colorGrey,
+                                                    ),
                                                   ),
                                                 ),
                                               ),
-                                            ),
-                                          ],
+                                            ],
+                                          ),
                                         ),
-                                      ),
-                                      Divider(
-                                        color: theme.isDarkMode
-                                            ? colors.darkColorDivider
-                                            : colors.colorDivider,
-                                        height: 0,
-                                      ),
-                                      const SizedBox(height: 24),
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 24.0),
-                                        child: SizedBox(
-                                          width: double.infinity,
-                                          height: 45,
-                                          child: OutlinedButton(
-                                            style: OutlinedButton.styleFrom(
-                                              elevation: 0,
-                                              minimumSize: const Size(0, 45),
-                                              backgroundColor: theme.isDarkMode
-                                                  ? colors.primaryDark
-                                                  : colors.primaryLight,
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(5),
+                                        Divider(
+                                          color: theme.isDarkMode
+                                              ? colors.darkColorDivider
+                                              : colors.colorDivider,
+                                          height: 0,
+                                        ),
+                                        const SizedBox(height: 24),
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 24.0),
+                                          child: SizedBox(
+                                            width: double.infinity,
+                                            height: 45,
+                                            child: OutlinedButton(
+                                              style: OutlinedButton.styleFrom(
+                                                elevation: 0,
+                                                minimumSize: const Size(0, 45),
+                                                backgroundColor: theme.isDarkMode
+                                                    ? colors.primaryDark
+                                                    : colors.primaryLight,
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(5),
+                                                ),
+                                                padding: EdgeInsets.zero,
                                               ),
-                                              padding: EdgeInsets.zero,
-                                            ),
-                                            onPressed: () {
-                                              // Download functionality will be added later
-                                              print("Downloading cmr");
-                                              ledgerdate
-                                                  .fetchcmrdownload(context);
-                                              print("Downloading cmr api");
-                                            },
-                                            child: TextWidget.subText(
-                                              text: "Download",
-                                              theme: theme.isDarkMode,
-                                              color: colors.colorWhite,
-                                              fw: 2,
-                                              align: TextAlign.center,
+                                              onPressed: () {
+                                                // Download functionality will be added later
+                                                print("Downloading cmr");
+                                                ledgerdate
+                                                    .fetchcmrdownload(context);
+                                                print("Downloading cmr api");
+                                              },
+                                              child: TextWidget.subText(
+                                                text: "Download",
+                                                theme: theme.isDarkMode,
+                                                color: colors.colorWhite,
+                                                fw: 2,
+                                                align: TextAlign.center,
+                                              ),
                                             ),
                                           ),
                                         ),
-                                      ),
-                                      const SizedBox(height: 35),
-                                    ],
+                                        const SizedBox(height: 35),
+                                      ],
+                                    ),
                                   ),
                                 ),
                               ),
@@ -3671,7 +3673,7 @@ class ReportsScreen extends ConsumerWidget {
                           //                     ? colors.colorWhite.withOpacity(0.1)
                           //                     : colors.colorBlack.withOpacity(0.1),
                           //                 onTap: () {
-      
+            
                           //                 },
                           //                 child: Container(
                           //                   width: 40,
@@ -3734,13 +3736,13 @@ class ReportsScreen extends ConsumerWidget {
                           //         break;
                           // case 'Holdings':
                           //   await ledgerdate.getCurrentDate('else');
-      
+            
                           //   Navigator.pushNamed(context, Routes.holdingscreen,
                           //       arguments: "DDDDD");
                           //   break;
                           // case 'Positions':
                           //   ledgerdate.fetchposition(context);
-      
+            
                           //   Navigator.pushNamed(context, Routes.positionscreen,
                           //       arguments: "DDDDD");
                           //   break;
@@ -3751,11 +3753,11 @@ class ReportsScreen extends ConsumerWidget {
                           //     ledgerdate.fetchpnldata(context,
                           //         ledgerdate.startDate, ledgerdate.today, true);
                           //   }
-      
+            
                           //   Navigator.pushNamed(context, Routes.pnlscreen,
                           //       arguments: "DDDDD");
                           //   break;
-      
+            
                           // case 'Tradebook':
                           //   // await ledgerdate.getCurrentDate('tradebook');
                           //   if (ledgerdate.tradebookdata == null) {
@@ -3775,7 +3777,7 @@ class ReportsScreen extends ConsumerWidget {
                             // }
                             // Navigator.pushNamed(context, Routes.pdfdownload,
                             //     arguments: "DDDDD");
-      
+            
                             //  await showModalBottomSheet(
                             //   isScrollControlled: true,
                             //   shape: const RoundedRectangleBorder(
@@ -3797,7 +3799,7 @@ class ReportsScreen extends ConsumerWidget {
                             //         ddd: "Contract Note",
                             //       ) ),
                             // );
-      
+            
                             await showModalBottomSheet(
                               isScrollControlled: true,
                               shape: const RoundedRectangleBorder(
@@ -3817,11 +3819,11 @@ class ReportsScreen extends ConsumerWidget {
                                   ),
                                   child: ContractCalendarScreen()),
                             );
-      
+            
                             // Navigator.pushNamed(context, Routes.contractCalendar);
-      
+            
                             break;
-      
+            
                           case 'CA Events':
                             // ledgerdate.fetchposition(context);
                             // }
@@ -3830,11 +3832,11 @@ class ReportsScreen extends ConsumerWidget {
                               ledgerdate.fetchcaeventsdata(context,
                                   ledgerdate.startDate, ledgerdate.endDate);
                             }
-      
+            
                             Navigator.pushNamed(context, Routes.caeventmainpage,
                                 arguments: "DDDDD");
                             break;
-      
+            
                           // Add other cases as needed
                         }
                       },
@@ -3847,9 +3849,9 @@ class ReportsScreen extends ConsumerWidget {
                 ),
               ),
             ),
-      
+            
             const SizedBox(height: 16.0),
-      
+            
             // Version
             Padding(
               padding: const EdgeInsets.only(bottom: 8),
@@ -3864,8 +3866,8 @@ class ReportsScreen extends ConsumerWidget {
             )
           ],
         ),
-        // bottomNavigationBar: buildBottomNav(4, theme, context, ref),
       ),
+      // bottomNavigationBar: buildBottomNav(4, theme, context, ref),
     );
   }
 

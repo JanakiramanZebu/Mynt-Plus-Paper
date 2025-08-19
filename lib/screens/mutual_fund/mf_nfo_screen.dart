@@ -24,27 +24,27 @@ class MFNFOScreen extends ConsumerWidget {
     final theme = ref.watch(themeProvider);
     final fund = ref.watch(fundProvider);
 
-    return SafeArea(
-      child: Scaffold(
-        appBar: PreferredSize(
-          preferredSize: const Size.fromHeight(50),
-          child: AppBar(
-            elevation: 0.2,
-            leadingWidth: 41,
-            centerTitle: false,
-            titleSpacing: 6,
-            leading: const CustomBackBtn(),
-            title: TextWidget.titleText(
-              text: "New Fund Offer",
-              color: theme.isDarkMode
-                  ? colors.textPrimaryDark
-                  : colors.textPrimaryLight,
-              theme: theme.isDarkMode,
-              fw: 1,
-            ),
+    return Scaffold(
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(50),
+        child: AppBar(
+          elevation: 0.2,
+          leadingWidth: 41,
+          centerTitle: false,
+          titleSpacing: 6,
+          leading: const CustomBackBtn(),
+          title: TextWidget.titleText(
+            text: "New Fund Offer",
+            color: theme.isDarkMode
+                ? colors.textPrimaryDark
+                : colors.textPrimaryLight,
+            theme: theme.isDarkMode,
+            fw: 1,
           ),
         ),
-        body: TransparentLoaderScreen(
+      ),
+      body: SafeArea(
+        child: TransparentLoaderScreen(
           isLoading: mf.investloader,
           child: _buildContent(context, mf, theme, ref, fund),
         ),

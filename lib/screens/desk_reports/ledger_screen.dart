@@ -192,65 +192,65 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
             ledgerprovider.falseloader('ledger');
             ledgerprovider.showledgerSearch(true);
           },
-          child: SafeArea(
-            child: Scaffold(
-              appBar: AppBar(
-                // automaticallyImplyLeading: false,
-                leadingWidth: 41,
-                titleSpacing: 6,
-                centerTitle: false,
-                leading: Material(
-                  color: Colors.transparent,
-                  shape: const CircleBorder(),
-                  clipBehavior: Clip.hardEdge,
-                  child: InkWell(
-                    customBorder: const CircleBorder(),
-                    splashColor: theme.isDarkMode
-                        ? colors.splashColorDark
-                        : colors.splashColorLight,
-                    highlightColor: theme.isDarkMode
-                        ? colors.highlightDark
-                        : colors.highlightLight,
-                    onTap: () {
-                      ledgerprovider.falseloader('ledger');
-                      ledgerprovider.showledgerSearch(true);
-                      Navigator.pop(context);
-                    },
-                    child: Container(
-                      width: 44, // Increased touch area
-                      height: 44,
-                      alignment: Alignment.center,
-                      child: Icon(Icons.arrow_back_ios_outlined,
-                          size: 18,
-                          color: theme.isDarkMode
-                          ? colors.textSecondaryDark
-                          : colors.textSecondaryLight,),
-                    ),
+          child: Scaffold(
+            appBar: AppBar(
+              // automaticallyImplyLeading: false,
+              leadingWidth: 41,
+              titleSpacing: 6,
+              centerTitle: false,
+              leading: Material(
+                color: Colors.transparent,
+                shape: const CircleBorder(),
+                clipBehavior: Clip.hardEdge,
+                child: InkWell(
+                  customBorder: const CircleBorder(),
+                  splashColor: theme.isDarkMode
+                      ? colors.splashColorDark
+                      : colors.splashColorLight,
+                  highlightColor: theme.isDarkMode
+                      ? colors.highlightDark
+                      : colors.highlightLight,
+                  onTap: () {
+                    ledgerprovider.falseloader('ledger');
+                    ledgerprovider.showledgerSearch(true);
+                    Navigator.pop(context);
+                  },
+                  child: Container(
+                    width: 44, // Increased touch area
+                    height: 44,
+                    alignment: Alignment.center,
+                    child: Icon(Icons.arrow_back_ios_outlined,
+                        size: 18,
+                        color: theme.isDarkMode
+                        ? colors.textSecondaryDark
+                        : colors.textSecondaryLight,),
                   ),
                 ),
-                elevation: 0.2,
-                title: TextWidget.titleText(
-                    text: "Ledger",
-                    textOverflow: TextOverflow.ellipsis,
-                    color: theme.isDarkMode
-                        ? colors.textPrimaryDark
-                        : colors.textPrimaryLight,
-                    theme: theme.isDarkMode,
-                    fw: 1),
-                // leading: InkWell(
-                //   onTap: () {
-            
-                //   },
-                //   child: Icon(Icons.ios_share)),
               ),
-              body: ledgerprovider.ledgerloading
-                  ? Center(
-                      child: Container(
-                        color: Colors.white,
-                        child: CircularLoaderImage(),
-                      ),
-                    )
-                  : Column(
+              elevation: 0.2,
+              title: TextWidget.titleText(
+                  text: "Ledger",
+                  textOverflow: TextOverflow.ellipsis,
+                  color: theme.isDarkMode
+                      ? colors.textPrimaryDark
+                      : colors.textPrimaryLight,
+                  theme: theme.isDarkMode,
+                  fw: 1),
+              // leading: InkWell(
+              //   onTap: () {
+          
+              //   },
+              //   child: Icon(Icons.ios_share)),
+            ),
+            body: ledgerprovider.ledgerloading
+                ? Center(
+                    child: Container(
+                      color: Colors.white,
+                      child: CircularLoaderImage(),
+                    ),
+                  )
+                : SafeArea(
+                  child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Text("${ddd}")
@@ -449,12 +449,12 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                                 ],
                               ),
                             ),
-            
+                            
                             // Expanded(
                             //   child: Padding(
                             //     padding: const EdgeInsets.all(14.0),
                             //     child: TextField(
-            
+                            
                             //       decoration: InputDecoration(
                             //         filled: true,
                             //          fillColor: const Color(0xffF1F3F8),
@@ -485,7 +485,7 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                             //       ),
                             //     ),
                             //   ),
-            
+                            
                             // ),
                           ],
                         ),
@@ -661,7 +661,7 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                                         ),
                                       ),
                                     ),
-            
+                            
                                     // TextButton(
                                     //     onPressed: () {
                                     //       positionBook.showPositionSearch(false);
@@ -778,7 +778,7 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                                       } else {
                                         // positionBook.showPositionSearch(false);
                                       }
-            
+                            
                                       ledgerprovider.searchLedgerType(value);
                                     },
                                   ),
@@ -860,7 +860,7 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                         //             Container(
                         //               width: 100, // Fixed width for the static column
                         //               height: 50,
-            
+                            
                         //               padding: EdgeInsets.all(8.0),
                         //               decoration: BoxDecoration(
                         //                 border: Border.all(color: const Color.fromARGB(255, 224, 224, 224)),
@@ -872,7 +872,7 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                         //         ],
                         //       ),
                         //       // Scrollable Content
-            
+                            
                         //       Expanded(
                         //         child: SingleChildScrollView(
                         //           scrollDirection: Axis.horizontal,
@@ -885,7 +885,7 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                         //                     Container(
                         //                        margin: EdgeInsets.only(top: 20),
                         //                       width: i == 4 ? 275 : 100, // Column width
-            
+                            
                         //                       padding: EdgeInsets.all(8.0),
                         //                       color: Color(0xFFEEEEEE),
                         //                       child: Text(
@@ -956,7 +956,7 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                                                   'Yes') {
                                             final ledgerEntry = ledgerprovider
                                                 .ledgerAllData?.fullStat?[index];
-            
+                            
                                             if (ledgerEntry != null) {
                                               // Show logo loader
                                               showDialog(
@@ -979,7 +979,7 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                                               Navigator.of(context,
                                                       rootNavigator: true)
                                                   .pop();
-            
+                            
                                               if (context.mounted) {
                                                 await _showBottomSheet(
                                                   context,
@@ -1114,7 +1114,7 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                                                   ],
                                                 ),
                                               ),
-            
+                            
                                               Padding(
                                                 padding: const EdgeInsets.only(
                                                     top: 4.0, bottom: 4.0),
@@ -1143,7 +1143,7 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                                                             theme:
                                                                 theme.isDarkMode,
                                                             fw: 3),
-            
+                            
                                                         TextWidget.paraText(
                                                             text:
                                                                 " ${dateFormatChangeForLedger(ledgerprovider.ledgerAllData!.fullStat![index].vOUCHERDATE.toString())}",
@@ -1201,7 +1201,7 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                                                   ],
                                                 ),
                                               ),
-            
+                            
                                               // ledgerprovider
                                               //             .ledgerAllData!
                                               //             .fullStat![index]
@@ -1213,9 +1213,9 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                                               //       )
                                               //     : SizedBox(),
                                               // const SizedBox(height: 4),
-            
+                            
                                               // ledgerprovider.ledgerAllData!.fullStat![index].bill == 'Yes' ?
-            
+                            
                                               // Padding(
                                               //   padding: const EdgeInsets.only(top: 4.0),
                                               //   child: Column(
@@ -1284,7 +1284,7 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                               )
                       ],
                     ),
-            ),
+                ),
           ),
         ),
       );

@@ -77,370 +77,372 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
           widget.foucs.unfocus();
         },
         child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    TextWidget.subText(
-                      text:
-                          "Withdrawable Amount ₹ ${widget.withdarw.payoutdetails!.withdrawAmount}",
-                      theme: widget.theme.isDarkMode,
-                      color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                    ),
-                    const SizedBox(height: 10),
-                    TextFormField(
-                      enabled: widget.withdarw.payoutdetails!.withdrawAmount ==
-                              '0.00'
-                          ? false
-                          : true,
-                      focusNode: widget.foucs,
-                      inputFormatters: [
-                        FilteringTextInputFormatter.allow(
-                            RegExp(r'^\d*\.?\d*')),
-                        // Prevent entering just "0"
-                        FilteringTextInputFormatter.deny(RegExp(r'^0$')),
-                      ],
-                      keyboardType:
-                          const TextInputType.numberWithOptions(decimal: true),
-                      style: TextWidget.textStyle(
-                          theme: widget.theme.isDarkMode, color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight, fontSize: 25,),
-                      controller: widget.withdarw.withdrawamount,
-                      onChanged: (value) {
-                        // widget.withdarw.withdrawamount.text = value;
-                        setState(() {
-                          if (widget.withdarw.withdrawamount.text.isNotEmpty) {
-                            double enteredAmount = double.parse(
-                                widget.withdarw.withdrawamount.text);
-                            double availableAmount = double.parse(widget
-                                .withdarw.payoutdetails!.withdrawAmount
-                                .toString());
-
-                            if (enteredAmount <= 0) {
-                              disable = true;
-                              withdarwerror = "Amount must be greater than 0";
-                            } else if (enteredAmount > availableAmount) {
-                              disable = true;
-                              withdarwerror = "Insufficient fund";
-                            } else {
-                              disable = false;
-                              withdarwerror = "";
-                            }
-                          } else if (widget
-                                  .withdarw.withdrawamount.text.isEmpty ||
-                              widget.withdarw.payoutdetails!.withdrawAmount ==
-                                  "0.00") {
-                            disable = true;
-                            withdarwerror = "";
-                          } else {
-                            disable = false;
-                            withdarwerror = "";
-                          }
-                        });
-                      },
-                      decoration: InputDecoration(
-                        contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 8),
-                        enabledBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: colors.colorBlue),
-                            borderRadius: BorderRadius.circular(5)),
-                        disabledBorder: InputBorder.none,
-                        focusedBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: colors.colorBlue),
-                            borderRadius: BorderRadius.circular(5)),
-                        border: OutlineInputBorder(
-                            borderSide: BorderSide.none,
-                            borderRadius: BorderRadius.circular(5)),
-                        fillColor: widget.theme.isDarkMode
-                            ? colors.darkGrey
-                            : const Color(0xffF1F3F8),
-                        filled: true,
-                        hintText: "0",
-                        hintStyle: TextWidget.textStyle(
-                            theme: false,
-                            color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                            fontSize: 25,
-                            ),
-                        labelStyle: TextWidget.textStyle(
-                            theme: widget.theme.isDarkMode,
-                            fontSize: 25,
-                            ),
-                        prefixIcon: Padding(
-                          padding: const EdgeInsets.all(12.0),
-                          child: SvgPicture.asset(
-                            assets.ruppeIcon,
-                            color: widget.theme.isDarkMode
-                               ? colors.textSecondaryDark
-                                          : colors.textSecondaryLight,
-                                    
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(left: 16),
-                child: withdarwerror == ""
-                    ? Container()
-                    : TextWidget.captionText(
-                        text: withdarwerror,
-                        theme: false,
-                        color: colors.error,
-                      ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton(
-                    style: OutlinedButton.styleFrom(
-                      elevation: 0,
-                      minimumSize: const Size(0, 45),
-                      backgroundColor: disable
-                          ? colors.darkGrey
-                          : widget.theme.isDarkMode
-                              ? colors.primaryDark
-                              : colors.primaryLight,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                      side: BorderSide.none,
-                    ),
-                    onPressed: (disable)
-                        ? () {
-                            if (widget.withdarw.payoutdetails!.withdrawAmount ==
-                                "0.00") {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                  warningMessage(context, "Insufficient fund"));
-                            } else if (widget
-                                .withdarw.withdrawamount.text.isEmpty) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                  warningMessage(
-                                      context, "Please enter the amount"));
-                            } else if (double.tryParse(
-                                        widget.withdarw.withdrawamount.text) !=
-                                    null &&
-                                double.parse(
-                                        widget.withdarw.withdrawamount.text) <=
-                                    0) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                  warningMessage(context,
-                                      "Amount must be greater than 0"));
-                            } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                  warningMessage(
-                                      context, "Please enter a valid amount"));
-                            }
-                          }
-                        : () async {
-                            setState(() {
-                              _withdrawLoading = true;
-                            });
-                            await widget.withdarw.fetchPaymentWithDraw(
-                                widget.withdarw.ipAddress,
-                                widget.withdarw.withdrawamount.text,
-                                widget.segment,
-                                context);
-                            _isVisible = false;
-                            widget.withdarw.focusNode.unfocus();
-                            widget.withdarw.withdrawamount.clear();
-                            setState(() {
-                              disable = true;
-                              withdarwerror = "";
-                            });
-
-                            showUIWithDelay();
-                            setState(() {
-                              _withdrawLoading = false;
-                            });
-                          },
-                    child: _withdrawLoading
-                        ? SizedBox(
-                            width: 18,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                                strokeWidth: 2, color: colors.colorWhite),
-                          )
-                        : TextWidget.titleText(
-                            text: 'Withdraw',
-                            theme: false,
-                            color:
-                                disable ? colors.colorGrey : colors.colorWhite,
-                            fw: disable ? 0 : 2),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: Column(
-                  children: [
-                    InkWell(
-                      onTap: () {
-                        setState(() {
-                          isBreakUpExpanded = !isBreakUpExpanded;
-                        });
-                      },
-                      // onTap: () async {
-                      //   showModalBottomSheet(
-                      //       enableDrag: false,
-                      //       useSafeArea: true,
-                      //       isScrollControlled: true,
-                      //       shape: const RoundedRectangleBorder(
-                      //           borderRadius: BorderRadius.vertical(
-                      //               top: Radius.circular(16))),
-                      //       backgroundColor: const Color(0xffffffff),
-                      //       context: context,
-                      //       builder: (BuildContext context) {
-                      //         return BreakUpDetails(
-                      //             withdraw: widget.withdarw);
-                      //       });
-                      // },
-                      splashColor: theme.isDarkMode
-                          ? colors.splashColorDark
-                          : colors.splashColorLight,
-                      highlightColor: theme.isDarkMode
-                          ? colors.highlightDark
-                          : colors.highlightLight,
-                      child: Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(vertical: 12.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            SvgPicture.asset(assets.breakup,
-                                width: 14, height: 14, color: theme.isDarkMode ? colors.primaryDark : colors.primaryLight,),
-                            const SizedBox(width: 6),
-                            TextWidget.subText(
-                              text: "Break up",
-                              theme: false,
-                              color: theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
-                            ),
-                            const SizedBox(width: 4),
-                            Icon(
-                              isBreakUpExpanded
-                                  ? Icons.keyboard_arrow_up
-                                  : Icons.keyboard_arrow_down,
-                              color: theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
-                              size: 16,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                    // Expandable break up content
-                    if (isBreakUpExpanded) ...[
-                      const SizedBox(height: 16),
-                      _buildBreakUpContent(),
-                    ],
-                  ],
-                ),
-              ),
-              if (_isVisible == true) ...[
+          child: SafeArea(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       TextWidget.subText(
-                        text: "Open Request",
-                        theme: false,
-                        color: widget.theme.isDarkMode
-                            ? colors.textPrimaryDark
-                            : colors.textPrimaryLight,
-                            fw: 0
+                        text:
+                            "Withdrawable Amount ₹ ${widget.withdarw.payoutdetails!.withdrawAmount}",
+                        theme: widget.theme.isDarkMode,
+                        color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
                       ),
-                      const SizedBox(
-                        height: 12,
-                      ),
-                      Container(
-                        decoration: BoxDecoration(
-                            color: theme.isDarkMode ? colors.textSecondaryDark.withOpacity(0.6) : colors.textSecondaryLight.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(8)),
-                        child: ListTile(
-                          minLeadingWidth: 10,
-                          leading: const Icon(
-                            Icons.timer_outlined,
-                            color: Color(0xfffb8c00),
-                          ),
-                          title: Row(
-                            children: [
-                              TextWidget.paraText(
-                                text: "Request on : ",
-                                theme: false,
-                                color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                      const SizedBox(height: 10),
+                      TextFormField(
+                        enabled: widget.withdarw.payoutdetails!.withdrawAmount ==
+                                '0.00'
+                            ? false
+                            : true,
+                        focusNode: widget.foucs,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(
+                              RegExp(r'^\d*\.?\d*')),
+                          // Prevent entering just "0"
+                          FilteringTextInputFormatter.deny(RegExp(r'^0$')),
+                        ],
+                        keyboardType:
+                            const TextInputType.numberWithOptions(decimal: true),
+                        style: TextWidget.textStyle(
+                            theme: widget.theme.isDarkMode, color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight, fontSize: 25,),
+                        controller: widget.withdarw.withdrawamount,
+                        onChanged: (value) {
+                          // widget.withdarw.withdrawamount.text = value;
+                          setState(() {
+                            if (widget.withdarw.withdrawamount.text.isNotEmpty) {
+                              double enteredAmount = double.parse(
+                                  widget.withdarw.withdrawamount.text);
+                              double availableAmount = double.parse(widget
+                                  .withdarw.payoutdetails!.withdrawAmount
+                                  .toString());
+            
+                              if (enteredAmount <= 0) {
+                                disable = true;
+                                withdarwerror = "Amount must be greater than 0";
+                              } else if (enteredAmount > availableAmount) {
+                                disable = true;
+                                withdarwerror = "Insufficient fund";
+                              } else {
+                                disable = false;
+                                withdarwerror = "";
+                              }
+                            } else if (widget
+                                    .withdarw.withdrawamount.text.isEmpty ||
+                                widget.withdarw.payoutdetails!.withdrawAmount ==
+                                    "0.00") {
+                              disable = true;
+                              withdarwerror = "";
+                            } else {
+                              disable = false;
+                              withdarwerror = "";
+                            }
+                          });
+                        },
+                        decoration: InputDecoration(
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 8),
+                          enabledBorder: OutlineInputBorder(
+                              borderSide: BorderSide(color: colors.colorBlue),
+                              borderRadius: BorderRadius.circular(5)),
+                          disabledBorder: InputBorder.none,
+                          focusedBorder: OutlineInputBorder(
+                              borderSide: BorderSide(color: colors.colorBlue),
+                              borderRadius: BorderRadius.circular(5)),
+                          border: OutlineInputBorder(
+                              borderSide: BorderSide.none,
+                              borderRadius: BorderRadius.circular(5)),
+                          fillColor: widget.theme.isDarkMode
+                              ? colors.darkGrey
+                              : const Color(0xffF1F3F8),
+                          filled: true,
+                          hintText: "0",
+                          hintStyle: TextWidget.textStyle(
+                              theme: false,
+                              color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                              fontSize: 25,
                               ),
-                              TextWidget.paraText(
-                                text:
-                                    "${widget.withdarw.withdrawstatus?[0].eNTRYTIME}",
-                                theme: false,
-                                color: theme.isDarkMode ? colors.secondaryDark : colors.secondaryLight,
+                          labelStyle: TextWidget.textStyle(
+                              theme: widget.theme.isDarkMode,
+                              fontSize: 25,
                               ),
-                            ],
-                          ),
-                          trailing: TextWidget.titleText(
-                            text:
-                                "₹ ${widget.withdarw.withdrawstatus?[0].dUEAMT}",
-                            theme: false,
-                            color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                            fw: 1
+                          prefixIcon: Padding(
+                            padding: const EdgeInsets.all(12.0),
+                            child: SvgPicture.asset(
+                              assets.ruppeIcon,
+                              color: widget.theme.isDarkMode
+                                 ? colors.textSecondaryDark
+                                            : colors.textSecondaryLight,
+                                      
+                            ),
                           ),
                         ),
                       ),
                     ],
                   ),
-                )
-
-                //  Row(
-                //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                //       children: [
-                //         contantTitleText(
-                //           "₹${widget.withdarw.payoutdetails!.withdrawAmount}",
-                //           widget.theme,
-                //         ),
-                //         if (double.parse(widget
-                //                 .withdarw.payoutdetails!.withdrawAmount
-                //                 .toString()) >
-                //             0) ...[
-                //           InkWell(
-                //               onTap: () {
-                //                 setState(() {
-                //                   widget.withdarw.withdrawamount.text = widget
-                //                       .withdarw.payoutdetails!.withdrawAmount
-                //                       .toString();
-                //                       withdarwerror = "";
-                //                   disable = false;
-                //                 });
-                //               },
-                //               child: Container(
-                //                 padding: const EdgeInsets.symmetric(
-                //                     horizontal: 12, vertical: 6),
-                //                 decoration: BoxDecoration(
-                //                   color: widget.theme.isDarkMode
-                //                       ? colors.colorLightBlue.withOpacity(0.1)
-                //                       : colors.colorBlue.withOpacity(0.1),
-                //                   borderRadius: BorderRadius.circular(16),
-                //                 ),
-                //                 child: Text("Withdraw All",
-                //                     style: textStyles.resendOtpstyle.copyWith(
-                //                         color: widget.theme.isDarkMode
-                //                             ? colors.colorLightBlue
-                //                             : colors.colorBlue)),
-                //               )),
-                //         ]
-                //       ],
-                //     ),
-              ]
-            ],
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(left: 16),
+                  child: withdarwerror == ""
+                      ? Container()
+                      : TextWidget.captionText(
+                          text: withdarwerror,
+                          theme: false,
+                          color: colors.error,
+                        ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        elevation: 0,
+                        minimumSize: const Size(0, 45),
+                        backgroundColor: disable
+                            ? colors.darkGrey
+                            : widget.theme.isDarkMode
+                                ? colors.primaryDark
+                                : colors.primaryLight,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        side: BorderSide.none,
+                      ),
+                      onPressed: (disable)
+                          ? () {
+                              if (widget.withdarw.payoutdetails!.withdrawAmount ==
+                                  "0.00") {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                    warningMessage(context, "Insufficient fund"));
+                              } else if (widget
+                                  .withdarw.withdrawamount.text.isEmpty) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                    warningMessage(
+                                        context, "Please enter the amount"));
+                              } else if (double.tryParse(
+                                          widget.withdarw.withdrawamount.text) !=
+                                      null &&
+                                  double.parse(
+                                          widget.withdarw.withdrawamount.text) <=
+                                      0) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                    warningMessage(context,
+                                        "Amount must be greater than 0"));
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                    warningMessage(
+                                        context, "Please enter a valid amount"));
+                              }
+                            }
+                          : () async {
+                              setState(() {
+                                _withdrawLoading = true;
+                              });
+                              await widget.withdarw.fetchPaymentWithDraw(
+                                  widget.withdarw.ipAddress,
+                                  widget.withdarw.withdrawamount.text,
+                                  widget.segment,
+                                  context);
+                              _isVisible = false;
+                              widget.withdarw.focusNode.unfocus();
+                              widget.withdarw.withdrawamount.clear();
+                              setState(() {
+                                disable = true;
+                                withdarwerror = "";
+                              });
+            
+                              showUIWithDelay();
+                              setState(() {
+                                _withdrawLoading = false;
+                              });
+                            },
+                      child: _withdrawLoading
+                          ? SizedBox(
+                              width: 18,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                  strokeWidth: 2, color: colors.colorWhite),
+                            )
+                          : TextWidget.titleText(
+                              text: 'Withdraw',
+                              theme: false,
+                              color:
+                                  disable ? colors.colorGrey : colors.colorWhite,
+                              fw: disable ? 0 : 2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: Column(
+                    children: [
+                      InkWell(
+                        onTap: () {
+                          setState(() {
+                            isBreakUpExpanded = !isBreakUpExpanded;
+                          });
+                        },
+                        // onTap: () async {
+                        //   showModalBottomSheet(
+                        //       enableDrag: false,
+                        //       useSafeArea: true,
+                        //       isScrollControlled: true,
+                        //       shape: const RoundedRectangleBorder(
+                        //           borderRadius: BorderRadius.vertical(
+                        //               top: Radius.circular(16))),
+                        //       backgroundColor: const Color(0xffffffff),
+                        //       context: context,
+                        //       builder: (BuildContext context) {
+                        //         return BreakUpDetails(
+                        //             withdraw: widget.withdarw);
+                        //       });
+                        // },
+                        splashColor: theme.isDarkMode
+                            ? colors.splashColorDark
+                            : colors.splashColorLight,
+                        highlightColor: theme.isDarkMode
+                            ? colors.highlightDark
+                            : colors.highlightLight,
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(vertical: 12.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              SvgPicture.asset(assets.breakup,
+                                  width: 14, height: 14, color: theme.isDarkMode ? colors.primaryDark : colors.primaryLight,),
+                              const SizedBox(width: 6),
+                              TextWidget.subText(
+                                text: "Break up",
+                                theme: false,
+                                color: theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
+                              ),
+                              const SizedBox(width: 4),
+                              Icon(
+                                isBreakUpExpanded
+                                    ? Icons.keyboard_arrow_up
+                                    : Icons.keyboard_arrow_down,
+                                color: theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
+                                size: 16,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+            
+                      // Expandable break up content
+                      if (isBreakUpExpanded) ...[
+                        const SizedBox(height: 16),
+                        _buildBreakUpContent(),
+                      ],
+                    ],
+                  ),
+                ),
+                if (_isVisible == true) ...[
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        TextWidget.subText(
+                          text: "Open Request",
+                          theme: false,
+                          color: widget.theme.isDarkMode
+                              ? colors.textPrimaryDark
+                              : colors.textPrimaryLight,
+                              fw: 0
+                        ),
+                        const SizedBox(
+                          height: 12,
+                        ),
+                        Container(
+                          decoration: BoxDecoration(
+                              color: theme.isDarkMode ? colors.textSecondaryDark.withOpacity(0.6) : colors.textSecondaryLight.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8)),
+                          child: ListTile(
+                            minLeadingWidth: 10,
+                            leading: const Icon(
+                              Icons.timer_outlined,
+                              color: Color(0xfffb8c00),
+                            ),
+                            title: Row(
+                              children: [
+                                TextWidget.paraText(
+                                  text: "Request on : ",
+                                  theme: false,
+                                  color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                                ),
+                                TextWidget.paraText(
+                                  text:
+                                      "${widget.withdarw.withdrawstatus?[0].eNTRYTIME}",
+                                  theme: false,
+                                  color: theme.isDarkMode ? colors.secondaryDark : colors.secondaryLight,
+                                ),
+                              ],
+                            ),
+                            trailing: TextWidget.titleText(
+                              text:
+                                  "₹ ${widget.withdarw.withdrawstatus?[0].dUEAMT}",
+                              theme: false,
+                              color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                              fw: 1
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+            
+                  //  Row(
+                  //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  //       children: [
+                  //         contantTitleText(
+                  //           "₹${widget.withdarw.payoutdetails!.withdrawAmount}",
+                  //           widget.theme,
+                  //         ),
+                  //         if (double.parse(widget
+                  //                 .withdarw.payoutdetails!.withdrawAmount
+                  //                 .toString()) >
+                  //             0) ...[
+                  //           InkWell(
+                  //               onTap: () {
+                  //                 setState(() {
+                  //                   widget.withdarw.withdrawamount.text = widget
+                  //                       .withdarw.payoutdetails!.withdrawAmount
+                  //                       .toString();
+                  //                       withdarwerror = "";
+                  //                   disable = false;
+                  //                 });
+                  //               },
+                  //               child: Container(
+                  //                 padding: const EdgeInsets.symmetric(
+                  //                     horizontal: 12, vertical: 6),
+                  //                 decoration: BoxDecoration(
+                  //                   color: widget.theme.isDarkMode
+                  //                       ? colors.colorLightBlue.withOpacity(0.1)
+                  //                       : colors.colorBlue.withOpacity(0.1),
+                  //                   borderRadius: BorderRadius.circular(16),
+                  //                 ),
+                  //                 child: Text("Withdraw All",
+                  //                     style: textStyles.resendOtpstyle.copyWith(
+                  //                         color: widget.theme.isDarkMode
+                  //                             ? colors.colorLightBlue
+                  //                             : colors.colorBlue)),
+                  //               )),
+                  //         ]
+                  //       ],
+                  //     ),
+                ]
+              ],
+            ),
           ),
         ),
       ),

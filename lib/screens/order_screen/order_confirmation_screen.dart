@@ -119,25 +119,25 @@ class _OrderConfirmationScreenState extends ConsumerState<OrderConfirmationScree
     final theme = ref.read(themeProvider);
 
     try {
-      return SafeArea(
-        child: Scaffold(
-          backgroundColor: theme.isDarkMode ? colors.colorBlack : colors.kColorLightGrey,
-          appBar: AppBar(
-            leadingWidth: 48,
-            centerTitle: false,
-            titleSpacing: 0,
-            leading: const CustomBackBtn(),
-            elevation: 0.2,
-            backgroundColor: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-            title: TextWidget.titleText(
-              text: "Order Confirmation",
-              fw: 1,
-              color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-              theme: false,
-            ),
+      return Scaffold(
+        backgroundColor: theme.isDarkMode ? colors.colorBlack : colors.kColorLightGrey,
+        appBar: AppBar(
+          leadingWidth: 48,
+          centerTitle: false,
+          titleSpacing: 0,
+          leading: const CustomBackBtn(),
+          elevation: 0.2,
+          backgroundColor: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+          title: TextWidget.titleText(
+            text: "Order Confirmation",
+            fw: 1,
+            color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+            theme: false,
           ),
-          body: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
+        ),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: SafeArea(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -175,9 +175,9 @@ class _OrderConfirmationScreenState extends ConsumerState<OrderConfirmationScree
                     ],
                   ),
                 ),
-        
+                  
                 const SizedBox(height: 20),
-        
+                  
                 // Orders List
                 TextWidget.subText(
                   text: widget.orderData.length == 1 ? "Order Details" : "Order List",
@@ -185,9 +185,9 @@ class _OrderConfirmationScreenState extends ConsumerState<OrderConfirmationScree
                   color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
                   theme: false,
                 ),
-        
+                  
                 const SizedBox(height: 12),
-        
+                  
                 // Build expandable list for each order
                 ...widget.orderData.asMap().entries.map((entry) {
                   final index = entry.key;
@@ -196,7 +196,7 @@ class _OrderConfirmationScreenState extends ConsumerState<OrderConfirmationScree
                   final isExpanded = expandedOrders.contains(orderNumber);
                   final isLoading = loadingStates[orderNumber] ?? false;
                   final orderHistory = orderHistories[orderNumber];
-        
+                  
                   return Container(
                     margin: const EdgeInsets.only(bottom: 12),
                     decoration: BoxDecoration(
@@ -322,9 +322,9 @@ class _OrderConfirmationScreenState extends ConsumerState<OrderConfirmationScree
                     ),
                   );
                 }),
-        
+                  
                 const SizedBox(height: 30),
-        
+                  
                 // Action Button
                 SizedBox(
                   width: double.infinity,

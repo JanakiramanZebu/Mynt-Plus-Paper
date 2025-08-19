@@ -144,25 +144,25 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
     final theme = ref.watch(themeProvider);
     final mfData = ref.watch(mfProvider);
 
-    return SafeArea(
-      child: Scaffold(
-        appBar: AppBar(
-          elevation: 0,
-          leadingWidth: 41,
-          centerTitle: false,
-          titleSpacing: 6,
-          leading: CustomBackBtn(),
-          shadowColor: const Color(0xffECEFF3),
-          title: TextWidget.titleText(
-            text: widget.title,
-            color: theme.isDarkMode
-                ? colors.textPrimaryDark
-                : colors.textPrimaryLight,
-            fw: 1,
-            theme: theme.isDarkMode,
-          ),
+    return Scaffold(
+      appBar: AppBar(
+        elevation: 0,
+        leadingWidth: 41,
+        centerTitle: false,
+        titleSpacing: 6,
+        leading: CustomBackBtn(),
+        shadowColor: const Color(0xffECEFF3),
+        title: TextWidget.titleText(
+          text: widget.title,
+          color: theme.isDarkMode
+              ? colors.textPrimaryDark
+              : colors.textPrimaryLight,
+          fw: 1,
+          theme: theme.isDarkMode,
         ),
-        body: TransparentLoaderScreen(
+      ),
+      body: SafeArea(
+        child: TransparentLoaderScreen(
           isLoading: mfData.bestmfloader ?? false,
           child: tabTitles.isEmpty
               ? const Center(child: NoDataFound())

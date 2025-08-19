@@ -52,60 +52,60 @@ class _PledgeMainScreen extends State<PledgeHistoryMainScreen>
 
       final ledgerprovider = ref.watch(ledgerProvider);
 
-      return SafeArea(
-        child: Scaffold(
-          appBar: AppBar(
-            // automaticallyImplyLeading: false,
-            elevation: 0.2,
-            title: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                TextWidget.titleText(
-                    text: "Pledge History",
-                    textOverflow: TextOverflow.ellipsis,
-                    color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                    theme: theme.isDarkMode,
-                    fw: 1),
-        
-                // DropdownButtonHideUnderline(
-                //     child: DropdownButton2(
-                //         menuItemStyleData: MenuItemStyleData(
-                //             customHeights: ledgerprovider.getCustItemsHeight()),
-                //         buttonStyleData: ButtonStyleData(
-                //             height: 36,
-                //             width: MediaQuery.of(context).size.width,
-                //             decoration: const BoxDecoration(
-                //                 color: Color(0xffF1F3F8),
-                //                 borderRadius:
-                //                     BorderRadius.all(Radius.circular(32)))),
-                //         dropdownStyleData: DropdownStyleData(
-                //           padding: const EdgeInsets.symmetric(vertical: 6),
-                //           decoration: BoxDecoration(
-                //             borderRadius: BorderRadius.circular(4),
-                //           ),
-                //           offset: const Offset(0, 8),
-                //         ),
-                //         isExpanded: true,
-                //         style:
-                //             textStyle(const Color(0XFF000000), 13, FontWeight.w500),
-                //         hint: Text(mfOrder.paymentName,
-                //             style: textStyle(
-                //                 const Color(0XFF000000), 13, FontWeight.w500)),
-                //         items: mfOrder.addDividers(),
-                //         value: mfOrder.paymentName,
-                //         onChanged: (value) async {
-                //           mfOrder.chngPayName("$value");
-                //         })),
-              ],
-            ),
-             leading: const CustomBackBtn(),
-            // leading: InkWell(
-            //   onTap: () {
-        
-            //   },
-            //   child: Icon(Icons.ios_share)),
+      return Scaffold(
+        appBar: AppBar(
+          // automaticallyImplyLeading: false,
+          elevation: 0.2,
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              TextWidget.titleText(
+                  text: "Pledge History",
+                  textOverflow: TextOverflow.ellipsis,
+                  color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                  theme: theme.isDarkMode,
+                  fw: 1),
+      
+              // DropdownButtonHideUnderline(
+              //     child: DropdownButton2(
+              //         menuItemStyleData: MenuItemStyleData(
+              //             customHeights: ledgerprovider.getCustItemsHeight()),
+              //         buttonStyleData: ButtonStyleData(
+              //             height: 36,
+              //             width: MediaQuery.of(context).size.width,
+              //             decoration: const BoxDecoration(
+              //                 color: Color(0xffF1F3F8),
+              //                 borderRadius:
+              //                     BorderRadius.all(Radius.circular(32)))),
+              //         dropdownStyleData: DropdownStyleData(
+              //           padding: const EdgeInsets.symmetric(vertical: 6),
+              //           decoration: BoxDecoration(
+              //             borderRadius: BorderRadius.circular(4),
+              //           ),
+              //           offset: const Offset(0, 8),
+              //         ),
+              //         isExpanded: true,
+              //         style:
+              //             textStyle(const Color(0XFF000000), 13, FontWeight.w500),
+              //         hint: Text(mfOrder.paymentName,
+              //             style: textStyle(
+              //                 const Color(0XFF000000), 13, FontWeight.w500)),
+              //         items: mfOrder.addDividers(),
+              //         value: mfOrder.paymentName,
+              //         onChanged: (value) async {
+              //           mfOrder.chngPayName("$value");
+              //         })),
+            ],
           ),
-          body: TransparentLoaderScreen(
+           leading: const CustomBackBtn(),
+          // leading: InkWell(
+          //   onTap: () {
+      
+          //   },
+          //   child: Icon(Icons.ios_share)),
+        ),
+        body: SafeArea(
+          child: TransparentLoaderScreen(
             isLoading: ledgerprovider.pledgehistory,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -114,7 +114,7 @@ class _PledgeMainScreen extends State<PledgeHistoryMainScreen>
                 //   padding: const EdgeInsets.only(left : 16.0, top : 24.0),
                 //   child: BarChartWidget(),
                 // ),
-        
+                
                 Padding(
                   padding: const EdgeInsets.only(top: 8.0),
                   child: Container(
@@ -155,7 +155,7 @@ class _PledgeMainScreen extends State<PledgeHistoryMainScreen>
                 controller: _tabController,
                 tabs: List.generate(tablistitems.length, (index) {
                   final isSelected = _tabController.index == index;
-        
+                
                   final color = isSelected
                       ? (theme.isDarkMode
                           ? colors.secondaryDark
@@ -163,7 +163,7 @@ class _PledgeMainScreen extends State<PledgeHistoryMainScreen>
                       : (theme.isDarkMode
                           ? colors.textSecondaryDark
                           : colors.textSecondaryLight);
-        
+                
                   return Tab(
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -184,7 +184,7 @@ class _PledgeMainScreen extends State<PledgeHistoryMainScreen>
               ),
                       ),
                 ),
-        
+                
                 Expanded(
                   child: TabBarView( 
                     controller: _tabController,

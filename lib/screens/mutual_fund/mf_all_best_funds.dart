@@ -132,26 +132,26 @@ class _SaveTaxesScreenState extends ConsumerState<SaveTaxesScreen>
     final theme = ref.watch(themeProvider);
     final isDarkMode = theme.isDarkMode;
 
-    return SafeArea(
-      child: Scaffold(
-        appBar: PreferredSize(
-          preferredSize: const Size.fromHeight(50),
-          child: AppBar(
-            elevation: 0,
-            leadingWidth: 41,
-            centerTitle: false,
-            titleSpacing: 6,
-            leading: CustomBackBtn(),
-            title: TextWidget.titleText(
-              text: "Collections",
-              color:
-                  isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-              fw: 1,
-              theme: theme.isDarkMode,
-            ),
+    return Scaffold(
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(50),
+        child: AppBar(
+          elevation: 0,
+          leadingWidth: 41,
+          centerTitle: false,
+          titleSpacing: 6,
+          leading: CustomBackBtn(),
+          title: TextWidget.titleText(
+            text: "Collections",
+            color:
+                isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+            fw: 1,
+            theme: theme.isDarkMode,
           ),
         ),
-        body: Stack(
+      ),
+      body: SafeArea(
+        child: Stack(
           children: [
             TransparentLoaderScreen(
               isLoading: mf.bestmfloader ?? false,

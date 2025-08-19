@@ -18,9 +18,7 @@ class NoDataFound extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         SvgPicture.asset(assets.noDatafound,
-        color:  theme.isDarkMode
-                ? colors.textSecondaryDark
-                : colors.textSecondaryLight,
+        color:   Color(0xff777777)
         ),
         const SizedBox(height: 2),
         TextWidget.subText(

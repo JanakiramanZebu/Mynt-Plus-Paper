@@ -40,22 +40,24 @@ class MFSipOrderHistoryScreen extends ConsumerWidget {
         titleSpacing: 6,
         leading: const CustomBackBtn(),
       ),
-      body: Stack(
-        children: [
-          TransparentLoaderScreen(
-            isLoading: mfData.bestmfloader ?? false,
-            child: mfData.mfnotlivesiporderlist?.data?.isEmpty ?? true
-                ? const Center(child: NoDataFound())
-                : Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: _buildSipOrderList(context, mfData, theme),
-                      ),
-                    ],
-                  ),
-          ),
-        ],
+      body: SafeArea(
+        child: Stack(
+          children: [
+            TransparentLoaderScreen(
+              isLoading: mfData.bestmfloader ?? false,
+              child: mfData.mfnotlivesiporderlist?.data?.isEmpty ?? true
+                  ? const Center(child: NoDataFound())
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: _buildSipOrderList(context, mfData, theme),
+                        ),
+                      ],
+                    ),
+            ),
+          ],
+        ),
       ),
     );
   }

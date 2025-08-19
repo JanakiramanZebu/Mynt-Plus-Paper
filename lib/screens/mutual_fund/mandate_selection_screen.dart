@@ -65,47 +65,47 @@ class _MandateSelectionScreenState extends State<MandateSelectionScreen> {
         final theme = ref.read(themeProvider);
         final mfOrder = ref.watch(mfProvider);
 
-        return SafeArea(
-          child: Scaffold(
-            appBar: AppBar(
-              leading: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: Material(
-                  color: Colors.transparent,
-                  shape: const CircleBorder(),
-                  clipBehavior: Clip.hardEdge,
-                  child: InkWell(
-                    customBorder: const CircleBorder(),
-                    splashColor: theme.isDarkMode
-                        ? colors.splashColorDark
-                        : colors.splashColorLight,
-                    highlightColor: theme.isDarkMode
-                        ? colors.highlightDark
-                        : colors.highlightLight,
-                    onTap: () => Navigator.pop(context),
-                    child: Icon(
-                      Icons.arrow_back_ios_outlined,
-                      size: 18,
-                      color:
-                          theme.isDarkMode ? colors.colorGrey : colors.colorBlack,
-                    ),
+        return Scaffold(
+          appBar: AppBar(
+            leading: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: Material(
+                color: Colors.transparent,
+                shape: const CircleBorder(),
+                clipBehavior: Clip.hardEdge,
+                child: InkWell(
+                  customBorder: const CircleBorder(),
+                  splashColor: theme.isDarkMode
+                      ? colors.splashColorDark
+                      : colors.splashColorLight,
+                  highlightColor: theme.isDarkMode
+                      ? colors.highlightDark
+                      : colors.highlightLight,
+                  onTap: () => Navigator.pop(context),
+                  child: Icon(
+                    Icons.arrow_back_ios_outlined,
+                    size: 18,
+                    color:
+                        theme.isDarkMode ? colors.colorGrey : colors.colorBlack,
                   ),
                 ),
               ),
-              elevation: 0,
-              centerTitle: false,
-              titleSpacing: -8,
-              title: TextWidget.titleText(
-                  text: "Auto Pay (Mandates)",
-                  theme: theme.isDarkMode,
-                  color: theme.isDarkMode
-                      ? colors.textPrimaryDark
-                      : colors.textPrimaryLight,
-                  fw: 0),
             ),
-            backgroundColor:
-                theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-            body: Column(
+            elevation: 0,
+            centerTitle: false,
+            titleSpacing: -8,
+            title: TextWidget.titleText(
+                text: "Auto Pay (Mandates)",
+                theme: theme.isDarkMode,
+                color: theme.isDarkMode
+                    ? colors.textPrimaryDark
+                    : colors.textPrimaryLight,
+                fw: 0),
+          ),
+          backgroundColor:
+              theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+          body: SafeArea(
+            child: Column(
               children: [
                 // Mandate List
                 Expanded(
@@ -120,7 +120,7 @@ class _MandateSelectionScreenState extends State<MandateSelectionScreen> {
                             final mandate = mfOrder.mandateData![index];
                             final isSelected =
                                 mandate.mandateId == widget.currentMandateId;
-          
+                    
                             return InkWell(
                               onTap: () {
                                 widget.onMandateSelected(mandate.mandateId ?? '');
@@ -220,7 +220,7 @@ class _MandateSelectionScreenState extends State<MandateSelectionScreen> {
                                               
                                             ],
                                           ),
-           const SizedBox(height: 4),
+                     const SizedBox(height: 4),
                                           Row(
                                             children: [
                                               TextWidget.paraText(

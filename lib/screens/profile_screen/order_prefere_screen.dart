@@ -123,41 +123,41 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
   Widget build(BuildContext context) {
     final theme = ref.watch(themeProvider);
 
-    return SafeArea(
-      child: Scaffold(
-        appBar: AppBar(
-          leadingWidth: 41,
-          titleSpacing: 6,
-          centerTitle: false,
-          leading: gobackOP
-              ? InkWell(
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.pushNamed(context, Routes.placeOrderScreen,
-                        arguments: {
-                          "orderArg": widget.orderArg,
-                          "scripInfo": widget.scripInfo,
-                          "isBskt": ""
-                        });
-                  },
-                  child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 9),
-                      child: SvgPicture.asset(assets.backArrow,
-                          color: theme.isDarkMode
-                              ? colors.colorWhite
-                              : colors.colorBlack)))
-              : const CustomBackBtn(),
-          elevation: 0.2,
-          title: TextWidget.titleText(
-            text: 'Order Preference',
-            theme: false,
-            color: theme.isDarkMode
-                ? colors.textPrimaryDark
-                : colors.textPrimaryLight,
-            fw: 1,
-          ),
+    return Scaffold(
+      appBar: AppBar(
+        leadingWidth: 41,
+        titleSpacing: 6,
+        centerTitle: false,
+        leading: gobackOP
+            ? InkWell(
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.pushNamed(context, Routes.placeOrderScreen,
+                      arguments: {
+                        "orderArg": widget.orderArg,
+                        "scripInfo": widget.scripInfo,
+                        "isBskt": ""
+                      });
+                },
+                child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 9),
+                    child: SvgPicture.asset(assets.backArrow,
+                        color: theme.isDarkMode
+                            ? colors.colorWhite
+                            : colors.colorBlack)))
+            : const CustomBackBtn(),
+        elevation: 0.2,
+        title: TextWidget.titleText(
+          text: 'Order Preference',
+          theme: false,
+          color: theme.isDarkMode
+              ? colors.textPrimaryDark
+              : colors.textPrimaryLight,
+          fw: 1,
         ),
-        body: Column(
+      ),
+      body: SafeArea(
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Expanded(
@@ -286,7 +286,7 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                 itemCount: (orderType == "CO - BO")
                                     ? 2
                                     : priceTypes.length))),
-      
+            
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -545,7 +545,7 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                     onChanged: (value) {
                                       ScaffoldMessenger.of(context)
                                           .hideCurrentSnackBar();
-      
+            
                                       if (value.isEmpty) {
                                         ScaffoldMessenger.of(context)
                                             .showSnackBar(warningMessage(context,

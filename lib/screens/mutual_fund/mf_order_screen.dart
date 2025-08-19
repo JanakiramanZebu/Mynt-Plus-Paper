@@ -79,421 +79,421 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
         onTap: () {
           FocusScope.of(context).unfocus();
         },
-        child: SafeArea(
-          child: Scaffold(
-              appBar: AppBar(
-                leadingWidth: 41,
-                centerTitle: false,
-                titleSpacing: 6,
-                elevation: 0,
-                leading: Material(
-                  color: Colors.transparent,
-                  shape: const CircleBorder(),
-                  clipBehavior: Clip.hardEdge,
-                  child: InkWell(
-                    customBorder: const CircleBorder(),
-                    splashColor: theme.isDarkMode
-                        ? colors.splashColorDark
-                        : colors.splashColorLight,
-                    highlightColor: theme.isDarkMode
-                        ? colors.highlightDark
-                        : colors.highlightLight,
-                    onTap: () => Navigator.pop(context),
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Icon(
-                        Icons.arrow_back_ios_outlined,
-                        size: 18,
-                        color: theme.isDarkMode
-                            ? colors.colorGrey
-                            : colors.colorBlack,
-                      ),
+        child: Scaffold(
+            appBar: AppBar(
+              leadingWidth: 41,
+              centerTitle: false,
+              titleSpacing: 6,
+              elevation: 0,
+              leading: Material(
+                color: Colors.transparent,
+                shape: const CircleBorder(),
+                clipBehavior: Clip.hardEdge,
+                child: InkWell(
+                  customBorder: const CircleBorder(),
+                  splashColor: theme.isDarkMode
+                      ? colors.splashColorDark
+                      : colors.splashColorLight,
+                  highlightColor: theme.isDarkMode
+                      ? colors.highlightDark
+                      : colors.highlightLight,
+                  onTap: () => Navigator.pop(context),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Icon(
+                      Icons.arrow_back_ios_outlined,
+                      size: 18,
+                      color: theme.isDarkMode
+                          ? colors.colorGrey
+                          : colors.colorBlack,
                     ),
                   ),
                 ),
-                title: Padding(
-                  padding: const EdgeInsets.only(right: 0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              SizedBox(
-                                width: MediaQuery.of(context).size.width * 0.6,
-                                child: TextWidget.subText(
-                                    text:
-                                        "${(mfOrder.orderpagetitle == "SDS" && mfOrder.factSheetDataModel!.data?.name != null) ? mfOrder.factSheetDataModel!.data?.name!.replaceAll(RegExp(r'(Reg \(G\)|\(G\))$'), ' ') : (mfOrder.orderpagetitle == "NFO" ? '${widget.mfData.name}' : '${widget.mfData.fSchemeName}')}",
-                                    textOverflow: TextOverflow.ellipsis,
-                                    theme: theme.isDarkMode,
-                                    color: theme.isDarkMode
-                                        ? colors.textPrimaryDark
-                                        : colors.textPrimaryLight,
-                                    fw: 0),
-                              ),
-                            ],
-          
-                            // children: [
-                            //   CircleAvatar(
-                            //       backgroundImage: NetworkImage(
-                            //           "https://v3.mynt.in/mf/static/images/mf/${widget.mfData.aMCCode}.png")),
-                            //   const SizedBox(width: 8),
-                            //   Expanded(
-                            //     child: Column(
-                            //       crossAxisAlignment: CrossAxisAlignment.start,
-                            //       mainAxisAlignment: MainAxisAlignment.start,
-                            //       children: [
-                            //         Text("${widget.mfData.fSchemeName}",
-                            //             maxLines: 1,
-                            //             overflow: TextOverflow.ellipsis,
-                            //             style: textStyle(
-                            //                 theme.isDarkMode
-                            //                     ? colors.colorWhite
-                            //                     : colors.colorBlack,
-                            //                 16,
-                            //                 FontWeight.w500)),
-                            //         const SizedBox(height: 10),
-                            //         SizedBox(
-                            //           height: 18,
-                            //           child: ListView(
-                            //             shrinkWrap: true,
-                            //             scrollDirection: Axis.horizontal,
-                            //             children: [
-                            //               CustomExchBadge(
-                            //                   exch: widget.mfData.schemeName!
-                            //                           .contains("GROWTH")
-                            //                       ? "GROWTH"
-                            //                       : widget.mfData.schemeName!
-                            //                               .contains("IDCW PAYOUT")
-                            //                           ? "IDCW PAYOUT"
-                            //                           : widget.mfData.schemeName!
-                            //                                   .contains(
-                            //                                       "IDCW REINVESTMENT")
-                            //                               ? "IDCW REINVESTMENT"
-                            //                               : widget.mfData.schemeName!
-                            //                                       .contains("IDCW")
-                            //                                   ? "IDCW"
-                            //                                   : "NORMAL"),
-                            //         const SizedBox(width: 7),
-                            //               CustomExchBadge(
-                            //                   exch: "${widget.mfData.schemeType}"),
-                            //         const SizedBox(width: 7),
-                            //               CustomExchBadge(
-                            //                   exch: widget.mfData.sCHEMESUBCATEGORY!
-                            //                       .replaceAll("Fund", '')
-                            //                       .replaceAll("Hybrid", "")
-                            //                       .toUpperCase()),
-                            //             ],
-                            //           ),
-                            //         ),
-                            //       ],
-                            //     ),
-                            //   ),
-                            // ],
-                          ),
-                          const SizedBox(height: 4),
-                          Row(
-                            children: [
-                              TextWidget.paraText(
-                                  text: "${mfOrder.mfOrderTpye}",
+              ),
+              title: Padding(
+                padding: const EdgeInsets.only(right: 0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            SizedBox(
+                              width: MediaQuery.of(context).size.width * 0.6,
+                              child: TextWidget.subText(
+                                  text:
+                                      "${(mfOrder.orderpagetitle == "SDS" && mfOrder.factSheetDataModel!.data?.name != null) ? mfOrder.factSheetDataModel!.data?.name!.replaceAll(RegExp(r'(Reg \(G\)|\(G\))$'), ' ') : (mfOrder.orderpagetitle == "NFO" ? '${widget.mfData.name}' : '${widget.mfData.fSchemeName}')}",
                                   textOverflow: TextOverflow.ellipsis,
+                                  theme: theme.isDarkMode,
+                                  color: theme.isDarkMode
+                                      ? colors.textPrimaryDark
+                                      : colors.textPrimaryLight,
+                                  fw: 0),
+                            ),
+                          ],
+        
+                          // children: [
+                          //   CircleAvatar(
+                          //       backgroundImage: NetworkImage(
+                          //           "https://v3.mynt.in/mf/static/images/mf/${widget.mfData.aMCCode}.png")),
+                          //   const SizedBox(width: 8),
+                          //   Expanded(
+                          //     child: Column(
+                          //       crossAxisAlignment: CrossAxisAlignment.start,
+                          //       mainAxisAlignment: MainAxisAlignment.start,
+                          //       children: [
+                          //         Text("${widget.mfData.fSchemeName}",
+                          //             maxLines: 1,
+                          //             overflow: TextOverflow.ellipsis,
+                          //             style: textStyle(
+                          //                 theme.isDarkMode
+                          //                     ? colors.colorWhite
+                          //                     : colors.colorBlack,
+                          //                 16,
+                          //                 FontWeight.w500)),
+                          //         const SizedBox(height: 10),
+                          //         SizedBox(
+                          //           height: 18,
+                          //           child: ListView(
+                          //             shrinkWrap: true,
+                          //             scrollDirection: Axis.horizontal,
+                          //             children: [
+                          //               CustomExchBadge(
+                          //                   exch: widget.mfData.schemeName!
+                          //                           .contains("GROWTH")
+                          //                       ? "GROWTH"
+                          //                       : widget.mfData.schemeName!
+                          //                               .contains("IDCW PAYOUT")
+                          //                           ? "IDCW PAYOUT"
+                          //                           : widget.mfData.schemeName!
+                          //                                   .contains(
+                          //                                       "IDCW REINVESTMENT")
+                          //                               ? "IDCW REINVESTMENT"
+                          //                               : widget.mfData.schemeName!
+                          //                                       .contains("IDCW")
+                          //                                   ? "IDCW"
+                          //                                   : "NORMAL"),
+                          //         const SizedBox(width: 7),
+                          //               CustomExchBadge(
+                          //                   exch: "${widget.mfData.schemeType}"),
+                          //         const SizedBox(width: 7),
+                          //               CustomExchBadge(
+                          //                   exch: widget.mfData.sCHEMESUBCATEGORY!
+                          //                       .replaceAll("Fund", '')
+                          //                       .replaceAll("Hybrid", "")
+                          //                       .toUpperCase()),
+                          //             ],
+                          //           ),
+                          //         ),
+                          //       ],
+                          //     ),
+                          //   ),
+                          // ],
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            TextWidget.paraText(
+                                text: "${mfOrder.mfOrderTpye}",
+                                textOverflow: TextOverflow.ellipsis,
+                                theme: theme.isDarkMode,
+                                color: theme.isDarkMode
+                                    ? colors.textSecondaryDark
+                                    : colors.textSecondaryLight,
+                                fw: 3),
+                          ],
+                        ),
+                      ],
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        PopupMenuButton<String>(
+                           color: theme.isDarkMode
+                              ? colors.searchBgDark
+                              : colors.searchBg,
+                          menuPadding: const EdgeInsets.all(8),
+                          splashRadius: 20,
+                          icon: Icon(
+                            Icons.more_vert,
+                            color: theme.isDarkMode
+                                ? colors.textSecondaryDark
+                                : colors.textSecondaryLight,
+                          ),
+                          onSelected: (String selected) async {
+                            final isin = widget.mfData.iSIN;
+                            final schemeCode = widget.mfData.schemeCode;
+        
+                            if ((widget.mfData.sIPFLAG == "Y" &&
+                                isin != null &&
+                                schemeCode != null)) {
+                              await mfOrder.invertfun(
+                                  isin, schemeCode, context);
+                            }
+                            if (mfOrder.mfOrderTpye != "One-time") {
+                              String amt =
+                                  widget.mfData.minimumPurchaseAmount ?? "0";
+                              mfOrder.invAmt.text = amt.split('.').first;
+                            } else {
+                              String amt =
+                                  widget.mfData.minimumPurchaseAmount ?? "0";
+                              mfOrder.installmentAmt.text =
+                                  amt.split('.').first;
+                            }
+        
+                            ref.read(fundProvider).fetchFunds(context);
+                            ref.read(transcationProvider).initialdata(context);
+        
+                            mfOrder.chngOrderType(selected);
+                            mfOrder.orderchangetitle(selected);
+        
+                            if (mfOrder.orderpagetitle != "NFO") {
+                              mfOrder.orderpagetite("SDS");
+                            }
+                          },
+                          itemBuilder: (BuildContext context) {
+                            final isOneTime = mfOrder.mfOrderTpye == "One-time";
+                            final altText = isOneTime ? "SIP" : "One-time";
+        
+                            return [
+                              PopupMenuItem<String>(
+                                value: altText,
+                                child: TextWidget.subText(
+                                  text: altText,
                                   theme: theme.isDarkMode,
                                   color: theme.isDarkMode
                                       ? colors.textSecondaryDark
                                       : colors.textSecondaryLight,
-                                  fw: 3),
-                            ],
-                          ),
-                        ],
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          PopupMenuButton<String>(
-                             color: theme.isDarkMode
-                                ? colors.searchBgDark
-                                : colors.searchBg,
-                            menuPadding: const EdgeInsets.all(8),
-                            splashRadius: 20,
-                            icon: Icon(
-                              Icons.more_vert,
-                              color: theme.isDarkMode
-                                  ? colors.textSecondaryDark
-                                  : colors.textSecondaryLight,
-                            ),
-                            onSelected: (String selected) async {
-                              final isin = widget.mfData.iSIN;
-                              final schemeCode = widget.mfData.schemeCode;
-          
-                              if ((widget.mfData.sIPFLAG == "Y" &&
-                                  isin != null &&
-                                  schemeCode != null)) {
-                                await mfOrder.invertfun(
-                                    isin, schemeCode, context);
-                              }
-                              if (mfOrder.mfOrderTpye != "One-time") {
-                                String amt =
-                                    widget.mfData.minimumPurchaseAmount ?? "0";
-                                mfOrder.invAmt.text = amt.split('.').first;
-                              } else {
-                                String amt =
-                                    widget.mfData.minimumPurchaseAmount ?? "0";
-                                mfOrder.installmentAmt.text =
-                                    amt.split('.').first;
-                              }
-          
-                              ref.read(fundProvider).fetchFunds(context);
-                              ref.read(transcationProvider).initialdata(context);
-          
-                              mfOrder.chngOrderType(selected);
-                              mfOrder.orderchangetitle(selected);
-          
-                              if (mfOrder.orderpagetitle != "NFO") {
-                                mfOrder.orderpagetite("SDS");
-                              }
-                            },
-                            itemBuilder: (BuildContext context) {
-                              final isOneTime = mfOrder.mfOrderTpye == "One-time";
-                              final altText = isOneTime ? "SIP" : "One-time";
-          
-                              return [
-                                PopupMenuItem<String>(
-                                  value: altText,
-                                  child: TextWidget.subText(
-                                    text: altText,
-                                    theme: theme.isDarkMode,
-                                    color: theme.isDarkMode
-                                        ? colors.textSecondaryDark
-                                        : colors.textSecondaryLight,
-                                  ),
                                 ),
-                              ];
-                            },
-                          ),
-                        ],
-                      )
-                    ],
-                  ),
+                              ),
+                            ];
+                          },
+                        ),
+                      ],
+                    )
+                  ],
                 ),
-                // bottom: PreferredSize(
-                //     preferredSize: const Size.fromHeight(40),
-                //     child: Column(children: [
-                //       Padding(
-                //         padding: const EdgeInsets.all(8.0),
-                //         child: Container(
-                //           color: theme.isDarkMode
-                //               ? colors.colorBlack
-                //               : const Color.fromARGB(255, 250, 251, 255),
-                //           child: Padding(
-                //             padding: const EdgeInsets.all(8.0),
-                //             child: Column(
-                //               children: [
-                //                 Row(
-                //                   crossAxisAlignment: CrossAxisAlignment.start,
-                //                   mainAxisAlignment: MainAxisAlignment.start,
-                //                   children: [
-                //                     CircleAvatar(
-                //                       backgroundImage: NetworkImage(
-                //                         "https://v3.mynt.in/mfapi/static/images/mf/${widget.mfData.aMCCode}.png",
-                //                       ),
-                //                     ),
-                //                     const SizedBox(width: 8),
-                //                     Expanded(
-                //                       child: Column(
-                //                         crossAxisAlignment:
-                //                             CrossAxisAlignment.start,
-                //                         children: [
-                //                           const SizedBox(height: 8),
-                //                           SizedBox(
-                //                             height: 18,
-                //                             child: ListView(
-                //                               shrinkWrap: true,
-                //                               scrollDirection: Axis.horizontal,
-                //                               children: [
-                //                                 // CustomExchBadge(
-                //                                 //   exch: widget.mfData.schemeName!.contains("GROWTH")
-                //                                 //       ? "GROWTH"
-                //                                 //       : widget.mfData.schemeName!.contains("IDCW PAYOUT")
-                //                                 //           ? "IDCW PAYOUT"
-                //                                 //           : widget.mfData.schemeName!.contains("IDCW REINVESTMENT")
-                //                                 //               ? "IDCW REINVESTMENT"
-                //                                 //               : widget.mfData.schemeName!.contains("IDCW")
-                //                                 //                   ? "IDCW"
-                //                                 //                   : "NORMAL",
-                //                                 // ),
-                //                               ],
-                //                             ),
-                //                           ),
-                //                         ],
-                //                       ),
-                //                     ),
-                //                   ],
-                //                 ),
-                //                 // const SizedBox(height: 8),
-                //                 // Row(
-                //                 //   mainAxisAlignment:
-                //                 //       MainAxisAlignment.spaceBetween,
-                //                 //   children: [
-                //                 //     Column(
-                //                 //       crossAxisAlignment:
-                //                 //           CrossAxisAlignment.start,
-                //                 //       children: [
-                //                 //         const SizedBox(height: 7),
-                //                 //         Text(
-                //                 //           "AUM (CR)",
-                //                 //           style: textStyle(
-                //                 //               const Color(0xff999999),
-                //                 //               12,
-                //                 //               FontWeight.w500),
-                //                 //         ),
-                //                 //         const SizedBox(height: 3),
-                //                 //         Text(
-                //                 //           (double.parse(widget.mfData.aUM!.isEmpty
-                //                 //                   ? "0.00"
-                //                 //                   : widget.mfData.aUM!))
-                //                 //               .toStringAsFixed(2),
-                //                 //           style: textStyle(colors.colorBlack, 14,
-                //                 //               FontWeight.w600),
-                //                 //         ),
-                //                 //       ],
-                //                 //     ),
-                //                 //     Column(
-                //                 //       crossAxisAlignment:
-                //                 //           CrossAxisAlignment.start,
-                //                 //       children: [
-                //                 //         const SizedBox(height: 8),
-                //                 //         Text(
-                //                 //           "NAV",
-                //                 //           style: textStyle(
-                //                 //               const Color(0xff999999),
-                //                 //               12,
-                //                 //               FontWeight.w500),
-                //                 //         ),
-                //                 //         const SizedBox(height: 3),
-                //                 //         Text(
-                //                 //           widget.mfData.nETASSETVALUE!.isEmpty
-                //                 //               ? "0.00"
-                //                 //               : widget.mfData.nETASSETVALUE!,
-                //                 //           style: textStyle(colors.colorBlack, 14,
-                //                 //               FontWeight.w600),
-                //                 //         ),
-                //                 //       ],
-                //                 //     ),
-                //                 //     Column(
-                //                 //       crossAxisAlignment:
-                //                 //           CrossAxisAlignment.start,
-                //                 //       children: [
-                //                 //         const SizedBox(height: 8),
-                //                 //         Text(
-                //                 //           "MIN. INV",
-                //                 //           style: textStyle(
-                //                 //               const Color(0xff999999),
-                //                 //               12,
-                //                 //               FontWeight.w500),
-                //                 //         ),
-                //                 //         const SizedBox(height: 3),
-                //                 //         Text(
-                //                 //           widget.mfData.minimumPurchaseAmount!
-                //                 //                   .isEmpty
-                //                 //               ? "0.00"
-                //                 //               : widget
-                //                 //                   .mfData.minimumPurchaseAmount!,
-                //                 //           style: textStyle(colors.colorBlack, 14,
-                //                 //               FontWeight.w600),
-                //                 //         ),
-                //                 //       ],
-                //                 //     ),
-                //                 //     Column(
-                //                 //       crossAxisAlignment:
-                //                 //           CrossAxisAlignment.start,
-                //                 //       children: [
-                //                 //         const SizedBox(height: 8),
-                //                 //         Text(
-                //                 //           "5YR CAGR",
-                //                 //           style: textStyle(
-                //                 //               const Color(0xff999999),
-                //                 //               12,
-                //                 //               FontWeight.w500),
-                //                 //         ),
-                //                 //         const SizedBox(height: 3),
-                //                 //         Text(
-                //                 //           widget.mfData.fIVEYEARDATA?.isEmpty ??
-                //                 //                   true
-                //                 //               ? "0.00"
-                //                 //               : "${widget.mfData.fIVEYEARDATA}%",
-                //                 //           style: textStyle(colors.colorBlack, 14,
-                //                 //               FontWeight.w600),
-                //                 //         )
-                //                 //       ],
-                //                 //     ),
-                //                 //   ],
-                //                 // ),
-                //               ],
-                //             ),
-                //           ),
-                //         ),
-                //       ),
-                //       Container(
-                //           height: 46,
-                //           // decoration: BoxDecoration(
-                //           //     border: (Border(
-                //           //         top: BorderSide(
-                //           //             color: theme.isDarkMode
-                //           //                 ? colors.darkColorDivider
-                //           //                 : colors.colorDivider)))),
-                //           child: ListView.builder(
-                //               scrollDirection: Axis.horizontal,
-                //               itemBuilder: (context, index) {
-                //                 return InkWell(
-                //                     onTap: () {
-                //                       mfOrder.chngOrderType(
-                //                           mfOrder.mfOrderTpyes[index]);
-                //                       mfOrder.resetmfordervalidation();
-                //                       FocusScope.of(context).unfocus();
-                //                     },
-                //                     child: Container(
-                //                         alignment: Alignment.centerLeft,
-                //                         padding: const EdgeInsets.symmetric(
-                //                             horizontal: 15),
-                //                         decoration: BoxDecoration(
-                //                             border: mfOrder.mfOrderTpye ==
-                //                                     mfOrder.mfOrderTpyes[index]
-                //                                 ? Border(
-                //                                     bottom: BorderSide(
-                //                                         color: theme.isDarkMode
-                //                                             ? colors.primaryDark
-                //                                             : colors.primaryLight,
-                //                                         width: 2))
-                //                                 : null),
-                //                         child: Text(mfOrder.mfOrderTpyes[index],
-                //                             style: textStyle(
-                //                                 mfOrder.mfOrderTpye ==
-                //                                             mfOrder.mfOrderTpyes[
-                //                                                 index] &&
-                //                                         theme.isDarkMode
-                //                                     ? colors.colorWhite
-                //                                     : mfOrder.mfOrderTpye ==
-                //                                             mfOrder
-                //                                                 .mfOrderTpyes[index]
-                //                                         ? colors.colorBlack
-                //                                         : const Color(0xff666666),
-                //                                 14,
-                //                                 mfOrder.mfOrderTpye ==
-                //                                         mfOrder.mfOrderTpyes[index]
-                //                                     ? FontWeight.w600
-                //                                     : FontWeight.w500))));
-                //               },
-                //               itemCount: widget.mfData.sIPFLAG == "Y"
-                //                   ? mfOrder.mfOrderTpyes.length
-                //                   : 1))
-                //     ]))
               ),
-              body: Column(
+              // bottom: PreferredSize(
+              //     preferredSize: const Size.fromHeight(40),
+              //     child: Column(children: [
+              //       Padding(
+              //         padding: const EdgeInsets.all(8.0),
+              //         child: Container(
+              //           color: theme.isDarkMode
+              //               ? colors.colorBlack
+              //               : const Color.fromARGB(255, 250, 251, 255),
+              //           child: Padding(
+              //             padding: const EdgeInsets.all(8.0),
+              //             child: Column(
+              //               children: [
+              //                 Row(
+              //                   crossAxisAlignment: CrossAxisAlignment.start,
+              //                   mainAxisAlignment: MainAxisAlignment.start,
+              //                   children: [
+              //                     CircleAvatar(
+              //                       backgroundImage: NetworkImage(
+              //                         "https://v3.mynt.in/mfapi/static/images/mf/${widget.mfData.aMCCode}.png",
+              //                       ),
+              //                     ),
+              //                     const SizedBox(width: 8),
+              //                     Expanded(
+              //                       child: Column(
+              //                         crossAxisAlignment:
+              //                             CrossAxisAlignment.start,
+              //                         children: [
+              //                           const SizedBox(height: 8),
+              //                           SizedBox(
+              //                             height: 18,
+              //                             child: ListView(
+              //                               shrinkWrap: true,
+              //                               scrollDirection: Axis.horizontal,
+              //                               children: [
+              //                                 // CustomExchBadge(
+              //                                 //   exch: widget.mfData.schemeName!.contains("GROWTH")
+              //                                 //       ? "GROWTH"
+              //                                 //       : widget.mfData.schemeName!.contains("IDCW PAYOUT")
+              //                                 //           ? "IDCW PAYOUT"
+              //                                 //           : widget.mfData.schemeName!.contains("IDCW REINVESTMENT")
+              //                                 //               ? "IDCW REINVESTMENT"
+              //                                 //               : widget.mfData.schemeName!.contains("IDCW")
+              //                                 //                   ? "IDCW"
+              //                                 //                   : "NORMAL",
+              //                                 // ),
+              //                               ],
+              //                             ),
+              //                           ),
+              //                         ],
+              //                       ),
+              //                     ),
+              //                   ],
+              //                 ),
+              //                 // const SizedBox(height: 8),
+              //                 // Row(
+              //                 //   mainAxisAlignment:
+              //                 //       MainAxisAlignment.spaceBetween,
+              //                 //   children: [
+              //                 //     Column(
+              //                 //       crossAxisAlignment:
+              //                 //           CrossAxisAlignment.start,
+              //                 //       children: [
+              //                 //         const SizedBox(height: 7),
+              //                 //         Text(
+              //                 //           "AUM (CR)",
+              //                 //           style: textStyle(
+              //                 //               const Color(0xff999999),
+              //                 //               12,
+              //                 //               FontWeight.w500),
+              //                 //         ),
+              //                 //         const SizedBox(height: 3),
+              //                 //         Text(
+              //                 //           (double.parse(widget.mfData.aUM!.isEmpty
+              //                 //                   ? "0.00"
+              //                 //                   : widget.mfData.aUM!))
+              //                 //               .toStringAsFixed(2),
+              //                 //           style: textStyle(colors.colorBlack, 14,
+              //                 //               FontWeight.w600),
+              //                 //         ),
+              //                 //       ],
+              //                 //     ),
+              //                 //     Column(
+              //                 //       crossAxisAlignment:
+              //                 //           CrossAxisAlignment.start,
+              //                 //       children: [
+              //                 //         const SizedBox(height: 8),
+              //                 //         Text(
+              //                 //           "NAV",
+              //                 //           style: textStyle(
+              //                 //               const Color(0xff999999),
+              //                 //               12,
+              //                 //               FontWeight.w500),
+              //                 //         ),
+              //                 //         const SizedBox(height: 3),
+              //                 //         Text(
+              //                 //           widget.mfData.nETASSETVALUE!.isEmpty
+              //                 //               ? "0.00"
+              //                 //               : widget.mfData.nETASSETVALUE!,
+              //                 //           style: textStyle(colors.colorBlack, 14,
+              //                 //               FontWeight.w600),
+              //                 //         ),
+              //                 //       ],
+              //                 //     ),
+              //                 //     Column(
+              //                 //       crossAxisAlignment:
+              //                 //           CrossAxisAlignment.start,
+              //                 //       children: [
+              //                 //         const SizedBox(height: 8),
+              //                 //         Text(
+              //                 //           "MIN. INV",
+              //                 //           style: textStyle(
+              //                 //               const Color(0xff999999),
+              //                 //               12,
+              //                 //               FontWeight.w500),
+              //                 //         ),
+              //                 //         const SizedBox(height: 3),
+              //                 //         Text(
+              //                 //           widget.mfData.minimumPurchaseAmount!
+              //                 //                   .isEmpty
+              //                 //               ? "0.00"
+              //                 //               : widget
+              //                 //                   .mfData.minimumPurchaseAmount!,
+              //                 //           style: textStyle(colors.colorBlack, 14,
+              //                 //               FontWeight.w600),
+              //                 //         ),
+              //                 //       ],
+              //                 //     ),
+              //                 //     Column(
+              //                 //       crossAxisAlignment:
+              //                 //           CrossAxisAlignment.start,
+              //                 //       children: [
+              //                 //         const SizedBox(height: 8),
+              //                 //         Text(
+              //                 //           "5YR CAGR",
+              //                 //           style: textStyle(
+              //                 //               const Color(0xff999999),
+              //                 //               12,
+              //                 //               FontWeight.w500),
+              //                 //         ),
+              //                 //         const SizedBox(height: 3),
+              //                 //         Text(
+              //                 //           widget.mfData.fIVEYEARDATA?.isEmpty ??
+              //                 //                   true
+              //                 //               ? "0.00"
+              //                 //               : "${widget.mfData.fIVEYEARDATA}%",
+              //                 //           style: textStyle(colors.colorBlack, 14,
+              //                 //               FontWeight.w600),
+              //                 //         )
+              //                 //       ],
+              //                 //     ),
+              //                 //   ],
+              //                 // ),
+              //               ],
+              //             ),
+              //           ),
+              //         ),
+              //       ),
+              //       Container(
+              //           height: 46,
+              //           // decoration: BoxDecoration(
+              //           //     border: (Border(
+              //           //         top: BorderSide(
+              //           //             color: theme.isDarkMode
+              //           //                 ? colors.darkColorDivider
+              //           //                 : colors.colorDivider)))),
+              //           child: ListView.builder(
+              //               scrollDirection: Axis.horizontal,
+              //               itemBuilder: (context, index) {
+              //                 return InkWell(
+              //                     onTap: () {
+              //                       mfOrder.chngOrderType(
+              //                           mfOrder.mfOrderTpyes[index]);
+              //                       mfOrder.resetmfordervalidation();
+              //                       FocusScope.of(context).unfocus();
+              //                     },
+              //                     child: Container(
+              //                         alignment: Alignment.centerLeft,
+              //                         padding: const EdgeInsets.symmetric(
+              //                             horizontal: 15),
+              //                         decoration: BoxDecoration(
+              //                             border: mfOrder.mfOrderTpye ==
+              //                                     mfOrder.mfOrderTpyes[index]
+              //                                 ? Border(
+              //                                     bottom: BorderSide(
+              //                                         color: theme.isDarkMode
+              //                                             ? colors.primaryDark
+              //                                             : colors.primaryLight,
+              //                                         width: 2))
+              //                                 : null),
+              //                         child: Text(mfOrder.mfOrderTpyes[index],
+              //                             style: textStyle(
+              //                                 mfOrder.mfOrderTpye ==
+              //                                             mfOrder.mfOrderTpyes[
+              //                                                 index] &&
+              //                                         theme.isDarkMode
+              //                                     ? colors.colorWhite
+              //                                     : mfOrder.mfOrderTpye ==
+              //                                             mfOrder
+              //                                                 .mfOrderTpyes[index]
+              //                                         ? colors.colorBlack
+              //                                         : const Color(0xff666666),
+              //                                 14,
+              //                                 mfOrder.mfOrderTpye ==
+              //                                         mfOrder.mfOrderTpyes[index]
+              //                                     ? FontWeight.w600
+              //                                     : FontWeight.w500))));
+              //               },
+              //               itemCount: widget.mfData.sIPFLAG == "Y"
+              //                   ? mfOrder.mfOrderTpyes.length
+              //                   : 1))
+              //     ]))
+            ),
+            body: SafeArea(
+              child: Column(
                 children: [
                   Divider(
                     color: theme.isDarkMode
@@ -564,7 +564,7 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                           //     const SizedBox(height: 8),
                           //   ],
                           //   const SizedBox(height: 8),
-          
+                      
                           //   ElevatedButton(
                           //       onPressed: () async {
                           //         showDialog(
@@ -588,7 +588,7 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                           //                       : colors.colorBlack,
                           //                   14,
                           //                   FontWeight.w500)))),
-          
+                      
                           //   // Row(
                           //   //   children: [
                           //   //     IconButton(
@@ -667,7 +667,7 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                           //             //             ? assets.darkAdd
                           //             //             : assets.addIcon,
                           //             //         fit: BoxFit.scaleDown)),
-          
+                      
                           //             textCtrl: mfOrder.invAmt,
                           //             onChanged: (value) {
                           //               mfOrder.isValidUpiId(widget.mfData);
@@ -794,7 +794,7 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                                   //     child: SvgPicture.asset(
                                   //         theme.isDarkMode ? assets.darkAdd : assets.addIcon,
                                   //         fit: BoxFit.scaleDown)),
-          
+                      
                                   textCtrl: mfOrder.mfOrderTpye == "One-time"
                                       ? mfOrder.invAmt
                                       : mfOrder.installmentAmt,
@@ -1309,7 +1309,9 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                   ),
                 ],
               ),
-              bottomSheet: Container(
+            ),
+            bottomNavigationBar: SafeArea(
+              child: Container(
                   color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -1364,7 +1366,7 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                       //                     FontWeight.w600))
                       //           ]),
                       //         ])),
-          
+                      
                       SafeArea(
                         child: Container(
                           padding: const EdgeInsets.symmetric(
@@ -1375,25 +1377,25 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                                 if (mfOrder.investloader == false) {
                                   print(mfOrder.invAmtError);
                                   print(mfOrder.upiError);
-          
+                      
                                   print(mfOrder.installmentAmtError);
                                   print(mfOrder.invDurationError);
-          
+                      
                                   // if (mfOrder.invAmtError == "" &&
                                   //     mfOrder.upiError == "" &&
                                   //     mfOrder.installmentAmtError == "" &&
                                   //     mfOrder.invDurationError == "") {
-          
+                      
                                   if (mfOrder.mfOrderTpye == "One-time" &&
                                       mfOrder.invAmtError == "") {
                                     Navigator.pop(context);
-          
+                      
                                     final startTime = DateTime.now();
                                     // print(mfOrder.isValidUpiId(widget.mfData));
                                     // print(widget.mfData);
                                     // if (mfOrder.isValidUpiId(widget.mfData) == true) {
                                     // await mfPlaceorder(widget.mfData, mfOrder, context);
-          
+                      
                                     // CallUpiNetbanking(
                                     // context, mfOrder, theme, widget.mfData);
                                     // } else if (mfOrder.paymentName != "UPI") {
@@ -1419,10 +1421,10 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                                         ),
                                       ),
                                     );
-          
+                      
                                     await mfPlaceorder(
                                         widget.mfData, mfOrder, context);
-          
+                      
                                     final elapsed =
                                         DateTime.now().difference(startTime);
                                     if (elapsed < const Duration(seconds: 2)) {
@@ -1430,7 +1432,7 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                                           const Duration(seconds: 2) - elapsed;
                                       await Future.delayed(remaining);
                                     }
-          
+                      
                                     if (mfOrder.investloader == false) {
                                       if (mfOrder.mfPlaceOrderResponces == null &&
                                           mfOrder.mfPlaceOrderResponces?.stat !=
@@ -1440,7 +1442,7 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                                                 "${mfOrder.mfPlaceOrderResponces?.remarks}"));
                                       }
                                     }
-          
+                      
                                     // CallUpiNetbanking(
                                     //     context, mfOrder, theme, widget.mfData);
                                   } else if (mfOrder.mfOrderTpye == "SIP" &&
@@ -1514,8 +1516,8 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                       if (defaultTargetPlatform == TargetPlatform.iOS)
                         const SizedBox(height: 18)
                     ],
-                  ))),
-        ));
+                  )),
+            )));
   }
 }
 
