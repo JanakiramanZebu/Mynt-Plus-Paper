@@ -183,6 +183,9 @@ class Routes {
   static const String mfCategoryList = 'mfCategoryList';
   static const String mfsipcalscreen = 'mfsipcalscreen';
   static const String mfcagrcalss = 'mfcagrcalss';
+  static const String brokerCalculator = 'brokerCalculator';
+  static const String marginCalculator = 'marginCalculator';
+  static const String portfolioDashboard = 'portfolioDashboard';
 
   //reports
   static const String ledgerscreen = 'LedgerScreen';

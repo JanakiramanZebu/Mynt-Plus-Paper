@@ -69,63 +69,85 @@ class BondsOpenOrderDetails extends ConsumerWidget {
         builder: (context, scrollController) {
           return Consumer(
             builder: (context, ref, _) {
-              return Scaffold(
-                backgroundColor: Colors.transparent,
-                // appBar: _buildAppBar(context, theme),
-                body: Container(
+              return SafeArea(
+                child: Scaffold(
+                  backgroundColor: Colors.transparent,
+                  // appBar: _buildAppBar(context, theme),
+                  body: Container(
                   decoration: BoxDecoration(
-                    color: theme.isDarkMode
-                        ? colors.colorBlack
-                        : colors.colorWhite,
-                    borderRadius: const BorderRadius.only(
+                           borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(16),
                       topRight: Radius.circular(16),
                     ),
-                  ),
-                  child: Column(
-                    children: [
-                      const CustomDragHandler(),
-                      Expanded(
-                        child: SingleChildScrollView(
-                          controller: scrollController,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
+                         color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                         border: Border(
+                                    top: BorderSide(
+                                      color: theme.isDarkMode
+                                          ? colors.textSecondaryDark
+                                              .withOpacity(0.5)
+                                          : colors.colorWhite,
+                                    ),
+                                    left: BorderSide(
+                                      color: theme.isDarkMode
+                                          ? colors.textSecondaryDark
+                                              .withOpacity(0.5)
+                                          : colors.colorWhite,
+                                    ),
+                                    right: BorderSide(
+                                      color: theme.isDarkMode
+                                          ? colors.textSecondaryDark
+                                              .withOpacity(0.5)
+                                          : colors.colorWhite,
+                                    ),
+                                  ),
+                
+                         
+                        ),
+                    child: Column(
+                      children: [
+                        const CustomDragHandler(),
+                        Expanded(
+                          child: SingleChildScrollView(
+                            controller: scrollController,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                
+                                _HeaderSection(
+                                    bondsdetails: bondsdetails, theme: theme),
+                                    
+                                // Divider(
+                                //   height: 0,
+                                //   color: theme.isDarkMode
+                                //       ? colors.darkColorDivider
+                                //       : colors.colorDivider,
+                                // ),
+                
+                                Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(horizontal: 16),
+                                  child: _OrderDetailsSection(
+                                      bondsdetails: bondsdetails, theme: theme),
+                                ),
+                                Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(horizontal: 16),
+                                  child: _ReasonSection(
+                                      bondsdetails: bondsdetails, theme: theme),
+                                ),
+                                Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(horizontal: 16),
+                                  child: _BidDetailsSection(
+                                      bondsdetails: bondsdetails, theme: theme),
+                                ),
                               
-                              _HeaderSection(
-                                  bondsdetails: bondsdetails, theme: theme),
-                                  
-                              // Divider(
-                              //   height: 0,
-                              //   color: theme.isDarkMode
-                              //       ? colors.darkColorDivider
-                              //       : colors.colorDivider,
-                              // ),
-
-                              Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 16),
-                                child: _OrderDetailsSection(
-                                    bondsdetails: bondsdetails, theme: theme),
-                              ),
-                              Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 16),
-                                child: _ReasonSection(
-                                    bondsdetails: bondsdetails, theme: theme),
-                              ),
-                              Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 16),
-                                child: _BidDetailsSection(
-                                    bondsdetails: bondsdetails, theme: theme),
-                              ),
-                            
-                            ],
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               );
@@ -147,14 +169,14 @@ class BondsOpenOrderDetails extends ConsumerWidget {
             padding: const EdgeInsets.symmetric(horizontal: 10),
             child: Icon(
               Icons.arrow_back_ios,
-              color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+              color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
               size: 22,
             ),
           ),
         ),
       ),
       backgroundColor: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-      shadowColor: const Color(0xffECEFF3),
+      // shadowColor: const Color(0xffECEFF3),
       title: Text(
         "Order Details",
         style: _textStyle(
@@ -355,14 +377,14 @@ class _StatusBadge extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           decoration: BoxDecoration(
             color: isSuccess
-                ? colors.success.withOpacity(0.1)
-                : colors.pending.withOpacity(0.1),
+                ? theme.isDarkMode ? colors.profitDark.withOpacity(0.1) : colors.profitLight.withOpacity(0.1)
+                : theme.isDarkMode ? colors.pending.withOpacity(0.1) : colors.pending.withOpacity(0.1),
             borderRadius: BorderRadius.circular(4),
           ),
           child: TextWidget.paraText(
             text: isSuccess ? "Success" : "Pending",
             theme: false,
-            color: isSuccess ? colors.success : colors.pending,
+            color: isSuccess ? theme.isDarkMode ? colors.profitDark : colors.profitLight : theme.isDarkMode ? colors.pending : colors.pending,
           ),
         ),
 
@@ -417,12 +439,12 @@ class _PaymentStatusRow extends StatelessWidget {
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: bondsdetails.clearingStatus.toString() == "Allotted"
-                        ? colors.success.withOpacity(0.1)
+                        ? theme.isDarkMode ? colors.profitDark.withOpacity(0.1) : colors.profitLight.withOpacity(0.1)
                         : bondsdetails.clearingStatus.toString() ==
                                 "Fund Pending"
                             ? colors.pending.withOpacity(0.1)
-                            : colors.error.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(4),
+                            : theme.isDarkMode ? colors.lossDark.withOpacity(0.1) : colors.lossLight.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(5),
                   ),
                   child: TextWidget.paraText(
                     text: bondsdetails.clearingStatus.toString() == "Allotted"
@@ -433,11 +455,11 @@ class _PaymentStatusRow extends StatelessWidget {
                             : "Failed",
                     theme: false,
                     color: bondsdetails.clearingStatus.toString() == "Allotted"
-                        ? colors.success
+                        ?  theme.isDarkMode ?   colors.profitDark : colors.profitLight
                         : bondsdetails.clearingStatus.toString() ==
                                 "Fund Pending"
-                            ? colors.pending
-                            : colors.error,
+                            ? theme.isDarkMode ? colors.pending : colors.pending
+                            : theme.isDarkMode ? colors.lossDark : colors.lossLight,
                   ),
                 ),
               ],
@@ -506,20 +528,23 @@ class _CancelOrderButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
         padding:
-            const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 16),
+            const EdgeInsets.only( top: 16, bottom: 16),
         child: Row(children: [
           Expanded(
               child: Row(
             children: [
               Expanded(
                 child: Container(
-                    height: 40,
+                    height: 45,
                     decoration: BoxDecoration(
-                        border: Border.all(
-                          color: colors.btnOutlinedBorder,
+                        border: theme.isDarkMode
+                          ? null :  Border.all(
+                       color: colors.primaryLight,
                           width: 1,
                         ),
-                        color: colors.btnBg,
+                        color: theme.isDarkMode
+                          ? colors.textSecondaryDark.withOpacity(0.6)
+                          : colors.btnBg,
                         borderRadius: BorderRadius.circular(5)),
                     child: Material(
                       color: Colors.transparent,
@@ -533,17 +558,14 @@ class _CancelOrderButton extends StatelessWidget {
                             ? colors.highlightDark
                             : colors.highlightLight,
                         onTap: () => _showCancelDialog(context),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          child: Center(
-                            child: TextWidget.subText(
-                                text: "Cancel Order",
-                                theme: false,
-                                color: theme.isDarkMode
-                                    ? colors.primaryDark
-                                    : colors.primaryLight,
-                                fw: 2),
-                          ),
+                        child: Center(
+                          child: TextWidget.subText(
+                              text: "Cancel Order",
+                              theme: false,
+                              color: theme.isDarkMode
+                          ? colors.colorWhite
+                          : colors.primaryLight,
+                              fw: 2),
                         ),
                       ),
                     )),

@@ -8,6 +8,7 @@ import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/screens/bonds/bonds_order_screen/orderscreenbottompage.dart';
 
+import '../../../provider/stocks_provider.dart';
 import '../../../res/global_state_text.dart';
 
 class SovereignGoldBondsScreen extends StatelessWidget {
@@ -36,7 +37,7 @@ class SovereignGoldBondsScreen extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          _buildBondsList(context, bonds, theme),
+          _buildBondsList(context, bonds, theme, ref),
           _buildDivider(theme),
         ],
       );
@@ -44,18 +45,24 @@ class SovereignGoldBondsScreen extends StatelessWidget {
   }
 
   Widget _buildBondsList(
-      BuildContext context, BondsProvider bonds, ThemesProvider theme) {
+      BuildContext context, BondsProvider bonds, ThemesProvider theme, WidgetRef ref) {
+    // Safe null checks for bonds data
+    final sovereignBonds = bonds.sovereignGoldBonds?.ncbSGB;
+    if (sovereignBonds == null || sovereignBonds.isEmpty) {
+      return const SizedBox();
+    }
+
     // Filter bonds based on search query
-    List<dynamic> filteredBonds = bonds.sovereignGoldBonds!.ncbSGB!;
-    if (bonds.bondscommonsearchcontroller.text.isNotEmpty) {
-      filteredBonds = bonds.sovereignGoldBonds!.ncbSGB!
+    List<dynamic> filteredBonds = sovereignBonds;
+    if (ref.read(stocksProvide).searchController.text.isNotEmpty) {
+      filteredBonds = sovereignBonds
           .where((bond) => bonds.bondsCommonSearchList.contains(bond))
           .toList();
     }
 
-    if (filteredBonds.isEmpty) {
-      return const SizedBox();
-    }
+    // if (filteredBonds.isEmpty) {
+    //   return const SizedBox();
+    // }
 
     return ListView.separated(
       padding: EdgeInsets.zero,

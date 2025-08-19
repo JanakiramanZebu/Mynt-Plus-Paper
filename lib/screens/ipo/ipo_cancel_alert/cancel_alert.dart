@@ -23,7 +23,12 @@ class IpoCancelAlert extends ConsumerWidget {
     final theme = ref.watch(themeProvider);
 
     return AlertDialog(
-      backgroundColor: colors.colorWhite,
+      backgroundColor: theme
+                                                                        .isDarkMode
+                                                                    ? const Color(
+                                                                        0xFF121212)
+                                                                    : const Color(
+                                                                        0xFFF1F3F8),
       titlePadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
       shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(8))),
@@ -60,9 +65,7 @@ class IpoCancelAlert extends ConsumerWidget {
                     child: Icon(
                       Icons.close_rounded,
                       size: 22,
-                      color: theme.isDarkMode
-                          ? colors.colorWhite
-                          : colors.colorBlack,
+                     color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                     ),
                   ),
                 ),
@@ -82,9 +85,9 @@ class IpoCancelAlert extends ConsumerWidget {
                     text:
                         "Are you sure you want to cancel the (${ipocancel.symbol} order)",
                     theme: theme.isDarkMode,
-                    color: theme.isDarkMode
-                        ? colors.textPrimaryDark
-                        : colors.textPrimaryLight,
+                      color: theme.isDarkMode
+                                                                                ? colors.textSecondaryDark
+                                                                                : colors.textPrimaryLight,
                     fw: 3,
                     align: TextAlign.center,
                   ),
@@ -113,8 +116,8 @@ class IpoCancelAlert extends ConsumerWidget {
                 text: "Yes",
                 theme: theme.isDarkMode,
                 color:
-                    !theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                fw: 0),
+                   colors.colorWhite ,
+                fw: 2),
           ),
         ),
       ],

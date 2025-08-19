@@ -30,6 +30,7 @@ import '../models/mf_model/mf_bank_detail_model.dart';
 import '../models/mf_model/mf_category_list_model.dart';
 import '../models/mf_model/mf_categorytype_model.dart';
 import '../models/mf_model/mf_create_mandate.dart';
+import '../models/mf_model/mf_etf_category_model.dart';
 import '../models/mf_model/mf_factsheet_data_model.dart';
 import '../models/mf_model/mf_factsheet_graph.dart';
 import '../models/mf_model/mf_lumpsum_order.dart';
@@ -1190,6 +1191,23 @@ class MFProvider extends DefaultChangeNotifier {
       _investloader = false;
 
       notifyListeners();
+    }
+  }
+
+  MfEtfCategoryModel? _etfCategorydata;
+  MfEtfCategoryModel? get etfCategorydata => _etfCategorydata;
+
+  Future fetchEtfCategory() async {
+    try {
+      _investloader = true;
+      var etfCategorydata = await api.getetfcategory();
+      _etfCategorydata = etfCategorydata;
+      // print("ETF Category ==>${_etfCategorydata}");
+      notifyListeners();
+    } catch (e) {
+      debugPrint("Error fetching ETF Category: $e");
+    } finally {
+      _investloader = false;
     }
   }
 

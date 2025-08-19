@@ -6,6 +6,7 @@ import 'package:mynt_plus/sharedWidget/functions.dart';
 
 import '../../provider/thems.dart';
 import '../../res/global_state_text.dart';
+import '../../sharedWidget/custom_back_btn.dart';
 import '../../sharedWidget/loader_ui.dart';
 import 'pledge_history_screen.dart';
 import 'tax_pnl_screens/pnl_value_screen.dart';
@@ -58,12 +59,13 @@ class _PledgeMainScreen extends State<PledgeHistoryMainScreen>
           title: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              TextWidget.heroText(
+              TextWidget.titleText(
                   text: "Pledge History",
                   textOverflow: TextOverflow.ellipsis,
+                  color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
                   theme: theme.isDarkMode,
                   fw: 1),
-
+      
               // DropdownButtonHideUnderline(
               //     child: DropdownButton2(
               //         menuItemStyleData: MenuItemStyleData(
@@ -95,102 +97,105 @@ class _PledgeMainScreen extends State<PledgeHistoryMainScreen>
               //         })),
             ],
           ),
+           leading: const CustomBackBtn(),
           // leading: InkWell(
           //   onTap: () {
-
+      
           //   },
           //   child: Icon(Icons.ios_share)),
         ),
-        body: TransparentLoaderScreen(
-          isLoading: ledgerprovider.pledgehistory,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Padding(
-              //   padding: const EdgeInsets.only(left : 16.0, top : 24.0),
-              //   child: BarChartWidget(),
-              // ),
-
-              Padding(
-                padding: const EdgeInsets.only(top: 8.0),
-                child: Container(
-                    width: MediaQuery.of(context).size.width,
-                    padding: const EdgeInsets.only(bottom: 0, left: 15, top: 2),
-                    decoration: BoxDecoration(
-                        border: Border(
-                            bottom: BorderSide(
-                                color: theme.isDarkMode
-                                    ? colors.darkColorDivider
-                                    : colors.colorDivider,
-                                width: 0.4))),
-                    // height: 60,
-                    child: 
-                    TabBar(
-              onTap: (index) {
-                setState(() {});
-              },
-              tabAlignment: TabAlignment.start,
-              indicatorSize: TabBarIndicatorSize.tab,
-              isScrollable: true,
-              indicatorColor: theme.isDarkMode
-                  ? colors.secondaryDark
-                  : colors.secondaryLight,
-              unselectedLabelColor: theme.isDarkMode
-                  ? colors.textSecondaryDark
-                  : colors.textSecondaryLight,
-              unselectedLabelStyle: TextWidget.textStyle(
-                fontSize: 14,
-                theme: false,
-                fw: 3,
+        body: SafeArea(
+          child: TransparentLoaderScreen(
+            isLoading: ledgerprovider.pledgehistory,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Padding(
+                //   padding: const EdgeInsets.only(left : 16.0, top : 24.0),
+                //   child: BarChartWidget(),
+                // ),
+                
+                Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: Container(
+                      width: MediaQuery.of(context).size.width,
+                      padding: const EdgeInsets.only(bottom: 0, left: 15, top: 2),
+                      decoration: BoxDecoration(
+                          border: Border(
+                              bottom: BorderSide(
+                                  color: theme.isDarkMode
+                                      ? colors.darkColorDivider
+                                      : colors.colorDivider,
+                                  width: 0.4))),
+                      // height: 60,
+                      child: 
+                      TabBar(
+                onTap: (index) {
+                  setState(() {});
+                },
+                tabAlignment: TabAlignment.start,
+                indicatorSize: TabBarIndicatorSize.tab,
+                isScrollable: true,
+                indicatorColor: theme.isDarkMode
+                    ? colors.secondaryDark
+                    : colors.secondaryLight,
+                unselectedLabelColor: theme.isDarkMode
+                    ? colors.textSecondaryDark
+                    : colors.textSecondaryLight,
+                unselectedLabelStyle: TextWidget.textStyle(
+                  fontSize: 14,
+                  theme: false,
+                  fw: 3,
+                ),
+                labelColor: theme.isDarkMode
+                    ? colors.secondaryDark
+                    : colors.secondaryLight,
+                labelStyle:
+                    TextWidget.textStyle(fontSize: 14, theme: false, fw: 3),
+                controller: _tabController,
+                tabs: List.generate(tablistitems.length, (index) {
+                  final isSelected = _tabController.index == index;
+                
+                  final color = isSelected
+                      ? (theme.isDarkMode
+                          ? colors.secondaryDark
+                          : colors.secondaryLight)
+                      : (theme.isDarkMode
+                          ? colors.textSecondaryDark
+                          : colors.textSecondaryLight);
+                
+                  return Tab(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        TextWidget.subText(
+                          text: tablistitems[index]['title'].toString(),
+                          theme: false,
+                          color: color,
+                          fw: isSelected ? 2 : null,
+                        ),
+                        const SizedBox(width: 5),
+                         
+                      ],
+                    ),
+                  );
+                }),
               ),
-              labelColor: theme.isDarkMode
-                  ? colors.secondaryDark
-                  : colors.secondaryLight,
-              labelStyle:
-                  TextWidget.textStyle(fontSize: 14, theme: false, fw: 3),
-              controller: _tabController,
-              tabs: List.generate(tablistitems.length, (index) {
-                final isSelected = _tabController.index == index;
-
-                final color = isSelected
-                    ? (theme.isDarkMode
-                        ? colors.secondaryDark
-                        : colors.secondaryLight)
-                    : (theme.isDarkMode
-                        ? colors.textSecondaryDark
-                        : colors.textSecondaryLight);
-
-                return Tab(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      TextWidget.subText(
-                        text: tablistitems[index]['title'].toString(),
-                        theme: false,
-                        color: color,
-                        fw: isSelected ? 2 : null,
                       ),
-                      const SizedBox(width: 5),
-                       
+                ),
+                
+                Expanded(
+                  child: TabBarView( 
+                    controller: _tabController,
+                    children: [
+                      PledgeHistoryScreen(),
+                      UnpledgeHistoryScreen(),
                     ],
                   ),
-                );
-              }),
-            ),
-                    ),
-              ),
-
-              Expanded(
-                child: TabBarView( 
-                  controller: _tabController,
-                  children: [
-                    PledgeHistoryScreen(),
-                    UnpledgeHistoryScreen(),
-                  ],
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       );

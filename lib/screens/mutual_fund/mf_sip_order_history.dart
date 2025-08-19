@@ -40,22 +40,24 @@ class MFSipOrderHistoryScreen extends ConsumerWidget {
         titleSpacing: 6,
         leading: const CustomBackBtn(),
       ),
-      body: Stack(
-        children: [
-          TransparentLoaderScreen(
-            isLoading: mfData.bestmfloader ?? false,
-            child: mfData.mfnotlivesiporderlist?.data?.isEmpty ?? true
-                ? const Center(child: NoDataFound())
-                : Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: _buildSipOrderList(context, mfData, theme),
-                      ),
-                    ],
-                  ),
-          ),
-        ],
+      body: SafeArea(
+        child: Stack(
+          children: [
+            TransparentLoaderScreen(
+              isLoading: mfData.bestmfloader ?? false,
+              child: mfData.mfnotlivesiporderlist?.data?.isEmpty ?? true
+                  ? const Center(child: NoDataFound())
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: _buildSipOrderList(context, mfData, theme),
+                        ),
+                      ],
+                    ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -131,16 +133,16 @@ class MFSipOrderHistoryScreen extends ConsumerWidget {
                             horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
                           color: item.status == "ACTIVE"
-                              ? colors.profit.withOpacity(0.1) : item.status == "ACTIVE" ? colors.pending.withOpacity(0.1)
-                              : colors.loss.withOpacity(0.1),
+                              ? theme.isDarkMode ? colors.profitDark.withOpacity(0.1) : colors.profitLight.withOpacity(0.1) : item.status == "ACTIVE" ? colors.pending.withOpacity(0.1)
+                              : theme.isDarkMode ? colors.lossDark.withOpacity(0.1) : colors.lossLight.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: TextWidget.paraText(
                             // align: TextAlign.start,
                             text: item.status == "ACTIVE" ? "LIVE" : item.status,
                             color: item.status == "ACTIVE"
-                              ? colors.profit  : item.status == "ACTIVE" ? colors.pending 
-                              : colors.loss ,
+                              ? theme.isDarkMode ? colors.profitDark : colors.profitLight  : item.status == "ACTIVE" ? colors.pending 
+                              : theme.isDarkMode ? colors.lossDark : colors.lossLight ,
                             textOverflow: TextOverflow.ellipsis,
                             theme: theme.isDarkMode,
                             maxLines: 2,
@@ -180,8 +182,8 @@ class MFSipOrderHistoryScreen extends ConsumerWidget {
                             align: TextAlign.start,
                             text: "Due Date : ${item.startDate}",
                             color: theme.isDarkMode
-                                ? colors.textPrimaryDark
-                                : colors.textPrimaryLight,
+                                ? colors.textSecondaryDark
+                                : colors.textSecondaryLight,
                             textOverflow: TextOverflow.ellipsis,
                             theme: theme.isDarkMode,
                             maxLines: 2,
@@ -191,8 +193,8 @@ class MFSipOrderHistoryScreen extends ConsumerWidget {
                           align: TextAlign.start,
                           text: item.installmentAmount ?? 'N/A',
                           color: theme.isDarkMode
-                              ? colors.textPrimaryDark
-                              : colors.textPrimaryLight,
+                              ? colors.textSecondaryDark
+                              : colors.textSecondaryLight,
                           textOverflow: TextOverflow.ellipsis,
                           theme: theme.isDarkMode,
                           maxLines: 2,

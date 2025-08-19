@@ -299,13 +299,13 @@ class _ChangePassState extends ConsumerState<ChangePass> {
                                     ? colors.colorWhite
                                     : colors.colorBlack,
                                 fw: 3),
-                            enabledBorder: const UnderlineInputBorder(
+                            enabledBorder:  UnderlineInputBorder(
                               borderSide: BorderSide(
-                                  color: Color(0xFFDBDBDB), width: 1),
+                                   color: theme.isDarkMode ? colors.textSecondaryDark.withOpacity(0.2) :  Color(0xffDBDBDB), width: 1),
                             ),
-                            focusedBorder: const UnderlineInputBorder(
+                            focusedBorder:  UnderlineInputBorder(
                               borderSide: BorderSide(
-                                  color: Color(0xFFDBDBDB), width: 1),
+                                    color: theme.isDarkMode ? colors.textSecondaryDark.withOpacity(0.2) :  Color(0xffDBDBDB), width: 1),
                             ),
                             counterText: "",
                             // errorStyle: textStyle(
@@ -345,7 +345,7 @@ class _ChangePassState extends ConsumerState<ChangePass> {
                                     changepassword.hideoldpassword
                                         ? "assets/icon/eye-off.svg"
                                         : "assets/icon/eye.svg",
-                                    color: const Color(0xff999999),
+                                    color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                                     width: 22,
                                   ),
                                 ),
@@ -374,7 +374,7 @@ class _ChangePassState extends ConsumerState<ChangePass> {
                             ? TextWidget.captionText(
                                 text: "${changepassword.oldPasswordError}",
                                 theme: false,
-                                color: colors.kColorRedText,
+                                color: theme.isDarkMode ? colors.lossDark : colors.lossLight,
                                 fw: 0)
                             : const SizedBox(),
                         const SizedBox(height: 20),
@@ -422,13 +422,13 @@ class _ChangePassState extends ConsumerState<ChangePass> {
                                     ? colors.colorWhite
                                     : colors.colorBlack,
                                 fw: 3),
-                            enabledBorder: const UnderlineInputBorder(
+                            enabledBorder:  UnderlineInputBorder(
                               borderSide: BorderSide(
-                                  color: Color(0xffECEDEE), width: 1.5),
+                                  color: theme.isDarkMode ? colors.textSecondaryDark.withOpacity(0.2) :  Color(0xffECEDEE), width: 1.5),
                             ),
-                            focusedBorder: const UnderlineInputBorder(
+                            focusedBorder:  UnderlineInputBorder(
                               borderSide: BorderSide(
-                                  color: Color(0xffECEDEE), width: 1.5),
+                                  color: theme.isDarkMode ? colors.textSecondaryDark.withOpacity(0.2) :  Color(0xffECEDEE), width: 1.5),
                             ),
                             counterText: "",
                             // errorStyle: textStyle(
@@ -466,7 +466,7 @@ class _ChangePassState extends ConsumerState<ChangePass> {
                                     changepassword.hidenewpassword
                                         ? "assets/icon/eye-off.svg"
                                         : "assets/icon/eye.svg",
-                                    color: const Color(0xff999999),
+                                    color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                                     width: 22,
                                   ),
                                 ),
@@ -496,7 +496,7 @@ class _ChangePassState extends ConsumerState<ChangePass> {
                             ? TextWidget.captionText(
                                 text: "${changepassword.newPasswordError}",
                                 theme: false,
-                                color: colors.kColorRedText,
+                                color: theme.isDarkMode ? colors.lossDark : colors.lossLight,
                                 fw: 0)
                             : const SizedBox(),
                         const SizedBox(height: 30),

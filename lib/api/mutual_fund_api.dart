@@ -20,6 +20,7 @@ import '../models/mf_model/mf_all_payment_model.dart';
 import '../models/mf_model/mf_category_list_model.dart';
 import '../models/mf_model/mf_categorytype_model.dart';
 import '../models/mf_model/mf_create_mandate.dart';
+import '../models/mf_model/mf_etf_category_model.dart';
 import '../models/mf_model/mf_factsheet_data_model.dart';
 import '../models/mf_model/mf_factsheet_graph.dart';
 import '../models/mf_model/mf_lumpsum_order.dart';
@@ -156,6 +157,21 @@ mixin MutualFundApi on ApiCore {
       log("Top Schemes ==>$json");
 
       return TopSchemesModel.fromJson(json as Map<String, dynamic>);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<MfEtfCategoryModel> getetfcategory() async {
+    try {
+      final uri = Uri.parse(apiLinks.etfcategory);
+      final res = await apiClient.get(uri,
+          headers: defaultHeaders);
+      final json = jsonDecode(res.body);
+
+      // log("ETF Category ==>$json");
+
+      return MfEtfCategoryModel.fromJson(json as Map<String, dynamic>);
     } catch (e) {
       rethrow;
     }

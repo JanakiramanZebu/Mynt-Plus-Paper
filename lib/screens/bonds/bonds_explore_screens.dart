@@ -71,8 +71,8 @@ class _ExploreScreensState extends ConsumerState<BondsExploreScreens>
     _allBondsTabController = TabController(
         length: 2, vsync: this, initialIndex: widget.initialTabIndex ?? 0);
 
-    _allBondsTabController.animation!.addListener(() {
-      final newIndex = _allBondsTabController.animation!.value.round();
+    _allBondsTabController.animation?.addListener(() {
+      final newIndex = _allBondsTabController.animation?.value.round() ?? 0;
       if (selectedTab != newIndex) {
         setState(() {
           selectedTab = newIndex; // Update activeTab immediately on swipe
@@ -131,6 +131,11 @@ class _ExploreScreensState extends ConsumerState<BondsExploreScreens>
                             selectedTab = tab;
                           });
                           _allBondsTabController.animateTo(tab);
+                          ref.read(bondsProvider).bondscommonsearchcontroller.clear();
+                          ref.read(bondsProvider).clearCommonBondsSearch();
+                          FocusScope.of(context).unfocus();
+                          
+
                         },
                         child: tabConstruce(
                           tablistitems[tab]['title'].toString(),
@@ -146,7 +151,8 @@ class _ExploreScreensState extends ConsumerState<BondsExploreScreens>
               Expanded(
                 child: TabBarView(
                   controller: _allBondsTabController,
-                  children: [BondsListScreen(), BondsOrderbookMainScreen()],
+                  children: [
+                    BondsListScreen(), BondsOrderbookMainScreen()],
                 ),
               ),
             ],

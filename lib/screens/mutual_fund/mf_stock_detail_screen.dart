@@ -82,74 +82,98 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
             final fund = ref.watch(fundProvider);
             final mfData = ref.watch(mfProvider);
 
-            return Scaffold(
-              backgroundColor: Colors.transparent,
-              body: Container(
-                decoration: BoxDecoration(
-                  color:
-                      theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(16),
-                    topRight: Radius.circular(16),
+            return SafeArea(
+              child: Scaffold(
+                backgroundColor: Colors.transparent,
+                body: Container(
+                  decoration: BoxDecoration(
+                    color:
+                        theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(16),
+                      topRight: Radius.circular(16),
+                      
+              
+                    ),
+                      border: Border(
+                                    top: BorderSide(
+                                      color: theme.isDarkMode
+                                          ? colors.textSecondaryDark
+                                              .withOpacity(0.5)
+                                          : colors.colorWhite,
+                                    ),
+                                    left: BorderSide(
+                                      color: theme.isDarkMode
+                                          ? colors.textSecondaryDark
+                                              .withOpacity(0.5)
+                                          : colors.colorWhite,
+                                    ),
+                                    right: BorderSide(
+                                      color: theme.isDarkMode
+                                          ? colors.textSecondaryDark
+                                              .withOpacity(0.5)
+                                          : colors.colorWhite,
+                                    ),
+                                  ),
                   ),
-                ),
-                child: TransparentLoaderScreen(
-                  isLoading: mfData.singleloader ?? false,
-                  child: Column(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          children: [
-                            const CustomDragHandler(),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Column(
-                                  children: [
-                                    Container(
-                                      decoration: BoxDecoration(
-                                        color: theme.isDarkMode
-                                            ? colors.colorBlack
-                                            : colors.colorWhite,
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(16.0),
-                                        child: Column(
-                                          children: [
-                                            _buildFundHeader(theme, mfData),
-                                            const SizedBox(height: 16),
-                                            _buildBottomActionButtons(
-                                                context, theme, mfData),
-                                          ],
+                  child: TransparentLoaderScreen(
+                    isLoading: mfData.singleloader ?? false,
+                    child: Column(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            children: [
+                              const CustomDragHandler(),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Column(
+                                    children: [
+                                      Container(
+                                        decoration: BoxDecoration(
+                                          color: theme.isDarkMode
+                                              ? colors.colorBlack
+                                              : colors.colorWhite,
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(16.0),
+                                          child: Column(
+                                            children: [
+                                              _buildFundHeader(theme, mfData),
+                                              const SizedBox(height: 16),
+                                              _buildBottomActionButtons(
+                                                  context, theme, mfData),
+                                            ],
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                            // Tab Content - Scrollable
-                            Expanded(
-                              child: SingleChildScrollView(
-                                controller: scrollController,
-                                child: Column(
-                                  children: [
-                                    MFOverview(mfStockData: widget.mfStockData),
-                                    MFPerformance(
-                                        mfStockData: widget.mfStockData),
-                                    MFAllocation(
-                                        mfStockData: widget.mfStockData),
-                                    MFSchemeInfo(
-                                        mfStockData: widget.mfStockData),
-                                  ],
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              // Tab Content - Scrollable
+                              Expanded(
+                                child: SingleChildScrollView(
+                                  controller: scrollController,
+                                  child: Column(
+                                    children: [
+                                      MFOverview(mfStockData: widget.mfStockData),
+                                      MFPerformance(
+                                          mfStockData: widget.mfStockData),
+                                      MFAllocation(
+                                          mfStockData: widget.mfStockData),
+                                      MFSchemeInfo(
+                                          mfStockData: widget.mfStockData),
+                                    ],
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),

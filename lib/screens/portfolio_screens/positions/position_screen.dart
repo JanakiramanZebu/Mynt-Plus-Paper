@@ -234,7 +234,7 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 5),
               decoration: BoxDecoration(
-                color: colors.searchBg,
+                color: theme.isDarkMode ? colors.searchBgDark : colors.searchBg,
                 borderRadius: BorderRadius.circular(5),
               ),
               child: Row(
@@ -266,7 +266,7 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
                               padding: const EdgeInsets.all(8.0),
                               child: _getCachedIcon(
                                 assets.searchIcon,
-                                color: colors.textPrimaryLight,
+                                color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                                 width: 20,
                               ),
                             ),
@@ -315,7 +315,7 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
                                 padding: const EdgeInsets.all(8.0),
                                 child: _getCachedIcon(
                                   assets.filterLinesDark,
-                                  color: colors.textPrimaryLight,
+                                   color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                                 ),
                               ),
                             ),
@@ -360,7 +360,7 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
                             child: Padding(
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 10, vertical: 5),
-                              child: TextWidget.paraText(
+                              child: TextWidget.subText(
                                 text: positionBook.exitPositionQty == 0
                                     ? "Exit All"
                                     : "Exit (${positionBook.exitPositionQty})",
@@ -368,7 +368,7 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
                                 color: theme.isDarkMode
                                     ? colors.secondaryDark
                                     : colors.secondaryLight,
-                                fw: 3,
+                                fw: 2,
                               ),
                             ),
                           ),
@@ -451,9 +451,10 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
             autofocus: true,
             controller: positionBook.positionSearchCtrl,
             style: TextWidget.textStyle(
-              fontSize: 14,
+              fontSize: 16,
               theme: theme.isDarkMode,
-              fw: 1,
+              color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+              
             ),
             keyboardType: TextInputType.text,
             textCapitalization: TextCapitalization.characters,
@@ -467,14 +468,13 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
                 hintStyle: TextWidget.textStyle(
                     fontSize: 14,
                     theme: theme.isDarkMode,
-                    fw: 0,
-                    color: colors.textSecondaryLight),
-                fillColor: colors.searchBg,
+                    color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight),
+                fillColor: theme.isDarkMode ? colors.searchBgDark : colors.searchBg,
                 filled: true,
                 prefixIcon: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: SvgPicture.asset(assets.searchIcon,
-                      color: colors.textPrimaryLight,
+                      color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                       fit: BoxFit.scaleDown,
                       width: 20),
                 ),
@@ -499,6 +499,7 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
                       });
                     },
                     child: SvgPicture.asset(assets.removeIcon,
+                     color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                         fit: BoxFit.scaleDown, width: 20),
                   ),
                 ),
@@ -893,8 +894,10 @@ class _PositionItemState extends ConsumerState<_PositionItem> {
 
       return Container(
         color: netQtyZero
-            ? colors.colorBlack.withOpacity(0.05)
-            : colors.textSecondaryDark,
+            ? theme.isDarkMode
+                ? colors.textSecondaryDark.withOpacity(0.2)
+                : colors.textSecondaryLight.withOpacity(0.2)
+            : null,
         padding: const EdgeInsets.all(16),
         child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

@@ -31,17 +31,17 @@ class AppColors {
 
 // Dark theme text colors
   final textPrimaryDark = const Color(0xFFFFFFFF);
-  final textSecondaryDark = const Color(0xFFFFFFFF);
+  final textSecondaryDark = const Color(0xFF8A8A8A);
   final textDisabledDark = const Color(0xFF404040);
 
 // === STATUS COLORS ===
   final profit = const Color(0xFF00B14F);
   final profitLight = const Color(0xFF00B14F);
-  final profitDark = const Color(0xFF2F855A);
+  final profitDark = const Color(0xFF68D391);
 
   final loss = const Color(0xFFFF1717);
   final lossLight = const Color(0xFFFF1717);
-  final lossDark = const Color(0xFFC53030);
+  final lossDark = const Color(0xFFFF6B6B);
 
   final error = const Color(0xFFFF1717);
   final errorLight = const Color(0xFFFF1717);
@@ -61,7 +61,7 @@ class AppColors {
 // === BACKGROUND COLORS ===
   final btnBg = const Color(0XFFF1F3F8);
   final searchBg = const Color(0XFFF9F9F9);
-
+  final searchBgDark = const Color(0xFF1E1E1E);
   final iconColor = const Color(0xff777777);
 
   // === BORDER COLORS ===

@@ -32,6 +32,10 @@ class MfHoldNewScreen extends ConsumerWidget {
         ? (mfData.mfHoldingSearchItems ?? [])
         : (mfData.mfholdingnew?.data ?? []);
 
+    // Check if user has any holdings data at all
+    final hasHoldingsData = mfData.mfholdingnew?.data != null && 
+                           mfData.mfholdingnew!.data!.isNotEmpty;
+
     return Scaffold(
               body: TransparentLoaderScreen(
           isLoading: mfData.holdstatload ?? false,
@@ -44,11 +48,12 @@ class MfHoldNewScreen extends ConsumerWidget {
               child: GestureDetector(
                 onTap: () => FocusScope.of(context).unfocus(),
                 behavior: HitTestBehavior.opaque,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Summary container
-                    Container(
+                child: hasHoldingsData 
+                    ? Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Summary container
+                          Container(
                       padding: const EdgeInsets.all(16),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -100,6 +105,7 @@ class MfHoldNewScreen extends ConsumerWidget {
                                           color: _getColorBasedOnValue(
                                             mfData
                                                 .mfholdingnew?.summary?.absReturnValue,
+                                            theme,
                                           ),
                                           theme: theme.isDarkMode,
                                           fw: 0),
@@ -151,6 +157,7 @@ class MfHoldNewScreen extends ConsumerWidget {
                                     color: _getColorBasedOnValue(
                                       mfData.mfholdingnew?.summary?.absReturnPercent
                                           ?.toString(),
+                                          theme,
                                     ),
                                     theme: theme.isDarkMode,
                                   ),
@@ -174,7 +181,9 @@ class MfHoldNewScreen extends ConsumerWidget {
                                 child: Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 5),
                                   decoration: BoxDecoration(
-                                    color: colors.searchBg,
+                                   color: theme.isDarkMode
+                  ? colors.searchBgDark
+                  : colors.searchBg,
                                     borderRadius: BorderRadius.circular(5),
                                   ),
                                   child: Row(
@@ -208,7 +217,9 @@ class MfHoldNewScreen extends ConsumerWidget {
                                                   padding: const EdgeInsets.all(8.0),
                                                   child: SvgPicture.asset(
                                                     assets.searchIcon,
-                                                    color: colors.textPrimaryLight,
+                                                   color: theme.isDarkMode
+                                ? colors.textSecondaryDark
+                                : colors.textSecondaryLight,
                                                     width: 20,
                                                     fit: BoxFit.scaleDown,
                                                   ),
@@ -250,7 +261,9 @@ class MfHoldNewScreen extends ConsumerWidget {
                                                   child: SvgPicture.asset(
                                                     assets.filterLinesDark,
                                                     width: 18,
-                                                    color: colors.textPrimaryLight,
+                                                color: theme.isDarkMode
+                                ? colors.textSecondaryDark
+                                : colors.textSecondaryLight,
                                                     fit: BoxFit.scaleDown,
                                                   ),
                                                 ),
@@ -275,23 +288,32 @@ class MfHoldNewScreen extends ConsumerWidget {
                           child: TextFormField(
                             autofocus: true,
                             controller: mfData.mfHoldingSearchController,
-                            style: TextWidget.textStyle(
-                                fontSize: 14, theme: theme.isDarkMode, fw: 1),
+                           style: TextWidget.textStyle(
+                                    fontSize: 16,
+                                    color: theme.isDarkMode
+                                        ? colors.textPrimaryDark
+                                        : colors.textPrimaryLight,
+                                    theme: theme.isDarkMode,
+                                  ),
                             keyboardType: TextInputType.text,
                             decoration: InputDecoration(
                               hintText: "Search",
-                              hintStyle: TextWidget.textStyle(
-                                  fontSize: 14,
-                                  theme: theme.isDarkMode,
-                                  fw: 0,
-                                  color: colors.textSecondaryLight),
-                              fillColor: colors.searchBg,
+                             hintStyle: TextWidget.textStyle(
+                                      fontSize: 14,
+                                      theme: theme.isDarkMode,
+                                     color: theme.isDarkMode
+                                ? colors.textSecondaryDark
+                                : colors.textSecondaryLight,
+                                    ),
+                              fillColor: theme.isDarkMode ? colors.searchBgDark : colors.searchBg,
                               filled: true,
                               prefixIcon: Padding(
                                 padding: const EdgeInsets.all(8.0),
                                 child: SvgPicture.asset(
                                   assets.searchIcon,
-                                  color: colors.textPrimaryLight,
+                            color: theme.isDarkMode
+                                ? colors.textSecondaryDark
+                                : colors.textSecondaryLight,
                                   width: 20,
                                   fit: BoxFit.scaleDown,
                                 ),
@@ -316,6 +338,9 @@ class MfHoldNewScreen extends ConsumerWidget {
                                     child: SvgPicture.asset(
                                       assets.removeIcon,
                                       fit: BoxFit.scaleDown,
+                                      color: theme.isDarkMode
+                                ? colors.textSecondaryDark
+                                : colors.textSecondaryLight,
                                       width: 20,
                                     ),
                                   ),
@@ -350,10 +375,14 @@ class MfHoldNewScreen extends ConsumerWidget {
                         ),
                       ),
 
-                    // Show appropriate UI based on data state
-                    _buildListContent(context, theme.isDarkMode, mfData, showSearch, searchText, items, theme),
-                  ],
-                ),
+                          // Show appropriate UI based on data state
+                          _buildListContent(context, theme.isDarkMode, mfData, showSearch, searchText, items, theme),
+                        ],
+                      )
+                    : const SizedBox(
+                        height: 400,
+                        child: Center(child: NoDataFound()),
+                      ),
               ),
             ),
           ),
@@ -370,8 +399,8 @@ class MfHoldNewScreen extends ConsumerWidget {
       );
     }
 
-    // Don't show anything if no holdings data at all (not in search mode)
-    if (!showSearch && items.isEmpty) {
+    // If items is empty but we're here, it means we have holdings data but search/filter resulted in empty
+    if (items.isEmpty) {
       return const SizedBox.shrink();
     }
 
@@ -446,7 +475,7 @@ class MfHoldNewScreen extends ConsumerWidget {
                             align: TextAlign.start,
                             text: "${item.profitLoss ?? "0.00"}",
                             color: _getColorBasedOnValue(
-                                item.profitLoss.toString()),
+                                item.profitLoss.toString(), theme),
                             textOverflow: TextOverflow.ellipsis,
                             theme: isDarkMode,
                             fw: 3),
@@ -521,7 +550,7 @@ class MfHoldNewScreen extends ConsumerWidget {
                             text:
                                 "(${(double.tryParse(item.changeprofitLoss.toString()) ?? 0.0).toStringAsFixed(2)}%)",
                             color: _getColorBasedOnValue(
-                                item.changeprofitLoss.toString()),
+                                item.changeprofitLoss.toString(), theme),
                             textOverflow: TextOverflow.ellipsis,
                             theme: theme.isDarkMode,
                             fw: 3),
@@ -630,8 +659,8 @@ class MfHoldNewScreen extends ConsumerWidget {
   }
 
   // Helper method to determine color based on value
-  Color _getColorBasedOnValue(String? valueStr) {
+  Color _getColorBasedOnValue(String? valueStr, ThemesProvider theme) {
     final value = double.tryParse(valueStr ?? "0") ?? 0;
-    return value >= 0 ? colors.profit : colors.loss;
+    return value >= 0 ? theme.isDarkMode ? colors.profitDark : colors.profitLight : theme.isDarkMode ? colors.lossDark : colors.lossLight;
   }
 }

@@ -205,6 +205,11 @@ class Assets {
   final String sipdashboard = "assets/icon/dashboard/sip_dash.svg";
   final String basketdashboard = "assets/icon/dashboard/basket_dash.svg";
   final String alertdashboard = "assets/icon/dashboard/alert_dash.svg";
+  final String referandearn = "assets/icon/dashboard/refer_and_earn.svg";
+  final String plsummary = "assets/icon/dashboard/p&l_summary.svg";
+  final String ledger = "assets/icon/dashboard/ledger.svg";
+  final String margincal = "assets/icon/dashboard/margin_cal.svg";
+  final String brokercal = "assets/icon/dashboard/broker-cal.svg";
 
   // Bonds
   final String govtBond = "assets/icon/bonds/gov_bonds.svg";

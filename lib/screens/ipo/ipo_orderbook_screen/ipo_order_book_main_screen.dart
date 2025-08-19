@@ -63,44 +63,42 @@ class _IpoOrderbookMainScreenState extends ConsumerState<IpoOrderbookMainScreen>
         children: [
           if (filteredOpenOrders.isNotEmpty) ...[
             Container(
-                padding: const EdgeInsets.symmetric(vertical: 8),
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  color: theme.isDarkMode ? colors.btnBg : colors.btnBg,
-                  border: Border(
-                    top: BorderSide(
-                      color: theme.isDarkMode
-                          ? colors.dividerDark
-                          : colors.dividerLight,
-                    ),
-                    bottom: BorderSide(
-                      color: theme.isDarkMode
-                          ? colors.dividerDark
-                          : colors.dividerLight,
-                    ),
-                  ),
+                  color: theme.isDarkMode ? colors.textSecondaryDark.withOpacity(0.2) : colors.textSecondaryLight.withOpacity(0.05),
+                  // border: Border(
+                  //   top: BorderSide(
+                  //     color: theme.isDarkMode
+                  //         ? colors.dividerDark
+                  //         : colors.dividerLight,
+                  //   ),
+                  //   bottom: BorderSide(
+                  //     color: theme.isDarkMode
+                  //         ? colors.dividerDark
+                  //         : colors.dividerLight,
+                  //   ),
+                  // ),
                 ),
                 child: _buildSectionHeader("Open Orders", theme)),
             IpoOpenOrder(filteredOrders: filteredOpenOrders),
           ],
           if (filteredCloseOrders.isNotEmpty) ...[
             Container(
-              padding: const EdgeInsets.symmetric(vertical: 8),
               width: double.infinity,
               decoration: BoxDecoration(
-                color: theme.isDarkMode ? colors.btnBg : colors.btnBg,
-                border: Border(
-                  top: BorderSide(
-                    color: theme.isDarkMode
-                        ? colors.dividerDark
-                        : colors.dividerLight,
-                  ),
-                  bottom: BorderSide(
-                    color: theme.isDarkMode
-                        ? colors.dividerDark
-                        : colors.dividerLight,
-                  ),
-                ),
+               color: theme.isDarkMode ? colors.textSecondaryDark.withOpacity(0.2) : colors.textSecondaryLight.withOpacity(0.05),
+                // border: Border(
+                //   top: BorderSide(
+                //     color: theme.isDarkMode
+                //         ? colors.dividerDark
+                //         : colors.dividerLight,
+                //   ),
+                //   bottom: BorderSide(
+                //     color: theme.isDarkMode
+                //         ? colors.dividerDark
+                //         : colors.dividerLight,
+                //   ),
+                // ),
               ),
               child: _buildSectionHeader("Closed Orders", theme),
             ),
@@ -171,8 +169,8 @@ class _IpoOrderbookMainScreenState extends ConsumerState<IpoOrderbookMainScreen>
         theme: false,
         fw: 0,
         color: theme.isDarkMode
-            ? colors.textSecondaryDark
-            : colors.textSecondaryLight,
+            ? colors.textPrimaryDark
+            : colors.textPrimaryLight,
       ),
     );
   }

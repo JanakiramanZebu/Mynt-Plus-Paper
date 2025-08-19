@@ -13,6 +13,7 @@ import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import '../../../models/ipo_model/ipo_sme_model.dart';
 import '../../../models/ipo_model/ipo_mainstream_model.dart';
 import '../../../provider/iop_provider.dart';
+import '../../../provider/stocks_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../provider/transcation_provider.dart';
 import '../../../res/global_state_text.dart';
@@ -34,7 +35,7 @@ class MainSmeListCard extends StatelessWidget {
       final devHeight = MediaQuery.of(context).size.height;
 
       // Get filtered IPOs based on search
-      List<dynamic> filteredIpos = _getFilteredIPOs(ipos, mainstreamipo);
+      List<dynamic> filteredIpos = _getFilteredIPOs(ipos, mainstreamipo, ref);
 
       List<dynamic> openIpos = filteredIpos.where((ipo) {
         // Check if the IPO object has biddingStartDate and biddingEndDate properties
@@ -110,11 +111,14 @@ class MainSmeListCard extends StatelessWidget {
     });
   }
 
-  List<dynamic> _getFilteredIPOs(IPOProvider ipos, IPOProvider mainstreamipo) {
+  List<dynamic> _getFilteredIPOs(IPOProvider ipos, IPOProvider mainstreamipo, WidgetRef ref) {
     // If there's a search query, use the common search results
-    if (ipos.ipocommonsearchcontroller.text.isNotEmpty &&
+    if (ref.watch(stocksProvide).searchController.text.isNotEmpty &&
         ipos.ipoCommonSearchList.isNotEmpty) {
       return ipos.ipoCommonSearchList;
+    }else if(ref.watch(stocksProvide).searchController.text.isNotEmpty &&
+       ipos.ipoCommonSearchList.isEmpty){
+      return [const NoDataFound()];
     }
     // Otherwise, use the original mainsme list
     return mainstreamipo.mainsme;
@@ -247,6 +251,7 @@ class _IPOListSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView.separated(
+      padding: const EdgeInsets.all(0),
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: ipos.length,

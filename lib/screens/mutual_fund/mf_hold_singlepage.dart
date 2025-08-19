@@ -41,9 +41,9 @@ class _mfholdsinlepage extends State<mfholdsinlepage>
   }
 
   // Helper method to determine color based on value
-  Color _getColorBasedOnValue(String? valueStr) {
+  Color _getColorBasedOnValue(String? valueStr, ThemesProvider theme) {
     final value = double.tryParse(valueStr ?? "0") ?? 0;
-    return value >= 0 ? Colors.green : Colors.red;
+    return value >= 0 ? theme.isDarkMode ? colors.profitDark : colors.profitLight : theme.isDarkMode ? colors.lossDark : colors.lossLight;
   }
 
   MutualFundList _convertHoldingToMutualFundList(dynamic holdingData) {
@@ -73,29 +73,48 @@ class _mfholdsinlepage extends State<mfholdsinlepage>
           mfdata.holssinglelist!.isNotEmpty &&
           mfdata.holssinglelist![0] != null;
 
-      return Container(
-        decoration: BoxDecoration(
-          color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(16),
-            topRight: Radius.circular(16),
-          ),
-        ),
-        child: DraggableScrollableSheet(
-          expand: false,
-          initialChildSize: 0.88,
-          maxChildSize: 0.99,
-          builder: (context, scrollController) {
-            return Scaffold(
-              backgroundColor: Colors.transparent,
-              body: SingleChildScrollView(
-                controller: scrollController,
-                child: hasData
-                    ? _buildHoldingDetails(context, theme, mfdata)
-                    : const Center(child: NoDataFound()),
+      return SafeArea(
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(16),
+              topRight: Radius.circular(16),
+            ),
+            color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+            border: Border(
+              top: BorderSide(
+                color: theme.isDarkMode
+                    ? colors.textSecondaryDark.withOpacity(0.5)
+                    : colors.colorWhite,
               ),
-            );
-          },
+              left: BorderSide(
+                color: theme.isDarkMode
+                    ? colors.textSecondaryDark.withOpacity(0.5)
+                    : colors.colorWhite,
+              ),
+              right: BorderSide(
+                color: theme.isDarkMode
+                    ? colors.textSecondaryDark.withOpacity(0.5)
+                    : colors.colorWhite,
+              ),
+            ),
+          ),
+          child: DraggableScrollableSheet(
+            expand: false,
+            initialChildSize: 0.88,
+            maxChildSize: 0.88,
+            builder: (context, scrollController) {
+              return Scaffold(
+                backgroundColor: Colors.transparent,
+                body: SingleChildScrollView(
+                  controller: scrollController,
+                  child: hasData
+                      ? _buildHoldingDetails(context, theme, mfdata)
+                      : const Center(child: NoDataFound()),
+                ),
+              );
+            },
+          ),
         ),
       );
     });
@@ -212,7 +231,9 @@ class _mfholdsinlepage extends State<mfholdsinlepage>
                                           assets.rightarrowcur,
                                           width: 20,
                                           height: 20,
-                                          color: colors.iconColor,
+                                          color: theme.isDarkMode
+                                              ? colors.textSecondaryDark
+                                              : colors.textSecondaryLight,
                                         ),
                                       ],
                                     ),
@@ -248,12 +269,16 @@ class _mfholdsinlepage extends State<mfholdsinlepage>
                     },
                     style: ElevatedButton.styleFrom(
                       elevation: 0,
-                      backgroundColor: colors.btnBg,
-                      foregroundColor: const Color.fromARGB(255, 0, 0, 0),
-                      side: BorderSide(
-                        color: colors.btnOutlinedBorder,
-                        width: 1,
-                      ),
+                      backgroundColor: theme.isDarkMode
+                          ? colors.textSecondaryDark.withOpacity(0.6)
+                          : colors.btnBg,
+                      // foregroundColor: const Color.fromARGB(255, 0, 0, 0),
+                      side: theme.isDarkMode
+                          ? null
+                          : BorderSide(
+                              color: colors.primaryLight,
+                              width: 1,
+                            ),
                       minimumSize: Size(double.infinity, 45), // height: 48
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(5),
@@ -263,7 +288,7 @@ class _mfholdsinlepage extends State<mfholdsinlepage>
                         align: TextAlign.right,
                         text: "Redeem",
                         color: theme.isDarkMode
-                            ? colors.primaryDark
+                            ? colors.colorWhite
                             : colors.primaryLight,
                         textOverflow: TextOverflow.ellipsis,
                         theme: theme.isDarkMode,
@@ -280,7 +305,7 @@ class _mfholdsinlepage extends State<mfholdsinlepage>
             "Returns",
             "${_formatValue(data.profitLoss)} (${(double.tryParse(data.changeprofitLoss ?? '0') ?? 0).toStringAsFixed(2)}%)",
             theme,
-            valueColor: _getColorBasedOnValue(data.profitLoss),
+            valueColor: _getColorBasedOnValue(data.profitLoss, theme),
           ),
 
           // Units and Avg Price

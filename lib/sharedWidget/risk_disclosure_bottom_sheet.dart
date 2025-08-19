@@ -26,15 +26,31 @@ class RiskDisclousreBottomSheet extends ConsumerWidget {
       child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
+                 borderRadius: const BorderRadius.only(
+                                topLeft: Radius.circular(16),
+                                topRight: Radius.circular(16),
+                              ),
               color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-              boxShadow: const [
-              BoxShadow(
-                color: Color(0xff999999),
-                blurRadius: 4.0,
-                offset: Offset(2.0, 0.0),
-              )
-            ],
+              border: Border(
+                                  top: BorderSide(
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                            .withOpacity(0.5)
+                                        : colors.colorWhite,
+                                  ),
+                                  left: BorderSide(
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                            .withOpacity(0.5)
+                                        : colors.colorWhite,
+                                  ),
+                                  right: BorderSide(
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                            .withOpacity(0.5)
+                                        : colors.colorWhite,
+                                  ),
+                                ),
               ),
           child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -166,7 +182,7 @@ class RiskDisclousreBottomSheet extends ConsumerWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 8),
                   child: SizedBox(
                       width: MediaQuery.of(context).size.width,
-                      height: 40,
+                      height: 45,
                       child: ElevatedButton(
                         onPressed: () async {
                           pref.setRiskDiscloser(true);

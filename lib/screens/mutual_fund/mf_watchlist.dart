@@ -106,6 +106,9 @@ class _MFWatchlistScreenState extends ConsumerState<MFWatchlistScreen> {
             theme: theme.isDarkMode,
           ),
           PopupMenuButton<String>(
+             color: theme.isDarkMode
+                              ? colors.searchBgDark
+                              : colors.searchBg,
             onSelected: (value) {
               setState(() {
                 selectedReturn = value;
@@ -143,16 +146,29 @@ class _MFWatchlistScreenState extends ConsumerState<MFWatchlistScreen> {
                     fw: 3,
                   )),
             ],
-            child: InkWell(
-              child: TextWidget.paraText(
-                align: TextAlign.right,
-                text: selectedReturn,
-                color: theme.isDarkMode
-                    ? colors.textSecondaryDark
-                    : colors.textSecondaryLight,
-                textOverflow: TextOverflow.ellipsis,
-                theme: theme.isDarkMode,
-                fw: 3,
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                 splashColor: theme.isDarkMode
+                                            ? Colors.white.withOpacity(0.15)
+                                            : Colors.black.withOpacity(0.15),
+                                        highlightColor: theme.isDarkMode
+                                            ? Colors.white.withOpacity(0.08)
+                                            : Colors.black.withOpacity(0.08),
+                                        borderRadius: BorderRadius.circular(8),
+                child: Padding(
+                  padding: const EdgeInsets.all(5.0),
+                  child: TextWidget.paraText(
+                    align: TextAlign.right,
+                    text: selectedReturn,
+                    color: theme.isDarkMode
+                        ? colors.textSecondaryDark
+                        : colors.textSecondaryLight,
+                    textOverflow: TextOverflow.ellipsis,
+                    theme: theme.isDarkMode,
+                    fw: 3,
+                  ),
+                ),
               ),
             ),
           )

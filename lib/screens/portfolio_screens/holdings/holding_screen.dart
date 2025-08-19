@@ -627,8 +627,8 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
                                               ? colors.lossDark
                                               : colors.lossLight
                                           : theme.isDarkMode
-                                              ? colors.successDark
-                                              : colors.successLight,
+                                              ? colors.profitDark
+                                              : colors.profitLight,
                                       fw: 0),
                                   const SizedBox(width: 4),
                                   TextWidget.subText(
@@ -642,8 +642,8 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
                                               ? colors.lossDark
                                               : colors.lossLight
                                           : theme.isDarkMode
-                                              ? colors.successDark
-                                              : colors.successLight,
+                                              ? colors.profitDark
+                                              : colors.profitLight,
                                       fw: 3),
                                 ])
                           ]),
@@ -670,8 +670,8 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
                                           ? colors.lossDark
                                           : colors.lossLight
                                       : theme.isDarkMode
-                                          ? colors.successDark
-                                          : colors.successLight,
+                                          ? colors.profitDark
+                                          : colors.profitLight,
                                   fw: 0),
                               const SizedBox(width: 4),
                               TextWidget.headText(
@@ -685,8 +685,8 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
                                           ? colors.lossDark
                                           : colors.lossLight
                                       : theme.isDarkMode
-                                          ? colors.successDark
-                                          : colors.successLight,
+                                          ? colors.profitDark
+                                          : colors.profitLight,
                                   fw: 0),
                             ],
                           ),
@@ -811,7 +811,9 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 5),
                     decoration: BoxDecoration(
-                      color: colors.searchBg,
+                      color: theme.isDarkMode
+                          ? colors.searchBgDark
+                          : colors.searchBg,
                       borderRadius: BorderRadius.circular(5),
                     ),
                     child: Row(
@@ -853,7 +855,9 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
                                     padding: const EdgeInsets.all(8.0),
                                     child: SvgPicture.asset(
                                       assets.searchIcon,
-                                      color: colors.textPrimaryLight,
+                                      color: theme.isDarkMode
+                                          ? colors.textSecondaryDark
+                                          : colors.textSecondaryLight,
                                       width: 20,
                                       fit: BoxFit.scaleDown,
                                     ),
@@ -896,7 +900,9 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
                                       child: SvgPicture.asset(
                                         assets.filterLinesDark,
                                         width: 18,
-                                        color: colors.textPrimaryLight,
+                                        color: theme.isDarkMode
+                                            ? colors.textSecondaryDark
+                                            : colors.textSecondaryLight,
                                         fit: BoxFit.scaleDown,
                                       ),
                                     ),
@@ -1076,7 +1082,12 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
                 autofocus: true,
                 controller: holdingProvider.holdingSearchCtrl,
                 style: TextWidget.textStyle(
-                    fontSize: 14, theme: theme.isDarkMode, fw: 1),
+                  fontSize: 16,
+                  color: theme.isDarkMode
+                      ? colors.textPrimaryDark
+                      : colors.textPrimaryLight,
+                  theme: theme.isDarkMode,
+                ),
                 keyboardType: TextInputType.text,
                 textCapitalization: TextCapitalization.characters,
                 inputFormatters: [
@@ -1087,16 +1098,22 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
                 decoration: InputDecoration(
                     hintText: "Search",
                     hintStyle: TextWidget.textStyle(
-                        fontSize: 14,
-                        theme: theme.isDarkMode,
-                        fw: 0,
-                        color: colors.textSecondaryLight),
-                    fillColor: colors.searchBg,
+                      fontSize: 14,
+                      theme: theme.isDarkMode,
+                      color: theme.isDarkMode
+                          ? colors.textSecondaryDark
+                          : colors.textSecondaryLight,
+                    ),
+                    fillColor: theme.isDarkMode
+                        ? colors.searchBgDark
+                        : colors.searchBg,
                     filled: true,
                     prefixIcon: Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: SvgPicture.asset(assets.searchIcon,
-                          color: colors.textPrimaryLight,
+                          color: theme.isDarkMode
+                              ? colors.textSecondaryDark
+                              : colors.textSecondaryLight,
                           fit: BoxFit.scaleDown,
                           width: 20),
                     ),
@@ -1130,7 +1147,11 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
                           });
                         },
                         child: SvgPicture.asset(assets.removeIcon,
-                            fit: BoxFit.scaleDown, width: 20),
+                            color: theme.isDarkMode
+                                ? colors.textSecondaryDark
+                                : colors.textSecondaryLight,
+                            fit: BoxFit.scaleDown,
+                            width: 20),
                       ),
                     ),
                     enabledBorder: OutlineInputBorder(

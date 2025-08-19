@@ -40,7 +40,7 @@ class _MfmainScreenState extends State<MfmainScreen> {
           //  leading: Padding(
           //    padding: const EdgeInsets.only(left:8.0),
           //    child: IconButton(
-          //        icon: Icon(Icons.arrow_back_ios, color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack), 
+          //        icon: Icon(Icons.arrow_back_ios, color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack),
           //        onPressed: () {
           //         // ref.read(indexListProvider).bottomMenu(2, context);
           //         Navigator.pop(context);
@@ -48,12 +48,12 @@ class _MfmainScreenState extends State<MfmainScreen> {
           //      ),
           //  ),
           elevation: 0,
-            // leadingWidth: 41,
-            centerTitle: false,
-            titleSpacing: 6,
-            // leading: const CustomBackBtn(),
-            shadowColor: const Color(0xffECEFF3),
-             title: Row(
+          // leadingWidth: 41,
+          centerTitle: false,
+          titleSpacing: 6,
+          // leading: const CustomBackBtn(),
+          shadowColor: const Color(0xffECEFF3),
+          title: Row(
             children: [
               // SvgPicture.asset(
               //   assets.myntnewLogo,
@@ -61,43 +61,62 @@ class _MfmainScreenState extends State<MfmainScreen> {
               //   height: 46,
               // ),
               // const SizedBox(width: 10),
-             Expanded(
-               child: Padding(
-                 padding: const EdgeInsets.symmetric(horizontal: 8),
-                 child: Container(
-                   height: 40,
-                   decoration: BoxDecoration(
-                     borderRadius: BorderRadius.circular(25),
-                   ),
-                   child: InkWell( // Wrap with InkWell to capture taps
-                     borderRadius: BorderRadius.circular(5),
-                     onTap: () {
-                       Navigator.pushNamed(context, Routes.mfsearchscreen);
-                     },
-                     child: AbsorbPointer( // Prevents user input but allows onTap
-                       child: SearchBar(
-                         hintText: "Search Mutual Fund",
-                          hintStyle: MaterialStateProperty.all(TextWidget.textStyle(color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight, fontSize: 14, theme: theme.isDarkMode)),
-                         backgroundColor: WidgetStateProperty.all(
-                                colors.searchBg,), // Gray background
-                         shape: WidgetStateProperty.all(
-                           RoundedRectangleBorder(
-                               borderRadius: BorderRadius.circular(5), // Rounded corners
-                               side: BorderSide.none, // No border
-                           ),
-                         ),
-                         elevation: WidgetStateProperty.all(0), // No shadow
-                         leading:Padding(
-                           padding: const EdgeInsets.only(left: 4),
-                           child: SvgPicture.asset(assets.searchIcon, width: 18, height: 18),
-                         ), // Prefix icon
-                       ),
-                     ),
-                   ),
-                 ),
-               ),
-             ),
-
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: Container(
+                    height: 40,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                    child: InkWell(
+                      // Wrap with InkWell to capture taps
+                      borderRadius: BorderRadius.circular(5),
+                      onTap: () {
+                        Navigator.pushNamed(context, Routes.mfsearchscreen);
+                      },
+                      child: AbsorbPointer(
+                        // Prevents user input but allows onTap
+                        child: SearchBar(
+                          textStyle: MaterialStateProperty.all(
+                              TextWidget.textStyle(
+                                  color: theme.isDarkMode
+                                      ? colors.textPrimaryDark
+                                      : colors.textPrimaryLight,
+                                  fontSize: 16,
+                                  theme: theme.isDarkMode)),
+                          hintText: "Search Mutual Fund",
+                          hintStyle: MaterialStateProperty.all(
+                              TextWidget.textStyle(
+                                  color: theme.isDarkMode
+                                      ? colors.textSecondaryDark
+                                      : colors.textSecondaryLight,
+                                  fontSize: 14,
+                                  theme: theme.isDarkMode)),
+                          backgroundColor: WidgetStateProperty.all(
+                            theme.isDarkMode
+                                ? colors.searchBgDark
+                                : colors.searchBg,
+                          ), // Gray background
+                          shape: WidgetStateProperty.all(
+                            RoundedRectangleBorder(
+                              borderRadius:
+                                  BorderRadius.circular(5), // Rounded corners
+                              side: BorderSide.none, // No border
+                            ),
+                          ),
+                          elevation: WidgetStateProperty.all(0), // No shadow
+                          leading: Padding(
+                            padding: const EdgeInsets.only(left: 4),
+                            child: SvgPicture.asset(assets.searchIcon,
+                                width: 18, height: 18, color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,),
+                          ), // Prefix icon
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
           // centerTitle: false,
@@ -274,8 +293,8 @@ class _MfmainScreenState extends State<MfmainScreen> {
                   //                     // const SizedBox(height: 22),
                   //                   ],
                   //                 )
-                  //               ] 
-                                
+                  //               ]
+
                   //               // else ...[
                   //               //   Container(
                   //               //     padding: const EdgeInsets.only(
@@ -403,12 +422,11 @@ class _MfmainScreenState extends State<MfmainScreen> {
                   //               //     ),
                   //               //   ),
                   //               // ),
-                             
+
                   //             ],
                   //           ))),
                   // ),
                   //   ],
-                
                 ];
               },
               body: MFExploreScreens(theme: theme)),

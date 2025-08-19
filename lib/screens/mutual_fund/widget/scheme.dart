@@ -159,8 +159,8 @@ class MFSchemeInfo extends ConsumerWidget {
                 ReadMoreText(factSheetData.managerDetailedDescription ?? "",
                     style: TextWidget.textStyle(
                            color : isDarkMode
-                                ? colors.colorWhite
-                                : const Color(0xff666666),
+                                  ? colors.textSecondaryDark
+                                  : colors.textSecondaryLight,
                            fontSize: 12,
                            theme: false,
                            height: 1.2

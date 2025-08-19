@@ -95,8 +95,8 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
                       labelPadding: const EdgeInsets.only(right: 0, bottom: 0),
                       tabAlignment: TabAlignment.start,
                       indicatorColor: theme.isDarkMode
-                          ? colors.primaryDark
-                          : colors.primaryLight,
+                          ? colors.secondaryDark
+                          : colors.secondaryLight,
                       controller: _tabController,
                       isScrollable: true,
                       tabs: List.generate(
@@ -175,22 +175,51 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
 
               if (mforderbook.mforderdet?.stat == "Ok") {
                 showModalBottomSheet(
-                  isScrollControlled: true,
-                  shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(16),
-                      topRight: Radius.circular(16),
-                    ),
-                  ),
-                  isDismissible: true,
-                  enableDrag: false,
-                  useSafeArea: true,
-                  context: context,
-                  builder: (context) => Container(
-                      padding: EdgeInsets.only(
-                        bottom: MediaQuery.of(context).viewInsets.bottom,
+                 isScrollControlled: true,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(16),
+            topRight: Radius.circular(16),
+          ),
+        ),
+        isDismissible: true,
+        enableDrag: false,
+        useSafeArea: true,
+        context: context,
+        builder: (context) => Container(
+          decoration: BoxDecoration(
+                        color: theme.isDarkMode
+                            ? colors.colorBlack
+                            : colors.colorWhite,
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(16),
+                          topRight: Radius.circular(16),
+                        ),
+                        border: Border(
+                                  top: BorderSide(
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                            .withOpacity(0.5)
+                                        : colors.colorWhite,
+                                  ),
+                                  left: BorderSide(
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                            .withOpacity(0.5)
+                                        : colors.colorWhite,
+                                  ),
+                                  right: BorderSide(
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                            .withOpacity(0.5)
+                                        : colors.colorWhite,
+                                  ),
+                                ),
                       ),
-                      child: const mforderdetscreen()),
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+            ),
+                    child: const mforderdetscreen()),
                 );
                 // Navigator.pushNamed(context, Routes.mforderdetscreen);
               } else {
@@ -228,8 +257,12 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
                     Container(
                       decoration: BoxDecoration(
                         color: orderData.buySell == "P"
-                            ? colors.profit.withOpacity(0.1)
-                            : colors.loss.withOpacity(0.1),
+                            ? theme.isDarkMode
+                                ? colors.profitDark.withOpacity(0.1)
+                                : colors.profitLight.withOpacity(0.1)
+                            : theme.isDarkMode
+                                ? colors.lossDark.withOpacity(0.1)
+                                : colors.lossLight.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(3),
                       ),
                       padding: const EdgeInsets.symmetric(
@@ -239,8 +272,12 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
                         theme: theme.isDarkMode,
                         text: orderData.buySell ?? "-",
                         color: orderData.buySell == "P"
-                            ? colors.profit
-                            : colors.loss,
+                            ? theme.isDarkMode
+                                ? colors.profitDark
+                                : colors.profitLight
+                            : theme.isDarkMode
+                                ? colors.lossDark
+                                : colors.lossLight,
                       ),
                     ),
                     const SizedBox(width: 4),
@@ -289,11 +326,15 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
                           horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         color: orderData.status == "ALLOCATED"
-                            ? colors.profit.withOpacity(0.1)
+                            ? theme.isDarkMode
+                                ? colors.profitDark.withOpacity(0.1)
+                                : colors.profitLight.withOpacity(0.1)
                             : orderData.status == "REJECTED" ||
                                     orderData.status == "CANCELLED" ||
                                     orderData.status == "PAYMENT DECLINED"
-                                ? colors.loss.withOpacity(0.1)
+                                ? theme.isDarkMode
+                                    ? colors.lossDark.withOpacity(0.1)
+                                    : colors.lossLight.withOpacity(0.1)
                                 : orderData.status ==
                                         inProgressStatuses
                                             .contains(orderData.status)
@@ -306,11 +347,15 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
                           text: _getListStatusText(orderData.status),
                           theme: false,
                           color: orderData.status == "ALLOCATED"
-                              ? colors.profit
+                              ? theme.isDarkMode
+                                  ? colors.profitDark
+                                  : colors.profitLight
                               : orderData.status == "REJECTED" ||
                                       orderData.status == "CANCELLED" ||
                                       orderData.status == "PAYMENT DECLINED"
-                                  ? colors.loss
+                                  ? theme.isDarkMode
+                                      ? colors.lossDark
+                                      : colors.lossLight
                                   : orderData.status ==
                                           inProgressStatuses
                                               .contains(orderData.status)
@@ -369,6 +414,7 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
   Widget _buildTab(int tab, ThemesProvider theme) {
     return ElevatedButton(
       onPressed: () {
+        FocusScope.of(context).unfocus();
         setState(() {
           activeTab = tab;
         });
@@ -376,15 +422,20 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
       },
       style: ElevatedButton.styleFrom(
         minimumSize: Size(MediaQuery.of(context).size.width * 0.5, 50),
+        overlayColor: Colors.transparent, // no splash
+        splashFactory: NoSplash.splashFactory,
         elevation: 0,
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 0),
-        backgroundColor: theme.isDarkMode
-            ? tab == activeTab
-                ? colors.colorBlack
-                : const Color.fromARGB(255, 0, 0, 0).withOpacity(.15)
-            : tab == activeTab
-                ? const Color.fromARGB(255, 255, 255, 255)
-                : const Color.fromARGB(255, 255, 255, 255),
+        // backgroundColor: theme.isDarkMode
+        //     ? tab == activeTab
+        //         ? colors.colorBlack
+        //         : const Color.fromARGB(255, 0, 0, 0).withOpacity(.15)
+        //     : tab == activeTab
+        //         ? const Color.fromARGB(255, 255, 255, 255)
+        //         : const Color.fromARGB(255, 255, 255, 255),
+
+        backgroundColor:
+            theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
         shape: const StadiumBorder(),
       ),
       child: TextWidget.subText(
@@ -392,14 +443,14 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
           text: tablistitems[tab]['title'].toString(),
           color: theme.isDarkMode
               ? tab == activeTab
-                  ? colors.primaryDark
+                  ? colors.secondaryDark
                   : colors.textSecondaryDark
               : tab == activeTab
-                  ? colors.primaryLight
+                  ? colors.secondaryLight
                   : colors.textSecondaryLight,
           textOverflow: TextOverflow.ellipsis,
           theme: theme.isDarkMode,
-          fw: tab == activeTab ? 1 : 3),
+          fw: tab == activeTab ? 2 : 3),
     );
   }
 }

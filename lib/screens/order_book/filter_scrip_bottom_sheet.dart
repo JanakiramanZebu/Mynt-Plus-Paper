@@ -135,7 +135,30 @@ class _OrderbookFilterBottomSheetState
     return SafeArea(
       child: Container(
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(16),
+            topRight: Radius.circular(16),
+          ),
+           border: Border(
+                                  top: BorderSide(
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                            .withOpacity(0.5)
+                                        : colors.colorWhite,
+                                  ),
+                                  left: BorderSide(
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                            .withOpacity(0.5)
+                                        : colors.colorWhite,
+                                  ),
+                                  right: BorderSide(
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                            .withOpacity(0.5)
+                                        : colors.colorWhite,
+                                  ),
+                                ),
           color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
         ),
         child: Column(
@@ -154,8 +177,8 @@ class _OrderbookFilterBottomSheetState
                           text: "Sort by",
                           theme: false,
                           color: !theme.isDarkMode
-                              ? colors.colorBlack
-                              : colors.colorWhite,
+                              ? colors.textPrimaryLight
+                              : colors.textPrimaryDark,
                           fw: 1),
                     ])),
             Divider(

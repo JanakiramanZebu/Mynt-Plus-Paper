@@ -5,9 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/models/bonds_model/bonds_order_book_model.dart';
 import 'package:mynt_plus/models/bonds_model/bonds_place_order_details_model.dart';
 import 'package:mynt_plus/models/bonds_model/place_order_response_model.dart';
-import 'package:mynt_plus/res/res.dart';
-import 'package:mynt_plus/routes/route_names.dart';
-import 'package:mynt_plus/screens/bonds/bonds_orderbook_screen/bonds_order_book_main_screen.dart';
+// import 'package:mynt_plus/res/res.dart';
+// import 'package:mynt_plus/routes/route_names.dart';
+// import 'package:mynt_plus/screens/bonds/bonds_orderbook_screen/bonds_order_book_main_screen.dart';
 import 'package:mynt_plus/sharedWidget/snack_bar.dart';
 import '../api/core/api_export.dart';
 import '../locator/locator.dart';
@@ -19,6 +19,7 @@ import '../models/bonds_model/sovereign_gold_bonds_model.dart';
 import '../models/bonds_model/state_bonds_model.dart';
 import '../models/bonds_model/treasury_bonds_model.dart';
 import 'core/default_change_notifier.dart';
+import 'stocks_provider.dart';
 
 final bondsProvider = ChangeNotifierProvider((ref) => BondsProvider(ref));
 
@@ -94,8 +95,15 @@ class BondsProvider extends DefaultChangeNotifier {
   TextEditingController get bondscommonsearchcontroller =>
       _bondscommonsearchcontroller;
 
+  // Expose setter to update search text programmatically (e.g., from dashboard)
+  void setBondsSearchQuery(String value) {
+    _bondscommonsearchcontroller.text = value;
+    notifyListeners();
+  }
+
   clearCommonBondsSearch() {
-    _bondscommonsearchcontroller.text = "";
+    // _bondscommonsearchcontroller.text = "";
+    ref.read(stocksProvide).searchController.clear();
     _bondsCommonSearchList = [];
     notifyListeners();
   }
@@ -112,6 +120,27 @@ class BondsProvider extends DefaultChangeNotifier {
           .toList();
     }
     notifyListeners();
+  }
+
+  // Filter bonds open/close order books by current search text for "My Bids"
+  List<BondsOrderBookModel> filterOpenOrdersBySearch() {
+    final query = _bondscommonsearchcontroller.text.trim().toLowerCase();
+    final list = openOrderBook ?? [];
+    if (query.isEmpty) return list;
+    return list.where((o) {
+      final symbol = (o.symbol ?? '').toLowerCase();
+      return symbol.contains(query);
+    }).toList();
+  }
+
+  List<BondsOrderBookModel> filterCloseOrdersBySearch() {
+    final query = _bondscommonsearchcontroller.text.trim().toLowerCase();
+    final list = closeOrderBook ?? [];
+    if (query.isEmpty) return list;
+    return list.where((o) {
+      final symbol = (o.symbol ?? '').toLowerCase();
+      return symbol.contains(query);
+    }).toList();
   }
 
 // bonds.ledgerBalModel!.total
@@ -486,7 +515,7 @@ class BondsProvider extends DefaultChangeNotifier {
                   context, _bondOrderResponcesModel!.orderStatusResponse!)
               : error(context, _bondOrderResponcesModel!.reason!));
       Navigator.pop(context);
-      Navigator.pushReplacementNamed(context, Routes.bonds, arguments: 1);
+      // Navigator.pushReplacementNamed(context, Routes.bonds, arguments: 1);
       // return _ipoOrderResponcesModel;
     } catch (e) {
       print("bonds placeorder error:: $e");

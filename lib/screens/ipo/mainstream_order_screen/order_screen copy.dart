@@ -8,6 +8,7 @@ import '../../../models/ipo_model/ipo_place_order_model.dart';
 import '../../../provider/iop_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../provider/transcation_provider.dart';
+import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/functions.dart';
 import '../../../sharedWidget/ipo_error_widget.dart';
@@ -646,16 +647,22 @@ class _ApplyIpoScreenState extends ConsumerState<ApplyIpoScreen> {
                                 const SizedBox(
                                   height: 6,
                                 ),
-                                IpoErrorBadge(
-                                  errorName: addIpo[index].qualityerrortext,
+                                TextWidget.captionText(
+                                  theme: false,
+                                  text: addIpo[index].qualityerrortext,
+                                  color: colors.error,
+                                  fw: 3,
                                 )
                               ],
                               if (addIpo[index].biderrortext.isNotEmpty) ...[
                                 const SizedBox(
                                   height: 6,
                                 ),
-                                IpoErrorBadge(
-                                  errorName: addIpo[index].biderrortext,
+                                TextWidget.captionText(
+                                  theme: false,
+                                  text: addIpo[index].biderrortext,
+                                  color: colors.error,
+                                  fw: 3,
                                 )
                               ],
                               Row(
@@ -792,8 +799,11 @@ class _ApplyIpoScreenState extends ConsumerState<ApplyIpoScreen> {
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: IpoErrorBadge(
-                        errorName: upierrortext,
+                      child: TextWidget.captionText(
+                        theme: false,
+                        text: upierrortext,
+                        color: colors.error,
+                        fw: 3,
                       ),
                     )
                   ],

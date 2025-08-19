@@ -39,8 +39,8 @@ class ExchangeMessage extends ConsumerWidget {
                                 text:
                                     "${noftification.exchangemessage![index].exchTm} (${noftification.exchangemessage![index].exch})",
                                 theme: false,
-                                color: colors.textSecondaryLight,
-                                fw: 0),
+                                color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                                ),
                             const SizedBox(
                               height: 5,
                             ),
@@ -50,8 +50,8 @@ class ExchangeMessage extends ConsumerWidget {
                                   fontSize: 14,
                                   theme: false,
                                   color: theme.isDarkMode
-                                      ? colors.textSecondaryDark
-                                      : colors.textSecondaryLight,
+                                      ? colors.textPrimaryDark
+                                      : colors.textPrimaryLight,
                                   height: 1.5,
                                   letterSpacing: 0.5),
                               textAlign: TextAlign.left,
@@ -62,6 +62,7 @@ class ExchangeMessage extends ConsumerWidget {
                                 color: theme.isDarkMode
                                     ? colors.colorLightBlue
                                     : colors.colorBlue,
+                                fw: 2,
                               ),
                               lessStyle: TextWidget.textStyle(
                                 fontSize: 12,
@@ -69,6 +70,7 @@ class ExchangeMessage extends ConsumerWidget {
                                 color: theme.isDarkMode
                                     ? colors.colorLightBlue
                                     : colors.colorBlue,
+                                fw: 2,
                               ),
                               colorClickableText: theme.isDarkMode
                                   ? colors.colorLightBlue

@@ -56,52 +56,54 @@ class _NotificationpageState extends ConsumerState<Notificationpage>
           )),
       body: Consumer(builder: (context, WidgetRef ref, _) {
         final notification = ref.watch(notificationprovider);
-        return Column(
-          children: [
-            Container(
-                decoration: BoxDecoration(
-                    border: Border(
-                        bottom: BorderSide(
-                            color: theme.isDarkMode
-                                ? colors.darkColorDivider
-                                : colors.colorDivider,
-                            width: 0))),
-                width: MediaQuery.of(context).size.width,
-                height: 46,
-                child: TabBar(
-                    indicatorSize: TabBarIndicatorSize.tab,
-                    indicatorColor: theme.isDarkMode
-                        ? colors.secondaryDark
-                        : colors.secondaryLight,
-                    unselectedLabelColor: colors.textSecondaryLight,
-                    unselectedLabelStyle: TextWidget.textStyle(
-                      fontSize: 14,
-                      theme: false,
-                      color: colors.textSecondaryLight,
-                  
-                    ),
-                    labelColor: theme.isDarkMode
-                                ? colors.secondaryDark
-                                : colors.secondaryLight,
-                    labelStyle: TextWidget.textStyle(
-                      fontSize: 14,
-                      theme: false,
-                      color:theme.isDarkMode
-                                ? colors.secondaryDark
-                                : colors.secondaryLight,
-                      fw: 2,
-                    ),
-                    controller: notification.notifytab,
-                    tabs: notification.notifyTabName)),
-            Expanded(
-                child: TabBarView(
-                    controller: notification.notifytab,
-                    children: const [
-                  BrokerMsg(),
-                  ExchangeMessage(),
-                  InformationMessage(),
-                ]))
-          ],
+        return SafeArea(
+          child: Column(
+            children: [
+              Container(
+                  decoration: BoxDecoration(
+                      border: Border(
+                          bottom: BorderSide(
+                              color: theme.isDarkMode
+                                  ? colors.darkColorDivider
+                                  : colors.colorDivider,
+                              width: 0))),
+                  width: MediaQuery.of(context).size.width,
+                  height: 46,
+                  child: TabBar(
+                      indicatorSize: TabBarIndicatorSize.tab,
+                      indicatorColor: theme.isDarkMode
+                          ? colors.secondaryDark
+                          : colors.secondaryLight,
+                      unselectedLabelColor: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                      unselectedLabelStyle: TextWidget.textStyle(
+                        fontSize: 14,
+                        theme: false,
+                        color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                    
+                      ),
+                      labelColor: theme.isDarkMode
+                                  ? colors.secondaryDark
+                                  : colors.secondaryLight,
+                      labelStyle: TextWidget.textStyle(
+                        fontSize: 14,
+                        theme: false,
+                        color:theme.isDarkMode
+                                  ? colors.secondaryDark
+                                  : colors.secondaryLight,
+                        fw: 2,
+                      ),
+                      controller: notification.notifytab,
+                      tabs: notification.notifyTabName)),
+              Expanded(
+                  child: TabBarView(
+                      controller: notification.notifytab,
+                      children: const [
+                    BrokerMsg(),
+                    ExchangeMessage(),
+                    InformationMessage(),
+                  ]))
+            ],
+          ),
         );
       }),
     );

@@ -35,14 +35,19 @@ class MFNFOScreen extends ConsumerWidget {
           leading: const CustomBackBtn(),
           title: TextWidget.titleText(
             text: "New Fund Offer",
+            color: theme.isDarkMode
+                ? colors.textPrimaryDark
+                : colors.textPrimaryLight,
             theme: theme.isDarkMode,
             fw: 1,
           ),
         ),
       ),
-      body: TransparentLoaderScreen(
-        isLoading: mf.investloader,
-        child: _buildContent(context, mf, theme, ref, fund),
+      body: SafeArea(
+        child: TransparentLoaderScreen(
+          isLoading: mf.investloader,
+          child: _buildContent(context, mf, theme, ref, fund),
+        ),
       ),
     );
   }

@@ -8,7 +8,9 @@ import 'package:mynt_plus/provider/websocket_provider.dart';
 import '../api/core/api_export.dart';
 import '../locator/locator.dart';
 import 'package:intl/intl.dart';
+import '../locator/preference.dart';
 import '../models/explore_model/ca_events_model.dart';
+import '../models/explore_model/portfolioanalisys_models.dart';
 import '../models/explore_model/stocks_model/corporate_action_model.dart';
 import '../models/explore_model/stocks_model/get_ad_indices.dart';
 import '../models/explore_model/stocks_model/sctor_thematic_model.dart';
@@ -18,14 +20,21 @@ import '../models/indices/global_indices_model.dart';
 import '../models/news_model.dart';
 import '../models/explore_model/stocks_model/action_trade_model.dart';
 import '../models/explore_model/stocks_model/toplist_stocks.dart';
+import '../models/marketwatch_model/search_scrip_model.dart';
+import '../models/span_calc_model.dart';
+import '../models/marketwatch_model/get_quotes.dart';
+// duplicate imports removed
+import '../routes/route_names.dart';
 import 'bonds_provider.dart';
 import 'core/default_change_notifier.dart';
 import 'iop_provider.dart';
+import 'mf_provider.dart';
 
 final stocksProvide = ChangeNotifierProvider((ref) => StocksProvider(ref));
 
 class StocksProvider extends DefaultChangeNotifier {
   final api = locator<ApiExporter>();
+  final prefs = locator<Preferences>();
 
   final Ref ref;
 
@@ -35,6 +44,14 @@ class StocksProvider extends DefaultChangeNotifier {
   List<GlobalIndicesModel>? get globalIndicesModel => _globalIndicesModel;
   List<ActionTradeModel>? _actionTrademodel;
   List<ActionTradeModel>? get actionTrademodel => _actionTrademodel;
+
+  // Search scrip related variables
+  List<ScripValue> _searchResults = [];
+  List<ScripValue> get searchResults => _searchResults;
+  bool _isSearching = false;
+  bool get isSearching => _isSearching;
+  String? _searchError;
+  String? get searchError => _searchError;
 
   TopListStocks? _topListStocks;
   TopListStocks? get topListStocks => _topListStocks;
@@ -157,30 +174,61 @@ class StocksProvider extends DefaultChangeNotifier {
   final TextEditingController _searchController = TextEditingController();
   TextEditingController get searchController => _searchController;
 
-  globalsearch(String value) {
-    _searchController.text = value;
+
+  dashboardsearchclear() {
+    _searchController.clear();
     notifyListeners();
   }
 
-  searchdashboard(String value, BuildContext context) {
-    // _searchController.clear();
+  searchdashboard(String value, BuildContext context, {int? tabIndex}) {
+    // Use provided tabIndex or fall back to current exploreIndex
+    _searchController.text = value;
+    int currentTabIndex = tabIndex ?? _exploreIndex;
+    
+    if (value.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < _exploreTabName.length) {
+      switch (_exploreTabName[currentTabIndex].text) {
+        case "Stocks":
+          // Add stock search logic here if needed
+          // For now, we can implement stock search or navigate to stock search screen
+          // Navigator.pushNamed(context, Routes.stockSearchScreen);
+          break;
 
-    if (value.isNotEmpty) {
-      switch (exploreIndex) {
-        case 0:
+        case "Mutual Fund":
+          Navigator.pushNamed(context, Routes.mfsearchscreen);
           break;
-        case 1:
-          ref.read(bondsProvider).searchCommonBonds(value, context);
-          break;
-        case 2:
+
+        case "IPO":
+          // Update IPO search used by Upcoming and My Bids
+          ref.read(ipoProvide).setIpoSearchQuery(value);
+          // Maintain existing common search behavior
           ref.read(ipoProvide).searchCommonIpo(value, context);
+          break;
 
-          // ref.read(stocksProvide).searchCommonStocks(value, context);
+        case "Bond":
+          // Update Bonds search used by My Bids orderbook filtering
+          ref.read(bondsProvider).setBondsSearchQuery(value);
+          ref.read(bondsProvider).searchCommonBonds(value, context);
           break;
       }
     }
     notifyListeners();
   }
+
+  clearsearchlist(BuildContext context) {
+    ref.read(ipoProvide).clearCommonIpoSearch();
+    ref.read(bondsProvider).clearCommonBondsSearch();
+    notifyListeners();
+  }
+
+  // Method to sync TabBar index with provider's exploreIndex
+  void syncTabIndex(int tabIndex) {
+    if (tabIndex >= 0 && tabIndex < _exploreTabName.length) {
+      _exploreIndex = tabIndex;
+      _exploreName = _exploreNames[tabIndex];
+      notifyListeners();
+    }
+  }
+
 
   showMoreFunRatio() {
     _moreFunRatio = !_moreFunRatio;
@@ -195,8 +243,9 @@ class StocksProvider extends DefaultChangeNotifier {
   late TabController exploreTab;
   final List<Tab> _exploreTabName = [
     const Tab(text: "Stocks"),
-    const Tab(text: "Bonds"),
-    const Tab(text: "IPOs"),
+    const Tab(text: "Mutual Fund"),
+    const Tab(text: "IPO"),
+    const Tab(text: "Bond"),
   ];
   List<Tab> get exploreTabName => _exploreTabName;
 
@@ -389,17 +438,124 @@ class StocksProvider extends DefaultChangeNotifier {
       final String formatted = formatter.format(now);
 
       _newsModel = await api.fetchNews(formatted);
+      notifyListeners(); // Add this to notify listeners about the state change
 
       return _newsModel;
     } catch (e) {
       print(e);
-      Fluttertoast.showToast(
-          msg: "$e",
-          backgroundColor: Colors.red,
-          textColor: Colors.white,
-          fontSize: 14.0);
+      // Fluttertoast.showToast(
+      //     msg: "$e",
+      //     backgroundColor: Colors.red,
+      //     textColor: Colors.white,
+      //     fontSize: 14.0);
       rethrow;
     }
+  }
+
+  PortfolioResponse? _portfolioAnalysis;
+  PortfolioResponse? get portfolioAnalysis => _portfolioAnalysis;
+  bool _isPortfolioLoading = false;
+  String? _portfolioError;
+
+  // Portfolio getters
+  bool get isPortfolioLoading => _isPortfolioLoading;
+  String? get portfolioError => _portfolioError;
+  bool get hasPortfolioData => _portfolioAnalysis != null;
+
+  Future getPortfolioAnalysis() async {
+    final Preferences pref = locator<Preferences>();
+
+    try {
+      final clientId = pref.clientId ?? "";
+      final session = pref.clientSession ?? "";
+      final portfolioAnalysis = await api.fetchPortfolioAnalysis(clientId, "81d17903d77d3b70ad87fbb3d823e964846246846b0f6327844731c1b232cc62");
+
+      _portfolioAnalysis = portfolioAnalysis;
+      _portfolioError = null;
+      notifyListeners();
+
+      return _portfolioAnalysis;
+    } catch (e) {
+      print(e);
+      _portfolioError = e.toString();
+      _portfolioAnalysis = null;
+      rethrow;
+    }
+  }
+
+  // Load portfolio data with loading state
+  Future<void> loadPortfolioData({
+    required String clientId,
+    required String session,
+  }) async {
+    _isPortfolioLoading = true;
+    _portfolioError = null;
+    notifyListeners();
+
+    try {
+      final data = await api.fetchPortfolioAnalysis(clientId, session);
+      _portfolioAnalysis = data;
+      _portfolioError = null;
+    } catch (e) {
+      _portfolioError = e.toString();
+      _portfolioAnalysis = null;
+    } finally {
+      _isPortfolioLoading = false;
+      notifyListeners();
+    }
+  }
+
+  // Refresh portfolio data
+  Future<void> refreshPortfolioData({
+    required String clientId,
+    required String session,
+  }) async {
+    await loadPortfolioData(clientId: clientId, session: session);
+  }
+
+  // Clear portfolio data
+  void clearPortfolioData() {
+    _portfolioAnalysis = null;
+    _portfolioError = null;
+    _isPortfolioLoading = false;
+    notifyListeners();
+  }
+
+  // Get top sectors (limited)
+  Map<String, double> getTopSectors({int limit = 5}) {
+    if (_portfolioAnalysis == null) return {};
+    
+    final entries = _portfolioAnalysis!.sectorAllocation.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+    
+    if (entries.length <= limit) {
+      return Map.fromEntries(entries);
+    }
+    
+    final topEntries = entries.take(limit).toList();
+    final othersSum = entries.skip(limit).fold(0.0, (sum, entry) => sum + entry.value);
+    
+    if (othersSum > 0) {
+      topEntries.add(MapEntry('Others', othersSum));
+    }
+    
+    return Map.fromEntries(topEntries);
+  }
+
+  // Get current portfolio value
+  double get currentPortfolioValue {
+    if (_portfolioAnalysis?.chartData?.totalCurrentValue.isNotEmpty == true) {
+      return _portfolioAnalysis!.chartData!.totalCurrentValue.last;
+    }
+    return 0.0;
+  }
+
+  // Get total invested value
+  double get totalInvestedValue {
+    if (_portfolioAnalysis?.chartData?.totalInvestedValue.isNotEmpty == true) {
+      return _portfolioAnalysis!.chartData!.totalInvestedValue.last;
+    }
+    return 0.0;
   }
 
   Future getGlobalIndices() async {
@@ -978,4 +1134,107 @@ class StocksProvider extends DefaultChangeNotifier {
       debugPrint("$e");
     }
   }
+
+  // Search scrip methods
+  Future<void> searchScrip(String searchText, {List<String> filters = const ["NFO", "BFO"]}) async {
+    if (searchText.length < 2) {
+      _searchResults.clear();
+      _searchError = null;
+      notifyListeners();
+      return;
+    }
+
+    _isSearching = true;
+    _searchError = null;
+    notifyListeners();
+
+    try {
+      final result = await api.searchScrip(searchText, filters: filters);
+      
+      if (result.stat == "Ok") {
+        _searchResults = result.values ?? [];
+        _searchError = null;
+      } else {
+        _searchResults = [];
+        _searchError = "No results found";
+      }
+    } catch (e) {
+      _searchResults = [];
+      // _searchError = e.toString();
+    } finally {
+      _isSearching = false;
+      notifyListeners();
+    }
+  }
+
+  void clearSearchResults() {
+    _searchResults.clear();
+    _searchError = null;
+    notifyListeners();
+  }
+
+  // SpanCalc state
+  SpanCalcResponse? _spanCalcResponse;
+  SpanCalcResponse? get spanCalcResponse => _spanCalcResponse;
+  bool _isCalculatingSpan = false;
+  bool get isCalculatingSpan => _isCalculatingSpan;
+  
+Future<SpanCalcResponse?> calculateSpanForSelection({
+    required ScripValue scrip,
+    required int quantity,
+    required String transactionType, // 'B' or 'S'
+  }) async {
+    _isCalculatingSpan = true;
+    notifyListeners();
+    try {
+      final GetQuotes quote = await api.getScripQuote(scrip.token ?? '', scrip.exch ?? '');
+
+      final signedQty = (transactionType == 'S' ? -quantity : quantity).toString();
+      final position = SpanCalcPositionItem(
+        prd: 'M',
+        exch: scrip.exch ?? '',
+        tsym: scrip.tsym ?? '',
+        symname: quote.symname ?? '',
+        instname: quote.instname ?? '',
+        exd: quote.exd ?? '',
+        netqty: signedQty,
+        optt: quote.optt ?? '',
+        strprc: quote.strprc ?? '',
+      );
+
+      final response = await calculateSpanForPositions([position]);
+      return response;
+    } catch (e) {
+      return null;
+    } finally {
+      _isCalculatingSpan = false;
+      notifyListeners();
+    }
+  }
+
+  Future<SpanCalcResponse?> calculateSpanForPositions(
+    List<SpanCalcPositionItem> positions, {
+    String? actid,
+  }) async {
+    if (positions.isEmpty) return null;
+    try {
+      _isCalculatingSpan = true;
+      notifyListeners();
+      // final resolvedActId = (actid != null && actid.isNotEmpty)
+      //     ? actid
+      //     : ((prefs.clientId ?? '').isNotEmpty ? prefs.clientId! : 'DEMOIT');
+      final response = await api.spanCalc(actid: 'DEMOIT', positions: positions);
+      _spanCalcResponse = response;
+      return response;
+    } catch (e) {
+      _spanCalcResponse = null;
+      return null;
+    } finally {
+      _isCalculatingSpan = false;
+      notifyListeners();
+    }
+  }
+
+  /// Fetch GetQuotes and call SpanCalc for a single selection
+  
 }

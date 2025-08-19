@@ -200,13 +200,13 @@ class _ForgotPassUnblockUserState extends State<ForgotPassUnblockUser> {
                                         ? colors.colorWhite
                                         : colors.colorBlack,
                                     fw: 3),
-                                enabledBorder: const UnderlineInputBorder(
+                                enabledBorder:  UnderlineInputBorder(
                                   borderSide: BorderSide(
-                                      color: Color(0xFFDBDBDB), width: 1),
+                                       color: theme.isDarkMode ? colors.textSecondaryDark.withOpacity(0.2) :  Color(0xffDBDBDB), width: 1),
                                 ),
-                                focusedBorder: const UnderlineInputBorder(
+                                focusedBorder:  UnderlineInputBorder(
                                   borderSide: BorderSide(
-                                      color: Color(0xFFDBDBDB), width: 1),
+                                       color: theme.isDarkMode ? colors.textSecondaryDark.withOpacity(0.2) :  Color(0xffDBDBDB), width: 1),
                                 ),
                                 counterText: "",
                                 contentPadding: const EdgeInsets.symmetric(
@@ -255,13 +255,14 @@ class _ForgotPassUnblockUserState extends State<ForgotPassUnblockUser> {
                                         text:
                                             "${authForgetpassword.forgetpassError}",
                                         theme: false,
-                                        color: colors.kColorRedText,
+                                        color: theme.isDarkMode ? colors.lossDark : colors.lossLight,
                                         fw: 0)
                                     : const SizedBox(),
                                 TextWidget.captionText(
                                     text:
                                         "${authForgetpassword.forGetloginMethCtrl.text.length}/10",
                                     theme: theme.isDarkMode,
+                                    color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                                     fw: 0),
                               ],
                             )

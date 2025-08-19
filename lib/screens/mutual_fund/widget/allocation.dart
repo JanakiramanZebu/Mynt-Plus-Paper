@@ -51,8 +51,8 @@ class MFAllocation extends ConsumerWidget {
                   textOverflow: TextOverflow.ellipsis,
                   theme: theme.isDarkMode,
                   fw: 3),
-              const SizedBox(height: 7),
-              TextWidget.paraText(
+              const SizedBox(height: 12),
+              TextWidget.subText(
                   align: TextAlign.right,
                   text: "Equity allocation by Sector",
                   color: theme.isDarkMode
@@ -61,7 +61,7 @@ class MFAllocation extends ConsumerWidget {
                   textOverflow: TextOverflow.ellipsis,
                   theme: theme.isDarkMode,
                   fw: 3),
-              const SizedBox(height: 16),
+              const SizedBox(height: 8),
               if (hasSectors) ...[
                 ListView.separated(
                   padding: EdgeInsets.zero,
@@ -77,11 +77,11 @@ class MFAllocation extends ConsumerWidget {
                     return progressBar(
                       sector.sectorRating ?? "",
                       sector.netAsset ?? "0.00",
-                      colors.profit,
+                      theme.isDarkMode ? colors.profitDark : colors.profitLight,
                       theme,
                     );
                   },
-                  separatorBuilder: (_, __) => const SizedBox(height: 18),
+                  separatorBuilder: (_, __) => const SizedBox(height: 16),
                 ),
                 if (mfData.sectors!.length > 5)
                   TextButton(
@@ -98,7 +98,7 @@ class MFAllocation extends ConsumerWidget {
                             : colors.primaryLight,
                         textOverflow: TextOverflow.ellipsis,
                         theme: theme.isDarkMode,
-                        fw: 3),
+                        fw: 2),
                   ),
               ],
               const SizedBox(height: 8),
@@ -127,7 +127,7 @@ class MFAllocation extends ConsumerWidget {
                     return progressBar(
                       holding.holdings ?? "",
                       holding.netAsset ?? "0.00",
-                      colors.profit,
+                      theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
                       theme,
                     );
                   },
@@ -190,10 +190,12 @@ class MFAllocation extends ConsumerWidget {
       LinearPercentIndicator(
         lineHeight: 10.0,
         barRadius: const Radius.circular(4),
-        backgroundColor: color1.withOpacity(.3),
+        backgroundColor:  theme.isDarkMode
+        ? colors.textSecondaryDark.withOpacity(0.3)
+        : colors.textSecondaryLight.withOpacity(0.1),
         percent: (percentage / 100).clamp(0.0, 1.0),
         padding: EdgeInsets.zero,
-        progressColor: color1,
+        progressColor: theme.isDarkMode ? color1 : color1,
       )
     ]);
   }

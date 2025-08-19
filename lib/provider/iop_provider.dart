@@ -6,6 +6,7 @@ import 'package:mynt_plus/models/ipo_model/ipo_details_model.dart';
 import 'package:mynt_plus/models/ipo_model/ipo_pre_close_model.dart';
 import 'package:mynt_plus/models/ipo_model/ipo_upcoming_model.dart';
 import 'package:mynt_plus/provider/fund_provider.dart';
+import 'package:mynt_plus/provider/stocks_provider.dart';
 import '../api/core/api_export.dart';
 import '../locator/locator.dart';
 import '../models/ipo_model/ipo_db_model.dart';
@@ -309,8 +310,15 @@ class IPOProvider extends DefaultChangeNotifier {
   }
 
   clearCommonIpoSearch() {
-    ipocommonsearchcontroller.clear();
+    // ipocommonsearchcontroller.clear();
+   ref.read(stocksProvide).searchController.clear();
     _ipoCommonSearchList = [];
+    notifyListeners();
+  }
+
+  // Set common IPO search query to drive filtering in Upcoming and My Bids screens
+  void setIpoSearchQuery(String value) {
+    ipocommonsearchcontroller.text = value;
     notifyListeners();
   }
 
@@ -344,7 +352,8 @@ class IPOProvider extends DefaultChangeNotifier {
               ? element.companyName!.toUpperCase().contains(value.toUpperCase())
               : element.name!.toUpperCase().contains(value.toUpperCase()))
           .toList();
-      print("_ipoCommonSearchList :: ${inspect(_ipoCommonSearchList)}");
+          
+      // print("_ipoCommonSearchList :: ${inspect(_ipoCommonSearchList)}");
       // if (_ipoCommonSearchList.isEmpty) {
       //   ScaffoldMessenger.of(context)
       //       .showSnackBar(warningMessage(context, 'No Data Found'));

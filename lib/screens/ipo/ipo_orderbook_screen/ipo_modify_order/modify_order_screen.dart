@@ -10,6 +10,7 @@ import '../../../../models/ipo_model/ipo_place_order_model.dart';
 import '../../../../provider/iop_provider.dart';
 import '../../../../provider/thems.dart';
 import '../../../../provider/transcation_provider.dart';
+import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
 import '../../../../sharedWidget/functions.dart';
 import '../../../../sharedWidget/ipo_error_widget.dart';
@@ -667,11 +668,21 @@ class _BidItemState extends State<_BidItem> {
           ),
           if (widget.ipoDetail.qualityerrortext.isNotEmpty) ...[
             const SizedBox(height: 6),
-            IpoErrorBadge(errorName: widget.ipoDetail.qualityerrortext),
+            TextWidget.captionText(
+              theme: false,
+              text: widget.ipoDetail.qualityerrortext,
+              color: colors.error,
+              fw: 3,
+            ),
           ],
           if (widget.ipoDetail.biderrortext.isNotEmpty) ...[
             const SizedBox(height: 6),
-            IpoErrorBadge(errorName: widget.ipoDetail.biderrortext),
+            TextWidget.captionText(
+              theme: false,
+              text: widget.ipoDetail.biderrortext,
+              color: colors.error,
+              fw: 3,
+            ),
           ],
           _buildCutoffCheckbox(),
         ],
@@ -975,7 +986,12 @@ class _UPISectionState extends State<_UPISection> {
           const SizedBox(height: 6),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: IpoErrorBadge(errorName: widget.upierrortext),
+            child: TextWidget.captionText(
+              theme: false,
+              text: widget.upierrortext,
+              color: colors.error,
+              fw: 3,
+            ),
           ),
         ],
       ],

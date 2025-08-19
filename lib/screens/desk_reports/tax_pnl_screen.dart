@@ -74,10 +74,7 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
         child: Stack(
           children: [
             Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-              ),
+             
               child: Padding(
                 padding: const EdgeInsets.only(bottom: 24),
                 child: Column(
@@ -139,6 +136,7 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
                       child: TextWidget.subText(
                         text: "Financial Year",
                         theme: theme.isDarkMode,
+                        color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -152,7 +150,7 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 6, vertical: 6),
                             decoration: BoxDecoration(
-                              color: const Color(0xffF1F3F8),
+                           color:   theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
                               border: Border.all(
                                 color: colors.colorBlue,
                               ),
@@ -202,6 +200,7 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
                                   "Apr ${ledgerprovider.yearforTaxpnl} - Mar ${ledgerprovider.yearforTaxpnl + 1}",
                                   style: TextWidget.textStyle(
                                     fontSize: 14,
+                                    color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
                                     theme: theme.isDarkMode,
                                     fw: 1,
                                   ),
@@ -268,11 +267,11 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
                       padding: const EdgeInsets.symmetric(horizontal: 24.0),
                       child: SizedBox(
                         width: double.infinity,
-                        height: 48,
+                        height: 45,
                         child: OutlinedButton(
                           style: OutlinedButton.styleFrom(
                             elevation: 0,
-                            minimumSize: const Size(0, 48),
+                            minimumSize: const Size(0, 45),
                             backgroundColor: theme.isDarkMode
                                 ? colors.primaryDark
                                 : colors.primaryLight,
@@ -311,7 +310,7 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
                               });
                             } catch (e) {
                               // Show error in ScaffoldMessenger
-                              Navigator.pop(context);
+                              // Navigator.pop(context);
                               ScaffoldMessenger.of(context).showSnackBar(
                                 warningMessage(
                                     context, 'Error: ${e.toString()}'),

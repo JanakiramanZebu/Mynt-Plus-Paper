@@ -25,105 +25,125 @@ class _UPIAppsPaymentSuccessAlertState
   @override
   Widget build(BuildContext context) {
     return PopScope(
-              canPop: false,
-              onPopInvokedWithResult: (didPop, result) async {
-                if (didPop) return;
-              },
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+      },
       child: Consumer(
         builder: (context, ref, child) {
           final fund = ref.watch(transcationProvider);
           final theme = ref.watch(themeProvider);
-          return Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
+          return SafeArea(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              decoration: BoxDecoration(
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(16),
+                  topRight: Radius.circular(16),
+                ),
                 color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-                boxShadow: const [
-                  BoxShadow(
-                      color: Color(0xff999999),
-                      blurRadius: 4.0,
-                      offset: Offset(2.0, 0.0))
-                ]),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const CustomDragHandler(),
-                Container(
-                  alignment: Alignment.center,
-                  child: Column(
-                    children: [
-                      Icon(
-                        fund.hdfcUPIStatus!.data!.status == "SUCCESS"
-                            ? Icons.check_circle_rounded
-                            : Icons.cancel_rounded,
-                        //
-                        color: fund.hdfcUPIStatus!.data!.status == "SUCCESS"
-                            ? colors.kColorGreenButton
-                            : colors.kColorRedButton,
-                        size: 70,
-                      ),
-                      const SizedBox(
-                        height: 16,
-                      ),
-                      TextWidget.subText(
+                border: Border(
+                  top: BorderSide(
+                    color: theme.isDarkMode
+                        ? colors.textSecondaryDark.withOpacity(0.5)
+                        : colors.colorWhite,
+                  ),
+                  left: BorderSide(
+                    color: theme.isDarkMode
+                        ? colors.textSecondaryDark.withOpacity(0.5)
+                        : colors.colorWhite,
+                  ),
+                  right: BorderSide(
+                    color: theme.isDarkMode
+                        ? colors.textSecondaryDark.withOpacity(0.5)
+                        : colors.colorWhite,
+                  ),
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const CustomDragHandler(),
+                  Container(
+                    alignment: Alignment.center,
+                    child: Column(
+                      children: [
+                        Icon(
+                          fund.hdfcUPIStatus!.data!.status == "SUCCESS"
+                              ? Icons.check_circle_rounded
+                              : Icons.cancel_rounded,
+                          //
+                          color: fund.hdfcUPIStatus!.data!.status == "SUCCESS"
+                              ? colors.kColorGreenButton
+                              : colors.kColorRedButton,
+                          size: 70,
+                        ),
+                        const SizedBox(
+                          height: 16,
+                        ),
+                        TextWidget.subText(
                           text: "${fund.hdfcUPIStatus!.data!.status}",
                           theme: false,
                           color: theme.isDarkMode
-                            ? colors.textPrimaryDark
-                            : colors.textPrimaryLight,
-                          ),
-                      const SizedBox(
-                        height: 5,
-                      ),
-                      TextWidget.subText(
-                          text: fund.hdfcUPIStatus!.data!.status == "SUCCESS"
-                            ? "Transaction Success"
-                            : "Transaction fail",
-                          theme: false,
-                          color: colors.textSecondaryLight,
+                              ? colors.textPrimaryDark
+                              : colors.textPrimaryLight,
                         ),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      TextWidget.custmText(
-                          text: "₹${fund.hdfcUPIStatus!.data!.amount}",
+                        const SizedBox(
+                          height: 5,
+                        ),
+                        TextWidget.subText(
+                          text: fund.hdfcUPIStatus!.data!.status == "SUCCESS"
+                              ? "Transaction Success"
+                              : "Transaction fail",
                           theme: false,
-                          fs: 40,
-                          color: theme.isDarkMode
-                                ? colors.colorWhite
-                              : colors.colorBlack),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      TextWidget.subText(
+                          color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                        ),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        TextWidget.custmText(
+                            text: "₹${fund.hdfcUPIStatus!.data!.amount}",
+                            theme: false,
+                            fs: 40,
+                           color: theme.isDarkMode
+                              ? colors.textPrimaryDark
+                              : colors.textPrimaryLight,),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        TextWidget.subText(
                           text: formatDateTimepaymet(
-                            value:
-                                "${fund.hdfcUPIStatus!.data!.transactionAuthDate}"),
+                              value:
+                                  "${fund.hdfcUPIStatus!.data!.transactionAuthDate}"),
                           theme: false,
-                          color: colors.textSecondaryLight,
-                         ),
-                    ],
+                          color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(
-                  height: 16,
-                ),               
-                data("UPI Address", "${fund.hdfcUPIStatus!.data!.clientVPA}", theme),
-                data("Order ID", "${fund.hdfcUPIStatus!.data!.orderNumber}", theme),
-                data("UPI Transaction ID", "${fund.hdfcUPIStatus!.data!.upiTransactionNo}", theme),
-                data("Status Description", "${fund.hdfcUPIStatus!.data!.statusDescription}", theme),
-                const SizedBox(
-                  height: 16,
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: SizedBox(
-                    width: MediaQuery.of(context).size.width,
-                    child: ElevatedButton(
+                  const SizedBox(
+                    height: 16,
+                  ),
+                  data("UPI Address", "${fund.hdfcUPIStatus!.data!.clientVPA}",
+                      theme),
+                  data("Order ID", "${fund.hdfcUPIStatus!.data!.orderNumber}",
+                      theme),
+                  data("UPI Transaction ID",
+                      "${fund.hdfcUPIStatus!.data!.upiTransactionNo}", theme),
+                  data("Status Description",
+                      "${fund.hdfcUPIStatus!.data!.statusDescription}", theme),
+                  const SizedBox(
+                    height: 16,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: SizedBox(
+                      width: MediaQuery.of(context).size.width,
+                      child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           elevation: 0,
-                          minimumSize: const Size(0, 40),
+                          minimumSize: const Size(0, 45),
                           backgroundColor: theme.isDarkMode
                               ? colors.primaryDark
                               : colors.primaryLight,
@@ -138,26 +158,25 @@ class _UPIAppsPaymentSuccessAlertState
                           Navigator.pop(context);
                           FocusScope.of(context).unfocus();
                         },
-                      child: TextWidget.titleText(
-                          text: 'Close',
-                          theme: false,
-                          color:  colors.colorWhite,
-                          fw: 2),
+                        child: TextWidget.titleText(
+                            text: 'Close',
+                            theme: false,
+                            color: colors.colorWhite,
+                            fw: 2),
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(
-                  height: 20,
-                ),
-              ],
+                  const SizedBox(
+                    height: 20,
+                  ),
+                ],
+              ),
             ),
           );
         },
       ),
     );
   }
-
-
 
   data(String name, String value, ThemesProvider theme) {
     return Column(

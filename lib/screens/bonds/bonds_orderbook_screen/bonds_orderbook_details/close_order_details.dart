@@ -13,15 +13,12 @@ import '../../../../sharedWidget/custom_drag_handler.dart';
 import '../../../../sharedWidget/functions.dart';
 import '../../../../res/global_state_text.dart';
 
-
 Widget data(String name, String value, ThemesProvider theme) {
   return Column(
-    
     children: [
       const SizedBox(height: 12),
       Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        
         children: [
           TextWidget.subText(
             text: name,
@@ -38,7 +35,7 @@ Widget data(String name, String value, ThemesProvider theme) {
               color: theme.isDarkMode
                   ? colors.textPrimaryDark
                   : colors.textPrimaryLight,
-                  align: TextAlign.right,
+              align: TextAlign.right,
             ),
           ),
         ],
@@ -68,78 +65,107 @@ class BondsCloseOrderDetails extends ConsumerWidget {
     return DraggableScrollableSheet(
         expand: false,
         initialChildSize: 0.88,
-        minChildSize: 0.05,
+        // minChildSize: 0.05,
         maxChildSize: 0.99,
         builder: (context, scrollController) {
           return Consumer(
             builder: (context, ref, _) {
-              return Scaffold(
-                backgroundColor: Colors.transparent,
+              return SafeArea(
+                child: Scaffold(
+                  backgroundColor: Colors.transparent,
 
-                // appBar: _buildAppBar(context, theme),
-                body: Container(
-                  decoration: BoxDecoration(
-                    color: theme.isDarkMode
-                        ? colors.colorBlack
-                        : colors.colorWhite,
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(16),
-                      topRight: Radius.circular(16),
+                  // appBar: _buildAppBar(context, theme),
+                  body: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(16),
+                        topRight: Radius.circular(16),
+                      ),
+                      color: theme.isDarkMode
+                          ? colors.colorBlack
+                          : colors.colorWhite,
+                      border: Border(
+                        top: BorderSide(
+                          color: theme.isDarkMode
+                              ? colors.textSecondaryDark.withOpacity(0.5)
+                              : colors.colorWhite,
+                        ),
+                        left: BorderSide(
+                          color: theme.isDarkMode
+                              ? colors.textSecondaryDark.withOpacity(0.5)
+                              : colors.colorWhite,
+                        ),
+                        right: BorderSide(
+                          color: theme.isDarkMode
+                              ? colors.textSecondaryDark.withOpacity(0.5)
+                              : colors.colorWhite,
+                        ),
+                      ),
                     ),
-                  ),
-                  child: Column(
-                    children: [
-                      const CustomDragHandler(),
-                      Expanded(
-                        child: SingleChildScrollView(
-                          controller: scrollController,
+                    child: Column(
+                      children: [
+                        Expanded(
                           child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
+                              const CustomDragHandler(),
                               _HeaderSection(
                                   bondsCloseDetails: bondsCloseDetails,
                                   theme: theme),
-                              // Divider(
-                              //   height: 0,
-                              //   color: theme.isDarkMode
-                              //       ? colors.darkColorDivider
-                              //       : colors.colorDivider,
-                              // ),
-                             
-                              // const SizedBox(height: 16),
-                              // Divider(
-                              //   height: 0,
-                              //   color: theme.isDarkMode
-                              //       ? colors.darkColorDivider
-                              //       : colors.colorDivider,
-                              // ),
-                              // const SizedBox(height: 8),
-                              Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 16),
-                                child: _OrderDetailsSection(
-                                    bondsCloseDetails: bondsCloseDetails,
-                                    theme: theme),
-                              ),
-                               Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 16),
-                                child: _ReasonSection(
-                                    bondsCloseDetails: bondsCloseDetails,
-                                    theme: theme),
-                              ),
-                              Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 16),
-                                child: _BidDetailsSection(
-                                    bondsCloseDetails: bondsCloseDetails,
-                                    theme: theme),
+                              Expanded(
+                                child: SingleChildScrollView(
+                                  controller: scrollController,
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      // Divider(
+                                      //   height: 0,
+                                      //   color: theme.isDarkMode
+                                      //       ? colors.darkColorDivider
+                                      //       : colors.colorDivider,
+                                      // ),
+
+                                      // const SizedBox(height: 16),
+                                      // Divider(
+                                      //   height: 0,
+                                      //   color: theme.isDarkMode
+                                      //       ? colors.darkColorDivider
+                                      //       : colors.colorDivider,
+                                      // ),
+                                      // const SizedBox(height: 8),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 16),
+                                        child: _OrderDetailsSection(
+                                            bondsCloseDetails:
+                                                bondsCloseDetails,
+                                            theme: theme),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 16),
+                                        child: _ReasonSection(
+                                            bondsCloseDetails:
+                                                bondsCloseDetails,
+                                            theme: theme),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 16),
+                                        child: _BidDetailsSection(
+                                            bondsCloseDetails:
+                                                bondsCloseDetails,
+                                            theme: theme),
+                                      ),
+                                    ],
+                                  ),
+                                ),
                               ),
                             ],
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               );
@@ -229,7 +255,9 @@ class _SymbolInfo extends StatelessWidget {
               child: TextWidget.titleText(
                 text: bondsCloseDetails.symbol.toString(),
                 theme: theme.isDarkMode,
-                color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                color: theme.isDarkMode
+                    ? colors.textPrimaryDark
+                    : colors.textPrimaryLight,
                 fw: 1,
               ),
             ),
@@ -290,9 +318,9 @@ class _OrderIdRow extends StatelessWidget {
                           horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         color: isSuccess
-                            ? colors.error.withOpacity(0.1)
+                            ? theme.isDarkMode ? colors.lossDark.withOpacity(0.1) : colors.lossLight.withOpacity(0.1)
                             : isFailed
-                                ? colors.error.withOpacity(0.1)
+                                ? theme.isDarkMode ? colors.lossDark.withOpacity(0.1) : colors.lossLight.withOpacity(0.1)
                                 : colors.pending.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(4),
                       ),
@@ -304,9 +332,9 @@ class _OrderIdRow extends StatelessWidget {
                                 : "Pending",
                         theme: false,
                         color: isSuccess
-                            ? colors.error
+                            ? theme.isDarkMode ? colors.lossDark : colors.lossLight
                             : isFailed
-                                ? colors.error
+                                ? theme.isDarkMode ? colors.lossDark : colors.lossLight
                                 : colors.pending,
                       ),
                     ),
@@ -436,25 +464,34 @@ class _PaymentStatusRow extends StatelessWidget {
             ),
             Row(
               children: [
-
-                 Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                          color: isEmpty ? colors.error.withOpacity(0.1) :  bondsCloseDetails.clearingStatus.toString() == "Fund Pending" ? colors.pending.withOpacity(0.1) : colors.success.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: TextWidget.paraText(
-                        text:  isEmpty
-                      ? "Failed"
-                      : bondsCloseDetails.clearingStatus.toString() == "Fund Pending"
-                      ? "Fund Pending"
-                      : "Success",
-                        theme: false,
-                        color:  isEmpty ? colors.error :  bondsCloseDetails.clearingStatus.toString() == "Fund Pending" ? colors.pending : colors.success,
-                        
-                      ),
-                    ),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: isEmpty
+                        ? theme.isDarkMode ? colors.lossDark.withOpacity(0.1) : colors.lossLight.withOpacity(0.1)
+                        : bondsCloseDetails.clearingStatus.toString() ==
+                                "Fund Pending"
+                            ? theme.isDarkMode ? colors.pending.withOpacity(0.1) : colors.pending.withOpacity(0.1)
+                            : theme.isDarkMode ? colors.profit.withOpacity(0.1) : colors.profit.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: TextWidget.paraText(
+                    text: isEmpty
+                        ? "Failed"
+                        : bondsCloseDetails.clearingStatus.toString() ==
+                                "Fund Pending"
+                            ? "Fund Pending"
+                            : "Success",
+                    theme: false,
+                    color: isEmpty
+                        ? theme.isDarkMode ? colors.lossDark : colors.lossLight
+                        : bondsCloseDetails.clearingStatus.toString() ==
+                                "Fund Pending"
+                            ? theme.isDarkMode ? colors.pending : colors.pending
+                            : theme.isDarkMode ? colors.profitDark : colors.profitLight,
+                  ),
+                ),
                 // SvgPicture.asset(
                 //   isEmpty
                 //       ? "assets/icon/failed.svg"
@@ -518,14 +555,13 @@ class _OrderDetailsSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-       
         data(
           "Quantity",
           // (bondsCloseDetails.bidDetail!.investmentValue! / bondsCloseDetails.bidDetail!.price!).toStringAsFixed(0),
 
-
-           (double.parse(bondsCloseDetails.totalAmountPayable!) / bondsCloseDetails.bidDetail!.
-          price!).toStringAsFixed(0),
+          (double.parse(bondsCloseDetails.totalAmountPayable!) /
+                  bondsCloseDetails.bidDetail!.price!)
+              .toStringAsFixed(0),
           theme,
         ),
         data(
@@ -533,7 +569,7 @@ class _OrderDetailsSection extends StatelessWidget {
           "${bondsCloseDetails.bidDetail!.price!}",
           theme,
         ),
-         data(
+        data(
           "Order no",
           bondsCloseDetails.orderNumber != null
               ? bondsCloseDetails.orderNumber!.toString()
@@ -571,7 +607,9 @@ class _BidDetailsSection extends StatelessWidget {
           child: TextWidget.subText(
             text: "Bid order Details",
             theme: theme.isDarkMode,
-            color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+            color: theme.isDarkMode
+                ? colors.textPrimaryDark
+                : colors.textPrimaryLight,
             fw: 0,
           ),
         ),
@@ -633,24 +671,27 @@ class _BidDetailsTable extends StatelessWidget {
               label: TextWidget.subText(
                 text: "Qty",
                 theme: theme.isDarkMode,
-                color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                
+                color: theme.isDarkMode
+                    ? colors.textPrimaryDark
+                    : colors.textPrimaryLight,
               ),
             ),
             DataColumn(
               label: TextWidget.subText(
                 text: "Price",
                 theme: theme.isDarkMode,
-                color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                
+                color: theme.isDarkMode
+                    ? colors.textPrimaryDark
+                    : colors.textPrimaryLight,
               ),
             ),
             DataColumn(
               label: TextWidget.subText(
                 text: "Amount",
                 theme: theme.isDarkMode,
-                color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                
+                color: theme.isDarkMode
+                    ? colors.textPrimaryDark
+                    : colors.textPrimaryLight,
               ),
             ),
           ],
@@ -661,20 +702,20 @@ class _BidDetailsTable extends StatelessWidget {
                   text:
                       // (bondsCloseDetails.bidDetail!.investmentValue! / bondsCloseDetails.bidDetail!.price!).toStringAsFixed(0),
 
-                       "${(double.parse(bondsCloseDetails.totalAmountPayable!) / bondsCloseDetails.
-                      bidDetail!.price!).toStringAsFixed(0)}",
+                      "${(double.parse(bondsCloseDetails.totalAmountPayable!) / bondsCloseDetails.bidDetail!.price!).toStringAsFixed(0)}",
                   theme: theme.isDarkMode,
-                  color:
-                      theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                  color: theme.isDarkMode
+                      ? colors.textSecondaryDark
+                      : colors.textSecondaryLight,
                 ),
               ),
               DataCell(
                 TextWidget.paraText(
                   text: "${bondsCloseDetails.bidDetail!.price!}",
                   theme: theme.isDarkMode,
-                  color:
-                      theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                 
+                  color: theme.isDarkMode
+                      ? colors.textSecondaryDark
+                      : colors.textSecondaryLight,
                 ),
               ),
               DataCell(
@@ -685,9 +726,9 @@ class _BidDetailsTable extends StatelessWidget {
                     value: double.parse(bondsCloseDetails.totalAmountPayable!),
                   )}",
                   theme: theme.isDarkMode,
-                  color:
-                      theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                  
+                  color: theme.isDarkMode
+                      ? colors.textSecondaryDark
+                      : colors.textSecondaryLight,
                 ),
               ),
             ]),

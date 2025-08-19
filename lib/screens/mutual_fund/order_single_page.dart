@@ -53,20 +53,25 @@ class _mforderdetscreen extends State<mforderdetscreen>
     return DraggableScrollableSheet(
         expand: false,
         initialChildSize: 0.88,
-        minChildSize: 0.05,
-        maxChildSize: 0.99,
+        // minChildSize: 0.05,
+        maxChildSize: 0.88,
         builder: (context, scrollController) {
           return Consumer(builder: (context, ref, child) {
             final theme = ref.watch(themeProvider);
             final mfdata = ref.watch(mfProvider);
 
+
             // Check if order data is null
             final hasData = mfdata.mforderdet?.data != null;
 
-            return Scaffold(
-              backgroundColor: Colors.transparent,
-              body: hasData
-                  ? Padding(
+            if(!hasData){
+              return const Center(child: NoDataFound());
+            }
+
+            return SafeArea(
+              child: Scaffold(
+                backgroundColor: theme.isDarkMode ? colors.colorBlack : Colors.transparent,
+                body: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: SingleChildScrollView(
                         controller: scrollController,
@@ -93,18 +98,21 @@ class _mforderdetscreen extends State<mforderdetscreen>
                                       .read(transcationProvider)
                                       .initialdata(context);
                                   mfdata.fetchUpiDetail('', context);
-
-                                  final isUpi = mfdata.paymentName == 'UPI';
-                                  final isNetBanking =
-                                      mfdata.paymentName == 'NET BANKING';
-                                  final isUpiValid =
-                                      isUpi ? mfdata.upiError == '' : true;
-
-                                  // mfdata.isValidUpiId(widget.data);
-                                  // await mfdata.fetchUpiDetail('repop' , context);
-
-                                  // Navigator.pop(context);
-
+                        
+                                              final isUpi =
+                                                  mfdata.paymentName == 'UPI';
+                                              final isNetBanking =
+                                                  mfdata.paymentName ==
+                                                      'NET BANKING';
+                                              final isUpiValid = isUpi
+                                                  ? mfdata.upiError == ''
+                                                  : true;
+                        
+                                              // mfdata.isValidUpiId(widget.data);
+                                              // await mfdata.fetchUpiDetail('repop' , context);
+                        
+                                              // Navigator.pop(context);
+                        
                                   // Set loading state immediately when button is pressed
                                   Navigator.pop(context);
                                   _showBottomSheet(
@@ -120,10 +128,10 @@ class _mforderdetscreen extends State<mforderdetscreen>
                                   //   mfdata.mforderdet?.data![0].accVPA,
                                   //   mfdata.mforderdet?.data![0].paymentType,
                                   // );
-
+                        
                                   // if (mfdata.upiApiresponse != null &&
                                   //     mfdata.upiApiresponse?.stat == "Ok") {
-
+                        
                                   //     // showModalBottomSheet(
                                   //     //   context: context,
                                   //     //   isScrollControlled: true,
@@ -169,7 +177,7 @@ class _mforderdetscreen extends State<mforderdetscreen>
                                   //   );
                                   //   //  mfdata.IsPaymentCalled(false);
                                   //   // Navigator.pop(context);
-
+                        
                                   //   // Navigate to a new screen showing InAppWebView
                                   //   Navigator.of(context).push(
                                   //     MaterialPageRoute(
@@ -229,26 +237,32 @@ class _mforderdetscreen extends State<mforderdetscreen>
                                 },
                                 style: ElevatedButton.styleFrom(
                                   elevation: 0,
-                                  backgroundColor: colors.btnBg,
-                                  foregroundColor:
-                                      const Color.fromARGB(255, 0, 0, 0),
-                                  side: BorderSide(
-                                    color: colors.btnOutlinedBorder,
-                                    width: 1,
-                                  ),
-                                  minimumSize:
-                                      Size(double.infinity, 40), // height: 48
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(5),
-                                  ),
+                                   backgroundColor: theme.isDarkMode
+                                                  ? colors.textSecondaryDark
+                                                      .withOpacity(0.6)
+                                                  : colors.btnBg,
+                                              // foregroundColor: const Color.fromARGB(255, 0, 0, 0),
+                                              side: theme.isDarkMode
+                                                  ? null
+                                                  : BorderSide(
+                                                      color:
+                                                          colors.primaryLight,
+                                                      width: 1,
+                                                    ),
+                                              minimumSize: Size(double.infinity,
+                                                  45), // height: 48
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(5),
+                                              ),
                                 ),
                                 child: TextWidget.subText(
                                     align: TextAlign.right,
                                     text: "Re-Initiate Payment",
                                     color: theme.isDarkMode
-                                        ? colors.primaryDark
-                                        : colors.primaryLight,
-                                    textOverflow: TextOverflow.ellipsis,
+                                                    ? colors.colorWhite
+                                                    : colors.primaryLight,
+                                  
                                     theme: theme.isDarkMode,
                                     fw: 2),
                               ),
@@ -273,7 +287,7 @@ class _mforderdetscreen extends State<mforderdetscreen>
                                   align: TextAlign.start,
                                   text:
                                       "${mfdata.mforderdet?.data![0].remarks ?? "No remarks available"}",
-                                  color: colors.loss,
+                                  color: theme.isDarkMode ? colors.lossDark : colors.lossLight,
                                   textOverflow: TextOverflow.ellipsis,
                                   theme: theme.isDarkMode,
                                   maxLines: 3,
@@ -282,8 +296,9 @@ class _mforderdetscreen extends State<mforderdetscreen>
                           ],
                         ),
                       ),
+                    ) ,
                     )
-                  : const Center(child: NoDataFound()),
+                 
             );
           });
         });
@@ -349,12 +364,16 @@ class _mforderdetscreen extends State<mforderdetscreen>
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
               color: mfdata.mforderdet?.data?[0].status == "ALLOCATED"
-                  ? colors.profit.withOpacity(0.1)
+                  ? theme.isDarkMode
+                      ? colors.profitDark.withOpacity(0.1)
+                      : colors.profitLight.withOpacity(0.1)
                   : mfdata.mforderdet?.data?[0].status == "REJECTED" ||
                           mfdata.mforderdet?.data?[0].status == "CANCELLED" ||
                           mfdata.mforderdet?.data?[0].status ==
                               "PAYMENT DECLINED"
-                      ? colors.loss.withOpacity(0.1)
+                      ? theme.isDarkMode
+                          ? colors.lossDark.withOpacity(0.1)
+                          : colors.lossLight.withOpacity(0.1)
                       : mfdata.mforderdet?.data?[0].status ==
                               inProgressStatuses
                                   .contains(mfdata.mforderdet?.data?[0].status)
@@ -366,12 +385,16 @@ class _mforderdetscreen extends State<mforderdetscreen>
                 text: _getListStatusText(mfdata.mforderdet?.data?[0].status),
                 theme: false,
                 color: mfdata.mforderdet?.data?[0].status == "ALLOCATED"
-                    ? colors.profit
+                    ? theme.isDarkMode
+                        ? colors.profitDark
+                        : colors.profitLight
                     : mfdata.mforderdet?.data?[0].status == "REJECTED" ||
                             mfdata.mforderdet?.data?[0].status == "CANCELLED" ||
                             mfdata.mforderdet?.data?[0].status ==
                                 "PAYMENT DECLINED"
-                        ? colors.loss
+                        ? theme.isDarkMode
+                            ? colors.lossDark
+                            : colors.lossLight
                         : mfdata.mforderdet?.data?[0].status ==
                                 inProgressStatuses.contains(
                                     mfdata.mforderdet?.data?[0].status)
@@ -480,12 +503,16 @@ class _mforderdetscreen extends State<mforderdetscreen>
               },
               style: ElevatedButton.styleFrom(
                 elevation: 0,
-                backgroundColor: colors.btnBg,
-                foregroundColor: const Color.fromARGB(255, 0, 0, 0),
-                side: BorderSide(
-                  color: colors.btnOutlinedBorder,
-                  width: 1,
-                ),
+                backgroundColor: theme.isDarkMode
+                          ? colors.textSecondaryDark.withOpacity(0.6)
+                          : colors.btnBg,
+                      // foregroundColor: const Color.fromARGB(255, 0, 0, 0),
+                      side: theme.isDarkMode
+                          ? null
+                          : BorderSide(
+                              color: colors.primaryLight,
+                              width: 1,
+                            ),
                 minimumSize: Size(double.infinity, 40), // height: 48
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(5),
@@ -494,9 +521,9 @@ class _mforderdetscreen extends State<mforderdetscreen>
               child: TextWidget.subText(
                   align: TextAlign.right,
                   text: "Cancel Order",
-                  color: theme.isDarkMode
-                      ? colors.primaryDark
-                      : colors.primaryLight,
+                   color: theme.isDarkMode
+                            ? colors.colorWhite
+                            : colors.primaryLight,
                   textOverflow: TextOverflow.ellipsis,
                   theme: theme.isDarkMode,
                   fw: 2),
@@ -527,7 +554,7 @@ class _mforderdetscreen extends State<mforderdetscreen>
                 align: TextAlign.right,
                 text: value1,
                 color: theme.isDarkMode
-                    ? colors.textPrimary
+                    ? colors.textPrimaryDark
                     : colors.textPrimaryLight,
                 theme: theme.isDarkMode,
                 fw: 3),

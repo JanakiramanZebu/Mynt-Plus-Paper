@@ -1,52 +1,48 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:mynt_plus/provider/bonds_provider.dart';
-import '../../../../provider/iop_provider.dart';
+// import 'package:flutter_riverpod/flutter_riverpod.dart';
+// import 'package:flutter_svg/svg.dart';
+// import 'package:google_fonts/google_fonts.dart';
+// import 'package:mynt_plus/provider/bonds_provider.dart';
+// import '../../../../provider/iop_provider.dart';
 import '../../../../provider/thems.dart';
 import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
-import '../../../../routes/route_names.dart';
+// import '../../../../routes/route_names.dart';
 import '../../../../sharedWidget/functions.dart';
 import '../bonds_orderbook_details/open_order_details.dart';
 
-class BondsOpenOrder extends ConsumerWidget {
-  const BondsOpenOrder({super.key});
+class BondsOpenOrderList extends StatelessWidget {
+  final List<dynamic> orders;
+  final ThemesProvider theme;
+  const BondsOpenOrderList({super.key, required this.orders, required this.theme});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.watch(themeProvider);
-    final bonds = ref.watch(bondsProvider);
-
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _OrdersList(bonds: bonds, theme: theme),
-        ],
-      ),
-    );
+  Widget build(BuildContext context) {
+    return _OrdersList(orders: orders, theme: theme);
   }
 }
 
 class _OrdersList extends StatelessWidget {
-  final BondsProvider bonds;
+  final List<dynamic> orders;
   final ThemesProvider theme;
 
   const _OrdersList({
-    required this.bonds,
+    required this.orders,
     required this.theme,
   });
 
   @override
   Widget build(BuildContext context) {
+    if (orders.isEmpty) {
+      return const SizedBox();
+    }
+
     return ListView.separated(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      itemCount: bonds.openOrderBook!.length,
+      itemCount: orders.length,
       itemBuilder: (context, index) => _OrderItem(
-        order: bonds.openOrderBook![index],
+        order: orders[index],
         theme: theme,
       ),
       separatorBuilder: (context, index) => _OrderDivider(theme: theme),

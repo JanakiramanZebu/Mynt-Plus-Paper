@@ -10,6 +10,7 @@ import '../../../../../provider/websocket_provider.dart';
 import '../../../../../res/global_state_text.dart';
 import '../../../../../res/res.dart';
 import '../../../../../sharedWidget/no_data_found.dart';
+import '../../../../../sharedWidget/list_divider.dart';
 
 class TradeAction extends ConsumerStatefulWidget {
   const TradeAction({super.key});
@@ -22,13 +23,17 @@ class _TradeActionState extends ConsumerState<TradeAction>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   late PageController _pageController;
-  // late int _lastFetchedIndex ;
+  final ScrollController _tabScrollController = ScrollController();
+
   List<String> tradeAction = [
     "Top gainers",
     "Top losers",
     "Vol. breakout",
     "Most Active"
   ];
+
+  int _currentPageIndex = 0;
+  bool _isUserScrolling = false;
 
   @override
   void initState() {
@@ -47,10 +52,42 @@ class _TradeActionState extends ConsumerState<TradeAction>
       }
     });
 
+    _tabScrollController.addListener(_handleTabScroll);
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       _preloadTradeActionData();
     });
+  }
+
+  void _handleTabScroll() {
+    if (_tabScrollController.position.isScrollingNotifier.value) {
+      _isUserScrolling = true;
+    } else {
+      Future.delayed(const Duration(milliseconds: 400), () {
+        if (mounted) _isUserScrolling = false;
+      });
+    }
+  }
+
+  void _scrollToSelectedTab(int index, {bool force = false}) {
+    if (!_tabScrollController.hasClients) return;
+    if (!force && _isUserScrolling) return;
+
+    final viewW = _tabScrollController.position.viewportDimension;
+    final max = _tabScrollController.position.maxScrollExtent;
+    final tabWidth = 120.0; // Approximate tab width
+
+    final target = (index * tabWidth) - (viewW / 2) + (tabWidth / 2);
+    final offset = target.clamp(0.0, max);
+
+    if ((_tabScrollController.offset - offset).abs() < 1.0) return;
+
+    _tabScrollController.animateTo(
+      offset,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOutCubic,
+    );
   }
 
   void _preloadTradeActionData() async {
@@ -72,10 +109,37 @@ class _TradeActionState extends ConsumerState<TradeAction>
     }
   }
 
+  Future<void> _handlePageChanged(int pageIndex) async {
+    if (!mounted) return;
+
+    _currentPageIndex = pageIndex;
+    _scrollToSelectedTab(pageIndex, force: true);
+
+    try {
+      final actionTrade = ref.read(stocksProvide);
+      await actionTrade.chngTradeAction(tradeAction[pageIndex]);
+    } catch (e) {
+      print("Error changing trade action: $e");
+    }
+  }
+
+  Future<void> _handleTabTap(String action, int index) async {
+    if (_currentPageIndex == index) return;
+
+    _currentPageIndex = index;
+
+    if (_pageController.hasClients) {
+      _pageController.jumpToPage(index);
+    }
+
+    await _handlePageChanged(index);
+  }
+
   @override
   void dispose() {
     _tabController.dispose();
     _pageController.dispose();
+    _tabScrollController.dispose();
     super.dispose();
   }
 
@@ -87,280 +151,272 @@ class _TradeActionState extends ConsumerState<TradeAction>
       final theme = ref.watch(themeProvider);
       final socketDatas = ref.watch(websocketProvider).socketDatas;
 
-      return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              TextWidget.titleText(
-                text: "Trade action",
-                theme: theme.isDarkMode,
-                fw: 1,
-                color: theme.isDarkMode
-                    ? colors.textPrimaryDark
-                    : colors.textPrimaryLight,
-              ),
-              // DropdownButtonHideUnderline(
-              //   child: DropdownButton2(
-              //     menuItemStyleData: MenuItemStyleData(
-              //         customHeights: actionTrade.getCustomItemsHeight()),
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header
+          // Padding(
+          //   padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          //   child: Row(
+          //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          //     children: [
+          //       TextWidget.titleText(
+          //         text: "Trade action",
+          //         theme: theme.isDarkMode,
+          //         fw: 1,
+          //         color: theme.isDarkMode
+          //             ? colors.textPrimaryDark
+          //             : colors.textPrimaryLight,
+          //       ),
+          //     ],
+          //   ),
+          // ),
+          const SizedBox(height: 15),
 
-              //     buttonStyleData: const ButtonStyleData(
-              //         height: 32,
-              //         width: 100,
-              //         decoration: BoxDecoration(
-              //             color: Color(0xffF1F3F8),
-              //             borderRadius:
-              //                 BorderRadius.all(Radius.circular(32)))),
-              //     dropdownStyleData: DropdownStyleData(
-              //       width: 100,
-              //       padding: const EdgeInsets.symmetric(vertical: 6),
-              //       decoration: BoxDecoration(
-              //         borderRadius: BorderRadius.circular(8),
-              //       ),
-              //       offset: const Offset(0, 8),
-              //     ),
-              //     // buttonSplashColor: Colors.transparent,
-              //     isExpanded: true,
-              //     hint: TextWidget.subText(
-              //         text: actionTrade.selctedTradeAct,
-              //         theme: theme.isDarkMode),
-              //     items: actionTrade.addDividersAfterExpDates(),
-              //     // customItemsHeights: actionTrade.getCustomItemsHeight(),
-              //     value: actionTrade.selctedTradeAct,
-              //     onChanged: (value) async {
-              //       if (value != actionTrade.selctedTradeAct) {
-              //         actionTrade.chngTradeAct("$value");
-              //       }
-              //     },
-              //     // buttonHeight: 36,
-              //     // buttonWidth: 120,
-              //   ),
-              // ),
-            ],
+          // Tabs
+          _buildTabs(theme),
+          // const SizedBox(height: 15),
+
+          // Page View
+          Expanded(
+            child: _buildPageView(actionTrade, marketWatch, theme, socketDatas),
           ),
-        ),
-        const SizedBox(height: 15),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: SizedBox(
-                height: 36,
-                child: TabBar(
-                  controller: _tabController,
-                  isScrollable: true,
-                  indicator: const BoxDecoration(),
-                  labelPadding: const EdgeInsets.only(right: 8),
-                  indicatorColor: Colors.transparent,
-                  labelColor: colors.colorBlack,
-                  labelStyle:
-                      TextWidget.textStyle(fontSize: 16, fw: 3, theme: false),
-                  unselectedLabelColor: colors.colorWhite,
-                  unselectedLabelStyle:
-                      TextWidget.textStyle(fontSize: 16, fw: 3, theme: false),
-                  tabs: List.generate(tradeAction.length, (index) {
-                    final action = tradeAction[index];
-                    final isSelected = _tabController.index == index;
+        ],
+      );
+    });
+  }
 
-                    return Tab(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? (theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : colors.btnBg)
-                              : Colors.transparent,
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 8, horizontal: 12),
-                        child: TextWidget.paraText(
-                          text: action,
-                          color: isSelected
-                              ? (theme.isDarkMode
-                                  ? colors.colorBlack
-                                  : colors.colorBlack)
-                              : colors.textSecondaryLight,
-                          fw: isSelected ? 2 : 3,
-                          theme: !theme.isDarkMode,
-                        ),
-                      ),
-                    );
-                  }),
-                  onTap: (index) async {
-                    // Allow direct navigation to any tab
-                    _tabController.animateTo(index);
-                    // _pageController.animateToPage(
-                    //   index,
-                    //   duration: const Duration(milliseconds: 300),
-                    //   curve: Curves.easeInOut,
-                    // );
-                    // actionTrade.requestWSTradeaction(isSubscribe: false, context: context);
-                    await actionTrade.chngTradeAction(tradeAction[index]);
-                    // actionTrade.requestWSTradeaction(isSubscribe: true, context: context);
-                  },
+  Widget _buildTabs(ThemesProvider theme) {
+    return Container(
+      height: 35,
+      padding: const EdgeInsets.only(left: 16.0),
+      child: ListView.builder(
+        controller: _tabScrollController,
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        itemCount: tradeAction.length,
+        itemBuilder: (context, index) {
+          final action = tradeAction[index];
+          final isSelected = _currentPageIndex == index;
+
+          return Container(
+            // width: 120,
+            margin: const EdgeInsets.only(right: 8),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(5),
+                splashColor: theme.isDarkMode
+                    ? Colors.white.withOpacity(0.15)
+                    : Colors.black.withOpacity(0.15),
+                highlightColor: theme.isDarkMode
+                    ? Colors.white.withOpacity(0.08)
+                    : Colors.black.withOpacity(0.08),
+                onTap: () => _handleTabTap(action, index),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? (theme.isDarkMode ? colors.colorWhite : colors.searchBg)
+                        : Colors.transparent,
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 6, horizontal: 10),
+                  child: Center(
+                    child: TextWidget.paraText(
+                      text: action,
+                      color: isSelected
+                          ? colors.colorBlack
+                          : colors.textSecondaryLight,
+                      fw: isSelected ? 2 : 3,
+                      theme: !theme.isDarkMode,
+                    ),
+                  ),
                 ),
               ),
             ),
-            const SizedBox(height: 15),
-            SizedBox(
-              height: 350,
-              child: PageView.builder(
-                controller: _pageController,
-                itemCount: tradeAction.length,
-                onPageChanged: (index) async {
-                  _tabController.animateTo(index);
-                  await actionTrade.chngTradeAction(tradeAction[index]);
-                },
-                itemBuilder: (context, pageIndex) {
-                  final currentAction = tradeAction[pageIndex];
-                  List<TopGainers> topStocks;
+          );
+        },
+      ),
+    );
+  }
 
-                  switch (currentAction) {
-                    case "Top gainers":
-                      topStocks = actionTrade.topGainers;
-                      break;
-                    case "Top losers":
-                      topStocks = actionTrade.topLosers;
-                      break;
-                    case "Vol. breakout":
-                      topStocks = actionTrade.byVolume;
-                      break;
-                    case "Most Active":
-                      topStocks = actionTrade.byValue;
-                      break;
-                    default:
-                      topStocks = actionTrade.topStockData;
-                  }
+  Widget _buildPageView(
+    dynamic actionTrade,
+    dynamic marketWatch,
+    ThemesProvider theme,
+    Map<dynamic, dynamic> socketDatas,
+  ) {
+    return PageView.builder(
+      controller: _pageController,
+      itemCount: tradeAction.length,
+      onPageChanged: (index) {
+        _handlePageChanged(index);
+      },
+      itemBuilder: (context, pageIndex) {
+        final currentAction = tradeAction[pageIndex];
+        List<TopGainers> topStocks;
 
-                  if (topStocks.isEmpty) {
-                    return const Center(child: NoDataFound());
-                  }
-                  return ListView.builder(
-                    padding: const EdgeInsets.symmetric(vertical: 5),
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: topStocks.length.clamp(0, 5),
-                    itemBuilder: (context, index) {
-                      final stock = topStocks[index];
+        switch (currentAction) {
+          case "Top gainers":
+            topStocks = actionTrade.topGainers;
+            break;
+          case "Top losers":
+            topStocks = actionTrade.topLosers;
+            break;
+          case "Vol. breakout":
+            topStocks = actionTrade.byVolume;
+            break;
+          case "Most Active":
+            topStocks = actionTrade.byValue;
+            break;
+          default:
+            topStocks = actionTrade.topStockData;
+        }
 
-                      if (socketDatas.containsKey(stock.token)) {
-                        stock.lp = "${socketDatas[stock.token]['lp'] ?? 0.00}";
-                        stock.pc = "${socketDatas[stock.token]['pc'] ?? 0.00}";
-                        stock.v = "${socketDatas[stock.token]['v'] ?? 0.00}";
-                      }
+        if (topStocks.isEmpty) {
+          return const Center(child: NoDataFound());
+        }
 
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 2.0),
-                        child: Column(
-                          children: [
-                            InkWell(
-                              onTap: () async {
-                                DepthInputArgs depthArgs = DepthInputArgs(
-                                    exch: topStocks[index].exch.toString(),
-                                    token: topStocks[index].token.toString(),
-                                    tsym: topStocks[index].tsym.toString(),
-                                    instname: "",
-                                    symbol: topStocks[index].tsym.toString(),
-                                    expDate: "",
-                                    option: "");
-                                await marketWatch.calldepthApis(
-                                    context, depthArgs, "");
-                              },
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 16, vertical: 8),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        TextWidget.subText(
-                                          text: "${topStocks[index].tsym} ?? "
-                                                  ""
-                                              .split("-")
-                                              .first,
-                                          fw: 3,
-                                          theme: theme.isDarkMode,
-                                          color: theme.isDarkMode
-                                              ? colors.textPrimaryDark
-                                              : colors.textPrimaryLight,
-                                        ),
-                                        const SizedBox(height: 8),
-                                        TextWidget.paraText(
-                                          text: "${topStocks[index].exch}",
-                                          color: theme.isDarkMode
-                                              ? colors.textPrimaryDark
-                                              : colors.textPrimaryLight,
-                                          theme: theme.isDarkMode,
-                                          fw: 3,
-                                        ),
-                                      ],
-                                    ),
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.end,
-                                      children: [
-                                        TextWidget.subText(
-                                          text: "${topStocks[index].lp}",
-                                          fw: 3,
-                                          theme: theme.isDarkMode,
-                                          color: topStocks[index]
-                                                  .lp!
-                                                  .startsWith("-")
-                                              ? theme.isDarkMode
-                                                  ? colors.lossDark
-                                                  : colors.lossLight
-                                              : double.tryParse(stock.lp!) !=
-                                                          null &&
-                                                      double.parse(stock.lp!) >
-                                                          0
-                                                  ? theme.isDarkMode
-                                                      ? colors.profitDark
-                                                      : colors.profitLight
-                                                  : theme.isDarkMode
-                                                      ? colors.textSecondaryDark
-                                                      : colors
-                                                          .textSecondaryLight,
-                                        ),
-                                        const SizedBox(height: 8),
-                                        TextWidget.paraText(
-                                          text:
-                                              "${topStocks[index].c} (${topStocks[index].pc}%)",
-                                          fw: 3,
-                                          color: theme.isDarkMode
-                                              ? colors.textSecondaryDark
-                                              : colors.textSecondaryLight,
-                                          theme: theme.isDarkMode,
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            Divider(
-                              color: theme.isDarkMode
-                                  ? colors.darkColorDivider
-                                  : colors.colorDivider,
-                              thickness: 0,
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  );
-                },
-              ),
+        return ListView.separated(
+          physics: const NeverScrollableScrollPhysics(),
+          padding: const EdgeInsets.symmetric(vertical: 5),
+          itemCount: topStocks.length.clamp(0, 5),
+          separatorBuilder: (_, __) => const ListDivider(),
+          itemBuilder: (context, index) {
+            final stock = topStocks[index];
+
+            if (socketDatas.containsKey(stock.token)) {
+              stock.lp = "${socketDatas[stock.token]['lp'] ?? 0.00}";
+              stock.pc = "${socketDatas[stock.token]['pc'] ?? 0.00}";
+              stock.v = "${socketDatas[stock.token]['v'] ?? 0.00}";
+            }
+
+            return Column(
+              children: [
+                _buildStockCard(stock, marketWatch, theme),
+              const ListDivider(),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildStockCard(
+      TopGainers stock, dynamic marketWatch, ThemesProvider theme) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(6),
+        splashColor: theme.isDarkMode
+            ? Colors.white.withOpacity(0.15)
+            : Colors.black.withOpacity(0.15),
+        highlightColor: theme.isDarkMode
+            ? Colors.white.withOpacity(0.08)
+            : Colors.black.withOpacity(0.08),
+        onTap: () async {
+          DepthInputArgs depthArgs = DepthInputArgs(
+              exch: stock.exch.toString(),
+              token: stock.token.toString(),
+              tsym: stock.tsym.toString(),
+              instname: "",
+              symbol: stock.tsym.toString(),
+              expDate: "",
+              option: "");
+          await marketWatch.calldepthApis(context, depthArgs, "");
+        },
+        child: ListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+          dense: false,
+          title: Padding(
+            padding: const EdgeInsets.only(bottom: 4),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                TextWidget.subText(
+                  text: stock.tsym?.split("-").isNotEmpty == true ? stock.tsym!.split("-").first.toUpperCase() : "",
+                  color: theme.isDarkMode
+                      ? colors.textPrimaryDark
+                      : colors.textPrimaryLight,
+                  fw: 3,
+                  theme: theme.isDarkMode,
+                ),
+              ],
             ),
-          ],
+          ),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    TextWidget.paraText(
+                      text: stock.exch ?? "",
+                      color: theme.isDarkMode
+                          ? colors.textSecondaryDark
+                          : colors.textSecondaryLight,
+                      theme: theme.isDarkMode,
+                      fw: 3,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          trailing: _buildPriceData(stock, theme),
         ),
-      ]);
-    });
+      ),
+    );
+  }
+
+  Widget _buildPriceData(TopGainers stock, ThemesProvider theme) {
+    final displayLtp = stock.lp ?? "0.00";
+    final displayChange = stock.c ?? "0.00";
+    final displayPerChange = stock.pc ?? "0.00";
+
+    final changeColor =
+        displayChange.startsWith("-") || displayPerChange.startsWith('-')
+            ? (theme.isDarkMode ? colors.lossDark : colors.lossLight)
+            : (displayChange == "0.00" || displayPerChange == "0.00")
+                ? (theme.isDarkMode
+                    ? colors.textSecondaryDark
+                    : colors.textSecondaryLight)
+                : (theme.isDarkMode ? colors.profitDark : colors.profitLight);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(bottom: 4),
+          child: Text(
+            displayLtp,
+            style: TextWidget.textStyle(
+              fontSize: 16,
+              color: changeColor,
+              theme: theme.isDarkMode,
+              fw: 3,
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(top: 4),
+          child: TextWidget.paraText(
+            text: "$displayChange ($displayPerChange%)",
+            color: theme.isDarkMode
+                ? colors.textSecondaryDark
+                : colors.textSecondaryLight,
+            theme: theme.isDarkMode,
+            fw: 3,
+          ),
+        ),
+      ],
+    );
   }
 }

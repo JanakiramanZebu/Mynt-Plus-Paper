@@ -65,223 +65,248 @@ class _IndexBottomSheetState extends ConsumerState<IndexBottomSheet> {
         maxChildSize: maxSize,
         expand: false,
         builder: (_, controller) {
-          return Container(
-            decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-                boxShadow: const [
-                  BoxShadow(
-                      color: Color(0xff999999),
-                      blurRadius: 4.0,
-                      offset: Offset(2.0, 0.0))
-                ]),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const CustomDragHandler(),
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 14.0, vertical: 8.0),
-                  child: TextWidget.titleText(
-                    text: "Indices",
-                    theme: theme.isDarkMode,
-                    fw: 1,
+          return SafeArea(
+            child: Container(
+              decoration: BoxDecoration(
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(16),
+                    topRight: Radius.circular(16),
                   ),
-                ),
-
-                // Tabs section - full width
-                Container(
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: theme.isDarkMode ? Colors.black : Colors.white,
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Tabs content
-                      Container(
-                        height: 40,
-                        child: Row(
-                          children: [
-                            // Exchange tabs - each taking equal width
-                            ..._exchanges.asMap().entries.map((entry) {
-                              final index = entry.key;
-                              final exchange = entry.value;
-                              final isSelected = _currentPageIndex == index;
-
-                              return Container(
-                                width:
-                                    95.0, // Fixed width to match watchlist tabs
-                                child: Material(
-                                  color: Colors.transparent,
-                                  child: InkWell(
-                                    onTap: () async {
-                                      setState(() {
-                                        _currentPageIndex = index;
-                                      });
-                                      // Use jumpToPage to avoid animation through intermediate tabs
-                                      _pageController.jumpToPage(index);
-                                      // Call the existing function to update the list
-                                      await indexProvide.fetchIndexList(
-                                          exchange, context);
-                                    },
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Container(
-                                          width: double.infinity,
-                                          alignment: Alignment.center,
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 10, vertical: 6),
-                                          child: TextWidget.subText(
-                                            text: exchange,
-                                            color: isSelected
-                                                ? theme.isDarkMode
-                                                    ? colors.secondaryDark
-                                                    : colors.secondaryLight
-                                                : theme.isDarkMode
-                                                    ? colors.textSecondaryDark
-                                                    : colors.textSecondaryLight,
-                                            textOverflow: TextOverflow.ellipsis,
-                                            maxLines: 1,
-                                            theme: theme.isDarkMode,
-                                            fw: isSelected ? 1 : null,
-                                          ),
-                                        ),
-                                        // Animated underline indicator
-                                        AnimatedContainer(
-                                          duration:
-                                              const Duration(milliseconds: 250),
-                                          curve: Curves.easeInOut,
-                                          height: 2,
-                                          width: isSelected
-                                              ? 77
-                                              : 0, // Width = tab width - 18 (like watchlist)
-                                          margin: const EdgeInsets.only(top: 1),
-                                          decoration: BoxDecoration(
-                                            color: colors.colorBlue,
-                                            borderRadius:
-                                                BorderRadius.circular(2),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
+                  border: Border(
+                                  top: BorderSide(
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                            .withOpacity(0.5)
+                                        : colors.colorWhite,
+                                  ),
+                                  left: BorderSide(
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                            .withOpacity(0.5)
+                                        : colors.colorWhite,
+                                  ),
+                                  right: BorderSide(
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                            .withOpacity(0.5)
+                                        : colors.colorWhite,
                                   ),
                                 ),
-                              );
-                            }).toList(),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
+                  color:
+                      theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
                 ),
-
-                Divider(
-                    color: theme.isDarkMode
-                        ? colors.darkColorDivider
-                        : colors.colorDivider),
-
-                Expanded(
-                  child: Column(
-                    children: [
-                      // Sticky header that doesn't scroll
-                      Container(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            SvgPicture.asset(
-                              assets.dInfo,
-                              color: theme.isDarkMode
-                                  ? colors.secondaryDark
-                                  : colors.secondaryLight,
-                            ),
-                            TextWidget.paraText(
-                              text:
-                                  " Long press to add to Slot ${widget.indexPosition + 1}",
-                              color: theme.isDarkMode
-                                  ? colors.secondaryDark
-                                  : colors.secondaryLight,
-                              theme: theme.isDarkMode,
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      // Scrollable list content
-                      Expanded(
-                        child: PageView.builder(
-                          controller: _pageController,
-                          itemCount: _exchanges.length,
-                          onPageChanged: (index) async {
-                            setState(() {
-                              _currentPageIndex = index;
-                            });
-                            // Call the existing function to update the list
-                            await indexProvide.fetchIndexList(
-                                _exchanges[index], context);
-                          },
-                          itemBuilder: (context, pageIndex) {
-                            return indexProvide.isLoad
-                                ? const Center(
-                                    child: CircularProgressIndicator())
-                                : indexProvide.indValuesList.isNotEmpty
-                                    ? ListView.builder(
-                                        shrinkWrap: false,
-                                        controller: controller,
-                                        physics: const BouncingScrollPhysics(
-                                            parent:
-                                                AlwaysScrollableScrollPhysics()),
-                                        itemCount:
-                                            indexProvide.indValuesList.length *
-                                                    2 -
-                                                1,
-                                        itemBuilder:
-                                            (BuildContext context, idx) {
-                                          // For odd indices, show divider
-                                          if (idx.isOdd) {
-                                            return const ListDivider();
-                                          }
-
-                                          int index = idx ~/ 2;
-                                          // Get the current index data
-                                          var itemData =
-                                              indexProvide.indValuesList[index];
-
-                                          // Determine if the index is checked
-                                          bool ischeck = indexProvide
-                                              .defaultIndexList!.indValues!
-                                              .any((element) =>
-                                                  element.token ==
-                                                  itemData.token);
-
-                                          return IndexListItemWithStream(
-                                            key: ValueKey(
-                                                'index-item-${itemData.token}'),
-                                            itemData: itemData,
-                                            indexProvider: indexProvide,
-                                            marketWatch: marketWatch,
-                                            ischeck: ischeck,
-                                            isDarkMode: theme.isDarkMode,
-                                            indexPosition: widget.indexPosition,
-                                          );
-                                        })
-                                    : Center(
-                                        child: TextWidget.subText(
-                                          text: "No Data found",
-                                          color: Color(0xff777777),
-                                          theme: theme.isDarkMode,
-                                          fw: 0,
-                                        ),
-                                      );
-                          },
-                        ),
-                      ),
-                    ],
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const CustomDragHandler(),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14.0, vertical: 8.0),
+                    child: TextWidget.titleText(
+                      text: "Indices",
+                      theme: theme.isDarkMode,
+                      fw: 1,
+                    ),
                   ),
-                )
-              ],
+
+                  // Tabs section - full width
+                  Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: theme.isDarkMode ? Colors.black : Colors.white,
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Tabs content
+                        Container(
+                          height: 40,
+                          child: Row(
+                            children: [
+                              // Exchange tabs - each taking equal width
+                              ..._exchanges.asMap().entries.map((entry) {
+                                final index = entry.key;
+                                final exchange = entry.value;
+                                final isSelected = _currentPageIndex == index;
+
+                                return Container(
+                                  width:
+                                      95.0, // Fixed width to match watchlist tabs
+                                  child: Material(
+                                    color: Colors.transparent,
+                                    child: InkWell(
+                                      onTap: () async {
+                                        setState(() {
+                                          _currentPageIndex = index;
+                                        });
+                                        // Use jumpToPage to avoid animation through intermediate tabs
+                                        _pageController.jumpToPage(index);
+                                        // Call the existing function to update the list
+                                        await indexProvide.fetchIndexList(
+                                            exchange, context);
+                                      },
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Container(
+                                            width: double.infinity,
+                                            alignment: Alignment.center,
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 10, vertical: 6),
+                                            child: TextWidget.subText(
+                                              text: exchange,
+                                              color: isSelected
+                                                  ? theme.isDarkMode
+                                                      ? colors.secondaryDark
+                                                      : colors.secondaryLight
+                                                  : theme.isDarkMode
+                                                      ? colors.textSecondaryDark
+                                                      : colors
+                                                          .textSecondaryLight,
+                                              textOverflow:
+                                                  TextOverflow.ellipsis,
+                                              maxLines: 1,
+                                              theme: theme.isDarkMode,
+                                              fw: isSelected ? 1 : null,
+                                            ),
+                                          ),
+                                          // Animated underline indicator
+                                          AnimatedContainer(
+                                            duration: const Duration(
+                                                milliseconds: 250),
+                                            curve: Curves.easeInOut,
+                                            height: 2,
+                                            width: isSelected
+                                                ? 77
+                                                : 0, // Width = tab width - 18 (like watchlist)
+                                            margin:
+                                                const EdgeInsets.only(top: 1),
+                                            decoration: BoxDecoration(
+                                              color: colors.colorBlue,
+                                              borderRadius:
+                                                  BorderRadius.circular(2),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  Divider(
+                      color: theme.isDarkMode
+                          ? colors.darkColorDivider
+                          : colors.colorDivider),
+
+                  Expanded(
+                    child: Column(
+                      children: [
+                        // Sticky header that doesn't scroll
+                        Container(
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              SvgPicture.asset(
+                                assets.dInfo,
+                                color: theme.isDarkMode
+                                    ? colors.secondaryDark
+                                    : colors.secondaryLight,
+                              ),
+                              TextWidget.paraText(
+                                text:
+                                    " Long press to add to Slot ${widget.indexPosition + 1}",
+                                color: theme.isDarkMode
+                                    ? colors.secondaryDark
+                                    : colors.secondaryLight,
+                                theme: theme.isDarkMode,
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        // Scrollable list content
+                        Expanded(
+                          child: PageView.builder(
+                            controller: _pageController,
+                            itemCount: _exchanges.length,
+                            onPageChanged: (index) async {
+                              setState(() {
+                                _currentPageIndex = index;
+                              });
+                              // Call the existing function to update the list
+                              await indexProvide.fetchIndexList(
+                                  _exchanges[index], context);
+                            },
+                            itemBuilder: (context, pageIndex) {
+                              return indexProvide.isLoad
+                                  ? const Center(
+                                      child: CircularProgressIndicator())
+                                  : indexProvide.indValuesList.isNotEmpty
+                                      ? ListView.builder(
+                                          shrinkWrap: false,
+                                          controller: controller,
+                                          physics: const BouncingScrollPhysics(
+                                              parent:
+                                                  AlwaysScrollableScrollPhysics()),
+                                          itemCount: indexProvide
+                                                      .indValuesList.length *
+                                                  2 -
+                                              1,
+                                          itemBuilder:
+                                              (BuildContext context, idx) {
+                                            // For odd indices, show divider
+                                            if (idx.isOdd) {
+                                              return const ListDivider();
+                                            }
+
+                                            int index = idx ~/ 2;
+                                            // Get the current index data
+                                            var itemData = indexProvide
+                                                .indValuesList[index];
+
+                                            // Determine if the index is checked
+                                            bool ischeck = indexProvide
+                                                .defaultIndexList!.indValues!
+                                                .any((element) =>
+                                                    element.token ==
+                                                    itemData.token);
+
+                                            return IndexListItemWithStream(
+                                              key: ValueKey(
+                                                  'index-item-${itemData.token}'),
+                                              itemData: itemData,
+                                              indexProvider: indexProvide,
+                                              marketWatch: marketWatch,
+                                              ischeck: ischeck,
+                                              isDarkMode: theme.isDarkMode,
+                                              indexPosition:
+                                                  widget.indexPosition,
+                                            );
+                                          })
+                                      : Center(
+                                          child: TextWidget.subText(
+                                            text: "No Data found",
+                                            color: Color(0xff777777),
+                                            theme: theme.isDarkMode,
+                                            fw: 0,
+                                          ),
+                                        );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                ],
+              ),
             ),
           );
         });
@@ -522,8 +547,8 @@ class _IndexListItemWithStreamState extends State<IndexListItemWithStream> {
         padding: const EdgeInsets.only(left: 16, right: 16, top: 8, bottom: 16),
         color: widget.ischeck
             ? (widget.isDarkMode
-                ? colors.colorWhite.withOpacity(0.05)
-                : colors.colorBlack.withOpacity(0.05))
+                ? colors.textSecondaryDark.withOpacity(0.2)
+                : colors.textSecondaryLight.withOpacity(0.2))
             : Colors.transparent,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -694,7 +719,7 @@ class _DynamicPriceContent extends StatelessWidget {
       } else if ((value.toString() == "null" ||
               percentValue.toString() == "null") ||
           (value.toString() == "0.00" || percentValue.toString() == "0.00")) {
-        _colorCache[key] = colors.textSecondaryLight;
+        _colorCache[key] = colors.textSecondaryDark;
       } else {
         _colorCache[key] = colors.successLight;
       }

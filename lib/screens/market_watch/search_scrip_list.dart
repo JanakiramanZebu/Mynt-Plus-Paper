@@ -267,7 +267,7 @@ print(!searchScrip.exarr.contains('"${scrip.exch}"'));
                                       ? colors.colorLightBlue
                                       : searchScrip.isAdded![index]
                                           ? colors.colorBlue
-                                          : colors.colorGrey,
+                                          : colors.textSecondaryDark,
                                 ),
                               ),
                             ),

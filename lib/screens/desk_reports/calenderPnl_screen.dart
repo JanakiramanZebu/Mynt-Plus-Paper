@@ -17,6 +17,7 @@ import '../../res/global_state_text.dart';
 import '../../sharedWidget/custom_back_btn.dart';
 import '../../sharedWidget/custom_switch_btn.dart';
 import '../../sharedWidget/custom_text_form_field.dart';
+import '../../sharedWidget/list_divider.dart';
 import '../../sharedWidget/snack_bar.dart';
 import '../../sharedWidget/splash_loader.dart';
 import '../../utils/no_emoji_inputformatter.dart';
@@ -31,17 +32,25 @@ class CalenderpnlScreen extends ConsumerStatefulWidget {
 }
 
 class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
-    with TickerProviderStateMixin {
+    with TickerProviderStateMixin, WidgetsBindingObserver {
   late TabController _tabController;
   int activeTab = 0;
+  bool _isInitialized = false;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _tabController = TabController(length: 4, vsync: this);
     _tabController.animation!.addListener(_onTabChanged);
     // Fetch data only if not loaded for this year/segment
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeData();
+    });
+  }
+
+  void _initializeData() {
+    if (!_isInitialized) {
       final ledgerprovider = ref.read(ledgerProvider);
       ledgerprovider.loadOrFetchCalendarPnlData(
         context,
@@ -49,7 +58,44 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
         ledgerprovider.today,
         ledgerprovider.selectedSegment,
       );
-    });
+      _isInitialized = true;
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Ensure data is fetched when screen becomes active again
+    final ledgerprovider = ref.read(ledgerProvider);
+    if (_isInitialized &&
+        (ledgerprovider.calenderpnlAllData == null ||
+            ledgerprovider.calenderpnlAllData?.segment !=
+                ledgerprovider.selectedSegment)) {
+      // If data is null or segment doesn't match, fetch data again
+      ledgerprovider.loadOrFetchCalendarPnlData(
+        context,
+        ledgerprovider.startDate,
+        ledgerprovider.today,
+        ledgerprovider.selectedSegment,
+        force: true,
+      );
+    }
+  }
+
+  // Method to refresh data when screen becomes visible
+  void _refreshDataOnVisibility() {
+    final ledgerprovider = ref.read(ledgerProvider);
+    if (_isInitialized) {
+      // Reset loading state first to ensure loader is shown
+      ledgerprovider.resetCalendarPnlLoading();
+      ledgerprovider.loadOrFetchCalendarPnlData(
+        context,
+        ledgerprovider.startDate,
+        ledgerprovider.today,
+        ledgerprovider.selectedSegment,
+        force: true,
+      );
+    }
   }
 
   void _onTabChanged() {
@@ -63,8 +109,18 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _tabController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.resumed) {
+      // Refresh data when app becomes active again
+      _refreshDataOnVisibility();
+    }
   }
 
   @override
@@ -117,8 +173,9 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
           canPop: true,
           onPopInvokedWithResult: (didPop, result) {
             if (didPop) {
-              ledgerprovider.falseloader('calpnl');
+              // ledgerprovider.falseloader('calpnl');
               ledgerprovider.setSegment("Equity");
+              ledgerprovider.setFinancialYear("");
 
               ledgerprovider.showProfiossSearch(false);
             }
@@ -129,26 +186,49 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
             },
             child: Scaffold(
               appBar: AppBar(
-                leadingWidth: 41,
-                titleSpacing: 6,
+                leadingWidth: 48,
+                titleSpacing: 0,
                 centerTitle: false,
-                leading: InkWell(
-                    onTap: () {
-                      ledgerprovider.falseloader('calpnl');
-                      ledgerprovider.setSegment("Equity");
-                      ledgerprovider.setFinancialYear("");
-                      ledgerprovider.showProfiossSearch(false);
-                      Navigator.pop(context);
-                    },
-                    child: const CustomBackBtn()),
+                leading: Material(
+                   color: Colors.transparent,
+              shape: const CircleBorder(),
+              clipBehavior: Clip.hardEdge,
+                  child: InkWell(
+                      customBorder: const CircleBorder(),
+              splashColor: theme.isDarkMode
+                                                ? colors.splashColorDark
+                                                : colors.splashColorLight,
+                                            highlightColor: theme.isDarkMode
+                                                ? colors.highlightDark
+                                                : colors.highlightLight,
+                      onTap: () {
+                    // ledgerprovider.falseloader('calpnl');
+                        ledgerprovider.setSegment("Equity");
+                        ledgerprovider.setFinancialYear("");
+                        ledgerprovider.showProfiossSearch(false);
+                        Navigator.pop(context);
+                      },
+                      child:  Container(
+                  width: 44, // Increased touch area
+                  height: 44,
+                  alignment: Alignment.center,
+                  child: Icon(
+                    Icons.arrow_back_ios_outlined,
+                    size: 18,
+                    color: theme.isDarkMode
+                        ? colors.textSecondaryDark
+                        : colors.textSecondaryLight,
+                  ),
+                ),),
+                ),
                 elevation: 0.2,
                 title: TextWidget.titleText(
                     text: "P&L Summary",
                     textOverflow: TextOverflow.ellipsis,
                     theme: theme.isDarkMode,
                     color: theme.isDarkMode
-                        ? colors.textSecondaryDark
-                        : colors.textSecondaryLight,
+                        ? colors.textPrimaryDark
+                        : colors.textPrimaryLight,
                     fw: 1),
                 bottom: PreferredSize(
                   preferredSize: Size.fromHeight(40),
@@ -196,32 +276,13 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                               ledgerprovider.availableSegments[index];
                           ledgerprovider.setSegment(selectedSegment);
                           // Check if data is cached for this segment and year
-                          final cacheKey = ledgerprovider.calendarPnlCacheKey(
-                            ledgerprovider.selectedFinancialYear,
-                            selectedSegment,
-                          );
-                          if (!ledgerprovider.calendarPnlCache
-                                  .containsKey(cacheKey) ||
-                              ledgerprovider.calendarPnlCache[cacheKey] ==
-                                  null) {
-                            // Show loader and fetch data
-                            ledgerprovider.loadOrFetchCalendarPnlData(
-                              context,
-                              ledgerprovider.formattedStartDate,
-                              ledgerprovider.formattedendDate,
-                              selectedSegment,
-                              force: true,
-                            );
-                          } else {
-                            // Use cached data
-                            ledgerprovider.loadOrFetchCalendarPnlData(
-                              context,
-                              ledgerprovider.formattedStartDate,
-                              ledgerprovider.formattedendDate,
-                              selectedSegment,
-                              force: false,
-                            );
-                          }
+                          ledgerprovider.loadOrFetchCalendarPnlData(
+                          context,
+                          ledgerprovider.formattedStartDate,
+                          ledgerprovider.formattedendDate,
+                          selectedSegment,
+                          force: false,
+                        );
                         },
                       ),
                     ],
@@ -238,553 +299,554 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                         child: CircularLoaderImage(),
                       ),
                     )
-                  : RefreshIndicator(
-                      onRefresh: _refresh,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Column(
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 16.0, vertical: 16),
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Column(
-                                      children: [
-                                        TextWidget.subText(
-                                            text: ledgerprovider
-                                                .selectedFinancialYear,
-                                            color: theme.isDarkMode
-                                                ? colors.textSecondaryDark
-                                                : colors.textSecondaryLight,
-                                            textOverflow: TextOverflow.ellipsis,
-                                            theme: theme.isDarkMode,
-                                            fw: 3),
-                                        const SizedBox(height: 4),
-                                        TextWidget.subText(
-                                            text: "Realised P&L",
-                                            color: theme.isDarkMode
-                                                ? colors.textSecondaryDark
-                                                : colors.textSecondaryLight,
-                                            textOverflow: TextOverflow.ellipsis,
-                                            theme: theme.isDarkMode,
-                                            fw: 3),
-                                        const SizedBox(height: 4),
-                                        TextWidget.headText(
-                                            text:
-                                                "${ledgerprovider.calenderpnlAllData != null ? ledgerprovider.calenderpnlAllData!.realized.toStringAsFixed(2) : 0.0} ",
-                                            color: ledgerprovider
-                                                        .calenderpnlAllData !=
-                                                    null
-                                                ? ledgerprovider
-                                                            .calenderpnlAllData!
-                                                            .realized !=
-                                                        0
-                                                    ? ledgerprovider
-                                                                .calenderpnlAllData!
-                                                                .realized <
-                                                            0
-                                                        ? theme.isDarkMode
-                                                            ? colors.lossDark
-                                                            : colors.lossLight
-                                                        : theme.isDarkMode
-                                                            ? colors.profitDark
-                                                            : colors.profitLight
-                                                    : theme.isDarkMode
-                                                        ? colors
-                                                            .textSecondaryDark
-                                                        : colors
-                                                            .textSecondaryLight
-                                                : theme.isDarkMode
-                                                    ? colors.textSecondaryDark
-                                                    : colors.textSecondaryLight,
-                                            textOverflow: TextOverflow.ellipsis,
-                                            theme: theme.isDarkMode,
-                                            fw: 0),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                          ledgerprovider.calenderpnlAllData == null
-                              ? const Center(
-                                  child: Padding(
-                                  padding: EdgeInsets.only(top: 60),
-                                  child: NoDataFound(),
-                                ))
-                              : Expanded(
-                                  child: SingleChildScrollView(
-                                    physics:
-                                        const AlwaysScrollableScrollPhysics(),
-                                    child: Column(
-                                      children: [
-                                        Padding(
-                                          padding: const EdgeInsets.all(8.0),
-                                          child: CalendarTabs(
-                                            theme: theme,
-                                            heatmapData:
-                                                ledgerprovider.heatmapData,
-                                          ),
-                                        ),
-                                        Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Divider(
+                  : SafeArea(
+                    child: RefreshIndicator(
+                        onRefresh: _refresh,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Column(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16.0, vertical: 16),
+                                  child: Row(
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Column(
+                                        children: [
+                                          TextWidget.subText(
+                                              text: ledgerprovider
+                                                  .selectedFinancialYear,
                                               color: theme.isDarkMode
-                                                  ? colors.dividerDark
-                                                  : colors.dividerLight,
-                                            ),
-                                            Container(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      horizontal: 16,
-                                                      vertical: 5),
-                                              decoration: BoxDecoration(
-                                                borderRadius:
-                                                    BorderRadius.circular(5),
-                                              ),
-                                              child:
-                                                  !ledgerprovider
-                                                          .showProfitlossSearch
-                                                      ? SizedBox(
-                                                          height: 40,
-                                                          child: Container(
-                                                            padding:
-                                                                const EdgeInsets
-                                                                    .symmetric(
-                                                                    horizontal:
-                                                                        5),
-                                                            decoration:
-                                                                BoxDecoration(
-                                                              color: colors
-                                                                  .searchBg,
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                          5),
-                                                            ),
-                                                            child: Row(
-                                                              mainAxisAlignment:
-                                                                  MainAxisAlignment
-                                                                      .end,
-                                                              children: [
-                                                                // Padding(
-                                                                //   padding:
-                                                                //       const EdgeInsets
-                                                                //           .only(
-                                                                //           right:
-                                                                //               10),
-                                                                //   child: Row(
-                                                                //     children: [
-                                                                //       Material(
-                                                                //         color: Colors
-                                                                //             .transparent,
-                                                                //         shape:
-                                                                //             const CircleBorder(),
-                                                                //         clipBehavior:
-                                                                //             Clip.hardEdge,
-                                                                //         child:
-                                                                //             InkWell(
-                                                                //           customBorder:
-                                                                //               const CircleBorder(),
-                                                                //           splashColor: theme.isDarkMode
-                                                                //               ? colors.splashColorDark
-                                                                //               : colors.splashColorLight,
-                                                                //           highlightColor: theme.isDarkMode
-                                                                //               ? colors.highlightDark
-                                                                //               : colors.highlightLight,
-                                                                //           onTap:
-                                                                //               () {
-                                                                //             Future.delayed(const Duration(milliseconds: 150),
-                                                                //                 () {
-                                                                //               ledgerprovider.showProfiossSearch(true);
-                                                                //             });
-                                                                //           },
-                                                                //           child:
-                                                                //               Padding(
-                                                                //             padding:
-                                                                //                 const EdgeInsets.all(8.0),
-                                                                //             child:
-                                                                //                 SvgPicture.asset(
-                                                                //               assets.searchIcon,
-                                                                //               color: colors.textPrimaryLight,
-                                                                //               width: 18,
-                                                                //             ),
-                                                                //           ),
-                                                                //         ),
-                                                                //       ),
-                                                                //     ],
-                                                                //   ),
-                                                                // ),
-                                                                Material(
-                                                                  color: Colors
-                                                                      .transparent,
-                                                                  shape:
-                                                                      const RoundedRectangleBorder(),
-                                                                  child:
-                                                                      InkWell(
-                                                                    customBorder:
-                                                                        const RoundedRectangleBorder(),
-                                                                    splashColor: theme.isDarkMode
-                                                                        ? colors
-                                                                            .splashColorDark
-                                                                        : colors
-                                                                            .splashColorLight,
-                                                                    highlightColor: theme.isDarkMode
-                                                                        ? colors
-                                                                            .highlightDark
-                                                                        : colors
-                                                                            .highlightLight,
-                                                                    onTap: () {
-                                                                      _showBottomSheetcharges(
-                                                                          context,
-                                                                          theme,
-                                                                          ledgerprovider);
-                                                                    },
-                                                                    child:
-                                                                        Padding(
-                                                                      padding: const EdgeInsets
-                                                                          .symmetric(
-                                                                          horizontal:
-                                                                              8.0,
-                                                                          vertical:
-                                                                              5),
-                                                                      child: TextWidget
-                                                                          .subText(
-                                                                        text:
-                                                                            "Charges",
-                                                                        color: theme.isDarkMode
-                                                                            ? colors.primaryDark
-                                                                            : colors.primaryLight,
-                                                                        textOverflow:
-                                                                            TextOverflow.ellipsis,
-                                                                        theme: theme
-                                                                            .isDarkMode,
-                                                                        fw: 2,
-                                                                      ),
-                                                                    ),
-                                                                  ),
-                                                                )
-                                                              ],
-                                                            ),
-                                                          ),
-                                                        )
-                                                      : SizedBox(
-                                                          height: 40,
-                                                          child: TextFormField(
-                                                            autofocus: true,
-                                                            controller:
-                                                                ledgerprovider
-                                                                    .profitlossSearchCtrl,
-                                                            style: TextWidget
-                                                                .textStyle(
-                                                              fontSize: 14,
-                                                              theme: theme
-                                                                  .isDarkMode,
-                                                              fw: 1,
-                                                            ),
-                                                            keyboardType:
-                                                                TextInputType
-                                                                    .text,
-                                                            textCapitalization:
-                                                                TextCapitalization
-                                                                    .characters,
-                                                            inputFormatters: [
-                                                              UpperCaseTextFormatter(),
-                                                              NoEmojiInputFormatter(),
-                                                              FilteringTextInputFormatter
-                                                                  .deny(RegExp(
-                                                                      '[π£•₹€℅™∆√¶/.,]'))
-                                                            ],
-                                                            decoration:
-                                                                InputDecoration(
-                                                                    hintText:
-                                                                        "Search",
-                                                                    hintStyle: TextWidget.textStyle(
-                                                                        fontSize:
-                                                                            14,
-                                                                        theme: theme
-                                                                            .isDarkMode,
-                                                                        fw: 0,
-                                                                        color: colors
-                                                                            .textSecondaryLight),
-                                                                    fillColor: colors
-                                                                        .searchBg,
-                                                                    filled:
-                                                                        true,
-                                                                    prefixIcon:
-                                                                        Padding(
-                                                                      padding: const EdgeInsets
-                                                                          .all(
-                                                                          8.0),
-                                                                      child: SvgPicture.asset(
-                                                                          assets
-                                                                              .searchIcon,
-                                                                          color: colors
-                                                                              .textPrimaryLight,
-                                                                          fit: BoxFit
-                                                                              .scaleDown,
-                                                                          width:
-                                                                              20),
-                                                                    ),
-                                                                    suffixIcon:
-                                                                        Material(
-                                                                      color: Colors
-                                                                          .transparent,
-                                                                      shape:
-                                                                          const CircleBorder(),
-                                                                      clipBehavior:
-                                                                          Clip.hardEdge,
-                                                                      child:
-                                                                          InkWell(
-                                                                        customBorder:
-                                                                            const CircleBorder(),
-                                                                        splashColor: theme.isDarkMode
-                                                                            ? colors.splashColorDark
-                                                                            : colors.splashColorLight,
-                                                                        highlightColor: theme.isDarkMode
-                                                                            ? colors.highlightDark
-                                                                            : colors.highlightLight,
-                                                                        onTap:
-                                                                            () async {
-                                                                          Future.delayed(
-                                                                              const Duration(milliseconds: 150),
-                                                                              () {
-                                                                            ledgerprovider.clearProfitlossSearch();
-                                                                            ledgerprovider.showProfiossSearch(false);
-                                                                          });
-                                                                        },
-                                                                        child: SvgPicture.asset(
-                                                                            assets
-                                                                                .removeIcon,
-                                                                            fit:
-                                                                                BoxFit.scaleDown,
-                                                                            width: 20),
-                                                                      ),
-                                                                    ),
-                                                                    enabledBorder: OutlineInputBorder(
-                                                                        borderSide: BorderSide
-                                                                            .none,
-                                                                        borderRadius: BorderRadius.circular(
-                                                                            20)),
-                                                                    disabledBorder:
-                                                                        InputBorder
-                                                                            .none,
-                                                                    focusedBorder: OutlineInputBorder(
-                                                                        borderSide: BorderSide
-                                                                            .none,
-                                                                        borderRadius: BorderRadius.circular(
-                                                                            20)),
-                                                                    contentPadding: const EdgeInsets.symmetric(
-                                                                        horizontal:
-                                                                            5,
-                                                                        vertical:
-                                                                            5),
-                                                                    border: OutlineInputBorder(
-                                                                        borderSide: BorderSide
-                                                                            .none,
-                                                                        borderRadius:
-                                                                            BorderRadius.circular(20))),
-                                                            onChanged: (value) {
-                                                              if (value
-                                                                  .isNotEmpty) {
-                                                                // positionBook.showPositionSearch(false);
-                                                              } else {
-                                                                // positionBook.showPositionSearch(false);
-                                                              }
-
-                                                              ledgerprovider
-                                                                  .profitlossSearch(
-                                                                      value,
-                                                                      context);
-                                                            },
-                                                          ),
-                                                        ),
-                                            ),
-                                            Divider(
+                                                  ? colors.textSecondaryDark
+                                                  : colors.textSecondaryLight,
+                                              textOverflow: TextOverflow.ellipsis,
+                                              theme: theme.isDarkMode,
+                                              fw: 3),
+                                          const SizedBox(height: 4),
+                                          TextWidget.subText(
+                                              text: "Realised P&L",
                                               color: theme.isDarkMode
-                                                  ? colors.dividerDark
-                                                  : colors.dividerLight,
-                                            ),
-                                            sortedDates.isEmpty
-                                                ? Center(
-                                                    child: Padding(
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                            top: 30),
-                                                    child: Column(
-                                                      children: [
-                                                        const NoDataFound(),
-                                                        if (ledgerprovider
-                                                            .profitlossSearchCtrl
-                                                            .text
-                                                            .isNotEmpty)
-                                                          Padding(
-                                                            padding:
-                                                                const EdgeInsets
-                                                                    .only(
-                                                                    top: 16),
-                                                            child: TextWidget
-                                                                .subText(
-                                                              text:
-                                                                  "No results found for '${ledgerprovider.profitlossSearchCtrl.text}'",
-                                                              color: theme.isDarkMode
-                                                                  ? colors
-                                                                      .textSecondaryDark
-                                                                  : colors
-                                                                      .textSecondaryLight,
-                                                              textOverflow:
-                                                                  TextOverflow
-                                                                      .ellipsis,
-                                                              theme: theme
-                                                                  .isDarkMode,
-                                                              fw: 0,
-                                                            ),
-                                                          ),
-                                                      ],
-                                                    ),
-                                                  ))
-                                                : ListView.separated(
-                                                    shrinkWrap: true,
-                                                    physics:
-                                                        const NeverScrollableScrollPhysics(),
-                                                    itemCount:
-                                                        sortedDates.length,
-                                                    itemBuilder:
-                                                        (context, index) {
-                                                      final dateKey =
-                                                          sortedDates[index];
-                                                      final tradesForDate =
-                                                          ledgerprovider
-                                                                  .grouped[
-                                                              dateKey]!;
-                                                      // Calculate total realized PnL for this date
-                                                      final totalRealisedPnl =
-                                                          tradesForDate.fold<
-                                                                  double>(
-                                                              0.0,
-                                                              (sum, item) =>
-                                                                  sum +
-                                                                  double.parse(item
-                                                                      .realisedpnl!));
-
-                                                      // Format the date (e.g. "03 Oct 2024")
-                                                      final dateString =
-                                                          '${dateKey.day.toString().padLeft(2, '0')} '
-                                                          '${_monthName(dateKey.month)} '
-                                                          '${dateKey.year}';
-
-                                                      return Theme(
-                                                          data: Theme.of(
-                                                                  context)
-                                                              .copyWith(
-                                                                  dividerColor:
-                                                                      Colors
-                                                                          .transparent),
-                                                          child: InkWell(
-                                                              onTap: () {
-                                                                _showBottomSheet(
-                                                                    context,
-                                                                    tradesForDate,
-                                                                    theme,
-                                                                    dateString,
-                                                                    screenWidth);
-                                                              },
-                                                              child: Padding(
-                                                                padding: const EdgeInsets
-                                                                    .symmetric(
-                                                                    vertical:
-                                                                        16.0,
-                                                                    horizontal:
-                                                                        16.0),
-                                                                child: Row(
-                                                                  mainAxisAlignment:
-                                                                      MainAxisAlignment
-                                                                          .spaceBetween,
-                                                                  children: [
-                                                                    SizedBox(
-                                                                      width:
-                                                                          screenWidth *
-                                                                              0.5,
-                                                                      child:
-                                                                          Row(
-                                                                        children: [
-                                                                          TextWidget.subText(
-                                                                              text: "${dateString}  ",
-                                                                              color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                                                                              textOverflow: TextOverflow.ellipsis,
-                                                                              theme: theme.isDarkMode,
-                                                                              fw: 0),
-                                                                          Container(
-                                                                            padding:
-                                                                                const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-                                                                            decoration:
-                                                                                BoxDecoration(
-                                                                              color: colors.btnBg,
-                                                                              borderRadius: BorderRadius.circular(2),
-                                                                            ),
-                                                                            child:
-                                                                                TextWidget.subText(
-                                                                              text: "${tradesForDate.length}",
-                                                                              textOverflow: TextOverflow.ellipsis,
-                                                                              theme: theme.isDarkMode,
-                                                                              color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                                                                              fw: 0,
-                                                                            ),
-                                                                          ),
-                                                                        ],
-                                                                      ),
-                                                                    ),
-                                                                    TextWidget.subText(
-                                                                        text: "${(totalRealisedPnl).toStringAsFixed(2)} ",
-                                                                        color: totalRealisedPnl != 0
-                                                                            ? totalRealisedPnl > 0
-                                                                                ? theme.isDarkMode
-                                                                                    ? colors.profitDark
-                                                                                    : colors.profitLight
-                                                                                : totalRealisedPnl < 0
-                                                                                    ? theme.isDarkMode
-                                                                                        ? colors.lossDark
-                                                                                        : colors.lossLight
-                                                                                    : theme.isDarkMode
-                                                                                        ? colors.textSecondaryDark
-                                                                                        : colors.textSecondaryLight
-                                                                            : theme.isDarkMode
-                                                                                ? colors.textPrimaryDark
-                                                                                : colors.textPrimaryLight,
-                                                                        textOverflow: TextOverflow.ellipsis,
-                                                                        theme: theme.isDarkMode,
-                                                                        fw: 0),
-                                                                  ],
-                                                                ),
-                                                              )));
-                                                    },
-                                                    separatorBuilder:
-                                                        (BuildContext context,
-                                                            int index) {
-                                                      return Divider(
-                                                        color: theme.isDarkMode
-                                                            ? colors.dividerDark
-                                                            : colors
-                                                                .dividerLight,
-                                                      );
-                                                    },
-                                                  )
-                                          ],
-                                        ),
-                                      ],
-                                    ),
+                                                  ? colors.textSecondaryDark
+                                                  : colors.textSecondaryLight,
+                                              textOverflow: TextOverflow.ellipsis,
+                                              theme: theme.isDarkMode,
+                                              fw: 3),
+                                          const SizedBox(height: 4),
+                                          TextWidget.headText(
+                                              text:
+                                                  "${ledgerprovider.calenderpnlAllData != null ? ledgerprovider.calenderpnlAllData!.realized.toStringAsFixed(2) : 0.0} ",
+                                              color: ledgerprovider
+                                                          .calenderpnlAllData !=
+                                                      null
+                                                  ? ledgerprovider
+                                                              .calenderpnlAllData!
+                                                              .realized !=
+                                                          0
+                                                      ? ledgerprovider
+                                                                  .calenderpnlAllData!
+                                                                  .realized <
+                                                              0
+                                                          ? theme.isDarkMode
+                                                              ? colors.lossDark
+                                                              : colors.lossLight
+                                                          : theme.isDarkMode
+                                                              ? colors.profitDark
+                                                              : colors.profitLight
+                                                      : theme.isDarkMode
+                                                          ? colors
+                                                              .textSecondaryDark
+                                                          : colors
+                                                              .textSecondaryLight
+                                                  : theme.isDarkMode
+                                                      ? colors.textSecondaryDark
+                                                      : colors.textSecondaryLight,
+                                              textOverflow: TextOverflow.ellipsis,
+                                              theme: theme.isDarkMode,
+                                              fw: 0),
+                                        ],
+                                      ),
+                                    ],
                                   ),
                                 ),
-                        ],
+                              ],
+                            ),
+                            ledgerprovider.calenderpnlAllData == null
+                                ? const Center(
+                                    child: Padding(
+                                    padding: EdgeInsets.only(top: 60),
+                                    child: NoDataFound(),
+                                  ))
+                                : Expanded(
+                                    child: SingleChildScrollView(
+                                      physics:
+                                          const AlwaysScrollableScrollPhysics(),
+                                      child: Column(
+                                        children: [
+                                          Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: CalendarTabs(
+                                              theme: theme,
+                                              heatmapData:
+                                                  ledgerprovider.heatmapData,
+                                            ),
+                                          ),
+                                          Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Divider(
+                                                color: theme.isDarkMode
+                                                    ? colors.dividerDark
+                                                    : colors.dividerLight,
+                                              ),
+                                              Container(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 16,
+                                                        vertical: 5),
+                                                decoration: BoxDecoration(
+                                                  borderRadius:
+                                                      BorderRadius.circular(5),
+                                                ),
+                                                child:
+                                                    !ledgerprovider
+                                                            .showProfitlossSearch
+                                                        ? SizedBox(
+                                                            height: 40,
+                                                            child: Container(
+                                                              padding:
+                                                                  const EdgeInsets
+                                                                      .symmetric(
+                                                                      horizontal:
+                                                                          5),
+                                                              decoration:
+                                                                  BoxDecoration(
+                                                               color: theme.isDarkMode
+                                    ? colors.searchBgDark
+                                    : colors.searchBg,
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            5),
+                                                              ),
+                                                              child: Row(
+                                                                mainAxisAlignment:
+                                                                    MainAxisAlignment
+                                                                        .end,
+                                                                children: [
+                                                                  // Padding(
+                                                                  //   padding:
+                                                                  //       const EdgeInsets
+                                                                  //           .only(
+                                                                  //           right:
+                                                                  //               10),
+                                                                  //   child: Row(
+                                                                  //     children: [
+                                                                  //       Material(
+                                                                  //         color: Colors
+                                                                  //             .transparent,
+                                                                  //         shape:
+                                                                  //             const CircleBorder(),
+                                                                  //         clipBehavior:
+                                                                  //             Clip.hardEdge,
+                                                                  //         child:
+                                                                  //             InkWell(
+                                                                  //           customBorder:
+                                                                  //               const CircleBorder(),
+                                                                  //           splashColor: theme.isDarkMode
+                                                                  //               ? colors.splashColorDark
+                                                                  //               : colors.splashColorLight,
+                                                                  //           highlightColor: theme.isDarkMode
+                                                                  //               ? colors.highlightDark
+                                                                  //               : colors.highlightLight,
+                                                                  //           onTap:
+                                                                  //               () {
+                                                                  //             Future.delayed(const Duration(milliseconds: 150),
+                                                                  //                 () {
+                                                                  //               ledgerprovider.showProfiossSearch(true);
+                                                                  //             });
+                                                                  //           },
+                                                                  //           child:
+                                                                  //               Padding(
+                                                                  //             padding:
+                                                                  //                 const EdgeInsets.all(8.0),
+                                                                  //             child:
+                                                                  //                 SvgPicture.asset(
+                                                                  //               assets.searchIcon,
+                                                                  //               color: colors.textPrimaryLight,
+                                                                  //               width: 18,
+                                                                  //             ),
+                                                                  //           ),
+                                                                  //         ),
+                                                                  //       ),
+                                                                  //     ],
+                                                                  //   ),
+                                                                  // ),
+                                                                  Material(
+                                                                    color: Colors
+                                                                        .transparent,
+                                                                    shape:
+                                                                        const RoundedRectangleBorder(),
+                                                                    child:
+                                                                        InkWell(
+                                                                      customBorder:
+                                                                          const RoundedRectangleBorder(),
+                                                                      splashColor: theme.isDarkMode
+                                                                          ? colors
+                                                                              .splashColorDark
+                                                                          : colors
+                                                                              .splashColorLight,
+                                                                      highlightColor: theme.isDarkMode
+                                                                          ? colors
+                                                                              .highlightDark
+                                                                          : colors
+                                                                              .highlightLight,
+                                                                      onTap: () {
+                                                                        _showBottomSheetcharges(
+                                                                            context,
+                                                                            theme,
+                                                                            ledgerprovider);
+                                                                      },
+                                                                      child:
+                                                                          Padding(
+                                                                        padding: const EdgeInsets
+                                                                            .symmetric(
+                                                                            horizontal:
+                                                                                8.0,
+                                                                            vertical:
+                                                                                5),
+                                                                        child: TextWidget
+                                                                            .subText(
+                                                                          text:
+                                                                              "Charges",
+                                                                          color: theme.isDarkMode
+                                                                              ? colors.primaryDark
+                                                                              : colors.primaryLight,
+                                                                          textOverflow:
+                                                                              TextOverflow.ellipsis,
+                                                                          theme: theme
+                                                                              .isDarkMode,
+                                                                          fw: 2,
+                                                                        ),
+                                                                      ),
+                                                                    ),
+                                                                  )
+                                                                ],
+                                                              ),
+                                                            ),
+                                                          )
+                                                        : SizedBox(
+                                                            height: 40,
+                                                            child: TextFormField(
+                                                              autofocus: true,
+                                                              controller:
+                                                                  ledgerprovider
+                                                                      .profitlossSearchCtrl,
+                                                             style: TextWidget.textStyle(
+                                    fontSize: 16,
+                                    color: theme.isDarkMode
+                                        ? colors.textPrimaryDark
+                                        : colors.textPrimaryLight,
+                                    theme: theme.isDarkMode,
+                                  ),
+                                                              keyboardType:
+                                                                  TextInputType
+                                                                      .text,
+                                                              textCapitalization:
+                                                                  TextCapitalization
+                                                                      .characters,
+                                                              inputFormatters: [
+                                                                UpperCaseTextFormatter(),
+                                                                NoEmojiInputFormatter(),
+                                                                FilteringTextInputFormatter
+                                                                    .deny(RegExp(
+                                                                        '[π£•₹€℅™∆√¶/.,]'))
+                                                              ],
+                                                              decoration:
+                                                                  InputDecoration(
+                                                                      hintText:
+                                                                          "Search",
+                                                                      hintStyle: TextWidget.textStyle(
+                                      fontSize: 14,
+                                      theme: theme.isDarkMode,
+                                     color: theme.isDarkMode
+                                ? colors.textSecondaryDark
+                                : colors.textSecondaryLight,
+                                    ),
+                              fillColor: theme.isDarkMode ? colors.searchBgDark : colors.searchBg,
+                                                                      filled:
+                                                                          true,
+                                                                      prefixIcon:
+                                                                          Padding(
+                                                                        padding: const EdgeInsets
+                                                                            .all(
+                                                                            8.0),
+                                                                        child: SvgPicture.asset(
+                                                                            assets
+                                                                                .searchIcon,
+                                                                            color: colors
+                                                                                .textPrimaryLight,
+                                                                            fit: BoxFit
+                                                                                .scaleDown,
+                                                                            width:
+                                                                                20),
+                                                                      ),
+                                                                      suffixIcon:
+                                                                          Material(
+                                                                        color: Colors
+                                                                            .transparent,
+                                                                        shape:
+                                                                            const CircleBorder(),
+                                                                        clipBehavior:
+                                                                            Clip.hardEdge,
+                                                                        child:
+                                                                            InkWell(
+                                                                          customBorder:
+                                                                              const CircleBorder(),
+                                                                          splashColor: theme.isDarkMode
+                                                                              ? colors.splashColorDark
+                                                                              : colors.splashColorLight,
+                                                                          highlightColor: theme.isDarkMode
+                                                                              ? colors.highlightDark
+                                                                              : colors.highlightLight,
+                                                                          onTap:
+                                                                              () async {
+                                                                            Future.delayed(
+                                                                                const Duration(milliseconds: 150),
+                                                                                () {
+                                                                              ledgerprovider.clearProfitlossSearch();
+                                                                              ledgerprovider.showProfiossSearch(false);
+                                                                            });
+                                                                          },
+                                                                          child: SvgPicture.asset(
+                                                                              assets
+                                                                                  .removeIcon,
+                                                                              fit:
+                                                                                  BoxFit.scaleDown,
+                                                                              width: 20),
+                                                                        ),
+                                                                      ),
+                                                                      enabledBorder: OutlineInputBorder(
+                                                                          borderSide: BorderSide
+                                                                              .none,
+                                                                          borderRadius: BorderRadius.circular(
+                                                                              20)),
+                                                                      disabledBorder:
+                                                                          InputBorder
+                                                                              .none,
+                                                                      focusedBorder: OutlineInputBorder(
+                                                                          borderSide: BorderSide
+                                                                              .none,
+                                                                          borderRadius: BorderRadius.circular(
+                                                                              20)),
+                                                                      contentPadding: const EdgeInsets.symmetric(
+                                                                          horizontal:
+                                                                              5,
+                                                                          vertical:
+                                                                              5),
+                                                                      border: OutlineInputBorder(
+                                                                          borderSide: BorderSide
+                                                                              .none,
+                                                                          borderRadius:
+                                                                              BorderRadius.circular(20))),
+                                                              onChanged: (value) {
+                                                                if (value
+                                                                    .isNotEmpty) {
+                                                                  // positionBook.showPositionSearch(false);
+                                                                } else {
+                                                                  // positionBook.showPositionSearch(false);
+                                                                }
+                                
+                                                                ledgerprovider
+                                                                    .profitlossSearch(
+                                                                        value,
+                                                                        context);
+                                                              },
+                                                            ),
+                                                          ),
+                                              ),
+                                              Divider(
+                                                color: theme.isDarkMode
+                                                    ? colors.dividerDark
+                                                    : colors.dividerLight,
+                                              ),
+                                              sortedDates.isEmpty
+                                                  ? Center(
+                                                      child: Padding(
+                                                      padding:
+                                                          const EdgeInsets.only(
+                                                              top: 30),
+                                                      child: Column(
+                                                        children: [
+                                                          const NoDataFound(),
+                                                          if (ledgerprovider
+                                                              .profitlossSearchCtrl
+                                                              .text
+                                                              .isNotEmpty)
+                                                            Padding(
+                                                              padding:
+                                                                  const EdgeInsets
+                                                                      .only(
+                                                                      top: 16),
+                                                              child: TextWidget
+                                                                  .subText(
+                                                                text:
+                                                                    "No results found for '${ledgerprovider.profitlossSearchCtrl.text}'",
+                                                                color: theme.isDarkMode
+                                                                    ? colors
+                                                                        .textSecondaryDark
+                                                                    : colors
+                                                                        .textSecondaryLight,
+                                                                textOverflow:
+                                                                    TextOverflow
+                                                                        .ellipsis,
+                                                                theme: theme
+                                                                    .isDarkMode,
+                                                                fw: 0,
+                                                              ),
+                                                            ),
+                                                        ],
+                                                      ),
+                                                    ))
+                                                  : ListView.separated(
+                                                      shrinkWrap: true,
+                                                      physics:
+                                                          const NeverScrollableScrollPhysics(),
+                                                      itemCount:
+                                                          sortedDates.length,
+                                                      itemBuilder:
+                                                          (context, index) {
+                                                        final dateKey =
+                                                            sortedDates[index];
+                                                        final tradesForDate =
+                                                            ledgerprovider
+                                                                    .grouped[
+                                                                dateKey]!;
+                                                        // Calculate total realized PnL for this date
+                                                        final totalRealisedPnl =
+                                                            tradesForDate.fold<
+                                                                    double>(
+                                                                0.0,
+                                                                (sum, item) =>
+                                                                    sum +
+                                                                    double.parse(item
+                                                                        .realisedpnl!));
+                                
+                                                        // Format the date (e.g. "03 Oct 2024")
+                                                        final dateString =
+                                                            '${dateKey.day.toString().padLeft(2, '0')} '
+                                                            '${_monthName(dateKey.month)} '
+                                                            '${dateKey.year}';
+                                
+                                                        return Theme(
+                                                            data: Theme.of(
+                                                                    context)
+                                                                .copyWith(
+                                                                    dividerColor:
+                                                                        Colors
+                                                                            .transparent),
+                                                            child: InkWell(
+                                                                onTap: () {
+                                                                  _showBottomSheet(
+                                                                      context,
+                                                                      tradesForDate,
+                                                                      theme,
+                                                                      dateString,
+                                                                      screenWidth);
+                                                                },
+                                                                child: Padding(
+                                                                  padding: const EdgeInsets
+                                                                      .symmetric(
+                                                                      vertical:
+                                                                          16.0,
+                                                                      horizontal:
+                                                                          16.0),
+                                                                  child: Row(
+                                                                    mainAxisAlignment:
+                                                                        MainAxisAlignment
+                                                                            .spaceBetween,
+                                                                    children: [
+                                                                      SizedBox(
+                                                                        width:
+                                                                            screenWidth *
+                                                                                0.5,
+                                                                        child:
+                                                                            Row(
+                                                                          children: [
+                                                                            TextWidget.subText(
+                                                                                text: "${dateString}  ",
+                                                                                color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                                                                                textOverflow: TextOverflow.ellipsis,
+                                                                                theme: theme.isDarkMode,
+                                                                                fw: 3),
+                                                                            Container(
+                                                                              padding:
+                                                                                  const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                                                                              decoration:
+                                                                                  BoxDecoration(
+                                                                                color: theme.isDarkMode ? colors.btnBg.withOpacity(0.1) : colors.btnBg.withOpacity(0.8),
+                                                                                borderRadius: BorderRadius.circular(2),
+                                                                              ),
+                                                                              child:
+                                                                                  TextWidget.subText(
+                                                                                text: "${tradesForDate.length}",
+                                                                                textOverflow: TextOverflow.ellipsis,
+                                                                                theme: theme.isDarkMode,
+                                                                                color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                                                                                fw: 3,
+                                                                              ),
+                                                                            ),
+                                                                          ],
+                                                                        ),
+                                                                      ),
+                                                                      TextWidget.subText(
+                                                                          text: "${(totalRealisedPnl).toStringAsFixed(2)} ",
+                                                                          color: totalRealisedPnl != 0
+                                                                              ? totalRealisedPnl > 0
+                                                                                  ? theme.isDarkMode
+                                                                                      ? colors.profitDark
+                                                                                      : colors.profitLight
+                                                                                  : totalRealisedPnl < 0
+                                                                                      ? theme.isDarkMode
+                                                                                          ? colors.lossDark
+                                                                                          : colors.lossLight
+                                                                                      : theme.isDarkMode
+                                                                                          ? colors.textPrimaryDark
+                                                                                          : colors.textPrimaryLight
+                                                                              : theme.isDarkMode
+                                                                                  ? colors.textPrimaryDark
+                                                                                  : colors.textPrimaryLight,
+                                                                          textOverflow: TextOverflow.ellipsis,
+                                                                          theme: theme.isDarkMode,
+                                                                          fw: 3),
+                                                                    ],
+                                                                  ),
+                                                                )));
+                                                      },
+                                                      separatorBuilder:
+                                                          (BuildContext context,
+                                                              int index) {
+                                                        return Divider(
+                                                          color: theme.isDarkMode
+                                                              ? colors.dividerDark
+                                                              : colors
+                                                                  .dividerLight,
+                                                        );
+                                                      },
+                                                    )
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                          ],
+                        ),
                       ),
-                    ),
+                  ),
             ),
           ),
         );
@@ -1071,63 +1133,97 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
   void _showBottomSheetcharges(
       BuildContext context, ThemesProvider theme, LDProvider ledgerprovider) {
     showModalBottomSheet(
-      shape: const RoundedRectangleBorder(
+      shape:  RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       useSafeArea: true,
       isDismissible: true,
-      backgroundColor: Colors.white,
+      backgroundColor: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
       context: context,
       isScrollControlled: true,
       builder: (context) => Container(
         padding: EdgeInsets.only(
           bottom: MediaQuery.of(context).viewInsets.bottom,
         ),
-        child: DraggableScrollableSheet(
-          initialChildSize: 0.2,
-          minChildSize: 0.2,
-          maxChildSize: 0.4,
-          expand: false,
-          builder: (BuildContext context, ScrollController scrollController) {
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const CustomDragHandler(),
-                const SizedBox(height: 20),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      TextWidget.titleText(
-                        text: "Charges and Taxes",
-                        color: theme.isDarkMode
-                            ? colors.textPrimaryDark
-                            : colors.textPrimaryLight,
-                        theme: theme.isDarkMode,
-                        fw: 0,
+        child: SafeArea(
+          child: Container(
+             decoration: BoxDecoration(
+             borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(16),
+                topRight: Radius.circular(16),
+              ),
+           color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+           border: Border(
+                                    top: BorderSide(
+                                      color: theme.isDarkMode
+                                          ? colors.textSecondaryDark
+                                              .withOpacity(0.5)
+                                          : colors.colorWhite,
+                                    ),
+                                    left: BorderSide(
+                                      color: theme.isDarkMode
+                                          ? colors.textSecondaryDark
+                                              .withOpacity(0.5)
+                                          : colors.colorWhite,
+                                    ),
+                                    right: BorderSide(
+                                      color: theme.isDarkMode
+                                          ? colors.textSecondaryDark
+                                              .withOpacity(0.5)
+                                          : colors.colorWhite,
+                                    ),
+                                  ),
+          
+           
+          ),
+            child: DraggableScrollableSheet(
+              initialChildSize: 0.2,
+              minChildSize: 0.2,
+              maxChildSize: 0.4,
+              expand: false,
+              builder: (BuildContext context, ScrollController scrollController) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const CustomDragHandler(),
+                    // ListDivider(),
+                    const SizedBox(height: 20),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          TextWidget.subText(
+                            text: "Charges and Taxes",
+                            color: theme.isDarkMode
+                                ? colors.textPrimaryDark
+                                : colors.textPrimaryLight,
+                            theme: theme.isDarkMode,
+                            fw: 3,
+                          ),
+                          TextWidget.subText(
+                            text: ledgerprovider.calenderpnlAllData != null
+                                ? ledgerprovider.calenderpnlAllData!.totalCharges !=
+                                        null
+                                    ? ledgerprovider
+                                        .calenderpnlAllData!.totalCharges!
+                                        .toStringAsFixed(2)
+                                    : '0.0'
+                                : '0.0',
+                            color: theme.isDarkMode
+                                ? colors.textPrimaryDark
+                                : colors.textPrimaryLight,
+                            theme: theme.isDarkMode,
+                            fw: 3,
+                          ),
+                        ],
                       ),
-                      TextWidget.titleText(
-                        text: ledgerprovider.calenderpnlAllData != null
-                            ? ledgerprovider.calenderpnlAllData!.totalCharges !=
-                                    null
-                                ? ledgerprovider
-                                    .calenderpnlAllData!.totalCharges!
-                                    .toStringAsFixed(2)
-                                : '0.0'
-                            : '0.0',
-                        color: theme.isDarkMode
-                            ? colors.textPrimaryDark
-                            : colors.textPrimaryLight,
-                        theme: theme.isDarkMode,
-                        fw: 0,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            );
-          },
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
         ),
       ),
     );
@@ -1141,201 +1237,221 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
       ),
       useSafeArea: true,
       isDismissible: true,
-      backgroundColor: Colors.white,
+      backgroundColor: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
       context: context,
       isScrollControlled: true,
-      builder: (context) => Container(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-        ),
-        child: DraggableScrollableSheet(
-          initialChildSize: 0.88,
-          minChildSize: .4,
-          maxChildSize: 0.88,
-          expand: false,
-          builder: (BuildContext context, ScrollController scrollController) {
-            return Container(
-              decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(30),
-                  color:
-                      theme.isDarkMode ? colors.colorBlack : colors.colorWhite),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Drag Handle
-                  const CustomDragHandler(),
-                  const SizedBox(height: 20),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: TextWidget.titleText(
-                        text: "Trades in ${date}",
-                        textOverflow: TextOverflow.ellipsis,
-                        theme: theme.isDarkMode,
-                        color: theme.isDarkMode
-                            ? colors.textPrimaryDark
-                            : colors.textPrimaryLight,
-                        fw: 0),
-                  ),
-                  Divider(
-                    color: theme.isDarkMode
-                        ? colors.dividerDark
-                        : colors.dividerLight,
-                  ),
-                  Expanded(
-                    child: ListView.separated(
-                      controller: scrollController,
-                      itemCount: trade.length,
-                      itemBuilder: (context, index) {
-                        String symbol = trade[index].sCRIPSYMBOL ?? '';
-                        String cleanedSymbol =
-                            symbol.replaceFirst(RegExp(r'^\d+\s+'), '');
-
-                        return Column(
-                          children: [
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 16.0),
-                              child: Column(
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 4.0),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        SizedBox(
-                                          width: widthval *
-                                              0.80, // Ensures text takes the available width
-                                          child: InkWell(
-                                            onTap: () async {
-                                              // Handle the onTap event here
-                                            },
-                                            child: TextWidget.subText(
-                                              text: cleanedSymbol,
-                                              color: theme.isDarkMode
-                                                  ? colors.textPrimaryDark
-                                                  : colors.textPrimaryLight,
-                                              theme: theme.isDarkMode,
-                                              fw: 0,
-                                              textOverflow:
-                                                  TextOverflow.ellipsis,
-                                              softWrap: true,
-                                              maxLines: 2,
+      builder: (context) => SafeArea(
+        child: Container(
+           decoration: BoxDecoration(
+             borderRadius: const BorderRadius.only(
+        topLeft: Radius.circular(16),
+        topRight: Radius.circular(16),
+            ),
+           color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+           border: Border(
+                                    top: BorderSide(
+                                      color: theme.isDarkMode
+                                          ? colors.textSecondaryDark
+                                              .withOpacity(0.5)
+                                          : colors.colorWhite,
+                                    ),
+                                    left: BorderSide(
+                                      color: theme.isDarkMode
+                                          ? colors.textSecondaryDark
+                                              .withOpacity(0.5)
+                                          : colors.colorWhite,
+                                    ),
+                                    right: BorderSide(
+                                      color: theme.isDarkMode
+                                          ? colors.textSecondaryDark
+                                              .withOpacity(0.5)
+                                          : colors.colorWhite,
+                                    ),
+                                  ),
+        
+           
+          ),
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+          ),
+          child: DraggableScrollableSheet(
+            initialChildSize: 0.88,
+            minChildSize: .4,
+            maxChildSize: 0.88,
+            expand: false,
+            builder: (BuildContext context, ScrollController scrollController) {
+              return Container(
+                
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Drag Handle
+                    const CustomDragHandler(),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: TextWidget.titleText(
+                          text: "Trades in ${date}",
+                          textOverflow: TextOverflow.ellipsis,
+                          theme: theme.isDarkMode,
+                          color: theme.isDarkMode
+                              ? colors.textPrimaryDark
+                              : colors.textPrimaryLight,
+                          fw: 1),
+                    ),
+                    Divider(
+                      color: theme.isDarkMode
+                          ? colors.dividerDark
+                          : colors.dividerLight,
+                    ),
+                    Expanded(
+                      child: ListView.separated(
+                        controller: scrollController,
+                        itemCount: trade.length,
+                        itemBuilder: (context, index) {
+                          String symbol = trade[index].sCRIPSYMBOL ?? '';
+                          String cleanedSymbol =
+                              symbol.replaceFirst(RegExp(r'^\d+\s+'), '');
+        
+                          return Column(
+                            children: [
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 16.0),
+                                child: Column(
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 4.0),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          SizedBox(
+                                            width: widthval *
+                                                0.80, // Ensures text takes the available width
+                                            child: InkWell(
+                                              onTap: () async {
+                                                // Handle the onTap event here
+                                              },
+                                              child: TextWidget.subText(
+                                                text: cleanedSymbol,
+                                                color: theme.isDarkMode
+                                                    ? colors.textPrimaryDark
+                                                    : colors.textPrimaryLight,
+                                                theme: theme.isDarkMode,
+                                                fw: 3,
+                                                textOverflow:
+                                                    TextOverflow.ellipsis,
+                                                softWrap: true,
+                                                maxLines: 2,
+                                              ),
                                             ),
                                           ),
-                                        ),
-                                      ],
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                  const SizedBox(height: 25),
-                                  trade[index].oQTY != "0" &&
-                                          trade[index].oRATE != "0"
-                                      ? _buildInfoRow(
-                                          "Open Qty / Price",
-                                          "${double.tryParse(trade[index].oQTY)!.toInt()} / ${double.tryParse(trade[index].oRATE)!.toStringAsFixed(2)}",
-                                          theme)
-                                      : const SizedBox.shrink(),
-                                  const SizedBox(height: 8),
-                                  _buildInfoRow(
-                                      "Buy Qty / Price",
-                                      "${double.tryParse(trade[index].bQTY)!.toInt()} / ${double.tryParse(trade[index].bRATE)!.toStringAsFixed(2)}",
-                                      theme),
-                                  const SizedBox(height: 8),
-                                  _buildInfoRow(
-                                      "Sell Qty / Price",
-                                      "${double.tryParse(trade[index].sQTY)!.toInt()} / ${double.tryParse(trade[index].sRATE)!.toStringAsFixed(2)}",
-                                      theme),
-                                  const SizedBox(height: 8),
-                                  _buildInfoRow(
-                                      "Net Qty",
-                                      "${double.tryParse(trade[index].updatedNETQTY)!.toInt()}",
-                                      theme),
-                                  const SizedBox(height: 8),
-                                  Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            TextWidget.subText(
-                                                text: "Realised",
-                                                theme: false,
-                                                color: theme.isDarkMode
-                                                    ? colors.textSecondaryDark
-                                                    : colors.textSecondaryLight,
-                                                fw: 3),
-                                            TextWidget.subText(
-                                                text:
-                                                    "${double.parse(trade[index].realisedpnl).toStringAsFixed(2)}",
-                                                theme: false,
-                                                color: double.parse(trade[index]
-                                                                .realisedpnl)
-                                                            .toStringAsFixed(
-                                                                2) !=
-                                                        0
-                                                    ? double.parse(trade[index]
-                                                                .realisedpnl) >
-                                                            0
-                                                        ? theme.isDarkMode
-                                                            ? colors.profitDark
-                                                            : colors.profitLight
-                                                        : double.parse(trade[
-                                                                        index]
-                                                                    .realisedpnl) <
-                                                                0
-                                                            ? theme.isDarkMode
-                                                                ? colors
-                                                                    .lossDark
-                                                                : colors
-                                                                    .lossLight
-                                                            : theme.isDarkMode
-                                                                ? colors
-                                                                    .textSecondaryDark
-                                                                : colors
-                                                                    .textSecondaryLight
-                                                    : theme.isDarkMode
-                                                        ? colors.textPrimaryDark
-                                                        : colors
-                                                            .textPrimaryLight,
-                                                fw: 3),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 8),
-                                        Divider(
-                                            color: theme.isDarkMode
-                                                ? colors.dividerDark
-                                                : colors.dividerLight,
-                                            thickness: 0)
-                                      ]),
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 8.0),
-                                    child: Divider(
-                                      color: theme.isDarkMode
-                                          ? colors.dividerDark
-                                          : colors.dividerLight,
-                                    ),
-                                  ),
-                                ],
+                                    const SizedBox(height: 25),
+                                    trade[index].oQTY != "0" &&
+                                            trade[index].oRATE != "0"
+                                        ? _buildInfoRow(
+                                            "Open Qty / Price",
+                                            "${double.tryParse(trade[index].oQTY)!.toInt()} / ${double.tryParse(trade[index].oRATE)!.toStringAsFixed(2)}",
+                                            theme)
+                                        : const SizedBox.shrink(),
+                                    const SizedBox(height: 8),
+                                    _buildInfoRow(
+                                        "Buy Qty / Price",
+                                        "${double.tryParse(trade[index].bQTY)!.toInt()} / ${double.tryParse(trade[index].bRATE)!.toStringAsFixed(2)}",
+                                        theme),
+                                    const SizedBox(height: 8),
+                                    _buildInfoRow(
+                                        "Sell Qty / Price",
+                                        "${double.tryParse(trade[index].sQTY)!.toInt()} / ${double.tryParse(trade[index].sRATE)!.toStringAsFixed(2)}",
+                                        theme),
+                                    const SizedBox(height: 8),
+                                    _buildInfoRow(
+                                        "Net Qty",
+                                        "${double.tryParse(trade[index].updatedNETQTY)!.toInt()}",
+                                        theme),
+                                    const SizedBox(height: 8),
+                                    Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              TextWidget.subText(
+                                                  text: "Realised",
+                                                  theme: false,
+                                                  color: theme.isDarkMode
+                                                      ? colors.textSecondaryDark
+                                                      : colors.textSecondaryLight,
+                                                  fw: 3),
+                                              TextWidget.subText(
+                                                  text:
+                                                      "${double.parse(trade[index].realisedpnl).toStringAsFixed(2)}",
+                                                  theme: false,
+                                                  color: double.parse(trade[index]
+                                                                  .realisedpnl)
+                                                              .toStringAsFixed(
+                                                                  2) !=
+                                                          0
+                                                      ? double.parse(trade[index]
+                                                                  .realisedpnl) >
+                                                              0
+                                                          ? theme.isDarkMode
+                                                              ? colors.profitDark
+                                                              : colors.profitLight
+                                                          : double.parse(trade[
+                                                                          index]
+                                                                      .realisedpnl) <
+                                                                  0
+                                                              ? theme.isDarkMode
+                                                                  ? colors
+                                                                      .lossDark
+                                                                  : colors
+                                                                      .lossLight
+                                                              :theme.isDarkMode
+                                                          ? colors.textPrimaryDark
+                                                          : colors
+                                                              .textPrimaryLight
+                                                      : theme.isDarkMode
+                                                          ? colors.textPrimaryDark
+                                                          : colors
+                                                              .textPrimaryLight,
+                                                  fw: 3),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 8),
+                                          Divider(
+                                              color: theme.isDarkMode
+                                                  ? colors.dividerDark
+                                                  : colors.dividerLight,
+                                              thickness: 0)
+                                        ]),
+                                   
+                                  ],
+                                ),
                               ),
-                            ),
-                          ],
-                        );
-                      },
-                      separatorBuilder: (BuildContext context, int index) {
-                        return Divider(
-                          color: theme.isDarkMode
-                              ? colors.dividerDark
-                              : colors.dividerLight,
-                        );
-                      },
+                              
+                            ],
+                          );
+                        },
+                        separatorBuilder: (BuildContext context, int index) {
+                          return Divider(
+                            color: theme.isDarkMode
+                                ? colors.dividerDark
+                                : colors.dividerLight,
+                          );
+                        },
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            );
-          },
+                  ],
+                ),
+              );
+            },
+          ),
         ),
       ),
     );
@@ -1572,14 +1688,14 @@ class _MonthlyGrid extends StatelessWidget {
           ? colors.textSecondaryDark
           : colors.textSecondaryLight;
     } else {
-      bgColor = (monthValue < 0) ? colors.lossLight : colors.profitLight;
+      bgColor = (monthValue < 0) ? theme.isDarkMode ? colors.lossDark : colors.lossLight : theme.isDarkMode ? colors.profitDark : colors.profitLight;
     }
     return Container(
       margin: const EdgeInsets.all(6),
       width: screenWidth * 0.19,
       height: screenWidth * 0.19,
       decoration: BoxDecoration(
-        color: colors.btnBg.withOpacity(0.8),
+        color: theme.isDarkMode ? colors.btnBg.withOpacity(0.1) : colors.btnBg.withOpacity(0.8),
         borderRadius: BorderRadius.circular(8.0),
       ),
       child: Column(

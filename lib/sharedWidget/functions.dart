@@ -145,6 +145,24 @@ String formatInCrore(int number) {
   return '$formattedValue Cr';
 }
 
+// Compact formatter for INR amounts: uses L (Lakh) and Cr (Crore) when large
+// Examples: 125000 -> 1.25 L, 25000000 -> 2.50 Cr
+String formatAmountCompact(num amount, {int fractionDigits = 2}) {
+  final bool isNegative = amount < 0;
+  final double absolute = amount.abs().toDouble();
+
+  String result;
+  if (absolute >= 10000000) {
+    result = '${(absolute / 10000000).toStringAsFixed(fractionDigits)} Cr';
+  } else if (absolute >= 100000) {
+    result = '${(absolute / 100000).toStringAsFixed(fractionDigits)} L';
+  } else {
+    result = absolute.toStringAsFixed(fractionDigits);
+  }
+
+  return isNegative ? '-$result' : result;
+}
+
 String formatDateTime({required String value}) {
   String formatedDate = '';
   if (value.isNotEmpty) {

@@ -34,8 +34,8 @@ class CustomBackBtn extends ConsumerWidget {
                       Icons.arrow_back_ios_outlined,
                       size: 18,
                       color: theme.isDarkMode
-                          ? colors.colorWhite
-                          : colors.colorBlack,
+                          ? colors.textSecondaryDark
+                          : colors.textSecondaryLight,
                     ),
                   ),
                 ),

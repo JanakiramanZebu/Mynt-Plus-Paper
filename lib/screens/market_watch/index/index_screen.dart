@@ -103,61 +103,73 @@ class _DefaultIndexListState extends ConsumerState<DefaultIndexList>
         : Container(
             margin: const EdgeInsets.only(bottom: 10),
             height: 80,
-            width: MediaQuery.of(context).size.width * 0.90,
+            width: MediaQuery.of(context).size.width * 1.0,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: List.generate(3, (i) {
                 if (i >= indexValues.length)
-                  return const Expanded(child: SizedBox());
+                  return const SizedBox.shrink();
                 final item = indexValues[i];
-                return Material(
-                  color: Colors.transparent,
-                  shape: const RoundedRectangleBorder(),
-                  child: InkWell(
-                    customBorder: const RoundedRectangleBorder(),
-                    splashColor: theme.isDarkMode
-                        ? colors.splashColorDark
-                        : colors.splashColorLight,
-                    highlightColor: theme.isDarkMode
-                        ? colors.highlightDark
-                        : colors.highlightLight,
-                    onTap: () {
-                      _handleTap(
-                          context,
-                          marketWatch,
-                          item.token?.toString() ?? "",
-                          item.exch?.toString() ?? "");
-                    },
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        TextWidget.subText(
-                          text: item.idxname ?? "",
-                          theme: false,
-                          color: theme.isDarkMode
-                              ? colors.textPrimaryDark
-                              : colors.textPrimaryLight,
+                return Expanded(
+                  child: Container(
+                    height: 80,
+                    margin: const EdgeInsets.symmetric(horizontal: 0),
+                    child: Material(
+                      color: Colors.transparent,
+                      shape: const RoundedRectangleBorder(),
+                      child: InkWell(
+                        customBorder: const RoundedRectangleBorder(),
+                        splashColor: theme.isDarkMode
+                            ? colors.splashColorDark
+                            : colors.splashColorLight,
+                        highlightColor: theme.isDarkMode
+                            ? colors.highlightDark
+                            : colors.highlightLight,
+                        onTap: () {
+                          _handleTap(
+                              context,
+                              marketWatch,
+                              item.token?.toString() ?? "",
+                              item.exch?.toString() ?? "");
+                        },
+                        child: Container(
+                          width: double.infinity,
+                          height: double.infinity,
+                          padding: const EdgeInsets.all(8),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              TextWidget.subText(
+                                text: item.idxname ?? "",
+                                theme: false,
+                                color: theme.isDarkMode
+                                    ? colors.textPrimaryDark
+                                    : colors.textPrimaryLight,
+                                fw: 3,
+                              ),
+                              const SizedBox(height: 4),
+                              _LivePriceWidget(
+                                key: ValueKey('price_${item.token ?? ""}'),
+                                token: item.token?.toString() ?? "",
+                                initialLtp: (item.ltp == null || item.ltp == "null")
+                                    ? "0.00"
+                                    : item.ltp?.toString() ?? "0.00",
+                                initialChange:
+                                    (item.change == null || item.change == "null")
+                                        ? "0.00"
+                                        : item.change?.toString() ?? "0.00",
+                                initialPerChange: (item.perChange == null ||
+                                        item.perChange == "null")
+                                    ? "0.00"
+                                    : item.perChange?.toString() ?? "0.00",
+                                isDarkMode: theme.isDarkMode,
+                                src: false,
+                              ),
+                            ],
+                          ),
                         ),
-                        const SizedBox(height: 4),
-                        _LivePriceWidget(
-                          key: ValueKey('price_${item.token ?? ""}'),
-                          token: item.token?.toString() ?? "",
-                          initialLtp: (item.ltp == null || item.ltp == "null")
-                              ? "0.00"
-                              : item.ltp?.toString() ?? "0.00",
-                          initialChange:
-                              (item.change == null || item.change == "null")
-                                  ? "0.00"
-                                  : item.change?.toString() ?? "0.00",
-                          initialPerChange: (item.perChange == null ||
-                                  item.perChange == "null")
-                              ? "0.00"
-                              : item.perChange?.toString() ?? "0.00",
-                          isDarkMode: theme.isDarkMode,
-                          src: false,
-                        ),
-                      ],
+                      ),
                     ),
                   ),
                 );
@@ -284,7 +296,7 @@ class OptimizedIndexItem extends ConsumerWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
             decoration: BoxDecoration(
-              color: theme.isDarkMode ? Colors.black : Colors.white,
+              color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
             ),
             width: itemWidth,
             child: Column(
@@ -384,6 +396,7 @@ class OptimizedIndexItem extends ConsumerWidget {
         await showModalBottomSheet(
             context: context,
             isScrollControlled: true,
+            useSafeArea: true,
             isDismissible: true,
             shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.only(
@@ -646,6 +659,7 @@ class _LivePriceWidgetState extends State<_LivePriceWidget> {
                               ? colors.textSecondaryDark
                               : colors.textSecondaryLight,
                           12,
+                          3,
                         )),
                     const SizedBox(
                       width: 3,
@@ -683,12 +697,14 @@ class _LivePriceWidgetState extends State<_LivePriceWidget> {
     final key = '$change|$perChange';
     return _colorCache.putIfAbsent(key, () {
       if (change.startsWith("-") || perChange.startsWith('-')) {
-        return colors.errorLight;
+        return widget.isDarkMode ? colors.lossDark : colors.lossLight;
       } else if ((change == "null" || perChange == "null") ||
           (change == "0.00" || perChange == "0.00")) {
-        return colors.textSecondaryLight;
+        return widget.isDarkMode
+            ? colors.textSecondaryDark
+            : colors.textSecondaryLight;
       } else {
-        return colors.successLight;
+        return widget.isDarkMode ? colors.profitDark : colors.profitLight;
       }
     });
   }

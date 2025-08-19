@@ -56,6 +56,7 @@ class ApiLinks {
   String get searchScripNew => '${bemynt}global/SearchScrip';
   String get technicalData => '$goMyntURL/GetTechnicals';
   String get watchListrename => '$goMyntURL/RenameMW';
+  String get spanCalc => 'https://go.mynt.in/NorenWClientTV/SpanCalc';
 
   // Cams
   String get goCamsURL => "https://rekycbe.mynt.in/portfolio";
@@ -231,6 +232,7 @@ class ApiLinks {
   String get mfallpayment => "$dashBoardURL/mf/lumsum_purchase_mob";
   String get topSchemes => "$dashBoardURL/mf/getTopschemes";
   String get redemption => "$dashBoardURL/mf/lumsum_redemption_mob";
+  String get etfcategory => "$dashBoardURL/dd//etf-category";
 
   String get mainfund => 'https://fundapi.mynt.in/api';
   String get clientcheck => '$mainfund/client_check';

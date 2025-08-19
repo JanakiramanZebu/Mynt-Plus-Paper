@@ -87,13 +87,32 @@ class _GttOrderDetailState extends ConsumerState<GttOrderDetail> {
                       backgroundColor: Colors.transparent,
                       body: Container(
                         decoration: BoxDecoration(
-                          color: theme.isDarkMode
-                              ? colors.colorBlack
-                              : colors.colorWhite,
                           borderRadius: const BorderRadius.only(
-                            topLeft: Radius.circular(16),
-                            topRight: Radius.circular(16),
-                          ),
+      topLeft: Radius.circular(16),
+      topRight: Radius.circular(16),
+    ),
+         color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+         border: Border(
+                                  top: BorderSide(
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                            .withOpacity(0.5)
+                                        : colors.colorWhite,
+                                  ),
+                                  left: BorderSide(
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                            .withOpacity(0.5)
+                                        : colors.colorWhite,
+                                  ),
+                                  right: BorderSide(
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                            .withOpacity(0.5)
+                                        : colors.colorWhite,
+                                  ),
+                                ),
+
                         ),
                         child: Column(
                           children: <Widget>[
@@ -143,16 +162,13 @@ class _GttOrderDetailState extends ConsumerState<GttOrderDetail> {
                                                                   "${displayData.symbol?.replaceAll("-EQ", "")}",
                                                               theme: theme
                                                                   .isDarkMode,
-                                                              fw: 0),
+                                                                  color : theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                                                              fw: 1),
                                                           TextWidget.subText(
                                                               text:
                                                                   " ${displayData.option} ",
                                                               theme: false,
-                                                              color: theme.isDarkMode
-                                                                  ? colors
-                                                                      .colorWhite
-                                                                  : colors
-                                                                      .colorBlack,
+                                                            color : theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
                                                               fw: 3,
                                                               textOverflow:
                                                                   TextOverflow
@@ -180,8 +196,7 @@ class _GttOrderDetailState extends ConsumerState<GttOrderDetail> {
                                                                       displayData
                                                                               .ltp ==
                                                                           "0.00"
-                                                                  ? colors
-                                                                      .ltpgrey
+                                                                  ? theme.isDarkMode ?  colors.textSecondaryDark : colors.textSecondaryLight
                                                                   : displayData
                                                                               .ltp!
                                                                               .startsWith(
@@ -190,10 +205,8 @@ class _GttOrderDetailState extends ConsumerState<GttOrderDetail> {
                                                                               .ltp!
                                                                               .startsWith(
                                                                                   "-")
-                                                                      ? colors
-                                                                          .darkred
-                                                                      : colors
-                                                                          .ltpgreen,
+                                                                      ? theme.isDarkMode ? colors.lossDark : colors.lossLight
+                                                                      : theme.isDarkMode ? colors.profitDark : colors.profitLight,
                                                               fw: 3),
                                                           // TextWidget.paraText(
                                                           //     text:
@@ -206,11 +219,7 @@ class _GttOrderDetailState extends ConsumerState<GttOrderDetail> {
                                                               text:
                                                                   "${double.parse("${displayData.change ?? 0.00} ").toStringAsFixed(2)} (${displayData.perChange ?? 0.00}%)",
                                                               theme: false,
-                                                              color: theme.isDarkMode
-                                                                  ? colors
-                                                                      .colorWhite
-                                                                  : colors
-                                                                      .colorBlack,
+                                                              color : theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
                                                               fw: 3),
                                                         ],
                                                       ),
@@ -229,8 +238,9 @@ class _GttOrderDetailState extends ConsumerState<GttOrderDetail> {
                                                           assets.rightarrowcur,
                                                           width: 12,
                                                           height: 12,
-                                                          color: const Color(
-                                                              0xff777777),
+                                                         color: theme.isDarkMode
+                                                              ? colors.textSecondaryDark
+                                                              : colors.textSecondaryLight,
                                                         ),
                                                       ),
                                                     ],
@@ -249,12 +259,17 @@ class _GttOrderDetailState extends ConsumerState<GttOrderDetail> {
                                             child: Container(
                                               height: 45,
                                               decoration: BoxDecoration(
-                                                border: Border.all(
-                                                  color:
-                                                      colors.btnOutlinedBorder,
-                                                  width: 1,
-                                                ),
-                                                color: colors.btnBg,
+                                                border: theme.isDarkMode
+                                                          ? null
+                                                          : Border.all(
+                                                              color: colors
+                                                                  .primaryLight,
+                                                              width: 1),
+                                                color: theme.isDarkMode
+                                                          ? colors
+                                                              .textSecondaryDark
+                                                              .withOpacity(0.6)
+                                                          : colors.btnBg,
                                                 borderRadius:
                                                     BorderRadius.circular(5),
                                               ),
@@ -282,9 +297,12 @@ class _GttOrderDetailState extends ConsumerState<GttOrderDetail> {
                                                             builder: (BuildContext
                                                                 dialogContext) {
                                                               return AlertDialog(
-                                                                backgroundColor:
-                                                                    colors
-                                                                        .colorWhite,
+                                                                backgroundColor: theme
+                                                                        .isDarkMode
+                                                                    ? const Color(
+                                                                        0xFF121212)
+                                                                    : const Color(
+                                                                        0xFFF1F3F8),
                                                                 titlePadding:
                                                                     const EdgeInsets
                                                                         .symmetric(
@@ -354,7 +372,7 @@ class _GttOrderDetailState extends ConsumerState<GttOrderDetail> {
                                                                               child: Icon(
                                                                                 Icons.close_rounded,
                                                                                 size: 22,
-                                                                                color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                                                                               color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                                                                               ),
                                                                             ),
                                                                           ),
@@ -377,8 +395,8 @@ class _GttOrderDetailState extends ConsumerState<GttOrderDetail> {
                                                                                 "${displayData.tsym?.replaceAll("-EQ", "")} ${displayData.expDate} ${displayData.option}",
                                                                             theme: theme
                                                                                 .isDarkMode,
-                                                                            color: theme.isDarkMode
-                                                                                ? colors.textPrimaryDark
+                                                                             color: theme.isDarkMode
+                                                                                ? colors.textSecondaryDark
                                                                                 : colors.textPrimaryLight,
                                                                             fw: 3),
                                                                       ],
@@ -398,8 +416,8 @@ class _GttOrderDetailState extends ConsumerState<GttOrderDetail> {
                                                                                 "Do you want to Cancel this order?",
                                                                             theme: theme
                                                                                 .isDarkMode,
-                                                                            color: theme.isDarkMode
-                                                                                ? colors.textPrimaryDark
+                                                                           color: theme.isDarkMode
+                                                                                ? colors.textSecondaryDark
                                                                                 : colors.textPrimaryLight,
                                                                             fw: 3),
                                                                       ),
@@ -424,7 +442,7 @@ class _GttOrderDetailState extends ConsumerState<GttOrderDetail> {
                                                                           .styleFrom(
                                                                         minimumSize: const Size(
                                                                             0,
-                                                                            40), // width, height
+                                                                            45), // width, height
                                                                         side: BorderSide(
                                                                             color:
                                                                                 colors.btnOutlinedBorder), // Outline border color
@@ -440,12 +458,10 @@ class _GttOrderDetailState extends ConsumerState<GttOrderDetail> {
                                                                           .titleText(
                                                                         text:
                                                                             "Cancel",
-                                                                        color: !theme.isDarkMode
-                                                                            ? colors.colorWhite
-                                                                            : colors.colorBlack,
+                                                                        color: colors.colorWhite,
                                                                         theme: theme
                                                                             .isDarkMode,
-                                                                        fw: 0,
+                                                                        fw: 2,
                                                                       ),
                                                                     ),
                                                                   ),
@@ -464,7 +480,7 @@ class _GttOrderDetailState extends ConsumerState<GttOrderDetail> {
                                                             child:
                                                                 CircularProgressIndicator(
                                                               strokeWidth: 2,
-                                                              color: colors
+                                                              color: theme.isDarkMode ? colors.colorWhite :  colors
                                                                   .primaryDark,
                                                             ),
                                                           )
@@ -473,13 +489,12 @@ class _GttOrderDetailState extends ConsumerState<GttOrderDetail> {
                                                                 "Cancel Order",
                                                             theme: theme
                                                                 .isDarkMode,
-                                                            color: theme
-                                                                    .isDarkMode
-                                                                ? colors
-                                                                    .primaryDark
-                                                                : colors
-                                                                    .primaryLight,
-                                                            fw: 0),
+                                                             color: theme.isDarkMode
+                                                                      ? colors
+                                                                          .colorWhite
+                                                                      : colors
+                                                                          .primaryLight,
+                                                            fw: 2),
                                                   ),
                                                 ),
                                               ),
@@ -537,7 +552,7 @@ class _GttOrderDetailState extends ConsumerState<GttOrderDetail> {
                                                         theme: theme.isDarkMode,
                                                         color:
                                                             colors.colorWhite,
-                                                        fw: 0),
+                                                        fw: 2),
                                                   ),
                                                 ),
                                               ),
@@ -686,15 +701,14 @@ class _GttOrderDetailState extends ConsumerState<GttOrderDetail> {
                   ? colors.textSecondaryDark
                   : colors.textSecondaryLight,
               fw: 3),
-          TextWidget.subText(text: value, theme: theme.isDarkMode, fw: 3),
+          TextWidget.subText(text: value, theme: theme.isDarkMode, color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight, fw: 3),
         ],
       ),
       const SizedBox(height: 8),
       Divider(
-          color: theme.isDarkMode
-              ? colors.darkColorDivider
-              : const Color(0xffEBEEF3),
-          thickness: 1)
+            thickness: 0,
+            color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
+          )
     ]);
   }
 }

@@ -278,6 +278,31 @@ class LDProvider extends DefaultChangeNotifier {
     _caeventalldata = val;
     _sharingdatacalendar = val;
     _cpactiondata = val;
+
+    // Clear calendar PnL related data structures when switching accounts
+    if (val == null) {
+      calendarPnlCache.clear();
+      grouped.clear();
+      _originalGrouped.clear();
+      _heatmapData.clear();
+      monthlyPnL.clear();
+
+      // Reset financial year and date-related variables
+      selectedFinancialYear = '';
+      startTaxDate = DateTime.now();
+      endTaxDate = DateTime.now();
+      selectedMonth = DateTime.now();
+      formattedStartDate = '';
+      formattedendDate = '';
+
+      // Reset loading state
+      _calendarpnlloading = false;
+
+      // Reset sharing-related variables
+      _ucode = '';
+      notsharing = true;
+      changeornot = '';
+    }
   }
 
   String _eqtypestring = "";
@@ -510,7 +535,7 @@ class LDProvider extends DefaultChangeNotifier {
   bool _ledgerloading = false;
   bool get ledgerloading => _ledgerloading;
 
-  bool _cpactionloader = true;
+  bool _cpactionloader = false;
   bool get cpactionloader => _cpactionloader;
 
   bool _pledgehistory = false;
@@ -1091,6 +1116,7 @@ class LDProvider extends DefaultChangeNotifier {
 
       print("${_holdingsAllData}rererere");
     } catch (e) {
+      _cpactionloader = false;
       _holdingsloading = false;
       // ScaffoldMessenger.of(context).showSnackBar(
       //   warningMessage(context, 'Error occurred try again later'),
@@ -1673,12 +1699,12 @@ class LDProvider extends DefaultChangeNotifier {
       notifyListeners();
     } catch (e) {
       _reportsloading = false;
-      debugPrint("$e");
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          warningMessage(context, 'Error occurred try again later'),
-        );
-      }
+      debugPrint("fdfdffdfdfd: $e");
+      // if (context.mounted) {
+      //   ScaffoldMessenger.of(context).showSnackBar(
+      //     warningMessage(context, 'Error occurred try again later'),
+      //   );
+      // }
     }
   }
 
@@ -3544,6 +3570,33 @@ class LDProvider extends DefaultChangeNotifier {
   // Helper to generate cache key
   String calendarPnlCacheKey(String fy, String segment) => '$fy|$segment';
 
+  // Method to clear calendar PnL cache when switching accounts
+  Future<void> clearCalendarPnlCache() async {
+    calendarPnlCache.clear();
+    grouped.clear();
+    _originalGrouped.clear();
+    _heatmapData.clear();
+    monthlyPnL.clear();
+
+    // Reset financial year and date-related variables
+    selectedFinancialYear = '';
+    startTaxDate = DateTime.now();
+    endTaxDate = DateTime.now();
+    selectedMonth = DateTime.now();
+    formattedStartDate = '';
+    formattedendDate = '';
+
+    // Reset loading state
+    _calendarpnlloading = false;
+
+    // Reset sharing-related variables
+    _ucode = '';
+    notsharing = true;
+    changeornot = '';
+
+    notifyListeners();
+  }
+
   /// Prefetch all years' data for the current segment (used on profile icon tap)
   Future<void> prefetchAllCalendarPnlDataForSegment(
       BuildContext context, String segment,
@@ -3584,6 +3637,15 @@ class LDProvider extends DefaultChangeNotifier {
     final fy = selectedFinancialYear;
     final segment = type;
     final cacheKey = calendarPnlCacheKey(fy, segment);
+
+    // Always show loader when force is true or when no cached data exists
+    if (force ||
+        !calendarPnlCache.containsKey(cacheKey) ||
+        calendarPnlCache[cacheKey] == null) {
+      _calendarpnlloading = true;
+      notifyListeners();
+    }
+
     if (!force &&
         calendarPnlCache.containsKey(cacheKey) &&
         calendarPnlCache[cacheKey] != null) {
@@ -3596,6 +3658,7 @@ class LDProvider extends DefaultChangeNotifier {
       // Rebuild grouped and heatmapData from cached data
       _rebuildGroupedAndHeatmap(_calenderpnlAllData);
       setFinancialYear(fy);
+      _calendarpnlloading = false;
       notifyListeners();
       return;
     }
@@ -3780,6 +3843,12 @@ class LDProvider extends DefaultChangeNotifier {
   bool isCalendarPnlDataCached(String fy, String segment) {
     final key = calendarPnlCacheKey(fy, segment);
     return calendarPnlCache.containsKey(key) && calendarPnlCache[key] != null;
+  }
+
+  // Method to reset calendar PnL loading state
+  void resetCalendarPnlLoading() {
+    _calendarpnlloading = false;
+    notifyListeners();
   }
 }
 // List<double> getCustItemsHeight() {

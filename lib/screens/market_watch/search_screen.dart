@@ -121,6 +121,7 @@ class _AddScripState extends ConsumerState<SearchScreen>
             }
             await searchScrip.searchClear();
             currentRouteName = 'homeScreen';
+            FocusScope.of(context).unfocus();
             // Navigator.pop(context);
           },
           child: GestureDetector(
@@ -149,6 +150,7 @@ class _AddScripState extends ConsumerState<SearchScreen>
                           searchScrip.setpageName("");
                           currentRouteName = 'homeScreen';
                           Navigator.pop(context);
+                          FocusScope.of(context).unfocus();
                         },
                         child: Container(
                           width: 44,
@@ -158,8 +160,8 @@ class _AddScripState extends ConsumerState<SearchScreen>
                             Icons.arrow_back_ios_outlined,
                             size: 18,
                             color: theme.isDarkMode
-                                ? colors.colorWhite
-                                : colors.colorBlack,
+                                ? colors.textSecondaryDark
+                                : colors.textSecondaryLight,
                           ),
                         ),
                       ),
@@ -171,7 +173,9 @@ class _AddScripState extends ConsumerState<SearchScreen>
                       child: Container(
                         height: 40,
                         decoration: BoxDecoration(
-                          color: colors.searchBg,
+                          color: theme.isDarkMode
+                ? colors.searchBgDark
+                : colors.searchBg,
                           borderRadius: BorderRadius.circular(5),
                           // border: Border.all(
                           //   color: theme.isDarkMode ? const Color(0xFF2A2A2A) : const Color(0xFFEEEEEE),
@@ -184,9 +188,9 @@ class _AddScripState extends ConsumerState<SearchScreen>
                             const SizedBox(width: 12),
                             SvgPicture.asset(
                               assets.searchIcon,
-                              color: theme.isDarkMode
-                                  ? colors.textPrimaryDark
-                                  : colors.textPrimaryLight,
+                             color: theme.isDarkMode
+                              ? colors.textSecondaryDark
+                              : colors.textSecondaryLight,
                               width: 18,
                               height: 18,
                             ),
@@ -197,7 +201,7 @@ class _AddScripState extends ConsumerState<SearchScreen>
                                 autofocus: true,
                                 controller: textCtrl,
                                 style: TextWidget.textStyle(
-                                  fontSize: 14,
+                                  fontSize: 16,
                                   color: theme.isDarkMode
                                       ? colors.textPrimaryDark
                                       : colors.textPrimaryLight,
@@ -222,9 +226,9 @@ class _AddScripState extends ConsumerState<SearchScreen>
                                   hintStyle: TextWidget.textStyle(
                                     fontSize: 14,
                                     theme: theme.isDarkMode,
-                                    color: theme.isDarkMode
-                                        ? colors.textPrimaryDark
-                                        : colors.textPrimaryLight,
+                                   color: theme.isDarkMode
+                              ? colors.textSecondaryDark
+                              : colors.textSecondaryLight,
                                   ),
                                   contentPadding: const EdgeInsets.symmetric(
                                       horizontal: 0, vertical: 12),
@@ -242,7 +246,7 @@ class _AddScripState extends ConsumerState<SearchScreen>
                                 },
                               ),
                             ),
-
+          
                             // Clear button
                             if (textCtrl.text.isNotEmpty)
                               Padding(
@@ -262,6 +266,9 @@ class _AddScripState extends ConsumerState<SearchScreen>
                                         assets.removeIcon,
                                         width: 20,
                                         height: 20,
+                                        color: theme.isDarkMode
+                              ? colors.textSecondaryDark
+                              : colors.textSecondaryLight,
                                       ),
                                     ),
                                   ),
@@ -272,75 +279,77 @@ class _AddScripState extends ConsumerState<SearchScreen>
                       ),
                     ),
                   ),
-                  body: Stack(children: [
-                    Column(children: [
-                      Container(
-                        decoration: BoxDecoration(
-                          color: theme.isDarkMode
-                              ? colors.colorBlack
-                              : colors.colorWhite,
-                          // tab bottom border
-                          border: Border(
-                            bottom: BorderSide(
-                              color: theme.isDarkMode
-                                  ? const Color(0xFF2A2A2A)
-                                  : const Color(0xFFE0E0E0),
-                              width: 1.0,
-                            ),
-                          ),
-                        ),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            // Tabs content
-                            Container(
-                              height: 32,
-                              child: Row(
-                                children: [
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: _buildSearchTabs(ref, theme, tabCtrl,
-                                        tabcount, searchScrip),
-                                  ),
-                                ],
+                  body: SafeArea(
+                    child: Stack(children: [
+                      Column(children: [
+                        Container(
+                          decoration: BoxDecoration(
+                            color: theme.isDarkMode
+                                ? colors.colorBlack
+                                : colors.colorWhite,
+                            // tab bottom border
+                            border: Border(
+                              bottom: BorderSide(
+                                color: theme.isDarkMode
+                                    ? const Color(0xFF2A2A2A)
+                                    : const Color(0xFFE0E0E0),
+                                width: 1.0,
                               ),
                             ),
-                          ],
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              // Tabs content
+                              Container(
+                                height: 32,
+                                child: Row(
+                                  children: [
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: _buildSearchTabs(ref, theme, tabCtrl,
+                                          tabcount, searchScrip),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      Expanded(
-                        child:
-                            // TabBarView(controller: tabCtrl, children: [
-                            SearchScripList(
-                                wlName: widget.wlName,
-                                searchValue: searchScrip.allSearchScrip!,
-                                isBasket: widget.isBasket),
-                        // SearchScripList(
-                        //     wlName: widget.wlName,
-                        //     searchValue: searchScrip.allSearchScrip!,
-                        //     isBasket: widget.isBasket),
-                        // SearchScripList(
-                        //     wlName: widget.wlName,
-                        //     searchValue: searchScrip.allSearchScrip!,
-                        //     isBasket: widget.isBasket),
-                        // SearchScripList(
-                        //     wlName: widget.wlName,
-                        //     searchValue: searchScrip.allSearchScrip!,
-                        //     isBasket: widget.isBasket),
-                        // SearchScripList(
-                        //     wlName: widget.wlName,
-                        //     searchValue: searchScrip.allSearchScrip!,
-                        //     isBasket: widget.isBasket),
-                        // SearchScripList(
-                        //     wlName: widget.wlName,
-                        //     searchValue: searchScrip.allSearchScrip!,
-                        //     isBasket: widget.isBasket),
-                        // ])
-                      )
+                        Expanded(
+                          child:
+                              // TabBarView(controller: tabCtrl, children: [
+                              SearchScripList(
+                                  wlName: widget.wlName,
+                                  searchValue: searchScrip.allSearchScrip!,
+                                  isBasket: widget.isBasket),
+                          // SearchScripList(
+                          //     wlName: widget.wlName,
+                          //     searchValue: searchScrip.allSearchScrip!,
+                          //     isBasket: widget.isBasket),
+                          // SearchScripList(
+                          //     wlName: widget.wlName,
+                          //     searchValue: searchScrip.allSearchScrip!,
+                          //     isBasket: widget.isBasket),
+                          // SearchScripList(
+                          //     wlName: widget.wlName,
+                          //     searchValue: searchScrip.allSearchScrip!,
+                          //     isBasket: widget.isBasket),
+                          // SearchScripList(
+                          //     wlName: widget.wlName,
+                          //     searchValue: searchScrip.allSearchScrip!,
+                          //     isBasket: widget.isBasket),
+                          // SearchScripList(
+                          //     wlName: widget.wlName,
+                          //     searchValue: searchScrip.allSearchScrip!,
+                          //     isBasket: widget.isBasket),
+                          // ])
+                        )
+                      ]),
+                      if (internet.connectionStatus ==
+                          ConnectivityResult.none) ...[const NoInternetWidget()]
                     ]),
-                    if (internet.connectionStatus ==
-                        ConnectivityResult.none) ...[const NoInternetWidget()]
-                  ]))));
+                  ))));
     });
   }
 
@@ -398,7 +407,9 @@ class _AddScripState extends ConsumerState<SearchScreen>
                             ? theme.isDarkMode
                                 ? colors.secondaryDark
                                 : colors.secondaryLight
-                            : colors.textSecondaryLight,
+                            : theme.isDarkMode
+                                ? colors.textSecondaryDark
+                                : colors.textSecondaryLight,
                         textOverflow: TextOverflow.ellipsis,
                         maxLines: 1,
                         theme: theme.isDarkMode,
