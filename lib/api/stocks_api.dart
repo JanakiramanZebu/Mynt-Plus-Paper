@@ -1,6 +1,8 @@
 // ignore_for_file: unused_import
 // removed unused import
 
+import 'package:mynt_plus/models/strategy_model.dart';
+
 import '../models/explore_model/ca_events_model.dart';
 import '../models/explore_model/portfolioanalisys_models.dart';
 import '../models/explore_model/stocks_model/corporate_action_model.dart';
@@ -98,6 +100,61 @@ mixin StocksAPI on ApiCore {
       rethrow;
     }
   }
+
+  Future<StrategyResponse> createStrategy(StrategyRequest request) async {
+    try {
+      final response = await apiClient.post(
+        Uri.parse('http://192.168.5.119:8002/client/create_strategy'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(request.toJson()),
+      );
+
+      print("response Strategy :::::: ${response.body}");
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final Map<String, dynamic> responseData = jsonDecode(response.body);
+        return StrategyResponse(
+          success: true,
+          message: 'Strategy created successfully',
+          data: responseData,
+        );
+      } else {
+        return StrategyResponse(
+          success: false,
+          message: 'Failed to create strategy: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      return StrategyResponse(
+        success: false,
+        message: 'Error: $e',
+      );
+    }
+  }
+
+  Future<Map<String, String>> getStrikePrice(String symbol, String expiry) async {
+    // Simulate API call for strike prices
+    await Future.delayed(Duration(milliseconds: 500));
+    return {
+      'ATM': '56900',
+      'ITM': '56800',
+      'OTM': '57000',
+    };
+  }
+
+  Future<List<String>> getExpiryDates(String symbol) async {
+    // Simulate API call for expiry dates
+    await Future.delayed(Duration(milliseconds: 300));
+    return [
+      '28-AUG-2025',
+      '04-SEP-2025',
+      '11-SEP-2025',
+      '18-SEP-2025',
+    ];
+  }
+
 
   Future<List<SectorThematicDetailModel>> getadindices(String indexName) async {
     try {

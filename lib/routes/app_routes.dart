@@ -2,6 +2,7 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/models/order_book_model/place_order_model.dart';
+import 'package:mynt_plus/screens/algo/algo_create.dart';
 import 'package:mynt_plus/screens/bonds/bonds_common_search_screen.dart';
 // import 'package:mynt_plus/screens/ipo/ipo_common_search_screen.dart';
 import 'package:mynt_plus/screens/mutual_fund/cagr_calculator_screen.dart';
@@ -241,6 +242,11 @@ class AppRoutes {
       case Routes.editScrip:
         return _createRoute(
           pageBuilder: (_, __, ___) => EditScrip(wlName: args),
+          beginOffset: const Offset(-1.0, 0.0),
+        );
+      case Routes.algoCreate:
+        return _createRoute(
+          pageBuilder: (_, __, ___) => const AlgoCreate(),
           beginOffset: const Offset(-1.0, 0.0),
         );
 
@@ -847,7 +853,7 @@ class AppRoutes {
       case Routes.mfsearchscreen:
         return _createRoute(
           pageBuilder: (_, __, ___) => const MfCommonSearch(),
-          beginOffset: const Offset(0.0, 1.0),
+          beginOffset: const Offset(-1.0, 0.0),
         );
       // case Routes.mfWatchlist:
       //   return _createRoute(
