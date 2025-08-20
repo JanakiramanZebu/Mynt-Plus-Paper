@@ -237,12 +237,8 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                         : userOrderPreference['prc'])
                 : 'Limit';
 
-    if (isUserOrderPreferenceAvailable) {
-      _isStoplossOrder = isAdvancedOptionClicked =
-          ["SL Limit", "SL MKT"].contains(userOrderPreference['prc']);
-      _isMarketOrder =
-          ["Market", "SL MKT"].contains(userOrderPreference['prc']);
-    }
+      _isMarketOrder =  ["Market", "SL MKT"].contains(priceType);
+      _isStoplossOrder = isAdvancedOptionClicked = ["SL Limit", "SL MKT"].contains(priceType);
 
     priceTypes = [
       {
@@ -333,11 +329,9 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
               ? "EOS"
               : "DAY";
 
-      isAdvancedOptionClicked = _addValidityAndDisclosedQty =
-          isUserOrderPreferenceAvailable &&
-                  userOrderPreference['validity'] == 'IOC'
-              ? true
-              : false;
+      _addValidityAndDisclosedQty =
+            isUserOrderPreferenceAvailable && userOrderPreference['validity'] == 'IOC'? true : false ;
+      isAdvancedOptionClicked = !isAdvancedOptionClicked ? _addValidityAndDisclosedQty : isAdvancedOptionClicked;
 
       lotSize = int.parse("${widget.scripInfo.ls ?? 0}");
       frezQty = sfq > 1 ? (sfq / lotSize).floor() * lotSize : lotSize;

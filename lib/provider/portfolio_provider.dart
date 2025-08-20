@@ -511,6 +511,8 @@ class PortfolioProvider extends DefaultChangeNotifier {
       }
     } else if (mode == 'P') {
       result = await api.getPositionBook();
+      // result = await api.mockPositionBookResponse();
+
       if (result['stat'] == 'success') {
         _tpostionBookModel = result['data'];
       } else {
