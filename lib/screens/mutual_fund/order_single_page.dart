@@ -70,7 +70,7 @@ class _mforderdetscreen extends State<mforderdetscreen>
 
             return SafeArea(
               child: Scaffold(
-                backgroundColor: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                backgroundColor: theme.isDarkMode ? colors.colorBlack : Colors.transparent,
                 body: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: SingleChildScrollView(

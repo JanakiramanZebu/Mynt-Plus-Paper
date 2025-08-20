@@ -39,25 +39,25 @@ class _NotificationpageState extends ConsumerState<Notificationpage>
   @override
   Widget build(BuildContext context) {
     final theme = ref.read(themeProvider);
-    return SafeArea(
-      child: Scaffold(
-        appBar: AppBar(
-            elevation: .2,
-            centerTitle: false,
-            leadingWidth: 41,
-            titleSpacing: 6,
-            leading: const CustomBackBtn(),
-            title: TextWidget.titleText(
-              text: "Notificaton",
-              theme: false,
-              color: theme.isDarkMode
-                  ? colors.textPrimaryDark
-                  : colors.textPrimaryLight,
-              fw: 1,
-            )),
-        body: Consumer(builder: (context, WidgetRef ref, _) {
-          final notification = ref.watch(notificationprovider);
-          return Column(
+    return Scaffold(
+      appBar: AppBar(
+          elevation: .2,
+          centerTitle: false,
+          leadingWidth: 41,
+          titleSpacing: 6,
+          leading: const CustomBackBtn(),
+          title: TextWidget.titleText(
+            text: "Notificaton",
+            theme: false,
+            color: theme.isDarkMode
+                ? colors.textPrimaryDark
+                : colors.textPrimaryLight,
+            fw: 1,
+          )),
+      body: Consumer(builder: (context, WidgetRef ref, _) {
+        final notification = ref.watch(notificationprovider);
+        return SafeArea(
+          child: Column(
             children: [
               Container(
                   decoration: BoxDecoration(
@@ -103,9 +103,9 @@ class _NotificationpageState extends ConsumerState<Notificationpage>
                     InformationMessage(),
                   ]))
             ],
-          );
-        }),
-      ),
+          ),
+        );
+      }),
     );
   }
 }

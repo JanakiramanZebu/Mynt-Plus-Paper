@@ -167,14 +167,16 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
                 child: Container(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(5),
-                    color: colors.searchBg,
+                    color: theme.isDarkMode
+                                  ? colors.searchBgDark
+                                  : colors.searchBg,
                   ),
                   child: SizedBox(
                     height: 40,
                     child: InkWell(
                       onTap: () {
                         if (_tabController.index == 1) {
-                          FocusScope.of(context).unfocus();
+                          // FocusScope.of(context).unfocus();
                           Navigator.pushNamed(context, Routes.mfsearchscreen);
                         } else if (_tabController.index == 0) {
                           FocusScope.of(context).unfocus();
@@ -205,10 +207,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
                             color: theme.isDarkMode
                                 ? colors.textPrimaryDark
                                 : colors.textPrimaryLight,
-                            
                           ),
                           readOnly: _tabController.index == 2 ||
-                              _tabController.index == 3 ? false : true,
+                                  _tabController.index == 3
+                              ? false
+                              : true,
                           keyboardType: TextInputType.text,
                           textCapitalization: TextCapitalization.characters,
                           inputFormatters: [
@@ -222,16 +225,19 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
                               hintStyle: TextWidget.textStyle(
                                   fontSize: 16,
                                   theme: theme.isDarkMode,
-                                 
-                                  color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight),
+                                  color: theme.isDarkMode
+                                      ? colors.textSecondaryDark
+                                      : colors.textSecondaryLight),
                               fillColor: theme.isDarkMode
-                        ? colors.searchBgDark
-                        : colors.searchBg,
+                                  ? colors.searchBgDark
+                                  : colors.searchBg,
                               filled: true,
                               prefixIcon: Padding(
                                 padding: const EdgeInsets.all(8.0),
                                 child: SvgPicture.asset(assets.searchIcon,
-                                   color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                        : colors.textSecondaryLight,
                                     fit: BoxFit.scaleDown,
                                     width: 20),
                               ),
@@ -255,11 +261,16 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
                                               FocusScope.of(context).unfocus();
                                               stocks.clearsearchlist(context);
                                               if (_tabController.index == 2) {
-                                                ref.read(ipoProvide).setIpoSearchQuery("");
-;
-                                              }else if(_tabController.index == 3){
-                                                                        ref.read(bondsProvider).bondscommonsearchcontroller.clear();
-
+                                                ref
+                                                    .read(ipoProvide)
+                                                    .setIpoSearchQuery("");
+                                                ;
+                                              } else if (_tabController.index ==
+                                                  3) {
+                                                ref
+                                                    .read(bondsProvider)
+                                                    .bondscommonsearchcontroller
+                                                    .clear();
                                               }
                                               //   if (positionBook.positionSearchCtrl.text.isEmpty) {
                                               //     positionBook.showPositionSearch(false);
@@ -267,10 +278,13 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
                                               // });
                                             },
                                             child: SvgPicture.asset(
-                                                assets.removeIcon,
-                                                fit: BoxFit.scaleDown,
-                                                width: 20,
-                                                color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,),
+                                              assets.removeIcon,
+                                              fit: BoxFit.scaleDown,
+                                              width: 20,
+                                              color: theme.isDarkMode
+                                                  ? colors.textSecondaryDark
+                                                  : colors.textSecondaryLight,
+                                            ),
                                           ),
                                         )
                                       : null,

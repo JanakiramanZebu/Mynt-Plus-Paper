@@ -205,52 +205,53 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
 
       final List<dynamic> displaypledgedvalue = pledgedvalue;
 
-      return SafeArea(
-        child: Scaffold(
-          appBar: AppBar(
-            // automaticallyImplyLeading: false,
-            leadingWidth: 41,
-            titleSpacing: 6,
-            centerTitle: false,
-            leading: const CustomBackBtn(),
-            elevation: 0.2,
-            title: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                TextWidget.titleText(
-                    text: "Pledge",
-                    textOverflow: TextOverflow.ellipsis,
-                    color: theme.isDarkMode
-                        ? colors.textPrimaryDark
-                        : colors.textPrimaryLight,
-                    theme: theme.isDarkMode,
-                    fw: 1),
-                // IconButton(
-                //     onPressed: () async {
-                //       await ledgerprovider.fetchunpledgehistory(context);
-                //       ledgerprovider.fetchpledgehistory(context);
-                //       ledgerprovider.taxpnlExTabchange(0);
-                //       Navigator.pushNamed(context, Routes.pledgehistorymainscreen,
-                //           arguments: "DDDDD");
-                //     },
-                //     icon: const Icon(Icons.history))
-              ],
-            ),
-
-            // leading: InkWell(
-            //   onTap: () {
-
-            //   },
-            //   child: Icon(Icons.ios_share)),
+      return Scaffold(
+        appBar: AppBar(
+          // automaticallyImplyLeading: false,
+          backgroundColor: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+          leadingWidth: 41,
+          titleSpacing: 6,
+          centerTitle: false,
+          leading: const CustomBackBtn(),
+          elevation: 0.2,
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              TextWidget.titleText(
+                  text: "Pledge",
+                  textOverflow: TextOverflow.ellipsis,
+                  color: theme.isDarkMode
+                      ? colors.textPrimaryDark
+                      : colors.textPrimaryLight,
+                  theme: theme.isDarkMode,
+                  fw: 1),
+              // IconButton(
+              //     onPressed: () async {
+              //       await ledgerprovider.fetchunpledgehistory(context);
+              //       ledgerprovider.fetchpledgehistory(context);
+              //       ledgerprovider.taxpnlExTabchange(0);
+              //       Navigator.pushNamed(context, Routes.pledgehistorymainscreen,
+              //           arguments: "DDDDD");
+              //     },
+              //     icon: const Icon(Icons.history))
+            ],
           ),
-          body: ledgerprovider.pledgeloader
-              ? Center(
-                  child: Container(
-                    color: Colors.white,
-                    child: CircularLoaderImage(),
-                  ),
-                )
-              : RefreshIndicator(
+      
+          // leading: InkWell(
+          //   onTap: () {
+      
+          //   },
+          //   child: Icon(Icons.ios_share)),
+        ),
+        body: ledgerprovider.pledgeloader
+            ? Center(
+                child: Container(
+                  color: Colors.white,
+                  child: CircularLoaderImage(),
+                ),
+              )
+            : SafeArea(
+              child: RefreshIndicator(
                   onRefresh: _refresh,
                   child: Stack(
                     children: [
@@ -711,7 +712,7 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                           //     thickness: 7.0,
                           //   ),
                           // ),
-
+                    
                           // Padding(
                           //   padding: const EdgeInsets.only(left: 30 , right: 30),
                           //   child: Row(
@@ -734,7 +735,7 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                           //             Container(
                           //               width: 100, // Fixed width for the static column
                           //               height: 50,
-
+                    
                           //               padding: EdgeInsets.all(8.0),
                           //               decoration: BoxDecoration(
                           //                 border: Border.all(color: const Color.fromARGB(255, 224, 224, 224)),
@@ -746,7 +747,7 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                           //         ],
                           //       ),
                           //       // Scrollable Content
-
+                    
                           //       Expanded(
                           //         child: SingleChildScrollView(
                           //           scrollDirection: Axis.horizontal,
@@ -759,7 +760,7 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                           //                     Container(
                           //                        margin: EdgeInsets.only(top: 20),
                           //                       width: i == 4 ? 275 : 100, // Column width
-
+                    
                           //                       padding: EdgeInsets.all(8.0),
                           //                       color: Color(0xFFEEEEEE),
                           //                       child: Text(
@@ -849,15 +850,15 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                             fw: 0,
                             letterSpacing: -0.28),
                         labelPadding: const EdgeInsets.symmetric(horizontal: 4),
-
-
+                    
+                    
                               // build the "Open 4" badge and the rest of the tabs
                               tabs: orderTabName.map((tabString) {
                                 /// If the value looks like "Open 4", split it once on the space
-
+                    
                                 final title =
                                     tabString.text.toString(); // "Open"
-
+                    
                                 return Tab(
                                   child: Padding(
                                     padding: const EdgeInsets.only(
@@ -893,7 +894,7 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                                     activetabe: '2', searchQuery: searchQuery),
                                 // OrderBook(orderBook: orderBook.allOrder!),
                               ])),
-
+                    
                           if (ledgerprovider.listforpledge.length > 0)
                             Container(
                               height: screenheight * 0.07,
@@ -1057,7 +1058,7 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                     ],
                   ),
                 ),
-        ),
+            ),
       );
     });
   }

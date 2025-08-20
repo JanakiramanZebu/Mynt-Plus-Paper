@@ -113,24 +113,24 @@ class _MFCAGRCALState extends State<MFCAGRCAL> {
         ChartData('Final Investment', finalAmount, const Color(0xff015FEC)),
       ];
 
-      return SafeArea(
-        child: Scaffold(
-          appBar: PreferredSize(
-            preferredSize: const Size.fromHeight(50),
-            child: AppBar(
-              elevation: 0,
-              leadingWidth: 41,
-              centerTitle: false,
-              titleSpacing: 6,
-              leading: const CustomBackBtn(),
-              title: TextWidget.titleText(
-                text: "CAGR Calculator",
-                theme: isDarkMode,
-                fw: 1,
-              ),
+      return Scaffold(
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(50),
+          child: AppBar(
+            elevation: 0,
+            leadingWidth: 41,
+            centerTitle: false,
+            titleSpacing: 6,
+            leading: const CustomBackBtn(),
+            title: TextWidget.titleText(
+              text: "CAGR Calculator",
+              theme: isDarkMode,
+              fw: 1,
             ),
           ),
-          body: Padding(
+        ),
+        body: SafeArea(
+          child: Padding(
             padding: const EdgeInsets.all(16),
             child: SingleChildScrollView(
               child: Column(
@@ -189,9 +189,9 @@ class _MFCAGRCALState extends State<MFCAGRCAL> {
                       ],
                     ),
                   ),
-        
+                
                   const SizedBox(height: 16),
-        
+                
                   // Initial Investment
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -239,9 +239,9 @@ class _MFCAGRCALState extends State<MFCAGRCAL> {
                       )
                     ],
                   ),
-        
+                
                   const SizedBox(height: 6),
-        
+                
                   // Initial Investment Slider
                   SliderTheme(
                     data: SliderTheme.of(context).copyWith(
@@ -274,9 +274,9 @@ class _MFCAGRCALState extends State<MFCAGRCAL> {
                       ),
                     ),
                   ),
-        
+                
                   const SizedBox(height: 16),
-        
+                
                   // Final Investment
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -324,9 +324,9 @@ class _MFCAGRCALState extends State<MFCAGRCAL> {
                       )
                     ],
                   ),
-        
+                
                   const SizedBox(height: 6),
-        
+                
                   // Final Investment Slider
                   SliderTheme(
                     data: SliderTheme.of(context).copyWith(
@@ -359,9 +359,9 @@ class _MFCAGRCALState extends State<MFCAGRCAL> {
                       ),
                     ),
                   ),
-        
+                
                   const SizedBox(height: 24),
-        
+                
                   // Duration of Investment
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -382,9 +382,9 @@ class _MFCAGRCALState extends State<MFCAGRCAL> {
                       ),
                     ],
                   ),
-        
+                
                   const SizedBox(height: 16),
-        
+                
                   // Duration Slider
                   SliderTheme(
                     data: SliderTheme.of(context).copyWith(
@@ -412,9 +412,9 @@ class _MFCAGRCALState extends State<MFCAGRCAL> {
                       },
                     ),
                   ),
-        
+                
                   const SizedBox(height: 16),
-        
+                
                   // Estimation Section
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -428,7 +428,7 @@ class _MFCAGRCALState extends State<MFCAGRCAL> {
                         fw: 0,
                       ),
                       const SizedBox(height: 16),
-        
+                
                       // Initial and Final Values
                       resultRow("Initial Value",
                           int.tryParse(_principalCtrl.text) ?? 0, theme),

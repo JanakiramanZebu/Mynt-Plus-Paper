@@ -42,7 +42,7 @@ class _mfSipdetScren extends State<mfSipdetScren>
             return SafeArea(
               child: Scaffold(
                 backgroundColor:
-                    theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                    theme.isDarkMode ? colors.colorBlack : Colors.transparent,
                 body: Container(
                   decoration: BoxDecoration(
                     borderRadius: const BorderRadius.only(

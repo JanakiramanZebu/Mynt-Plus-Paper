@@ -117,25 +117,25 @@ class _MFSIPSCREENState extends State<MFSIPSCREEN> {
         ChartData('Investment', double.parse("${_investedAmount}"), colors.colorBlack)
       ];
 
-      return SafeArea(
-        child: Scaffold(
-          appBar: PreferredSize(
-            preferredSize: const Size.fromHeight(50),
-            child: AppBar(
-              elevation: 0,
-              leadingWidth: 41,
-              centerTitle: false,
-              titleSpacing: 6,
-              leading: const CustomBackBtn(),
-              title: TextWidget.titleText(
-                text: "SIP Calculator",
-                color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                theme: theme.isDarkMode,
-                fw: 1,
-              ),
+      return Scaffold(
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(50),
+          child: AppBar(
+            elevation: 0,
+            leadingWidth: 41,
+            centerTitle: false,
+            titleSpacing: 6,
+            leading: const CustomBackBtn(),
+            title: TextWidget.titleText(
+              text: "SIP Calculator",
+              color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+              theme: theme.isDarkMode,
+              fw: 1,
             ),
           ),
-          body: Padding(
+        ),
+        body: SafeArea(
+          child: Padding(
             padding: const EdgeInsets.only(left: 16, right: 16, top: 16),
             child: SingleChildScrollView(
               child: Column(

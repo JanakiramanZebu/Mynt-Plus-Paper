@@ -24,6 +24,7 @@ import '../models/marketwatch_model/search_scrip_model.dart';
 import '../models/span_calc_model.dart';
 import '../models/marketwatch_model/get_quotes.dart';
 // duplicate imports removed
+import '../models/strategy_model.dart';
 import '../routes/route_names.dart';
 import 'bonds_provider.dart';
 import 'core/default_change_notifier.dart';
@@ -1235,6 +1236,248 @@ Future<SpanCalcResponse?> calculateSpanForSelection({
     }
   }
 
-  /// Fetch GetQuotes and call SpanCalc for a single selection
+  String _strategyType = 'Intraday';
+  TimeOfDay _entryTime = TimeOfDay(hour: 9, minute: 35);
+  TimeOfDay _exitTime = TimeOfDay(hour: 15, minute: 15);
+  
+  // Instrument Settings
+  String _selectedIndex = 'BANKNIFTY';
+  String _selectedUnderlying = 'Cash';
+  String _selectedSquareOff = 'Partial';
+  
+  // Leg Builder
+  List<StrategyLeg> _legs = [];
+  bool _isLegBuilderCollapsed = false;
+  String _selectedSegment = 'Options';
+  String _totalQty = '1';
+  String _selectedPosition = 'Buy';
+  String _selectedOptionType = 'Call';
+  String _selectedExpiry = 'Weekly';
+  String _selectedStrikeCriteria = 'Strike Type';
+  String _selectedStrikeType = 'ATM';
+  String _currentStrike = '56900';
+  
+  // Target and StopLoss
+  int _targetPoints = 0;
+  int _stopLossPoints = 0;
+  
+  // Loading and Error states
+  bool _isLoading = false;
+  String? _errorMessage;
+  String? _successMessage;
+  bool _overallTarget = false;
+  bool _overallStoploss = false;
+
+  TextEditingController targetPointsController = TextEditingController();
+  TextEditingController stopLossPointsController = TextEditingController();
+
+  // Getters
+  String get strategyType => _strategyType;
+  TimeOfDay get entryTime => _entryTime;
+  TimeOfDay get exitTime => _exitTime;
+  String get selectedIndex => _selectedIndex;
+  String get selectedUnderlying => _selectedUnderlying;
+  String get selectedSquareOff => _selectedSquareOff;
+  List<StrategyLeg> get legs => _legs;
+  bool get isLegBuilderCollapsed => _isLegBuilderCollapsed;
+  String get selectedSegment => _selectedSegment;
+  String get totalQty => _totalQty;
+  String get selectedPosition => _selectedPosition;
+  String get selectedOptionType => _selectedOptionType;
+  String get selectedExpiry => _selectedExpiry;
+  String get selectedStrikeCriteria => _selectedStrikeCriteria;
+  String get selectedStrikeType => _selectedStrikeType;
+  String get currentStrike => _currentStrike;
+  int get targetPoints => _targetPoints;
+  int get stopLossPoints => _stopLossPoints;
+  bool get isLoading => _isLoading;
+  String? get errorMessage => _errorMessage;
+  String? get successMessage => _successMessage;
+  bool get overallTarget => _overallTarget;
+  bool get overallStoploss => _overallStoploss;
+
+
+
+  void toggleOverallTarget() {
+    _overallTarget = !_overallTarget;
+    notifyListeners();
+  }
+  
+  void toggleOverallStoploss() {
+    _overallStoploss = !_overallStoploss;
+    notifyListeners();
+  }
+
+  // Setters
+  void setStrategyType(String type) {
+    _strategyType = type;
+    notifyListeners();
+  }
+
+  void setEntryTime(TimeOfDay time) {
+    _entryTime = time;
+    notifyListeners();
+  }
+
+  void setExitTime(TimeOfDay time) {
+    _exitTime = time;
+    notifyListeners();
+  }
+
+  void setSelectedIndex(String index) {
+    _selectedIndex = index;
+    notifyListeners();
+  }
+
+  void setSelectedUnderlying(String underlying) {
+    _selectedUnderlying = underlying;
+    notifyListeners();
+  }
+
+  void setSelectedSquareOff(String squareOff) {
+    _selectedSquareOff = squareOff;
+    notifyListeners();
+  }
+
+  void toggleLegBuilderCollapsed() {
+    _isLegBuilderCollapsed = !_isLegBuilderCollapsed;
+    notifyListeners();
+  }
+
+  void setSelectedSegment(String segment) {
+    _selectedSegment = segment;
+    notifyListeners();
+  }
+
+  void setTotalQty(String qty) {
+    _totalQty = qty;
+    notifyListeners();
+  }
+
+  void setSelectedPosition(String position) {
+    _selectedPosition = position;
+    notifyListeners();
+  }
+
+  void setSelectedOptionType(String optionType) {
+    _selectedOptionType = optionType;
+    notifyListeners();
+  }
+
+  void setSelectedExpiry(String expiry) {
+    _selectedExpiry = expiry;
+    notifyListeners();
+  }
+
+  void setSelectedStrikeCriteria(String criteria) {
+    _selectedStrikeCriteria = criteria;
+    notifyListeners();
+  }
+
+  void setSelectedStrikeType(String strikeType) {
+    _selectedStrikeType = strikeType;
+    _updateStrikePrice();
+    notifyListeners();
+  }
+
+  void setTargetPoints(points) {
+    _targetPoints = points;
+    notifyListeners();
+  }
+
+  void setStopLossPoints(points) {
+    _stopLossPoints = points;
+    notifyListeners();
+  }
+
+  void _updateStrikePrice() async {
+    try {
+      final strikes = await api.getStrikePrice(_selectedIndex, _selectedExpiry);
+      _currentStrike = strikes[_selectedStrikeType] ?? '56900';
+      notifyListeners();
+    } catch (e) {
+      _errorMessage = 'Failed to update strike price';
+      notifyListeners();
+    }
+  }
+
+  void addLeg() {
+    final leg = StrategyLeg(
+      strike: _currentStrike,
+      expiry: '28-AUG-2025', // This should be dynamic based on selection
+      optionType: _selectedOptionType == 'Call' ? 'CE' : 'PE',
+      quantity: (_totalQty).toString(), // Assuming 25 quantity per lot
+      action: _selectedPosition == 'Buy' ? 'B' : 'S',
+      prctype: 'MKT',
+    );
+    
+    _legs.add(leg);
+    notifyListeners();
+  }
+
+  void removeLeg(int index) {
+    if (index < _legs.length) {
+      _legs.removeAt(index);
+      notifyListeners();
+    }
+  }
+
+  Future<bool> createStrategy() async {
+    _isLoading = true;
+    _errorMessage = null;
+    _successMessage = null;
+    notifyListeners();
+
+    try {
+      final request = StrategyRequest(
+        uid: 'ZP00285', // This should come from user session
+        email: 'user@example.com', // This should come from user session
+        statname: '$_selectedIndex ${_strategyType.toLowerCase()} Strategy',
+        exch: 'NFO',
+        product: 'OPTIONS',
+        symbol: _selectedIndex,
+        idxtoken: _selectedIndex == 'BANKNIFTY' ? '26009' : '26000',
+        idxexch: 'NSE',
+        statlegs: _legs,
+        target: Target(type: 'POINTS', value: _targetPoints),
+        stoploss: StopLoss(
+          type: _stopLossPoints != null ? 'POINTS' : null,
+          value: _stopLossPoints,
+        ),
+        starttime: '${_entryTime.hour.toString().padLeft(2, '0')}:${_entryTime.minute.toString().padLeft(2, '0')}:00',
+        endtime: '${_exitTime.hour.toString().padLeft(2, '0')}:${_exitTime.minute.toString().padLeft(2, '0')}:00',
+        executionOn: _strategyType == 'Intraday' 
+            ? ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']
+            : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+        broker: 'ZEBU',
+        datetime: DateTime.now().toIso8601String(),
+      );
+print("request Strategy :::::: ${request.toJson()}");
+      final response = await api.createStrategy(request);
+
+      
+      if (response.success) {
+        _successMessage = response.message;
+        _legs.clear(); // Clear legs after successful creation
+      } else {
+        _errorMessage = response.message;
+      }
+      
+      _isLoading = false;
+      notifyListeners();
+      return response.success;
+    } catch (e) {
+      _errorMessage = 'Failed to create strategy: $e';
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  void clearMessages() {
+    _errorMessage = null;
+    _successMessage = null;
+    notifyListeners();
+  }
   
 }

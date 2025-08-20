@@ -36,112 +36,114 @@ class _ContractCalendarScreenState extends State<ContractCalendarScreen> {
         final ledgerprovider = ref.watch(ledgerProvider);
         final theme = ref.watch(themeProvider);
 
-        return Stack(
-          children: [
-            Container(
-             decoration: BoxDecoration(
-           borderRadius: const BorderRadius.only(
-      topLeft: Radius.circular(16),
-      topRight: Radius.circular(16),
-    ),
-         color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-         border: Border(
-                                  top: BorderSide(
-                                    color: theme.isDarkMode
-                                        ? colors.textSecondaryDark
-                                            .withOpacity(0.5)
-                                        : colors.colorWhite,
+        return SafeArea(
+          child: Stack(
+            children: [
+              Container(
+               decoration: BoxDecoration(
+             borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(16),
+                topRight: Radius.circular(16),
+              ),
+           color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+           border: Border(
+                                    top: BorderSide(
+                                      color: theme.isDarkMode
+                                          ? colors.textSecondaryDark
+                                              .withOpacity(0.5)
+                                          : colors.colorWhite,
+                                    ),
+                                    left: BorderSide(
+                                      color: theme.isDarkMode
+                                          ? colors.textSecondaryDark
+                                              .withOpacity(0.5)
+                                          : colors.colorWhite,
+                                    ),
+                                    right: BorderSide(
+                                      color: theme.isDarkMode
+                                          ? colors.textSecondaryDark
+                                              .withOpacity(0.5)
+                                          : colors.colorWhite,
+                                    ),
                                   ),
-                                  left: BorderSide(
-                                    color: theme.isDarkMode
-                                        ? colors.textSecondaryDark
-                                            .withOpacity(0.5)
-                                        : colors.colorWhite,
-                                  ),
-                                  right: BorderSide(
-                                    color: theme.isDarkMode
-                                        ? colors.textSecondaryDark
-                                            .withOpacity(0.5)
-                                        : colors.colorWhite,
-                                  ),
+          
+           
+          ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 8.0, horizontal: 16.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          TextWidget.titleText(
+                            text: "Contract Note",
+                            theme: theme.isDarkMode,
+                              color : theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                            fw: 1,
+                          ),
+                          Material(
+                            color: Colors.transparent,
+                            shape: const CircleBorder(),
+                            child: InkWell(
+                              onTap: () async {
+                                await Future.delayed(
+                                    const Duration(milliseconds: 150));
+                                Navigator.pop(context);
+                              },
+                              borderRadius: BorderRadius.circular(20),
+                              splashColor: theme.isDarkMode
+                                  ? Colors.white.withOpacity(0.15)
+                                  : Colors.black.withOpacity(0.15),
+                              highlightColor: theme.isDarkMode
+                                  ? Colors.white.withOpacity(0.08)
+                                  : Colors.black.withOpacity(0.08),
+                              child: Padding(
+                                padding: const EdgeInsets.all(6.0),
+                                child: Icon(
+                                  Icons.close_rounded,
+                                  size: 22,
+                                  color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                                 ),
-
-         
-        ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 8.0, horizontal: 16.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        TextWidget.titleText(
-                          text: "Contract Note",
-                          theme: theme.isDarkMode,
-                            color : theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                          fw: 1,
-                        ),
-                        Material(
-                          color: Colors.transparent,
-                          shape: const CircleBorder(),
-                          child: InkWell(
-                            onTap: () async {
-                              await Future.delayed(
-                                  const Duration(milliseconds: 150));
-                              Navigator.pop(context);
-                            },
-                            borderRadius: BorderRadius.circular(20),
-                            splashColor: theme.isDarkMode
-                                ? Colors.white.withOpacity(0.15)
-                                : Colors.black.withOpacity(0.15),
-                            highlightColor: theme.isDarkMode
-                                ? Colors.white.withOpacity(0.08)
-                                : Colors.black.withOpacity(0.08),
-                            child: Padding(
-                              padding: const EdgeInsets.all(6.0),
-                              child: Icon(
-                                Icons.close_rounded,
-                                size: 22,
-                                color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                               ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                  Divider(
-                    color: theme.isDarkMode
-                        ? colors.darkColorDivider
-                        : colors.colorDivider,
-                    height: 0,
-                  ),
-
-                  // Calendar
-                  _buildCalendar(context, ledgerprovider, theme),
-                  const SizedBox(height: 24),
-                ],
+                    Divider(
+                      color: theme.isDarkMode
+                          ? colors.darkColorDivider
+                          : colors.colorDivider,
+                      height: 0,
+                    ),
+          
+                    // Calendar
+                    _buildCalendar(context, ledgerprovider, theme),
+                    const SizedBox(height: 24),
+                  ],
+                ),
               ),
-            ),
-
-            // Loading overlay
-            if (ledgerprovider.isContractCalendarLoading)
-              Positioned.fill(
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.3),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: const Center(
-                    child: CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+          
+              // Loading overlay
+              if (ledgerprovider.isContractCalendarLoading)
+                Positioned.fill(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.3),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: const Center(
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+                      ),
                     ),
                   ),
                 ),
-              ),
-          ],
+            ],
+          ),
         );
       },
     );

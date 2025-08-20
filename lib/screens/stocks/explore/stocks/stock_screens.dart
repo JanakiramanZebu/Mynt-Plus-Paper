@@ -174,7 +174,9 @@ class _StockScreenState extends ConsumerState<StockScreen>
                       children: [
                         Container(
                             decoration: BoxDecoration(
-                              color: Color(0xFFE7E7E7),
+                              color: theme.isDarkMode
+                                  ? colors.colorBlack
+                                  : colors.searchBg,
                               borderRadius: BorderRadius.circular(30),
                             ),
                             child: Padding(
@@ -258,7 +260,7 @@ class _StockScreenState extends ConsumerState<StockScreen>
                                           horizontal: 16, vertical: 14),
                                       decoration: BoxDecoration(
                                         color: theme.isDarkMode
-                                            ? colors.colorWhite
+                                            ? colors.colorBlack
                                             : colors.searchBg,
                                         borderRadius: BorderRadius.circular(5),
                                       ),
@@ -468,6 +470,11 @@ class _StockScreenState extends ConsumerState<StockScreen>
                             fw: 3,
                             color: colors.textSecondaryLight),
                         labelPadding: const EdgeInsets.symmetric(horizontal: 4),
+                        // onTap: (index) {
+                        //   if (index == 0) {
+                        //     Navigator.pushNamed(context, Routes.algoCreate);
+                        //   }
+                        // },
                         tabs: const [
                           Tab(
                             child: Padding(
@@ -701,15 +708,15 @@ class _StockScreenState extends ConsumerState<StockScreen>
                       children: [
                         InkWell(
                           canRequestFocus: false,
-                          onTap: () {
-                            Navigator.pushNamed(context, Routes.portfolioDashboard);
-                          },
+                          // onTap: () {
+                          //   Navigator.pushNamed(context, Routes.portfolioDashboard);
+                          // },
                           child: Container(
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 8, vertical: 6),
                             decoration: BoxDecoration(
                               color: theme.isDarkMode
-                                  ? colors.searchBg
+                                  ? colors.searchBgDark
                                   : colors.searchBg,
                               borderRadius: BorderRadius.circular(5),
                             ),

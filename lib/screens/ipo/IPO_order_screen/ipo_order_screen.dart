@@ -149,184 +149,184 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
 
           _updateProviderState(ipo);
 
-          return SafeArea(
-            child: Scaffold(
-              appBar: AppBar(
-                elevation: .2,
-                centerTitle: false,
-                leadingWidth: 38,
-                titleSpacing: 1,
-                leading: Material(
-                  color: Colors.transparent,
-                  shape: const CircleBorder(),
-                  clipBehavior: Clip.hardEdge,
-                  child: InkWell(
-                    customBorder: const CircleBorder(),
-                    splashColor: theme.isDarkMode
-                        ? colors.splashColorDark
-                        : colors.splashColorLight,
-                    highlightColor: theme.isDarkMode
-                        ? colors.highlightDark
-                        : colors.highlightLight,
-                    onTap: () => Navigator.pop(context),
-                    child: Icon(
-                      Icons.arrow_back_ios_outlined,
-                      size: 18,
-                      color: theme.isDarkMode
-                          ? colors.textSecondaryDark
-                          : colors.textSecondaryLight,
-                    ),
+          return Scaffold(
+            appBar: AppBar(
+              elevation: .2,
+              centerTitle: false,
+              leadingWidth: 38,
+              titleSpacing: 1,
+              leading: Material(
+                color: Colors.transparent,
+                shape: const CircleBorder(),
+                clipBehavior: Clip.hardEdge,
+                child: InkWell(
+                  customBorder: const CircleBorder(),
+                  splashColor: theme.isDarkMode
+                      ? colors.splashColorDark
+                      : colors.splashColorLight,
+                  highlightColor: theme.isDarkMode
+                      ? colors.highlightDark
+                      : colors.highlightLight,
+                  onTap: () => Navigator.pop(context),
+                  child: Icon(
+                    Icons.arrow_back_ios_outlined,
+                    size: 18,
+                    color: theme.isDarkMode
+                        ? colors.textSecondaryDark
+                        : colors.textSecondaryLight,
                   ),
                 ),
-                backgroundColor:
-                    theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-                title: Padding(
-                  padding: const EdgeInsets.only(right: 16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      TextWidget.titleText(
-                          text: ipoName,
-                          theme: theme.isDarkMode,
-                          color: theme.isDarkMode
-                              ? colors.textPrimaryDark
-                              : colors.textPrimaryLight,
-                          fw: 1),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          TextWidget.paraText(
-                              text: ipoKey,
-                              theme: theme.isDarkMode,
-                              color: theme.isDarkMode
-                                  ? colors.textSecondaryDark
-                                  : colors.textSecondaryLight,
-                              fw: 3),
-                          const SizedBox(width: 6),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: isOpen
-                                  ? theme.isDarkMode
-                                      ? colors.profitDark.withOpacity(0.2)
-                                      : colors.profitLight.withOpacity(0.2)
-                                  : theme.isDarkMode
-                                      ? colors.lossDark.withOpacity(0.2)
-                                      : colors.lossLight.withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: TextWidget.paraText(
-                              text: status.toUpperCase(),
-                              theme: false,
-                              fw: 3,
-                              color: isOpen
-                                  ? theme.isDarkMode
-                                      ? colors.profitDark
-                                      : colors.profitLight
-                                  : theme.isDarkMode
-                                      ? colors.lossDark
-                                      : colors.lossLight,
-                            ),
+              ),
+              backgroundColor:
+                  theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+              title: Padding(
+                padding: const EdgeInsets.only(right: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextWidget.titleText(
+                        text: ipoName,
+                        theme: theme.isDarkMode,
+                        color: theme.isDarkMode
+                            ? colors.textPrimaryDark
+                            : colors.textPrimaryLight,
+                        fw: 1),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        TextWidget.paraText(
+                            text: ipoKey,
+                            theme: theme.isDarkMode,
+                            color: theme.isDarkMode
+                                ? colors.textSecondaryDark
+                                : colors.textSecondaryLight,
+                            fw: 3),
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: isOpen
+                                ? theme.isDarkMode
+                                    ? colors.profitDark.withOpacity(0.2)
+                                    : colors.profitLight.withOpacity(0.2)
+                                : theme.isDarkMode
+                                    ? colors.lossDark.withOpacity(0.2)
+                                    : colors.lossLight.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(4),
                           ),
-                        ],
-                      ),
-                    ],
-                  ),
+                          child: TextWidget.paraText(
+                            text: status.toUpperCase(),
+                            theme: false,
+                            fw: 3,
+                            color: isOpen
+                                ? theme.isDarkMode
+                                    ? colors.profitDark
+                                    : colors.profitLight
+                                : theme.isDarkMode
+                                    ? colors.lossDark
+                                    : colors.lossLight,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-                bottom: PreferredSize(
-                  preferredSize: Size.fromHeight(chips.isNotEmpty ? 50 : 0),
-                  child: chips.isNotEmpty
-                      ? Row(
-                          children: [
-                            DefaultTabController(
-                              length: chips.length,
-                              initialIndex: chips.contains(selectedChip)
-                                  ? chips.indexOf(selectedChip)
-                                  : 0,
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    TabBar(
-                                      tabAlignment: TabAlignment.start,
-                                      indicatorSize: TabBarIndicatorSize.tab,
-                                      isScrollable: true,
-                                      indicatorColor: theme.isDarkMode
-                                          ? colors.secondaryDark
-                                          : colors.secondaryLight,
-                                      unselectedLabelColor: theme.isDarkMode
-                                          ? colors.textSecondaryDark
-                                          : colors.textSecondaryLight,
-                                      unselectedLabelStyle: TextWidget.textStyle(
+              ),
+              bottom: PreferredSize(
+                preferredSize: Size.fromHeight(chips.isNotEmpty ? 50 : 0),
+                child: chips.isNotEmpty
+                    ? Row(
+                        children: [
+                          DefaultTabController(
+                            length: chips.length,
+                            initialIndex: chips.contains(selectedChip)
+                                ? chips.indexOf(selectedChip)
+                                : 0,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  TabBar(
+                                    tabAlignment: TabAlignment.start,
+                                    indicatorSize: TabBarIndicatorSize.tab,
+                                    isScrollable: true,
+                                    indicatorColor: theme.isDarkMode
+                                        ? colors.secondaryDark
+                                        : colors.secondaryLight,
+                                    unselectedLabelColor: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                        : colors.textSecondaryLight,
+                                    unselectedLabelStyle: TextWidget.textStyle(
+                                      fontSize: 14,
+                                      theme: false,                                    
+                                      fw: 3,
+                                    ),
+                                    labelPadding: const EdgeInsets.symmetric(
+                                        horizontal: 16),
+                                    indicatorPadding:
+                                        const EdgeInsets.symmetric(
+                                            horizontal: 16),
+                                    labelColor: theme.isDarkMode
+                                        ? colors.secondaryDark
+                                        : colors.secondaryLight,
+                                    labelStyle: TextWidget.textStyle(
                                         fontSize: 14,
-                                        theme: false,                                    
-                                        fw: 3,
-                                      ),
-                                      labelPadding: const EdgeInsets.symmetric(
-                                          horizontal: 16),
-                                      indicatorPadding:
-                                          const EdgeInsets.symmetric(
-                                              horizontal: 16),
-                                      labelColor: theme.isDarkMode
-                                          ? colors.secondaryDark
-                                          : colors.secondaryLight,
-                                      labelStyle: TextWidget.textStyle(
-                                          fontSize: 14,
+                                        theme: false,
+                                        color: theme.isDarkMode
+                                            ? colors.secondaryDark
+                                            : colors.secondaryLight,
+                                        fw: 2),
+                                    tabs: chips.map((chip) {
+                                      return Tab(
+                                        child: TextWidget.subText(
+                                          text: chip,
                                           theme: false,
+                                          fw: 0,
                                           color: theme.isDarkMode
                                               ? colors.secondaryDark
                                               : colors.secondaryLight,
-                                          fw: 2),
-                                      tabs: chips.map((chip) {
-                                        return Tab(
-                                          child: TextWidget.subText(
-                                            text: chip,
-                                            theme: false,
-                                            fw: 0,
-                                            color: theme.isDarkMode
-                                                ? colors.secondaryDark
-                                                : colors.secondaryLight,
-                                          ),
-                                        );
-                                      }).toList(),
-                                      onTap: (index) async {
-                                        final chip = chips[index];
-                                        setState(() {
-                                          selectedChip = chip;
-                                          _updateProviderState(ipo);
-                                        });
-                                        ipo.chngCategoryType(chip);
-                                        await ipo.categoryOnChange(
-                                          addIpo,
-                                          ipo.maxUPIAmt,
-                                          _getButtonActiveState(ipo),
-                                          selectedChip,
-                                        );
-                                      },
-                                    ),
-                                    Divider(
-                                      height: 1,
-                                      color: theme.isDarkMode
-                                          ? colors.dividerDark
-                                          : colors.dividerLight,
-                                    ),
-                                  ],
-                                ),
+                                        ),
+                                      );
+                                    }).toList(),
+                                    onTap: (index) async {
+                                      final chip = chips[index];
+                                      setState(() {
+                                        selectedChip = chip;
+                                        _updateProviderState(ipo);
+                                      });
+                                      ipo.chngCategoryType(chip);
+                                      await ipo.categoryOnChange(
+                                        addIpo,
+                                        ipo.maxUPIAmt,
+                                        _getButtonActiveState(ipo),
+                                        selectedChip,
+                                      );
+                                    },
+                                  ),
+                                  Divider(
+                                    height: 1,
+                                    color: theme.isDarkMode
+                                        ? colors.dividerDark
+                                        : colors.dividerLight,
+                                  ),
+                                ],
                               ),
                             ),
-                          ],
-                        )
-                      : const SizedBox(),
-                ),
+                          ),
+                        ],
+                      )
+                    : const SizedBox(),
               ),
-              body: Column(
+            ),
+            body: SafeArea(
+              child: Column(
                 children: [
                   Expanded(
                     child: SingleChildScrollView(
@@ -347,16 +347,16 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                           //             FontWeight.w600)),
                           //   ),
                           // ),
-            
+                        
                           // Category chips container with conditional styling
-            
+                        
                           ListView.builder(
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
                             itemCount: addIpo.length,
                             itemBuilder: (context, index) {
                               _updateProviderState(ipo);
-            
+                        
                               return Padding(
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 16,
@@ -784,7 +784,7 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                                       //     const Padding(
                                       //         padding: EdgeInsets.symmetric(
                                       //             horizontal: 55, vertical: 20)),
-            
+                        
                                       //   ],
                                       // ),
                                      if (addIpo[index]
@@ -815,7 +815,7 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                                           ),
                                         ],
                                       ),
-
+                        
                                       // if (addIpo[index]
                                       //     .qualityerrortext
                                       //     .isNotEmpty) ...[

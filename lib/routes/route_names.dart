@@ -178,6 +178,7 @@ class Routes {
   static const String mforderdetscreen = 'mforderdetscreen';
   static const String mfsearchscreen = 'mfsearchscreen';
   static const String redeemNewBottomSheet = 'redeemNewBottomSheet';
+  static const String algoCreate = 'algoCreate';
 
   static const String mfnfoscreen = 'mfnfoscreen';
   static const String mfCategoryList = 'mfCategoryList';

@@ -106,106 +106,106 @@ class _CABuybackState extends State<CABuyback> with TickerProviderStateMixin {
       // String tcredit = ledgerprovider.ledgerAllData?.crAmt ?? '0.0';
       String clbalance = ledgerprovider.ledgerAllData?.closingBalance ?? '0.0';
 
-      return SafeArea(
-        child: Scaffold(
-            appBar: AppBar(
-              automaticallyImplyLeading: false,
-              elevation: 0,
-              leadingWidth: 48,
-              centerTitle: false,
-              titleSpacing: 0,
-              leading: const CustomBackBtn(),
-              // elevation: 0.2,
-              title: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  TextWidget.titleText(
-                      text: "Corporate Action",
-                      textOverflow: TextOverflow.ellipsis,
-                      theme: theme.isDarkMode,
-                      color: !theme.isDarkMode
-                          ? colors.textPrimaryLight
-                          : colors.textPrimaryDark,
-                      fw: 1),
-                  // Row(
-                  //   children: [
-                  //     Container(
-                  //       margin: const EdgeInsets.only(right: 10),
-                  //       decoration: BoxDecoration(
-                  //         color: profiledetails.clientAllDetails.clientData?.dDPI ==
-                  //                 "Y"
-                  //             ? colors.kColorGreenButton
-                  //             : colors.kColorRedButton,
-                  //         borderRadius: BorderRadius.circular(15),
-                  //       ),
-                  //       child: Padding(
-                  //         padding: const EdgeInsets.all(8.0),
-                  //         child: TextWidget.paraText(
-                  //             text:
-                  //                 "DDPI${profiledetails.clientAllDetails.clientData?.dDPI}",
-                  //             theme: theme.isDarkMode,
-                  //             fw: 1,
-                  //             color: colors.colorWhite),
-                  //       ),
-                  //     ),
-                  //     Container(
-                  //       decoration: BoxDecoration(
-                  //         color:
-                  //             profiledetails.clientAllDetails.clientData?.pOA == "Y"
-                  //                 ? colors.kColorGreenButton
-                  //                 : colors.kColorRedButton,
-                  //         borderRadius: BorderRadius.circular(15),
-                  //       ),
-                  //       child: Padding(
-                  //         padding: const EdgeInsets.all(8.0),
-                  //         child: TextWidget.paraText(
-                  //             text: "POA",
-                  //             theme: theme.isDarkMode,
-                  //             fw: 1,
-                  //             color: colors.colorWhite),
-                  //       ),
-                  //     )
-                  //   ],
-                  // ),
-        
-                  // DropdownButtonHideUnderline(
-                  //     child: DropdownButton2(
-                  //         menuItemStyleData: MenuItemStyleData(
-                  //             customHeights: ledgerprovider.getCustItemsHeight()),
-                  //         buttonStyleData: ButtonStyleData(
-                  //             height: 36,
-                  //             width: MediaQuery.of(context).size.width,
-                  //             decoration: const BoxDecoration(
-                  //                 color: Color(0xffF1F3F8),
-                  //                 borderRadius:
-                  //                     BorderRadius.all(Radius.circular(32)))),
-                  //         dropdownStyleData: DropdownStyleData(
-                  //           padding: const EdgeInsets.symmetric(vertical: 6),
-                  //           decoration: BoxDecoration(
-                  //             borderRadius: BorderRadius.circular(4),
-                  //           ),
-                  //           offset: const Offset(0, 8),
-                  //         ),
-                  //         isExpanded: true,
-                  //         style:
-                  //             textStyle(const Color(0XFF000000), 13, FontWeight.w500),
-                  //         hint: Text(mfOrder.paymentName,
-                  //             style: textStyle(
-                  //                 const Color(0XFF000000), 13, FontWeight.w500)),
-                  //         items: mfOrder.addDividers(),
-                  //         value: mfOrder.paymentName,
-                  //         onChanged: (value) async {
-                  //           mfOrder.chngPayName("$value");
-                  //         })),
-                ],
-              ),
-              // leading: InkWell(
-              //   onTap: () {
-        
-              //   },
-              //   child: Icon(Icons.ios_share)),
+      return Scaffold(
+          appBar: AppBar(
+            automaticallyImplyLeading: false,
+            elevation: 0,
+            leadingWidth: 48,
+            centerTitle: false,
+            titleSpacing: 0,
+            leading: const CustomBackBtn(),
+            // elevation: 0.2,
+            title: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                TextWidget.titleText(
+                    text: "Corporate Action",
+                    textOverflow: TextOverflow.ellipsis,
+                    theme: theme.isDarkMode,
+                    color: !theme.isDarkMode
+                        ? colors.textPrimaryLight
+                        : colors.textPrimaryDark,
+                    fw: 1),
+                // Row(
+                //   children: [
+                //     Container(
+                //       margin: const EdgeInsets.only(right: 10),
+                //       decoration: BoxDecoration(
+                //         color: profiledetails.clientAllDetails.clientData?.dDPI ==
+                //                 "Y"
+                //             ? colors.kColorGreenButton
+                //             : colors.kColorRedButton,
+                //         borderRadius: BorderRadius.circular(15),
+                //       ),
+                //       child: Padding(
+                //         padding: const EdgeInsets.all(8.0),
+                //         child: TextWidget.paraText(
+                //             text:
+                //                 "DDPI${profiledetails.clientAllDetails.clientData?.dDPI}",
+                //             theme: theme.isDarkMode,
+                //             fw: 1,
+                //             color: colors.colorWhite),
+                //       ),
+                //     ),
+                //     Container(
+                //       decoration: BoxDecoration(
+                //         color:
+                //             profiledetails.clientAllDetails.clientData?.pOA == "Y"
+                //                 ? colors.kColorGreenButton
+                //                 : colors.kColorRedButton,
+                //         borderRadius: BorderRadius.circular(15),
+                //       ),
+                //       child: Padding(
+                //         padding: const EdgeInsets.all(8.0),
+                //         child: TextWidget.paraText(
+                //             text: "POA",
+                //             theme: theme.isDarkMode,
+                //             fw: 1,
+                //             color: colors.colorWhite),
+                //       ),
+                //     )
+                //   ],
+                // ),
+      
+                // DropdownButtonHideUnderline(
+                //     child: DropdownButton2(
+                //         menuItemStyleData: MenuItemStyleData(
+                //             customHeights: ledgerprovider.getCustItemsHeight()),
+                //         buttonStyleData: ButtonStyleData(
+                //             height: 36,
+                //             width: MediaQuery.of(context).size.width,
+                //             decoration: const BoxDecoration(
+                //                 color: Color(0xffF1F3F8),
+                //                 borderRadius:
+                //                     BorderRadius.all(Radius.circular(32)))),
+                //         dropdownStyleData: DropdownStyleData(
+                //           padding: const EdgeInsets.symmetric(vertical: 6),
+                //           decoration: BoxDecoration(
+                //             borderRadius: BorderRadius.circular(4),
+                //           ),
+                //           offset: const Offset(0, 8),
+                //         ),
+                //         isExpanded: true,
+                //         style:
+                //             textStyle(const Color(0XFF000000), 13, FontWeight.w500),
+                //         hint: Text(mfOrder.paymentName,
+                //             style: textStyle(
+                //                 const Color(0XFF000000), 13, FontWeight.w500)),
+                //         items: mfOrder.addDividers(),
+                //         value: mfOrder.paymentName,
+                //         onChanged: (value) async {
+                //           mfOrder.chngPayName("$value");
+                //         })),
+              ],
             ),
-            body: TransparentLoaderScreen(
+            // leading: InkWell(
+            //   onTap: () {
+      
+            //   },
+            //   child: Icon(Icons.ios_share)),
+          ),
+          body: SafeArea(
+            child: TransparentLoaderScreen(
               isLoading: ledgerprovider.cpactionloader,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -217,7 +217,7 @@ class _CABuybackState extends State<CABuyback> with TickerProviderStateMixin {
                   //       "Financial activities through debits and credits ",
                   //       style: textStyle(colors.colorBlack, 14, FontWeight.w600),
                   //     )),
-        
+                  
                   // Padding(
                   //   padding: const EdgeInsets.only(left: 30 , right: 30),
                   //   child: Row(
@@ -240,7 +240,7 @@ class _CABuybackState extends State<CABuyback> with TickerProviderStateMixin {
                   //             Container(
                   //               width: 100, // Fixed width for the static column
                   //               height: 50,
-        
+                  
                   //               padding: EdgeInsets.all(8.0),
                   //               decoration: BoxDecoration(
                   //                 border: Border.all(color: const Color.fromARGB(255, 224, 224, 224)),
@@ -252,7 +252,7 @@ class _CABuybackState extends State<CABuyback> with TickerProviderStateMixin {
                   //         ],
                   //       ),
                   //       // Scrollable Content
-        
+                  
                   //       Expanded(
                   //         child: SingleChildScrollView(
                   //           scrollDirection: Axis.horizontal,
@@ -265,7 +265,7 @@ class _CABuybackState extends State<CABuyback> with TickerProviderStateMixin {
                   //                     Container(
                   //                        margin: EdgeInsets.only(top: 20),
                   //                       width: i == 4 ? 275 : 100, // Column width
-        
+                  
                   //                       padding: EdgeInsets.all(8.0),
                   //                       color: Color(0xFFEEEEEE),
                   //                       child: Text(
@@ -416,7 +416,7 @@ class _CABuybackState extends State<CABuyback> with TickerProviderStateMixin {
                                               theme: theme.isDarkMode,
                                             ),
                                           ),
-        
+                  
                                           Container(
                                             padding: const EdgeInsets.symmetric(
                                                 horizontal: 8, vertical: 2),
@@ -465,7 +465,7 @@ class _CABuybackState extends State<CABuyback> with TickerProviderStateMixin {
                                           // ],
                                         ],
                                       ),
-        
+                  
                                       Padding(
                                         padding: const EdgeInsets.only(
                                           top: 4.0,
@@ -611,7 +611,7 @@ class _CABuybackState extends State<CABuyback> with TickerProviderStateMixin {
                                             //             return null;
                                             //           }
                                             //         }
-        
+                  
                                             //         // _showBottomSheet(
                                             //         //     context, const LedgerBillBottom());
                                             //       },
@@ -651,7 +651,7 @@ class _CABuybackState extends State<CABuyback> with TickerProviderStateMixin {
                                           ],
                                         ),
                                       ),
-        
+                  
                                       // const ListDivider(),
                                       if (ledgerprovider.selectvalueofcpaction !=
                                           'OFS') ...[
@@ -758,7 +758,7 @@ class _CABuybackState extends State<CABuyback> with TickerProviderStateMixin {
                                         //     mainAxisAlignment:
                                         //         MainAxisAlignment.spaceBetween,
                                         //     children: [
-        
+                  
                                         //       dataval?.orderstatus != 'null' ?
                                         //       Row(
                                         //         children: [
@@ -931,8 +931,8 @@ class _CABuybackState extends State<CABuyback> with TickerProviderStateMixin {
                         )),
                 ],
               ),
-            )),
-      );
+            ),
+          ));
     });
   }
 

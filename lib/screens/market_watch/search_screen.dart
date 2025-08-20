@@ -124,163 +124,163 @@ class _AddScripState extends ConsumerState<SearchScreen>
             FocusScope.of(context).unfocus();
             // Navigator.pop(context);
           },
-          child: SafeArea(
-            child: GestureDetector(
-                onTap: () => FocusManager.instance.primaryFocus!.unfocus(),
-                child: Scaffold(
-                    appBar: AppBar(
-                      elevation: 0,
-                      // backgroundColor: theme.isDarkMode ? const Color(0xFF1A1A1A) : const Color(0xFFF1F3F8),
-                      leadingWidth: 48,
-                      titleSpacing: 0,
-                      leading: Material(
-                        color: Colors.transparent,
-                        shape: const CircleBorder(),
-                        clipBehavior: Clip.hardEdge,
-                        child: InkWell(
-                          customBorder: const CircleBorder(),
-                          splashColor: Colors.black.withOpacity(0.15),
-                          highlightColor: Colors.black.withOpacity(0.08),
-                          onTap: () {
-                            if (!(["Option||Is", "Chart||Is"]
-                                .contains(widget.isBasket))) {
-                              ref.read(marketWatchProvider).requestMWScrip(
-                                  context: context, isSubscribe: true);
-                            }
-                            searchScrip.searchClear();
-                            searchScrip.setpageName("");
-                            currentRouteName = 'homeScreen';
-                            Navigator.pop(context);
-                            FocusScope.of(context).unfocus();
-                          },
-                          child: Container(
-                            width: 44,
-                            height: 44,
-                            alignment: Alignment.center,
-                            child: Icon(
-                              Icons.arrow_back_ios_outlined,
-                              size: 18,
-                              color: theme.isDarkMode
-                                  ? colors.textSecondaryDark
-                                  : colors.textSecondaryLight,
-                            ),
-                          ),
-                        ),
-                      ),
-                      title: Container(
-                        // color: theme.isDarkMode ? const Color(0xFF1A1A1A) : const Color(0xFFF1F3F8),
-                        padding:
-                            const EdgeInsets.only(right: 12, top: 8, bottom: 7),
+          child: GestureDetector(
+              onTap: () => FocusManager.instance.primaryFocus!.unfocus(),
+              child: Scaffold(
+                  appBar: AppBar(
+                    elevation: 0,
+                    // backgroundColor: theme.isDarkMode ? const Color(0xFF1A1A1A) : const Color(0xFFF1F3F8),
+                    leadingWidth: 48,
+                    titleSpacing: 0,
+                    leading: Material(
+                      color: Colors.transparent,
+                      shape: const CircleBorder(),
+                      clipBehavior: Clip.hardEdge,
+                      child: InkWell(
+                        customBorder: const CircleBorder(),
+                        splashColor: Colors.black.withOpacity(0.15),
+                        highlightColor: Colors.black.withOpacity(0.08),
+                        onTap: () {
+                          if (!(["Option||Is", "Chart||Is"]
+                              .contains(widget.isBasket))) {
+                            ref.read(marketWatchProvider).requestMWScrip(
+                                context: context, isSubscribe: true);
+                          }
+                          searchScrip.searchClear();
+                          searchScrip.setpageName("");
+                          currentRouteName = 'homeScreen';
+                          Navigator.pop(context);
+                          FocusScope.of(context).unfocus();
+                        },
                         child: Container(
-                          height: 40,
-                          decoration: BoxDecoration(
+                          width: 44,
+                          height: 44,
+                          alignment: Alignment.center,
+                          child: Icon(
+                            Icons.arrow_back_ios_outlined,
+                            size: 18,
                             color: theme.isDarkMode
-                  ? colors.searchBgDark
-                  : colors.searchBg,
-                            borderRadius: BorderRadius.circular(5),
-                            // border: Border.all(
-                            //   color: theme.isDarkMode ? const Color(0xFF2A2A2A) : const Color(0xFFEEEEEE),
-                            //   width: 1,
-                            // ),
-                          ),
-                          child: Row(
-                            children: [
-                              // Search icon
-                              const SizedBox(width: 12),
-                              SvgPicture.asset(
-                                assets.searchIcon,
-                               color: theme.isDarkMode
                                 ? colors.textSecondaryDark
                                 : colors.textSecondaryLight,
-                                width: 18,
-                                height: 18,
-                              ),
-                              const SizedBox(width: 8),
-                              // Text input
-                              Expanded(
-                                child: TextFormField(
-                                  autofocus: true,
-                                  controller: textCtrl,
-                                  style: TextWidget.textStyle(
-                                    fontSize: 16,
-                                    color: theme.isDarkMode
-                                        ? colors.textPrimaryDark
-                                        : colors.textPrimaryLight,
-                                    theme: theme.isDarkMode,
-                                  ),
-                                  textCapitalization:
-                                      TextCapitalization.characters,
-                                  inputFormatters: [
-                                    UpperCaseTextFormatter(),
-                                    NoEmojiInputFormatter(),
-                                    FilteringTextInputFormatter.deny(
-                                        RegExp('[π£•₹€℅™∆√¶/.,]'))
-                                  ],
-                                  keyboardType: TextInputType.text,
-                                  decoration: InputDecoration(
-                                    isCollapsed: true,
-                                    border: InputBorder.none,
-                                    enabledBorder: InputBorder.none,
-                                    focusedBorder: InputBorder.none,
-                                    hintText:
-                                        "Search stocks, indices, options...",
-                                    hintStyle: TextWidget.textStyle(
-                                      fontSize: 14,
-                                      theme: theme.isDarkMode,
-                                     color: theme.isDarkMode
-                                ? colors.textSecondaryDark
-                                : colors.textSecondaryLight,
-                                    ),
-                                    contentPadding: const EdgeInsets.symmetric(
-                                        horizontal: 0, vertical: 12),
-                                  ),
-                                  onChanged: (value) async {
-                                    _searchvalue = value;
-                                    if (value.isEmpty) {
-                                      searchScrip.searchClear();
-                                    }
-                                    if (internet.connectionStatus !=
-                                        ConnectivityResult.none) {
-                                      searchScrip.scripSearch(value, context,
-                                          tabCtrl.index, widget.isBasket);
-                                    }
-                                  },
-                                ),
-                              ),
-            
-                              // Clear button
-                              if (textCtrl.text.isNotEmpty)
-                                Padding(
-                                  padding: const EdgeInsets.only(right: 8),
-                                  child: Material(
-                                    color: Colors.transparent,
-                                    shape: const CircleBorder(),
-                                    child: InkWell(
-                                      customBorder: const CircleBorder(),
-                                      onTap: () async {
-                                        textCtrl.clear();
-                                        await searchScrip.searchClear();
-                                      },
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: SvgPicture.asset(
-                                          assets.removeIcon,
-                                          width: 20,
-                                          height: 20,
-                                          color: theme.isDarkMode
-                                ? colors.textSecondaryDark
-                                : colors.textSecondaryLight,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                            ],
                           ),
                         ),
                       ),
                     ),
-                    body: Stack(children: [
+                    title: Container(
+                      // color: theme.isDarkMode ? const Color(0xFF1A1A1A) : const Color(0xFFF1F3F8),
+                      padding:
+                          const EdgeInsets.only(right: 12, top: 8, bottom: 7),
+                      child: Container(
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: theme.isDarkMode
+                ? colors.searchBgDark
+                : colors.searchBg,
+                          borderRadius: BorderRadius.circular(5),
+                          // border: Border.all(
+                          //   color: theme.isDarkMode ? const Color(0xFF2A2A2A) : const Color(0xFFEEEEEE),
+                          //   width: 1,
+                          // ),
+                        ),
+                        child: Row(
+                          children: [
+                            // Search icon
+                            const SizedBox(width: 12),
+                            SvgPicture.asset(
+                              assets.searchIcon,
+                             color: theme.isDarkMode
+                              ? colors.textSecondaryDark
+                              : colors.textSecondaryLight,
+                              width: 18,
+                              height: 18,
+                            ),
+                            const SizedBox(width: 8),
+                            // Text input
+                            Expanded(
+                              child: TextFormField(
+                                autofocus: true,
+                                controller: textCtrl,
+                                style: TextWidget.textStyle(
+                                  fontSize: 16,
+                                  color: theme.isDarkMode
+                                      ? colors.textPrimaryDark
+                                      : colors.textPrimaryLight,
+                                  theme: theme.isDarkMode,
+                                ),
+                                textCapitalization:
+                                    TextCapitalization.characters,
+                                inputFormatters: [
+                                  UpperCaseTextFormatter(),
+                                  NoEmojiInputFormatter(),
+                                  FilteringTextInputFormatter.deny(
+                                      RegExp('[π£•₹€℅™∆√¶/.,]'))
+                                ],
+                                keyboardType: TextInputType.text,
+                                decoration: InputDecoration(
+                                  isCollapsed: true,
+                                  border: InputBorder.none,
+                                  enabledBorder: InputBorder.none,
+                                  focusedBorder: InputBorder.none,
+                                  hintText:
+                                      "Search stocks, indices, options...",
+                                  hintStyle: TextWidget.textStyle(
+                                    fontSize: 14,
+                                    theme: theme.isDarkMode,
+                                   color: theme.isDarkMode
+                              ? colors.textSecondaryDark
+                              : colors.textSecondaryLight,
+                                  ),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 0, vertical: 12),
+                                ),
+                                onChanged: (value) async {
+                                  _searchvalue = value;
+                                  if (value.isEmpty) {
+                                    searchScrip.searchClear();
+                                  }
+                                  if (internet.connectionStatus !=
+                                      ConnectivityResult.none) {
+                                    searchScrip.scripSearch(value, context,
+                                        tabCtrl.index, widget.isBasket);
+                                  }
+                                },
+                              ),
+                            ),
+          
+                            // Clear button
+                            if (textCtrl.text.isNotEmpty)
+                              Padding(
+                                padding: const EdgeInsets.only(right: 8),
+                                child: Material(
+                                  color: Colors.transparent,
+                                  shape: const CircleBorder(),
+                                  child: InkWell(
+                                    customBorder: const CircleBorder(),
+                                    onTap: () async {
+                                      textCtrl.clear();
+                                      await searchScrip.searchClear();
+                                    },
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: SvgPicture.asset(
+                                        assets.removeIcon,
+                                        width: 20,
+                                        height: 20,
+                                        color: theme.isDarkMode
+                              ? colors.textSecondaryDark
+                              : colors.textSecondaryLight,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  body: SafeArea(
+                    child: Stack(children: [
                       Column(children: [
                         Container(
                           decoration: BoxDecoration(
@@ -348,8 +348,8 @@ class _AddScripState extends ConsumerState<SearchScreen>
                       ]),
                       if (internet.connectionStatus ==
                           ConnectivityResult.none) ...[const NoInternetWidget()]
-                    ]))),
-          ));
+                    ]),
+                  ))));
     });
   }
 

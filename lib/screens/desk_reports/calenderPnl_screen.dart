@@ -184,123 +184,123 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
             onTap: () {
               FocusScope.of(context).unfocus();
             },
-            child: SafeArea(
-              child: Scaffold(
-                appBar: AppBar(
-                  leadingWidth: 48,
-                  titleSpacing: 0,
-                  centerTitle: false,
-                  leading: Material(
-                     color: Colors.transparent,
-                shape: const CircleBorder(),
-                clipBehavior: Clip.hardEdge,
-                    child: InkWell(
-                        customBorder: const CircleBorder(),
-                splashColor: theme.isDarkMode
-                                                  ? colors.splashColorDark
-                                                  : colors.splashColorLight,
-                                              highlightColor: theme.isDarkMode
-                                                  ? colors.highlightDark
-                                                  : colors.highlightLight,
-                        onTap: () {
-                      // ledgerprovider.falseloader('calpnl');
-                          ledgerprovider.setSegment("Equity");
-                          ledgerprovider.setFinancialYear("");
-                          ledgerprovider.showProfiossSearch(false);
-                          Navigator.pop(context);
-                        },
-                        child:  Container(
-                    width: 44, // Increased touch area
-                    height: 44,
-                    alignment: Alignment.center,
-                    child: Icon(
-                      Icons.arrow_back_ios_outlined,
-                      size: 18,
-                      color: theme.isDarkMode
-                          ? colors.textSecondaryDark
-                          : colors.textSecondaryLight,
-                    ),
-                  ),),
+            child: Scaffold(
+              appBar: AppBar(
+                leadingWidth: 48,
+                titleSpacing: 0,
+                centerTitle: false,
+                leading: Material(
+                   color: Colors.transparent,
+              shape: const CircleBorder(),
+              clipBehavior: Clip.hardEdge,
+                  child: InkWell(
+                      customBorder: const CircleBorder(),
+              splashColor: theme.isDarkMode
+                                                ? colors.splashColorDark
+                                                : colors.splashColorLight,
+                                            highlightColor: theme.isDarkMode
+                                                ? colors.highlightDark
+                                                : colors.highlightLight,
+                      onTap: () {
+                    // ledgerprovider.falseloader('calpnl');
+                        ledgerprovider.setSegment("Equity");
+                        ledgerprovider.setFinancialYear("");
+                        ledgerprovider.showProfiossSearch(false);
+                        Navigator.pop(context);
+                      },
+                      child:  Container(
+                  width: 44, // Increased touch area
+                  height: 44,
+                  alignment: Alignment.center,
+                  child: Icon(
+                    Icons.arrow_back_ios_outlined,
+                    size: 18,
+                    color: theme.isDarkMode
+                        ? colors.textSecondaryDark
+                        : colors.textSecondaryLight,
                   ),
-                  elevation: 0.2,
-                  title: TextWidget.titleText(
-                      text: "P&L Summary",
-                      textOverflow: TextOverflow.ellipsis,
-                      theme: theme.isDarkMode,
-                      color: theme.isDarkMode
-                          ? colors.textPrimaryDark
-                          : colors.textPrimaryLight,
-                      fw: 1),
-                  bottom: PreferredSize(
-                    preferredSize: Size.fromHeight(40),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        TabBar(
-                          tabAlignment: TabAlignment.start,
-                          indicatorSize: TabBarIndicatorSize.tab,
-                          isScrollable: true,
-                          indicatorColor: theme.isDarkMode
-                              ? colors.secondaryDark
-                              : colors.secondaryLight,
-                          unselectedLabelColor: theme.isDarkMode
+                ),),
+                ),
+                elevation: 0.2,
+                title: TextWidget.titleText(
+                    text: "P&L Summary",
+                    textOverflow: TextOverflow.ellipsis,
+                    theme: theme.isDarkMode,
+                    color: theme.isDarkMode
+                        ? colors.textPrimaryDark
+                        : colors.textPrimaryLight,
+                    fw: 1),
+                bottom: PreferredSize(
+                  preferredSize: Size.fromHeight(40),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      TabBar(
+                        tabAlignment: TabAlignment.start,
+                        indicatorSize: TabBarIndicatorSize.tab,
+                        isScrollable: true,
+                        indicatorColor: theme.isDarkMode
+                            ? colors.secondaryDark
+                            : colors.secondaryLight,
+                        unselectedLabelColor: theme.isDarkMode
+                            ? colors.textSecondaryDark
+                            : colors.textSecondaryLight,
+                        unselectedLabelStyle: TextWidget.textStyle(
+                          fontSize: 14,
+                          theme: false,
+                          color: theme.isDarkMode
                               ? colors.textSecondaryDark
                               : colors.textSecondaryLight,
-                          unselectedLabelStyle: TextWidget.textStyle(
+                          fw: 3,
+                        ),
+                        labelPadding:
+                            const EdgeInsets.symmetric(horizontal: 16),
+                        indicatorPadding:
+                            const EdgeInsets.symmetric(horizontal: 16),
+                        labelColor: theme.isDarkMode
+                            ? colors.secondaryDark
+                            : colors.secondaryLight,
+                        labelStyle: TextWidget.textStyle(
                             fontSize: 14,
                             theme: false,
                             color: theme.isDarkMode
-                                ? colors.textSecondaryDark
-                                : colors.textSecondaryLight,
-                            fw: 3,
-                          ),
-                          labelPadding:
-                              const EdgeInsets.symmetric(horizontal: 16),
-                          indicatorPadding:
-                              const EdgeInsets.symmetric(horizontal: 16),
-                          labelColor: theme.isDarkMode
-                              ? colors.secondaryDark
-                              : colors.secondaryLight,
-                          labelStyle: TextWidget.textStyle(
-                              fontSize: 14,
-                              theme: false,
-                              color: theme.isDarkMode
-                                  ? colors.secondaryDark
-                                  : colors.secondaryLight,
-                              fw: 2),
-                          tabs: ledgerprovider.availableSegments
-                              .map((e) => Tab(text: e))
-                              .toList(),
-                          controller: _tabController,
-                          onTap: (index) {
-                            final selectedSegment =
-                                ledgerprovider.availableSegments[index];
-                            ledgerprovider.setSegment(selectedSegment);
-                            // Check if data is cached for this segment and year
-                            ledgerprovider.loadOrFetchCalendarPnlData(
-                            context,
-                            ledgerprovider.formattedStartDate,
-                            ledgerprovider.formattedendDate,
-                            selectedSegment,
-                            force: false,
-                          );
-                          },
-                        ),
-                      ],
-                    ),
+                                ? colors.secondaryDark
+                                : colors.secondaryLight,
+                            fw: 2),
+                        tabs: ledgerprovider.availableSegments
+                            .map((e) => Tab(text: e))
+                            .toList(),
+                        controller: _tabController,
+                        onTap: (index) {
+                          final selectedSegment =
+                              ledgerprovider.availableSegments[index];
+                          ledgerprovider.setSegment(selectedSegment);
+                          // Check if data is cached for this segment and year
+                          ledgerprovider.loadOrFetchCalendarPnlData(
+                          context,
+                          ledgerprovider.formattedStartDate,
+                          ledgerprovider.formattedendDate,
+                          selectedSegment,
+                          force: false,
+                        );
+                        },
+                      ),
+                    ],
                   ),
                 ),
-                body: (ledgerprovider.calendarpnlloading ||
-                        ledgerprovider.calenderpnlAllData == null ||
-                        (ledgerprovider.selectedSegment == 'FNO' &&
-                            ledgerprovider.calenderpnlAllData?.segment != 'FNO'))
-                    ? Center(
-                        child: Container(
-                          color: Colors.white,
-                          child: CircularLoaderImage(),
-                        ),
-                      )
-                    : RefreshIndicator(
+              ),
+              body: (ledgerprovider.calendarpnlloading ||
+                      ledgerprovider.calenderpnlAllData == null ||
+                      (ledgerprovider.selectedSegment == 'FNO' &&
+                          ledgerprovider.calenderpnlAllData?.segment != 'FNO'))
+                  ? Center(
+                      child: Container(
+                        color: Colors.white,
+                        child: CircularLoaderImage(),
+                      ),
+                    )
+                  : SafeArea(
+                    child: RefreshIndicator(
                         onRefresh: _refresh,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -425,8 +425,8 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                                                               decoration:
                                                                   BoxDecoration(
                                                                color: theme.isDarkMode
-                  ? colors.searchBgDark
-                  : colors.searchBg,
+                                    ? colors.searchBgDark
+                                    : colors.searchBg,
                                                                 borderRadius:
                                                                     BorderRadius
                                                                         .circular(
@@ -659,7 +659,7 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                                                                 } else {
                                                                   // positionBook.showPositionSearch(false);
                                                                 }
-              
+                                
                                                                 ledgerprovider
                                                                     .profitlossSearch(
                                                                         value,
@@ -734,13 +734,13 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                                                                     sum +
                                                                     double.parse(item
                                                                         .realisedpnl!));
-              
+                                
                                                         // Format the date (e.g. "03 Oct 2024")
                                                         final dateString =
                                                             '${dateKey.day.toString().padLeft(2, '0')} '
                                                             '${_monthName(dateKey.month)} '
                                                             '${dateKey.year}';
-              
+                                
                                                         return Theme(
                                                             data: Theme.of(
                                                                     context)
@@ -846,7 +846,7 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                           ],
                         ),
                       ),
-              ),
+                  ),
             ),
           ),
         );
@@ -1145,82 +1145,84 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
         padding: EdgeInsets.only(
           bottom: MediaQuery.of(context).viewInsets.bottom,
         ),
-        child: Container(
-           decoration: BoxDecoration(
-           borderRadius: const BorderRadius.only(
-      topLeft: Radius.circular(16),
-      topRight: Radius.circular(16),
-    ),
-         color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-         border: Border(
-                                  top: BorderSide(
-                                    color: theme.isDarkMode
-                                        ? colors.textSecondaryDark
-                                            .withOpacity(0.5)
-                                        : colors.colorWhite,
+        child: SafeArea(
+          child: Container(
+             decoration: BoxDecoration(
+             borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(16),
+                topRight: Radius.circular(16),
+              ),
+           color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+           border: Border(
+                                    top: BorderSide(
+                                      color: theme.isDarkMode
+                                          ? colors.textSecondaryDark
+                                              .withOpacity(0.5)
+                                          : colors.colorWhite,
+                                    ),
+                                    left: BorderSide(
+                                      color: theme.isDarkMode
+                                          ? colors.textSecondaryDark
+                                              .withOpacity(0.5)
+                                          : colors.colorWhite,
+                                    ),
+                                    right: BorderSide(
+                                      color: theme.isDarkMode
+                                          ? colors.textSecondaryDark
+                                              .withOpacity(0.5)
+                                          : colors.colorWhite,
+                                    ),
                                   ),
-                                  left: BorderSide(
-                                    color: theme.isDarkMode
-                                        ? colors.textSecondaryDark
-                                            .withOpacity(0.5)
-                                        : colors.colorWhite,
-                                  ),
-                                  right: BorderSide(
-                                    color: theme.isDarkMode
-                                        ? colors.textSecondaryDark
-                                            .withOpacity(0.5)
-                                        : colors.colorWhite,
-                                  ),
-                                ),
-
-         
-        ),
-          child: DraggableScrollableSheet(
-            initialChildSize: 0.2,
-            minChildSize: 0.2,
-            maxChildSize: 0.4,
-            expand: false,
-            builder: (BuildContext context, ScrollController scrollController) {
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const CustomDragHandler(),
-                  // ListDivider(),
-                  const SizedBox(height: 20),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        TextWidget.subText(
-                          text: "Charges and Taxes",
-                          color: theme.isDarkMode
-                              ? colors.textPrimaryDark
-                              : colors.textPrimaryLight,
-                          theme: theme.isDarkMode,
-                          fw: 3,
-                        ),
-                        TextWidget.subText(
-                          text: ledgerprovider.calenderpnlAllData != null
-                              ? ledgerprovider.calenderpnlAllData!.totalCharges !=
-                                      null
-                                  ? ledgerprovider
-                                      .calenderpnlAllData!.totalCharges!
-                                      .toStringAsFixed(2)
-                                  : '0.0'
-                              : '0.0',
-                          color: theme.isDarkMode
-                              ? colors.textPrimaryDark
-                              : colors.textPrimaryLight,
-                          theme: theme.isDarkMode,
-                          fw: 3,
-                        ),
-                      ],
+          
+           
+          ),
+            child: DraggableScrollableSheet(
+              initialChildSize: 0.2,
+              minChildSize: 0.2,
+              maxChildSize: 0.4,
+              expand: false,
+              builder: (BuildContext context, ScrollController scrollController) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const CustomDragHandler(),
+                    // ListDivider(),
+                    const SizedBox(height: 20),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          TextWidget.subText(
+                            text: "Charges and Taxes",
+                            color: theme.isDarkMode
+                                ? colors.textPrimaryDark
+                                : colors.textPrimaryLight,
+                            theme: theme.isDarkMode,
+                            fw: 3,
+                          ),
+                          TextWidget.subText(
+                            text: ledgerprovider.calenderpnlAllData != null
+                                ? ledgerprovider.calenderpnlAllData!.totalCharges !=
+                                        null
+                                    ? ledgerprovider
+                                        .calenderpnlAllData!.totalCharges!
+                                        .toStringAsFixed(2)
+                                    : '0.0'
+                                : '0.0',
+                            color: theme.isDarkMode
+                                ? colors.textPrimaryDark
+                                : colors.textPrimaryLight,
+                            theme: theme.isDarkMode,
+                            fw: 3,
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
-              );
-            },
+                  ],
+                );
+              },
+            ),
           ),
         ),
       ),

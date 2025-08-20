@@ -1455,9 +1455,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
           Column(
             children: [
               SvgPicture.asset(assets.noDatafound,
-                  color: theme.isDarkMode
-                      ? colors.darkColorDivider
-                      : colors.colorDivider),
+                  color: Color(0xff777777)),
               const SizedBox(height: 2),
               Text("No Data Found",
                   style:
@@ -1500,9 +1498,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
             children: [
               SvgPicture.asset(
                 assets.noDatafound,
-                color: theme.isDarkMode
-                    ? colors.textSecondaryDark
-                    : colors.textSecondaryLight,
+                color: Color(0xff777777),
               ),
               const SizedBox(height: 2),
               TextWidget.subText(
@@ -1543,9 +1539,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
             children: [
               SvgPicture.asset(
                 assets.noDatafound,
-                color: theme.isDarkMode
-                    ? colors.textSecondaryDark
-                    : colors.textSecondaryLight,
+                color: Color(0xff777777),
               ),
               const SizedBox(height: 2),
               TextWidget.subText(
