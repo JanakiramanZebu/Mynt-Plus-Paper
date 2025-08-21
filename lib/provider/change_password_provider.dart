@@ -231,7 +231,7 @@ class ChangePasswordProvider extends DefaultChangeNotifier {
       if (_forgetPasswordModel!.stat == "Ok") {
         ConstantName.sessCheck = true;
         ScaffoldMessenger.of(context).showSnackBar(successMessage(
-            context, 'New password is sended through Email/SMS'));
+            context, 'New password is sent through Email/SMS'));
 
         userIdController.text = '${_forgetPasswordModel!.clientid}';
 
@@ -284,8 +284,8 @@ class ChangePasswordProvider extends DefaultChangeNotifier {
 
         Future.delayed(const Duration(seconds: 2), () {
           changePassMethod();
-          Navigator.pushNamedAndRemoveUntil(
-              context, Routes.loginScreen, (route) => false);
+         Navigator.pushNamedAndRemoveUntil(
+      context, Routes.loginScreen, (route) => route.isFirst);
         });
       } else if (_changepasswordmodel!.stat == "Not_Ok") {
         warningToaster(context,
