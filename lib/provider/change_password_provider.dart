@@ -275,18 +275,22 @@ class ChangePasswordProvider extends DefaultChangeNotifier {
       if (_changepasswordmodel!.stat == "Ok") {
         ConstantName.sessCheck = true;
         ref.read(authProvider).clearTextField();
-
+// FocusScope.of(context).unfocus();
         ScaffoldMessenger.of(context).showSnackBar(
             successMessage(context, '${_changepasswordmodel!.dmsg}'));
         pref.setHideLoginOptBtn(false);
         ref.read(authProvider).loginMethCtrl.text = pref.clientId!;
         pref.setMobileLogin(false);
+        changePassMethod();
 
-        Future.delayed(const Duration(seconds: 2), () {
-          changePassMethod();
-         Navigator.pushNamedAndRemoveUntil(
+          Navigator.pushNamedAndRemoveUntil(
       context, Routes.loginScreen, (route) => route.isFirst);
-        });
+
+      //   Future.delayed(const Duration(seconds: 2), () {
+      //     changePassMethod();
+      //    Navigator.pushNamedAndRemoveUntil(
+      // context, Routes.loginScreen, (route) => route.isFirst);
+      //   });
       } else if (_changepasswordmodel!.stat == "Not_Ok") {
         warningToaster(context,
             _changepasswordmodel!.emsg!.replaceAll("Error Occurred :", ""));
