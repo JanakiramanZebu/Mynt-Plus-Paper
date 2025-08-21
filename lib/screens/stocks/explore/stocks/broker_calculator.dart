@@ -183,26 +183,21 @@ class _BrokerageCalculatorScreenState
         FocusScope.of(context).unfocus();
       },
       child: Scaffold(
-        backgroundColor: Colors.grey[50],
+        backgroundColor:
+            theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
         appBar: AppBar(
-          leadingWidth: 41,
-          titleSpacing: 6,
+          leadingWidth: 48,
+          titleSpacing: 0,
           centerTitle: false,
-          leading: InkWell(
-              onTap: () {
-                // ledgerprovider.falseloader('calpnl');
-      
-                Navigator.pop(context);
-              },
-              child: const CustomBackBtn()),
+           leading: CustomBackBtn(),
           elevation: 0.2,
           title: TextWidget.titleText(
               text: "Brokerage Calculator",
               textOverflow: TextOverflow.ellipsis,
               theme: theme.isDarkMode,
-              color: theme.isDarkMode
-                  ? colors.textSecondaryDark
-                  : colors.textSecondaryLight,
+               color: theme.isDarkMode
+                  ? colors.textPrimaryDark
+                  : colors.textPrimaryLight,
               fw: 1),
         ),
         body: SafeArea(
