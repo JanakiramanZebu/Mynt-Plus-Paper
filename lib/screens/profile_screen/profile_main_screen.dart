@@ -1303,7 +1303,7 @@ class SettingsScreen extends ConsumerWidget {
                                     const SizedBox(height: 8.0),
                                     TextWidget.subText(
                                       text:
-                                          "Freezing your account will lock access for everyone, including you.\n\nAll open orders will be automatically canceled.\n\nExisting positions will remain unaffected.\n\nYou can unfreeze your account anytime by verifying your identity.",
+                                          "Freezing your account will lock access for everyone, including you.\n\nAll open orders will be automatically cancelled.\n\nExisting positions will remain unaffected.\n\nYou can unfreeze your account anytime by verifying your identity.",
                                       theme: false,
                                       color: theme.isDarkMode
                                           ? colors.textSecondaryDark
