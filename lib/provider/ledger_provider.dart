@@ -121,8 +121,17 @@ class LDProvider extends DefaultChangeNotifier {
   PnlModel? _pnlAllDatadummy;
   PnlModel? get pnlAllDataDummy => _pnlAllDatadummy;
 
+  // Calendar PNL data per segment
+  Map<String, CalenderpnlModel> _calenderpnlDataBySegment = {};
+  Map<String, CalenderpnlModel> get calenderpnlDataBySegment => _calenderpnlDataBySegment;
+
+  // Legacy single data variable (keeping for backward compatibility)
   CalenderpnlModel? _calenderpnlAllData;
-  CalenderpnlModel? get calenderpnlAllData => _calenderpnlAllData;
+  CalenderpnlModel? get calenderpnlAllData {
+    final data = _calenderpnlDataBySegment[selectedSegment];
+    print("calenderpnlAllData getter called for segment: $selectedSegment, data exists: ${data != null}");
+    return data;
+  }
 
   TradeBookModel? _tradebookdata;
   TradeBookModel? get tradebookdata => _tradebookdata;
@@ -281,27 +290,7 @@ class LDProvider extends DefaultChangeNotifier {
 
     // Clear calendar PnL related data structures when switching accounts
     if (val == null) {
-      calendarPnlCache.clear();
-      grouped.clear();
-      _originalGrouped.clear();
-      _heatmapData.clear();
-      monthlyPnL.clear();
-
-      // Reset financial year and date-related variables
-      selectedFinancialYear = '';
-      startTaxDate = DateTime.now();
-      endTaxDate = DateTime.now();
-      selectedMonth = DateTime.now();
-      formattedStartDate = '';
-      formattedendDate = '';
-
-      // Reset loading state
-      _calendarpnlloading = false;
-
-      // Reset sharing-related variables
-      _ucode = '';
-      notsharing = true;
-      changeornot = '';
+      clearCalendarPnLData();
     }
   }
 
@@ -552,6 +541,16 @@ class LDProvider extends DefaultChangeNotifier {
 
   bool _calendarpnlloading = false;
   bool get calendarpnlloading => _calendarpnlloading;
+
+  // Segment-specific loading states for Calendar PnL
+  Map<String, bool> _calendarPnlLoadingBySegment = {};
+  bool isCalendarPnlLoadingForSegment(String segment) {
+    return _calendarPnlLoadingBySegment[segment] ?? false;
+  }
+  void setCalendarPnlLoadingForSegment(String segment, bool loading) {
+    _calendarPnlLoadingBySegment[segment] = loading;
+    notifyListeners();
+  }
 
   bool _taxderloading = false;
   bool get taxderloading => _taxderloading;
@@ -1449,7 +1448,7 @@ class LDProvider extends DefaultChangeNotifier {
   // Future fetchcalenderpnldata(
   //     BuildContext context, String from, String to, String type,
   //     {bool force = false}) async {
-  //   // Always fetch if called from loadOrFetchCalendarPnlData with force=true
+
   //   try {
   //     final prefs = await SharedPreferences.getInstance();
   //     _noticenewfeature = prefs.getString("notice").toString();
@@ -2608,15 +2607,6 @@ class LDProvider extends DefaultChangeNotifier {
         ? DateTime(now.year, now.month, 1)
         : startTaxDate;
 
-    // Use cached data if available for this year/segment
-    final cacheKey =
-        calendarPnlCacheKey(selectedFinancialYear, selectedSegment);
-    if (calendarPnlCache.containsKey(cacheKey) &&
-        calendarPnlCache[cacheKey] != null) {
-      _calenderpnlAllData = calendarPnlCache[cacheKey];
-      _rebuildGroupedAndHeatmap(_calenderpnlAllData);
-    }
-
     if (_heatmapData != {}) {
       // Aggregate monthly P&L data for this financial year.
       monthlyPnL = _aggregateMonthlyPnL(_heatmapData, startTaxDate, endTaxDate);
@@ -3564,15 +3554,245 @@ class LDProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
-  // Add a cache for calendar PnL data per (year, segment)
-  final Map<String, CalenderpnlModel?> calendarPnlCache = {};
+  // Check if data exists for a specific segment
+  bool hasDataForSegment(String segment) {
+    return _calenderpnlDataBySegment.containsKey(segment) && 
+           _calenderpnlDataBySegment[segment] != null;
+  }
 
-  // Helper to generate cache key
-  String calendarPnlCacheKey(String fy, String segment) => '$fy|$segment';
+  // Check if all segments have data
+  bool get hasDataForAllSegments {
+    return availableSegments.every((segment) => hasDataForSegment(segment));
+  }
 
-  // Method to clear calendar PnL cache when switching accounts
-  Future<void> clearCalendarPnlCache() async {
-    calendarPnlCache.clear();
+  // Get data for a specific segment without fetching
+  CalenderpnlModel? getDataForSegment(String segment) {
+    return _calenderpnlDataBySegment[segment];
+  }
+
+  // Get current segment data
+  CalenderpnlModel? get currentSegmentData {
+    return _calenderpnlDataBySegment[selectedSegment];
+  }
+
+  // Fetch data for all segments if none have data
+  Future fetchDataForAllSegmentsIfEmpty(
+      BuildContext context, String from, String to) async {
+    if (hasDataForAllSegments) {
+      return; // All segments already have data
+    }
+    
+    // Set loading state for all segments initially
+    for (String segment in availableSegments) {
+      if (!hasDataForSegment(segment)) {
+        setCalendarPnlLoadingForSegment(segment, true);
+      }
+    }
+    notifyListeners();
+    
+    // Fetch data for all segments
+    for (String segment in availableSegments) {
+      if (!hasDataForSegment(segment)) {
+        await fetchcalenderpnldata(context, from, to, segment);
+      }
+    }
+  }
+
+  // Simplified fetchcalenderpnldata without caching
+  Future fetchcalenderpnldata(
+      BuildContext context, String from, String to, String type) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      _noticenewfeature = prefs.getString("notice").toString();
+
+      // Set segment-specific loading state
+      setCalendarPnlLoadingForSegment(type, true);
+      _calendarpnlloading = true;
+      notifyListeners();
+      
+      CalenderpnlModel? fetchedData = await api.getcalenderpnldata(from, to, type);
+      
+      // Store data for this specific segment
+      if (fetchedData != null) {
+        fetchedData.segment = type;
+        _calenderpnlDataBySegment[type] = fetchedData;
+        
+        // Only update the UI data if this is the currently selected segment
+        if (selectedSegment == type) {
+          // Use the centralized method to rebuild all data structures
+          _rebuildGroupedAndHeatmapForSegment(type);
+        }
+      }
+      
+      // Clear segment-specific loading state
+      setCalendarPnlLoadingForSegment(type, false);
+      _calendarpnlloading = false;
+      
+      // Clear search if any
+      if (profitlossSearchCtrl.text.isNotEmpty) {
+        profitlossSearchCtrl.clear();
+      }
+      
+      notifyListeners();
+    } catch (e) {
+      // Clear segment-specific loading state on error
+      setCalendarPnlLoadingForSegment(type, false);
+      _calendarpnlloading = false;
+      debugPrint("$e");
+    }
+  }
+
+  // Switch to a different segment, fetching data only if needed
+  Future switchToSegment(BuildContext context, String segment, String from, String to) async {
+    print("switchToSegment called: current=$selectedSegment, switching to=$segment");
+    if (selectedSegment == segment) {
+      print("Already on segment $segment, returning");
+      return; // Already on this segment
+    }
+    
+    // Set loading state for the segment being switched to
+    setCalendarPnlLoadingForSegment(segment, true);
+    notifyListeners();
+    
+    try {
+      selectedSegment = segment;
+      print("Updated selectedSegment to: $segment");
+      
+      // If we don't have data for this segment, fetch it
+      if (!hasDataForSegment(segment)) {
+        print("No data for segment $segment, fetching...");
+        await fetchcalenderpnldata(context, from, to, segment);
+      } else {
+        print("Data exists for segment $segment, rebuilding UI...");
+        // Just rebuild UI from existing data
+        _rebuildGroupedAndHeatmapForSegment(segment);
+      }
+      
+      // Force a UI refresh to ensure all components are updated
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
+      
+    } finally {
+      // Always clear loading state
+      setCalendarPnlLoadingForSegment(segment, false);
+      notifyListeners();
+      print("switchToSegment completed for segment: $segment");
+    }
+  }
+
+  // Rebuild grouped data and heatmap for a specific segment without refetching
+  void _rebuildGroupedAndHeatmapForSegment(String segment) {
+    print("_rebuildGroupedAndHeatmapForSegment called for segment: $segment");
+    final segmentData = _calenderpnlDataBySegment[segment];
+    if (segmentData == null) {
+      // If no data exists, clear everything
+      print("No data found for segment: $segment, clearing grouped data");
+      grouped = {};
+      _originalGrouped = {};
+      _heatmapData = {};
+      return;
+    }
+    
+    print("Found data for segment: $segment, data count: ${segmentData.data?.length ?? 0}, journal count: ${segmentData.journal?.length ?? 0}");
+    
+    // Clear and rebuild grouped data and heatmap
+    grouped = {};
+    _originalGrouped = {};
+    _heatmapData = {};
+    
+    // Clear search and filters when switching segments
+    if (profitlossSearchCtrl.text.isNotEmpty) {
+      profitlossSearchCtrl.clear();
+    }
+    _selectedFilters = {};
+    
+    // Process journal data for heatmap
+    if (segmentData.journal != null && segmentData.journal!.isNotEmpty) {
+      for (var element in segmentData.journal!) {
+        if (element.realisedpnl != null && element.realisedpnl != '0.0' && element.tRADEDATE != null) {
+          try {
+            DateFormat inputFormat = DateFormat("yyyy-MM-dd'T'HH:mm:ss");
+            DateTime parsedDate = inputFormat.parse(element.tRADEDATE!);
+            final dateKey = DateTime(parsedDate.year, parsedDate.month, parsedDate.day);
+            _heatmapData[dateKey] = double.tryParse(element.realisedpnl ?? "0.0") ?? 0.0;
+          } catch (e) {
+            print("Error parsing journal date: ${element.tRADEDATE} - $e");
+          }
+        }
+      }
+    }
+    
+    // Process trade data for grouping
+    if (segmentData.data != null && segmentData.data!.isNotEmpty) {
+      print("Processing ${segmentData.data!.length} trade records for segment $segment");
+      for (var trade in segmentData.data!) {
+        if (trade.tRADEDATE != null) {
+          try {
+            DateFormat inputFormat = DateFormat("yyyy-MM-dd'T'HH:mm:ss");
+            DateTime parsedDate = inputFormat.parse(trade.tRADEDATE!);
+            final dateKey = DateTime(parsedDate.year, parsedDate.month, parsedDate.day);
+            if (!grouped.containsKey(dateKey)) {
+              grouped[dateKey] = [];
+            }
+            grouped[dateKey]!.add(trade);
+          } catch (e) {
+            print("Error parsing trade date: ${trade.tRADEDATE} - $e");
+          }
+        } else {
+          print("Trade record has no TRADEDATE: ${trade.toString()}");
+        }
+      }
+    } else {
+      print("No trade data found for segment $segment");
+    }
+    
+    // Store original grouped data for filtering
+    _originalGrouped = Map.from(grouped);
+    
+    // Recalculate monthly P&L based on the new heatmap data
+    if (_heatmapData.isNotEmpty) {
+      monthlyPnL = _aggregateMonthlyPnL(_heatmapData, startTaxDate, endTaxDate);
+      print("Recalculated monthly P&L for segment $segment: ${monthlyPnL.length} months");
+    } else {
+      monthlyPnL.clear();
+      print("No heatmap data for segment $segment, cleared monthly P&L");
+    }
+    
+    print("After processing segment $segment: grouped has ${grouped.length} dates, heatmap has ${_heatmapData.length} entries");
+    if (grouped.isNotEmpty) {
+      print("Sample grouped dates: ${grouped.keys.take(3).toList()}");
+      // Validate that the grouped data contains the correct segment data
+      for (var dateKey in grouped.keys.take(3)) {
+        final tradesForDate = grouped[dateKey]!;
+        print("Date $dateKey has ${tradesForDate.length} trades");
+        if (tradesForDate.isNotEmpty) {
+          print("Sample trade: ${tradesForDate.first.toString()}");
+        }
+      }
+    }
+    
+    // Ensure we have at least an empty map if no data was processed
+    if (grouped.isEmpty) {
+      grouped = {};
+      _originalGrouped = {};
+      print("No grouped data processed for segment $segment");
+    }
+    
+    // Final validation
+    print("Final state for segment $segment: grouped=${grouped.length}, originalGrouped=${_originalGrouped.length}, heatmap=${_heatmapData.length}");
+  }
+
+  // Method to clear Calendar PnL data when switching accounts
+  void clearCalendarPnLData() {
+    // Clear segment-based data storage
+    _calenderpnlDataBySegment.clear();
+    
+    // Clear segment-specific loading states
+    _calendarPnlLoadingBySegment.clear();
+    
+    // Clear legacy data structures
+    _calenderpnlAllData = null;
     grouped.clear();
     _originalGrouped.clear();
     _heatmapData.clear();
@@ -3593,263 +3813,10 @@ class LDProvider extends DefaultChangeNotifier {
     _ucode = '';
     notsharing = true;
     changeornot = '';
-
+    
     notifyListeners();
   }
 
-  /// Prefetch all years' data for the current segment (used on profile icon tap)
-  Future<void> prefetchAllCalendarPnlDataForSegment(
-      BuildContext context, String segment,
-      {List<String>? years}) async {
-    final yearsToFetch = years ?? availableFinancialYears;
-    for (final fy in yearsToFetch) {
-      final key = calendarPnlCacheKey(fy, segment);
-      await _fetchAndCacheCalenderPnlData(
-        context,
-        _getStartDateForFY(fy),
-        _getEndDateForFY(fy),
-        segment,
-        key,
-      );
-    }
-  }
-
-  // Helper to get formatted start date for a FY string
-  String _getStartDateForFY(String fy) {
-    final parts = fy.split('-');
-    final startYear = int.parse(parts[0]);
-    final startTaxDate = DateTime(startYear, 4, 1);
-    return DateFormat("dd/MM/yyyy").format(startTaxDate);
-  }
-
-  // Helper to get formatted end date for a FY string
-  String _getEndDateForFY(String fy) {
-    final parts = fy.split('-');
-    final startYear = int.parse(parts[0]);
-    final endTaxDate = DateTime(startYear + 1, 3, 31);
-    return DateFormat("dd/MM/yyyy").format(endTaxDate);
-  }
-
-  // Modified loadOrFetchCalendarPnlData to use cache
-  Future<void> loadOrFetchCalendarPnlData(
-      BuildContext context, String from, String to, String type,
-      {bool force = false}) async {
-    final fy = selectedFinancialYear;
-    final segment = type;
-    final cacheKey = calendarPnlCacheKey(fy, segment);
-
-    // Always show loader when force is true or when no cached data exists
-    if (force ||
-        !calendarPnlCache.containsKey(cacheKey) ||
-        calendarPnlCache[cacheKey] == null) {
-      _calendarpnlloading = true;
-      notifyListeners();
-    }
-
-    if (!force &&
-        calendarPnlCache.containsKey(cacheKey) &&
-        calendarPnlCache[cacheKey] != null) {
-      // Use cached data
-      _calenderpnlAllData = calendarPnlCache[cacheKey];
-      // Ensure segment field is set for cached data
-      if (_calenderpnlAllData != null && _calenderpnlAllData!.segment == null) {
-        _calenderpnlAllData!.segment = segment;
-      }
-      // Rebuild grouped and heatmapData from cached data
-      _rebuildGroupedAndHeatmap(_calenderpnlAllData);
-      setFinancialYear(fy);
-      _calendarpnlloading = false;
-      notifyListeners();
-      return;
-    }
-    // Otherwise, fetch and cache
-    await fetchcalenderpnldata(context, from, to, type,
-        force: true, cacheKey: cacheKey);
-  }
-
-  // Modified fetchcalenderpnldata to support caching
-  Future fetchcalenderpnldata(
-      BuildContext context, String from, String to, String type,
-      {bool force = false, String? cacheKey}) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      _noticenewfeature = prefs.getString("notice").toString();
-      _calendarpnlloading = true;
-      notifyListeners();
-      final data = await api.getcalenderpnldata(from, to, type);
-      // Only update cache and UI for FNO after data is received
-      if (type == 'FNO') {
-        if (cacheKey != null) {
-          calendarPnlCache[cacheKey] = data;
-        }
-        _calenderpnlAllData = data;
-        if (_calenderpnlAllData != null) {
-          _calenderpnlAllData!.segment = type;
-        }
-      } else {
-        // For other segments, keep current behavior
-        _calenderpnlAllData = data;
-        if (_calenderpnlAllData != null) {
-          _calenderpnlAllData!.segment = type;
-        }
-        if (cacheKey != null) {
-          calendarPnlCache[cacheKey] = data;
-        }
-      }
-      grouped = {};
-      _originalGrouped = {};
-      if (_calenderpnlAllData != null) {
-        _heatmapData = {};
-        if (_calenderpnlAllData!.journal != null) {
-          _selectedFilters = {};
-          for (var element in _calenderpnlAllData!.journal!) {
-            if (element.realisedpnl != '0.0') {
-              String dateString = element.tRADEDATE!;
-              try {
-                DateFormat inputFormat = DateFormat("yyyy-MM-dd'T'HH:mm:ss");
-                DateTime parsedDate = inputFormat.parse(dateString);
-                _heatmapData[DateTime(
-                        parsedDate.year, parsedDate.month, parsedDate.day)] =
-                    double.parse(element.realisedpnl ?? "0.0");
-              } catch (e) {
-                print("Error parsing date: $dateString - $e");
-              }
-            }
-          }
-        }
-        if (_calenderpnlAllData!.data != null) {
-          for (var trade in _calenderpnlAllData!.data!) {
-            DateFormat inputFormat = DateFormat("yyyy-MM-dd'T'HH:mm:ss");
-            DateTime parsedDate = inputFormat.parse(trade.tRADEDATE!);
-            final dateKey =
-                DateTime(parsedDate.year, parsedDate.month, parsedDate.day);
-            if (!grouped.containsKey(dateKey)) {
-              grouped[dateKey] = [];
-            }
-            grouped[dateKey]!.add(trade);
-          }
-        }
-      }
-      setFinancialYear(selectedFinancialYear);
-      _calendarpnlloading = false;
-      if (profitlossSearchCtrl.text.isNotEmpty) {
-        profitlossSearchCtrl.clear();
-      }
-      notifyListeners();
-    } catch (e) {
-      _calendarpnlloading = false;
-      debugPrint("$e");
-    }
-  }
-
-  // Helper to rebuild grouped and heatmapData from cached data
-  void _rebuildGroupedAndHeatmap(CalenderpnlModel? data) {
-    grouped = {};
-    _originalGrouped = {};
-    _heatmapData = {};
-    if (data == null) return;
-    // Set the segment field when rebuilding from cache
-    if (data.segment == null) {
-      data.segment = selectedSegment;
-    }
-    if (data.journal != null) {
-      for (var element in data.journal!) {
-        if (element.realisedpnl != '0.0') {
-          String dateString = element.tRADEDATE!;
-          try {
-            DateFormat inputFormat = DateFormat("yyyy-MM-dd'T'HH:mm:ss");
-            DateTime parsedDate = inputFormat.parse(dateString);
-            _heatmapData[DateTime(
-                    parsedDate.year, parsedDate.month, parsedDate.day)] =
-                double.parse(element.realisedpnl ?? "0.0");
-          } catch (e) {
-            print("Error parsing date: $dateString - $e");
-          }
-        }
-      }
-    }
-    if (data.data != null) {
-      for (var trade in data.data!) {
-        DateFormat inputFormat = DateFormat("yyyy-MM-dd'T'HH:mm:ss");
-        DateTime parsedDate = inputFormat.parse(trade.tRADEDATE!);
-        final dateKey =
-            DateTime(parsedDate.year, parsedDate.month, parsedDate.day);
-        if (!grouped.containsKey(dateKey)) {
-          grouped[dateKey] = [];
-        }
-        grouped[dateKey]!.add(trade);
-      }
-    }
-  }
-
-  Future<void> _fetchAndCacheCalenderPnlData(BuildContext context, String from,
-      String to, String type, String cacheKey) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      _noticenewfeature = prefs.getString("notice").toString();
-      _calendarpnlloading = true;
-      notifyListeners();
-      final data = await api.getcalenderpnldata(from, to, type);
-      _calenderpnlAllData = data;
-      // Cache the result
-      calendarPnlCache[cacheKey] = data;
-      grouped = {};
-      _originalGrouped = {};
-      if (_calenderpnlAllData != null) {
-        _heatmapData = {};
-        if (_calenderpnlAllData!.journal != null) {
-          _selectedFilters = {};
-          for (var element in _calenderpnlAllData!.journal!) {
-            if (element.realisedpnl != '0.0') {
-              String dateString = element.tRADEDATE!;
-              try {
-                DateFormat inputFormat = DateFormat("yyyy-MM-dd'T'HH:mm:ss");
-                DateTime parsedDate = inputFormat.parse(dateString);
-                _heatmapData[DateTime(
-                        parsedDate.year, parsedDate.month, parsedDate.day)] =
-                    double.parse(element.realisedpnl ?? "0.0");
-              } catch (e) {
-                print("Error parsing date: $dateString - $e");
-              }
-            }
-          }
-        }
-        if (_calenderpnlAllData!.data != null) {
-          for (var trade in _calenderpnlAllData!.data!) {
-            DateFormat inputFormat = DateFormat("yyyy-MM-dd'T'HH:mm:ss");
-            DateTime parsedDate = inputFormat.parse(trade.tRADEDATE!);
-            final dateKey =
-                DateTime(parsedDate.year, parsedDate.month, parsedDate.day);
-            if (!grouped.containsKey(dateKey)) {
-              grouped[dateKey] = [];
-            }
-            grouped[dateKey]!.add(trade);
-          }
-        }
-      }
-      setFinancialYear(selectedFinancialYear);
-      _calendarpnlloading = false;
-      if (profitlossSearchCtrl.text.isNotEmpty) {
-        profitlossSearchCtrl.clear();
-      }
-      notifyListeners();
-    } catch (e) {
-      _calendarpnlloading = false;
-      debugPrint("$e");
-    }
-  }
-
-  // Helper to check if calendar PnL data is cached for a given year and segment
-  bool isCalendarPnlDataCached(String fy, String segment) {
-    final key = calendarPnlCacheKey(fy, segment);
-    return calendarPnlCache.containsKey(key) && calendarPnlCache[key] != null;
-  }
-
-  // Method to reset calendar PnL loading state
-  void resetCalendarPnlLoading() {
-    _calendarpnlloading = false;
-    notifyListeners();
-  }
 }
 // List<double> getCustItemsHeight() {
 //   List<double> itemsHeights = [];

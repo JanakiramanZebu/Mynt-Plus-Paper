@@ -83,16 +83,13 @@ class ReportsScreen extends ConsumerWidget {
                 await ledgerdate.getCurrentDate('else');
                 ledgerdate.fetchsharingdata(ledgerdate.startDate,
                     ledgerdate.today, ledgerdate.selectedSegment, context);
-                // Only fetch if not already cached
-                if (!ledgerdate.isCalendarPnlDataCached(
-                    ledgerdate.selectedFinancialYear, 'Equity')) {
-                  ledgerdate.loadOrFetchCalendarPnlData(
-                    context,
-                    ledgerdate.startDate,
-                    ledgerdate.today,
-                    'Equity',
-                  );
-                }
+                // Fetch calendar PnL data
+                ledgerdate.fetchcalenderpnldata(
+                  context,
+                  ledgerdate.startDate,
+                  ledgerdate.today,
+                  'Equity',
+                );
                 Navigator.pushNamed(context, Routes.calenderpnlScreen,
                     arguments: "DDDDD");
 

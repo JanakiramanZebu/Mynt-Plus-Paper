@@ -807,14 +807,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     });
 
      reportsprovider.calendarProvider();
-    // Prefetch only the current financial year for all segments
+    // Initialize calendar provider
     final currentFY = reportsprovider.availableFinancialYears.first;
-    if ((reportsprovider.pnlAllData == null)) {
-      for (final segment in reportsprovider.availableSegments) {
-        reportsprovider.prefetchAllCalendarPnlDataForSegment(context, segment,
-            years: [currentFY]);
+    if ((reportsprovider.hasDataForAllSegments)) {
+         reportsprovider.fetchDataForAllSegmentsIfEmpty(
+          context,
+          reportsprovider.startDate,
+          reportsprovider.today,
+        );
+        // Calendar PnL data will be fetched when needed
       }
-    }
     // Immediately set the default year and segment to show correct data from cache
     reportsprovider.setFinancialYear(currentFY);
     reportsprovider.setSegment(reportsprovider.availableSegments.first);
@@ -927,10 +929,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     // Prefetch only the current financial year for all segments
     final currentFY = reportsprovider.availableFinancialYears.first;
     if ((reportsprovider.pnlAllData == null)) {
-      for (final segment in reportsprovider.availableSegments) {
-        reportsprovider.prefetchAllCalendarPnlDataForSegment(context, segment,
-            years: [currentFY]);
-      }
+      // Calendar PnL data will be fetched when needed
     }
     // Immediately set the default year and segment to show correct data from cache
     reportsprovider.setFinancialYear(currentFY);

@@ -39,24 +39,12 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
   void initState() {
     super.initState();
 
-    // Initialize TabController
     _tabController = TabController(
       length: 4,
       vsync: this,
       initialIndex: 0,
     );
-
     // Sync initial tab index with provider
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      FocusScope.of(context).unfocus();
-      if (mounted) {
-        ref.read(stocksProvide).syncTabIndex(0);
-      }
-      ProviderScope.containerOf(context).read(authProvider).setIposAPicalls();
-      ref.read(bondsProvider).fetchAllBonds();
-    });
-
-    // Add listener to handle tab changes
     _tabController.addListener(() {
       setState(() {});
       // Sync with provider when tab changes
@@ -68,6 +56,14 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
         ref.read(stocksProvide).searchController.clear();
       }
     });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        ref.read(stocksProvide).syncTabIndex(0);
+      }
+      ProviderScope.containerOf(context).read(authProvider).setIposAPicalls(context);
+      ref.read(bondsProvider).fetchAllBonds();
+    });
+
   }
 
   @override
@@ -81,17 +77,19 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final reportsprovider = ref.read(ledgerProvider);
       // await ref.read(stocksProvide).getNews();
-      await ref.read(mfProvider).fetchEtfCategory();
 
       reportsprovider.calendarProvider();
-      // Prefetch only the current financial year for all segments
+      // Initialize calendar provider
       final currentFY = reportsprovider.availableFinancialYears.first;
-      if ((reportsprovider.pnlAllData == null)) {
-        for (final segment in reportsprovider.availableSegments) {
-          reportsprovider.prefetchAllCalendarPnlDataForSegment(context, segment,
-              years: [currentFY]);
-        }
+      if ((reportsprovider.hasDataForAllSegments)) {
+         reportsprovider.fetchDataForAllSegmentsIfEmpty(
+          context,
+          reportsprovider.startDate,
+          reportsprovider.today,
+        );
+        // Calendar PnL data will be fetched when needed
       }
+      await ref.read(mfProvider).fetchEtfCategory();
       // Immediately set the default year and segment to show correct data from cache
       reportsprovider.setFinancialYear(currentFY);
       reportsprovider.setSegment(reportsprovider.availableSegments.first);

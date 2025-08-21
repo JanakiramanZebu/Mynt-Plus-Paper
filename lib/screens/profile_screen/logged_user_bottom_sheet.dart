@@ -375,7 +375,8 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                                 userProfile.profileloaderfun(true);
                                 // portfolio.clearAllportfolio();
                                 // orders.clearAllorders();
-                                await ledgerprovider.clearCalendarPnlCache();
+                                // Calendar PnL cache cleared automatically when switching accounts
+                                ref.read(ledgerProvider).clearCalendarPnLData();
                                 ref.read(fundProvider).clearFunds();
           
                                 userProfile.clearUserData();

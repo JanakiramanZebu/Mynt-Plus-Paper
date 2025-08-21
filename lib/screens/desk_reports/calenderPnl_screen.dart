@@ -52,12 +52,14 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
   void _initializeData() {
     if (!_isInitialized) {
       final ledgerprovider = ref.read(ledgerProvider);
-      ledgerprovider.loadOrFetchCalendarPnlData(
-        context,
-        ledgerprovider.startDate,
-        ledgerprovider.today,
-        ledgerprovider.selectedSegment,
-      );
+      // If no data exists for any segment, fetch data for all segments
+      if (!ledgerprovider.hasDataForAllSegments) {
+        ledgerprovider.fetchDataForAllSegmentsIfEmpty(
+          context,
+          ledgerprovider.startDate,
+          ledgerprovider.today,
+        );
+      }
       _isInitialized = true;
     }
   }
@@ -67,17 +69,13 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
     super.didChangeDependencies();
     // Ensure data is fetched when screen becomes active again
     final ledgerprovider = ref.read(ledgerProvider);
-    if (_isInitialized &&
-        (ledgerprovider.calenderpnlAllData == null ||
-            ledgerprovider.calenderpnlAllData?.segment !=
-                ledgerprovider.selectedSegment)) {
-      // If data is null or segment doesn't match, fetch data again
-      ledgerprovider.loadOrFetchCalendarPnlData(
+    if (_isInitialized && !ledgerprovider.hasDataForSegment(ledgerprovider.selectedSegment)) {
+      // If no data exists for the current segment, fetch it
+      ledgerprovider.fetchcalenderpnldata(
         context,
         ledgerprovider.startDate,
         ledgerprovider.today,
         ledgerprovider.selectedSegment,
-        force: true,
       );
     }
   }
@@ -85,15 +83,13 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
   // Method to refresh data when screen becomes visible
   void _refreshDataOnVisibility() {
     final ledgerprovider = ref.read(ledgerProvider);
-    if (_isInitialized) {
-      // Reset loading state first to ensure loader is shown
-      ledgerprovider.resetCalendarPnlLoading();
-      ledgerprovider.loadOrFetchCalendarPnlData(
+    if (_isInitialized && !ledgerprovider.hasDataForSegment(ledgerprovider.selectedSegment)) {
+      // If no data exists for the current segment, fetch it
+      ledgerprovider.fetchcalenderpnldata(
         context,
         ledgerprovider.startDate,
         ledgerprovider.today,
         ledgerprovider.selectedSegment,
-        force: true,
       );
     }
   }
@@ -139,30 +135,40 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
             .toList()
           ..sort((a, b) => b.compareTo(a));
         Future<void> _refresh() async {
-          await Future.delayed(
-              const Duration(seconds: 0)); // simulate refresh delay
-          print("refresh ");
-          // Always use the currently visible tab for refresh
-          final currentTabIndex = _tabController.index;
-          final currentSegment =
-              ledgerprovider.availableSegments[currentTabIndex];
-          ledgerprovider
-              .setSegment(currentSegment); // ensure provider is in sync
-          await ledgerprovider.getCurrentDate('else');
-          ledgerprovider.calendarProvider();
-          ledgerprovider.fetchsharingdata(
-            ledgerprovider.startDate,
-            ledgerprovider.today,
-            currentSegment,
-            context,
-          );
-          await ledgerprovider.loadOrFetchCalendarPnlData(
-            context,
-            ledgerprovider.startDate,
-            ledgerprovider.today,
-            currentSegment,
-            force: true,
-          );
+          try {
+            await Future.delayed(const Duration(seconds: 0)); // simulate refresh delay
+            print("refresh ");
+            
+            // Always use the currently visible tab for refresh
+            final currentTabIndex = _tabController.index;
+            final currentSegment = ledgerprovider.availableSegments[currentTabIndex];
+            
+            // Ensure provider is in sync
+            ledgerprovider.setSegment(currentSegment);
+            
+            // Get current date and calendar provider
+            await ledgerprovider.getCurrentDate('else');
+            ledgerprovider.calendarProvider();
+            
+            // Fetch sharing data first
+            await ledgerprovider.fetchsharingdata(
+              ledgerprovider.startDate,
+              ledgerprovider.today,
+              currentSegment,
+              context,
+            );
+            
+            // Fetch calendar PNL data
+            await ledgerprovider.fetchcalenderpnldata(
+              context,
+              ledgerprovider.startDate,
+              ledgerprovider.today,
+              currentSegment,
+            );
+          } catch (e) {
+            print("Error during refresh: $e");
+            // Don't let errors interrupt the UI
+          }
         }
 
         if (ledgerprovider.calenderpnlAllData != null) {
@@ -173,10 +179,9 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
           canPop: true,
           onPopInvokedWithResult: (didPop, result) {
             if (didPop) {
-              // ledgerprovider.falseloader('calpnl');
+              // Don't clear data when leaving screen, just reset to default segment
               ledgerprovider.setSegment("Equity");
               ledgerprovider.setFinancialYear("");
-
               ledgerprovider.showProfiossSearch(false);
             }
           },
@@ -202,7 +207,7 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                                                 ? colors.highlightDark
                                                 : colors.highlightLight,
                       onTap: () {
-                    // ledgerprovider.falseloader('calpnl');
+                        // Don't clear data when leaving screen, just reset to default segment
                         ledgerprovider.setSegment("Equity");
                         ledgerprovider.setFinancialYear("");
                         ledgerprovider.showProfiossSearch(false);
@@ -274,14 +279,12 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                         onTap: (index) {
                           final selectedSegment =
                               ledgerprovider.availableSegments[index];
-                          ledgerprovider.setSegment(selectedSegment);
-                          // Check if data is cached for this segment and year
-                          ledgerprovider.loadOrFetchCalendarPnlData(
+                          // Switch to the segment - this will also set selectedSegment internally
+                          ledgerprovider.switchToSegment(
                           context,
+                          selectedSegment,
                           ledgerprovider.formattedStartDate,
                           ledgerprovider.formattedendDate,
-                          selectedSegment,
-                          force: false,
                         );
                         },
                       ),
@@ -289,10 +292,9 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                   ),
                 ),
               ),
-              body: (ledgerprovider.calendarpnlloading ||
-                      ledgerprovider.calenderpnlAllData == null ||
-                      (ledgerprovider.selectedSegment == 'FNO' &&
-                          ledgerprovider.calenderpnlAllData?.segment != 'FNO'))
+              body: (ledgerprovider.isCalendarPnlLoadingForSegment(ledgerprovider.selectedSegment) ||
+                      (ledgerprovider.calenderpnlAllData == null && 
+                       !ledgerprovider.hasDataForSegment(ledgerprovider.selectedSegment)))
                   ? Center(
                       child: Container(
                         color: Colors.white,

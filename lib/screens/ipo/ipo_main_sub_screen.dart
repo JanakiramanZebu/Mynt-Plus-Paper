@@ -89,7 +89,7 @@ class _ViewBidsButton extends StatelessWidget {
       child: OutlinedButton(
         onPressed: () async {
           Future.delayed(const Duration(microseconds: 100), () async {
-            await ref.read(ipoProvide).getipoorderbookmodel(true);
+            await ref.read(ipoProvide).getipoorderbookmodel(context, true);
           });
           Navigator.pushNamed(context, Routes.ipoorderbook);
         },

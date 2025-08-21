@@ -134,14 +134,65 @@ mixin StocksAPI on ApiCore {
     }
   }
 
+  Future<StrategyList> getStrategyList() async {
+    try {
+      final response = await apiClient.post(Uri.parse('http://192.168.5.119:8002/client/get_strategies'),
+      headers: defaultHeaders,
+      body: jsonEncode({"uid": "ZP00285"}));
+          
+      final json = jsonDecode(response.body);
+
+      print("Strategy List: ${json}");
+
+      return StrategyList.fromJson(json as Map<String, dynamic>);
+    } catch (e) {
+      print("Strategy List Error: $e");
+      rethrow;
+    }
+  }
+
+  String _deploymessage = "";
+  // String get deployMessage => _deploymessage;
+
+  Future<String> deployStrategy(String strategyId) async {
+    try {
+      final response = await apiClient.post(Uri.parse('http://192.168.5.119:8002/client/StrategyDeploy'),
+      headers: defaultHeaders,
+      body: jsonEncode({"uid": "ZP00285", "strategyid": strategyId}));
+          
+      final json = jsonDecode(response.body);
+
+      print("Strategy List: ${json}");
+
+      return _deploymessage = "Strategy deployed successfully";
+    } catch (e) {
+      print("Strategy List Error: $e");
+      rethrow;
+    }
+  }
+
+  
+
   Future<Map<String, String>> getStrikePrice(String symbol, String expiry) async {
     // Simulate API call for strike prices
-    await Future.delayed(Duration(milliseconds: 500));
-    return {
-      'ATM': '56900',
-      'ITM': '56800',
-      'OTM': '57000',
-    };
+    try {
+
+      final response = await apiClient.get(Uri.parse('http://192.168.5.119:8002/client/Symbols'));
+          
+      final json = jsonDecode(response.body);
+
+      return json;
+
+      print("Strategy List: ${json}");
+    } catch (e) {
+      print("Strategy List Error: $e");
+      rethrow;
+    }
+    // return {
+    //   'ATM': '56900',
+    //   'ITM': '56800',
+    //   'OTM': '57000',
+    // };
   }
 
   Future<List<String>> getExpiryDates(String symbol) async {

@@ -1458,8 +1458,38 @@ class PortfolioProvider extends DefaultChangeNotifier {
         return int.parse("${a.netqty}").compareTo(int.parse("${b.netqty}"));
       });
     } else if (sorting == "Open") {
+      // Show 0 quantity positions (closed) at the top
       _allPostionList.sort((a, b) {
-        return int.parse("${b.netqty}").compareTo(int.parse("${a.netqty}"));
+        int aQty = int.parse("${a.netqty}");
+        int bQty = int.parse("${b.netqty}");
+        
+        // If both are closed (zero), maintain original order
+        if (aQty == 0 && bQty == 0) return 0;
+        // If both are open (non-zero), maintain original order
+        if (aQty != 0 && bQty != 0) return 0;
+        // If a is closed (zero), move it to top
+        if (aQty == 0) return -1;
+        // If b is closed (zero), move it to top
+        if (bQty == 0) return 1;
+        // Fallback to quantity comparison
+        return aQty.compareTo(bQty);
+      });
+    } else if (sorting == "OpenDSC") {
+      // Show 0 quantity positions (closed) at the bottom
+      _allPostionList.sort((a, b) {
+        int aQty = int.parse("${a.netqty}");
+        int bQty = int.parse("${b.netqty}");
+        
+        // If both are closed (zero), maintain original order
+        if (aQty == 0 && bQty == 0) return 0;
+        // If both are open (non-zero), maintain original order
+        if (aQty != 0 && bQty != 0) return 0;
+        // If a is closed (zero), move it to bottom
+        if (aQty == 0) return 1;
+        // If b is closed (zero), move it to bottom
+        if (bQty == 0) return -1;
+        // Fallback to quantity comparison
+        return aQty.compareTo(bQty);
       });
     }
 
@@ -2386,10 +2416,10 @@ class PortfolioProvider extends DefaultChangeNotifier {
   bool get isExitingAll => _isExitingAll;
 
   // Add this near the other state variables
-  String _currentPositionSortOption = "";
+  String _currentPositionSortOption = "Open";
   String get currentPositionSortOption => _currentPositionSortOption;
 
   // Add this near the other state variables and _currentHoldingSortOption
-  String _currentHoldingSortOption = "";
+  String _currentHoldingSortOption = "ASC";
   String get currentHoldingSortOption => _currentHoldingSortOption;
 }

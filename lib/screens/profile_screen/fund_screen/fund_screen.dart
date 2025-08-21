@@ -237,20 +237,25 @@ class _FundScreenState extends ConsumerState<FundScreen> {
             const SizedBox(height: 16),
             TextFormField(
               controller: fund.upiid,
-              style: theme.isDarkMode
-                  ? TextWidget.textStyle(
-                      fontSize: 14, theme: false, color: colors.colorWhite)
-                  : TextWidget.textStyle(
-                      fontSize: 14, theme: false, color: colors.colorBlack),
+              style: TextWidget.textStyle(
+                                      fontSize: 16,
+                                      color: theme.isDarkMode
+                                          ? colors.textPrimaryDark
+                                          : colors.textPrimaryLight,
+                                      theme: theme.isDarkMode,
+                                    ),
               inputFormatters: [
                 NoEmojiInputFormatter(),
-                FilteringTextInputFormatter.deny(RegExp('[π£•₹€℅™∆√¶/,.]')),
+                FilteringTextInputFormatter.deny(RegExp('[π£•₹€℅™∆√¶/,]')),
                 FilteringTextInputFormatter.deny(RegExp(r'\s')),
               ],
               decoration: InputDecoration(
-                hintText: "example: username@upi",
+                hintText: "Enter UPI ID",
+                
                 hintStyle: TextWidget.textStyle(
-                    fontSize: 14, theme: false, color: colors.colorGrey),
+                    fontSize: 14, theme: false, color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight),
+                    
+
                 contentPadding:
                     const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
                 enabledBorder: OutlineInputBorder(

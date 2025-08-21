@@ -396,7 +396,7 @@ class _IPOListItem extends StatelessWidget {
         ),
         const SizedBox(height: 6),
         TextWidget.paraText(
-          text: "${ipo.totalsub?.toString() ?? ""}x Sub ",
+          text: ipo.totalsub != null && ipo.totalsub.toString().isNotEmpty ? "${ipo.totalsub?.toString() ?? ""}x Sub " : "",
           theme: false,
           fw: 3,
           color: theme.isDarkMode

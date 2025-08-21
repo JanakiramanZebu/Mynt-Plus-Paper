@@ -63,9 +63,15 @@ class _PositionScripBottomSheetState
       } else if (currentPositionSortOption == "PCASC" || currentPositionSortOption == "PCDESC") {
         currentSortType = "perchng";
         perchangisAscending = currentPositionSortOption == "PCASC";
-      } else if (currentPositionSortOption == "Open" || currentPositionSortOption == "Close") {
+      } else if (currentPositionSortOption == "Open") {
         currentSortType = "position";
-        postion = currentPositionSortOption == "Open";
+        postion = true; // 0 qty at top
+      } else if (currentPositionSortOption == "OpenDSC") {
+        currentSortType = "position";
+        postion = false; // 0 qty at bottom
+      } else if (currentPositionSortOption == "Close") {
+        currentSortType = "position";
+        postion = true; // Default to Open position
       }
     } catch (e) {
       print("Error initializing sort state: $e");
@@ -117,7 +123,7 @@ class _PositionScripBottomSheetState
       } else if (type == "perchng") {
         sortingValue = perchangisAscending ? "PCASC" : "PCDESC";
       } else if (type == "position") {
-        sortingValue = postion ? "Open" : "Close";
+        sortingValue = postion ? "Open" : "OpenDSC";
       }
     });
 
@@ -162,9 +168,9 @@ class _PositionScripBottomSheetState
                                         : colors.colorWhite,
                                   ),
                                 ),
+          color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
             ),
 
-          color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
         
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

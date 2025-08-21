@@ -179,6 +179,7 @@ class Routes {
   static const String mfsearchscreen = 'mfsearchscreen';
   static const String redeemNewBottomSheet = 'redeemNewBottomSheet';
   static const String algoCreate = 'algoCreate';
+  static const String algoList = 'algoList';
 
   static const String mfnfoscreen = 'mfnfoscreen';
   static const String mfCategoryList = 'mfCategoryList';
@@ -215,4 +216,5 @@ class Routes {
   // rough
   static const String heatmapcalendarscreen = 'HeatmapCalendarScreen ';
   static const String withdrawscreen = 'withdrawscreen';
+
 }

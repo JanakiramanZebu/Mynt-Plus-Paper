@@ -115,6 +115,7 @@ class _StockScreenState extends ConsumerState<StockScreen>
       },
       {
         'label': 'Brokerage Calculator',
+        'label': 'Brokerage Calculator',
         'icon': assets.brokercal,
         'subtitle': 'Transparent costs'
       },
@@ -170,8 +171,7 @@ class _StockScreenState extends ConsumerState<StockScreen>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Container(
                             decoration: BoxDecoration(
@@ -190,64 +190,51 @@ class _StockScreenState extends ConsumerState<StockScreen>
                               ),
                             )),
                         const SizedBox(width: 12),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            SizedBox(
-                              width: MediaQuery.of(context).size.width * 0.80,
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  TextWidget.subText(
-                                    text: "Stocks Portfolio",
+                        SizedBox(
+                          width: MediaQuery.of(context).size.width * 0.8,
+                          child: Row(
+                            mainAxisAlignment:
+                                MainAxisAlignment.spaceBetween,
+                            children: [
+                              TextWidget.subText(
+                                text: "Stocks Portfolio",
+                                theme: false,
+                                color: theme.isDarkMode
+                                    ? colors.colorWhite
+                                    : colors.colorBlack,
+                                fw: 0,
+                              ),
+                              InkWell(
+                                canRequestFocus: false,
+                                onTap: () async {
+                                  Future.delayed(const Duration(milliseconds: 150), () {
+                                    trancation.changebool(true);
+                                    Navigator.pushNamed(
+                                        context, Routes.fundscreen,
+                                        arguments: trancation);
+                                  });
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 4),
+                                  child: TextWidget.subText(
+                                    text: "Add Money",
                                     theme: false,
                                     color: theme.isDarkMode
-                                        ? colors.textPrimaryDark
-                                        : colors.textPrimaryLight,
-                                    fw: 1,
+                                        ? colors.primaryDark
+                                        : colors.primaryLight,
+                                    fw: 2,
                                   ),
-
-                                  
-                                  
-                                  Material(
-                                      color: Colors.transparent,
-                                    child: InkWell(
-                                      canRequestFocus: false,
-                                      onTap: () async {
-                                        Future.delayed(const Duration(milliseconds: 150), () {
-                                          trancation.changebool(true);
-                                          Navigator.pushNamed(
-                                              context, Routes.fundscreen,
-                                              arguments: trancation);
-                                        });
-                                      },
-                                      borderRadius: BorderRadius.circular(8),
-                                    splashColor: theme.isDarkMode
-                                        ? Colors.white.withOpacity(0.15)
-                                        : Colors.black.withOpacity(0.15),
-                                    highlightColor: theme.isDarkMode
-                                        ? Colors.white.withOpacity(0.08)
-                                        : Colors.black.withOpacity(0.08),
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 8, vertical: 8),
-                                        child: TextWidget.subText(
-                                          text: "Add Money",
-                                          theme: false,
-                                          color: theme.isDarkMode
-                                              ? colors.primaryDark
-                                              : colors.primaryLight,
-                                          fw: 2,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 16),
-                            if (portfolio.holdingsModel != null &&
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+
+                    if (portfolio.holdingsModel != null &&
                                 portfolio.holdingsModel!.isNotEmpty)
                               Material(
                                 color: Colors.transparent,
@@ -265,146 +252,138 @@ class _StockScreenState extends ConsumerState<StockScreen>
                                     indexList.bottomMenu(2, context);
                                     portfolio.changeTabIndex(0);
                                   },
-                                  child: SizedBox(
-                                    width:
-                                        MediaQuery.of(context).size.width * 0.8,
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 16, vertical: 14),
-                                      decoration: BoxDecoration(
-                                        color: theme.isDarkMode
-                                            ? colors.searchBgDark
-                                            : colors.searchBg,
-                                        borderRadius: BorderRadius.circular(5),
-                                      ),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.end,
-                                            children: [
-                                              TextWidget.subText(
-                                                text: "P&L",
-                                                theme: false,
-                                                color: theme.isDarkMode
-                                                    ? colors.textSecondaryDark
-                                                    : colors.textSecondaryLight,
-                                                fw: 3,
-                                              ),
-                                              Row(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.end,
-                                                children: [
-                                                  TextWidget.titleText(
-                                                    text:
-                                                        "${getFormatter(value: totalCurrentVal, v4d: false, noDecimal: false)} ",
-                                                    theme: false,
-                                                    color: totalCurrentVal
-                                                            .toString()
-                                                            .startsWith("-")
-                                                        ? theme.isDarkMode
-                                                            ? colors.lossDark
-                                                            : colors.lossLight
-                                                        : theme.isDarkMode
-                                                            ? colors.profitDark
-                                                            : colors
-                                                                .profitLight,
-                                                    fw: 0,
-                                                  ),
-                                                  TextWidget.captionText(
-                                                    text:
-                                                        "(${portfolio.totPnlPercHolding == "NaN" ? 0.00 : portfolio.totPnlPercHolding}%)",
-                                                    theme: false,
-                                                    color: portfolio
-                                                            .totPnlPercHolding
-                                                            .toString()
-                                                            .startsWith("-")
-                                                        ? theme.isDarkMode
-                                                            ? colors.lossDark
-                                                            : colors.lossLight
-                                                        : theme.isDarkMode
-                                                            ? colors.successDark
-                                                            : colors
-                                                                .successLight,
-                                                    fw: 0,
-                                                  ),
-                                                ],
-                                              ),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 10),
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.end,
-                                            children: [
-                                              Row(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.end,
-                                                children: [
-                                                  TextWidget.subText(
-                                                    text: "Invested ",
-                                                    theme: false,
-                                                    color: theme.isDarkMode
-                                                        ? colors
-                                                            .textSecondaryDark
-                                                        : colors
-                                                            .textSecondaryLight,
-                                                    fw: 3,
-                                                  ),
-                                                  TextWidget.paraText(
-                                                    text:
-                                                       formatAmountCompact(double.parse(_totalPnlHolding)),
-                                                    theme: false,
-                                                    color: theme.isDarkMode
-                                                        ? colors.textPrimaryDark
-                                                        : colors.textPrimaryLight,
-                                                    fw: 1,
-                                                  ),
-                                                ],
-                                              ),
-                                              Row(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.end,
-                                                children: [
-                                                  TextWidget.subText(
-                                                    text: "Current ",
-                                                    theme: false,
-                                                    color: theme.isDarkMode
-                                                        ? colors
-                                                            .textSecondaryDark
-                                                        : colors
-                                                            .textSecondaryLight,
-                                                    fw: 3,
-                                                  ),
-                                                  TextWidget.paraText(
-                                                    text:
-                                                        formatAmountCompact(double.parse(_totalCurrentVal)),
-                                                    theme: false,
-                                                    color: theme.isDarkMode
-                                                        ? colors.textPrimaryDark
-                                                        : colors.textPrimaryLight,
-                                                    fw: 1,
-                                                  ),
-                                                ],
-                                              ),
-                                            ],
-                                          )
-                                        ],
-                                      ),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16, vertical: 14),
+                                    decoration: BoxDecoration(
+                                      color: theme.isDarkMode
+                                          ? colors.colorBlack
+                                          : colors.searchBg,
+                                      borderRadius: BorderRadius.circular(5),
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.end,
+                                          children: [
+                                            TextWidget.subText(
+                                              text: "P&L",
+                                              theme: false,
+                                              color: theme.isDarkMode
+                                                  ? colors.textSecondaryDark
+                                                  : colors.textSecondaryLight,
+                                              fw: 3,
+                                            ),
+                                            Row(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.end,
+                                              children: [
+                                                TextWidget.titleText(
+                                                  text:
+                                                      "${getFormatter(value: totalCurrentVal, v4d: false, noDecimal: false)} ",
+                                                  theme: false,
+                                                  color: totalCurrentVal
+                                                          .toString()
+                                                          .startsWith("-")
+                                                      ? theme.isDarkMode
+                                                          ? colors.lossDark
+                                                          : colors.lossLight
+                                                      : theme.isDarkMode
+                                                          ? colors.successDark
+                                                          : colors
+                                                              .successLight,
+                                                  fw: 0,
+                                                ),
+                                                TextWidget.captionText(
+                                                  text:
+                                                      "(${portfolio.totPnlPercHolding == "NaN" ? 0.00 : portfolio.totPnlPercHolding}%)",
+                                                  theme: false,
+                                                  color: portfolio
+                                                          .totPnlPercHolding
+                                                          .toString()
+                                                          .startsWith("-")
+                                                      ? theme.isDarkMode
+                                                          ? colors.lossDark
+                                                          : colors.lossLight
+                                                      : theme.isDarkMode
+                                                          ? colors.successDark
+                                                          : colors
+                                                              .successLight,
+                                                  fw: 0,
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 10),
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.end,
+                                          children: [
+                                            Row(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.end,
+                                              children: [
+                                                TextWidget.subText(
+                                                  text: "Invested ",
+                                                  theme: false,
+                                                  color: theme.isDarkMode
+                                                      ? colors
+                                                          .textSecondaryDark
+                                                      : colors
+                                                          .textSecondaryLight,
+                                                  fw: 3,
+                                                ),
+                                                TextWidget.paraText(
+                                                  text:
+                                                     formatAmountCompact(double.parse(_totalPnlHolding)),
+                                                  theme: false,
+                                                  color: theme.isDarkMode
+                                                      ? colors.colorWhite
+                                                      : colors.colorBlack,
+                                                  fw: 0,
+                                                ),
+                                              ],
+                                            ),
+                                            Row(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.end,
+                                              children: [
+                                                TextWidget.subText(
+                                                  text: "Current ",
+                                                  theme: false,
+                                                  color: theme.isDarkMode
+                                                      ? colors
+                                                          .textSecondaryDark
+                                                      : colors
+                                                          .textSecondaryLight,
+                                                  fw: 3,
+                                                ),
+                                                TextWidget.paraText(
+                                                  text:
+                                                      formatAmountCompact(double.parse(_totalCurrentVal)),
+                                                  theme: false,
+                                                  color: theme.isDarkMode
+                                                      ? colors.colorWhite
+                                                      : colors.colorBlack,
+                                                  fw: 0,
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        )
+                                      ],
                                     ),
                                   ),
                                 ),
                               ),
-                          ],
-                        ),
-                      ],
-                    ),
 
                     const SizedBox(height: 16),
 
@@ -481,10 +460,14 @@ class _StockScreenState extends ConsumerState<StockScreen>
                unselectedLabelStyle: TextWidget.textStyle(
                             fontSize: 14,
                             theme: false,
-                            color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                            
-                            letterSpacing: -0.28),
-              labelPadding: const EdgeInsets.symmetric(horizontal: 4),
+                            fw: 3,
+                            color: colors.textSecondaryLight),
+                        labelPadding: const EdgeInsets.symmetric(horizontal: 4),
+                        // onTap: (index) {
+                        //   if (index == 0) {
+                        //     Navigator.pushNamed(context, Routes.algoList);
+                        //   }
+                        // },
                         tabs: const [
                           Tab(
                             child: Padding(

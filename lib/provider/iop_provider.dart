@@ -110,6 +110,21 @@ class IPOProvider extends DefaultChangeNotifier {
   late TabController ipoScreenTab;
   late TabController ipoOrderBookScreenTab;
 
+  final tablistitems = [
+    {
+      "title": "Open",
+      "index": 0,
+    },
+    {
+      "title": "Upcoming", 
+      "index": 1,
+    },
+    {
+      "title": "My Bids",
+      "index": 2,
+    }
+  ];
+
   VerifyUPIModel? _upiIdValidationModel;
   VerifyUPIModel? get upiIdValidationModel => _upiIdValidationModel;
 
@@ -221,6 +236,14 @@ class IPOProvider extends DefaultChangeNotifier {
 
   int _selectedTab = 0;
   int get selectedTab => _selectedTab;
+
+  // Method to set selected tab index
+  void setSelectedTab(int index) {
+    if (index >= 0 && index < tablistitems.length) {
+      _selectedTab = index;
+      notifyListeners();
+    }
+  }
 
   String timemessage = "";
   String get timeMessage => timemessage;
@@ -1378,7 +1401,7 @@ class IPOProvider extends DefaultChangeNotifier {
     }
   }
 
-  Future getipoorderbookmodel(bool isTrue) async {
+  Future getipoorderbookmodel(BuildContext context, bool isTrue) async {
     try {
       _myBidsload = true;
       _ipoOrderBookModel = await api.fetchipoorderbook();
@@ -1388,6 +1411,9 @@ class IPOProvider extends DefaultChangeNotifier {
       return _ipoOrderBookModel;
     } catch (e) {
       print("IPOs ORDERBOOK error:: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+          error(context, "Error in fetching IPO Order Book"));
+      _myBidsload = false;
     } finally {
       _myBidsload = false;
     }
@@ -1401,13 +1427,15 @@ class IPOProvider extends DefaultChangeNotifier {
       if (_upiIdValidationModel!.data!.verifiedVPAStatus1 == "Available" ||
           _upiIdValidationModel!.data!.verifiedVPAStatus2 == "Available") {
         getipoplaceorder(context, menudata, iposbids, iposupiid);
-        getipoorderbookmodel(true);
+        getipoorderbookmodel(context, true);
         // ipotab();
         _upierror = "";
         _upivalid = false;
+        setSelectedTab(2);
         Navigator.pop(context);
         Navigator.pop(context);
-        Navigator.pushNamed(context, Routes.ipo, arguments: 2);
+        // Navigator.pushNamed(context, Routes.ipo, arguments: 2);
+
       } else {
         _upivalid = true;
         _upierror = "Invalid UPI ID";
@@ -1432,8 +1460,10 @@ class IPOProvider extends DefaultChangeNotifier {
 
       _ipoOrderResponcesModel =
           await api.fetchipoplaceorder(menudata, iposbids, iposupiid);
-      getipoorderbookmodel(true);
+      getipoorderbookmodel(context, true);
       // ipotab();
+
+      setSelectedTab(2); // "My Bids" tab
 
       ScaffoldMessenger.of(context).showSnackBar(
           successMessage(context, '${_ipoOrderResponcesModel!.msg}'));
@@ -1460,12 +1490,12 @@ class IPOProvider extends DefaultChangeNotifier {
     }
   }
 
-  Future getmainstreamipo() async {
+  Future getmainstreamipo(BuildContext context) async {
     try {
       toggleLoadingOn(true);
       _mainStreamIpoModel = await api.fetchmainstreamoipo();
       // print("object ${_mainStreamIpoModel!.mainIPO![0].asbanonasba}");
-      getipoorderbookmodel(true);
+      getipoorderbookmodel(context, true);
       notifyListeners();
 
       return _mainStreamIpoModel;
