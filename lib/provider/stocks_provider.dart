@@ -29,7 +29,6 @@ import '../routes/route_names.dart';
 import 'bonds_provider.dart';
 import 'core/default_change_notifier.dart';
 import 'iop_provider.dart';
-import 'mf_provider.dart';
 
 final stocksProvide = ChangeNotifierProvider((ref) => StocksProvider(ref));
 
@@ -468,7 +467,6 @@ class StocksProvider extends DefaultChangeNotifier {
 
     try {
       final clientId = pref.clientId ?? "";
-      final session = pref.clientSession ?? "";
       final portfolioAnalysis = await api.fetchPortfolioAnalysis(clientId, "81d17903d77d3b70ad87fbb3d823e964846246846b0f6327844731c1b232cc62");
 
       _portfolioAnalysis = portfolioAnalysis;
@@ -1213,6 +1211,32 @@ Future<SpanCalcResponse?> calculateSpanForSelection({
     }
   }
 
+  Future<SpanCalcPositionItem?> buildSpanPosition({
+    required ScripValue scrip,
+    required int quantity,
+    required String transactionType, // 'B' or 'S'
+  }) async {
+    try {
+      final GetQuotes quote = await api.getScripQuote(scrip.token ?? '', scrip.exch ?? '');
+      final signedQty = (transactionType == 'S' ? -quantity : quantity).toString();
+
+      return SpanCalcPositionItem(
+        prd: 'M',
+        exch: scrip.exch ?? '',
+        tsym: scrip.tsym ?? '',
+        symname: quote.symname ?? (scrip.symbol ?? ''),
+        instname: quote.instname ?? (scrip.instname ?? ''),
+        exd: quote.exd ?? (scrip.expDate ?? ''),
+        netqty: signedQty,
+        optt: quote.optt ?? (scrip.optt ?? ''),
+        // Match web: if strprc is null/empty, omit it
+        strprc: (quote.strprc ?? '').toString(),
+      );
+    } catch (e) {
+      return null;
+    }
+  }
+
   Future<SpanCalcResponse?> calculateSpanForPositions(
     List<SpanCalcPositionItem> positions, {
     String? actid,
@@ -1236,6 +1260,63 @@ Future<SpanCalcResponse?> calculateSpanForSelection({
     }
   }
 
+  // Margin Calculator Portfolio State
+  List<MarginCalculatorPortfolioItem> _marginCalculatorPortfolio = [];
+  MarginCalculatorData _marginCalculatorCombinedMargin = MarginCalculatorData();
+  double _marginCalculatorBenefits = 0.0;
+  double _marginCalculatorBenefitPercentage = 0.0;
+  bool _isMarginBreakdownExpanded = false;
+
+  // Getters for margin calculator
+  List<MarginCalculatorPortfolioItem> get marginCalculatorPortfolio => _marginCalculatorPortfolio;
+  MarginCalculatorData get marginCalculatorCombinedMargin => _marginCalculatorCombinedMargin;
+  double get marginCalculatorBenefits => _marginCalculatorBenefits;
+  double get marginCalculatorBenefitPercentage => _marginCalculatorBenefitPercentage;
+  bool get isMarginBreakdownExpanded => _isMarginBreakdownExpanded;
+
+  // Methods for margin calculator
+  void addMarginCalculatorContract(MarginCalculatorPortfolioItem item) {
+    _marginCalculatorPortfolio.add(item);
+    notifyListeners();
+  }
+
+  void removeMarginCalculatorContract(int index) {
+    if (index >= 0 && index < _marginCalculatorPortfolio.length) {
+      _marginCalculatorPortfolio.removeAt(index);
+      notifyListeners();
+    }
+  }
+
+  void clearMarginCalculatorPortfolio() {
+    _marginCalculatorPortfolio.clear();
+    _marginCalculatorCombinedMargin = MarginCalculatorData();
+    _marginCalculatorBenefits = 0.0;
+    _marginCalculatorBenefitPercentage = 0.0;
+    notifyListeners();
+  }
+
+  void updateMarginCalculatorCombinedData({
+    required MarginCalculatorData combinedMargin,
+    required double benefits,
+    required double benefitPercentage,
+  }) {
+    _marginCalculatorCombinedMargin = combinedMargin;
+    _marginCalculatorBenefits = benefits;
+    _marginCalculatorBenefitPercentage = benefitPercentage;
+    notifyListeners();
+  }
+
+  void toggleMarginBreakdownExpansion() {
+    _isMarginBreakdownExpanded = !_isMarginBreakdownExpanded;
+    notifyListeners();
+  }
+
+  // Check if contract already exists
+  bool marginCalculatorContractExists(String token, String exch) {
+    return _marginCalculatorPortfolio.any((item) =>
+        item.scrip.token == token && item.scrip.exch == exch);
+  }
+
   String _strategyType = 'Intraday';
   TimeOfDay _entryTime = TimeOfDay(hour: 9, minute: 35);
   TimeOfDay _exitTime = TimeOfDay(hour: 15, minute: 15);
@@ -1249,7 +1330,7 @@ Future<SpanCalcResponse?> calculateSpanForSelection({
   List<StrategyLeg> _legs = [];
   bool _isLegBuilderCollapsed = false;
   String _selectedSegment = 'Options';
-  int _totalLot = 1;
+  String _totalQty = '1';
   String _selectedPosition = 'Buy';
   String _selectedOptionType = 'Call';
   String _selectedExpiry = 'Weekly';
@@ -1281,7 +1362,7 @@ Future<SpanCalcResponse?> calculateSpanForSelection({
   List<StrategyLeg> get legs => _legs;
   bool get isLegBuilderCollapsed => _isLegBuilderCollapsed;
   String get selectedSegment => _selectedSegment;
-  int get totalLot => _totalLot;
+  String get totalQty => _totalQty;
   String get selectedPosition => _selectedPosition;
   String get selectedOptionType => _selectedOptionType;
   String get selectedExpiry => _selectedExpiry;
@@ -1349,8 +1430,8 @@ Future<SpanCalcResponse?> calculateSpanForSelection({
     notifyListeners();
   }
 
-  void setTotalLot(int lot) {
-    _totalLot = lot;
+  void setTotalQty(String qty) {
+    _totalQty = qty;
     notifyListeners();
   }
 
@@ -1406,7 +1487,7 @@ Future<SpanCalcResponse?> calculateSpanForSelection({
       strike: _currentStrike,
       expiry: '28-AUG-2025', // This should be dynamic based on selection
       optionType: _selectedOptionType == 'Call' ? 'CE' : 'PE',
-      quantity: (_totalLot * 25).toString(), // Assuming 25 quantity per lot
+      quantity: (_totalQty).toString(), // Assuming 25 quantity per lot
       action: _selectedPosition == 'Buy' ? 'B' : 'S',
       prctype: 'MKT',
     );
@@ -1479,5 +1560,44 @@ print("request Strategy :::::: ${request.toJson()}");
     _successMessage = null;
     notifyListeners();
   }
+
   
+  
+}
+
+
+
+// Margin Calculator Data Models
+class MarginCalculatorPortfolioItem {
+  final ScripValue scrip;
+  final String symbol;
+  final String exchange;
+  final int quantity;
+  final String transactionType;
+  final double spanMargin;
+  final double exposureMargin;
+  final double totalMargin;
+
+  MarginCalculatorPortfolioItem({
+    required this.scrip,
+    required this.symbol,
+    required this.exchange,
+    required this.quantity,
+    required this.transactionType,
+    required this.spanMargin,
+    required this.exposureMargin,
+    required this.totalMargin,
+  });
+}
+
+class MarginCalculatorData {
+  final double span;
+  final double exposure;
+  final double total;
+
+  MarginCalculatorData({
+    this.span = 0.0,
+    this.exposure = 0.0,
+    this.total = 0.0,
+  });
 }

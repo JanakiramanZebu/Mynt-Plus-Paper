@@ -157,9 +157,10 @@ class UserAccountScreen extends ConsumerWidget {
                     assets.qrIcon, // This is your asset path
                     height: 20,
                     width: 20,
-                     color: theme.isDarkMode
-                            ? colors.textSecondaryDark
-                            : colors.textSecondaryLight, // Optional: set color if your SVG supports it
+                    color: theme.isDarkMode
+                        ? colors.textSecondaryDark
+                        : colors
+                            .textSecondaryLight, // Optional: set color if your SVG supports it
                   ),
                   onPressed: () {
                     Navigator.pushNamed(context, Routes.qrscanner);
@@ -926,16 +927,16 @@ class SettingsScreen extends ConsumerWidget {
             //     ],
             //   ),
             // ),
-            
+
             // Padding(
             //   padding: const EdgeInsets.symmetric(horizontal: 16),
             //   child: ListDivider(),
             // ),
-            
+
             // const SizedBox(height: 12),
-            
+
             // Settings Section
-            
+
             // const SizedBox(height: 16),
             // Padding(
             //   padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -972,31 +973,26 @@ class SettingsScreen extends ConsumerWidget {
                                   context: context,
                                   builder: (BuildContext context) {
                                     return AlertDialog(
-                                       backgroundColor: theme
-                                                                          .isDarkMode
-                                                                      ? const Color(
-                                                                          0xFF121212)
-                                                                      : const Color(
-                                                                          0xFFF1F3F8),
-                                      titlePadding:
-                                                const EdgeInsets.symmetric(
-                                                    horizontal: 8, vertical: 8),
-                                            shape: const RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.all(
-                                                  Radius.circular(8)),
-                                            ),
-                                            scrollable: true,
-                                            contentPadding:
-                                                const EdgeInsets.symmetric(
-                                                    horizontal: 12, vertical: 12),
-                                            actionsPadding: const EdgeInsets.only(
-                                                bottom: 16,
-                                                right: 16,
-                                                left: 16,
-                                                top: 8),
-                                            insetPadding:
-                                                const EdgeInsets.symmetric(
-                                                    horizontal: 30, vertical: 12),
+                                      backgroundColor: theme.isDarkMode
+                                          ? const Color(0xFF121212)
+                                          : const Color(0xFFF1F3F8),
+                                      titlePadding: const EdgeInsets.symmetric(
+                                          horizontal: 8, vertical: 8),
+                                      shape: const RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.all(
+                                            Radius.circular(8)),
+                                      ),
+                                      scrollable: true,
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                              horizontal: 12, vertical: 12),
+                                      actionsPadding: const EdgeInsets.only(
+                                          bottom: 16,
+                                          right: 16,
+                                          left: 16,
+                                          top: 8),
+                                      insetPadding: const EdgeInsets.symmetric(
+                                          horizontal: 30, vertical: 12),
                                       title: Column(
                                         children: [
                                           Row(
@@ -1010,127 +1006,120 @@ class SettingsScreen extends ConsumerWidget {
                                               //         ? colors.colorWhite
                                               //         : colors.colorBlack,
                                               //     fw: 1),
-                                             Material(
-                                                          color: Colors.transparent,
-                                                          shape: const CircleBorder(),
-                                                          child: InkWell(
-                                                            onTap: () async {
-                                                              await Future.delayed(
-                                                                  const Duration(
-                                                                      milliseconds:
-                                                                          150));
-                                                              Navigator.pop(context);
-                                                            },
-                                                            borderRadius:
-                                                                BorderRadius.circular(
-                                                                    20),
-                                                            splashColor: theme
-                                                                    .isDarkMode
-                                                                ? colors.splashColorDark
-                                                                : colors
-                                                                    .splashColorLight,
-                                                            highlightColor: theme
-                                                                    .isDarkMode
-                                                                ? colors.splashColorDark
-                                                                : colors
-                                                                    .splashColorLight,
-                                                            child: Padding(
-                                                              padding:
-                                                                  const EdgeInsets.all(
-                                                                      6.0),
-                                                              child: Icon(
-                                                                Icons.close_rounded,
-                                                                size: 22,
-                                                                color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                                                              ),
-                                                            ),
-                                                          ),
-                                                        ),
+                                              Material(
+                                                color: Colors.transparent,
+                                                shape: const CircleBorder(),
+                                                child: InkWell(
+                                                  onTap: () async {
+                                                    await Future.delayed(
+                                                        const Duration(
+                                                            milliseconds: 150));
+                                                    Navigator.pop(context);
+                                                  },
+                                                  borderRadius:
+                                                      BorderRadius.circular(20),
+                                                  splashColor: theme.isDarkMode
+                                                      ? colors.splashColorDark
+                                                      : colors.splashColorLight,
+                                                  highlightColor: theme
+                                                          .isDarkMode
+                                                      ? colors.splashColorDark
+                                                      : colors.splashColorLight,
+                                                  child: Padding(
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                            6.0),
+                                                    child: Icon(
+                                                      Icons.close_rounded,
+                                                      size: 22,
+                                                      color: theme.isDarkMode
+                                                          ? colors
+                                                              .textSecondaryDark
+                                                          : colors
+                                                              .textSecondaryLight,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
                                             ],
                                           ),
-            
-                                            
-                                              SizedBox(
-                                          height: 115,
-                                          width:
-                                              MediaQuery.of(context).size.width,
-                                          child: Padding(
-                                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                                            child: Column(
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: [
-                                                  ListView.builder(
-                                                    physics:
-                                                        const NeverScrollableScrollPhysics(),
-                                                    shrinkWrap: true,
-                                                    itemCount:
-                                                        theme.themeTypes.length,
-                                                    itemBuilder:
-                                                        (BuildContext context,
-                                                            int index) {
-                                                      return ListTile(
-                                                        onTap: () async {
-                                                          theme.toggleTheme(
-                                                              themeMod:
-                                                                  theme.themeTypes[
-                                                                      index]);
-                                                          Navigator.pop(context);
+                                          SizedBox(
+                                              height: 100,
+                                              width: MediaQuery.of(context)
+                                                  .size
+                                                  .width,
+                                              child: Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 4),
+                                                child: Column(
+                                                    mainAxisSize:
+                                                        MainAxisSize.min,
+                                                    children: [
+                                                      ListView.builder(
+                                                        physics:
+                                                            const NeverScrollableScrollPhysics(),
+                                                        shrinkWrap: true,
+                                                        itemCount: theme
+                                                            .themeTypes.length,
+                                                        itemBuilder:
+                                                            (BuildContext
+                                                                    context,
+                                                                int index) {
+                                                          return InkWell(
+                                                              onTap: () async {
+                                                                theme.toggleTheme(
+                                                                    themeMod: theme
+                                                                            .themeTypes[
+                                                                        index]);
+                                                                Navigator.pop(
+                                                                    context);
+                                                              },
+                                                              child: Padding(
+                                                                padding:
+                                                                    const EdgeInsets
+                                                                        .only(
+                                                                        left: 8,
+                                                                        right:
+                                                                            16.0,
+                                                                        top:
+                                                                            12.0,
+                                                                        bottom:
+                                                                            12.0),
+                                                                child: Row(
+                                                                  children: [
+                                                                    SvgPicture.asset(theme
+                                                                            .isDarkMode
+                                                                        ? theme.themeTypes[index] ==
+                                                                                theme.deviceTheme
+                                                                            ? assets.darkActProductIcon
+                                                                            : assets.darkProductIcon
+                                                                        : theme.themeTypes[index] == theme.deviceTheme
+                                                                            ? assets.actProductIcon
+                                                                            : assets.productIcon),
+                                                                    const SizedBox(
+                                                                        width:
+                                                                            16),
+                                                                    TextWidget.subText(
+                                                                        text: theme.themeTypes[index],
+                                                                        theme: theme.isDarkMode,
+                                                                        color: theme.isDarkMode
+                                                                            ? theme.themeTypes[index] == theme.deviceTheme
+                                                                                ? colors.textPrimaryDark
+                                                                                : colors.textSecondaryDark
+                                                                            : theme.themeTypes[index] == theme.deviceTheme
+                                                                                ? colors.textPrimaryLight
+                                                                                : colors.textSecondaryLight,
+                                                                        fw: 0),
+                                                                  ],
+                                                                ),
+                                                              ));
                                                         },
-                                                        contentPadding:
-                                                            const EdgeInsets
-                                                                .symmetric(
-                                                                horizontal: 0,
-                                                                vertical: 0),
-                                                        dense: true,
-                                                        minLeadingWidth: 22,
-                                                        leading: SvgPicture.asset(theme
-                                                                .isDarkMode
-                                                            ? theme.themeTypes[
-                                                                        index] ==
-                                                                    theme
-                                                                        .deviceTheme
-                                                                ? assets
-                                                                    .darkActProductIcon
-                                                                : assets
-                                                                    .darkProductIcon
-                                                            : theme.themeTypes[
-                                                                        index] ==
-                                                                    theme
-                                                                        .deviceTheme
-                                                                ? assets
-                                                                    .actProductIcon
-                                                                : assets
-                                                                    .productIcon),
-                                                        title: TextWidget.subText(
-                                                            text: theme
-                                                                .themeTypes[index],
-                                                            theme: theme.isDarkMode,
-                                                            color: theme.isDarkMode
-                                                                ? Color(theme.themeTypes[
-                                                                            index] ==
-                                                                        theme
-                                                                            .deviceTheme
-                                                                    ? 0xffffffff
-                                                                    : 0xff666666)
-                                                                : Color(
-                                                                    theme.themeTypes[
-                                                                                index] ==
-                                                                            theme
-                                                                                .deviceTheme
-                                                                        ? 0xff000000
-                                                                        : 0xff666666,
-                                                                  ),
-                                                            fw: 0),
-                                                      );
-                                                    },
-                                                  )
-                                                ]),
-                                          )),
-            
-            
+                                                      )
+                                                    ]),
+                                              )),
                                         ],
                                       ),
-                                      
                                     );
                                   });
                               break;
@@ -1143,17 +1132,17 @@ class SettingsScreen extends ConsumerWidget {
                     },
                     separatorBuilder: (context, index) => Container(
                       margin: const EdgeInsets.symmetric(horizontal: 16),
-                      child:ListDivider(),
+                      child: ListDivider(),
                     ),
                   )
                 : const SizedBox.shrink(),
-            
+
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 16),
               child: ListDivider(),
             ),
             // const SizedBox(height: 16),
-            
+
             // Security Section
             // Padding(
             //   padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -1168,7 +1157,7 @@ class SettingsScreen extends ConsumerWidget {
             //     ),
             //   ),
             // ),
-            
+
             // const SizedBox(height: 16),
             // Padding(
             //   padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -1213,13 +1202,15 @@ class SettingsScreen extends ConsumerWidget {
                           builder: (BuildContext context) {
                             return SafeArea(
                               child: Container(
-                                 decoration: BoxDecoration(
-             borderRadius: const BorderRadius.only(
-        topLeft: Radius.circular(16),
-        topRight: Radius.circular(16),
-            ),
-           color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-           border: Border(
+                                decoration: BoxDecoration(
+                                  borderRadius: const BorderRadius.only(
+                                    topLeft: Radius.circular(16),
+                                    topRight: Radius.circular(16),
+                                  ),
+                                  color: theme.isDarkMode
+                                      ? colors.colorBlack
+                                      : colors.colorWhite,
+                                  border: Border(
                                     top: BorderSide(
                                       color: theme.isDarkMode
                                           ? colors.textSecondaryDark
@@ -1239,11 +1230,9 @@ class SettingsScreen extends ConsumerWidget {
                                           : colors.colorWhite,
                                     ),
                                   ),
-            
-           
-          ),
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 16.0),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16.0),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   mainAxisAlignment: MainAxisAlignment.start,
@@ -1291,7 +1280,8 @@ class SettingsScreen extends ConsumerWidget {
                                                   size: 22,
                                                   color: theme.isDarkMode
                                                       ? colors.textSecondaryDark
-                                                      : colors.textSecondaryLight,
+                                                      : colors
+                                                          .textSecondaryLight,
                                                 ),
                                               ),
                                             ),
@@ -1303,7 +1293,7 @@ class SettingsScreen extends ConsumerWidget {
                                     const SizedBox(height: 8.0),
                                     TextWidget.subText(
                                       text:
-                                          "Freezing your account will lock access for everyone, including you.\n\nAll open orders will be automatically canceled.\n\nExisting positions will remain unaffected.\n\nYou can unfreeze your account anytime by verifying your identity.",
+                                          "Freezing your account will lock access for everyone, including you.\n\nAll open orders will be automatically cancelled.\n\nExisting positions will remain unaffected.\n\nYou can unfreeze your account anytime by verifying your identity.",
                                       theme: false,
                                       color: theme.isDarkMode
                                           ? colors.textSecondaryDark
@@ -1326,12 +1316,10 @@ class SettingsScreen extends ConsumerWidget {
                                                 final theme =
                                                     ref.read(themeProvider);
                                                 return AlertDialog(
-                                                backgroundColor: theme
-                                                                          .isDarkMode
-                                                                      ? const Color(
-                                                                          0xFF121212)
-                                                                      : const Color(
-                                                                          0xFFF1F3F8),
+                                                  backgroundColor: theme
+                                                          .isDarkMode
+                                                      ? const Color(0xFF121212)
+                                                      : const Color(0xFFF1F3F8),
                                                   shape:
                                                       const RoundedRectangleBorder(
                                                     borderRadius:
@@ -1339,18 +1327,19 @@ class SettingsScreen extends ConsumerWidget {
                                                             Radius.circular(8)),
                                                   ),
                                                   scrollable: true,
-                                                  titlePadding:
-                                                      const EdgeInsets.symmetric(
-                                                          horizontal: 16,
-                                                          vertical: 8),
+                                                  titlePadding: const EdgeInsets
+                                                      .symmetric(
+                                                      horizontal: 16,
+                                                      vertical: 8),
                                                   contentPadding:
-                                                      const EdgeInsets.symmetric(
+                                                      const EdgeInsets
+                                                          .symmetric(
                                                           horizontal: 12,
                                                           vertical: 12),
-                                                  insetPadding:
-                                                      const EdgeInsets.symmetric(
-                                                          horizontal: 30,
-                                                          vertical: 12),
+                                                  insetPadding: const EdgeInsets
+                                                      .symmetric(
+                                                      horizontal: 30,
+                                                      vertical: 12),
                                                   actionsPadding:
                                                       const EdgeInsets.only(
                                                           bottom: 16,
@@ -1361,7 +1350,8 @@ class SettingsScreen extends ConsumerWidget {
                                                     children: [
                                                       Row(
                                                         mainAxisAlignment:
-                                                            MainAxisAlignment.end,
+                                                            MainAxisAlignment
+                                                                .end,
                                                         children: [
                                                           Material(
                                                             color: Colors
@@ -1396,24 +1386,30 @@ class SettingsScreen extends ConsumerWidget {
                                                               child: Padding(
                                                                 padding:
                                                                     const EdgeInsets
-                                                                        .all(6.0),
+                                                                        .all(
+                                                                        6.0),
                                                                 child: Icon(
                                                                   Icons
                                                                       .close_rounded,
                                                                   size: 22,
-                                                                   color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                                                                  color: theme.isDarkMode
+                                                                      ? colors
+                                                                          .textSecondaryDark
+                                                                      : colors
+                                                                          .textSecondaryLight,
                                                                 ),
                                                               ),
                                                             ),
                                                           ),
                                                         ],
                                                       ),
-                                                      const SizedBox(height: 12),
+                                                      const SizedBox(
+                                                          height: 12),
                                                       SizedBox(
-                                                        width:
-                                                            MediaQuery.of(context)
-                                                                .size
-                                                                .width,
+                                                        width: MediaQuery.of(
+                                                                context)
+                                                            .size
+                                                            .width,
                                                         child: Column(
                                                           crossAxisAlignment:
                                                               CrossAxisAlignment
@@ -1424,9 +1420,11 @@ class SettingsScreen extends ConsumerWidget {
                                                                   "Are you sure you want to freeze your account?",
                                                               theme: theme
                                                                   .isDarkMode,
-                                                                color: theme.isDarkMode
-                                                                                  ? colors.textSecondaryDark
-                                                                                  : colors.textPrimaryLight,
+                                                              color: theme.isDarkMode
+                                                                  ? colors
+                                                                      .textSecondaryDark
+                                                                  : colors
+                                                                      .textPrimaryLight,
                                                               fw: 3,
                                                               align: TextAlign
                                                                   .center,
@@ -1458,16 +1456,20 @@ class SettingsScreen extends ConsumerWidget {
                                                               RoundedRectangleBorder(
                                                             borderRadius:
                                                                 BorderRadius
-                                                                    .circular(5),
+                                                                    .circular(
+                                                                        5),
                                                           ),
                                                           backgroundColor:
-                                                              colors.primaryDark,
+                                                              colors
+                                                                  .primaryDark,
                                                         ),
-                                                        child:
-                                                            TextWidget.titleText(
+                                                        child: TextWidget
+                                                            .titleText(
                                                           text: "Yes",
-                                                          theme: theme.isDarkMode,
-                                                          color:colors.colorWhite,
+                                                          theme:
+                                                              theme.isDarkMode,
+                                                          color:
+                                                              colors.colorWhite,
                                                           fw: 2,
                                                         ),
                                                       ),
@@ -1504,7 +1506,7 @@ class SettingsScreen extends ConsumerWidget {
                             );
                           },
                         );
-            
+
                         break;
                       case 'Change Password':
                         ref.read(changePasswordProvider).userIdController.text =
@@ -1530,7 +1532,7 @@ class SettingsScreen extends ConsumerWidget {
                         break;
                       case 'Generate TOTP':
                         await apikeys.fetchTotp();
-            
+
                         showModalBottomSheet(
                             context: context,
                             isScrollControlled: true,
@@ -1554,9 +1556,9 @@ class SettingsScreen extends ConsumerWidget {
                 child: ListDivider(),
               ),
             ),
-            
+
             const Spacer(),
-            
+
             // Version
             Padding(
               padding: const EdgeInsets.only(bottom: 8),
@@ -1965,13 +1967,13 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
               //   thickness: 1, // Optional: customize the thickness
               // ),
               // const SizedBox(height: 8),
-            
+
               // const SizedBox(height: 10),
               // Divider(
               //   color: colors.fundbuttonBg, // Optional: customize the color
               //   thickness: 1, // Optional: customize the thickness
               // ),
-            
+
               /// Expandable List View
               Expanded(
                 child: ListView.separated(
@@ -1979,7 +1981,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                   itemBuilder: (context, index) {
                     final item = accountItems[index];
                     final title = item['title']!;
-            
+
                     return Theme(
                       data: Theme.of(context).copyWith(
                         dividerColor: theme.isDarkMode
@@ -2003,7 +2005,8 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                           initiallyExpanded: _expandedTitle == title,
                           onExpansionChanged: (isExpanding) =>
                               _onExpansionChanged(isExpanding, title),
-                          tilePadding: const EdgeInsets.symmetric(horizontal: 0),
+                          tilePadding:
+                              const EdgeInsets.symmetric(horizontal: 0),
                           title: TextWidget.subText(
                             text: title,
                             theme: false,
@@ -2024,10 +2027,11 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                       ),
                     );
                   },
-                  separatorBuilder: (context, index) => const SizedBox(height: 0),
+                  separatorBuilder: (context, index) =>
+                      const SizedBox(height: 0),
                 ),
               ),
-            
+
               /// Version Text
               Center(
                 child: Padding(
@@ -2035,7 +2039,9 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                   child: TextWidget.captionText(
                     text: ref.watch(authProvider).versiontext,
                     theme: false,
-                    color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                    color: theme.isDarkMode
+                        ? colors.textSecondaryDark
+                        : colors.textSecondaryLight,
                   ),
                 ),
               ),
@@ -2148,8 +2154,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                   // Add delay for visual feedback
                   await Future.delayed(const Duration(milliseconds: 150));
 
-                  profileDetails.openInWebURL(
-                      context, "bank");
+                  profileDetails.openInWebURL(context, "bank");
                 },
                 borderRadius: BorderRadius.circular(20),
                 splashColor: theme.isDarkMode
@@ -2286,13 +2291,13 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                             //         profileDetails.openInWebURL(
                             //           context,
                             //           "bank",
-                                      
+
                             //         );
                             //       } else if (value == 'delete') {
                             //         profileDetails.openInWebURL(
                             //           context,
                             //           "bank",
-                                      
+
                             //         );
                             //       }
                             //     },
@@ -2320,8 +2325,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                                   // Add delay for visual feedback
                                   await Future.delayed(
                                       const Duration(milliseconds: 150));
-                                  profileDetails.openInWebURL(context,
-                                      "bank");
+                                  profileDetails.openInWebURL(context, "bank");
                                 },
                                 borderRadius: BorderRadius.circular(20),
                                 splashColor: theme.isDarkMode
@@ -2334,7 +2338,9 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                                   padding: EdgeInsets.all(8),
                                   child: Icon(
                                     Icons.edit_outlined,
-                                    color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                        : colors.textSecondaryLight,
                                     size: 20,
                                   ),
                                 ),
@@ -2389,11 +2395,19 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                               horizontal: 6, vertical: 3),
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(2),
-                            color: DDPIActive ? theme.isDarkMode ? colors.primaryDark : colors.primaryLight : theme.isDarkMode ? colors.textSecondaryDark.withOpacity(0.2) : null,
+                            color: DDPIActive
+                                ? theme.isDarkMode
+                                    ? colors.primaryDark
+                                    : colors.primaryLight
+                                : theme.isDarkMode
+                                    ? colors.textSecondaryDark.withOpacity(0.2)
+                                    : null,
                             border: !DDPIActive
                                 ? Border(
                                     bottom: BorderSide(
-                                      color: theme.isDarkMode ? colors.lossDark : colors.lossLight,
+                                      color: theme.isDarkMode
+                                          ? colors.lossDark
+                                          : colors.lossLight,
                                       width: 1,
                                     ),
                                   )
@@ -2403,8 +2417,11 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                             text: "DDPI",
                             textOverflow: TextOverflow.ellipsis,
                             theme: theme.isDarkMode,
-                            color:
-                                DDPIActive ? colors.colorWhite : theme.isDarkMode ? colors.lossDark : colors.lossLight,
+                            color: DDPIActive
+                                ? colors.colorWhite
+                                : theme.isDarkMode
+                                    ? colors.lossDark
+                                    : colors.lossLight,
                           ),
                         ),
                         Container(
@@ -2417,7 +2434,9 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                             border: !POAActive
                                 ? Border(
                                     bottom: BorderSide(
-                                      color: theme.isDarkMode ? colors.lossDark : colors.lossLight,
+                                      color: theme.isDarkMode
+                                          ? colors.lossDark
+                                          : colors.lossLight,
                                       width: 1,
                                     ),
                                   )
@@ -2427,7 +2446,11 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                             text: "POA",
                             textOverflow: TextOverflow.ellipsis,
                             theme: theme.isDarkMode,
-                            color: POAActive ? colors.colorWhite : theme.isDarkMode ? colors.lossDark : colors.lossLight,
+                            color: POAActive
+                                ? colors.colorWhite
+                                : theme.isDarkMode
+                                    ? colors.lossDark
+                                    : colors.lossLight,
                           ),
                         ),
                       ],
@@ -2532,11 +2555,10 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
               elevation: 0,
               minimumSize: Size(100, 45),
               backgroundColor: colors.colorbluegrey,
-               disabledBackgroundColor: colors.colorbluegrey,
+              disabledBackgroundColor: colors.colorbluegrey,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(5),
               ),
-              
             ),
             child: TextWidget.subText(
               text: "Enable MTF",
@@ -2673,13 +2695,12 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               TextWidget.subText(
-                text: "Segments",
-                theme: theme.isDarkMode,
-                color: theme.isDarkMode
-                    ? colors.textPrimaryDark
-                    : colors.textPrimaryLight,
-                    fw:0
-              ),
+                  text: "Segments",
+                  theme: theme.isDarkMode,
+                  color: theme.isDarkMode
+                      ? colors.textPrimaryDark
+                      : colors.textPrimaryLight,
+                  fw: 0),
               Material(
                 color: Colors.transparent,
                 child: InkWell(
@@ -2696,11 +2717,13 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                   highlightColor: theme.isDarkMode
                       ? colors.highlightDark
                       : colors.highlightLight,
-                  child:  Padding(
+                  child: Padding(
                     padding: EdgeInsets.all(8),
                     child: Icon(
                       Icons.edit_outlined,
-                      color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                      color: theme.isDarkMode
+                          ? colors.textSecondaryDark
+                          : colors.textSecondaryLight,
                       size: 20,
                     ),
                   ),
@@ -2812,11 +2835,13 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                     highlightColor: theme.isDarkMode
                         ? Colors.white.withOpacity(0.08)
                         : Colors.black.withOpacity(0.08),
-                    child:  Padding(
+                    child: Padding(
                       padding: EdgeInsets.all(8),
                       child: Icon(
                         Icons.edit_outlined,
-                        color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                        color: theme.isDarkMode
+                            ? colors.textSecondaryDark
+                            : colors.textSecondaryLight,
                         size: 20,
                       ),
                     ),
@@ -2850,7 +2875,9 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
           TextWidget.subText(
             text: "Download various forms and documents",
             theme: theme.isDarkMode,
-            color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+            color: theme.isDarkMode
+                ? colors.textPrimaryDark
+                : colors.textPrimaryLight,
           ),
           const SizedBox(height: 10),
           Row(
@@ -2918,7 +2945,9 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
           TextWidget.subText(
             text: "Closing your account is a permanent and irreversible action",
             theme: theme.isDarkMode,
-            color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+            color: theme.isDarkMode
+                ? colors.textPrimaryDark
+                : colors.textPrimaryLight,
           ),
           const SizedBox(height: 10),
           ElevatedButton(
@@ -2996,11 +3025,17 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                       const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(2),
-                    color: isActive ? theme.isDarkMode ? colors.primaryDark : colors.primaryLight : null,
+                    color: isActive
+                        ? theme.isDarkMode
+                            ? colors.primaryDark
+                            : colors.primaryLight
+                        : null,
                     border: !isActive
                         ? Border(
                             bottom: BorderSide(
-                              color: theme.isDarkMode ? colors.lossDark : colors.lossLight,
+                              color: theme.isDarkMode
+                                  ? colors.lossDark
+                                  : colors.lossLight,
                               width: 1,
                             ),
                           )
@@ -3009,7 +3044,11 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                   child: TextWidget.subText(
                       text: displayName,
                       theme: theme.isDarkMode,
-                      color: isActive ? colors.colorWhite : theme.isDarkMode ? colors.lossDark : colors.lossLight),
+                      color: isActive
+                          ? colors.colorWhite
+                          : theme.isDarkMode
+                              ? colors.lossDark
+                              : colors.lossLight),
                 );
               }).toList(),
             ),
@@ -3249,7 +3288,7 @@ class ReportsScreen extends ConsumerWidget {
             //     ],
             //   ),
             // ),
-            
+
             // Padding(
             //   padding: const EdgeInsets.symmetric(horizontal: 16),
             //   child: Divider(
@@ -3257,11 +3296,11 @@ class ReportsScreen extends ConsumerWidget {
             //     thickness: 1, // Optional: customize the thickness
             //   ),
             // ),
-            
+
             // const SizedBox(height: 10),
-            
+
             // Reports Section
-            
+
             // const SizedBox(height: 10),
             // Padding(
             //   padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -3299,9 +3338,10 @@ class ReportsScreen extends ConsumerWidget {
                         switch (item['title']) {
                           case 'P&L Summary':
                             await ledgerdate.getCurrentDate('pandu');
-                            Navigator.pushNamed(context, Routes.calenderpnlScreen,
+                            Navigator.pushNamed(
+                                context, Routes.calenderpnlScreen,
                                 arguments: "DDDDD");
-            
+
                           case 'Tax P&L':
                             // await ledgerdate.getYearlistTaxpnl();
                             // if (ledgerdate.taxpnldercomcur == null &&
@@ -3310,15 +3350,15 @@ class ReportsScreen extends ConsumerWidget {
                             //   ledgerdate.getCurrentDate('');
                             //   ledgerdate.fetchtaxpnleqdata(
                             //       context, ledgerdate.yearforTaxpnl);
-            
+
                             //   ledgerdate.taxpnlExTabchange(0);
                             //   ledgerdate.chargesforeqtaxpnl(
                             //       context, ledgerdate.yearforTaxpnl);
                             // }
-            
+
                             // Navigator.pushNamed(context, Routes.taxpnlscreen,
                             //     arguments: "DDDDD");
-            
+
                             await showModalBottomSheet(
                               isScrollControlled: true,
                               shape: const RoundedRectangleBorder(
@@ -3332,50 +3372,51 @@ class ReportsScreen extends ConsumerWidget {
                               useSafeArea: true,
                               context: context,
                               builder: (context) => Container(
-                                decoration: BoxDecoration(
-           borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(16),
-            topRight: Radius.circular(16),
-          ),
-         color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-         border: Border(
-                                  top: BorderSide(
+                                  decoration: BoxDecoration(
+                                    borderRadius: const BorderRadius.only(
+                                      topLeft: Radius.circular(16),
+                                      topRight: Radius.circular(16),
+                                    ),
                                     color: theme.isDarkMode
-                                        ? colors.textSecondaryDark
-                                            .withOpacity(0.5)
+                                        ? colors.colorBlack
                                         : colors.colorWhite,
+                                    border: Border(
+                                      top: BorderSide(
+                                        color: theme.isDarkMode
+                                            ? colors.textSecondaryDark
+                                                .withOpacity(0.5)
+                                            : colors.colorWhite,
+                                      ),
+                                      left: BorderSide(
+                                        color: theme.isDarkMode
+                                            ? colors.textSecondaryDark
+                                                .withOpacity(0.5)
+                                            : colors.colorWhite,
+                                      ),
+                                      right: BorderSide(
+                                        color: theme.isDarkMode
+                                            ? colors.textSecondaryDark
+                                                .withOpacity(0.5)
+                                            : colors.colorWhite,
+                                      ),
+                                    ),
                                   ),
-                                  left: BorderSide(
-                                    color: theme.isDarkMode
-                                        ? colors.textSecondaryDark
-                                            .withOpacity(0.5)
-                                        : colors.colorWhite,
-                                  ),
-                                  right: BorderSide(
-                                    color: theme.isDarkMode
-                                        ? colors.textSecondaryDark
-                                            .withOpacity(0.5)
-                                        : colors.colorWhite,
-                                  ),
-                                ),
-            
-         
-        ),
                                   padding: EdgeInsets.only(
-                                    bottom:
-                                        MediaQuery.of(context).viewInsets.bottom,
+                                    bottom: MediaQuery.of(context)
+                                        .viewInsets
+                                        .bottom,
                                   ),
                                   child: TaxPnlScreen()),
                             );
-            
+
                             break;
                           case 'Ledger':
                             await ledgerdate.getCurrentDate('else');
-            
+
                             Navigator.pushNamed(context, Routes.ledgerscreen,
                                 arguments: "DDDDD");
                             break;
-            
+
                           case 'Client Master(CMR)':
                             await showModalBottomSheet(
                               isScrollControlled: true,
@@ -3392,43 +3433,46 @@ class ReportsScreen extends ConsumerWidget {
                               context: context,
                               builder: (context) => SafeArea(
                                 child: Container(
-                                 decoration: BoxDecoration(
-                                           borderRadius: const BorderRadius.only(
-                                            topLeft: Radius.circular(16),
-                                            topRight: Radius.circular(16),
-                                          ),
-                                         color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-                                         border: Border(
-                                    top: BorderSide(
-                                      color: theme.isDarkMode
-                                          ? colors.textSecondaryDark
-                                              .withOpacity(0.5)
-                                          : colors.colorWhite,
+                                  decoration: BoxDecoration(
+                                    borderRadius: const BorderRadius.only(
+                                      topLeft: Radius.circular(16),
+                                      topRight: Radius.circular(16),
                                     ),
-                                    left: BorderSide(
-                                      color: theme.isDarkMode
-                                          ? colors.textSecondaryDark
-                                              .withOpacity(0.5)
-                                          : colors.colorWhite,
-                                    ),
-                                    right: BorderSide(
-                                      color: theme.isDarkMode
-                                          ? colors.textSecondaryDark
-                                              .withOpacity(0.5)
-                                          : colors.colorWhite,
+                                    color: theme.isDarkMode
+                                        ? colors.colorBlack
+                                        : colors.colorWhite,
+                                    border: Border(
+                                      top: BorderSide(
+                                        color: theme.isDarkMode
+                                            ? colors.textSecondaryDark
+                                                .withOpacity(0.5)
+                                            : colors.colorWhite,
+                                      ),
+                                      left: BorderSide(
+                                        color: theme.isDarkMode
+                                            ? colors.textSecondaryDark
+                                                .withOpacity(0.5)
+                                            : colors.colorWhite,
+                                      ),
+                                      right: BorderSide(
+                                        color: theme.isDarkMode
+                                            ? colors.textSecondaryDark
+                                                .withOpacity(0.5)
+                                            : colors.colorWhite,
+                                      ),
                                     ),
                                   ),
-                                            
-                                         
-                                        ),
                                   child: Padding(
                                     padding: EdgeInsets.only(
                                       bottom: 24 +
-                                          MediaQuery.of(context).viewInsets.bottom,
+                                          MediaQuery.of(context)
+                                              .viewInsets
+                                              .bottom,
                                     ),
                                     child: Column(
                                       mainAxisSize: MainAxisSize.min,
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Padding(
                                           padding: const EdgeInsets.symmetric(
@@ -3459,19 +3503,22 @@ class ReportsScreen extends ConsumerWidget {
                                                           .withOpacity(0.15)
                                                       : Colors.black
                                                           .withOpacity(0.15),
-                                                  highlightColor: theme.isDarkMode
+                                                  highlightColor: theme
+                                                          .isDarkMode
                                                       ? Colors.white
                                                           .withOpacity(0.08)
                                                       : Colors.black
                                                           .withOpacity(0.08),
                                                   child: Padding(
                                                     padding:
-                                                        const EdgeInsets.all(6.0),
+                                                        const EdgeInsets.all(
+                                                            6.0),
                                                     child: Icon(
                                                       Icons.close_rounded,
                                                       size: 22,
                                                       color: theme.isDarkMode
-                                                          ? const Color(0xffBDBDBD)
+                                                          ? const Color(
+                                                              0xffBDBDBD)
                                                           : colors.colorGrey,
                                                     ),
                                                   ),
@@ -3497,9 +3544,10 @@ class ReportsScreen extends ConsumerWidget {
                                               style: OutlinedButton.styleFrom(
                                                 elevation: 0,
                                                 minimumSize: const Size(0, 45),
-                                                backgroundColor: theme.isDarkMode
-                                                    ? colors.primaryDark
-                                                    : colors.primaryLight,
+                                                backgroundColor:
+                                                    theme.isDarkMode
+                                                        ? colors.primaryDark
+                                                        : colors.primaryLight,
                                                 shape: RoundedRectangleBorder(
                                                   borderRadius:
                                                       BorderRadius.circular(5),
@@ -3673,7 +3721,7 @@ class ReportsScreen extends ConsumerWidget {
                           //                     ? colors.colorWhite.withOpacity(0.1)
                           //                     : colors.colorBlack.withOpacity(0.1),
                           //                 onTap: () {
-            
+
                           //                 },
                           //                 child: Container(
                           //                   width: 40,
@@ -3736,13 +3784,13 @@ class ReportsScreen extends ConsumerWidget {
                           //         break;
                           // case 'Holdings':
                           //   await ledgerdate.getCurrentDate('else');
-            
+
                           //   Navigator.pushNamed(context, Routes.holdingscreen,
                           //       arguments: "DDDDD");
                           //   break;
                           // case 'Positions':
                           //   ledgerdate.fetchposition(context);
-            
+
                           //   Navigator.pushNamed(context, Routes.positionscreen,
                           //       arguments: "DDDDD");
                           //   break;
@@ -3753,11 +3801,11 @@ class ReportsScreen extends ConsumerWidget {
                           //     ledgerdate.fetchpnldata(context,
                           //         ledgerdate.startDate, ledgerdate.today, true);
                           //   }
-            
+
                           //   Navigator.pushNamed(context, Routes.pnlscreen,
                           //       arguments: "DDDDD");
                           //   break;
-            
+
                           // case 'Tradebook':
                           //   // await ledgerdate.getCurrentDate('tradebook');
                           //   if (ledgerdate.tradebookdata == null) {
@@ -3777,7 +3825,7 @@ class ReportsScreen extends ConsumerWidget {
                             // }
                             // Navigator.pushNamed(context, Routes.pdfdownload,
                             //     arguments: "DDDDD");
-            
+
                             //  await showModalBottomSheet(
                             //   isScrollControlled: true,
                             //   shape: const RoundedRectangleBorder(
@@ -3799,7 +3847,7 @@ class ReportsScreen extends ConsumerWidget {
                             //         ddd: "Contract Note",
                             //       ) ),
                             // );
-            
+
                             await showModalBottomSheet(
                               isScrollControlled: true,
                               shape: const RoundedRectangleBorder(
@@ -3814,16 +3862,17 @@ class ReportsScreen extends ConsumerWidget {
                               context: context,
                               builder: (context) => Container(
                                   padding: EdgeInsets.only(
-                                    bottom:
-                                        MediaQuery.of(context).viewInsets.bottom,
+                                    bottom: MediaQuery.of(context)
+                                        .viewInsets
+                                        .bottom,
                                   ),
                                   child: ContractCalendarScreen()),
                             );
-            
+
                             // Navigator.pushNamed(context, Routes.contractCalendar);
-            
+
                             break;
-            
+
                           case 'CA Events':
                             // ledgerdate.fetchposition(context);
                             // }
@@ -3832,11 +3881,11 @@ class ReportsScreen extends ConsumerWidget {
                               ledgerdate.fetchcaeventsdata(context,
                                   ledgerdate.startDate, ledgerdate.endDate);
                             }
-            
+
                             Navigator.pushNamed(context, Routes.caeventmainpage,
                                 arguments: "DDDDD");
                             break;
-            
+
                           // Add other cases as needed
                         }
                       },
@@ -3849,9 +3898,9 @@ class ReportsScreen extends ConsumerWidget {
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 16.0),
-            
+
             // Version
             Padding(
               padding: const EdgeInsets.only(bottom: 8),

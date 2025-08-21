@@ -114,7 +114,7 @@ class _StockScreenState extends ConsumerState<StockScreen>
         'subtitle': 'Optimize leverage with precision'
       },
       {
-        'label': 'Broker Calculator',
+        'label': 'Brokerage Calculator',
         'icon': assets.brokercal,
         'subtitle': 'Transparent costs'
       },
@@ -171,28 +171,28 @@ class _StockScreenState extends ConsumerState<StockScreen>
                   children: [
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Container(
                             decoration: BoxDecoration(
                               color: theme.isDarkMode
-                                  ? colors.colorBlack
-                                  : colors.searchBg,
+                              ? colors.darkGrey
+                              : const Color(0xffF1F3F8),
                               borderRadius: BorderRadius.circular(30),
                             ),
                             child: Padding(
                               padding: const EdgeInsets.all(8.0),
                               child: SvgPicture.asset(
                                 "assets/icon/briefcase.svg",
-                                width: 18,
-                                height: 18,
-                                color: colors.primaryLight,
+                                width: 14,
+                                height: 14,
+                                color: theme.isDarkMode ? colors.textSecondaryDark   : colors.primaryLight,
                               ),
                             )),
                         const SizedBox(width: 12),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const SizedBox(height: 6),
                             SizedBox(
                               width: MediaQuery.of(context).size.width * 0.80,
                               child: Row(
@@ -203,30 +203,43 @@ class _StockScreenState extends ConsumerState<StockScreen>
                                     text: "Stocks Portfolio",
                                     theme: false,
                                     color: theme.isDarkMode
-                                        ? colors.colorWhite
-                                        : colors.colorBlack,
-                                    fw: 0,
+                                        ? colors.textPrimaryDark
+                                        : colors.textPrimaryLight,
+                                    fw: 1,
                                   ),
-                                  InkWell(
-                                    canRequestFocus: false,
-                                    onTap: () async {
-                                      Future.delayed(const Duration(milliseconds: 150), () {
-                                        trancation.changebool(true);
-                                        Navigator.pushNamed(
-                                            context, Routes.fundscreen,
-                                            arguments: trancation);
-                                      });
-                                    },
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 8, vertical: 4),
-                                      child: TextWidget.subText(
-                                        text: "Add Money",
-                                        theme: false,
-                                        color: theme.isDarkMode
-                                            ? colors.primaryDark
-                                            : colors.primaryLight,
-                                        fw: 0,
+
+                                  
+                                  
+                                  Material(
+                                      color: Colors.transparent,
+                                    child: InkWell(
+                                      canRequestFocus: false,
+                                      onTap: () async {
+                                        Future.delayed(const Duration(milliseconds: 150), () {
+                                          trancation.changebool(true);
+                                          Navigator.pushNamed(
+                                              context, Routes.fundscreen,
+                                              arguments: trancation);
+                                        });
+                                      },
+                                      borderRadius: BorderRadius.circular(8),
+                                    splashColor: theme.isDarkMode
+                                        ? Colors.white.withOpacity(0.15)
+                                        : Colors.black.withOpacity(0.15),
+                                    highlightColor: theme.isDarkMode
+                                        ? Colors.white.withOpacity(0.08)
+                                        : Colors.black.withOpacity(0.08),
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 8, vertical: 8),
+                                        child: TextWidget.subText(
+                                          text: "Add Money",
+                                          theme: false,
+                                          color: theme.isDarkMode
+                                              ? colors.primaryDark
+                                              : colors.primaryLight,
+                                          fw: 2,
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -260,7 +273,7 @@ class _StockScreenState extends ConsumerState<StockScreen>
                                           horizontal: 16, vertical: 14),
                                       decoration: BoxDecoration(
                                         color: theme.isDarkMode
-                                            ? colors.colorBlack
+                                            ? colors.searchBgDark
                                             : colors.searchBg,
                                         borderRadius: BorderRadius.circular(5),
                                       ),
@@ -297,9 +310,9 @@ class _StockScreenState extends ConsumerState<StockScreen>
                                                             ? colors.lossDark
                                                             : colors.lossLight
                                                         : theme.isDarkMode
-                                                            ? colors.successDark
+                                                            ? colors.profitDark
                                                             : colors
-                                                                .successLight,
+                                                                .profitLight,
                                                     fw: 0,
                                                   ),
                                                   TextWidget.captionText(
@@ -349,9 +362,9 @@ class _StockScreenState extends ConsumerState<StockScreen>
                                                        formatAmountCompact(double.parse(_totalPnlHolding)),
                                                     theme: false,
                                                     color: theme.isDarkMode
-                                                        ? colors.colorWhite
-                                                        : colors.colorBlack,
-                                                    fw: 0,
+                                                        ? colors.textPrimaryDark
+                                                        : colors.textPrimaryLight,
+                                                    fw: 1,
                                                   ),
                                                 ],
                                               ),
@@ -374,9 +387,9 @@ class _StockScreenState extends ConsumerState<StockScreen>
                                                         formatAmountCompact(double.parse(_totalCurrentVal)),
                                                     theme: false,
                                                     color: theme.isDarkMode
-                                                        ? colors.colorWhite
-                                                        : colors.colorBlack,
-                                                    fw: 0,
+                                                        ? colors.textPrimaryDark
+                                                        : colors.textPrimaryLight,
+                                                    fw: 1,
                                                   ),
                                                 ],
                                               ),
@@ -456,25 +469,22 @@ class _StockScreenState extends ConsumerState<StockScreen>
                         isScrollable: true,
                         indicatorSize: TabBarIndicatorSize.tab,
                         indicatorColor: colors.colorWhite,
-                        indicator: BoxDecoration(
-                          color: colors.searchBg,
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        unselectedLabelColor: colors.textSecondaryLight,
-                        labelStyle: TextWidget.textStyle(
-                            fontSize: 12, theme: false, fw: 2),
-                        labelColor: colors.colorBlack,
-                        unselectedLabelStyle: TextWidget.textStyle(
-                            fontSize: 12,
+                       indicator: BoxDecoration(
+                color: theme.isDarkMode ? colors.searchBgDark : const Color(0xffF1F3F8),
+                          borderRadius: BorderRadius.circular(5),
+              ),
+                       unselectedLabelColor:  theme.isDarkMode
+                  ? colors.textSecondaryDark
+                  : colors.textSecondaryLight,
+               labelStyle: TextWidget.textStyle(
+                            fontSize: 14, theme: false, fw: 2, color:theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight),
+               unselectedLabelStyle: TextWidget.textStyle(
+                            fontSize: 14,
                             theme: false,
-                            fw: 3,
-                            color: colors.textSecondaryLight),
-                        labelPadding: const EdgeInsets.symmetric(horizontal: 4),
-                        // onTap: (index) {
-                        //   if (index == 0) {
-                        //     Navigator.pushNamed(context, Routes.algoCreate);
-                        //   }
-                        // },
+                            color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                            
+                            letterSpacing: -0.28),
+              labelPadding: const EdgeInsets.symmetric(horizontal: 4),
                         tabs: const [
                           Tab(
                             child: Padding(
@@ -653,10 +663,9 @@ class _StockScreenState extends ConsumerState<StockScreen>
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(5),
+                          color: theme.isDarkMode ? colors.searchBgDark.withOpacity(0.5) : const Color(0xffF1F3F8).withOpacity(0.5),
                           border: Border.all(
-                            color: theme.isDarkMode
-                                ? colors.dividerDark
-                                : colors.dividerLight,
+                            color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
                           ),
                         ),
                         child: Row(
@@ -712,20 +721,16 @@ class _StockScreenState extends ConsumerState<StockScreen>
                           //   Navigator.pushNamed(context, Routes.portfolioDashboard);
                           // },
                           child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 6),
+                           padding: const EdgeInsets.only(
+                        left: 14, right: 14, top: 6, bottom: 6),
                             decoration: BoxDecoration(
-                              color: theme.isDarkMode
-                                  ? colors.searchBgDark
-                                  : colors.searchBg,
+                             color: theme.isDarkMode ? colors.searchBgDark : const Color(0xffF1F3F8),
                               borderRadius: BorderRadius.circular(5),
                             ),
-                            child: TextWidget.paraText(
+                            child: TextWidget.subText(
                               text: "Quick Access",
                               theme: false,
-                              color: theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : colors.colorBlack,
+                            color:theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
                               fw: 2,
                             ),
                           ),
@@ -761,7 +766,7 @@ class _StockScreenState extends ConsumerState<StockScreen>
                                   case 'Margin Calculator':
                                     Navigator.pushNamed(context, Routes.marginCalculator);
                                     break;
-                                  case 'Broker Calculator':
+                                  case 'Brokerage Calculator':
                                     Navigator.pushNamed(context, Routes.brokerCalculator);
                                     break;
                                 }
@@ -1143,7 +1148,7 @@ class _StockScreenState extends ConsumerState<StockScreen>
                         color: theme.isDarkMode
                             ? colors.textPrimaryDark
                             : colors.textPrimaryLight,
-                        fw: 0,
+                        fw: 3,
                       ),
                       const SizedBox(height: 4),
                       TextWidget.paraText(

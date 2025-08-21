@@ -9,7 +9,7 @@ class ListDivider extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.read(themeProvider);
+    final theme = ref.watch(themeProvider);
     return Divider(
         thickness: 0,
         color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,

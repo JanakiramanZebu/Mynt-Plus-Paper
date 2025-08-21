@@ -30,7 +30,7 @@ class CustomExchBadge extends ConsumerWidget {
     // Create a new badge if not in cache
     final badge = Container(
       child: TextWidget.subText(
-        fw: 3,
+        fw: 0,
         text: exch,
         textOverflow: TextOverflow.ellipsis,
         maxLines: 1,

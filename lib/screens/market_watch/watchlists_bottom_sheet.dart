@@ -500,8 +500,7 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                                         const EdgeInsets.all(8),
                                                     child: Icon(
                                                       Icons.delete_outlined,
-                                                      color:
-                                                          colors.kColorRedText,
+                                                       color: theme.isDarkMode ? colors.lossDark : colors.lossLight,
                                                       size: 20,
                                                     ),
                                                   ),

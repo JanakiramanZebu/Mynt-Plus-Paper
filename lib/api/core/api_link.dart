@@ -56,7 +56,7 @@ class ApiLinks {
   String get searchScripNew => '${bemynt}global/SearchScrip';
   String get technicalData => '$goMyntURL/GetTechnicals';
   String get watchListrename => '$goMyntURL/RenameMW';
-  String get spanCalc => 'https://go.mynt.in/NorenWClientTV/SpanCalc';
+  String get spanCalc => 'https://go.mynt.in/NorenWClient/SpanCalc';
 
   // Cams
   String get goCamsURL => "https://rekycbe.mynt.in/portfolio";

@@ -237,12 +237,8 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                         : userOrderPreference['prc'])
                 : 'Limit';
 
-    if (isUserOrderPreferenceAvailable) {
-      _isStoplossOrder = isAdvancedOptionClicked =
-          ["SL Limit", "SL MKT"].contains(userOrderPreference['prc']);
-      _isMarketOrder =
-          ["Market", "SL MKT"].contains(userOrderPreference['prc']);
-    }
+      _isMarketOrder =  ["Market", "SL MKT"].contains(priceType);
+      _isStoplossOrder = isAdvancedOptionClicked = ["SL Limit", "SL MKT"].contains(priceType);
 
     priceTypes = [
       {
@@ -333,11 +329,9 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
               ? "EOS"
               : "DAY";
 
-      isAdvancedOptionClicked = _addValidityAndDisclosedQty =
-          isUserOrderPreferenceAvailable &&
-                  userOrderPreference['validity'] == 'IOC'
-              ? true
-              : false;
+      _addValidityAndDisclosedQty =
+            isUserOrderPreferenceAvailable && userOrderPreference['validity'] == 'IOC'? true : false ;
+      isAdvancedOptionClicked = !isAdvancedOptionClicked ? _addValidityAndDisclosedQty : isAdvancedOptionClicked;
 
       lotSize = int.parse("${widget.scripInfo.ls ?? 0}");
       frezQty = sfq > 1 ? (sfq / lotSize).floor() * lotSize : lotSize;
@@ -1853,75 +1847,70 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                             theme: theme.isDarkMode,
                                             fw: 0,
                                           ),
-                                          IconButton(
-                                              onPressed: (isBuy! &&
-                                                      widget.scripInfo.seg ==
-                                                          "EQT")
-                                                  ? () {
-                                                      ScaffoldMessenger.of(
-                                                              context)
-                                                          .removeCurrentSnackBar();
-                                                      ScaffoldMessenger.of(
-                                                              context)
-                                                          .showSnackBar(
-                                                              warningMessage(
-                                                                  context,
-                                                                  "OCO Order can not be placed for Buy order"));
-                                                    }
-                                                  : () {
-                                                      setState(() {
-                                                        isOco = !isOco;
-                                                        // if (isOco) {
-                                                        //   orderInput.chngAlert("LTP");
-                                                        //   orderInput.chngCond(
-                                                        //       "Greater than"); // "Less than"
-                                                        //   orderInput
-                                                        //       .chngOCOPriceType("Limit");
-                                                        orderInput
-                                                            .disableCondGTT(
-                                                                isOco);
-                                                        // } else {
-                                                        //   orderInput
-                                                        //       .disableCondGTT(false);
-                                                        // }
-                                                      });
-                                  
-                                                      // ref
-                                                      //     .read(ordInputProvider)
-                                                      //     .chngInvesType(
-                                                      //         widget.scripInfo.seg == "EQT"
-                                                      //             ? InvestType.delivery
-                                                      //             : InvestType.carryForward,"OCO");
-                                                      ref
-                                                          .read(
-                                                              ordInputProvider)
-                                                          .updateOcoPrcQtyCtrl(
-                                                              "${widget.orderArg.ltp}",
-                                                              widget.orderArg
-                                                                  .lotSize!
-                                                                  .replaceAll(
-                                                                      "-", ""));
-                                                    },
-                                              icon: SvgPicture.asset(theme
-                                                      .isDarkMode
-                                                  ? isBuy! &&
-                                                          widget.scripInfo
-                                                                  .seg ==
-                                                              "EQT"
-                                                      ? assets.squareminus
-                                                      : isOco
-                                                          ? assets
-                                                              .darkCheckedboxIcon
-                                                          : assets
-                                                              .darkCheckboxIcon
-                                                  : isBuy! &&
-                                                          widget.scripInfo
-                                                                  .seg ==
-                                                              "EQT"
-                                                      ? assets.squareminus
-                                                      : isOco
-                                                          ? assets.checkedbox
-                                                          : assets.checkbox))
+                                          GestureDetector(
+  behavior: HitTestBehavior.translucent,
+  onTap: () {
+    if (isBuy! && widget.scripInfo.seg == "EQT") {
+      ScaffoldMessenger.of(context).removeCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        warningMessage(context, "OCO Order can not be placed for Buy order"),
+      );
+      return;
+    }
+
+    setState(() {
+      isOco = !isOco;
+      orderInput.disableCondGTT(isOco);
+    });
+
+    ref.read(ordInputProvider).updateOcoPrcQtyCtrl(
+      "${widget.orderArg.ltp}",
+      widget.orderArg.lotSize!.replaceAll("-", ""),
+    );
+  },
+  child: Container(
+    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+    child: AnimatedContainer(
+      duration: const Duration(milliseconds: 250),
+      curve: Curves.easeOut,
+      width: 40,
+      height: 22,
+      padding: const EdgeInsets.symmetric(horizontal: 3),
+      decoration: BoxDecoration(
+        color: (isBuy! && widget.scripInfo.seg == "EQT")
+            ? (theme.isDarkMode ? Colors.grey[800] : Colors.grey[300]) // Disabled state
+            : isOco
+                ? colors.colorBlue.withOpacity(0.25)
+                : (theme.isDarkMode ? Colors.grey[700] : Colors.grey[300]),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: AnimatedAlign(
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOut,
+        alignment: isOco ? Alignment.centerRight : Alignment.centerLeft,
+        child: Container(
+          width: 16,
+          height: 16,
+          decoration: BoxDecoration(
+            color: (isBuy! && widget.scripInfo.seg == "EQT")
+                ? (theme.isDarkMode ? Colors.grey[600] : Colors.grey[400]) // Disabled knob
+                : isOco
+                    ? colors.colorBlue
+                    : Colors.grey[500],
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.25),
+                blurRadius: 3,
+                offset: const Offset(0, 1),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  ),
+),
                                         ],
                                       ),
                                     ],
@@ -3842,110 +3831,148 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                           Row(
                                             children: [
                                               Expanded(
-                                                child: Theme(
-                                                  data: ThemeData(
-                                                    unselectedWidgetColor: theme
-                                                            .isDarkMode
-                                                        ? colors.textPrimaryDark
-                                                        : colors
-                                                            .textPrimaryLight,
-                                                  ),
-                                                  child: CheckboxListTile(
-                                                      contentPadding:
-                                                          const EdgeInsets.only(
-                                                              left: 16),
-                                                      title: Text(
-                                                        'Cover - Only SL',
-                                                        style: textStyle(
-                                                          theme.isDarkMode
-                                                              ? colors.colorWhite
-                                                              : colors.colorBlack,
-                                                          14,
-                                                          FontWeight.w400,
-                                                        ),
-                                                      ),
-                                                      value: _isCoverOrderEnabled,
-                                                      onChanged: (bool? value) {
-                                                        setState(() {
-                                                          _isCoverOrderEnabled =
-                                                              value!;
-                                                          _isBracketOrderEnabled =
-                                                              !value!;
-                                                          //   updatePriceType();
-                                                          //   orderInput.chngPriceType(priceType,
-                                                          //       widget.orderArg.exchange);
-                                                          orderInput.chngOrderType(
-                                                              orderType,
-                                                              _isCoverOrderEnabled,
-                                                              _isBracketOrderEnabled);
-                                                          marginUpdate();
-                                                        });
-                                                      },
-                                                      controlAffinity:
-                                                          ListTileControlAffinity
-                                                              .trailing,
-                                                      activeColor:
-                                                          colors.colorBlue,
-                                                      checkboxShape:
-                                                          const RoundedRectangleBorder(
-                                                        borderRadius:
-                                                            BorderRadius.all(
-                                                                Radius.circular(
-                                                                    5)),
-                                                      )),
-                                                ),
+                                                child: GestureDetector(
+  behavior: HitTestBehavior.translucent, // Improves touch detection
+  onTap: () {
+    setState(() {
+      _isCoverOrderEnabled = !_isCoverOrderEnabled;
+      _isBracketOrderEnabled = !_isCoverOrderEnabled;
+
+      // updatePriceType();
+      // orderInput.chngPriceType(priceType, widget.orderArg.exchange);
+      orderInput.chngOrderType(
+        orderType,
+        _isCoverOrderEnabled,
+        _isBracketOrderEnabled,
+      );
+      marginUpdate();
+    });
+  },
+  child: Container(
+    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          'Cover - Only SL',
+          style: textStyle(
+            theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+            14,
+            FontWeight.w400,
+          ),
+        ),
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeOut,
+          width: 40,
+          height: 22,
+          padding: const EdgeInsets.symmetric(horizontal: 3),
+          decoration: BoxDecoration(
+            color: _isCoverOrderEnabled
+                ? colors.colorBlue.withOpacity(0.25)
+                : (theme.isDarkMode ? Colors.grey[700] : Colors.grey[300]),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: AnimatedAlign(
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeOut,
+            alignment: _isCoverOrderEnabled
+                ? Alignment.centerRight
+                : Alignment.centerLeft,
+            child: Container(
+              width: 16,
+              height: 16,
+              decoration: BoxDecoration(
+                color: _isCoverOrderEnabled
+                    ? colors.colorBlue
+                    : Colors.grey[500],
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.25),
+                    blurRadius: 3,
+                    offset: const Offset(0, 1),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    ),
+  ),
+),
                                               ),
                                               Expanded(
-                                                child: Theme(
-                                                  data: ThemeData(
-                                                    unselectedWidgetColor: theme
-                                                            .isDarkMode
-                                                        ? colors.textPrimaryDark
-                                                        : colors
-                                                            .textPrimaryLight,
-                                                  ),
-                                                  child: CheckboxListTile(
-                                                      contentPadding:
-                                                          const EdgeInsets.only(
-                                                              left: 16),
-                                                      title: Text(
-                                                        'Bracket - TGT / SL',
-                                                        style: textStyle(
-                                                          theme.isDarkMode
-                                                              ? colors.colorWhite
-                                                              : colors.colorBlack,
-                                                          14,
-                                                          FontWeight.w400,
-                                                        ),
-                                                      ),
-                                                      value:
-                                                          _isBracketOrderEnabled,
-                                                      onChanged: (bool? value) {
-                                                        setState(() {
-                                                          _isBracketOrderEnabled =
-                                                              value!;
-                                                          _isCoverOrderEnabled =
-                                                              !value!;
-                                                          orderInput.chngOrderType(
-                                                              orderType,
-                                                              _isCoverOrderEnabled,
-                                                              _isBracketOrderEnabled);
-                                                          marginUpdate();
-                                                        });
-                                                      },
-                                                      controlAffinity:
-                                                          ListTileControlAffinity
-                                                              .trailing,
-                                                      activeColor:
-                                                          colors.colorBlue,
-                                                      checkboxShape:
-                                                          const RoundedRectangleBorder(
-                                                        borderRadius:
-                                                            BorderRadius.all(
-                                                                Radius.circular(
-                                                                    5)),
-                                                      )),
-                                                ),
+                                                child: GestureDetector(
+  behavior: HitTestBehavior.translucent, // Improves touch detection
+  onTap: () {
+    setState(() {
+      _isBracketOrderEnabled = !_isBracketOrderEnabled;
+      _isCoverOrderEnabled = !_isBracketOrderEnabled;
+
+      orderInput.chngOrderType(
+        orderType,
+        _isCoverOrderEnabled,
+        _isBracketOrderEnabled,
+      );
+      marginUpdate();
+    });
+  },
+  child: Container(
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          'Bracket - TGT / SL',
+          style: textStyle(
+            theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+            14,
+            FontWeight.w400,
+          ),
+        ),
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeOut,
+          width: 40,
+          height: 22,
+          padding: const EdgeInsets.symmetric(horizontal: 3),
+          decoration: BoxDecoration(
+            color: _isBracketOrderEnabled
+                ? colors.colorBlue.withOpacity(0.25)
+                : (theme.isDarkMode ? Colors.grey[700] : Colors.grey[300]),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: AnimatedAlign(
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeOut,
+            alignment: _isBracketOrderEnabled
+                ? Alignment.centerRight
+                : Alignment.centerLeft,
+            child: Container(
+              width: 16,
+              height: 16,
+              decoration: BoxDecoration(
+                color: _isBracketOrderEnabled
+                    ? colors.colorBlue
+                    : Colors.grey[500],
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.25),
+                    blurRadius: 3,
+                    offset: const Offset(0, 1),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    ),
+  ),
+),
                                               ),
                                               Divider(
                                                   color: theme.isDarkMode

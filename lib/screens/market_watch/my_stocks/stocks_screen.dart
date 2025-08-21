@@ -159,6 +159,7 @@ class _StocksScreenState extends State<StocksScreen> {
                                                           ? colors.textPrimaryDark
                                                           : colors.textPrimaryLight,
                                           theme: theme.isDarkMode,
+                                          fw: 0,
                                         ),
                                       ),
                                      
@@ -175,6 +176,7 @@ class _StocksScreenState extends State<StocksScreen> {
                                                           ? colors.textPrimaryDark
                                                           : colors.textPrimaryLight,
                                                         theme: theme.isDarkMode,
+                                                        fw: 0,
                                                       ),
                                         ),
                                     ],
@@ -201,8 +203,9 @@ class _StocksScreenState extends State<StocksScreen> {
                                                   " ${holdingProvide[index].exchTsym![0].expDate}  ",
                                               color:theme.isDarkMode ? colors.textSecondaryDark :  colors.textSecondaryLight,
                                               theme: theme.isDarkMode,
+                                              fw: 0,
                                             ),
-                                              const SizedBox(width: 4),
+                                              const SizedBox(width: 6),
                                           SvgPicture.asset(assets.suitcase,
                                               height: 12,
                                               width: 16,
@@ -215,6 +218,7 @@ class _StocksScreenState extends State<StocksScreen> {
                                                 "${holdingProvide[index].currentQty}",
                                             color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
                                             theme: theme.isDarkMode,
+                                            fw: 0,
                                           ),
                                         ],
                                       ),
@@ -258,6 +262,7 @@ class _StocksScreenState extends State<StocksScreen> {
                                                   ?  theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight
                                                   : theme.isDarkMode ? colors.profitDark : colors.profitLight,
                                           theme: theme.isDarkMode,
+                                          fw: 0,
                                           ),
                                     ),
                                     // const SizedBox(height: 4),
@@ -270,6 +275,7 @@ class _StocksScreenState extends State<StocksScreen> {
                                           color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                                           textOverflow: TextOverflow.ellipsis,
                                           theme: theme.isDarkMode,
+                                          fw: 0,
                                           ),
                                     ),
                                   ],

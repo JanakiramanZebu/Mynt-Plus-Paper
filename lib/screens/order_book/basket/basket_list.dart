@@ -289,6 +289,7 @@ class BasketList extends ConsumerWidget {
                               color: theme.isDarkMode
                                   ? colors.textPrimaryDark
                                   : colors.textPrimaryLight,
+                              fw: 0,
                             ),
                           ),
                           subtitle: Padding(
@@ -302,6 +303,7 @@ class BasketList extends ConsumerWidget {
                                   color: theme.isDarkMode
                                       ? colors.textSecondaryDark
                                       : colors.textSecondaryLight,
+                                  fw: 0,
                                 ),
                                 // const SizedBox(width: 4),
                                 // TextWidget.paraText(
@@ -331,6 +333,7 @@ class BasketList extends ConsumerWidget {
                               color: theme.isDarkMode
                                   ? colors.textSecondaryDark
                                   : colors.textPrimaryLight,
+                              fw: 0,
                             ),
                           ),
                         );

@@ -748,7 +748,7 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
                                                 //       colors.btnOutlinedBorder,
                                                 //   width: 1,
                                                 // ),
-                                                color: colors.primaryLight,
+                                                color: theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
                                                 borderRadius:
                                                     BorderRadius.circular(5)),
                                             child: Material(
