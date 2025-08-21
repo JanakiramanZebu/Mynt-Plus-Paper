@@ -993,7 +993,6 @@ class OrderProvider extends DefaultChangeNotifier {
           _executedOrder = [];
           _openOrder = [];
           _allOrder = [];
-          _selectedTab = 0;
           for (var element in _orderBookModel!) {
             if (element.exch == "BFO" && element.dname != null) {
               List<String> splitVal = element.dname!.split(" ");
