@@ -366,7 +366,7 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
                         ),
                         Container(
                           decoration: BoxDecoration(
-                              color: theme.isDarkMode ? colors.textSecondaryDark.withOpacity(0.6) : colors.textSecondaryLight.withOpacity(0.1),
+                              color: theme.isDarkMode ? colors.textSecondaryDark.withOpacity(0.3) : colors.searchBg,
                               borderRadius: BorderRadius.circular(8)),
                           child: ListTile(
                             minLeadingWidth: 10,
@@ -374,28 +374,44 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
                               Icons.timer_outlined,
                               color: Color(0xfffb8c00),
                             ),
-                            title: Row(
-                              children: [
-                                TextWidget.paraText(
-                                  text: "Request on : ",
-                                  theme: false,
-                                  color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                                ),
-                                TextWidget.paraText(
-                                  text:
-                                      "${widget.withdarw.withdrawstatus?[0].eNTRYTIME}",
-                                  theme: false,
-                                  color: theme.isDarkMode ? colors.secondaryDark : colors.secondaryLight,
-                                ),
-                              ],
-                            ),
-                            trailing: TextWidget.titleText(
+                            title: TextWidget.titleText(
                               text:
                                   "₹ ${widget.withdarw.withdrawstatus?[0].dUEAMT}",
                               theme: false,
                               color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
                               fw: 1
                             ),
+
+                            subtitle:  Padding(
+                              padding: const EdgeInsets.only(top: 8),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  TextWidget.paraText(
+                                    text: "Request on : ",
+                                    theme: false,
+                                    color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  TextWidget.paraText(
+                                    text:
+                                        "${widget.withdarw.withdrawstatus?[0].eNTRYTIME}",
+                                    theme: false,
+                                    color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            
+                            
+                            
+                            // trailing: TextWidget.titleText(
+                            //   text:
+                            //       "₹ ${widget.withdarw.withdrawstatus?[0].dUEAMT}888888888880000",
+                            //   theme: false,
+                            //   color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                            //   fw: 1
+                            // ),
                           ),
                         ),
                       ],

@@ -158,6 +158,7 @@ class _ModifyPlaceOrderScreenState
         priceCtrl.text = "Market";
       } else {
         priceCtrl.text = "${widget.modifyOrderArgs.prc}";
+        price = priceCtrl.text;
       }
 
       _isMarketOrder = prcType == "MKT";
@@ -2366,7 +2367,7 @@ class _ModifyPlaceOrderScreenState
               ? widget.modifyOrderArgs.mktProtection ?? ""
               : mktProtCtrl.text,
           orderNum: widget.modifyOrderArgs.norenordno!,
-          prc: prcType == "LMT" || prcType == "SL-LMT" ? priceCtrl.text : "0",
+          prc: price,//prcType == "LMT" || prcType == "SL-LMT" ? priceCtrl.text : "0",
           prd: widget.modifyOrderArgs.prd!,
           trantype: widget.modifyOrderArgs.trantype!,
           prctyp: prcType,
