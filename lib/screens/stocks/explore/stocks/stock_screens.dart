@@ -109,7 +109,7 @@ class _StockScreenState extends ConsumerState<StockScreen>
         'subtitle': 'Seamless tracking of every transaction'
       },
       {
-        'label': 'Margin Calculator',
+        'label': 'F&O Margin Calculator',
         'icon': assets.margincal,
         'subtitle': 'Optimize leverage with precision'
       },
@@ -763,7 +763,7 @@ class _StockScreenState extends ConsumerState<StockScreen>
                                         context, Routes.ledgerscreen,
                                         arguments: "DDDDD");
                                     break;
-                                  case 'Margin Calculator':
+                                  case 'F&O Margin Calculator':
                                     Navigator.pushNamed(context, Routes.marginCalculator);
                                     break;
                                   case 'Brokerage Calculator':
