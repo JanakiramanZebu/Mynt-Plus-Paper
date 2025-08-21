@@ -1842,7 +1842,12 @@ class PortfolioProvider extends DefaultChangeNotifier {
     // Calculate percentage change if invested amount exists
     if (investedValue > 0.0 || double.tryParse(holding.sellAmt ?? '0.0')! > 0) {
       final profitValue = double.tryParse(holding.exchTsym![0].profitNloss ?? "0.00") ?? 0.0;
-      holding.exchTsym![0].pNlChng = ((profitValue / (investedValue + (double.tryParse(holding.sellAmt ?? '0.0')!) - profitValue)) * 100).toStringAsFixed(2);
+      if(double.tryParse(holding.sellAmt ?? '0.0')! > 0){
+        holding.exchTsym![0].pNlChng = ((profitValue / (investedValue + (double.tryParse(holding.sellAmt ?? '0.0')!) - profitValue)) * 100).toStringAsFixed(2);
+      }
+      else{
+      holding.exchTsym![0].pNlChng = ((profitValue / investedValue) * 100).toStringAsFixed(2);
+      }
     }
     
     // Calculate one day change if close value is valid
