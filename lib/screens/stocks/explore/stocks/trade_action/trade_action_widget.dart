@@ -189,7 +189,7 @@ class _TradeActionState extends ConsumerState<TradeAction>
   Widget _buildTabs(ThemesProvider theme) {
     return Container(
       height: 35,
-      padding: const EdgeInsets.only(left: 16.0),
+      padding: const EdgeInsets.only(left: 8, right: 8, bottom: 8),
       child: ListView.builder(
         controller: _tabScrollController,
         scrollDirection: Axis.horizontal,
@@ -200,8 +200,7 @@ class _TradeActionState extends ConsumerState<TradeAction>
           final isSelected = _currentPageIndex == index;
 
           return Container(
-            // width: 120,
-            margin: const EdgeInsets.only(right: 8),
+            margin: const EdgeInsets.only(right: 4),
             child: Material(
               color: Colors.transparent,
               child: InkWell(
@@ -216,18 +215,17 @@ class _TradeActionState extends ConsumerState<TradeAction>
                 child: Container(
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? (theme.isDarkMode ? colors.colorWhite : colors.searchBg)
+                        ? theme.isDarkMode ? colors.searchBgDark : const Color(0xffF1F3F8)
                         : Colors.transparent,
                     borderRadius: BorderRadius.circular(5),
                   ),
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 6, horizontal: 10),
+                  padding: const EdgeInsets.only(left: 14, right: 14, top: 0, bottom: 0),
                   child: Center(
-                    child: TextWidget.paraText(
+                    child: TextWidget.subText(
                       text: action,
                       color: isSelected
-                          ? colors.colorBlack
-                          : colors.textSecondaryLight,
+                          ? theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight
+                          : theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                       fw: isSelected ? 2 : 3,
                       theme: !theme.isDarkMode,
                     ),

@@ -611,7 +611,7 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
                                 color: theme.isDarkMode
                                     ? colors.textSecondaryDark
                                     : colors.textSecondaryLight,
-                                fw: 3),
+                                fw: 0),
                             const SizedBox(height: 4),
                             Row(
                                 crossAxisAlignment: CrossAxisAlignment.end,
@@ -656,7 +656,7 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
                               color: theme.isDarkMode
                                   ? colors.textSecondaryDark
                                   : colors.textSecondaryLight,
-                              fw: 3),
+                              fw: 0),
                           const SizedBox(height: 4),
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.end,
@@ -707,7 +707,7 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
                                 color: theme.isDarkMode
                                     ? colors.textSecondaryDark
                                     : colors.textSecondaryLight,
-                                fw: 3),
+                                fw: 0),
                             const SizedBox(height: 4),
                             TextWidget.subText(
                                 text:
@@ -716,7 +716,7 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
                                 color: theme.isDarkMode
                                     ? colors.textPrimaryDark
                                     : colors.textPrimaryLight,
-                                fw: 3),
+                                fw: 0),
                           ],
                         ),
                         Column(
@@ -728,7 +728,7 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
                                 color: theme.isDarkMode
                                     ? colors.textSecondaryDark
                                     : colors.textSecondaryLight,
-                                fw: 3),
+                                fw: 0),
                             const SizedBox(height: 4),
                             TextWidget.subText(
                                 text:
@@ -737,7 +737,7 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
                                 color: theme.isDarkMode
                                     ? colors.textPrimaryDark
                                     : colors.textPrimaryLight,
-                                fw: 3),
+                                fw: 0),
                           ],
                         ),
                       ]),

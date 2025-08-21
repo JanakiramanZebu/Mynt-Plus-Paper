@@ -664,7 +664,7 @@ class _StaticIndexContent extends StatelessWidget {
               color:
                   isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
               theme: false,
-              // fw: 0,
+              fw: 0,
             ),
           ),
         ),
@@ -733,12 +733,14 @@ class _DynamicPriceContent extends StatelessWidget {
     final priceStyle = _getCachedStyle(
       isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
       12,
+      0
     );
 
     final changeColor = _getCachedChangeColor(ch, chp);
     final changeStyle = _getCachedStyle(
       changeColor,
       16,
+      0
     );
 
     // Create the price text once with proper formatting

@@ -112,7 +112,7 @@ class _HoldingsListState extends ConsumerState<HoldingsList> {
                   color: theme.isDarkMode
                       ? colors.textPrimaryDark
                       : colors.textPrimaryLight,
-                  fw: 3),
+                  fw: 0),
             ),
             _DynamicPnlInfo(
               profitLoss: widget.exchTsym.profitNloss ?? '0.00',
@@ -189,7 +189,7 @@ class _HoldingsListState extends ConsumerState<HoldingsList> {
                   color: theme.isDarkMode
                       ? colors.textSecondaryDark
                       : colors.textSecondaryLight,
-                  fw: 3,
+                  fw: 0,
                 ),
               ],
             ),
@@ -228,7 +228,7 @@ class _StaticQuantityInfo extends StatelessWidget {
     final styleKey = '${color.value}|$size|$fw|$isDarkMode';
     if (!_styles.containsKey(styleKey)) {
       _styles[styleKey] =
-          TextWidget.textStyle(color: color, fontSize: size, theme: isDarkMode);
+          TextWidget.textStyle(color: color, fontSize: size, theme: isDarkMode, fw: fw);
     }
     return _styles[styleKey]!;
   }
@@ -239,10 +239,10 @@ class _StaticQuantityInfo extends StatelessWidget {
       final theme = ref.watch(themeProvider);
       return Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
         Text("QTY ",
-            style: _getStyle(labelColor, 12, 3, 'qty-label', theme.isDarkMode)),
+            style: _getStyle(labelColor, 12, 0, 'qty-label', theme.isDarkMode)),
         Text("${holdingData.currentQty ?? 0}",
             style:
-                _getStyle(contentColor, 12, 3, 'qty-value', theme.isDarkMode)),
+                _getStyle(contentColor, 12, 0, 'qty-value', theme.isDarkMode)),
         // if (holdingData.npoadqty.toString() != "null") ...[
         //   Text(" NPQ",
         //       style: _getStyle(
@@ -291,10 +291,10 @@ class _StaticPriceInfo extends StatelessWidget {
       final theme = ref.watch(themeProvider);
       return Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
         Text("AVG ",
-            style: _getStyle(labelColor, 12, 3, 'qty-label', theme.isDarkMode)),
+            style: _getStyle(labelColor, 12, 0, 'qty-label', theme.isDarkMode)),
         Text("${holdingData.avgPrc}",
             style:
-                _getStyle(contentColor, 12, 3, 'qty-value', theme.isDarkMode)),
+                _getStyle(contentColor, 12, 0, 'qty-value', theme.isDarkMode)),
       ]);
     });
   }
@@ -324,7 +324,7 @@ class _StaticInvestmentInfo extends StatelessWidget {
     final styleKey = '${color.value}|$size|$fw|$isDarkMode';
     if (!_styles.containsKey(styleKey)) {
       _styles[styleKey] =
-          TextWidget.textStyle(color: color, fontSize: size, theme: isDarkMode);
+          TextWidget.textStyle(color: color, fontSize: size, theme: isDarkMode, fw: fw);
     }
     return _styles[styleKey]!;
   }
@@ -342,12 +342,12 @@ class _StaticInvestmentInfo extends StatelessWidget {
             Text(
               "INV ",
               style:
-                  _getStyle(labelColor, 12, 3, 'inv-label', theme.isDarkMode),
+                  _getStyle(labelColor, 12, 0, 'inv-label', theme.isDarkMode),
             ),
             Text(
               "${getFormatter(value: investedValue, v4d: false, noDecimal: false)}",
               style:
-                  _getStyle(contentColor, 12, 3, 'inv-value', theme.isDarkMode),
+                  _getStyle(contentColor, 12, 0, 'inv-value', theme.isDarkMode),
             ),
           ],
         );
@@ -442,7 +442,7 @@ class _DynamicLtpInfoState extends ConsumerState<_DynamicLtpInfo> {
     final key = '${color.value}|$size|$fw|$isDarkMode';
     if (!_styles.containsKey(key)) {
       _styles[key] =
-          TextWidget.textStyle(color: color, fontSize: size, theme: isDarkMode);
+          TextWidget.textStyle(color: color, fontSize: size, theme: isDarkMode, fw: fw);
     }
     return _styles[key]!;
   }
@@ -454,10 +454,10 @@ class _DynamicLtpInfoState extends ConsumerState<_DynamicLtpInfo> {
       child: Row(children: [
         Text("LTP ",
             style: _getStyle(
-                widget.labelColor, 12, 3, 'ltp-label', theme.isDarkMode)),
+                widget.labelColor, 12, 0, 'ltp-label', theme.isDarkMode)),
         Text("${_ltp}",
             style: _getStyle(
-                widget.contentColor, 12, 3, 'ltp-value', theme.isDarkMode))
+                widget.contentColor, 12, 0, 'ltp-value', theme.isDarkMode))
       ]),
     );
   }
@@ -618,13 +618,13 @@ class _DynamicPnlInfoState extends ConsumerState<_DynamicPnlInfo> {
         children: [
           if (_pnlChange != null)
             Text(
-              "(${_pnlChange == "NaN" ? "0.0" : _pnlChange}%) ",
-              style: _getStyle(pnlChangeColor, 12, 3, theme.isDarkMode),
+              "(${_pnlChange == "NaN" ? "0.0" : _pnlChange}%)",
+              style: _getStyle(pnlChangeColor, 12, 0, theme.isDarkMode),
             ),
           if (_profitLoss != null)
             Text(
               _profitLoss!,
-              style: _getStyle(pnlColor, 16, 3, theme.isDarkMode),
+              style: _getStyle(pnlColor, 16, 0, theme.isDarkMode),
             ),
         ],
       ),

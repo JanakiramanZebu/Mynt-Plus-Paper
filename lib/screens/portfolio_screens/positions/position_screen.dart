@@ -684,7 +684,7 @@ class _PnLDisplay extends StatelessWidget {
               color: theme.isDarkMode
                   ? colors.textSecondaryDark
                   : colors.textSecondaryLight,
-              fw: 3),
+              fw: 0),
           const SizedBox(height: 4),
           !isNetPnl
               ? _buildValueText(isDay ? totUnRealMtm : totMtM,
@@ -943,7 +943,7 @@ class _PositionItemState extends ConsumerState<_PositionItem> {
                   ? colors.textPrimaryDark
                   : colors.textPrimaryLight,
               textOverflow: TextOverflow.ellipsis,
-              fw: 3),
+              fw: 0),
           TextWidget.subText(
               text: "${widget.position.option} ",
               theme: theme.isDarkMode,
@@ -951,16 +951,16 @@ class _PositionItemState extends ConsumerState<_PositionItem> {
                   ? colors.textPrimaryDark
                   : colors.textPrimaryLight,
               textOverflow: TextOverflow.ellipsis,
-              fw: 3),
+              fw: 0),
         ]),
         Row(children: [
-          TextWidget.paraText(
+          TextWidget.subText(
               text: "${widget.position.exch}",
               theme: theme.isDarkMode,
               color: theme.isDarkMode
                   ? colors.textSecondaryDark
                   : colors.textSecondaryLight,
-              fw: 3),
+              fw: 0),
         ])
       ],
     );
@@ -982,17 +982,17 @@ class _PositionItemState extends ConsumerState<_PositionItem> {
                       ? colors.textSecondaryDark
                       : colors.textSecondaryLight,
                   12,
-                  3,
+                  0,
                   key: 'qty-label'),
             ),
             Text(
               qty,
               style: _getStyle(
                   theme.isDarkMode
-                      ? colors.textPrimaryDark
-                      : colors.textPrimaryLight,
+                      ? colors.textSecondaryDark
+                      : colors.textSecondaryLight,
                   12,
-                  3,
+                  0,
                   key: 'qty-value'),
             ),
 
@@ -1008,17 +1008,17 @@ class _PositionItemState extends ConsumerState<_PositionItem> {
                       ? colors.textSecondaryDark
                       : colors.textSecondaryLight,
                   12,
-                  3,
+                  0,
                   key: 'avg-label'),
             ),
             Text(
               avgPrice,
               style: _getStyle(
-                  theme.isDarkMode
-                      ? colors.textPrimaryDark
-                      : colors.textPrimaryLight,
+                   theme.isDarkMode
+                      ? colors.textSecondaryDark
+                      : colors.textSecondaryLight,
                   12,
-                  3,
+                  0,
                   key: 'avg-value'),
             ),
           ],
@@ -1070,7 +1070,7 @@ class _PositionItemState extends ConsumerState<_PositionItem> {
                 ? colors.textSecondaryDark
                 : colors.textSecondaryLight,
             12,
-            3,
+            0,
           ),
         ),
 
@@ -1081,14 +1081,14 @@ class _PositionItemState extends ConsumerState<_PositionItem> {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                "LTP  ",
+                "LTP ",
                 style: TextWidget.textStyle(
                   fontSize: 12,
                   color: theme.isDarkMode
                       ? colors.textSecondaryDark
                       : colors.textSecondaryLight,
                   theme: theme.isDarkMode,
-                  fw: 3,
+                  fw: 0,
                 ),
               ),
               Text(
@@ -1098,7 +1098,7 @@ class _PositionItemState extends ConsumerState<_PositionItem> {
                         ? colors.textSecondaryDark
                         : colors.textSecondaryLight,
                     12,
-                    3,
+                    0,
                     key: 'ltp-value'),
               )
             ],

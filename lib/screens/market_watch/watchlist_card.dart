@@ -103,6 +103,7 @@ class _WatchlistCardState extends ConsumerState<WatchlistCard> {
                     color: theme.isDarkMode
                         ? colors.textPrimaryDark
                         : colors.textPrimaryLight,
+                    fw: 0,
                     theme: theme.isDarkMode,
                   ),
                 ),
@@ -115,6 +116,7 @@ class _WatchlistCardState extends ConsumerState<WatchlistCard> {
                         ? colors.textPrimaryDark
                         : colors.textPrimaryLight,
                       theme: theme.isDarkMode,
+                      fw: 0,
                     ),
                   ),
               ],
@@ -138,6 +140,7 @@ class _WatchlistCardState extends ConsumerState<WatchlistCard> {
                             ? colors.textSecondaryDark
                             : colors.textSecondaryLight,
                         theme: theme.isDarkMode,
+                        fw: 0,
                       ),
                     if (widget.watchListData['holdingQty'] != null &&
                         widget.watchListData['holdingQty']
@@ -154,8 +157,9 @@ class _WatchlistCardState extends ConsumerState<WatchlistCard> {
                       const SizedBox(width: 4),
                       TextWidget.paraText(
                         text: "${widget.watchListData['holdingQty']}",
-                        color: colors.secondaryLight,
+                        color: theme.isDarkMode ? colors.secondaryDark : colors.secondaryLight,
                         theme: theme.isDarkMode,
+                        fw: 0,
                       ),
                     ]
                   ],
@@ -295,6 +299,7 @@ class _PriceDataWidgetState extends ConsumerState<_PriceDataWidget> {
       fontSize: 16, // or keep 12 if you prefer
       color: changeColor,
       theme: theme.isDarkMode,
+      fw: 0,
       // fw = 0 → FontWeight.w500 as per your logic
     );
 
@@ -319,6 +324,7 @@ class _PriceDataWidgetState extends ConsumerState<_PriceDataWidget> {
                 color: theme.isDarkMode
                     ? colors.textSecondaryDark
                     : colors.textSecondaryLight,
+                fw: 0,
                 theme: theme.isDarkMode),
           ),
         ]);

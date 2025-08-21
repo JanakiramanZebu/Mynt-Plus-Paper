@@ -257,7 +257,7 @@ class _PendingAlertState extends ConsumerState<PendingAlert> {
                         text: "PENDING",
                         theme: false,
                         color: colors.pending,
-                        fw: 3,
+                        fw: 0,
                       ),
                     ),
                   ],
@@ -271,7 +271,7 @@ class _PendingAlertState extends ConsumerState<PendingAlert> {
                       color: theme.isDarkMode
                           ? colors.textSecondaryDark
                           : colors.textSecondaryLight,
-                      fw: 3,
+                      fw: 0,
                     ),
                     const Spacer(),
                     Row(
@@ -282,7 +282,7 @@ class _PendingAlertState extends ConsumerState<PendingAlert> {
                           color: theme.isDarkMode
                               ? colors.textSecondaryDark
                               : colors.textSecondaryLight,
-                          fw: 3,
+                          fw: 0,
                         ),
                         TextWidget.paraText(
                           text: "${alert.ltp ?? alert.close ?? 0.00}",
@@ -290,7 +290,7 @@ class _PendingAlertState extends ConsumerState<PendingAlert> {
                           color: theme.isDarkMode
                               ? colors.textSecondaryDark
                               : colors.textSecondaryLight,
-                          fw: 3,
+                          fw: 0,
                         ),
                         TextWidget.paraText(
                           text: " (${alert.perChange ?? 0.00}%)",
@@ -298,7 +298,7 @@ class _PendingAlertState extends ConsumerState<PendingAlert> {
                           color: theme.isDarkMode
                               ? colors.textSecondaryDark
                               : colors.textSecondaryLight,
-                          fw: 3,
+                          fw: 0,
                         ),
                       ],
                     ),
@@ -316,7 +316,7 @@ class _PendingAlertState extends ConsumerState<PendingAlert> {
                           color: theme.isDarkMode
                               ? colors.textSecondaryDark
                               : colors.textSecondaryLight,
-                          fw: 3,
+                          fw: 0,
                         ),
                         TextWidget.paraText(
                           text: alert.aiT == "LTP_A"
@@ -330,7 +330,7 @@ class _PendingAlertState extends ConsumerState<PendingAlert> {
                           color: theme.isDarkMode
                               ? colors.textSecondaryDark
                               : colors.textSecondaryLight,
-                          fw: 3,
+                          fw: 0,
                         ),
                         const SizedBox(width: 4),
                         Transform.rotate(
@@ -374,7 +374,7 @@ class _PendingAlertState extends ConsumerState<PendingAlert> {
                           color: theme.isDarkMode
                               ? colors.textSecondaryDark
                               : colors.textSecondaryLight,
-                          fw: 3,
+                          fw: 0,
                         ),
                       ],
                     ),

@@ -725,7 +725,7 @@ class _OrderItemState extends State<_OrderItem> {
                         "${widget.orderItem.symbol?.replaceAll("-EQ", "")} ${widget.orderItem.expDate} ${widget.orderItem.option ?? ''}",
                         
                     theme: widget.theme.isDarkMode,
-                    fw: 3,
+                    fw: 0,
                     maxLines: 1,
                     textOverflow: TextOverflow.ellipsis,
                     color: widget.theme.isDarkMode
@@ -747,7 +747,7 @@ class _OrderItemState extends State<_OrderItem> {
                     text: _getStatusText(),
                     color: _getStatusColor(),
                     theme: false,
-                    fw: 3,
+                    fw: 0,
                   ),
                 ),
               ],
@@ -767,7 +767,7 @@ class _OrderItemState extends State<_OrderItem> {
                     color: widget.theme.isDarkMode
                         ? colors.textSecondaryDark
                         : colors.textSecondaryLight,
-                    fw: 3,
+                    fw: 0,
                   ),
                 ),
                 TextWidget.paraText(
@@ -776,7 +776,7 @@ class _OrderItemState extends State<_OrderItem> {
                   color: widget.theme.isDarkMode
                       ? colors.textSecondaryDark
                       : colors.textSecondaryLight,
-                  fw: 3,
+                  fw: 0,
                 ),
               ],
             ),
@@ -808,7 +808,7 @@ class _OrderItemState extends State<_OrderItem> {
                           ? colors.textSecondaryDark
                           : colors.textSecondaryLight,
                       theme: widget.theme.isDarkMode,
-                      fw: 3,
+                      fw: 0,
                     ),
                   ],
                 ),
@@ -818,7 +818,7 @@ class _OrderItemState extends State<_OrderItem> {
                       ? colors.textSecondaryDark
                       : colors.textSecondaryLight,
                   theme: widget.theme.isDarkMode,
-                  fw: 3,
+                  fw: 0,
                 ),
               ],
             ),

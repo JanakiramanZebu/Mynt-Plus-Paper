@@ -324,6 +324,7 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
                                 text: "Break up",
                                 theme: false,
                                 color: theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
+                                fw: 2,
                               ),
                               const SizedBox(width: 4),
                               Icon(
@@ -331,7 +332,7 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
                                     ? Icons.keyboard_arrow_up
                                     : Icons.keyboard_arrow_down,
                                 color: theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
-                                size: 16,
+                                size: 20,
                               ),
                             ],
                           ),

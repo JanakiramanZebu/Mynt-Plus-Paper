@@ -812,7 +812,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                           },
                                                                           child: Container(
                                                                               height: 45,
-                                                                              decoration: BoxDecoration(color: colors.primary, borderRadius: BorderRadius.circular(5)),
+                                                                              decoration: BoxDecoration(color: theme.isDarkMode ? colors.primaryDark : colors.primaryLight, borderRadius: BorderRadius.circular(5)),
                                                                               child: Center(child: TextWidget.subText(text: "Buy", color: colors.colorWhite, theme: theme.isDarkMode, fw: 2))),
                                                                         )),
                                                                         const SizedBox(
@@ -823,7 +823,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                                 onTap: () async {
                                                                                   await placeOrderInput(scripInfo, ctx, depthData, false);
                                                                                 },
-                                                                                child: Container(height: 45, decoration: BoxDecoration(color: colors.tertiary, borderRadius: BorderRadius.circular(5)), child: Center(child: TextWidget.subText(text: "Sell", color: colors.colorWhite, theme: theme.isDarkMode, fw: 2)))))
+                                                                                child: Container(height: 45, decoration: BoxDecoration(color: colors.tertiary , borderRadius: BorderRadius.circular(5)), child: Center(child: TextWidget.subText(text: "Sell", color: colors.colorWhite, theme: theme.isDarkMode, fw: 2)))))
                                                                       ])),
                                                       ],
                                                     ),

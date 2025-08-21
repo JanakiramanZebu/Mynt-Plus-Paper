@@ -595,7 +595,8 @@ class _LivePriceWidgetState extends State<_LivePriceWidget> {
                   "$_ltp ",
                   style: _getTextStyle(
                     changeColor,
-                    15,
+                    16,
+                    0
                   ),
                 ),
                 Row(
@@ -606,6 +607,7 @@ class _LivePriceWidgetState extends State<_LivePriceWidget> {
                               ? colors.textSecondaryDark
                               : colors.textSecondaryLight,
                           12,
+                          0
                         )),
                     Text("($_perChange%)",
                         style: _getTextStyle(
@@ -613,6 +615,7 @@ class _LivePriceWidgetState extends State<_LivePriceWidget> {
                               ? colors.textSecondaryDark
                               : colors.textSecondaryLight,
                           12,
+                          0
                         )),
                   ],
                 )
@@ -731,7 +734,8 @@ class _StaticIndexName extends StatelessWidget {
       _styleCache[key] = TextWidget.textStyle(
           fontSize: 14,
           color: isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-          theme: false);
+          theme: false,
+          fw: 0);
     }
     return _styleCache[key]!;
   }

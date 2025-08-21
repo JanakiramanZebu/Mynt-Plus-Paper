@@ -565,7 +565,7 @@ class GttOrderBook extends ConsumerWidget {
                                                         ? colors.textPrimaryDark
                                                         : colors
                                                             .textPrimaryLight,
-                                                    fw: 3,
+                                                    fw: 0,
                                                     textOverflow:
                                                         TextOverflow.ellipsis),
                                                 TextWidget.subText(
@@ -576,7 +576,7 @@ class GttOrderBook extends ConsumerWidget {
                                                         ? colors.textPrimaryDark
                                                         : colors
                                                             .textPrimaryLight,
-                                                    fw: 3,
+                                                    fw: 0,
                                                     textOverflow:
                                                         TextOverflow.ellipsis),
                                               ]),
@@ -688,7 +688,7 @@ class GttOrderBook extends ConsumerWidget {
                                                                             .profitLight
                                                                     : colors
                                                                         .textSecondaryLight,
-                                                        fw: 3),
+                                                        fw: 0),
                                                   ),
                                                   const SizedBox(width: 4),
                                                 ],
@@ -712,7 +712,7 @@ class GttOrderBook extends ConsumerWidget {
                                                               .textSecondaryDark
                                                           : colors
                                                               .textSecondaryLight,
-                                                      fw: 3),
+                                                      fw: 0),
                                                 ],
                                               ),
                                               Row(
@@ -738,7 +738,7 @@ class GttOrderBook extends ConsumerWidget {
                                                               .textSecondaryDark
                                                           : colors
                                                               .textSecondaryLight,
-                                                      fw: 3),
+                                                      fw: 0),
                                                   TextWidget.paraText(
                                                       text:
                                                           "${gttOrderBook[index].ltp ?? gttOrderBook[index].close ?? 0.00}",
@@ -748,7 +748,7 @@ class GttOrderBook extends ConsumerWidget {
                                                               .textSecondaryDark
                                                           : colors
                                                               .textSecondaryLight,
-                                                      fw: 3),
+                                                      fw: 0),
                                                   TextWidget.paraText(
                                                       text:
                                                           " (${gttOrderBook[index].perChange ?? 0.00}%)",
@@ -772,7 +772,7 @@ class GttOrderBook extends ConsumerWidget {
                                                                       .profitDark
                                                                   : colors
                                                                       .profitLight,
-                                                      fw: 3),
+                                                      fw: 0),
                                                 ],
                                               ),
                                             ]),
@@ -799,7 +799,7 @@ class GttOrderBook extends ConsumerWidget {
                                                             ? colors.profitDark
                                                             : colors
                                                                 .profitLight,
-                                                    fw: 1),
+                                                    fw: 0),
                                                 const SizedBox(width: 4),
                                                 TextWidget.paraText(
                                                     text:
@@ -810,7 +810,7 @@ class GttOrderBook extends ConsumerWidget {
                                                             .textSecondaryDark
                                                         : colors
                                                             .textSecondaryLight,
-                                                    fw: 3),
+                                                    fw: 0),
                                               ]),
                                               Row(
                                                   crossAxisAlignment:
@@ -824,7 +824,7 @@ class GttOrderBook extends ConsumerWidget {
                                                                 .textSecondaryDark
                                                             : colors
                                                                 .textSecondaryLight,
-                                                        fw: 3),
+                                                        fw: 0),
                                                     TextWidget.paraText(
                                                         text:
                                                             "${gttOrderBook[index].placeOrderParams?.qty ?? ''} ${gttOrderBook[index].placeOrderParamsLeg2?.qty != null ? ' / ${gttOrderBook[index].placeOrderParamsLeg2?.qty}' : ''}",
@@ -834,7 +834,7 @@ class GttOrderBook extends ConsumerWidget {
                                                                 .textSecondaryDark
                                                             : colors
                                                                 .textSecondaryLight,
-                                                        fw: 3),
+                                                        fw: 0),
                                                   ])
                                             ]),
                                         const SizedBox(height: 10),
@@ -863,7 +863,7 @@ class GttOrderBook extends ConsumerWidget {
                                                               .textSecondaryDark
                                                           : colors
                                                               .textSecondaryLight,
-                                                      fw: 3),
+                                                      fw: 0),
                                                 ],
                                               ),
                                               Row(children: [
@@ -885,7 +885,7 @@ class GttOrderBook extends ConsumerWidget {
                                                             .textSecondaryDark
                                                         : colors
                                                             .textSecondaryLight,
-                                                    fw: 3),
+                                                    fw: 0),
                                               ])
                                             ]),
                                         const SizedBox(height: 8),
