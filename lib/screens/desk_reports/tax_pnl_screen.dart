@@ -295,7 +295,7 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
                                 errorMessage = null;
                               });
 
-                              await ledgerprovider.pdfdownloadfortaxpnl(
+                                ledgerprovider.pdfdownloadfortaxpnl(
                                 context,
                                 ledgerprovider.taxpnleq?.data?.toJson() ?? {},
                                 ledgerprovider.taxpnldercomcur?.data
@@ -308,6 +308,9 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
                               setState(() {
                                 errorMessage = null;
                               });
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context).showSnackBar(successMessage(context, 'The file will be sent to your email shortly.'),);
+
                             } catch (e) {
                               // Show error in ScaffoldMessenger
                               // Navigator.pop(context);

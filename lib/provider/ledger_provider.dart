@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 import 'dart:ffi';
 
 import 'package:flutter/material.dart';
@@ -1582,27 +1583,27 @@ class LDProvider extends DefaultChangeNotifier {
         _taxpnlloading = true;
         notifyListeners();
 
-        _pdfresponse =
-            await api.getpdffileapitaxpnl(eq, dercomcur, eqcharge, year);
-        if (_pdfresponse == 'File Sent to mail successfully') {
-          if (_istaxpnlclosed == false) {
-            Navigator.pop(context);
-          }
+        // _pdfresponse =
+             api.getpdffileapitaxpnl(eq, dercomcur, eqcharge, year);
+        // if (_pdfresponse == 'File Sent to mail successfully') {
+          // if (_istaxpnlclosed == false) {
+          //   Navigator.pop(context);
+          // }
 
-          Future.delayed(Duration(seconds: 1), () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              successMessage(context, 'File sent to mail successfully'),
-            );
-          });
-          _taxpnlloading = false;
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            warningMessage(context, '$_pdfresponse'),
-          );
-          Navigator.pop(context);
-          _taxpnlloading = false;
-          throw _pdfresponse;
-        }
+          // Future.delayed(Duration(seconds: 1), () {
+          //   ScaffoldMessenger.of(context).showSnackBar(
+          //     successMessage(context, 'File sent to mail successfully'),
+          //   );
+          // });
+          // _taxpnlloading = false;
+        // } else {
+          // ScaffoldMessenger.of(context).showSnackBar(
+          //   warningMessage(context, '$_pdfresponse'),
+          // );
+          // Navigator.pop(context);
+        //   _taxpnlloading = false;
+        //   throw _pdfresponse;
+        // }
 
         _taxpnlloading = false;
         notifyListeners();
