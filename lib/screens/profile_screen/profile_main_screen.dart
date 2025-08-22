@@ -2163,8 +2163,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                   // Add delay for visual feedback
                   await Future.delayed(const Duration(milliseconds: 150));
 
-                  profileDetails.openInWebURLWithbank(
-                      context, "bank", "addbank", "");
+                  profileDetails.openInWebURL(context, "bank");
                 },
                 borderRadius: BorderRadius.circular(20),
                 splashColor: theme.isDarkMode
@@ -2288,40 +2287,45 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                                     theme: theme.isDarkMode,
                                     color: colors.colorWhite),
                               ),
-                            if (bank.defaultAc != "Yes")
-                              PopupMenuButton<String>(
-                                padding: EdgeInsets.zero,
-                                constraints:
-                                    const BoxConstraints(minWidth: 160),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                onSelected: (value) {
-                                  if (value == 'set_primary') {
-                                    profileDetails.openInWebURLWithbank(context, "bank", "setasprimarybank", bank.bankAcNo ?? "");
+                            // if (bank.defaultAc != "Yes")
+                            //   PopupMenuButton<String>(
+                            //     padding: EdgeInsets.zero,
+                            //     constraints:
+                            //         const BoxConstraints(minWidth: 160),
+                            //     shape: RoundedRectangleBorder(
+                            //       borderRadius: BorderRadius.circular(8),
+                            //     ),
+                            //     onSelected: (value) {
+                            //       if (value == 'set_primary') {
+                            //         profileDetails.openInWebURL(
+                            //           context,
+                            //           "bank",
 
-                                  } else if (value == 'delete') {
-                                    profileDetails.openInWebURLWithbank(context, "bank", "deletebank", bank.bankAcNo ?? "");
+                            //         );
+                            //       } else if (value == 'delete') {
+                            //         profileDetails.openInWebURL(
+                            //           context,
+                            //           "bank",
 
-                                  }
-                                },
-                                itemBuilder: (ctx) => [
-                                  PopupMenuItem<String>(
-                                    value: 'set_primary',
-                                    child: TextWidget.subText(text: 'Set primary', theme: theme.isDarkMode, color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,fw: 3),
-                                  ),
-                                  PopupMenuItem<String>(
-                                    value: 'delete',
-                                    child: TextWidget.subText(text: 'Delete', theme: theme.isDarkMode, color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,fw: 3),
-                                    
-                                  ),
-                                ],
-                                child: Icon(
-                                  Icons.more_vert,
-                                  size: 18,
-                                  color: colors.iconColor,
-                                ),
-                              ),
+                            //         );
+                            //       }
+                            //     },
+                            //     itemBuilder: (ctx) => const [
+                            //       PopupMenuItem<String>(
+                            //         value: 'set_primary',
+                            //         child: Text('Set primary'),
+                            //       ),
+                            //       PopupMenuItem<String>(
+                            //         value: 'delete',
+                            //         child: Text('Delete'),
+                            //       ),
+                            //     ],
+                            //     child: Icon(
+                            //       Icons.more_vert,
+                            //       size: 18,
+                            //       color: colors.iconColor,
+                            //     ),
+                            //   ),
                             SizedBox(height: 4),
                             Material(
                               color: Colors.transparent,
@@ -2330,8 +2334,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                                   // Add delay for visual feedback
                                   await Future.delayed(
                                       const Duration(milliseconds: 150));
-                                  profileDetails.openInWebURLWithbank(context,
-                                      "bank", "editbank", bank.bankAcNo ?? "");
+                                  profileDetails.openInWebURL(context, "bank");
                                 },
                                 borderRadius: BorderRadius.circular(20),
                                 splashColor: theme.isDarkMode
@@ -2501,7 +2504,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
               const SizedBox(height: 12),
               ElevatedButton(
                 onPressed: () async {
-                  profileprovider.openInWebURLk(context, "deposltory", "demat");
+                  profileprovider.openInWebURL(context, "deposltory");
                 },
                 style: ElevatedButton.styleFrom(
                     elevation: 0,
@@ -2603,7 +2606,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
           const SizedBox(height: 16),
           ElevatedButton(
             onPressed: () {
-              profileDetails.openInWebURLk(context, "segment", "mtf");
+              profileDetails.openInWebURL(context, "segment");
             },
             style: ElevatedButton.styleFrom(
               elevation: 0,
@@ -2651,7 +2654,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                         //                 arguments: "mtf");
 
                         //         } else {
-                        profileDetails.openInWebURLk(context, "segment", "mtf");
+                        profileDetails.openInWebURL(context, "mtf");
                         // }
 
                         // await ref.read(fundProvider).fetchHstoken(context);
@@ -2714,7 +2717,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                     // Add delay for visual feedback
                     await Future.delayed(const Duration(milliseconds: 150));
 
-                    profileDetails.openInWebURLk(context, "segment", "segment");
+                    profileDetails.openInWebURL(context, "segment");
                   },
                   borderRadius: BorderRadius.circular(20),
                   splashColor: theme.isDarkMode
@@ -2795,9 +2798,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                 ElevatedButton(
                   onPressed: () async {
                     await Future.delayed(const Duration(milliseconds: 150));
-                    // profileDetails.openInWebURL(context, "nominee");
-                      profileDetails.openInWebURLk(context, "nominee", "nominee");
-
+                    profileDetails.openInWebURL(context, "nominee");
                   },
                   style: ElevatedButton.styleFrom(
                       elevation: 0,
@@ -2834,7 +2835,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                       // Add delay for visual feedback
                       await Future.delayed(const Duration(milliseconds: 150));
 
-                      profileDetails.openInWebURLk(context, "nominee", "nominee");
+                      profileDetails.openInWebURL(context, "nominee");
                     },
                     borderRadius: BorderRadius.circular(20),
                     splashColor: theme.isDarkMode
@@ -2962,7 +2963,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
             onPressed: () async {
               await Future.delayed(const Duration(milliseconds: 150));
 
-              profileDetails.openInWebURLk(context, "closure", "closure");
+              profileDetails.openInWebURL(context, "closure");
             },
             style: ElevatedButton.styleFrom(
                 elevation: 0,
@@ -3100,32 +3101,32 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                         : colors.textSecondaryLight,
                   ),
                 ),
-                if (label == "Email" || label == "Mobile" || label == "Address")
-                  Material(
-                    color: Colors.transparent,
-                    shape: const CircleBorder(),
-                    child: InkWell(
-                      customBorder: const CircleBorder(),
-                      splashColor: theme.isDarkMode
-                          ? colors.splashColorDark
-                          : colors.splashColorLight,
-                      highlightColor: theme.isDarkMode
-                          ? colors.highlightDark
-                          : colors.highlightLight,
-                      onTap: () {
-                        ref.read(profileAllDetailsProvider).openInWebURLtest(
-                            context, "profile", label.toLowerCase());
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.all(4.0),
-                        child: Icon(
-                          Icons.edit_outlined,
-                          color: colors.iconColor,
-                          size: 20,
-                        ),
-                      ),
-                    ),
-                  ),
+                // if (label == "Email" || label == "Mobile" || label == "Address")
+                //   Material(
+                //     color: Colors.transparent,
+                //     shape: const CircleBorder(),
+                //     child: InkWell(
+                //       customBorder: const CircleBorder(),
+                //       splashColor: theme.isDarkMode
+                //           ? colors.splashColorDark
+                //           : colors.splashColorLight,
+                //       highlightColor: theme.isDarkMode
+                //           ? colors.highlightDark
+                //           : colors.highlightLight,
+                //       onTap: () {
+                //         ref.read(profileAllDetailsProvider).openInWebURLtest(
+                //             context, "profile", label.toLowerCase());
+                //       },
+                //       child: Padding(
+                //         padding: const EdgeInsets.all(4.0),
+                //         child: Icon(
+                //           Icons.edit_outlined,
+                //           color: colors.iconColor,
+                //           size: 20,
+                //         ),
+                //       ),
+                //     ),
+                //   ),
               ],
             ),
             SizedBox(

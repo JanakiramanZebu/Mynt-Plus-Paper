@@ -195,6 +195,7 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
             padding: const EdgeInsets.only(left: 8, right: 8,  bottom: 8),
             height: 35,
             child: TabBar(
+              // physics: const NeverScrollableScrollPhysics(),
               controller: _tabController, 
               tabAlignment: TabAlignment.start,
               isScrollable: true,
@@ -239,6 +240,7 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
           SizedBox(
             height: 450 ,
             child: TabBarView(
+              physics: const NeverScrollableScrollPhysics(),
               controller: _tabController,
               children: [
                 buildCollectionsTab(mfData, theme),

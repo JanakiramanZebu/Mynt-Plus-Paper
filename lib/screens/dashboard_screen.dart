@@ -60,10 +60,12 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
       if (mounted) {
         ref.read(stocksProvide).syncTabIndex(0);
       }
-      ProviderScope.containerOf(context).read(authProvider).setIposAPicalls(context);
+      ref
+          .read(marketWatchProvider)
+          .requestMWScrip(context: context, isSubscribe: true);
+      ref.read(authProvider).setIposAPicalls(context);
       ref.read(bondsProvider).fetchAllBonds();
     });
-
   }
 
   @override
@@ -82,7 +84,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
       // Initialize calendar provider
       final currentFY = reportsprovider.availableFinancialYears.first;
       if ((reportsprovider.hasDataForAllSegments)) {
-         reportsprovider.fetchDataForAllSegmentsIfEmpty(
+        reportsprovider.fetchDataForAllSegmentsIfEmpty(
           context,
           reportsprovider.startDate,
           reportsprovider.today,
@@ -166,8 +168,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(5),
                     color: theme.isDarkMode
-                                  ? colors.searchBgDark
-                                  : colors.searchBg,
+                        ? colors.searchBgDark
+                        : colors.searchBg,
                   ),
                   child: SizedBox(
                     height: 40,
@@ -322,6 +324,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
                   FocusScope.of(context).unfocus();
                   stocks.searchController.clear();
                   stocks.clearsearchlist(context);
+                  ref.read(ipoProvide).setSelectedTab(0);
                 },
                 tabAlignment: TabAlignment.start,
                 indicatorSize: TabBarIndicatorSize.tab,

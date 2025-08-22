@@ -63,9 +63,14 @@ class _BrokerageCalculatorScreenState
     final quantity = double.tryParse(_quantityController.text) ?? 0;
     final buyPrice = double.tryParse(_buyPriceController.text) ?? 0;
     final sellPrice = double.tryParse(_sellPriceController.text) ?? 0;
-    final brokerageRate = double.tryParse(_brokerageController.text) ?? 0;
+    final brokerageRa = double.tryParse(_brokerageController.text) ?? 0;
 
-    if (quantity <= 0 || buyPrice <= 0 || sellPrice <= 0) return;
+    
+double brokerageRate = (sellPrice == 0 || buyPrice == 0)
+    ? brokerageRa
+    : brokerageRa * 2;
+
+    // if (quantity <= 0 || buyPrice <= 0 || sellPrice <= 0) return;
 
     final turnover = (buyPrice + sellPrice) * quantity;
 
@@ -208,7 +213,7 @@ class _BrokerageCalculatorScreenState
                 _buildSegmentSelector(),
                 SizedBox(height: 16),
                 _buildResultsSection(),
-                _buildInfoSection(),
+                // _buildInfoSection(),
               ],
             ),
           ),
@@ -328,13 +333,29 @@ class _BrokerageCalculatorScreenState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        TextWidget.subText(
-          text: 'Brokerage Type',
-          theme: theme.isDarkMode,
-          color: theme.isDarkMode
-              ? colors.textSecondaryDark
-              : colors.textSecondaryLight,
-          fw: 3,
+        Row(
+          children: [
+            Expanded(
+              child: TextWidget.subText(
+                text: ' Brokerage',
+                theme: theme.isDarkMode,
+                color: theme.isDarkMode
+                    ? colors.textSecondaryDark
+                    : colors.textSecondaryLight,
+                fw: 3,
+              ),
+            ),
+            Expanded(
+              child: TextWidget.subText(
+                text: ' Brokerage Type',
+                theme: theme.isDarkMode,
+                color: theme.isDarkMode
+                    ? colors.textSecondaryDark
+                    : colors.textSecondaryLight,
+                fw: 3,
+              ),
+            ),
+          ],
         ),
         SizedBox(height: 8),
         Row(

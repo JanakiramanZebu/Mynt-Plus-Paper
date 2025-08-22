@@ -359,7 +359,7 @@ class _WatchlistsBottomSheetState
                           width: 15,
                         ),
                         Text(
-                          "LTP Perc.Change",
+                          "% LTP",
                           style: TextWidget.textStyle(
                               fontSize: 14,
                               color: currentSortType == "perchng"

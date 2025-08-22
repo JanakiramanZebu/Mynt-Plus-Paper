@@ -1016,9 +1016,8 @@ class _CABuybackState extends State<CABuyback> with TickerProviderStateMixin {
                                           'OFS') ...[
                                         Padding(
                                           padding: const EdgeInsets.only(
-                                              left: 16.0,
-                                              right: 16.0,
-                                              top: 2.0,
+                                              
+                                              top: 5.0,
                                               bottom: 4.0),
                                           child: Row(
                                             mainAxisAlignment:
@@ -1027,47 +1026,44 @@ class _CABuybackState extends State<CABuyback> with TickerProviderStateMixin {
                                               Row(
                                                 children: [
                                                   TextWidget.subText(
-                                                      align: TextAlign.right,
-                                                      text: "Size : ",
-                                                      color: Color(0xFF696969),
+                                                      text: "Size ",
+                                                      color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                                                       textOverflow:
                                                           TextOverflow.ellipsis,
                                                       theme: theme.isDarkMode,
-                                                      fw: 0),
+                                                      fw: 3),
                                                   TextWidget.subText(
-                                                      align: TextAlign.right,
+                                                      // align: TextAlign.right,
                                                       text:
                                                           " ${dataval?.issueSize}",
                                                       color: theme.isDarkMode
-                                                          ? Colors.white
-                                                          : Colors.black,
+                                                          ? colors.textSecondaryDark
+                                                          : colors.textSecondaryLight,
                                                       textOverflow:
                                                           TextOverflow.ellipsis,
                                                       theme: theme.isDarkMode,
-                                                      fw: 0),
+                                                      fw: 3),
                                                 ],
                                               ),
                                               Row(
                                                 children: [
                                                   TextWidget.subText(
-                                                      align: TextAlign.right,
-                                                      text: "Base Price : ",
-                                                      color: Color(0xFF696969),
+                                                      text: "Base Price ",
+                                                      color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                                                       textOverflow:
                                                           TextOverflow.ellipsis,
                                                       theme: theme.isDarkMode,
-                                                      fw: 0),
+                                                      fw: 3),
                                                   TextWidget.subText(
-                                                      align: TextAlign.right,
                                                       text:
                                                           " ${dataval?.baseprice}",
                                                       color: theme.isDarkMode
-                                                          ? Colors.white
-                                                          : Colors.black,
+                                                          ? colors.textSecondaryDark
+                                                          : colors.textSecondaryLight,
                                                       textOverflow:
                                                           TextOverflow.ellipsis,
                                                       theme: theme.isDarkMode,
-                                                      fw: 0),
+                                                      fw: 3),
                                                 ],
                                               ),
                                             ],
@@ -1075,10 +1071,8 @@ class _CABuybackState extends State<CABuyback> with TickerProviderStateMixin {
                                         ),
                                         Padding(
                                           padding: const EdgeInsets.only(
-                                              left: 16.0,
-                                              right: 16.0,
-                                              top: 8.0,
-                                              bottom: .0),
+                                             top: 5.0,
+                                              bottom: 4.0),
                                           child: Row(
                                             mainAxisAlignment:
                                                 MainAxisAlignment.spaceBetween,
@@ -1086,47 +1080,43 @@ class _CABuybackState extends State<CABuyback> with TickerProviderStateMixin {
                                               Row(
                                                 children: [
                                                   TextWidget.subText(
-                                                      align: TextAlign.right,
-                                                      text: "Open Date : ",
-                                                      color: Color(0xFF696969),
+                                                      text: "Open Date ",
+                                                      color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                                                       textOverflow:
                                                           TextOverflow.ellipsis,
                                                       theme: theme.isDarkMode,
-                                                      fw: 0),
+                                                      fw: 3),
                                                   TextWidget.subText(
-                                                      align: TextAlign.right,
                                                       text:
                                                           " ${dataval?.openondate}",
                                                       color: theme.isDarkMode
-                                                          ? Colors.white
-                                                          : Colors.black,
+                                                          ? colors.textSecondaryDark
+                                                          : colors.textSecondaryLight,
                                                       textOverflow:
                                                           TextOverflow.ellipsis,
                                                       theme: theme.isDarkMode,
-                                                      fw: 0),
+                                                      fw: 3),
                                                 ],
                                               ),
                                               Row(
                                                 children: [
                                                   TextWidget.subText(
-                                                      align: TextAlign.right,
-                                                      text: "Status : ",
-                                                      color: Color(0xFF696969),
+                                                      text: "Status ",
+                                                      color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                                                       textOverflow:
                                                           TextOverflow.ellipsis,
                                                       theme: theme.isDarkMode,
-                                                      fw: 0),
+                                                      fw: 3),
                                                   TextWidget.subText(
-                                                      align: TextAlign.right,
                                                       text:
                                                           " ${dataval?.orderstatus == 'null' ? '-' : dataval?.orderstatus}",
                                                       color: theme.isDarkMode
-                                                          ? Colors.white
-                                                          : Colors.black,
+                                                          ? colors.textSecondaryDark
+                                                          : colors.textSecondaryLight,
                                                       textOverflow:
                                                           TextOverflow.ellipsis,
                                                       theme: theme.isDarkMode,
-                                                      fw: 0),
+                                                      fw: 3),
                                                 ],
                                               ),
                                             ],
@@ -1307,15 +1297,15 @@ class _CABuybackState extends State<CABuyback> with TickerProviderStateMixin {
         return theme.isDarkMode ? colors.lossDark : colors.lossLight;
       case 'DLST':
       case 'DS':
-        return Colors.orange;
+        return theme.isDarkMode ? colors.lossDark : colors.lossLight;
       case 'TAKEOVER':
       case 'TO':
         return theme.isDarkMode ? colors.profitDark : colors.profitLight;
       case 'IS':
       case 'RS':
-        return Colors.yellow;
+        return theme.isDarkMode ? colors.lossDark : colors.lossLight;
       default:
-        return Colors.blue;
+        return theme.isDarkMode ? colors.lossDark : colors.lossLight;
     }
   }
 }

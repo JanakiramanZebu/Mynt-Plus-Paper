@@ -69,28 +69,34 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
     super.didChangeDependencies();
     // Ensure data is fetched when screen becomes active again
     final ledgerprovider = ref.read(ledgerProvider);
-    if (_isInitialized && !ledgerprovider.hasDataForSegment(ledgerprovider.selectedSegment)) {
-      // If no data exists for the current segment, fetch it
-      ledgerprovider.fetchcalenderpnldata(
-        context,
-        ledgerprovider.startDate,
-        ledgerprovider.today,
-        ledgerprovider.selectedSegment,
-      );
+    if (_isInitialized) {
+      if (!ledgerprovider.hasDataForSegment(ledgerprovider.selectedSegment)) {
+        ledgerprovider.fetchcalenderpnldata(
+          context,
+          ledgerprovider.startDate,
+          ledgerprovider.today,
+          ledgerprovider.selectedSegment,
+        );
+      } else {
+        ledgerprovider.refreshCurrentSegmentUI();
+      }
     }
   }
 
   // Method to refresh data when screen becomes visible
   void _refreshDataOnVisibility() {
     final ledgerprovider = ref.read(ledgerProvider);
-    if (_isInitialized && !ledgerprovider.hasDataForSegment(ledgerprovider.selectedSegment)) {
-      // If no data exists for the current segment, fetch it
-      ledgerprovider.fetchcalenderpnldata(
-        context,
-        ledgerprovider.startDate,
-        ledgerprovider.today,
-        ledgerprovider.selectedSegment,
-      );
+    if (_isInitialized) {
+      if (!ledgerprovider.hasDataForSegment(ledgerprovider.selectedSegment)) {
+        ledgerprovider.fetchcalenderpnldata(
+          context,
+          ledgerprovider.startDate,
+          ledgerprovider.today,
+          ledgerprovider.selectedSegment,
+        );
+      } else {
+        ledgerprovider.refreshCurrentSegmentUI();
+      }
     }
   }
 
@@ -137,14 +143,15 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
         Future<void> _refresh() async {
           try {
             await Future.delayed(const Duration(seconds: 0)); // simulate refresh delay
-            print("refresh ");
             
             // Always use the currently visible tab for refresh
             final currentTabIndex = _tabController.index;
             final currentSegment = ledgerprovider.availableSegments[currentTabIndex];
             
-            // Ensure provider is in sync
-            ledgerprovider.setSegment(currentSegment);
+            // Ensure provider is in sync (this will also rebuild UI if data exists)
+            if (ledgerprovider.selectedSegment != currentSegment) {
+              ledgerprovider.setSegment(currentSegment);
+            }
             
             // Get current date and calendar provider
             await ledgerprovider.getCurrentDate('else');
@@ -180,7 +187,15 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
           onPopInvokedWithResult: (didPop, result) {
             if (didPop) {
               // Don't clear data when leaving screen, just reset to default segment
-              ledgerprovider.setSegment("Equity");
+              // Use switchToSegment to ensure proper data handling
+              if (ledgerprovider.selectedSegment != "Equity") {
+                ledgerprovider.switchToSegment(
+                  context,
+                  "Equity",
+                  ledgerprovider.formattedStartDate,
+                  ledgerprovider.formattedendDate,
+                );
+              }
               ledgerprovider.setFinancialYear("");
               ledgerprovider.showProfiossSearch(false);
             }
@@ -208,7 +223,15 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                                                 : colors.highlightLight,
                       onTap: () {
                         // Don't clear data when leaving screen, just reset to default segment
-                        ledgerprovider.setSegment("Equity");
+                        // Use switchToSegment to ensure proper data handling
+                        if (ledgerprovider.selectedSegment != "Equity") {
+                          ledgerprovider.switchToSegment(
+                            context,
+                            "Equity",
+                            ledgerprovider.formattedStartDate,
+                            ledgerprovider.formattedendDate,
+                          );
+                        }
                         ledgerprovider.setFinancialYear("");
                         ledgerprovider.showProfiossSearch(false);
                         Navigator.pop(context);
