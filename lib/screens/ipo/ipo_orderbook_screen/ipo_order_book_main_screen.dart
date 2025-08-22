@@ -36,10 +36,10 @@ class _IpoOrderbookMainScreenState extends ConsumerState<IpoOrderbookMainScreen>
       final theme = ref.watch(themeProvider);
       final devHeight = MediaQuery.of(context).size.height;
 
-      return Scaffold(
-        body: TransparentLoaderScreen(
-          isLoading: ipo.myBidsload!,
-          child: _buildBody(ipo, theme, devHeight),
+      return TransparentLoaderScreen(
+            isLoading: ipo.myBidsload!,
+        child: Scaffold(
+          body: _buildBody(ipo, theme, devHeight),
         ),
       );
     });

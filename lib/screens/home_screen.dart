@@ -787,7 +787,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     portfolio.cancelTimer();
 
     // Unsubscribe from real-time data for other tabs
-    marketWatchList.requestMWScrip(context: context, isSubscribe: false);
     portfolio.requestWSHoldings(context: context, isSubscribe: false);
     orderProviderRef.requestWSOrderBook(context: context, isSubscribe: false);
     portfolio.requestWSPosition(context: context, isSubscribe: false);
@@ -815,9 +814,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           reportsprovider.startDate,
           reportsprovider.today,
         );
-        // Calendar PnL data will be fetched when needed
       }
-    // Immediately set the default year and segment to show correct data from cache
     reportsprovider.setFinancialYear(currentFY);
     reportsprovider.setSegment(reportsprovider.availableSegments.first);
     if (reportsprovider.ledgerAllData == null) {
@@ -1008,12 +1005,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             reportsprovider.taxpnleq == null) {
           await reportsprovider.getYearlistTaxpnl();
           reportsprovider.getCurrentDate('');
-          reportsprovider.fetchtaxpnleqdata(
-              context, reportsprovider.yearforTaxpnl);
+          // reportsprovider.fetchtaxpnleqdata(
+          //     context, reportsprovider.yearforTaxpnl);
 
-          reportsprovider.taxpnlExTabchange(0);
-          reportsprovider.chargesforeqtaxpnl(
-              context, reportsprovider.yearforTaxpnl);
+          // reportsprovider.taxpnlExTabchange(0);
+          // reportsprovider.chargesforeqtaxpnl(
+          //     context, reportsprovider.yearforTaxpnl);
         }
         if (reportsprovider.tradebookdata == null) {
           await reportsprovider.getCurrentDate('tradebook');

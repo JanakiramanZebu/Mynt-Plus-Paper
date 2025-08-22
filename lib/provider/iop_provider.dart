@@ -245,6 +245,12 @@ class IPOProvider extends DefaultChangeNotifier {
     }
   }
 
+  
+  void resetTabToDefault() {
+    _selectedTab = 0;
+    notifyListeners();
+  }
+
   String timemessage = "";
   String get timeMessage => timemessage;
 
@@ -1411,12 +1417,20 @@ class IPOProvider extends DefaultChangeNotifier {
       return _ipoOrderBookModel;
     } catch (e) {
       print("IPOs ORDERBOOK error:: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-          error(context, "Error in fetching IPO Order Book"));
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //     error(context, "Error in fetching IPO Order Book"));
       _myBidsload = false;
     } finally {
       _myBidsload = false;
     }
+  }
+
+  bool _singlepageapply = false;
+  bool get singlepageapply => _singlepageapply;
+  
+  void setSinglepageapply(bool value) {
+    _singlepageapply = value;
+    notifyListeners();
   }
 
   Future fetchupiidvalidation(BuildContext context, String upiId, String accno,
@@ -1434,6 +1448,9 @@ class IPOProvider extends DefaultChangeNotifier {
         setSelectedTab(2);
         Navigator.pop(context);
         Navigator.pop(context);
+        if(singlepageapply){
+          Navigator.pop(context);
+        }
         // Navigator.pushNamed(context, Routes.ipo, arguments: 2);
 
       } else {

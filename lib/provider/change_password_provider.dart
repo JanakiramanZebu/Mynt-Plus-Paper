@@ -231,7 +231,7 @@ class ChangePasswordProvider extends DefaultChangeNotifier {
       if (_forgetPasswordModel!.stat == "Ok") {
         ConstantName.sessCheck = true;
         ScaffoldMessenger.of(context).showSnackBar(successMessage(
-            context, 'New password is sent through Email/SMS'));
+            context, 'New Password has been sent to your registered Mobile Number /Email'));
 
         userIdController.text = '${_forgetPasswordModel!.clientid}';
 

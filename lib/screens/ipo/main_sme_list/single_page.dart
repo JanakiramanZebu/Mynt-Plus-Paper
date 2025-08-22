@@ -68,6 +68,7 @@ class _MainSmeSinglePageState extends State<MainSmeSinglePage> {
                 theme: theme,
                 singlepage: singlepage,
                 upi: upi,
+                ref: ref,
                 widget: widget,
                 scrollController: scrollController,
                 isExpanded: _isExpanded,
@@ -107,6 +108,7 @@ class _IPODetailsContainer extends StatelessWidget {
   final ScrollController scrollController;
   final bool isExpanded;
   final VoidCallback onExpandToggle;
+  final WidgetRef ref;
 
   const _IPODetailsContainer({
     required this.theme,
@@ -116,6 +118,7 @@ class _IPODetailsContainer extends StatelessWidget {
     required this.scrollController,
     required this.isExpanded,
     required this.onExpandToggle,
+    required this.ref,
   });
 
   @override
@@ -162,7 +165,7 @@ class _IPODetailsContainer extends StatelessWidget {
                   const SizedBox(height: 6),
                   // _buildStatusBanner(),
                   _buildCompanyHeader(),
-                  _buildApplyButton(context),
+                  _buildApplyButton(context, ref),
                   const SizedBox(height: 16),
                   Expanded(
             child: SingleChildScrollView(
@@ -338,7 +341,8 @@ class _IPODetailsContainer extends StatelessWidget {
     );
   }
 
-  Widget _buildApplyButton(BuildContext context) {
+  Widget _buildApplyButton(BuildContext context, WidgetRef ref) {
+    final ipo = ref.watch(ipoProvide);
     bool isApplyButtonEnabled = true;
     // if (singlepage.iposinglepage!.data['status'] == "CLOSED") {
     //   return const SizedBox();
@@ -360,6 +364,7 @@ class _IPODetailsContainer extends StatelessWidget {
           onPressed: () {
             if (isApplyButtonEnabled) {
               isApplyButtonEnabled = false;
+              ref.read(ipoProvide).setSinglepageapply(true);
               _handleApplyIPO(context);
             } else {
               return;

@@ -377,6 +377,7 @@ class _IPOListItem extends StatelessWidget {
             onTap: () {
               if (isApplyButtonEnabled) {
                 isApplyButtonEnabled = false;
+                ipoProvider.setSinglepageapply(false);
                 _onApplyPressed(context);
               } else {
                 return;

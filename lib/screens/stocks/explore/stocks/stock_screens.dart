@@ -165,78 +165,84 @@ class _StockScreenState extends ConsumerState<StockScreen>
               // const SizedBox(
               //   height: 16,
               // ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(left: 16, right: 12, top: 0, bottom: 0),
+                    child: Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Container(
-                            decoration: BoxDecoration(
-                              color: theme.isDarkMode
-                              ? colors.darkGrey
-                              : const Color(0xffF1F3F8),
-                              borderRadius: BorderRadius.circular(30),
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: SvgPicture.asset(
-                                "assets/icon/briefcase.svg",
-                                width: 14,
-                                height: 14,
-                                color: theme.isDarkMode ? colors.textSecondaryDark   : colors.primaryLight,
-                              ),
-                            )),
-                        const SizedBox(width: 12),
-                        SizedBox(
-                          width: MediaQuery.of(context).size.width * 0.8,
-                          child: Row(
-                            mainAxisAlignment:
-                                MainAxisAlignment.spaceBetween,
-                            children: [
-                              TextWidget.subText(
-                                text: "Stocks Portfolio",
-                                theme: false,
-                                color: theme.isDarkMode
-                                    ? colors.colorWhite
-                                    : colors.colorBlack,
-                                fw: 0,
-                              ),
-                              InkWell(
-                                canRequestFocus: false,
-                                onTap: () async {
-                                  Future.delayed(const Duration(milliseconds: 150), () {
-                                    trancation.changebool(true);
-                                    Navigator.pushNamed(
-                                        context, Routes.fundscreen,
-                                        arguments: trancation);
-                                  });
-                                },
+                        Row(
+                          children: [
+                            Container(
+                                decoration: BoxDecoration(
+                                  color: theme.isDarkMode
+                                  ? colors.darkGrey
+                                  : const Color(0xffF1F3F8),
+                                  borderRadius: BorderRadius.circular(30),
+                                ),
                                 child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 8, vertical: 4),
-                                  child: TextWidget.subText(
-                                    text: "Add Money",
-                                    theme: false,
-                                    color: theme.isDarkMode
-                                        ? colors.primaryDark
-                                        : colors.primaryLight,
-                                    fw: 2,
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: SvgPicture.asset(
+                                    "assets/icon/briefcase.svg",
+                                    width: 14,
+                                    height: 14,
+                                    color: theme.isDarkMode ? colors.textSecondaryDark   : colors.primaryLight,
                                   ),
+                                )),
+                        const SizedBox(width: 12),
+                                TextWidget.subText(
+                              text: "Stocks Portfolio",
+                              theme: false,
+                              color: theme.isDarkMode
+                                  ? colors.colorWhite
+                                  : colors.colorBlack,
+                              fw: 0,
+                            ),
+                          ],
+                        ),
+                        // const SizedBox(width: 12),
+                        Row(
+                          mainAxisAlignment:
+                              MainAxisAlignment.end,
+                          children: [
+                            InkWell(
+                              canRequestFocus: false,
+                              onTap: () async {
+                                Future.delayed(const Duration(milliseconds: 150), () {
+                                  trancation.changebool(true);
+                                  Navigator.pushNamed(
+                                      context, Routes.fundscreen,
+                                      arguments: trancation);
+                                });
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 4),
+                                child: TextWidget.subText(
+                                  text: "Add Money",
+                                  theme: false,
+                                  color: theme.isDarkMode
+                                      ? colors.primaryDark
+                                      : colors.primaryLight,
+                                  fw: 2,
                                 ),
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                    const SizedBox(height: 12),
-
-                    if (portfolio.holdingsModel != null &&
-                                portfolio.holdingsModel!.isNotEmpty)
-                              Material(
+                  ),
+                  const SizedBox(height: 12),
+              
+                  // if (portfolio.holdingsModel != null &&
+                  //             portfolio.holdingsModel!.isNotEmpty)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              child: Material(
                                 color: Colors.transparent,
                                 shape: const RoundedRectangleBorder(),
                                 child: InkWell(
@@ -384,51 +390,51 @@ class _StockScreenState extends ConsumerState<StockScreen>
                                   ),
                                 ),
                               ),
-
-                    const SizedBox(height: 16),
-
-                    // Center(
-                    //   child: ElevatedButton(
-                    //     onPressed: () async {},
-                    //     style: ElevatedButton.styleFrom(
-                    //       padding: const EdgeInsets.symmetric(vertical: 8),
-                    //       backgroundColor: Colors.white,
-                    //       elevation: 0,
-                    //       // side: const BorderSide(
-                    //       //     color: Color(0xFF87A1DD), width: 1.5),
-                    //       shape: RoundedRectangleBorder(
-                    //         borderRadius: BorderRadius.circular(24),
-                    //       ),
-                    //     ),
-                    //     child: Row(
-                    //       mainAxisSize: MainAxisSize.max,
-                    //       mainAxisAlignment: MainAxisAlignment.center,
-                    //       children: [
-                    //         SvgPicture.asset(
-                    //           'assets/explore/firefox.svg',
-                    //           width: 16,
-                    //           height: 16,
-                    //         ),
-                    //         const SizedBox(width: 8),
-                    //         const Text(
-                    //           "View my portfolio",
-                    //           style: TextStyle(
-                    //               color: Color(0xFF4069C9),
-                    //               fontWeight: FontWeight.w600,
-                    //               fontSize: 14),
-                    //         ),
-                    //         const Icon(
-                    //           Icons.expand_more,
-                    //           color: Color(0xFF4069C9),
-                    //           size: 28,
-                    //           weight: 7,
-                    //         ),
-                    //       ],
-                    //     ),
-                    //   ),
-                    // ),
-                  ],
-                ),
+                            ),
+              
+                  const SizedBox(height: 16),
+              
+                  // Center(
+                  //   child: ElevatedButton(
+                  //     onPressed: () async {},
+                  //     style: ElevatedButton.styleFrom(
+                  //       padding: const EdgeInsets.symmetric(vertical: 8),
+                  //       backgroundColor: Colors.white,
+                  //       elevation: 0,
+                  //       // side: const BorderSide(
+                  //       //     color: Color(0xFF87A1DD), width: 1.5),
+                  //       shape: RoundedRectangleBorder(
+                  //         borderRadius: BorderRadius.circular(24),
+                  //       ),
+                  //     ),
+                  //     child: Row(
+                  //       mainAxisSize: MainAxisSize.max,
+                  //       mainAxisAlignment: MainAxisAlignment.center,
+                  //       children: [
+                  //         SvgPicture.asset(
+                  //           'assets/explore/firefox.svg',
+                  //           width: 16,
+                  //           height: 16,
+                  //         ),
+                  //         const SizedBox(width: 8),
+                  //         const Text(
+                  //           "View my portfolio",
+                  //           style: TextStyle(
+                  //               color: Color(0xFF4069C9),
+                  //               fontWeight: FontWeight.w600,
+                  //               fontSize: 14),
+                  //         ),
+                  //         const Icon(
+                  //           Icons.expand_more,
+                  //           color: Color(0xFF4069C9),
+                  //           size: 28,
+                  //           weight: 7,
+                  //         ),
+                  //       ],
+                  //     ),
+                  //   ),
+                  // ),
+                ],
               ),
 
               Padding(

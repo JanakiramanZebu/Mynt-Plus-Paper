@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../../locator/constant.dart';
+import '../../../provider/ledger_provider.dart';
 import '../../../provider/portfolio_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../res/global_state_text.dart';
@@ -24,23 +25,24 @@ class _EdisWebviewState extends ConsumerState<EdisWebview> {
   Widget build(BuildContext context) {
     final theme = ref.read(themeProvider);
     final portfolioProviderRef = ref.read(portfolioProvider);
-    
+    final ledgerprovider = ref.read(ledgerProvider);
     return PopScope(
-      canPop: false, // Prevent default back navigation so we can handle it ourselves
+      canPop:
+          false, // Prevent default back navigation so we can handle it ourselves
       onPopInvokedWithResult: (didPop, result) async {
         // If didPop is true, the system already handled the pop - shouldn't happen with canPop: false
         if (didPop) return;
-        
+
         // Use a local flag to track navigation state
         bool isNavigating = false;
-        
+
         try {
           if (isNavigating) return; // Prevent multiple navigation attempts
           isNavigating = true;
-          
+
           // First refresh the holdings data
           await portfolioProviderRef.fetchHoldings(context, "Refresh");
-          
+          ledgerprovider.edischeckfunction('fromedit');
           // Then navigate back if the context is still valid
           if (context.mounted) {
             Navigator.of(context).pop();
@@ -65,8 +67,9 @@ class _EdisWebviewState extends ConsumerState<EdisWebview> {
                     // Use a safer approach for AppBar back button too
                     try {
                       // First refresh the holdings data
-                      await portfolioProviderRef.fetchHoldings(context, "Refresh");
-                      
+                      await portfolioProviderRef.fetchHoldings(
+                          context, "Refresh");
+
                       // Then navigate back if the context is still mounted
                       if (context.mounted) {
                         Navigator.of(context).pop();

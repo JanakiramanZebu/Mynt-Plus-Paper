@@ -20,12 +20,24 @@ mixin IPOApi on ApiCore {
       final res = await apiClient.post(uri,
           headers: funddefaultHeaders,
           body: (jsonEncode({"client_id": "${prefs.clientId}"})));
-      final List body = jsonDecode(res.body);
-      // log("IPO OrderBook ++++++++++++ $body");
-      return body.map((e) {
-        //  print("MAP ERROR $e");
-        return IpoOrderBookModel.fromJson(e);
-      }).toList();
+      
+      final dynamic responseBody = jsonDecode(res.body);
+      
+      if (responseBody is Map<String, dynamic> && responseBody.containsKey('msg')) {
+        if (responseBody['msg'] == 'orders not found') {
+          return [];
+        }
+        throw Exception(responseBody['msg']);
+      }
+      
+      if (responseBody is List) {
+        return responseBody.map((e) {
+          return IpoOrderBookModel.fromJson(e);
+        }).toList();
+      }
+      
+      throw Exception('Unexpected response format: ${responseBody.runtimeType}');
+      
     } catch (e) {
       //  log("SDSDSDSD $e");
       rethrow;

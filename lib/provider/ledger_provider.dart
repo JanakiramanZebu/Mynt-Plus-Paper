@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 import 'dart:ffi';
 
 import 'package:flutter/material.dart';
@@ -1104,7 +1105,6 @@ class LDProvider extends DefaultChangeNotifier {
   Future fetchholdingsData(String from, BuildContext context) async {
     try {
       _holdingsloading = true;
-      _cpactionloader = true;
 
       notifyListeners();
 
@@ -1115,7 +1115,6 @@ class LDProvider extends DefaultChangeNotifier {
 
       print("${_holdingsAllData}rererere");
     } catch (e) {
-      _cpactionloader = false;
       _holdingsloading = false;
       // ScaffoldMessenger.of(context).showSnackBar(
       //   warningMessage(context, 'Error occurred try again later'),
@@ -1137,9 +1136,9 @@ class LDProvider extends DefaultChangeNotifier {
       // print(
       //     "${_cpactiondata?.corporateAction} ........................._cpactiondata");
 
-      if (_cpactiondata != null) {
-        await hodlingshavecheckfunction();
-      }
+      // if (_cpactiondata != null) {
+      await hodlingshavecheckfunction();
+      // }
 
       //  _ledgerAllData = new LedgerModelData();
 
@@ -1256,6 +1255,8 @@ class LDProvider extends DefaultChangeNotifier {
       String appno) async {
     try {
       _cpactionloader = true;
+      Navigator.pop(context); // Pop after snackbar
+
       notifyListeners();
 
       // Pop only after API result to avoid context issues
@@ -1289,7 +1290,6 @@ class LDProvider extends DefaultChangeNotifier {
           );
         }
       }
-      Navigator.pop(context); // Pop after snackbar
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -1582,27 +1582,27 @@ class LDProvider extends DefaultChangeNotifier {
         _taxpnlloading = true;
         notifyListeners();
 
-        _pdfresponse =
-            await api.getpdffileapitaxpnl(eq, dercomcur, eqcharge, year);
-        if (_pdfresponse == 'File Sent to mail successfully') {
-          if (_istaxpnlclosed == false) {
-            Navigator.pop(context);
-          }
+        // _pdfresponse =
+             api.getpdffileapitaxpnl(eq, dercomcur, eqcharge, year);
+        // if (_pdfresponse == 'File Sent to mail successfully') {
+          // if (_istaxpnlclosed == false) {
+          //   Navigator.pop(context);
+          // }
 
-          Future.delayed(Duration(seconds: 1), () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              successMessage(context, 'File sent to mail successfully'),
-            );
-          });
-          _taxpnlloading = false;
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            warningMessage(context, '$_pdfresponse'),
-          );
-          Navigator.pop(context);
-          _taxpnlloading = false;
-          throw _pdfresponse;
-        }
+          // Future.delayed(Duration(seconds: 1), () {
+          //   ScaffoldMessenger.of(context).showSnackBar(
+          //     successMessage(context, 'File sent to mail successfully'),
+          //   );
+          // });
+          // _taxpnlloading = false;
+        // } else {
+          // ScaffoldMessenger.of(context).showSnackBar(
+          //   warningMessage(context, '$_pdfresponse'),
+          // );
+          // Navigator.pop(context);
+        //   _taxpnlloading = false;
+        //   throw _pdfresponse;
+        // }
 
         _taxpnlloading = false;
         notifyListeners();
@@ -2676,7 +2676,7 @@ class LDProvider extends DefaultChangeNotifier {
     final priceText = selectedpriceforcpaction.text.trim();
     // final balanceDouble =
     //     balance.contains('.') ? double.parse(balance) : int.parse(balance);
-    final parsedPrice = price != '' ? int.parse(priceText) : 0;
+    final parsedPrice = price != '' ? double.parse(priceText) : 0;
 
     _requiredamountforofs =
         (parsedPrice * int.parse(selectedqtyforcpaction.text)).toString();
@@ -2986,7 +2986,17 @@ class LDProvider extends DefaultChangeNotifier {
   }
 
   void setSegment(String seg) {
+    if (selectedSegment == seg) {
+      return; // Already on this segment
+    }
+    
     selectedSegment = seg;
+    
+    // If we have data for this segment, rebuild the UI
+    if (hasDataForSegment(seg)) {
+      _rebuildGroupedAndHeatmapForSegment(seg);
+    } 
+    
     notifyListeners();
   }
 
@@ -3446,15 +3456,15 @@ class LDProvider extends DefaultChangeNotifier {
     List<FullStat> filteredList = [];
 
     // If no filters selected, show no data
-    if (filters.isEmpty) {
-      _ledgerAllData!.fullStat = [];
-      _ledgerAllData!.openingBalance = '0.00';
-      _ledgerAllData!.crAmt = '0.00';
-      _ledgerAllData!.drAmt = '0.00';
-      _ledgerAllData!.closingBalance = '0.00';
-      notifyListeners();
-      return;
-    }
+    // if (filters.isEmpty) {
+    //   _ledgerAllData!.fullStat = [];
+    //   _ledgerAllData!.openingBalance = '0.00';
+    //   _ledgerAllData!.crAmt = '0.00';
+    //   _ledgerAllData!.drAmt = '0.00';
+    //   _ledgerAllData!.closingBalance = '0.00';
+    //   notifyListeners();
+    //   return;
+    // }
 
     bool billMarginSelected = filters.contains(SingingCharacter.billmargin);
     // Count only the type filters (not billmargin)
@@ -3465,6 +3475,15 @@ class LDProvider extends DefaultChangeNotifier {
 
     bool matchesType(FullStat o) {
       return filters.any((filter) {
+        if (filter != SingingCharacter.billmargin && allTypesSelected) {
+          // This block runs for anything EXCEPT billmargin
+          // Add whatever condition you want here
+          return o.tYPE == 'Opening Balance' ||
+              o.tYPE == 'Reciept' ||
+              o.tYPE == 'Payment' ||
+              o.tYPE == 'Journal' ||
+              o.tYPE == 'Bill';
+        }
         switch (filter) {
           case SingingCharacter.receipt:
             return o.tYPE == 'Reciept';
@@ -3490,6 +3509,9 @@ class LDProvider extends DefaultChangeNotifier {
       filteredList = originalList
           .where((o) => o.tYPE != 'Bill-Margin' && matchesType(o))
           .toList();
+    } else if (typeFilterCount == 0 && !billMarginSelected) {
+      filteredList =
+          originalList.where((o) => o.tYPE == 'Opening Balance').toList();
     }
     // else if (allTypesSelected && !billMarginSelected) {
     //   // All types, but not Bill Margin: show all non-margin entries
@@ -3644,9 +3666,7 @@ class LDProvider extends DefaultChangeNotifier {
 
   // Switch to a different segment, fetching data only if needed
   Future switchToSegment(BuildContext context, String segment, String from, String to) async {
-    print("switchToSegment called: current=$selectedSegment, switching to=$segment");
     if (selectedSegment == segment) {
-      print("Already on segment $segment, returning");
       return; // Already on this segment
     }
     
@@ -3656,47 +3676,41 @@ class LDProvider extends DefaultChangeNotifier {
     
     try {
       selectedSegment = segment;
-      print("Updated selectedSegment to: $segment");
       
-      // If we don't have data for this segment, fetch it
       if (!hasDataForSegment(segment)) {
-        print("No data for segment $segment, fetching...");
         await fetchcalenderpnldata(context, from, to, segment);
       } else {
-        print("Data exists for segment $segment, rebuilding UI...");
-        // Just rebuild UI from existing data
         _rebuildGroupedAndHeatmapForSegment(segment);
+        
+        final currentSegmentData = _calenderpnlDataBySegment[segment];
+        if (grouped.isEmpty && currentSegmentData != null && currentSegmentData.data != null && currentSegmentData.data!.isNotEmpty) {
+          _rebuildGroupedAndHeatmapForSegment(segment);
+        }
       }
       
-      // Force a UI refresh to ensure all components are updated
       WidgetsBinding.instance.addPostFrameCallback((_) {
         notifyListeners();
       });
       
     } finally {
-      // Always clear loading state
       setCalendarPnlLoadingForSegment(segment, false);
       notifyListeners();
-      print("switchToSegment completed for segment: $segment");
     }
   }
 
   // Rebuild grouped data and heatmap for a specific segment without refetching
   void _rebuildGroupedAndHeatmapForSegment(String segment) {
-    print("_rebuildGroupedAndHeatmapForSegment called for segment: $segment");
     final segmentData = _calenderpnlDataBySegment[segment];
     if (segmentData == null) {
-      // If no data exists, clear everything
-      print("No data found for segment: $segment, clearing grouped data");
       grouped = {};
       _originalGrouped = {};
       _heatmapData = {};
+      monthlyPnL.clear();
+      notifyListeners();
       return;
     }
     
-    print("Found data for segment: $segment, data count: ${segmentData.data?.length ?? 0}, journal count: ${segmentData.journal?.length ?? 0}");
     
-    // Clear and rebuild grouped data and heatmap
     grouped = {};
     _originalGrouped = {};
     _heatmapData = {};
@@ -3725,7 +3739,6 @@ class LDProvider extends DefaultChangeNotifier {
     
     // Process trade data for grouping
     if (segmentData.data != null && segmentData.data!.isNotEmpty) {
-      print("Processing ${segmentData.data!.length} trade records for segment $segment");
       for (var trade in segmentData.data!) {
         if (trade.tRADEDATE != null) {
           try {
@@ -3739,13 +3752,9 @@ class LDProvider extends DefaultChangeNotifier {
           } catch (e) {
             print("Error parsing trade date: ${trade.tRADEDATE} - $e");
           }
-        } else {
-          print("Trade record has no TRADEDATE: ${trade.toString()}");
-        }
+          }
       }
-    } else {
-      print("No trade data found for segment $segment");
-    }
+      }
     
     // Store original grouped data for filtering
     _originalGrouped = Map.from(grouped);
@@ -3753,21 +3762,15 @@ class LDProvider extends DefaultChangeNotifier {
     // Recalculate monthly P&L based on the new heatmap data
     if (_heatmapData.isNotEmpty) {
       monthlyPnL = _aggregateMonthlyPnL(_heatmapData, startTaxDate, endTaxDate);
-      print("Recalculated monthly P&L for segment $segment: ${monthlyPnL.length} months");
     } else {
       monthlyPnL.clear();
-      print("No heatmap data for segment $segment, cleared monthly P&L");
     }
     
-    print("After processing segment $segment: grouped has ${grouped.length} dates, heatmap has ${_heatmapData.length} entries");
     if (grouped.isNotEmpty) {
-      print("Sample grouped dates: ${grouped.keys.take(3).toList()}");
-      // Validate that the grouped data contains the correct segment data
+      
       for (var dateKey in grouped.keys.take(3)) {
         final tradesForDate = grouped[dateKey]!;
-        print("Date $dateKey has ${tradesForDate.length} trades");
         if (tradesForDate.isNotEmpty) {
-          print("Sample trade: ${tradesForDate.first.toString()}");
         }
       }
     }
@@ -3776,11 +3779,16 @@ class LDProvider extends DefaultChangeNotifier {
     if (grouped.isEmpty) {
       grouped = {};
       _originalGrouped = {};
-      print("No grouped data processed for segment $segment");
     }
     
-    // Final validation
-    print("Final state for segment $segment: grouped=${grouped.length}, originalGrouped=${_originalGrouped.length}, heatmap=${_heatmapData.length}");
+    notifyListeners();
+  }
+
+  // Method to refresh the current segment's UI data without refetching
+  void refreshCurrentSegmentUI() {
+    if (hasDataForSegment(selectedSegment)) {
+      _rebuildGroupedAndHeatmapForSegment(selectedSegment);
+    } 
   }
 
   // Method to clear Calendar PnL data when switching accounts

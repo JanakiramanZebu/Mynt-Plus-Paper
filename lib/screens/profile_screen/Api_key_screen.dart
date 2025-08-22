@@ -118,77 +118,71 @@ class _TotpScreenState extends ConsumerState<ApiKeyScreen> {
                   //         : colors.textSecondaryLight,
                   //     fw: 0),
                   apikeys.apikeyres!.apistatus == "NOT_PRESENT"
-                      ? Row(
+                      ? Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            SizedBox(
-                              width: 400, // Set a fixed width for the content
-                              child: Column(
-                                children: [
-                                  Column(
-                                    children: [
-                                      Container(
-                                        width: 400,
-                                        child: TextWidget.subText(
-                                          maxLines: 2,
-                                          textOverflow: TextOverflow.ellipsis,
-                                          text:
-                                              "It looks like you haven't created an API key yet. Click below to generate your first key and get started.",
+                            Column(
+                              children: [
+                                Column(
+                                  children: [
+                                    TextWidget.subText(
+                                      maxLines: 2,
+                                      textOverflow: TextOverflow.ellipsis,
+                                      text:
+                                          "It looks like you haven't created an API key yet. Click below to generate your first key and get started.",
+                                      theme: false,
+                                      color: theme.isDarkMode
+                                          ? colors.textPrimaryDark
+                                          : colors.textPrimaryLight,
+                                    ),
+                                    const SizedBox(height: 8.0),
+                                  ],
+                                ),
+                                const SizedBox(height: 16.0),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8.0),
+                                  child: SizedBox(
+                                    width: double.infinity,
+                                    child: ElevatedButton(
+                                      onPressed: () async {
+                                        await ref
+                                            .read(apikeyprovider)
+                                            .fetchgenerateapikey(
+                                                context, "1 year");
+                                        await ref
+                                            .read(apikeyprovider)
+                                            .fetchapikey(context);
+                                        Navigator.pop(context);
+                                        Clipboard.setData(ClipboardData(
+                                            text:
+                                                "${apikeys.apikeyres!.apikey}"));
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(successMessage(
+                                                context,
+                                                'API Key has been ${apikeys.generateApikey?.status} and copied'));
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        elevation: 0,
+                                        minimumSize:
+                                            const Size(double.infinity, 45),
+                                        backgroundColor: theme.isDarkMode
+                                            ? colors.primaryDark
+                                            : colors.primaryLight,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(4),
+                                        ),
+                                      ),
+                                      child: TextWidget.subText(
+                                          text: "Generate API Key",
                                           theme: false,
-                                          color: theme.isDarkMode
-                                              ? colors.textPrimaryDark
-                                              : colors.textPrimaryLight,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 8.0),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 16.0),
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8.0),
-                                    child: SizedBox(
-                                      width: double.infinity,
-                                      child: ElevatedButton(
-                                        onPressed: () async {
-                                          await ref
-                                              .read(apikeyprovider)
-                                              .fetchgenerateapikey(
-                                                  context, "1 year");
-                                          await ref
-                                              .read(apikeyprovider)
-                                              .fetchapikey(context);
-                                          Navigator.pop(context);
-                                          Clipboard.setData(ClipboardData(
-                                              text:
-                                                  "${apikeys.apikeyres!.apikey}"));
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(successMessage(
-                                                  context,
-                                                  'API Key has been ${apikeys.generateApikey?.status} and copied'));
-                                        },
-                                        style: ElevatedButton.styleFrom(
-                                          elevation: 0,
-                                          minimumSize:
-                                              const Size(double.infinity, 45),
-                                          backgroundColor: theme.isDarkMode
-                                              ? colors.primaryDark
-                                              : colors.primaryLight,
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(4),
-                                          ),
-                                        ),
-                                        child: TextWidget.subText(
-                                            text: "Generate API Key",
-                                            theme: false,
-                                            color: colors.colorWhite,
-                                            fw: 2),
-                                      ),
+                                          color: colors.colorWhite,
+                                          fw: 2),
                                     ),
                                   ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
                           ],
                         )
@@ -224,13 +218,13 @@ class _TotpScreenState extends ConsumerState<ApiKeyScreen> {
                                         decoration: BoxDecoration(
                                           color: apikeys.apikeyres!.apistatus ==
                                                   "VALID"
-                                              ? theme.isDarkMode ? colors.profitDark.withOpacity(0.4) : colors.profitLight.withOpacity(0.4)
-                                              : theme.isDarkMode ? colors.lossDark.withOpacity(0.4) : colors.lossLight.withOpacity(0.4),
+                                              ? theme.isDarkMode ? colors.profitDark.withOpacity(0.2) : colors.profitLight.withOpacity(0.2)
+                                              : theme.isDarkMode ? colors.lossDark.withOpacity(0.2) : colors.lossLight.withOpacity(0.2),
                                           borderRadius: BorderRadius.circular(4),
                                         ),
                                         child: Padding(
                                           padding: const EdgeInsets.all(4.0),
-                                          child: TextWidget.captionText(
+                                          child: TextWidget.paraText(
                                             text:
                                                 "${apikeys.apikeyres!.apistatus}",
                                             theme: false,

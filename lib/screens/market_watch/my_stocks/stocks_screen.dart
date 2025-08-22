@@ -216,7 +216,7 @@ class _StocksScreenState extends State<StocksScreen> {
                                           TextWidget.paraText(
                                             text:
                                                 "${holdingProvide[index].currentQty}",
-                                            color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                                            color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                                             theme: theme.isDarkMode,
                                             fw: 0,
                                           ),
