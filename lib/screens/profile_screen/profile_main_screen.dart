@@ -353,15 +353,24 @@ class UserAccountScreen extends ConsumerWidget {
                         break;
                       case 'Corporate Actions':
                         // ledgerdate.fetchposition(context);
+                        Navigator.pushNamed(context, Routes.cabuyback,
+                            arguments: "DDDDD");
                         if (reportsprovider.holdingsAllData == null ||
                             reportsprovider.cpactiondata == null) {
-                          await reportsprovider.getCurrentDate('else');
-                          Navigator.pushNamed(context, Routes.cabuyback,
-                              arguments: "DDDDD");
-                          await reportsprovider.fetchholdingsData(
-                              reportsprovider.today, context);
-                          if (reportsprovider.cpactiondata == null) {
-                            reportsprovider.fetchcpactiondata(context);
+                          if (reportsprovider.cpactionloader != true) {
+                            if (reportsprovider.cpactiondata == null) {
+                              reportsprovider.fetchcpactiondata(context);
+                            }
+                          }
+                          if (reportsprovider.holdingsloading != true) {
+                            await reportsprovider.getCurrentDate('else');
+                            if (reportsprovider.holdingsAllData == null) {
+                              await reportsprovider.fetchholdingsData(
+                                  reportsprovider.today, context);
+                            }
+                          } else {
+                            Navigator.pushNamed(context, Routes.cabuyback,
+                                arguments: "DDDDD");
                           }
                         } else {
                           Navigator.pushNamed(context, Routes.cabuyback,

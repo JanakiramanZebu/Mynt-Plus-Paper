@@ -1105,7 +1105,6 @@ class LDProvider extends DefaultChangeNotifier {
   Future fetchholdingsData(String from, BuildContext context) async {
     try {
       _holdingsloading = true;
-      _cpactionloader = true;
 
       notifyListeners();
 
@@ -1116,7 +1115,6 @@ class LDProvider extends DefaultChangeNotifier {
 
       print("${_holdingsAllData}rererere");
     } catch (e) {
-      _cpactionloader = false;
       _holdingsloading = false;
       // ScaffoldMessenger.of(context).showSnackBar(
       //   warningMessage(context, 'Error occurred try again later'),
@@ -1138,9 +1136,9 @@ class LDProvider extends DefaultChangeNotifier {
       // print(
       //     "${_cpactiondata?.corporateAction} ........................._cpactiondata");
 
-      if (_cpactiondata != null) {
-        await hodlingshavecheckfunction();
-      }
+      // if (_cpactiondata != null) {
+      await hodlingshavecheckfunction();
+      // }
 
       //  _ledgerAllData = new LedgerModelData();
 
@@ -1257,6 +1255,8 @@ class LDProvider extends DefaultChangeNotifier {
       String appno) async {
     try {
       _cpactionloader = true;
+      Navigator.pop(context); // Pop after snackbar
+
       notifyListeners();
 
       // Pop only after API result to avoid context issues
@@ -1290,7 +1290,6 @@ class LDProvider extends DefaultChangeNotifier {
           );
         }
       }
-      Navigator.pop(context); // Pop after snackbar
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -2686,7 +2685,7 @@ class LDProvider extends DefaultChangeNotifier {
     final priceText = selectedpriceforcpaction.text.trim();
     // final balanceDouble =
     //     balance.contains('.') ? double.parse(balance) : int.parse(balance);
-    final parsedPrice = price != '' ? int.parse(priceText) : 0;
+    final parsedPrice = price != '' ? double.parse(priceText) : 0;
 
     _requiredamountforofs =
         (parsedPrice * int.parse(selectedqtyforcpaction.text)).toString();
@@ -3456,15 +3455,15 @@ class LDProvider extends DefaultChangeNotifier {
     List<FullStat> filteredList = [];
 
     // If no filters selected, show no data
-    if (filters.isEmpty) {
-      _ledgerAllData!.fullStat = [];
-      _ledgerAllData!.openingBalance = '0.00';
-      _ledgerAllData!.crAmt = '0.00';
-      _ledgerAllData!.drAmt = '0.00';
-      _ledgerAllData!.closingBalance = '0.00';
-      notifyListeners();
-      return;
-    }
+    // if (filters.isEmpty) {
+    //   _ledgerAllData!.fullStat = [];
+    //   _ledgerAllData!.openingBalance = '0.00';
+    //   _ledgerAllData!.crAmt = '0.00';
+    //   _ledgerAllData!.drAmt = '0.00';
+    //   _ledgerAllData!.closingBalance = '0.00';
+    //   notifyListeners();
+    //   return;
+    // }
 
     bool billMarginSelected = filters.contains(SingingCharacter.billmargin);
     // Count only the type filters (not billmargin)
@@ -3475,6 +3474,15 @@ class LDProvider extends DefaultChangeNotifier {
 
     bool matchesType(FullStat o) {
       return filters.any((filter) {
+        if (filter != SingingCharacter.billmargin && allTypesSelected) {
+          // This block runs for anything EXCEPT billmargin
+          // Add whatever condition you want here
+          return o.tYPE == 'Opening Balance' ||
+              o.tYPE == 'Reciept' ||
+              o.tYPE == 'Payment' ||
+              o.tYPE == 'Journal' ||
+              o.tYPE == 'Bill';
+        }
         switch (filter) {
           case SingingCharacter.receipt:
             return o.tYPE == 'Reciept';
@@ -3500,6 +3508,9 @@ class LDProvider extends DefaultChangeNotifier {
       filteredList = originalList
           .where((o) => o.tYPE != 'Bill-Margin' && matchesType(o))
           .toList();
+    } else if (typeFilterCount == 0 && !billMarginSelected) {
+      filteredList =
+          originalList.where((o) => o.tYPE == 'Opening Balance').toList();
     }
     // else if (allTypesSelected && !billMarginSelected) {
     //   // All types, but not Bill Margin: show all non-margin entries
