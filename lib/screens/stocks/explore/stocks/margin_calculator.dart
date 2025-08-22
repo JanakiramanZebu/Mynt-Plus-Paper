@@ -844,7 +844,7 @@ class _MarginCalculatorScreenState
     // Validate contract selection
     if (_bottomSheetSelectedContract == null) {
       setBottomSheetState(() {
-        _errorMessage = "Please select a contract";
+        _errorMessage = "Select a contract";
       });
       hasErrors = true;
     }
@@ -852,7 +852,7 @@ class _MarginCalculatorScreenState
     // Validate quantity
     if (_bottomSheetQuantity <= 0) {
       setBottomSheetState(() {
-        _errorMessageqty = "Please enter a valid quantity";
+        _errorMessageqty = "Enter a valid quantity";
       });
       hasErrors = true;
     }

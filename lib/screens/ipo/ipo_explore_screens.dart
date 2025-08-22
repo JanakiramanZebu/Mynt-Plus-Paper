@@ -23,21 +23,9 @@ class IpoExploreScreens extends ConsumerStatefulWidget {
 class _ExploreScreensState extends ConsumerState<IpoExploreScreens>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  final tablistitems = [
-    {
-      "title": "Open",
-      "index": 0,
-    },
-    {
-      "title": "Upcoming", 
-      "index": 1,
-    },
-    {
-      "title": "My Bids",
-      "index": 2,
-    }
-  ];
+  
   int selectedTab = 0;
+  // ref.read(ipoProvide).selectedTab = selectedTab;
 
   @override
   void initState() {
@@ -45,6 +33,24 @@ class _ExploreScreensState extends ConsumerState<IpoExploreScreens>
     _tabController = TabController(
         length: 3, vsync: this, initialIndex: widget.initialTabIndex ?? 0);
     _tabController.animation!.addListener(_onTabChanged);
+    
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Listen to provider's selected tab changes
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        final providerTab = ref.read(ipoProvide).selectedTab;
+        if (providerTab != selectedTab) {
+          setState(() {
+            selectedTab = providerTab;
+          });
+          _tabController.animateTo(providerTab);
+        }
+      }
+    });
   }
 
   void _onTabChanged() {
@@ -53,6 +59,8 @@ class _ExploreScreensState extends ConsumerState<IpoExploreScreens>
       setState(() {
         selectedTab = newIndex;
       });
+      // Also update the provider's selected tab
+      ref.read(ipoProvide).setSelectedTab(newIndex);
     }
   }
 
@@ -90,7 +98,7 @@ class _ExploreScreensState extends ConsumerState<IpoExploreScreens>
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: List.generate(
-                  tablistitems.length,
+                  ref.read(ipoProvide).tablistitems.length,
                   (tab) => Material(
                     color: Colors.transparent,
                     child: InkWell(
@@ -111,7 +119,7 @@ class _ExploreScreensState extends ConsumerState<IpoExploreScreens>
                         FocusScope.of(context).unfocus();
                       },
                       child: _tabConstruct(
-                          tablistitems[tab]['title'].toString(), theme, tab),
+                          ref.read(ipoProvide).tablistitems[tab]['title'].toString(), theme, tab),
                     ),
                   ),
                 ),

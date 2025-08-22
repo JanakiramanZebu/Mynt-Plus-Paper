@@ -41,7 +41,7 @@ final orderProvider = ChangeNotifierProvider((ref) => OrderProvider(ref));
 class OrderProvider extends DefaultChangeNotifier {
   final api = locator<ApiExporter>();
 
-  int frezQtyOrderSliceMaxLimit = 20;
+  int frezQtyOrderSliceMaxLimit = 40;
 
   final FToast _fToast = FToast();
   FToast get fToast => _fToast;
@@ -993,7 +993,6 @@ class OrderProvider extends DefaultChangeNotifier {
           _executedOrder = [];
           _openOrder = [];
           _allOrder = [];
-          _selectedTab = 0;
           for (var element in _orderBookModel!) {
             if (element.exch == "BFO" && element.dname != null) {
               List<String> splitVal = element.dname!.split(" ");

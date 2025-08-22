@@ -25,7 +25,7 @@ class _IpoOrderbookMainScreenState extends ConsumerState<IpoOrderbookMainScreen>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(ipoProvide).getipoorderbookmodel(true);
+      ref.read(ipoProvide).getipoorderbookmodel(context, true);
     });
   }
 

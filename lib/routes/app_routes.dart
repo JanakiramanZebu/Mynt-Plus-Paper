@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/models/order_book_model/place_order_model.dart';
 import 'package:mynt_plus/screens/algo/algo_create.dart';
 import 'package:mynt_plus/screens/bonds/bonds_common_search_screen.dart';
+import 'package:mynt_plus/screens/algo/algo_strategytlist.dart';
 // import 'package:mynt_plus/screens/ipo/ipo_common_search_screen.dart';
 import 'package:mynt_plus/screens/mutual_fund/cagr_calculator_screen.dart';
 import 'package:mynt_plus/screens/mutual_fund/mf_hold_singlepage.dart';
@@ -247,6 +248,12 @@ class AppRoutes {
       case Routes.algoCreate:
         return _createRoute(
           pageBuilder: (_, __, ___) => const AlgoCreate(),
+          beginOffset: const Offset(-1.0, 0.0),
+        );
+
+      case Routes.algoList:
+        return _createRoute(
+          pageBuilder: (_, __, ___) => const AlgoStrategyList(),
           beginOffset: const Offset(-1.0, 0.0),
         );
 

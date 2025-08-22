@@ -1339,8 +1339,8 @@ Future<SpanCalcResponse?> calculateSpanForSelection({
   String _currentStrike = '56900';
   
   // Target and StopLoss
-  int _targetPoints = 0;
-  int _stopLossPoints = 0;
+  String _targetPoints = '0';
+  String _stopLossPoints = '0';
   
   // Loading and Error states
   bool _isLoading = false;
@@ -1351,6 +1351,7 @@ Future<SpanCalcResponse?> calculateSpanForSelection({
 
   TextEditingController targetPointsController = TextEditingController();
   TextEditingController stopLossPointsController = TextEditingController();
+  TextEditingController totalQtyController = TextEditingController();
 
   // Getters
   String get strategyType => _strategyType;
@@ -1369,8 +1370,8 @@ Future<SpanCalcResponse?> calculateSpanForSelection({
   String get selectedStrikeCriteria => _selectedStrikeCriteria;
   String get selectedStrikeType => _selectedStrikeType;
   String get currentStrike => _currentStrike;
-  int get targetPoints => _targetPoints;
-  int get stopLossPoints => _stopLossPoints;
+  String get targetPoints => _targetPoints;
+  String get stopLossPoints => _stopLossPoints;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   String? get successMessage => _successMessage;
@@ -1511,8 +1512,8 @@ Future<SpanCalcResponse?> calculateSpanForSelection({
 
     try {
       final request = StrategyRequest(
-        uid: 'ZP00285', // This should come from user session
-        email: 'user@example.com', // This should come from user session
+        uid: 'ZP00285', 
+        email: 'user@example.com',
         statname: '$_selectedIndex ${_strategyType.toLowerCase()} Strategy',
         exch: 'NFO',
         product: 'OPTIONS',
@@ -1553,6 +1554,44 @@ print("request Strategy :::::: ${request.toJson()}");
       notifyListeners();
       return false;
     }
+  }
+
+  StrategyList? _getStrategyList;
+  StrategyList? get getStrategyList => _getStrategyList;
+
+  Future<void> getstrategyList() async {
+    try {
+      final response = await api.getStrategyList();
+      _getStrategyList = response;
+      notifyListeners();
+    } catch (e) {
+      print("Error: $e");
+    }
+
+    // return ;
+  }
+
+  String _deployMessage = "";
+  String get deployMessage => _deployMessage;
+
+  Future<void> deployStrategy(String strategyId) async {
+    try {
+      final response = await api.deployStrategy(strategyId);
+      _deployMessage = response;
+      if(response == "Strategy deployed successfully"){
+        _deployMessage = "Strategy deployed successfully";
+      }else{
+        _deployMessage = "Strategy deployment failed";
+      }
+      notifyListeners();
+    } catch (e) {
+      print("Error: $e");
+    }
+  }
+
+  void clearStrategyList() {
+    _getStrategyList = null;
+    notifyListeners();
   }
 
   void clearMessages() {

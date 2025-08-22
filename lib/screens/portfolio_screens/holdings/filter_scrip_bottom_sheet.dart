@@ -27,7 +27,7 @@ class _WatchlistsBottomSheetState
   bool perchangisAscending = true;
   bool ltppcisAscending = true;
   bool investbyisAscending = true;
-  String currentSortType = ""; // Track current sort type
+  String currentSortType = "scrip"; // Track current sort type
 
   @override
   void initState() {
@@ -405,7 +405,7 @@ class _WatchlistsBottomSheetState
                           width: 15,
                         ),
                         Text(
-                          "Return Perc.Change",
+                          "% Profit & Loss",
                           style: TextWidget.textStyle(
                               fontSize: 14,
                               color: currentSortType == "ltppc"

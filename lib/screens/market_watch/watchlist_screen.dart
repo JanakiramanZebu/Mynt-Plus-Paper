@@ -630,7 +630,7 @@ void _initializeWithStoredData() {
                 highlightColor: theme.isDarkMode
                     ? Colors.white.withOpacity(.01)
                     : Colors.black.withOpacity(.01),
-                onTapDown: (_) => HapticFeedback.lightImpact(),
+                // onTapDown: (_) => HapticFeedback.lightImpact(),
                 onTap: () => _handleTabTap(name, i, ref),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,

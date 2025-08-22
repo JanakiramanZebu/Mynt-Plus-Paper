@@ -477,7 +477,7 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                                                             child:
                                                                                 CircularProgressIndicator(strokeWidth: 2, color:  colors.colorWhite ),
                                                                           )
-                                                                        : TextWidget.titleText(
+                                                                        : TextWidget.subText(
                                                                             text:
                                                                                 "Delete",
                                                                             color:

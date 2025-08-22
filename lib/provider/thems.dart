@@ -70,8 +70,8 @@ class ThemesProvider extends DefaultChangeNotifier {
           statusBarIconBrightness: Brightness.light, // For Android (dark icons)
           statusBarBrightness: Brightness.dark,
           statusBarColor: Colors.black,
-          systemNavigationBarColor: Colors.grey[800],
-          systemNavigationBarIconBrightness: Brightness.light));
+          systemNavigationBarColor: Colors.black,
+          systemNavigationBarIconBrightness: Brightness.dark));
     }
     // else if (pref.userAppTheme == "System Default") {
     //   final brightness = SchedulerBinding.instance.window.platformBrightness;
@@ -112,8 +112,8 @@ class ThemesProvider extends DefaultChangeNotifier {
           statusBarIconBrightness: Brightness.light, // For Android (dark icons)
           statusBarBrightness: Brightness.dark,
           statusBarColor: Colors.black,
-          systemNavigationBarColor: Colors.grey[800],
-          systemNavigationBarIconBrightness: Brightness.light));
+          systemNavigationBarColor: Colors.black,
+          systemNavigationBarIconBrightness: Brightness.dark));
       _deviceTheme = "Dark";
       themeMode = ThemeMode.dark;
       pref.setTheme(true);

@@ -110,394 +110,396 @@ class _OrderBookDetailState extends ConsumerState<OrderBookDetail> {
 
                   return Scaffold(
                     backgroundColor: Colors.transparent,
-                    body: Container(
-                      decoration: BoxDecoration(
-                        color: theme.isDarkMode
-                            ? colors.colorBlack
-                            : colors.colorWhite,
-                        borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(16),
-                          topRight: Radius.circular(16),
+                    body: SafeArea(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: theme.isDarkMode
+                              ? colors.colorBlack
+                              : colors.colorWhite,
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(16),
+                            topRight: Radius.circular(16),
+                          ),
+                           border: Border(
+                                    top: BorderSide(
+                                      color: theme.isDarkMode
+                                          ? colors.textSecondaryDark
+                                              .withOpacity(0.5)
+                                          : colors.colorWhite,
+                                    ),
+                                    left: BorderSide(
+                                      color: theme.isDarkMode
+                                          ? colors.textSecondaryDark
+                                              .withOpacity(0.5)
+                                          : colors.colorWhite,
+                                    ),
+                                    right: BorderSide(
+                                      color: theme.isDarkMode
+                                          ? colors.textSecondaryDark
+                                              .withOpacity(0.5)
+                                          : colors.colorWhite,
+                                    ),
+                                  ),
                         ),
-                         border: Border(
-                                  top: BorderSide(
-                                    color: theme.isDarkMode
-                                        ? colors.textSecondaryDark
-                                            .withOpacity(0.5)
-                                        : colors.colorWhite,
-                                  ),
-                                  left: BorderSide(
-                                    color: theme.isDarkMode
-                                        ? colors.textSecondaryDark
-                                            .withOpacity(0.5)
-                                        : colors.colorWhite,
-                                  ),
-                                  right: BorderSide(
-                                    color: theme.isDarkMode
-                                        ? colors.textSecondaryDark
-                                            .withOpacity(0.5)
-                                        : colors.colorWhite,
-                                  ),
-                                ),
-                      ),
-                      child: Column(
-                        children: <Widget>[
-                          Expanded(
-                            child: SingleChildScrollView(
-                              controller: scrollController,
-                              child: Column(
-                                children: [
-                                  const CustomDragHandler(),
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 16.0),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        const SizedBox(height: 16),
-
-                                        Material(
-                                          color: Colors.transparent,
-                                          shape: const BeveledRectangleBorder(),
-                                          child: InkWell(
-                                            customBorder:
-                                                const BeveledRectangleBorder(),
-                                            splashColor:
-                                                Colors.black.withOpacity(0.15),
-                                            highlightColor:
-                                                Colors.black.withOpacity(0.08),
-                                            onTap: () async {
-                                              await marketwatch
-                                                  .scripdepthsize(true);
-                                              await marketwatch.calldepthApis(
-                                                  context, depthArgs, "");
-                                            },
-                                            child: Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment
-                                                      .spaceBetween,
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.center,
-                                              children: [
-                                                Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    Row(
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .center,
-                                                      children: [
-                                                        TextWidget.titleText(
-                                                            text:
-                                                                "${displayData.symbol?.replaceAll("-EQ", "")} ${displayData.expDate} ${displayData.option}",
-                                                            theme: false,
-                                                            color: theme
-                                                                    .isDarkMode
-                                                                ? colors
-                                                                    .textPrimaryDark
-                                                                : colors
-                                                                    .textPrimaryLight,
-                                                            fw: 1),
-                                                        const SizedBox(
-                                                            width: 4),
-                                                        CustomExchBadge(
-                                                            exch: displayData
-                                                                .exch!),
-                                                      ],
-                                                    ),
-                                                    const SizedBox(height: 6),
-                                                    TextWidget.titleText(
-                                                        text:
-                                                            "${displayData.ltp}",
-                                                        theme: false,
-                                                        color: (displayData.change ==
-                                                                        "null" ||
-                                                                    displayData
-                                                                            .change ==
-                                                                        null) ||
-                                                                displayData
-                                                                        .change ==
-                                                                    "0.00"
-                                                            ? theme.isDarkMode
-                                                                ? colors
-                                                                    .textSecondaryDark
-                                                                : colors
-                                                                    .textSecondaryLight
-                                                            : displayData.change!
-                                                                        .startsWith(
-                                                                            "-") ||
-                                                                    displayData
-                                                                        .perChange!
-                                                                        .startsWith(
-                                                                            "-")
-                                                                ? theme
-                                                                        .isDarkMode
-                                                                    ? colors
-                                                                        .lossDark
-                                                                    : colors
-                                                                        .lossLight
-                                                                : theme
-                                                                        .isDarkMode
-                                                                    ? colors
-                                                                        .profitDark
-                                                                    : colors
-                                                                        .profitLight,
-                                                        fw: 3),
-                                                    const SizedBox(height: 4),
-                                                    Row(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .start,
-                                                      children: [
-                                                        // TextWidget.paraText(
-                                                        //     text:
-                                                        //         "${displayData.expDate}",
-                                                        //     theme: false,
-                                                        //     color: theme.isDarkMode
-                                                        //         ? colors
-                                                        //             .colorWhite
-                                                        //         : colors
-                                                        //             .colorBlack,
-                                                        //     fw: 3),
-                                                        TextWidget.paraText(
-                                                            text:
-                                                                "${double.parse("${displayData.change != "null" ? displayData.change ?? 0.00 : 0.0} ").toStringAsFixed(2)} (${displayData.perChange ?? 0.00}%)",
-                                                            theme: false,
-                                                            color: theme
-                                                                    .isDarkMode
-                                                                ? colors
-                                                                    .textSecondaryDark
-                                                                : colors
-                                                                    .textSecondaryLight,
-                                                            fw: 3),
-                                                      ],
-                                                    ),
-                                                  ],
-                                                ),
-                                                Row(
-                                                  children: [
-                                                    Container(
-                                                      height: 45,
-                                                      width: 26,
-                                                      padding:
-                                                          const EdgeInsets.all(
-                                                              7),
-                                                      child: SvgPicture.asset(
-                                                        assets.rightarrowcur,
-                                                        width: 12,
-                                                        height: 12,
-                                                        color:  theme
-                                                                    .isDarkMode
-                                                                ? colors
-                                                                    .textSecondaryDark
-                                                                : colors
-                                                                    .textSecondaryLight,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-
-                                        const SizedBox(height: 16),
-                                        (widget.orderBookData.status ==
-                                                    "PENDING" ||
-                                                widget.orderBookData.status ==
-                                                    "OPEN" ||
-                                                widget.orderBookData.status ==
-                                                    "TRIGGER_PENDING")
-                                            ? _buildActionButtonsBar(
-                                                context,
-                                                theme,
-                                                ref,
-                                                widget.orderBookData)
-                                            : _buildRepeatOrderBar(
-                                                context,
-                                                theme,
-                                                ref,
-                                                widget.orderBookData),
-
-                                        // ScripInfoBtns(
-                                        //     exch:
-                                        //         '${widget.orderBookData.exch}',
-                                        //     token:
-                                        //         '${widget.orderBookData.token}',
-                                        //     insName: '',
-                                        //     tsym:
-                                        //         '${widget.orderBookData.tsym}'),
-
-                                        const SizedBox(height: 25),
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            // if ((widget.positionList.netqty !=
-                                            //         "0") &&
-                                            //     (widget.positionList
-                                            //                 .sPrdtAli ==
-                                            //             "MIS" ||
-                                            //         widget.positionList
-                                            //                 .sPrdtAli ==
-                                            //             "CNC" ||
-                                            //         widget.positionList
-                                            //                 .sPrdtAli ==
-                                            //             "NRML"))
-                                            Material(
-                                              color: Colors.transparent,
-                                              shape:
+                        child: Column(
+                          children: <Widget>[
+                            Expanded(
+                              child: SingleChildScrollView(
+                                controller: scrollController,
+                                child: Column(
+                                  children: [
+                                    const CustomDragHandler(),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 16.0),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          const SizedBox(height: 16),
+                      
+                                          Material(
+                                            color: Colors.transparent,
+                                            shape: const BeveledRectangleBorder(),
+                                            child: InkWell(
+                                              customBorder:
                                                   const BeveledRectangleBorder(),
-                                              child: InkWell(
-                                                customBorder:
-                                                    const BeveledRectangleBorder(),
-                                                splashColor: Colors.black
-                                                    .withOpacity(0.15),
-                                                highlightColor: Colors.black
-                                                    .withOpacity(0.08),
-                                                onTap: () async {
-                                                  await order
-                                                      .showorderHistory(true);
-                                                  await Future.delayed(
-                                                      const Duration(
-                                                          milliseconds: 100));
-                                                  Scrollable.ensureVisible(
-                                                    orderStatusKey
-                                                        .currentContext!,
-                                                    duration: const Duration(
-                                                        milliseconds: 300),
-                                                    curve: Curves.easeInOut,
-                                                  );
-                                                },
-                                                child: Padding(
-                                                  padding: const EdgeInsets
-                                                      .symmetric(
-                                                      horizontal: 16,
-                                                      vertical: 5),
-                                                  child: Center(
-                                                    child: Row(
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .center,
-                                                      children: [
-                                                        SvgPicture.asset(
-                                                          assets
-                                                              .orderhistoryicon,
-                                                          width: 14,
-                                                          height: 14,
-                                                          color: theme
-                                                                  .isDarkMode
-                                                              ? colors
-                                                                  .primaryDark
-                                                              : colors
-                                                                  .primaryLight,
-                                                        ),
-                                                        const SizedBox(
-                                                            width: 6),
-                                                        TextWidget.subText(
-                                                          text: "Order History",
-                                                          fw: 2,
-                                                          color: theme
-                                                                  .isDarkMode
-                                                              ? colors
-                                                                  .primaryDark
-                                                              : colors
-                                                                  .primaryLight,
-                                                          theme: false,
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        _OrderDetailsSection(
-                                            orderBookData:
-                                                widget.orderBookData),
-
-                                        // Order status header
-                                        order.showOrderHistory
-                                            ? Row(
-                                                key: orderStatusKey,
+                                              splashColor:
+                                                  Colors.black.withOpacity(0.15),
+                                              highlightColor:
+                                                  Colors.black.withOpacity(0.08),
+                                              onTap: () async {
+                                                await marketwatch
+                                                    .scripdepthsize(true);
+                                                await marketwatch.calldepthApis(
+                                                    context, depthArgs, "");
+                                              },
+                                              child: Row(
                                                 mainAxisAlignment:
                                                     MainAxisAlignment
                                                         .spaceBetween,
                                                 crossAxisAlignment:
                                                     CrossAxisAlignment.center,
                                                 children: [
-                                                  TextWidget.subText(
-                                                      text: "Order Status",
-                                                      theme: false,
-                                                      color: theme.isDarkMode
-                                                          ? colors.textPrimaryDark
-                                                          : colors.textPrimaryLight,
-                                                      fw: 0),
-                                                  Container(
-                                                    padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                                    decoration: BoxDecoration(
-                                                      color: color
-                                                          .withOpacity(0.1),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              5),
-                                                      // border: Border.all(
-                                                      //   color: color,
-                                                      //   width: 1,
-                                                      // ),
-                                                    ),
-                                                    child: TextWidget.paraText(
-                                                        text:
-                                                            "${widget.orderBookData.status![0].toUpperCase()}${widget.orderBookData.status!.replaceAll("_", " ").substring(1)}",
-                                                        theme: false,
-                                                        color: color,
-                                                        fw: 3),
+                                                  Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment.start,
+                                                    children: [
+                                                      Row(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .center,
+                                                        children: [
+                                                          TextWidget.titleText(
+                                                              text:
+                                                                  "${displayData.symbol?.replaceAll("-EQ", "")} ${displayData.expDate} ${displayData.option}",
+                                                              theme: false,
+                                                              color: theme
+                                                                      .isDarkMode
+                                                                  ? colors
+                                                                      .textPrimaryDark
+                                                                  : colors
+                                                                      .textPrimaryLight,
+                                                              fw: 1),
+                                                          const SizedBox(
+                                                              width: 4),
+                                                          CustomExchBadge(
+                                                              exch: displayData
+                                                                  .exch!),
+                                                        ],
+                                                      ),
+                                                      const SizedBox(height: 6),
+                                                      TextWidget.titleText(
+                                                          text:
+                                                              "${displayData.ltp}",
+                                                          theme: false,
+                                                          color: (displayData.change ==
+                                                                          "null" ||
+                                                                      displayData
+                                                                              .change ==
+                                                                          null) ||
+                                                                  displayData
+                                                                          .change ==
+                                                                      "0.00"
+                                                              ? theme.isDarkMode
+                                                                  ? colors
+                                                                      .textSecondaryDark
+                                                                  : colors
+                                                                      .textSecondaryLight
+                                                              : displayData.change!
+                                                                          .startsWith(
+                                                                              "-") ||
+                                                                      displayData
+                                                                          .perChange!
+                                                                          .startsWith(
+                                                                              "-")
+                                                                  ? theme
+                                                                          .isDarkMode
+                                                                      ? colors
+                                                                          .lossDark
+                                                                      : colors
+                                                                          .lossLight
+                                                                  : theme
+                                                                          .isDarkMode
+                                                                      ? colors
+                                                                          .profitDark
+                                                                      : colors
+                                                                          .profitLight,
+                                                          fw: 3),
+                                                      const SizedBox(height: 4),
+                                                      Row(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          // TextWidget.paraText(
+                                                          //     text:
+                                                          //         "${displayData.expDate}",
+                                                          //     theme: false,
+                                                          //     color: theme.isDarkMode
+                                                          //         ? colors
+                                                          //             .colorWhite
+                                                          //         : colors
+                                                          //             .colorBlack,
+                                                          //     fw: 3),
+                                                          TextWidget.paraText(
+                                                              text:
+                                                                  "${double.parse("${displayData.change != "null" ? displayData.change ?? 0.00 : 0.0} ").toStringAsFixed(2)} (${displayData.perChange ?? 0.00}%)",
+                                                              theme: false,
+                                                              color: theme
+                                                                      .isDarkMode
+                                                                  ? colors
+                                                                      .textSecondaryDark
+                                                                  : colors
+                                                                      .textSecondaryLight,
+                                                              fw: 3),
+                                                        ],
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  Row(
+                                                    children: [
+                                                      Container(
+                                                        height: 45,
+                                                        width: 26,
+                                                        padding:
+                                                            const EdgeInsets.all(
+                                                                7),
+                                                        child: SvgPicture.asset(
+                                                          assets.rightarrowcur,
+                                                          width: 12,
+                                                          height: 12,
+                                                          color:  theme
+                                                                      .isDarkMode
+                                                                  ? colors
+                                                                      .textSecondaryDark
+                                                                  : colors
+                                                                      .textSecondaryLight,
+                                                        ),
+                                                      ),
+                                                    ],
                                                   ),
                                                 ],
-                                              )
-                                            : const SizedBox.shrink(),
-
-                                        // Order history timeline
-                                        if (orderHistory != null &&
-                                            orderHistory.isNotEmpty &&
-                                            orderHistory[0].stat != "Not_Ok" &&
-                                            order.showOrderHistory) ...[
-                                          ListView.builder(
-                                            reverse: true,
-                                            itemCount: orderHistory.length,
-                                            physics:
-                                                const NeverScrollableScrollPhysics(),
-                                            shrinkWrap: true,
-                                            itemBuilder: (BuildContext context,
-                                                int index) {
-                                              return TimeLineWidget(
-                                                  isfFrist:
-                                                      orderHistory.length - 1 ==
-                                                              index
-                                                          ? true
-                                                          : false,
-                                                  isLast:
-                                                      index == 0 ? true : false,
-                                                  orderHistoryData:
-                                                      orderHistory[index]);
-                                            },
+                                              ),
+                                            ),
                                           ),
-                                        ] else ...[
-                                          const SizedBox.shrink(),
+                      
+                                          const SizedBox(height: 16),
+                                          (widget.orderBookData.status ==
+                                                      "PENDING" ||
+                                                  widget.orderBookData.status ==
+                                                      "OPEN" ||
+                                                  widget.orderBookData.status ==
+                                                      "TRIGGER_PENDING")
+                                              ? _buildActionButtonsBar(
+                                                  context,
+                                                  theme,
+                                                  ref,
+                                                  widget.orderBookData)
+                                              : _buildRepeatOrderBar(
+                                                  context,
+                                                  theme,
+                                                  ref,
+                                                  widget.orderBookData),
+                      
+                                          // ScripInfoBtns(
+                                          //     exch:
+                                          //         '${widget.orderBookData.exch}',
+                                          //     token:
+                                          //         '${widget.orderBookData.token}',
+                                          //     insName: '',
+                                          //     tsym:
+                                          //         '${widget.orderBookData.tsym}'),
+                      
+                                          const SizedBox(height: 25),
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              // if ((widget.positionList.netqty !=
+                                              //         "0") &&
+                                              //     (widget.positionList
+                                              //                 .sPrdtAli ==
+                                              //             "MIS" ||
+                                              //         widget.positionList
+                                              //                 .sPrdtAli ==
+                                              //             "CNC" ||
+                                              //         widget.positionList
+                                              //                 .sPrdtAli ==
+                                              //             "NRML"))
+                                              Material(
+                                                color: Colors.transparent,
+                                                shape:
+                                                    const BeveledRectangleBorder(),
+                                                child: InkWell(
+                                                  customBorder:
+                                                      const BeveledRectangleBorder(),
+                                                  splashColor: Colors.black
+                                                      .withOpacity(0.15),
+                                                  highlightColor: Colors.black
+                                                      .withOpacity(0.08),
+                                                  onTap: () async {
+                                                    await order
+                                                        .showorderHistory(true);
+                                                    await Future.delayed(
+                                                        const Duration(
+                                                            milliseconds: 100));
+                                                    Scrollable.ensureVisible(
+                                                      orderStatusKey
+                                                          .currentContext!,
+                                                      duration: const Duration(
+                                                          milliseconds: 300),
+                                                      curve: Curves.easeInOut,
+                                                    );
+                                                  },
+                                                  child: Padding(
+                                                    padding: const EdgeInsets
+                                                        .symmetric(
+                                                        horizontal: 16,
+                                                        vertical: 5),
+                                                    child: Center(
+                                                      child: Row(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .center,
+                                                        children: [
+                                                          SvgPicture.asset(
+                                                            assets
+                                                                .orderhistoryicon,
+                                                            width: 14,
+                                                            height: 14,
+                                                            color: theme
+                                                                    .isDarkMode
+                                                                ? colors
+                                                                    .primaryDark
+                                                                : colors
+                                                                    .primaryLight,
+                                                          ),
+                                                          const SizedBox(
+                                                              width: 6),
+                                                          TextWidget.subText(
+                                                            text: "Order History",
+                                                            fw: 2,
+                                                            color: theme
+                                                                    .isDarkMode
+                                                                ? colors
+                                                                    .primaryDark
+                                                                : colors
+                                                                    .primaryLight,
+                                                            theme: false,
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          _OrderDetailsSection(
+                                              orderBookData:
+                                                  widget.orderBookData),
+                      
+                                          // Order status header
+                                          order.showOrderHistory
+                                              ? Row(
+                                                  key: orderStatusKey,
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceBetween,
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.center,
+                                                  children: [
+                                                    TextWidget.subText(
+                                                        text: "Order Status",
+                                                        theme: false,
+                                                        color: theme.isDarkMode
+                                                            ? colors.textPrimaryDark
+                                                            : colors.textPrimaryLight,
+                                                        fw: 0),
+                                                    Container(
+                                                      padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                                      decoration: BoxDecoration(
+                                                        color: color
+                                                            .withOpacity(0.1),
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                                5),
+                                                        // border: Border.all(
+                                                        //   color: color,
+                                                        //   width: 1,
+                                                        // ),
+                                                      ),
+                                                      child: TextWidget.paraText(
+                                                          text:
+                                                              "${widget.orderBookData.status![0].toUpperCase()}${widget.orderBookData.status!.replaceAll("_", " ").substring(1)}",
+                                                          theme: false,
+                                                          color: color,
+                                                          fw: 3),
+                                                    ),
+                                                  ],
+                                                )
+                                              : const SizedBox.shrink(),
+                      
+                                          // Order history timeline
+                                          if (orderHistory != null &&
+                                              orderHistory.isNotEmpty &&
+                                              orderHistory[0].stat != "Not_Ok" &&
+                                              order.showOrderHistory) ...[
+                                            ListView.builder(
+                                              reverse: true,
+                                              itemCount: orderHistory.length,
+                                              physics:
+                                                  const NeverScrollableScrollPhysics(),
+                                              shrinkWrap: true,
+                                              itemBuilder: (BuildContext context,
+                                                  int index) {
+                                                return TimeLineWidget(
+                                                    isfFrist:
+                                                        orderHistory.length - 1 ==
+                                                                index
+                                                            ? true
+                                                            : false,
+                                                    isLast:
+                                                        index == 0 ? true : false,
+                                                    orderHistoryData:
+                                                        orderHistory[index]);
+                                              },
+                                            ),
+                                          ] else ...[
+                                            const SizedBox.shrink(),
+                                          ],
+                                          const SizedBox(height: 20),
                                         ],
-                                        const SizedBox(height: 20),
-                                      ],
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   );

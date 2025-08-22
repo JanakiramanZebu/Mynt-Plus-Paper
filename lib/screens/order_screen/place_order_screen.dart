@@ -4029,1165 +4029,1349 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                       internet.connectionStatus == ConnectivityResult.none
                           ? const NoInternetWidget()
                           : SafeArea(
-                            child: Container(
-                                color: theme.isDarkMode
-                                    ? colors.colorBlack
-                                    : colors.colorWhite,
-                                child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      if (orderType != "GTT" &&
-                                          orderType != "SIP") ...[
+                            child: Padding(
+                             padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+                              child: Container(
+                                  color: theme.isDarkMode
+                                      ? colors.colorBlack
+                                      : colors.colorWhite,
+                                  child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        if (orderType != "GTT" &&
+                                            orderType != "SIP") ...[
+                                          if (orderType == "MTF" &&
+                                              !_isMTFEnabled) ...[
+                                            const SizedBox.shrink()
+                                          ] else ...[
+                                            Container(
+                                                width: MediaQuery.of(context)
+                                                    .size
+                                                    .width,
+                                                decoration: BoxDecoration(
+                                                    color: theme.isDarkMode
+                                                        ? colors.darkGrey
+                                                        : const Color(0xfffafbff),
+                                                    border: Border(
+                                                        top: BorderSide(
+                                                            color: theme
+                                                                    .isDarkMode
+                                                                ? colors
+                                                                    .darkColorDivider
+                                                                : colors
+                                                                    .colorDivider),
+                                                        bottom: BorderSide(
+                                                            color: theme
+                                                                    .isDarkMode
+                                                                ? colors
+                                                                    .darkColorDivider
+                                                                : colors
+                                                                    .colorDivider))),
+                                                padding: const EdgeInsets.only(
+                                                    left: 16.0, right: 3, top: 0),
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    // if (isAvbSecu) ...[
+                                                    //   AnimatedBuilder(
+                                                    //     animation: anibuildctrl,
+                                                    //     builder: (context, child) {
+                                                    //       return Transform.translate(
+                                                    //         offset: Offset(
+                                                    //             _shakeAnimation.value *
+                                                    //                 sin(DateTime.now().millisecondsSinceEpoch * 0.01),
+                                                    //             0),
+                                                    //         child: GestureDetector(
+                                                    //           onTap: () {
+                                                    //             final dynamic tooltip = tooltipKey.currentState;
+                                                    //             tooltip?.ensureTooltipVisible(); // Manually show tooltip on tap
+                                                    //           },
+                                                    //           child: AnimatedContainer(
+                                                    //               duration: const Duration(milliseconds: 300),
+                                                    //               curve: Curves.easeInCubic,
+                                                    //               margin: const EdgeInsets.only(right: 16, top: 16, bottom: 0),
+                                                    //               padding: const EdgeInsets.all(0),
+                                                    //               decoration: BoxDecoration(
+                                                    //                 color: const Color(0xffFFF6E6),
+                                                    //                 borderRadius: BorderRadius.circular(6),
+                                                    //                 border: Border.all(
+                                                    //                   color: anibuildctrl.isAnimating
+                                                    //                       ? colors.darkred
+                                                    //                       : const Color(0xffFFF6E6), // Border color
+                                                    //                   width: anibuildctrl.isAnimating
+                                                    //                       ? 1.0
+                                                    //                       : 0.0, // Border width (1px)
+                                                    //                 ),
+                                                    //                 boxShadow: anibuildctrl.isAnimating
+                                                    //                     ? [
+                                                    //                         BoxShadow(
+                                                    //                           color: colors.darkred.withOpacity(0.6),
+                                                    //                           blurRadius: 10,
+                                                    //                           spreadRadius: 3,
+                                                    //                           offset: const Offset(0, 0),
+                                                    //                         ),
+                                                    //                       ]
+                                                    //                     : [],
+                                                    //               ),
+                                                    //               child: Row(
+                                                    //                 mainAxisAlignment: MainAxisAlignment.start,
+                                                    //                 children: [
+                                                    //                   IconButton(
+                                                    //                       onPressed: () {
+                                                    //                         setState(() {
+                                                    //                           isSecu = !isSecu;
+                                                    //                         });
+                                                    //                       },
+                                                    //                       icon: SvgPicture.asset(
+                                                    //                           isSecu ? assets.checkedbox : assets.checkbox)),
+                                                    //                   Expanded(
+                                                    //                       // Ensures text takes available space and wraps
+                                                    //                       child: Column(
+                                                    //                     crossAxisAlignment: CrossAxisAlignment.start,
+                                                    //                     children: [
+                                                    //                       RichText(
+                                                    //                         text: TextSpan(
+                                                    //                           style: textStyle(
+                                                    //                             const Color(0xffB37702),
+                                                    //                             13,
+                                                    //                             FontWeight.w500,
+                                                    //                           ),
+                                                    //                           children: [
+                                                    //                             const WidgetSpan(
+                                                    //                               child: Icon(Icons.warning_outlined,
+                                                    //                                   color: Color.fromARGB(190, 255, 170, 0),
+                                                    //                                   size: 16),
+                                                    //                             ),
+                                                    //                             const TextSpan(
+                                                    //                                 text:
+                                                    //                                     " Exchange surveillance active — confirm to proceed with your order."),
+                                                    //                             WidgetSpan(
+                                                    //                               child: Tooltip(
+                                                    //                                 key: tooltipKey,
+                                                    //                                 // enableTapToDismiss: false,
+                                                    //                                 preferBelow: false,
+                                                    //                                 message: quotemsg,
+                                                    //                                 textStyle: const TextStyle(
+                                                    //                                   color: Colors.white,
+                                                    //                                   fontSize: 13,
+                                                    //                                 ),
+                                                    //                                 padding: const EdgeInsets.symmetric(
+                                                    //                                     vertical: 8, horizontal: 16),
+                                                    //                                 margin: const EdgeInsets.symmetric(
+                                                    //                                     horizontal: 16),
+                                                    //                                 decoration: BoxDecoration(
+                                                    //                                   color: Colors.black,
+                                                    //                                   borderRadius: BorderRadius.circular(8),
+                                                    //                                 ),
+                                                    //                                 child: Text(
+                                                    //                                   " Know more",
+                                                    //                                   style: textStyle(
+                                                    //                                     !theme.isDarkMode
+                                                    //                                         ? colors.colorBlue
+                                                    //                                         : colors.colorLightBlue,
+                                                    //                                     13,
+                                                    //                                     FontWeight.w500,
+                                                    //                                   ),
+                                                    //                                 ),
+                                                    //                               ),
+                                                    //                             ),
+                                                    //                           ],
+                                                    //                         ),
+                                                    //                         softWrap: true,
+                                                    //                       ),
+                                                    //                     ],
+                                                    //                   ))
+                                                    //                 ],
+                                                    //               )),
+                                                    //         ),
+                                                    //       );
+                                                    //     },
+                                                    //   ),
+                                                    // ],
+                                                    SingleChildScrollView(
+                                                      padding:
+                                                          const EdgeInsets.all(0),
+                                                      scrollDirection:
+                                                          Axis.horizontal,
+                                                      child: Row(
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .spaceBetween,
+                                                          children: [
+                                                            Row(children: [
+                                                              CustomWidgetButton(
+                                                                  onPress: internet
+                                                                              .connectionStatus ==
+                                                                          ConnectivityResult
+                                                                              .none
+                                                                      ? () {}
+                                                                      : () {
+                                                                          marginUpdate();
+                                                                          BrokerageInput brokerageInput = BrokerageInput(
+                                                                              exch:
+                                                                                  "${widget.scripInfo.exch}",
+                                                                              prc: priceCtrl
+                                                                                  .text,
+                                                                              prd: orderInput
+                                                                                  .orderType,
+                                                                              qty:
+                                                                                  "${widget.scripInfo.ls}",
+                                                                              trantype: isBuy!
+                                                                                  ? "B"
+                                                                                  : "S",
+                                                                              tsym:
+                                                                                  "${widget.scripInfo.tsym}");
+                                                                          ref.read(orderProvider).fetchGetBrokerage(
+                                                                              brokerageInput,
+                                                                              context);
+                                            
+                                                                          showModalBottomSheet(
+                                                                              useSafeArea:
+                                                                                  true,
+                                                                              isScrollControlled:
+                                                                                  true,
+                                                                              shape:
+                                                                                  const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+                                                                              context: context,
+                                                                              builder: (context) {
+                                                                                return const MarginDetailsBottomsheet();
+                                                                              });
+                                                                        },
+                                                                  widget: Row(
+                                                                      children: [
+                                                                        TextWidget
+                                                                            .paraText(
+                                                                          text:
+                                                                              "Required ",
+                                                                          color: theme.isDarkMode
+                                                                              ? colors.textSecondaryDark
+                                                                              : colors.textSecondaryLight,
+                                                                          theme: theme
+                                                                              .isDarkMode,
+                                                                        ),
+                                                                        Text(
+                                                                            "${orderProvide.orderMarginModel == null ? 0.00 : orderProvide.orderMarginModel!.ordermargin}  + ${orderProvide.getBrokerageModel == null ? 0.00 : orderProvide.getBrokerageModel!.brkageAmt ?? 0.00}",
+                                                                            style: textStyle(
+                                                                                !theme.isDarkMode ? colors.colorBlue : colors.colorLightBlue,
+                                                                                12,
+                                                                                FontWeight.bold)),
+                                                                        Icon(
+                                                                            Icons
+                                                                                .arrow_drop_down,
+                                                                            color: !theme.isDarkMode
+                                                                                ? colors.colorBlue
+                                                                                : colors.colorLightBlue)
+                                                                      ])),
+                                            
+                                                              const SizedBox(
+                                                                  width: 16),
+                                                              Row(
+                                                                children: [
+                                                                  TextWidget.paraText(
+                                                                    text: "Balance ",
+                                                                    color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                                                                    theme: theme.isDarkMode,
+                                                                  ),
+                                                                  // const SizedBox(width: 4),
+                                                                  TextWidget.paraText(
+                                                                      text: " ${clientFundDetail?.avlMrg ?? ''}",
+                                                                      color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                                                                      theme: theme.isDarkMode,
+                                                                      ),
+                                                                  const SizedBox(
+                                                                      width: 4),
+                                                                ],
+                                                              ),
+                                                              const SizedBox(
+                                                                  width: 8),
+                                                              orderProvide.orderMarginModel !=
+                                                                      null
+                                                                  ? orderProvide
+                                                                              .orderMarginModel!
+                                                                              .remarks ==
+                                                                          "Insufficient Balance"
+                                                                      ? InkWell(
+                                                                          onTap:
+                                                                              () {
+                                                                            ref.read(transcationProvider).fetchValidateToken(
+                                                                                context);
+                                                                            Future.delayed(
+                                                                                const Duration(milliseconds: 100),
+                                                                                () async {
+                                                                              await trancation.ip();
+                                                                              await trancation.fetchupiIdView(trancation.bankdetails!.dATA![trancation.indexss][1],
+                                                                                  trancation.bankdetails!.dATA![trancation.indexss][2]);
+                                                                              await trancation.fetchcwithdraw(context);
+                                                                            });
+                                            
+                                                                            trancation
+                                                                                .changebool(true);
+                                                                            Navigator.pushNamed(
+                                                                                context,
+                                                                                Routes.fundscreen,
+                                                                                arguments: trancation);
+                                                                          },
+                                                                          child:
+                                                                              Row(
+                                                                            children: [
+                                                                              // Red circular icon with white exclamation mark
+                                                                              // Container(
+                                                                              //   width: 20,
+                                                                              //   height: 20,
+                                                                              //   decoration: const BoxDecoration(
+                                                                              //     color: Colors.white,
+                                                                              //     shape: BoxShape.circle,
+                                                                              //   ),
+                                                                              //   child: const Center(
+                                                                              //     child: Icon(
+                                                                              //       Icons.error, // Exclamation icon
+                                                                              //       color: Colors.red,
+                                                                              //       size: 20,
+                                                                              //     ),
+                                                                              //   ),
+                                                                              // ),
+                                            
+                                                                              // "+ Add fund" text in blue
+                                                                              TextWidget.subText(
+                                                                                  text: '+ Add fund',
+                                                                                  color: theme.isDarkMode ? colors.secondaryDark : colors.secondaryLight,
+                                                                                  theme: theme.isDarkMode,
+                                                                                  fw: 2),
+                                                                              const SizedBox(width: 8),
+                                                                            ],
+                                                                          ),
+                                                                        )
+                                                                      : const SizedBox()
+                                                                  : const SizedBox(),
+                                            
+                                                              // CustomWidgetButton(
+                                                              //     onPress: internet
+                                                              //                 .connectionStatus ==
+                                                              //             ConnectivityResult
+                                                              //                 .none
+                                                              //         ? () {}
+                                                              //         : () {
+                                                              //             BrokerageInput brokerageInput = BrokerageInput(
+                                                              //                 exch:"${widget.scripInfo.exch}",
+                                                              //                 prc: priceCtrl.text,
+                                                              //                 prd: orderInput.orderType,
+                                                              //                 qty:"${widget.scripInfo.ls}",
+                                                              //                 trantype: isBuy!? "B": "S",
+                                                              //                 tsym:"${widget.scripInfo.tsym}");
+                                                              //                 ref.read(orderProvider)
+                                                              //                 .fetchGetBrokerage(brokerageInput,context);
+                                                              //             showModalBottomSheet(useSafeArea:true,
+                                                              //                 isScrollControlled:true,
+                                                              //                 shape: const RoundedRectangleBorder(
+                                                              //                 borderRadius: BorderRadius.vertical(
+                                                              //                 top: Radius.circular(16))),
+                                                              //                 context:context,
+                                                              //                 builder:(context) {
+                                                              //                   return const ChargesDetailsBottomsheet();
+                                                              //                 });
+                                                              //           },
+                                                              //     widget: Row(
+                                                              //         children: [
+                                                              //           Text(
+                                                              //               "Charges: ",
+                                                              //               style: textStyle(
+                                                              //                   const Color(
+                                                              //                       0xff666666),
+                                                              //                   12,
+                                                              //                   FontWeight
+                                                              //                       .w500)),
+                                                              //           Text(
+                                                              //               "₹${orderProvide.getBrokerageModel == null ? 0.00 : orderProvide.getBrokerageModel!.brkageAmt ?? 0.00}",
+                                                              //               style: textStyle(
+                                                              //                   !theme.isDarkMode
+                                                              //                       ? colors.colorBlue
+                                                              //                       : colors.colorLightBlue,
+                                                              //                   12,
+                                                              //                   FontWeight.w600)),
+                                                              //           Icon(
+                                                              //               Icons
+                                                              //                   .arrow_drop_down,
+                                                              //               color: !theme.isDarkMode
+                                                              //                   ? colors
+                                                              //                       .colorBlue
+                                                              //                   : colors
+                                                              //                       .colorLightBlue)
+                                                              //         ]))
+                                                            ]),
+                                                            IconButton(
+                                                                onPressed: internet
+                                                                            .connectionStatus ==
+                                                                        ConnectivityResult
+                                                                            .none
+                                                                    ? null
+                                                                    : () {
+                                                                        marginUpdate();
+                                                                      },
+                                                                icon: SvgPicture
+                                                                    .asset(assets
+                                                                        .reloadIcon)),
+                                                          ]),
+                                                    ),
+                                                  ],
+                                                ))
+                                          ],
+                                        ],
                                         if (orderType == "MTF" &&
                                             !_isMTFEnabled) ...[
                                           const SizedBox.shrink()
                                         ] else ...[
                                           Container(
-                                              width: MediaQuery.of(context)
-                                                  .size
-                                                  .width,
-                                              decoration: BoxDecoration(
-                                                  color: theme.isDarkMode
-                                                      ? colors.darkGrey
-                                                      : const Color(0xfffafbff),
-                                                  border: Border(
-                                                      top: BorderSide(
-                                                          color: theme
-                                                                  .isDarkMode
-                                                              ? colors
-                                                                  .darkColorDivider
-                                                              : colors
-                                                                  .colorDivider),
-                                                      bottom: BorderSide(
-                                                          color: theme
-                                                                  .isDarkMode
-                                                              ? colors
-                                                                  .darkColorDivider
-                                                              : colors
-                                                                  .colorDivider))),
-                                              padding: const EdgeInsets.only(
-                                                  left: 16.0, right: 3, top: 0),
-                                              child: Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  // if (isAvbSecu) ...[
-                                                  //   AnimatedBuilder(
-                                                  //     animation: anibuildctrl,
-                                                  //     builder: (context, child) {
-                                                  //       return Transform.translate(
-                                                  //         offset: Offset(
-                                                  //             _shakeAnimation.value *
-                                                  //                 sin(DateTime.now().millisecondsSinceEpoch * 0.01),
-                                                  //             0),
-                                                  //         child: GestureDetector(
-                                                  //           onTap: () {
-                                                  //             final dynamic tooltip = tooltipKey.currentState;
-                                                  //             tooltip?.ensureTooltipVisible(); // Manually show tooltip on tap
-                                                  //           },
-                                                  //           child: AnimatedContainer(
-                                                  //               duration: const Duration(milliseconds: 300),
-                                                  //               curve: Curves.easeInCubic,
-                                                  //               margin: const EdgeInsets.only(right: 16, top: 16, bottom: 0),
-                                                  //               padding: const EdgeInsets.all(0),
-                                                  //               decoration: BoxDecoration(
-                                                  //                 color: const Color(0xffFFF6E6),
-                                                  //                 borderRadius: BorderRadius.circular(6),
-                                                  //                 border: Border.all(
-                                                  //                   color: anibuildctrl.isAnimating
-                                                  //                       ? colors.darkred
-                                                  //                       : const Color(0xffFFF6E6), // Border color
-                                                  //                   width: anibuildctrl.isAnimating
-                                                  //                       ? 1.0
-                                                  //                       : 0.0, // Border width (1px)
-                                                  //                 ),
-                                                  //                 boxShadow: anibuildctrl.isAnimating
-                                                  //                     ? [
-                                                  //                         BoxShadow(
-                                                  //                           color: colors.darkred.withOpacity(0.6),
-                                                  //                           blurRadius: 10,
-                                                  //                           spreadRadius: 3,
-                                                  //                           offset: const Offset(0, 0),
-                                                  //                         ),
-                                                  //                       ]
-                                                  //                     : [],
-                                                  //               ),
-                                                  //               child: Row(
-                                                  //                 mainAxisAlignment: MainAxisAlignment.start,
-                                                  //                 children: [
-                                                  //                   IconButton(
-                                                  //                       onPressed: () {
-                                                  //                         setState(() {
-                                                  //                           isSecu = !isSecu;
-                                                  //                         });
-                                                  //                       },
-                                                  //                       icon: SvgPicture.asset(
-                                                  //                           isSecu ? assets.checkedbox : assets.checkbox)),
-                                                  //                   Expanded(
-                                                  //                       // Ensures text takes available space and wraps
-                                                  //                       child: Column(
-                                                  //                     crossAxisAlignment: CrossAxisAlignment.start,
-                                                  //                     children: [
-                                                  //                       RichText(
-                                                  //                         text: TextSpan(
-                                                  //                           style: textStyle(
-                                                  //                             const Color(0xffB37702),
-                                                  //                             13,
-                                                  //                             FontWeight.w500,
-                                                  //                           ),
-                                                  //                           children: [
-                                                  //                             const WidgetSpan(
-                                                  //                               child: Icon(Icons.warning_outlined,
-                                                  //                                   color: Color.fromARGB(190, 255, 170, 0),
-                                                  //                                   size: 16),
-                                                  //                             ),
-                                                  //                             const TextSpan(
-                                                  //                                 text:
-                                                  //                                     " Exchange surveillance active — confirm to proceed with your order."),
-                                                  //                             WidgetSpan(
-                                                  //                               child: Tooltip(
-                                                  //                                 key: tooltipKey,
-                                                  //                                 // enableTapToDismiss: false,
-                                                  //                                 preferBelow: false,
-                                                  //                                 message: quotemsg,
-                                                  //                                 textStyle: const TextStyle(
-                                                  //                                   color: Colors.white,
-                                                  //                                   fontSize: 13,
-                                                  //                                 ),
-                                                  //                                 padding: const EdgeInsets.symmetric(
-                                                  //                                     vertical: 8, horizontal: 16),
-                                                  //                                 margin: const EdgeInsets.symmetric(
-                                                  //                                     horizontal: 16),
-                                                  //                                 decoration: BoxDecoration(
-                                                  //                                   color: Colors.black,
-                                                  //                                   borderRadius: BorderRadius.circular(8),
-                                                  //                                 ),
-                                                  //                                 child: Text(
-                                                  //                                   " Know more",
-                                                  //                                   style: textStyle(
-                                                  //                                     !theme.isDarkMode
-                                                  //                                         ? colors.colorBlue
-                                                  //                                         : colors.colorLightBlue,
-                                                  //                                     13,
-                                                  //                                     FontWeight.w500,
-                                                  //                                   ),
-                                                  //                                 ),
-                                                  //                               ),
-                                                  //                             ),
-                                                  //                           ],
-                                                  //                         ),
-                                                  //                         softWrap: true,
-                                                  //                       ),
-                                                  //                     ],
-                                                  //                   ))
-                                                  //                 ],
-                                                  //               )),
-                                                  //         ),
-                                                  //       );
-                                                  //     },
-                                                  //   ),
-                                                  // ],
-                                                  SingleChildScrollView(
-                                                    padding:
-                                                        const EdgeInsets.all(0),
-                                                    scrollDirection:
-                                                        Axis.horizontal,
-                                                    child: Row(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .spaceBetween,
-                                                        children: [
-                                                          Row(children: [
-                                                            CustomWidgetButton(
-                                                                onPress: internet
-                                                                            .connectionStatus ==
-                                                                        ConnectivityResult
-                                                                            .none
-                                                                    ? () {}
-                                                                    : () {
-                                                                        marginUpdate();
-                                                                        BrokerageInput brokerageInput = BrokerageInput(
-                                                                            exch:
-                                                                                "${widget.scripInfo.exch}",
-                                                                            prc: priceCtrl
-                                                                                .text,
-                                                                            prd: orderInput
-                                                                                .orderType,
-                                                                            qty:
-                                                                                "${widget.scripInfo.ls}",
-                                                                            trantype: isBuy!
-                                                                                ? "B"
-                                                                                : "S",
-                                                                            tsym:
-                                                                                "${widget.scripInfo.tsym}");
-                                                                        ref.read(orderProvider).fetchGetBrokerage(
-                                                                            brokerageInput,
-                                                                            context);
-                                          
-                                                                        showModalBottomSheet(
-                                                                            useSafeArea:
-                                                                                true,
-                                                                            isScrollControlled:
-                                                                                true,
-                                                                            shape:
-                                                                                const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
-                                                                            context: context,
-                                                                            builder: (context) {
-                                                                              return const MarginDetailsBottomsheet();
-                                                                            });
-                                                                      },
-                                                                widget: Row(
-                                                                    children: [
-                                                                      TextWidget
-                                                                          .paraText(
-                                                                        text:
-                                                                            "Required ",
-                                                                        color: theme.isDarkMode
-                                                                            ? colors.textSecondaryDark
-                                                                            : colors.textSecondaryLight,
-                                                                        theme: theme
-                                                                            .isDarkMode,
-                                                                      ),
-                                                                      Text(
-                                                                          "${orderProvide.orderMarginModel == null ? 0.00 : orderProvide.orderMarginModel!.ordermargin}  + ${orderProvide.getBrokerageModel == null ? 0.00 : orderProvide.getBrokerageModel!.brkageAmt ?? 0.00}",
-                                                                          style: textStyle(
-                                                                              !theme.isDarkMode ? colors.colorBlue : colors.colorLightBlue,
-                                                                              12,
-                                                                              FontWeight.bold)),
-                                                                      Icon(
-                                                                          Icons
-                                                                              .arrow_drop_down,
-                                                                          color: !theme.isDarkMode
-                                                                              ? colors.colorBlue
-                                                                              : colors.colorLightBlue)
-                                                                    ])),
-                                          
-                                                            const SizedBox(
-                                                                width: 16),
-                                                            Row(
-                                                              children: [
-                                                                TextWidget.paraText(
-                                                                  text: "Balance ",
-                                                                  color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                                                                  theme: theme.isDarkMode,
-                                                                ),
-                                                                // const SizedBox(width: 4),
-                                                                TextWidget.paraText(
-                                                                    text: " ${clientFundDetail?.avlMrg ?? ''}",
-                                                                    color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                                                                    theme: theme.isDarkMode,
-                                                                    ),
-                                                                const SizedBox(
-                                                                    width: 4),
-                                                              ],
-                                                            ),
-                                                            const SizedBox(
-                                                                width: 8),
-                                                            orderProvide.orderMarginModel !=
-                                                                    null
-                                                                ? orderProvide
-                                                                            .orderMarginModel!
-                                                                            .remarks ==
-                                                                        "Insufficient Balance"
-                                                                    ? InkWell(
-                                                                        onTap:
-                                                                            () {
-                                                                          ref.read(transcationProvider).fetchValidateToken(
-                                                                              context);
-                                                                          Future.delayed(
-                                                                              const Duration(milliseconds: 100),
-                                                                              () async {
-                                                                            await trancation.ip();
-                                                                            await trancation.fetchupiIdView(trancation.bankdetails!.dATA![trancation.indexss][1],
-                                                                                trancation.bankdetails!.dATA![trancation.indexss][2]);
-                                                                            await trancation.fetchcwithdraw(context);
-                                                                          });
-                                          
-                                                                          trancation
-                                                                              .changebool(true);
-                                                                          Navigator.pushNamed(
-                                                                              context,
-                                                                              Routes.fundscreen,
-                                                                              arguments: trancation);
-                                                                        },
-                                                                        child:
-                                                                            Row(
-                                                                          children: [
-                                                                            // Red circular icon with white exclamation mark
-                                                                            // Container(
-                                                                            //   width: 20,
-                                                                            //   height: 20,
-                                                                            //   decoration: const BoxDecoration(
-                                                                            //     color: Colors.white,
-                                                                            //     shape: BoxShape.circle,
-                                                                            //   ),
-                                                                            //   child: const Center(
-                                                                            //     child: Icon(
-                                                                            //       Icons.error, // Exclamation icon
-                                                                            //       color: Colors.red,
-                                                                            //       size: 20,
-                                                                            //     ),
-                                                                            //   ),
-                                                                            // ),
-                                          
-                                                                            // "+ Add fund" text in blue
-                                                                            TextWidget.subText(
-                                                                                text: '+ Add fund',
-                                                                                color: theme.isDarkMode ? colors.secondaryDark : colors.secondaryLight,
-                                                                                theme: theme.isDarkMode,
-                                                                                fw: 2),
-                                                                            const SizedBox(width: 8),
-                                                                          ],
-                                                                        ),
-                                                                      )
-                                                                    : const SizedBox()
-                                                                : const SizedBox(),
-                                          
-                                                            // CustomWidgetButton(
-                                                            //     onPress: internet
-                                                            //                 .connectionStatus ==
-                                                            //             ConnectivityResult
-                                                            //                 .none
-                                                            //         ? () {}
-                                                            //         : () {
-                                                            //             BrokerageInput brokerageInput = BrokerageInput(
-                                                            //                 exch:"${widget.scripInfo.exch}",
-                                                            //                 prc: priceCtrl.text,
-                                                            //                 prd: orderInput.orderType,
-                                                            //                 qty:"${widget.scripInfo.ls}",
-                                                            //                 trantype: isBuy!? "B": "S",
-                                                            //                 tsym:"${widget.scripInfo.tsym}");
-                                                            //                 ref.read(orderProvider)
-                                                            //                 .fetchGetBrokerage(brokerageInput,context);
-                                                            //             showModalBottomSheet(useSafeArea:true,
-                                                            //                 isScrollControlled:true,
-                                                            //                 shape: const RoundedRectangleBorder(
-                                                            //                 borderRadius: BorderRadius.vertical(
-                                                            //                 top: Radius.circular(16))),
-                                                            //                 context:context,
-                                                            //                 builder:(context) {
-                                                            //                   return const ChargesDetailsBottomsheet();
-                                                            //                 });
-                                                            //           },
-                                                            //     widget: Row(
-                                                            //         children: [
-                                                            //           Text(
-                                                            //               "Charges: ",
-                                                            //               style: textStyle(
-                                                            //                   const Color(
-                                                            //                       0xff666666),
-                                                            //                   12,
-                                                            //                   FontWeight
-                                                            //                       .w500)),
-                                                            //           Text(
-                                                            //               "₹${orderProvide.getBrokerageModel == null ? 0.00 : orderProvide.getBrokerageModel!.brkageAmt ?? 0.00}",
-                                                            //               style: textStyle(
-                                                            //                   !theme.isDarkMode
-                                                            //                       ? colors.colorBlue
-                                                            //                       : colors.colorLightBlue,
-                                                            //                   12,
-                                                            //                   FontWeight.w600)),
-                                                            //           Icon(
-                                                            //               Icons
-                                                            //                   .arrow_drop_down,
-                                                            //               color: !theme.isDarkMode
-                                                            //                   ? colors
-                                                            //                       .colorBlue
-                                                            //                   : colors
-                                                            //                       .colorLightBlue)
-                                                            //         ]))
-                                                          ]),
-                                                          IconButton(
-                                                              onPressed: internet
-                                                                          .connectionStatus ==
-                                                                      ConnectivityResult
-                                                                          .none
-                                                                  ? null
-                                                                  : () {
-                                                                      marginUpdate();
-                                                                    },
-                                                              icon: SvgPicture
-                                                                  .asset(assets
-                                                                      .reloadIcon)),
-                                                        ]),
-                                                  ),
-                                                ],
-                                              ))
-                                        ],
-                                      ],
-                                      if (orderType == "MTF" &&
-                                          !_isMTFEnabled) ...[
-                                        const SizedBox.shrink()
-                                      ] else ...[
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 16, vertical: 4),
-                                          width: MediaQuery.of(context)
-                                              .size
-                                              .width,
-                                          child: ElevatedButton(
-                                            onPressed:
-                                                internet.connectionStatus ==
-                                                        ConnectivityResult
-                                                            .none
-                                                    ? null
-                                                    : () async {
-                                                        if (!orderProvide
-                                                            .orderloader) {
-                                                          if (orderType ==
-                                                              "SIP") {
-                                                            if (sipqtyctrl
-                                                                    .text
-                                                                    .isEmpty ||
-                                                                sipqtyctrl
-                                                                        .text ==
-                                                                    "0") {
-                                                              ScaffoldMessenger.of(
-                                                                      context)
-                                                                  .showSnackBar(warningMessage(
-                                                                      context,
-                                                                      sipqtyctrl.text.isEmpty
-                                                                          ? "Quantity can not be empty"
-                                                                          : "Quantity can not be 0"));
-                                                            } else if (sip
-                                                                    .numberofSips
-                                                                    .text
-                                                                    .isEmpty ||
-                                                                sip.numberofSips
-                                                                        .text ==
-                                                                    "0") {
-                                                              ScaffoldMessenger.of(
-                                                                      context)
-                                                                  .showSnackBar(warningMessage(
-                                                                      context,
-                                                                      sip.numberofSips.text.isEmpty
-                                                                          ? "Number of SIP can not be empty"
-                                                                          : "Number of SIP can not be 0"));
-                                                            } else {
-                                                              bool sipQty =
-                                                                  int.tryParse(sipqtyctrl.text) !=
-                                                                          null
-                                                                      ? true
-                                                                      : false;
-                                                              bool
-                                                                  numberOfSips =
-                                                                  int.tryParse(sip.numberofSips.text) !=
-                                                                          null
-                                                                      ? true
-                                                                      : false;
-                                        
-                                                              if (!sipQty ||
-                                                                  !numberOfSips) {
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 16, vertical: 4),
+                                            width: MediaQuery.of(context)
+                                                .size
+                                                .width,
+                                            child: ElevatedButton(
+                                              onPressed:
+                                                  internet.connectionStatus ==
+                                                          ConnectivityResult
+                                                              .none
+                                                      ? null
+                                                      : () async {
+                                                          if (!orderProvide
+                                                              .orderloader) {
+                                                            if (orderType ==
+                                                                "SIP") {
+                                                              if (sipqtyctrl
+                                                                      .text
+                                                                      .isEmpty ||
+                                                                  sipqtyctrl
+                                                                          .text ==
+                                                                      "0") {
                                                                 ScaffoldMessenger.of(
                                                                         context)
                                                                     .showSnackBar(warningMessage(
                                                                         context,
-                                                                        "Provide a valid value for SIP"));
+                                                                        sipqtyctrl.text.isEmpty
+                                                                            ? "Quantity can not be empty"
+                                                                            : "Quantity can not be 0"));
+                                                              } else if (sip
+                                                                      .numberofSips
+                                                                      .text
+                                                                      .isEmpty ||
+                                                                  sip.numberofSips
+                                                                          .text ==
+                                                                      "0") {
+                                                                ScaffoldMessenger.of(
+                                                                        context)
+                                                                    .showSnackBar(warningMessage(
+                                                                        context,
+                                                                        sip.numberofSips.text.isEmpty
+                                                                            ? "Number of SIP can not be empty"
+                                                                            : "Number of SIP can not be 0"));
                                                               } else {
-                                                                sipOrder(ref);
+                                                                bool sipQty =
+                                                                    int.tryParse(sipqtyctrl.text) !=
+                                                                            null
+                                                                        ? true
+                                                                        : false;
+                                                                bool
+                                                                    numberOfSips =
+                                                                    int.tryParse(sip.numberofSips.text) !=
+                                                                            null
+                                                                        ? true
+                                                                        : false;
+                                          
+                                                                if (!sipQty ||
+                                                                    !numberOfSips) {
+                                                                  ScaffoldMessenger.of(
+                                                                          context)
+                                                                      .showSnackBar(warningMessage(
+                                                                          context,
+                                                                          "Provide a valid value for SIP"));
+                                                                } else {
+                                                                  sipOrder(ref);
+                                                                }
                                                               }
-                                                            }
-                                                          } else if (orderType ==
-                                                              "GTT") {
-                                                            if (orderInput
-                                                                .disableGTTCond) {
-                                                              if ((orderInput
+                                                            } else if (orderType ==
+                                                                "GTT") {
+                                                              if (orderInput
+                                                                  .disableGTTCond) {
+                                                                if ((orderInput
+                                                                            .val1Ctrl
+                                                                            .text
+                                                                            .isNotEmpty &&
+                                                                        orderInput
+                                                                            .val2Ctrl
+                                                                            .text
+                                                                            .isNotEmpty &&
+                                                                        orderInput
+                                                                            .priceCtrl
+                                                                            .text
+                                                                            .isNotEmpty &&
+                                                                        orderInput
+                                                                            .ocoPriceCtrl
+                                                                            .text
+                                                                            .isNotEmpty &&
+                                                                        orderInput
+                                                                            .ocoQtyCtrl
+                                                                            .text
+                                                                            .isNotEmpty) &&
+                                                                    orderInput
+                                                                        .qtyCtrl
+                                                                        .text
+                                                                        .isNotEmpty) {
+                                                                  // if (orderInput
+                                                                  //             .actOcoPrcType == "SL Limit" ||
+                                                                  //     orderInput
+                                                                  //             .actOcoPrcType == "SL MKT") {
+                                                                  //   if (orderInput
+                                                                  //       .ocoTrgPrcCtrl
+                                                                  //       .text
+                                                                  //       .isEmpty) {
+                                                                  //     ScaffoldMessenger.of(
+                                                                  //             context)
+                                                                  //         .showSnackBar(warningMessage(
+                                                                  //             context,
+                                                                  //             "Trigger can not be empty"));
+                                                                  //   } else {
+                                                                  //     prepareToPlaceOCOOrder(orderInput);
+                                                                  //   }
+                                                                  // }
+                                                                  // else {
+                                                                  double ltp = double.parse(widget
+                                                                          .orderArg
+                                                                          .ltp ??
+                                                                      "0.00");
+                                                                  double val1 = double.parse(
+                                                                      orderInput
                                                                           .val1Ctrl
-                                                                          .text
-                                                                          .isNotEmpty &&
+                                                                          .text);
+                                                                  double val2 = double.parse(
                                                                       orderInput
                                                                           .val2Ctrl
-                                                                          .text
-                                                                          .isNotEmpty &&
-                                                                      orderInput
-                                                                          .priceCtrl
-                                                                          .text
-                                                                          .isNotEmpty &&
-                                                                      orderInput
-                                                                          .ocoPriceCtrl
-                                                                          .text
-                                                                          .isNotEmpty &&
-                                                                      orderInput
-                                                                          .ocoQtyCtrl
-                                                                          .text
-                                                                          .isNotEmpty) &&
-                                                                  orderInput
-                                                                      .qtyCtrl
-                                                                      .text
-                                                                      .isNotEmpty) {
-                                                                // if (orderInput
-                                                                //             .actOcoPrcType == "SL Limit" ||
-                                                                //     orderInput
-                                                                //             .actOcoPrcType == "SL MKT") {
-                                                                //   if (orderInput
-                                                                //       .ocoTrgPrcCtrl
-                                                                //       .text
-                                                                //       .isEmpty) {
-                                                                //     ScaffoldMessenger.of(
-                                                                //             context)
-                                                                //         .showSnackBar(warningMessage(
-                                                                //             context,
-                                                                //             "Trigger can not be empty"));
-                                                                //   } else {
-                                                                //     prepareToPlaceOCOOrder(orderInput);
-                                                                //   }
-                                                                // }
-                                                                // else {
-                                                                double ltp = double.parse(widget
-                                                                        .orderArg
-                                                                        .ltp ??
-                                                                    "0.00");
-                                                                double val1 = double.parse(
-                                                                    orderInput
-                                                                        .val1Ctrl
-                                                                        .text);
-                                                                double val2 = double.parse(
-                                                                    orderInput
-                                                                        .val2Ctrl
-                                                                        .text);
-                                        
-                                                                if (val1 >
-                                                                        ltp &&
-                                                                    val2 <
-                                                                        ltp) {
-                                                                  prepareToPlaceOCOOrder(
-                                                                      orderInput);
-                                                                } else {
-                                                                  ScaffoldMessenger.of(context).showSnackBar(warningMessage(
-                                                                      context,
-                                                                      val1 <= ltp
-                                                                          ? "Target Trigger Price can not be Less than LTP"
-                                                                          : val2 >= ltp
-                                                                              ? "Stoploss Trigger Price can not be Greater than LTP"
-                                                                              : "Trigger Price can not be equal to LTP"));
-                                                                }
-                                                                // }
-                                                              } else {
-                                                                ScaffoldMessenger.of(
-                                                                        context)
-                                                                    .showSnackBar(warningMessage(
+                                                                          .text);
+                                          
+                                                                  if (val1 >
+                                                                          ltp &&
+                                                                      val2 <
+                                                                          ltp) {
+                                                                    prepareToPlaceOCOOrder(
+                                                                        orderInput);
+                                                                  } else {
+                                                                    ScaffoldMessenger.of(context).showSnackBar(warningMessage(
                                                                         context,
-                                                                        "Enter all Input fields"));
-                                                              }
-                                                            } else {
-                                                              if ((orderInput
-                                                                          .val1Ctrl
-                                                                          .text
-                                                                          .isNotEmpty &&
-                                                                      orderInput
-                                                                          .priceCtrl
-                                                                          .text
-                                                                          .isNotEmpty) &&
-                                                                  orderInput
-                                                                      .qtyCtrl
-                                                                      .text
-                                                                      .isNotEmpty) {
-                                                                // if (orderInput
-                                                                //             .actPrcType == "SL Limit" ||
-                                                                //     orderInput
-                                                                //             .actPrcType == "SL MKT") {
-                                                                //   if (orderInput
-                                                                //       .trgPrcCtrl
-                                                                //       .text
-                                                                //       .isEmpty) {
-                                                                //     ScaffoldMessenger.of(
-                                                                //             context)
-                                                                //         .showSnackBar(warningMessage(
-                                                                //             context,
-                                                                //             "Trigger can not be empty"));
-                                                                //   } else {
-                                                                //     prepareToPlaceGttOrder(orderInput);
-                                                                //   }
-                                                                // } else {
-                                        
-                                                                double ltp = double.parse(widget
-                                                                        .orderArg
-                                                                        .ltp ??
-                                                                    "0.00");
-                                                                double val1 = double.parse(
-                                                                    orderInput
-                                                                        .val1Ctrl
-                                                                        .text);
-                                                                // double val2 = double.parse(orderInput.val2Ctrl.text);
-                                        
-                                                                if (val1 >
-                                                                    ltp) {
-                                                                  orderInput
-                                                                      .chngCond(
-                                                                          "Greater than");
-                                                                  orderInput
-                                                                      .chngAlert(
-                                                                          "LTP");
-                                                                  prepareToPlaceGttOrder(
-                                                                      orderInput);
-                                                                } else if (val1 <
-                                                                    ltp) {
-                                                                  orderInput
-                                                                      .chngCond(
-                                                                          "Less than");
-                                                                  orderInput
-                                                                      .chngAlert(
-                                                                          "LTP");
-                                                                  prepareToPlaceGttOrder(
-                                                                      orderInput);
+                                                                        val1 <= ltp
+                                                                            ? "Target Trigger Price can not be Less than LTP"
+                                                                            : val2 >= ltp
+                                                                                ? "Stoploss Trigger Price can not be Greater than LTP"
+                                                                                : "Trigger Price can not be equal to LTP"));
+                                                                  }
+                                                                  // }
                                                                 } else {
                                                                   ScaffoldMessenger.of(
                                                                           context)
                                                                       .showSnackBar(warningMessage(
                                                                           context,
-                                                                          "Trigger Price can not be equal to LTP"));
+                                                                          "Enter all Input fields"));
                                                                 }
-                                                                // }
                                                               } else {
-                                                                ScaffoldMessenger.of(
-                                                                        context)
-                                                                    .showSnackBar(warningMessage(
-                                                                        context,
-                                                                        "Enter all Input fields"));
+                                                                if ((orderInput
+                                                                            .val1Ctrl
+                                                                            .text
+                                                                            .isNotEmpty &&
+                                                                        orderInput
+                                                                            .priceCtrl
+                                                                            .text
+                                                                            .isNotEmpty) &&
+                                                                    orderInput
+                                                                        .qtyCtrl
+                                                                        .text
+                                                                        .isNotEmpty) {
+                                                                  // if (orderInput
+                                                                  //             .actPrcType == "SL Limit" ||
+                                                                  //     orderInput
+                                                                  //             .actPrcType == "SL MKT") {
+                                                                  //   if (orderInput
+                                                                  //       .trgPrcCtrl
+                                                                  //       .text
+                                                                  //       .isEmpty) {
+                                                                  //     ScaffoldMessenger.of(
+                                                                  //             context)
+                                                                  //         .showSnackBar(warningMessage(
+                                                                  //             context,
+                                                                  //             "Trigger can not be empty"));
+                                                                  //   } else {
+                                                                  //     prepareToPlaceGttOrder(orderInput);
+                                                                  //   }
+                                                                  // } else {
+                                          
+                                                                  double ltp = double.parse(widget
+                                                                          .orderArg
+                                                                          .ltp ??
+                                                                      "0.00");
+                                                                  double val1 = double.parse(
+                                                                      orderInput
+                                                                          .val1Ctrl
+                                                                          .text);
+                                                                  // double val2 = double.parse(orderInput.val2Ctrl.text);
+                                          
+                                                                  if (val1 >
+                                                                      ltp) {
+                                                                    orderInput
+                                                                        .chngCond(
+                                                                            "Greater than");
+                                                                    orderInput
+                                                                        .chngAlert(
+                                                                            "LTP");
+                                                                    prepareToPlaceGttOrder(
+                                                                        orderInput);
+                                                                  } else if (val1 <
+                                                                      ltp) {
+                                                                    orderInput
+                                                                        .chngCond(
+                                                                            "Less than");
+                                                                    orderInput
+                                                                        .chngAlert(
+                                                                            "LTP");
+                                                                    prepareToPlaceGttOrder(
+                                                                        orderInput);
+                                                                  } else {
+                                                                    ScaffoldMessenger.of(
+                                                                            context)
+                                                                        .showSnackBar(warningMessage(
+                                                                            context,
+                                                                            "Trigger Price can not be equal to LTP"));
+                                                                  }
+                                                                  // }
+                                                                } else {
+                                                                  ScaffoldMessenger.of(
+                                                                          context)
+                                                                      .showSnackBar(warningMessage(
+                                                                          context,
+                                                                          "Enter all Input fields"));
+                                                                }
                                                               }
-                                                            }
-                                                          } else {
-                                                            setState(() {
-                                                              if (frezQty ==
-                                                                  0) {
-                                                                quantity = int.parse(convertQtyOrAmtValue(
-                                                                            qtyCtrl
-                                                                                .text,
-                                                                            _isQtyToAmount)
-                                                                        .isEmpty
-                                                                    ? "0"
-                                                                    : convertQtyOrAmtValue(
-                                                                        qtyCtrl
-                                                                            .text,
-                                                                        _isQtyToAmount));
-                                                                // frezQty;
-                                                              } else {
-                                                                quantity = int.parse(convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount)
-                                                                            .isEmpty
-                                                                        ? "0"
-                                                                        : convertQtyOrAmtValue(
-                                                                            qtyCtrl.text,
-                                                                            _isQtyToAmount)) ~/
-                                                                    frezQty;
-                                                              }
-                                                              reminder = int.parse(convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount)
+                                                            } else {
+                                                              setState(() {
+                                                                if (frezQty ==
+                                                                    0) {
+                                                                  quantity = int.parse(convertQtyOrAmtValue(
+                                                                              qtyCtrl
+                                                                                  .text,
+                                                                              _isQtyToAmount)
                                                                           .isEmpty
                                                                       ? "0"
                                                                       : convertQtyOrAmtValue(
                                                                           qtyCtrl
                                                                               .text,
-                                                                          _isQtyToAmount)) -
-                                                                  (frezQty *
-                                                                      quantity);
-                                                              maxQty = frezQty *
-                                                                  frezQtyOrderSliceMaxLimit;
-                                                              print(
-                                                                  "objectobject{$quantity | $reminder | $maxQty}");
-                                                            });
-                                                            if (convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount)
-                                                                    .trim()
-                                                                    .isEmpty ||
-                                                                priceCtrl.text
-                                                                    .trim()
-                                                                    .isEmpty) {
-                                                              ScaffoldMessenger.of(
-                                                                      context)
-                                                                  .showSnackBar(warningMessage(
-                                                                      context,
-                                                                      convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount).isEmpty
-                                                                          ? "Quantity can not be empty"
-                                                                          : "Price can not be empty"));
-                                                            } else if (convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount).trim() == "0" ||
-                                                                priceCtrl.text.trim() ==
-                                                                    "0") {
-                                                              ScaffoldMessenger.of(
-                                                                      context)
-                                                                  .showSnackBar(warningMessage(
-                                                                      context,
-                                                                      convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount) ==
-                                                                              "0"
-                                                                          ? "Quantity can not be 0"
-                                                                          : "Price can not be 0"));
-                                                            } else if (int.parse(convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount).trim()) >
-                                                                (frezQty == lotSize
-                                                                    ? 999999
-                                                                    : frezQtyOrderSliceMaxLimit *
-                                                                        frezQty)) {
-                                                              ScaffoldMessenger.of(
-                                                                      context)
-                                                                  .showSnackBar(warningMessage(
-                                                                      context,
-                                                                      "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit * frezQty}"));
-                                        
-                                                              // 288192460  288192460
-                                                              // 14409623
-                                                            } else if ((priceType == "Limit" || priceType == "SL Limit") && (double.parse(ordPrice) < double.parse("${widget.scripInfo.lc ?? 0.00}")) ||
-                                                                (double.parse(ordPrice) >
-                                                                    double.parse(
-                                                                        "${widget.scripInfo.uc ?? 0.00}"))) {
-                                                              ScaffoldMessenger.of(
-                                                                      context)
-                                                                  .showSnackBar(warningMessage(
-                                                                      context,
-                                                                      double.parse(ordPrice) <
-                                                                              double.parse("${widget.scripInfo.lc ?? 0.00}")
-                                                                          ? "Price can not be lesser than Lower Circuit Limit ${widget.scripInfo.lc ?? 0.00}"
-                                                                          : "Price can not be greater than Upper Circuit Limit ${widget.scripInfo.uc ?? 0.00}"));
-                                                            } else if ((orderType == "Delivery" || orderType == "Intraday") &&
-                                                                (priceType == "SL Limit" ||
-                                                                    priceType ==
-                                                                        "SL MKT")) {
-                                                              if (triggerPriceCtrl
-                                                                      .text
-                                                                      .isEmpty ||
-                                                                  triggerPriceCtrl
-                                                                          .text ==
-                                                                      "0") {
-                                                                ScaffoldMessenger.of(context).showSnackBar(warningMessage(
-                                                                    context,
-                                                                    triggerPriceCtrl
-                                                                            .text
-                                                                            .isEmpty
-                                                                        ? "Trigger can not be empty"
-                                                                        : "Trigger can not be 0"));
-                                                              } else {
-                                                                if (isBuy!) {
-                                                                  if (priceType ==
-                                                                      "SL MKT") {
-                                                                    if (double.parse(triggerPriceCtrl
-                                                                            .text) <
-                                                                        double.parse(widget.orderArg.ltp ??
-                                                                            "0.00")) {
-                                                                      ScaffoldMessenger.of(context).showSnackBar(warningMessage(
-                                                                          context,
-                                                                          "Trigger should be greater than LTP"));
-                                                                    } else if (double.parse(triggerPriceCtrl
-                                                                            .text) >
-                                                                        double.parse(widget.scripInfo.uc ??
-                                                                            "0.00")) {
-                                                                      ScaffoldMessenger.of(context).showSnackBar(warningMessage(
-                                                                          context,
-                                                                          "Trigger can not be greater than upper circuit limit of ${widget.scripInfo.uc ?? 0.00}"));
-                                                                    } else {
-                                                                      if ((int.parse(convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount).isEmpty ? "0" : convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount)) >
-                                                                              frezQty &&
-                                                                          widget.scripInfo.frzqty !=
-                                                                              null)) {
-                                                                        placeOrder(
-                                                                            orderInput,
-                                                                            true,
-                                                                            theme);
-                                                                      } else {
-                                                                        placeOrder(
-                                                                            orderInput,
-                                                                            false,
-                                                                            theme);
-                                                                      }
-                                                                    }
-                                                                  } else {
-                                                                    if (double.parse(triggerPriceCtrl
-                                                                            .text) <
-                                                                        double.parse(widget.scripInfo.lc ??
-                                                                            "0.00")) {
-                                                                      ScaffoldMessenger.of(context).showSnackBar(warningMessage(
-                                                                          context,
-                                                                          "Trigger can not be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}"));
-                                                                    } else if (double.parse(
-                                                                            ordPrice) <
-                                                                        double.parse(triggerPriceCtrl
-                                                                            .text)) {
-                                                                      ScaffoldMessenger.of(context).showSnackBar(warningMessage(
-                                                                          context,
-                                                                          "Trigger should be less than price"));
-                                                                    } else if (double.parse(triggerPriceCtrl
-                                                                            .text) >
-                                                                        double.parse(widget.scripInfo.uc ??
-                                                                            "0.00")) {
-                                                                      ScaffoldMessenger.of(context).showSnackBar(warningMessage(
-                                                                          context,
-                                                                          "Trigger can not be greater than upper circuit limit of ${widget.scripInfo.uc ?? 0.00}"));
-                                                                    } else {
-                                                                      if ((int.parse(convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount).isEmpty ? "0" : convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount)) >
-                                                                              frezQty &&
-                                                                          widget.scripInfo.frzqty !=
-                                                                              null)) {
-                                                                        placeOrder(
-                                                                            orderInput,
-                                                                            true,
-                                                                            theme);
-                                                                      } else {
-                                                                        placeOrder(
-                                                                            orderInput,
-                                                                            false,
-                                                                            theme);
-                                                                      }
-                                                                    }
-                                                                  }
+                                                                          _isQtyToAmount));
+                                                                  // frezQty;
                                                                 } else {
-                                                                  if (priceType ==
-                                                                      "SL MKT") {
-                                                                    if (double.parse(triggerPriceCtrl
-                                                                            .text) >
-                                                                        double.parse(widget.orderArg.ltp ??
-                                                                            "0.00")) {
-                                                                      ScaffoldMessenger.of(context).showSnackBar(warningMessage(
-                                                                          context,
-                                                                          "Trigger should be lesser than LTP"));
-                                                                    } else if (double.parse(triggerPriceCtrl
-                                                                            .text) <
-                                                                        double.parse(widget.scripInfo.lc ??
-                                                                            "0.00")) {
-                                                                      ScaffoldMessenger.of(context).showSnackBar(warningMessage(
-                                                                          context,
-                                                                          "Trigger can not be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}"));
-                                                                    } else {
-                                                                      if ((int.parse(convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount).isEmpty ? "0" : convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount)) >
-                                                                              frezQty &&
-                                                                          widget.scripInfo.frzqty !=
-                                                                              null)) {
-                                                                        placeOrder(
-                                                                            orderInput,
-                                                                            true,
-                                                                            theme);
-                                                                      } else {
-                                                                        placeOrder(
-                                                                            orderInput,
-                                                                            false,
-                                                                            theme);
-                                                                      }
-                                                                    }
-                                                                  } else {
-                                                                    // log('x');
-                                        
-                                                                    if (double.parse(triggerPriceCtrl
-                                                                            .text) >
-                                                                        double.parse(widget.scripInfo.uc ??
-                                                                            "0.00")) {
-                                                                      ScaffoldMessenger.of(context).showSnackBar(warningMessage(
-                                                                          context,
-                                                                          "Trigger can not be greater than upper circuit limit of ${widget.scripInfo.uc ?? 0.00}"));
-                                                                    } else if (double.parse(
-                                                                            ordPrice) >
-                                                                        double.parse(triggerPriceCtrl
-                                                                            .text)) {
-                                                                      ScaffoldMessenger.of(context).showSnackBar(warningMessage(
-                                                                          context,
-                                                                          "Trigger should be greater than price"));
-                                                                    } else if (double.parse(triggerPriceCtrl
-                                                                            .text) <
-                                                                        double.parse(widget.scripInfo.lc ??
-                                                                            "0.00")) {
-                                                                      ScaffoldMessenger.of(context).showSnackBar(warningMessage(
-                                                                          context,
-                                                                          "Trigger can not be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}"));
-                                                                    } else {
-                                                                      if ((int.parse(convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount).isEmpty ? "0" : convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount)) >
-                                                                              frezQty &&
-                                                                          widget.scripInfo.frzqty !=
-                                                                              null)) {
-                                                                        placeOrder(
-                                                                            orderInput,
-                                                                            true,
-                                                                            theme);
-                                                                      } else {
-                                                                        placeOrder(
-                                                                            orderInput,
-                                                                            false,
-                                                                            theme);
-                                                                      }
-                                                                    }
-                                                                  }
+                                                                  quantity = int.parse(convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount)
+                                                                              .isEmpty
+                                                                          ? "0"
+                                                                          : convertQtyOrAmtValue(
+                                                                              qtyCtrl.text,
+                                                                              _isQtyToAmount)) ~/
+                                                                      frezQty;
                                                                 }
-                                                              }
-                                                            } else if (_isCoverOrderEnabled &&
-                                                                orderType ==
-                                                                    "CO - BO" &&
-                                                                (priceType == "Limit" ||
-                                                                    priceType == "Market")) {
-                                                              if (stopLossCtrl
-                                                                      .text
-                                                                      .isEmpty ||
-                                                                  stopLossCtrl
-                                                                          .text ==
-                                                                      "0") {
-                                                                ScaffoldMessenger.of(context).showSnackBar(warningMessage(
-                                                                    context,
-                                                                    stopLossCtrl
-                                                                            .text
+                                                                reminder = int.parse(convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount)
                                                                             .isEmpty
-                                                                        ? "Stoploss can not be empty"
-                                                                        : "Stoploss can not be 0"));
-                                                              } else {
-                                                                if (isBuy!) {
-                                                                  if ((double.parse(ordPrice) -
-                                                                          double.parse(stopLossCtrl
-                                                                              .text)) <
-                                                                      double.parse(widget.scripInfo.lc ??
-                                                                          "0.00")) {
-                                                                    ScaffoldMessenger.of(context).showSnackBar(warningMessage(
-                                                                        context,
-                                                                        "Price(Order price - Stoploss = ${(double.parse(ordPrice) - double.parse(stopLossCtrl.text)).toStringAsFixed(2)}) Stoploss can not be lower than ${widget.scripInfo.lc ?? 0.00}"));
-                                                                  } else {
-                                                                    if ((int.parse(convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount).isEmpty ? "0" : convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount)) >
-                                                                            frezQty &&
-                                                                        widget.scripInfo.frzqty !=
-                                                                            null)) {
-                                                                      placeOrder(
-                                                                          orderInput,
-                                                                          true,
-                                                                          theme);
-                                                                    } else {
-                                                                      placeOrder(
-                                                                          orderInput,
-                                                                          false,
-                                                                          theme);
-                                                                    }
-                                                                  }
-                                                                } else {
-                                                                  if ((double.parse(ordPrice) +
-                                                                          double.parse(stopLossCtrl
-                                                                              .text)) >
-                                                                      double.parse(widget.scripInfo.uc ??
-                                                                          "0.00")) {
-                                                                    ScaffoldMessenger.of(context).showSnackBar(warningMessage(
-                                                                        context,
-                                                                        "Price(Order price + Stoploss = ${(double.parse(ordPrice) + double.parse(stopLossCtrl.text))}) Stoploss can not be greater than ${widget.scripInfo.uc ?? 0.00}"));
-                                                                  } else {
-                                                                    if ((int.parse(convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount).isEmpty ? "0" : convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount)) >
-                                                                            frezQty &&
-                                                                        widget.scripInfo.frzqty !=
-                                                                            null)) {
-                                                                      placeOrder(
-                                                                          orderInput,
-                                                                          true,
-                                                                          theme);
-                                                                    } else {
-                                                                      placeOrder(
-                                                                          orderInput,
-                                                                          false,
-                                                                          theme);
-                                                                    }
-                                                                  }
-                                                                }
-                                                              }
-                                                            }
-                                                            // else if (orderType == "CO - BO" && (priceType == "SL Limit")) {
-                                                            //   if (stopLossCtrl.text
-                                                            //           .isEmpty ||
-                                                            //       stopLossCtrl.text ==
-                                                            //           "0") {
-                                                            //     ScaffoldMessenger
-                                                            //             .of(context)
-                                                            //         .showSnackBar(warningMessage(
-                                                            //             context,
-                                                            //             stopLossCtrl
-                                                            //                     .text
-                                                            //                     .isEmpty
-                                                            //                 ? "Stoploss can not be empty"
-                                                            //                 : "Stoploss can not be 0"));
-                                                            //   } else if (isBuy! &&
-                                                            //       (double.parse(ordPrice) - double.parse(stopLossCtrl.text)) <
-                                                            //           double.parse(widget
-                                                            //                   .scripInfo
-                                                            //                   .lc ??
-                                                            //               "0.00")) {
-                                                            //     ScaffoldMessenger
-                                                            //             .of(context)
-                                                            //         .showSnackBar(
-                                                            //             warningMessage(
-                                                            //                 context,
-                                                            //                 "Price(Order price - Stoploss = ${(double.parse(ordPrice) - double.parse(stopLossCtrl.text)).toStringAsFixed(2)}) Stoploss can not be lower than ${widget.scripInfo.lc ?? 0.00}"));
-                                                            //   } else if (!isBuy! &&
-                                                            //       (double.parse(ordPrice) + double.parse(stopLossCtrl.text)) >
-                                                            //           double.parse(widget
-                                                            //                   .scripInfo
-                                                            //                   .uc ??
-                                                            //               "0.00")) {
-                                                            //     ScaffoldMessenger
-                                                            //             .of(context)
-                                                            //         .showSnackBar(
-                                                            //             warningMessage(
-                                                            //                 context,
-                                                            //                 "Price(Order price + Stoploss = ${(double.parse(ordPrice) + double.parse(stopLossCtrl.text))}) Stoploss can not be greater than ${widget.scripInfo.uc ?? 0.00}"));
-                                                            //   } else if ((triggerPriceCtrl
-                                                            //               .text
-                                                            //               .isEmpty ||
-                                                            //           triggerPriceCtrl.text ==
-                                                            //               "0") &&
-                                                            //       priceType ==
-                                                            //           "SL Limit") {
-                                                            //     ScaffoldMessenger
-                                                            //             .of(context)
-                                                            //         .showSnackBar(warningMessage(
-                                                            //             context,
-                                                            //             triggerPriceCtrl
-                                                            //                     .text
-                                                            //                     .isEmpty
-                                                            //                 ? "Trigger can not be empty"
-                                                            //                 : "Trigger can not be 0"));
-                                                            //   } else {
-                                                            //     if (isBuy!) {
-                                                            //       if (double.parse(
-                                                            //               triggerPriceCtrl
-                                                            //                   .text) <
-                                                            //           double.parse(widget
-                                                            //                   .scripInfo
-                                                            //                   .lc ??
-                                                            //               "0.00")) {
-                                                            //         ScaffoldMessenger.of(
-                                                            //                 context)
-                                                            //             .showSnackBar(warningMessage(
-                                                            //                 context,
-                                                            //                 "Trigger can not be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}"));
-                                                            //       } else if (double.parse(
-                                                            //               ordPrice) <
-                                                            //           double.parse(triggerPriceCtrl
-                                                            //               .text)) {
-                                                            //         ScaffoldMessenger.of(
-                                                            //                 context)
-                                                            //             .showSnackBar(warningMessage(
-                                                            //                 context,
-                                                            //                 "Trigger should be less than price"));
-                                                            //       } else if (double.parse(
-                                                            //               triggerPriceCtrl
-                                                            //                   .text) >
-                                                            //           double.parse(widget
-                                                            //                   .scripInfo
-                                                            //                   .uc ??
-                                                            //               "0.00")) {
-                                                            //         ScaffoldMessenger.of(
-                                                            //                 context)
-                                                            //             .showSnackBar(warningMessage(
-                                                            //                 context,
-                                                            //                 "Trigger can not be greater than upper circuit limit of ${widget.scripInfo.uc ?? 0.00}"));
-                                                            //       } else {
-                                                            //         if ((int.parse(qtyCtrl.text.isEmpty
-                                                            //                     ? "0"
-                                                            //                     : qtyCtrl
-                                                            //                         .text) >
-                                                            //                 frezQty &&
-                                                            //             widget.scripInfo
-                                                            //                     .frzqty !=
-                                                            //                 null)) {
-                                                            //           placeOrder(
-                                                            //               orderInput,
-                                                            //               true,
-                                                            //               theme);
-                                                            //         } else {
-                                                            //           placeOrder(
-                                                            //               orderInput,
-                                                            //               false,
-                                                            //               theme);
-                                                            //         }
-                                                            //       }
-                                                            //     } else {
-                                                            //       if (double.parse(
-                                                            //               triggerPriceCtrl
-                                                            //                   .text) >
-                                                            //           double.parse(widget
-                                                            //                   .scripInfo
-                                                            //                   .uc ??
-                                                            //               "0.00")) {
-                                                            //         ScaffoldMessenger.of(
-                                                            //                 context)
-                                                            //             .showSnackBar(warningMessage(
-                                                            //                 context,
-                                                            //                 "Trigger can not be greater than upper circuit limit of ${widget.scripInfo.uc ?? 0.00}"));
-                                                            //       } else if (double.parse(
-                                                            //               ordPrice) >
-                                                            //           double.parse(triggerPriceCtrl
-                                                            //               .text)) {
-                                                            //         ScaffoldMessenger.of(
-                                                            //                 context)
-                                                            //             .showSnackBar(warningMessage(
-                                                            //                 context,
-                                                            //                 "Trigger should be greater than price"));
-                                                            //       } else if (double.parse(
-                                                            //               triggerPriceCtrl
-                                                            //                   .text) <
-                                                            //           double.parse(widget
-                                                            //                   .scripInfo
-                                                            //                   .lc ??
-                                                            //               "0.00")) {
-                                                            //         ScaffoldMessenger.of(
-                                                            //                 context)
-                                                            //             .showSnackBar(warningMessage(
-                                                            //                 context,
-                                                            //                 "Trigger can not be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}"));
-                                                            //       } else {
-                                                            //         if ((int.parse(qtyCtrl.text.isEmpty
-                                                            //                     ? "0"
-                                                            //                     : qtyCtrl
-                                                            //                         .text) >
-                                                            //                 frezQty &&
-                                                            //             widget.scripInfo
-                                                            //                     .frzqty !=
-                                                            //                 null)) {
-                                                            //           placeOrder(
-                                                            //               orderInput,
-                                                            //               true,
-                                                            //               theme);
-                                                            //         } else {
-                                                            //           placeOrder(
-                                                            //               orderInput,
-                                                            //               false,
-                                                            //               theme);
-                                                            //         }
-                                                            //       }
-                                                            //     }
-                                                            //   }
-                                                            // }
-                                                            else if (_isBracketOrderEnabled &&
-                                                                orderType ==
-                                                                    "CO - BO" &&
-                                                                (priceType ==
-                                                                        "Limit" ||
-                                                                    priceType ==
-                                                                        "Market")) {
-                                                              if (stopLossCtrl
-                                                                      .text
+                                                                        ? "0"
+                                                                        : convertQtyOrAmtValue(
+                                                                            qtyCtrl
+                                                                                .text,
+                                                                            _isQtyToAmount)) -
+                                                                    (frezQty *
+                                                                        quantity);
+                                                                maxQty = frezQty *
+                                                                    frezQtyOrderSliceMaxLimit;
+                                                                print(
+                                                                    "objectobject{$quantity | $reminder | $maxQty}");
+                                                              });
+                                                              if (convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount)
+                                                                      .trim()
                                                                       .isEmpty ||
-                                                                  targetCtrl
-                                                                      .text
+                                                                  priceCtrl.text
+                                                                      .trim()
                                                                       .isEmpty) {
                                                                 ScaffoldMessenger.of(
                                                                         context)
                                                                     .showSnackBar(warningMessage(
                                                                         context,
-                                                                        "${stopLossCtrl.text.isEmpty ? "Stoploss" : "Target"} can not be empty"));
-                                                              } else if (double.parse(stopLossCtrl.text) <=
-                                                                      0 ||
-                                                                  double.parse(targetCtrl.text) <=
-                                                                      0) {
+                                                                        convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount).isEmpty
+                                                                            ? "Quantity can not be empty"
+                                                                            : "Price can not be empty"));
+                                                              } else if (convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount).trim() == "0" ||
+                                                                  priceCtrl.text.trim() ==
+                                                                      "0") {
                                                                 ScaffoldMessenger.of(
                                                                         context)
                                                                     .showSnackBar(warningMessage(
                                                                         context,
-                                                                        "${double.parse(stopLossCtrl.text) <= 0 ? "Stoploss" : "Target"} can not be zero"));
-                                                              } else if (isBuy! &&
-                                                                  (double.parse(ordPrice) -
-                                                                          double.parse(stopLossCtrl
-                                                                              .text)) <
-                                                                      double.parse(widget.scripInfo.lc ??
-                                                                          "0.00")) {
+                                                                        convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount) ==
+                                                                                "0"
+                                                                            ? "Quantity can not be 0"
+                                                                            : "Price can not be 0"));
+                                                              } else if (int.parse(convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount).trim()) >
+                                                                  (frezQty == lotSize
+                                                                      ? 999999
+                                                                      : frezQtyOrderSliceMaxLimit *
+                                                                          frezQty)) {
                                                                 ScaffoldMessenger.of(
                                                                         context)
                                                                     .showSnackBar(warningMessage(
                                                                         context,
-                                                                        "Price(Order price - Stoploss = ${(double.parse(ordPrice) - double.parse(stopLossCtrl.text)).toStringAsFixed(2)}) Stoploss can not be lower than ${widget.scripInfo.lc ?? 0.00}"));
-                                                              } else if (!isBuy! &&
-                                                                  (double.parse(ordPrice) +
-                                                                          double.parse(stopLossCtrl.text)) >
-                                                                      double.parse(widget.scripInfo.uc ?? "0.00")) {
+                                                                        "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit * frezQty}"));
+                                          
+                                                                // 288192460  288192460
+                                                                // 14409623
+                                                              } else if ((priceType == "Limit" || priceType == "SL Limit") && (double.parse(ordPrice) < double.parse("${widget.scripInfo.lc ?? 0.00}")) ||
+                                                                  (double.parse(ordPrice) >
+                                                                      double.parse(
+                                                                          "${widget.scripInfo.uc ?? 0.00}"))) {
                                                                 ScaffoldMessenger.of(
                                                                         context)
                                                                     .showSnackBar(warningMessage(
                                                                         context,
-                                                                        "Price(Order price + Stoploss = ${(double.parse(ordPrice) + double.parse(stopLossCtrl.text))}) Stoploss can not be greater than ${widget.scripInfo.uc ?? 0.00}"));
-                                                              } else {
-                                                                if ((int.parse(convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount).isEmpty ? "0" : convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount)) >
+                                                                        double.parse(ordPrice) <
+                                                                                double.parse("${widget.scripInfo.lc ?? 0.00}")
+                                                                            ? "Price can not be lesser than Lower Circuit Limit ${widget.scripInfo.lc ?? 0.00}"
+                                                                            : "Price can not be greater than Upper Circuit Limit ${widget.scripInfo.uc ?? 0.00}"));
+                                                              } else if ((orderType == "Delivery" || orderType == "Intraday") &&
+                                                                  (priceType == "SL Limit" ||
+                                                                      priceType ==
+                                                                          "SL MKT")) {
+                                                                if (triggerPriceCtrl
+                                                                        .text
+                                                                        .isEmpty ||
+                                                                    triggerPriceCtrl
+                                                                            .text ==
+                                                                        "0") {
+                                                                  ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+                                                                      context,
+                                                                      triggerPriceCtrl
+                                                                              .text
+                                                                              .isEmpty
+                                                                          ? "Trigger can not be empty"
+                                                                          : "Trigger can not be 0"));
+                                                                } else {
+                                                                  if (isBuy!) {
+                                                                    if (priceType ==
+                                                                        "SL MKT") {
+                                                                      if (double.parse(triggerPriceCtrl
+                                                                              .text) <
+                                                                          double.parse(widget.orderArg.ltp ??
+                                                                              "0.00")) {
+                                                                        ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+                                                                            context,
+                                                                            "Trigger should be greater than LTP"));
+                                                                      } else if (double.parse(triggerPriceCtrl
+                                                                              .text) >
+                                                                          double.parse(widget.scripInfo.uc ??
+                                                                              "0.00")) {
+                                                                        ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+                                                                            context,
+                                                                            "Trigger can not be greater than upper circuit limit of ${widget.scripInfo.uc ?? 0.00}"));
+                                                                      } else {
+                                                                        if ((int.parse(convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount).isEmpty ? "0" : convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount)) >
+                                                                                frezQty &&
+                                                                            widget.scripInfo.frzqty !=
+                                                                                null)) {
+                                                                          placeOrder(
+                                                                              orderInput,
+                                                                              true,
+                                                                              theme);
+                                                                        } else {
+                                                                          placeOrder(
+                                                                              orderInput,
+                                                                              false,
+                                                                              theme);
+                                                                        }
+                                                                      }
+                                                                    } else {
+                                                                      if (double.parse(triggerPriceCtrl
+                                                                              .text) <
+                                                                          double.parse(widget.scripInfo.lc ??
+                                                                              "0.00")) {
+                                                                        ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+                                                                            context,
+                                                                            "Trigger can not be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}"));
+                                                                      } else if (double.parse(
+                                                                              ordPrice) <
+                                                                          double.parse(triggerPriceCtrl
+                                                                              .text)) {
+                                                                        ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+                                                                            context,
+                                                                            "Trigger should be less than price"));
+                                                                      } else if (double.parse(triggerPriceCtrl
+                                                                              .text) >
+                                                                          double.parse(widget.scripInfo.uc ??
+                                                                              "0.00")) {
+                                                                        ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+                                                                            context,
+                                                                            "Trigger can not be greater than upper circuit limit of ${widget.scripInfo.uc ?? 0.00}"));
+                                                                      } else {
+                                                                        if ((int.parse(convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount).isEmpty ? "0" : convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount)) >
+                                                                                frezQty &&
+                                                                            widget.scripInfo.frzqty !=
+                                                                                null)) {
+                                                                          placeOrder(
+                                                                              orderInput,
+                                                                              true,
+                                                                              theme);
+                                                                        } else {
+                                                                          placeOrder(
+                                                                              orderInput,
+                                                                              false,
+                                                                              theme);
+                                                                        }
+                                                                      }
+                                                                    }
+                                                                  } else {
+                                                                    if (priceType ==
+                                                                        "SL MKT") {
+                                                                      if (double.parse(triggerPriceCtrl
+                                                                              .text) >
+                                                                          double.parse(widget.orderArg.ltp ??
+                                                                              "0.00")) {
+                                                                        ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+                                                                            context,
+                                                                            "Trigger should be lesser than LTP"));
+                                                                      } else if (double.parse(triggerPriceCtrl
+                                                                              .text) <
+                                                                          double.parse(widget.scripInfo.lc ??
+                                                                              "0.00")) {
+                                                                        ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+                                                                            context,
+                                                                            "Trigger can not be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}"));
+                                                                      } else {
+                                                                        if ((int.parse(convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount).isEmpty ? "0" : convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount)) >
+                                                                                frezQty &&
+                                                                            widget.scripInfo.frzqty !=
+                                                                                null)) {
+                                                                          placeOrder(
+                                                                              orderInput,
+                                                                              true,
+                                                                              theme);
+                                                                        } else {
+                                                                          placeOrder(
+                                                                              orderInput,
+                                                                              false,
+                                                                              theme);
+                                                                        }
+                                                                      }
+                                                                    } else {
+                                                                      // log('x');
+                                          
+                                                                      if (double.parse(triggerPriceCtrl
+                                                                              .text) >
+                                                                          double.parse(widget.scripInfo.uc ??
+                                                                              "0.00")) {
+                                                                        ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+                                                                            context,
+                                                                            "Trigger can not be greater than upper circuit limit of ${widget.scripInfo.uc ?? 0.00}"));
+                                                                      } else if (double.parse(
+                                                                              ordPrice) >
+                                                                          double.parse(triggerPriceCtrl
+                                                                              .text)) {
+                                                                        ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+                                                                            context,
+                                                                            "Trigger should be greater than price"));
+                                                                      } else if (double.parse(triggerPriceCtrl
+                                                                              .text) <
+                                                                          double.parse(widget.scripInfo.lc ??
+                                                                              "0.00")) {
+                                                                        ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+                                                                            context,
+                                                                            "Trigger can not be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}"));
+                                                                      } else {
+                                                                        if ((int.parse(convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount).isEmpty ? "0" : convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount)) >
+                                                                                frezQty &&
+                                                                            widget.scripInfo.frzqty !=
+                                                                                null)) {
+                                                                          placeOrder(
+                                                                              orderInput,
+                                                                              true,
+                                                                              theme);
+                                                                        } else {
+                                                                          placeOrder(
+                                                                              orderInput,
+                                                                              false,
+                                                                              theme);
+                                                                        }
+                                                                      }
+                                                                    }
+                                                                  }
+                                                                }
+                                                              } else if (_isCoverOrderEnabled &&
+                                                                  orderType ==
+                                                                      "CO - BO" &&
+                                                                  (priceType == "Limit" ||
+                                                                      priceType == "Market")) {
+                                                                if (stopLossCtrl
+                                                                        .text
+                                                                        .isEmpty ||
+                                                                    stopLossCtrl
+                                                                            .text ==
+                                                                        "0") {
+                                                                  ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+                                                                      context,
+                                                                      stopLossCtrl
+                                                                              .text
+                                                                              .isEmpty
+                                                                          ? "Stoploss can not be empty"
+                                                                          : "Stoploss can not be 0"));
+                                                                } else {
+                                                                  if (isBuy!) {
+                                                                    if ((double.parse(ordPrice) -
+                                                                            double.parse(stopLossCtrl
+                                                                                .text)) <
+                                                                        double.parse(widget.scripInfo.lc ??
+                                                                            "0.00")) {
+                                                                      ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+                                                                          context,
+                                                                          "Price(Order price - Stoploss = ${(double.parse(ordPrice) - double.parse(stopLossCtrl.text)).toStringAsFixed(2)}) Stoploss can not be lower than ${widget.scripInfo.lc ?? 0.00}"));
+                                                                    } else {
+                                                                      if ((int.parse(convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount).isEmpty ? "0" : convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount)) >
+                                                                              frezQty &&
+                                                                          widget.scripInfo.frzqty !=
+                                                                              null)) {
+                                                                        placeOrder(
+                                                                            orderInput,
+                                                                            true,
+                                                                            theme);
+                                                                      } else {
+                                                                        placeOrder(
+                                                                            orderInput,
+                                                                            false,
+                                                                            theme);
+                                                                      }
+                                                                    }
+                                                                  } else {
+                                                                    if ((double.parse(ordPrice) +
+                                                                            double.parse(stopLossCtrl
+                                                                                .text)) >
+                                                                        double.parse(widget.scripInfo.uc ??
+                                                                            "0.00")) {
+                                                                      ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+                                                                          context,
+                                                                          "Price(Order price + Stoploss = ${(double.parse(ordPrice) + double.parse(stopLossCtrl.text))}) Stoploss can not be greater than ${widget.scripInfo.uc ?? 0.00}"));
+                                                                    } else {
+                                                                      if ((int.parse(convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount).isEmpty ? "0" : convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount)) >
+                                                                              frezQty &&
+                                                                          widget.scripInfo.frzqty !=
+                                                                              null)) {
+                                                                        placeOrder(
+                                                                            orderInput,
+                                                                            true,
+                                                                            theme);
+                                                                      } else {
+                                                                        placeOrder(
+                                                                            orderInput,
+                                                                            false,
+                                                                            theme);
+                                                                      }
+                                                                    }
+                                                                  }
+                                                                }
+                                                              }
+                                                              // else if (orderType == "CO - BO" && (priceType == "SL Limit")) {
+                                                              //   if (stopLossCtrl.text
+                                                              //           .isEmpty ||
+                                                              //       stopLossCtrl.text ==
+                                                              //           "0") {
+                                                              //     ScaffoldMessenger
+                                                              //             .of(context)
+                                                              //         .showSnackBar(warningMessage(
+                                                              //             context,
+                                                              //             stopLossCtrl
+                                                              //                     .text
+                                                              //                     .isEmpty
+                                                              //                 ? "Stoploss can not be empty"
+                                                              //                 : "Stoploss can not be 0"));
+                                                              //   } else if (isBuy! &&
+                                                              //       (double.parse(ordPrice) - double.parse(stopLossCtrl.text)) <
+                                                              //           double.parse(widget
+                                                              //                   .scripInfo
+                                                              //                   .lc ??
+                                                              //               "0.00")) {
+                                                              //     ScaffoldMessenger
+                                                              //             .of(context)
+                                                              //         .showSnackBar(
+                                                              //             warningMessage(
+                                                              //                 context,
+                                                              //                 "Price(Order price - Stoploss = ${(double.parse(ordPrice) - double.parse(stopLossCtrl.text)).toStringAsFixed(2)}) Stoploss can not be lower than ${widget.scripInfo.lc ?? 0.00}"));
+                                                              //   } else if (!isBuy! &&
+                                                              //       (double.parse(ordPrice) + double.parse(stopLossCtrl.text)) >
+                                                              //           double.parse(widget
+                                                              //                   .scripInfo
+                                                              //                   .uc ??
+                                                              //               "0.00")) {
+                                                              //     ScaffoldMessenger
+                                                              //             .of(context)
+                                                              //         .showSnackBar(
+                                                              //             warningMessage(
+                                                              //                 context,
+                                                              //                 "Price(Order price + Stoploss = ${(double.parse(ordPrice) + double.parse(stopLossCtrl.text))}) Stoploss can not be greater than ${widget.scripInfo.uc ?? 0.00}"));
+                                                              //   } else if ((triggerPriceCtrl
+                                                              //               .text
+                                                              //               .isEmpty ||
+                                                              //           triggerPriceCtrl.text ==
+                                                              //               "0") &&
+                                                              //       priceType ==
+                                                              //           "SL Limit") {
+                                                              //     ScaffoldMessenger
+                                                              //             .of(context)
+                                                              //         .showSnackBar(warningMessage(
+                                                              //             context,
+                                                              //             triggerPriceCtrl
+                                                              //                     .text
+                                                              //                     .isEmpty
+                                                              //                 ? "Trigger can not be empty"
+                                                              //                 : "Trigger can not be 0"));
+                                                              //   } else {
+                                                              //     if (isBuy!) {
+                                                              //       if (double.parse(
+                                                              //               triggerPriceCtrl
+                                                              //                   .text) <
+                                                              //           double.parse(widget
+                                                              //                   .scripInfo
+                                                              //                   .lc ??
+                                                              //               "0.00")) {
+                                                              //         ScaffoldMessenger.of(
+                                                              //                 context)
+                                                              //             .showSnackBar(warningMessage(
+                                                              //                 context,
+                                                              //                 "Trigger can not be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}"));
+                                                              //       } else if (double.parse(
+                                                              //               ordPrice) <
+                                                              //           double.parse(triggerPriceCtrl
+                                                              //               .text)) {
+                                                              //         ScaffoldMessenger.of(
+                                                              //                 context)
+                                                              //             .showSnackBar(warningMessage(
+                                                              //                 context,
+                                                              //                 "Trigger should be less than price"));
+                                                              //       } else if (double.parse(
+                                                              //               triggerPriceCtrl
+                                                              //                   .text) >
+                                                              //           double.parse(widget
+                                                              //                   .scripInfo
+                                                              //                   .uc ??
+                                                              //               "0.00")) {
+                                                              //         ScaffoldMessenger.of(
+                                                              //                 context)
+                                                              //             .showSnackBar(warningMessage(
+                                                              //                 context,
+                                                              //                 "Trigger can not be greater than upper circuit limit of ${widget.scripInfo.uc ?? 0.00}"));
+                                                              //       } else {
+                                                              //         if ((int.parse(qtyCtrl.text.isEmpty
+                                                              //                     ? "0"
+                                                              //                     : qtyCtrl
+                                                              //                         .text) >
+                                                              //                 frezQty &&
+                                                              //             widget.scripInfo
+                                                              //                     .frzqty !=
+                                                              //                 null)) {
+                                                              //           placeOrder(
+                                                              //               orderInput,
+                                                              //               true,
+                                                              //               theme);
+                                                              //         } else {
+                                                              //           placeOrder(
+                                                              //               orderInput,
+                                                              //               false,
+                                                              //               theme);
+                                                              //         }
+                                                              //       }
+                                                              //     } else {
+                                                              //       if (double.parse(
+                                                              //               triggerPriceCtrl
+                                                              //                   .text) >
+                                                              //           double.parse(widget
+                                                              //                   .scripInfo
+                                                              //                   .uc ??
+                                                              //               "0.00")) {
+                                                              //         ScaffoldMessenger.of(
+                                                              //                 context)
+                                                              //             .showSnackBar(warningMessage(
+                                                              //                 context,
+                                                              //                 "Trigger can not be greater than upper circuit limit of ${widget.scripInfo.uc ?? 0.00}"));
+                                                              //       } else if (double.parse(
+                                                              //               ordPrice) >
+                                                              //           double.parse(triggerPriceCtrl
+                                                              //               .text)) {
+                                                              //         ScaffoldMessenger.of(
+                                                              //                 context)
+                                                              //             .showSnackBar(warningMessage(
+                                                              //                 context,
+                                                              //                 "Trigger should be greater than price"));
+                                                              //       } else if (double.parse(
+                                                              //               triggerPriceCtrl
+                                                              //                   .text) <
+                                                              //           double.parse(widget
+                                                              //                   .scripInfo
+                                                              //                   .lc ??
+                                                              //               "0.00")) {
+                                                              //         ScaffoldMessenger.of(
+                                                              //                 context)
+                                                              //             .showSnackBar(warningMessage(
+                                                              //                 context,
+                                                              //                 "Trigger can not be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}"));
+                                                              //       } else {
+                                                              //         if ((int.parse(qtyCtrl.text.isEmpty
+                                                              //                     ? "0"
+                                                              //                     : qtyCtrl
+                                                              //                         .text) >
+                                                              //                 frezQty &&
+                                                              //             widget.scripInfo
+                                                              //                     .frzqty !=
+                                                              //                 null)) {
+                                                              //           placeOrder(
+                                                              //               orderInput,
+                                                              //               true,
+                                                              //               theme);
+                                                              //         } else {
+                                                              //           placeOrder(
+                                                              //               orderInput,
+                                                              //               false,
+                                                              //               theme);
+                                                              //         }
+                                                              //       }
+                                                              //     }
+                                                              //   }
+                                                              // }
+                                                              else if (_isBracketOrderEnabled &&
+                                                                  orderType ==
+                                                                      "CO - BO" &&
+                                                                  (priceType ==
+                                                                          "Limit" ||
+                                                                      priceType ==
+                                                                          "Market")) {
+                                                                if (stopLossCtrl
+                                                                        .text
+                                                                        .isEmpty ||
+                                                                    targetCtrl
+                                                                        .text
+                                                                        .isEmpty) {
+                                                                  ScaffoldMessenger.of(
+                                                                          context)
+                                                                      .showSnackBar(warningMessage(
+                                                                          context,
+                                                                          "${stopLossCtrl.text.isEmpty ? "Stoploss" : "Target"} can not be empty"));
+                                                                } else if (double.parse(stopLossCtrl.text) <=
+                                                                        0 ||
+                                                                    double.parse(targetCtrl.text) <=
+                                                                        0) {
+                                                                  ScaffoldMessenger.of(
+                                                                          context)
+                                                                      .showSnackBar(warningMessage(
+                                                                          context,
+                                                                          "${double.parse(stopLossCtrl.text) <= 0 ? "Stoploss" : "Target"} can not be zero"));
+                                                                } else if (isBuy! &&
+                                                                    (double.parse(ordPrice) -
+                                                                            double.parse(stopLossCtrl
+                                                                                .text)) <
+                                                                        double.parse(widget.scripInfo.lc ??
+                                                                            "0.00")) {
+                                                                  ScaffoldMessenger.of(
+                                                                          context)
+                                                                      .showSnackBar(warningMessage(
+                                                                          context,
+                                                                          "Price(Order price - Stoploss = ${(double.parse(ordPrice) - double.parse(stopLossCtrl.text)).toStringAsFixed(2)}) Stoploss can not be lower than ${widget.scripInfo.lc ?? 0.00}"));
+                                                                } else if (!isBuy! &&
+                                                                    (double.parse(ordPrice) +
+                                                                            double.parse(stopLossCtrl.text)) >
+                                                                        double.parse(widget.scripInfo.uc ?? "0.00")) {
+                                                                  ScaffoldMessenger.of(
+                                                                          context)
+                                                                      .showSnackBar(warningMessage(
+                                                                          context,
+                                                                          "Price(Order price + Stoploss = ${(double.parse(ordPrice) + double.parse(stopLossCtrl.text))}) Stoploss can not be greater than ${widget.scripInfo.uc ?? 0.00}"));
+                                                                } else {
+                                                                  if ((int.parse(convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount).isEmpty ? "0" : convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount)) >
+                                                                          frezQty &&
+                                                                      widget.scripInfo
+                                                                              .frzqty !=
+                                                                          null)) {
+                                                                    placeOrder(
+                                                                        orderInput,
+                                                                        true,
+                                                                        theme);
+                                                                  } else {
+                                                                    placeOrder(
+                                                                        orderInput,
+                                                                        false,
+                                                                        theme);
+                                                                  }
+                                                                }
+                                                              }
+                                                              // else if (orderType == "CO - BO" && (priceType == "SL Limit")) {
+                                                              //   if (stopLossCtrl.text
+                                                              //           .isEmpty ||
+                                                              //       targetCtrl.text
+                                                              //           .isEmpty) {
+                                                              //     ScaffoldMessenger
+                                                              //             .of(context)
+                                                              //         .showSnackBar(
+                                                              //             warningMessage(
+                                                              //                 context,
+                                                              //                 "${stopLossCtrl.text.isEmpty ? "Stoploss" : "Target"} can not be empty"));
+                                                              //   } else if (isBuy! &&
+                                                              //       (double.parse(ordPrice) - double.parse(stopLossCtrl.text)) <
+                                                              //           double.parse(widget
+                                                              //                   .scripInfo
+                                                              //                   .lc ??
+                                                              //               "0.00")) {
+                                                              //     ScaffoldMessenger
+                                                              //             .of(context)
+                                                              //         .showSnackBar(
+                                                              //             warningMessage(
+                                                              //                 context,
+                                                              //                 "Price(Order price - Stoploss = ${(double.parse(ordPrice) - double.parse(stopLossCtrl.text)).toStringAsFixed(2)}) Stoploss can not be lower than ${widget.scripInfo.lc ?? 0.00}"));
+                                                              //   } else if (!isBuy! &&
+                                                              //       (double.parse(ordPrice) +
+                                                              //               double.parse(stopLossCtrl
+                                                              //                   .text)) >
+                                                              //           double.parse(widget
+                                                              //                   .scripInfo
+                                                              //                   .uc ??
+                                                              //               "0.00")) {
+                                                              //     ScaffoldMessenger
+                                                              //             .of(context)
+                                                              //         .showSnackBar(
+                                                              //             warningMessage(
+                                                              //                 context,
+                                                              //                 "Price(Order price + Stoploss = ${(double.parse(ordPrice) + double.parse(stopLossCtrl.text))}) Stoploss can not be greater than ${widget.scripInfo.uc ?? 0.00}"));
+                                                              //   } else if (triggerPriceCtrl
+                                                              //           .text
+                                                              //           .isEmpty &&
+                                                              //       priceType == "SL Limit") {
+                                                              //     ScaffoldMessenger
+                                                              //             .of(context)
+                                                              //         .showSnackBar(
+                                                              //             warningMessage(
+                                                              //                 context,
+                                                              //                 "Trigger can not be empty"));
+                                                              //   } else {
+                                                              //     if (isBuy!) {
+                                                              //       if (double.parse(
+                                                              //               triggerPriceCtrl
+                                                              //                   .text) <
+                                                              //           double.parse(widget
+                                                              //                   .scripInfo
+                                                              //                   .lc ??
+                                                              //               "0.00")) {
+                                                              //         ScaffoldMessenger.of(
+                                                              //                 context)
+                                                              //             .showSnackBar(warningMessage(
+                                                              //                 context,
+                                                              //                 "Trigger can not be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}"));
+                                                              //       } else if (double.parse(
+                                                              //               ordPrice) <
+                                                              //           double.parse(triggerPriceCtrl
+                                                              //               .text)) {
+                                                              //         ScaffoldMessenger.of(
+                                                              //                 context)
+                                                              //             .showSnackBar(warningMessage(
+                                                              //                 context,
+                                                              //                 "Trigger should be less than price"));
+                                                              //       } else if (double.parse(
+                                                              //               triggerPriceCtrl
+                                                              //                   .text) >
+                                                              //           double.parse(widget
+                                                              //                   .scripInfo
+                                                              //                   .uc ??
+                                                              //               "0.00")) {
+                                                              //         ScaffoldMessenger.of(
+                                                              //                 context)
+                                                              //             .showSnackBar(warningMessage(
+                                                              //                 context,
+                                                              //                 "Trigger can not be greater than upper circuit limit of ${widget.scripInfo.uc ?? 0.00}"));
+                                                              //       } else {
+                                                              //         if ((int.parse(qtyCtrl.text.isEmpty
+                                                              //                     ? "0"
+                                                              //                     : qtyCtrl
+                                                              //                         .text) >
+                                                              //                 frezQty &&
+                                                              //             widget.scripInfo
+                                                              //                     .frzqty !=
+                                                              //                 null)) {
+                                                              //           placeOrder(
+                                                              //               orderInput,
+                                                              //               true,
+                                                              //               theme);
+                                                              //         } else {
+                                                              //           placeOrder(
+                                                              //               orderInput,
+                                                              //               false,
+                                                              //               theme);
+                                                              //         }
+                                                              //       }
+                                                              //     } else {
+                                                              //       if (double.parse(
+                                                              //               triggerPriceCtrl
+                                                              //                   .text) >
+                                                              //           double.parse(widget
+                                                              //                   .scripInfo
+                                                              //                   .uc ??
+                                                              //               "0.00")) {
+                                                              //         ScaffoldMessenger.of(
+                                                              //                 context)
+                                                              //             .showSnackBar(warningMessage(
+                                                              //                 context,
+                                                              //                 "Trigger can not be greater than upper circuit limit of ${widget.scripInfo.uc ?? 0.00}"));
+                                                              //       } else if (double.parse(
+                                                              //               ordPrice) >
+                                                              //           double.parse(triggerPriceCtrl
+                                                              //               .text)) {
+                                                              //         ScaffoldMessenger.of(
+                                                              //                 context)
+                                                              //             .showSnackBar(warningMessage(
+                                                              //                 context,
+                                                              //                 "Trigger should be greater than price"));
+                                                              //       } else if (double.parse(
+                                                              //               triggerPriceCtrl
+                                                              //                   .text) <
+                                                              //           double.parse(widget
+                                                              //                   .scripInfo
+                                                              //                   .lc ??
+                                                              //               "0.00")) {
+                                                              //         ScaffoldMessenger.of(
+                                                              //                 context)
+                                                              //             .showSnackBar(warningMessage(
+                                                              //                 context,
+                                                              //                 "Trigger can not be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}"));
+                                                              //       } else {
+                                                              //         if ((int.parse(qtyCtrl.text.isEmpty
+                                                              //                     ? "0"
+                                                              //                     : qtyCtrl
+                                                              //                         .text) >
+                                                              //                 frezQty &&
+                                                              //             widget.scripInfo
+                                                              //                     .frzqty !=
+                                                              //                 null)) {
+                                                              //           placeOrder(
+                                                              //               orderInput,
+                                                              //               true,
+                                                              //               theme);
+                                                              //         } else {
+                                                              //           placeOrder(
+                                                              //               orderInput,
+                                                              //               false,
+                                                              //               theme);
+                                                              //         }
+                                                              //       }
+                                                              //     }
+                                                              //   }
+                                                              // }
+                                                              else {
+                                                                if ((int.parse(convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount).isEmpty
+                                                                            ? "0"
+                                                                            : convertQtyOrAmtValue(
+                                                                                qtyCtrl
+                                                                                    .text,
+                                                                                _isQtyToAmount)) >
                                                                         frezQty &&
                                                                     widget.scripInfo
                                                                             .frzqty !=
@@ -5204,251 +5388,70 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                 }
                                                               }
                                                             }
-                                                            // else if (orderType == "CO - BO" && (priceType == "SL Limit")) {
-                                                            //   if (stopLossCtrl.text
-                                                            //           .isEmpty ||
-                                                            //       targetCtrl.text
-                                                            //           .isEmpty) {
-                                                            //     ScaffoldMessenger
-                                                            //             .of(context)
-                                                            //         .showSnackBar(
-                                                            //             warningMessage(
-                                                            //                 context,
-                                                            //                 "${stopLossCtrl.text.isEmpty ? "Stoploss" : "Target"} can not be empty"));
-                                                            //   } else if (isBuy! &&
-                                                            //       (double.parse(ordPrice) - double.parse(stopLossCtrl.text)) <
-                                                            //           double.parse(widget
-                                                            //                   .scripInfo
-                                                            //                   .lc ??
-                                                            //               "0.00")) {
-                                                            //     ScaffoldMessenger
-                                                            //             .of(context)
-                                                            //         .showSnackBar(
-                                                            //             warningMessage(
-                                                            //                 context,
-                                                            //                 "Price(Order price - Stoploss = ${(double.parse(ordPrice) - double.parse(stopLossCtrl.text)).toStringAsFixed(2)}) Stoploss can not be lower than ${widget.scripInfo.lc ?? 0.00}"));
-                                                            //   } else if (!isBuy! &&
-                                                            //       (double.parse(ordPrice) +
-                                                            //               double.parse(stopLossCtrl
-                                                            //                   .text)) >
-                                                            //           double.parse(widget
-                                                            //                   .scripInfo
-                                                            //                   .uc ??
-                                                            //               "0.00")) {
-                                                            //     ScaffoldMessenger
-                                                            //             .of(context)
-                                                            //         .showSnackBar(
-                                                            //             warningMessage(
-                                                            //                 context,
-                                                            //                 "Price(Order price + Stoploss = ${(double.parse(ordPrice) + double.parse(stopLossCtrl.text))}) Stoploss can not be greater than ${widget.scripInfo.uc ?? 0.00}"));
-                                                            //   } else if (triggerPriceCtrl
-                                                            //           .text
-                                                            //           .isEmpty &&
-                                                            //       priceType == "SL Limit") {
-                                                            //     ScaffoldMessenger
-                                                            //             .of(context)
-                                                            //         .showSnackBar(
-                                                            //             warningMessage(
-                                                            //                 context,
-                                                            //                 "Trigger can not be empty"));
-                                                            //   } else {
-                                                            //     if (isBuy!) {
-                                                            //       if (double.parse(
-                                                            //               triggerPriceCtrl
-                                                            //                   .text) <
-                                                            //           double.parse(widget
-                                                            //                   .scripInfo
-                                                            //                   .lc ??
-                                                            //               "0.00")) {
-                                                            //         ScaffoldMessenger.of(
-                                                            //                 context)
-                                                            //             .showSnackBar(warningMessage(
-                                                            //                 context,
-                                                            //                 "Trigger can not be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}"));
-                                                            //       } else if (double.parse(
-                                                            //               ordPrice) <
-                                                            //           double.parse(triggerPriceCtrl
-                                                            //               .text)) {
-                                                            //         ScaffoldMessenger.of(
-                                                            //                 context)
-                                                            //             .showSnackBar(warningMessage(
-                                                            //                 context,
-                                                            //                 "Trigger should be less than price"));
-                                                            //       } else if (double.parse(
-                                                            //               triggerPriceCtrl
-                                                            //                   .text) >
-                                                            //           double.parse(widget
-                                                            //                   .scripInfo
-                                                            //                   .uc ??
-                                                            //               "0.00")) {
-                                                            //         ScaffoldMessenger.of(
-                                                            //                 context)
-                                                            //             .showSnackBar(warningMessage(
-                                                            //                 context,
-                                                            //                 "Trigger can not be greater than upper circuit limit of ${widget.scripInfo.uc ?? 0.00}"));
-                                                            //       } else {
-                                                            //         if ((int.parse(qtyCtrl.text.isEmpty
-                                                            //                     ? "0"
-                                                            //                     : qtyCtrl
-                                                            //                         .text) >
-                                                            //                 frezQty &&
-                                                            //             widget.scripInfo
-                                                            //                     .frzqty !=
-                                                            //                 null)) {
-                                                            //           placeOrder(
-                                                            //               orderInput,
-                                                            //               true,
-                                                            //               theme);
-                                                            //         } else {
-                                                            //           placeOrder(
-                                                            //               orderInput,
-                                                            //               false,
-                                                            //               theme);
-                                                            //         }
-                                                            //       }
-                                                            //     } else {
-                                                            //       if (double.parse(
-                                                            //               triggerPriceCtrl
-                                                            //                   .text) >
-                                                            //           double.parse(widget
-                                                            //                   .scripInfo
-                                                            //                   .uc ??
-                                                            //               "0.00")) {
-                                                            //         ScaffoldMessenger.of(
-                                                            //                 context)
-                                                            //             .showSnackBar(warningMessage(
-                                                            //                 context,
-                                                            //                 "Trigger can not be greater than upper circuit limit of ${widget.scripInfo.uc ?? 0.00}"));
-                                                            //       } else if (double.parse(
-                                                            //               ordPrice) >
-                                                            //           double.parse(triggerPriceCtrl
-                                                            //               .text)) {
-                                                            //         ScaffoldMessenger.of(
-                                                            //                 context)
-                                                            //             .showSnackBar(warningMessage(
-                                                            //                 context,
-                                                            //                 "Trigger should be greater than price"));
-                                                            //       } else if (double.parse(
-                                                            //               triggerPriceCtrl
-                                                            //                   .text) <
-                                                            //           double.parse(widget
-                                                            //                   .scripInfo
-                                                            //                   .lc ??
-                                                            //               "0.00")) {
-                                                            //         ScaffoldMessenger.of(
-                                                            //                 context)
-                                                            //             .showSnackBar(warningMessage(
-                                                            //                 context,
-                                                            //                 "Trigger can not be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}"));
-                                                            //       } else {
-                                                            //         if ((int.parse(qtyCtrl.text.isEmpty
-                                                            //                     ? "0"
-                                                            //                     : qtyCtrl
-                                                            //                         .text) >
-                                                            //                 frezQty &&
-                                                            //             widget.scripInfo
-                                                            //                     .frzqty !=
-                                                            //                 null)) {
-                                                            //           placeOrder(
-                                                            //               orderInput,
-                                                            //               true,
-                                                            //               theme);
-                                                            //         } else {
-                                                            //           placeOrder(
-                                                            //               orderInput,
-                                                            //               false,
-                                                            //               theme);
-                                                            //         }
-                                                            //       }
-                                                            //     }
-                                                            //   }
-                                                            // }
-                                                            else {
-                                                              if ((int.parse(convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount).isEmpty
-                                                                          ? "0"
-                                                                          : convertQtyOrAmtValue(
-                                                                              qtyCtrl
-                                                                                  .text,
-                                                                              _isQtyToAmount)) >
-                                                                      frezQty &&
-                                                                  widget.scripInfo
-                                                                          .frzqty !=
-                                                                      null)) {
-                                                                placeOrder(
-                                                                    orderInput,
-                                                                    true,
-                                                                    theme);
-                                                              } else {
-                                                                placeOrder(
-                                                                    orderInput,
-                                                                    false,
-                                                                    theme);
-                                                              }
-                                                            }
                                                           }
-                                                        }
-                                                      },
-                                            style: ElevatedButton.styleFrom(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      vertical: 15),
-                                              backgroundColor: (widget
-                                                              .isBasket ==
-                                                          "Basket" ||
-                                                      widget.isBasket ==
-                                                          "BasketEdit" ||
-                                                      widget.isBasket ==
-                                                          "BasketMode")
-                                                  ? colors
-                                                      .primary // Use primary color for basket mode
-                                                  : isBuy!
-                                                      ? colors.primary
-                                                      : colors.tertiary,
-                                              // shape: const StadiumBorder()
+                                                        },
+                                              style: ElevatedButton.styleFrom(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        vertical: 15),
+                                                backgroundColor: (widget
+                                                                .isBasket ==
+                                                            "Basket" ||
+                                                        widget.isBasket ==
+                                                            "BasketEdit" ||
+                                                        widget.isBasket ==
+                                                            "BasketMode")
+                                                    ? colors
+                                                        .primary // Use primary color for basket mode
+                                                    : isBuy!
+                                                        ? colors.primary
+                                                        : colors.tertiary,
+                                                // shape: const StadiumBorder()
+                                              ),
+                                              child: orderProvide.orderloader
+                                                  ? const SizedBox(
+                                                      width: 18,
+                                                      height: 20,
+                                                      child:
+                                                          CircularProgressIndicator(
+                                                              strokeWidth: 2,
+                                                              color: Color(
+                                                                  0xffffffff)),
+                                                    )
+                                                  : TextWidget.subText(
+                                                      text: (widget.isBasket ==
+                                                                  "Basket" ||
+                                                              widget.isBasket ==
+                                                                  "BasketEdit" ||
+                                                              widget.isBasket ==
+                                                                  "BasketMode")
+                                                          ? widget.isBasket ==
+                                                                  "BasketEdit"
+                                                              ? "Edit to Basket"
+                                                              : "Add to Basket"
+                                                          : orderType == "SIP"
+                                                              ? "Create SIP"
+                                                              : isBuy!
+                                                                  ? 'Buy'
+                                                                  : "Sell",
+                                                      color: theme.isDarkMode
+                                                          ? orderType == "SIP"
+                                                              ? colors
+                                                                  .colorBlack
+                                                              : colors
+                                                                  .colorWhite
+                                                          : const Color(
+                                                              0xffffffff),
+                                                      theme: theme.isDarkMode,
+                                                      fw: 2),
                                             ),
-                                            child: orderProvide.orderloader
-                                                ? const SizedBox(
-                                                    width: 18,
-                                                    height: 20,
-                                                    child:
-                                                        CircularProgressIndicator(
-                                                            strokeWidth: 2,
-                                                            color: Color(
-                                                                0xffffffff)),
-                                                  )
-                                                : TextWidget.subText(
-                                                    text: (widget.isBasket ==
-                                                                "Basket" ||
-                                                            widget.isBasket ==
-                                                                "BasketEdit" ||
-                                                            widget.isBasket ==
-                                                                "BasketMode")
-                                                        ? widget.isBasket ==
-                                                                "BasketEdit"
-                                                            ? "Edit to Basket"
-                                                            : "Add to Basket"
-                                                        : orderType == "SIP"
-                                                            ? "Create SIP"
-                                                            : isBuy!
-                                                                ? 'Buy'
-                                                                : "Sell",
-                                                    color: theme.isDarkMode
-                                                        ? orderType == "SIP"
-                                                            ? colors
-                                                                .colorBlack
-                                                            : colors
-                                                                .colorWhite
-                                                        : const Color(
-                                                            0xffffffff),
-                                                    theme: theme.isDarkMode,
-                                                    fw: 2),
                                           ),
-                                        ),
-                                        // if (defaultTargetPlatform ==
-                                        //     TargetPlatform.iOS)
-                                        const SizedBox(height: 18)
-                                      ]
-                                    ])),
+                                          // if (defaultTargetPlatform ==
+                                          //     TargetPlatform.iOS)
+                                          const SizedBox(height: 18)
+                                        ]
+                                      ])),
+                            ),
                           )));
         },
       ),

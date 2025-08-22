@@ -201,28 +201,51 @@ class ProfileProvider extends DefaultChangeNotifier {
       ),
     );
   }
-  // void openInWebURLWithbank(BuildContext context, String urlArgs, String type, String bankAcNo) async {
-  //   await ref.read(fundProvider).fetchHstoken(context);
-  //   debugPrint(
-  //       '$urlArgs  ==== ${pref.clientId} =====  ${ref.read(fundProvider).fundHstoken!.hstk}');
-  //   String url = 'http://192.168.5.107:8080/${urlArgs}/?uid=${pref.clientId}&token=${pref.token}&type=${type}&acno=${bankAcNo}';
+  void openInWebURLWithbank(BuildContext context, String urlArgs, String type, String bankAcNo) async {
+    await ref.read(fundProvider).fetchHstoken(context);
+    debugPrint(
+        '$urlArgs  ==== ${pref.clientId} =====  ${ref.read(fundProvider).fundHstoken!.hstk}');
+    String url = 'http://192.168.5.107:8080/${urlArgs}/?uid=${pref.clientId}&token=${pref.token}&type=${type}&acno=${bankAcNo}&src=mobileapp';
     
-  //    Navigator.push(
-  //     context,
-  //     PageRouteBuilder(
-  //       pageBuilder: (_, __, ___) => InAppWebViewScreen(url: url),
-  //       transitionsBuilder: (_, animation, __, child) {
-  //         return SlideTransition(
-  //           position: Tween<Offset>(
-  //             begin: const Offset(-1.0, 0.0),
-  //             end: Offset.zero,
-  //           ).animate(animation),
-  //           child: child,
-  //         );
-  //       },
-  //     ),
-  //   );
-  // }
+     Navigator.push(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (_, __, ___) => InAppWebViewScreen(url: url),
+        transitionsBuilder: (_, animation, __, child) {
+          return SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(-1.0, 0.0),
+              end: Offset.zero,
+            ).animate(animation),
+            child: child,
+          );
+        },
+      ),
+    );
+  }
+
+  void openInWebURLk(BuildContext context, String urlArgs, String type) async {
+    await ref.read(fundProvider).fetchHstoken(context);
+    debugPrint(
+        '$urlArgs  ==== ${pref.clientId} =====  ${ref.read(fundProvider).fundHstoken!.hstk}');
+    String url = 'http://192.168.5.107:8080/${urlArgs}/?uid=${pref.clientId}&token=${pref.token}&type=${type}&src=mobileapp';
+    print("jdhfdfhhfdjksjhdjurl ::: $url");
+     Navigator.push(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (_, __, ___) => InAppWebViewScreen(url: url),
+        transitionsBuilder: (_, animation, __, child) {
+          return SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(-1.0, 0.0),
+              end: Offset.zero,
+            ).animate(animation),
+            child: child,
+          );
+        },
+      ),
+    );
+  }
 
   void openInWebURLtest(
       BuildContext context, String urlArgs, String type) async {

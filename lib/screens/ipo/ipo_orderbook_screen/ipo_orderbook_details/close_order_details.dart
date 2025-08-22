@@ -108,7 +108,7 @@ class _IpoCloseOrderDetailsState extends ConsumerState<IpoCloseOrderDetails> {
                           child: OutlinedButton(
                             onPressed: () async {
                               await ref.read(ipoProvide).getSmeIpo();
-                              await ref.read(ipoProvide).getmainstreamipo();
+                              await ref.read(ipoProvide).getmainstreamipo(context);
                               await ref
                                   .read(ipoProvide)
                                   .getipoperfomance(currentYear);

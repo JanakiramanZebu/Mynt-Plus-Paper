@@ -1885,10 +1885,10 @@ class AuthProvider extends DefaultChangeNotifier {
     }
   }
 
-  setIposAPicalls() async {
+  setIposAPicalls(BuildContext context) async {
     await ref.read(ipoProvide).getDashboardIpos();
     await ref.read(ipoProvide).getSmeIpo();
-    await ref.read(ipoProvide).getmainstreamipo();
+    await ref.read(ipoProvide).getmainstreamipo(context);
     await ref.read(ipoProvide).getUpcomingIpoModel();
     await ref.read(ipoProvide).getipoperfomance(currentYear);
     await ref.read(ipoProvide).mergemainsme();

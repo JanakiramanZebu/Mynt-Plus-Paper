@@ -389,11 +389,18 @@ class _CustomTabBarViewState extends State<_CustomTabBarView> {
       final newIndex = widget.controller.index;
 
       if (_pageController.hasClients && currentPage != newIndex) {
-        _pageController.animateToPage(
-          newIndex,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.ease,
-        );
+        // Use jumpToPage for distant tabs to avoid scrolling through all intermediate tabs
+        // Use animateToPage only for adjacent tabs (distance of 1)
+        final distance = (currentPage! - newIndex).abs();
+        if (distance > 1) {
+          _pageController.jumpToPage(newIndex);
+        } else {
+          _pageController.animateToPage(
+            newIndex,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.ease,
+          );
+        }
       }
     });
   }
