@@ -148,19 +148,8 @@ class ExitPositionScreen extends ConsumerWidget {
                       position.chng = chng;
                     }
 
-                    // Calculate profit/loss based on latest price
-                    if (position.avgPrc != null && position.netqty != null) {
-                      final avgPrice =
-                          double.tryParse(position.avgPrc ?? "0.0") ?? 0.0;
-                      final qty = int.tryParse(position.netqty ?? "0") ?? 0;
-                      final ltp = double.tryParse(position.lp ?? "0.0") ?? 0.0;
-
-                      if (avgPrice > 0 && qty != 0 && ltp > 0) {
-                        final pnl = (ltp - avgPrice) * qty;
-                        position.profitNloss = pnl.toStringAsFixed(2);
-                        position.mTm = pnl.toStringAsFixed(2);
-                      }
-                    }
+                    // Calculate profit/loss - use the same logic as position screen
+                    // P&L is already calculated by the portfolio provider, no need to recalculate manually
                   }
                 }
               }
@@ -271,7 +260,7 @@ class ExitPositionScreen extends ConsumerWidget {
                                             : colors.textSecondaryLight,
                                         fw: 3),
                                     TextWidget.paraText(
-                                        text: "${position.netqty}",
+                                        text: "${((int.tryParse(position.qty.toString()) ?? 0) / (position.exch == 'MCX' ? (int.tryParse(position.ls.toString()) ?? 1) : 1)).toInt()}",
                                         theme: false,
                                         color: theme.isDarkMode
                                             ? colors.textSecondaryDark
@@ -308,44 +297,15 @@ class ExitPositionScreen extends ConsumerWidget {
                                             CrossAxisAlignment.center,
                                         children: [
                                           TextWidget.titleText(
-                                              text:
-                                                  "${position.profitNloss ?? position.rpnl}",
+                                              text: positions.isNetPnl
+                                                  ? "${position.profitNloss ?? position.rpnl}"
+                                                  : "${position.mTm}",
                                               theme: false,
-                                              color: position.profitNloss !=
-                                                      null
-                                                  ? position.profitNloss!
-                                                          .startsWith("-")
-                                                      ? theme.isDarkMode
-                                                          ? colors.lossDark
-                                                          : colors.lossLight
-                                                      : position.profitNloss ==
-                                                              "0.00"
-                                                          ? theme.isDarkMode
-                                                              ? colors
-                                                                  .textSecondaryDark
-                                                              : colors
-                                                                  .textSecondaryLight
-                                                          : theme.isDarkMode
-                                                              ? colors
-                                                                  .profitDark
-                                                              : colors
-                                                                  .profitLight
-                                                  : position.rpnl!
-                                                          .startsWith("-")
-                                                      ? theme.isDarkMode
-                                                          ? colors.lossDark
-                                                          : colors.lossLight
-                                                      : position.rpnl == "0.00"
-                                                          ? theme.isDarkMode
-                                                              ? colors
-                                                                  .textSecondaryDark
-                                                              : colors
-                                                                  .textSecondaryLight
-                                                          : theme.isDarkMode
-                                                              ? colors
-                                                                  .profitDark
-                                                              : colors
-                                                                  .profitLight,
+                                              color: _getPnlColor(
+                                                  positions.isNetPnl
+                                                      ? (position.profitNloss ?? position.rpnl)
+                                                      : position.mTm,
+                                                  theme),
                                               fw: 3),
                                         ],
                                       )
@@ -491,5 +451,18 @@ class ExitPositionScreen extends ConsumerWidget {
             )),
       ),
     );
+  }
+
+  // Helper method to get P&L color (matching position screen logic)
+  Color _getPnlColor(String? pnlValue, ThemesProvider theme) {
+    if (pnlValue == null || pnlValue == "0.00") {
+      return theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight;
+    }
+
+    if (pnlValue.startsWith("-")) {
+      return theme.isDarkMode ? colors.lossDark : colors.lossLight;
+    }
+
+    return theme.isDarkMode ? colors.profitDark : colors.profitLight;
   }
 }

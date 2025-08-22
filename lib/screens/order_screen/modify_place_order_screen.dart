@@ -1641,8 +1641,8 @@ class _ModifyPlaceOrderScreenState
                                                                         context,
                                                                         double.parse(prcType == "MKT" || prcType == "SL-MKT" ? price : priceCtrl.text) <
                                                                                 double.parse("${widget.scripInfo.lc}")
-                                                                            ? "Price can not be lesser than Lower Circuit Limit ${widget.scripInfo.lc} 2 $price ${priceCtrl.text}"
-                                                                            : "Price can not be greater than Lower Circuit Limit ${widget.scripInfo.uc} 2"));
+                                                                            ? "Price can not be lesser than Lower Circuit Limit ${widget.scripInfo.lc}"
+                                                                            : "Price can not be greater than Upper Circuit Limit ${widget.scripInfo.uc}"));
                                                               } else if ((prcType ==
                                                                       "SL-LMT" ||
                                                                   prcType ==
@@ -2230,6 +2230,7 @@ class _ModifyPlaceOrderScreenState
                             width: double.infinity,
                             child: OutlinedButton(
                               onPressed: () {
+                                updatePriceType();
                                 Navigator.of(context).pop();
                               },
                               style: OutlinedButton.styleFrom(

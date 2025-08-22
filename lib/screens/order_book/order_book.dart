@@ -645,10 +645,21 @@ class _OrderBookState extends ConsumerState<OrderBook> {
       return double.tryParse(value) != null;
     }
 
-    // First try LTP, then avgprc, then prc, then close, then default to "0.00"
+    // First try current LTP, then check cached LTP, then fallback to other prices
     if (isValidPrice(order.ltp)) {
       return order.ltp!;
-    } else if (isValidPrice(order.avgprc)) {
+    }
+    
+    // Check cached LTP if current LTP is not valid
+    if (order.token != null) {
+      final cachedLTP = ref.read(websocketProvider).getCachedLTP(order.token!);
+      if (isValidPrice(cachedLTP)) {
+        return cachedLTP!;
+      }
+    }
+    
+    // Fallback to other price fields
+    if (isValidPrice(order.avgprc)) {
       return order.avgprc!;
     } else if (isValidPrice(order.prc)) {
       return order.prc!;
@@ -903,10 +914,21 @@ class _OrderItemState extends State<_OrderItem> {
       return double.tryParse(value) != null;
     }
 
-    // First try LTP, then avgprc, then prc, then close, then default to "0.00"
+    // First try current LTP, then check cached LTP, then fallback to other prices
     if (isValidPrice(widget.orderItem.ltp)) {
       return widget.orderItem.ltp!;
-    } else if (isValidPrice(widget.orderItem.avgprc)) {
+    }
+    
+    // Check cached LTP if current LTP is not valid
+    if (widget.orderItem.token != null) {
+      final cachedLTP = widget.ref.read(websocketProvider).getCachedLTP(widget.orderItem.token!);
+      if (isValidPrice(cachedLTP)) {
+        return cachedLTP!;
+      }
+    }
+    
+    // Fallback to other price fields
+    if (isValidPrice(widget.orderItem.avgprc)) {
       return widget.orderItem.avgprc!;
     } else if (isValidPrice(widget.orderItem.prc)) {
       return widget.orderItem.prc!;

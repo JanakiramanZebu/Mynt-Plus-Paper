@@ -150,8 +150,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
         ? {
               "C": "Delivery",
               "I": "Intraday",
-              "F": "MTF",
-              "M": "CO - BO" // map other product codes as needed
+              "F": "MTF"
             }[widget.orderArg.prd] ??
             "Delivery"
         : checkRawValue // ② old logic
