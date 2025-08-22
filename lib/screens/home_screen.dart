@@ -1005,12 +1005,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             reportsprovider.taxpnleq == null) {
           await reportsprovider.getYearlistTaxpnl();
           reportsprovider.getCurrentDate('');
-          reportsprovider.fetchtaxpnleqdata(
-              context, reportsprovider.yearforTaxpnl);
+          // reportsprovider.fetchtaxpnleqdata(
+          //     context, reportsprovider.yearforTaxpnl);
 
-          reportsprovider.taxpnlExTabchange(0);
-          reportsprovider.chargesforeqtaxpnl(
-              context, reportsprovider.yearforTaxpnl);
+          // reportsprovider.taxpnlExTabchange(0);
+          // reportsprovider.chargesforeqtaxpnl(
+          //     context, reportsprovider.yearforTaxpnl);
         }
         if (reportsprovider.tradebookdata == null) {
           await reportsprovider.getCurrentDate('tradebook');

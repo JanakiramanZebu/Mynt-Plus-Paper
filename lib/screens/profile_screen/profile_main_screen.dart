@@ -420,11 +420,11 @@ class UserAccountScreen extends ConsumerWidget {
                             reportsprovider.taxpnleq == null) {
                           await reportsprovider.getYearlistTaxpnl();
                           await reportsprovider.getCurrentDate('');
-                          reportsprovider.fetchtaxpnleqdata(
-                              context, reportsprovider.yearforTaxpnl);
-                          reportsprovider.taxpnlExTabchange(0);
-                          reportsprovider.chargesforeqtaxpnl(
-                              context, reportsprovider.yearforTaxpnl);
+                          // reportsprovider.fetchtaxpnleqdata(
+                          //     context, reportsprovider.yearforTaxpnl);
+                          // reportsprovider.taxpnlExTabchange(0);
+                          // reportsprovider.chargesforeqtaxpnl(
+                          //     context, reportsprovider.yearforTaxpnl);
                         }
                         if (reportsprovider.tradebookdata == null) {
                           await reportsprovider.getCurrentDate('tradebook');
@@ -1314,7 +1314,7 @@ class SettingsScreen extends ConsumerWidget {
                                           horizontal: 8),
                                       child: SizedBox(
                                         width: double.infinity,
-                                        height: 40,
+                                        height: 45,
                                         child: ElevatedButton(
                                           onPressed: () async {
                                             showDialog(
@@ -1496,7 +1496,7 @@ class SettingsScreen extends ConsumerWidget {
                                             minimumSize: const Size(0, 45),
                                             shape: RoundedRectangleBorder(
                                               borderRadius:
-                                                  BorderRadius.circular(4),
+                                                  BorderRadius.circular(5),
                                             ),
                                           ),
                                           child: TextWidget.subText(

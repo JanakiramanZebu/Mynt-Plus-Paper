@@ -147,7 +147,7 @@ class _WatchlistCardState extends ConsumerState<WatchlistCard> {
                             .toString()
                             .isNotEmpty &&
                         widget.watchListData['holdingQty'] != "null") ...[
-                      const SizedBox(width: 4),
+                      const SizedBox(width: 6),
                       SvgPicture.asset(assets.suitcase,
                           height: 12,
                           width: 16,
@@ -157,7 +157,7 @@ class _WatchlistCardState extends ConsumerState<WatchlistCard> {
                       const SizedBox(width: 4),
                       TextWidget.paraText(
                         text: "${widget.watchListData['holdingQty']}",
-                        color: theme.isDarkMode ? colors.secondaryDark : colors.secondaryLight,
+                        color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                         theme: theme.isDarkMode,
                         fw: 0,
                       ),
