@@ -391,13 +391,13 @@ class BasketScripList extends ConsumerWidget {
               leading: const CustomBackBtn(),
               title: TextWidget.titleText(
                   text:
-                      "${bsktName}   (${basket.bsktScripList.length} / ${20})",
+                      "${bsktName}   (${basket.bsktScripList.length} / ${basket.frezQtyOrderSliceMaxLimit})",
                   theme: false,
                   color: theme.isDarkMode
                       ? colors.textPrimaryDark
                       : colors.textPrimaryLight,
                   fw: 1),
-              actions: basket.bsktScripList.length < 20
+              actions: basket.bsktScripList.length < basket.frezQtyOrderSliceMaxLimit
                   ? [
                       Row(
                         children: [
@@ -426,12 +426,12 @@ class BasketScripList extends ConsumerWidget {
                                       ? colors.highlightDark
                                       : colors.highlightLight,
                                   onTap: () async {
-                                    // Check if basket already has 20 items
-                                    if (basket.bsktScripList.length >= 20) {
+                                    // Check if basket already has frezQtyOrderSliceMaxLimit items
+                                    if (basket.bsktScripList.length >= basket.frezQtyOrderSliceMaxLimit) {
                                       ScaffoldMessenger.of(context)
                                           .showSnackBar(SnackBar(
-                                        content: const Text(
-                                            "Basket limit reached. Please create a new basket as you are exceeding the 20 item limit."),
+                                        content: Text(
+                                            "Basket limit reached. Please create a new basket as you are exceeding the ${basket.frezQtyOrderSliceMaxLimit} item limit."),
                                         backgroundColor: colors.darkred,
                                         duration: const Duration(seconds: 3),
                                       ));

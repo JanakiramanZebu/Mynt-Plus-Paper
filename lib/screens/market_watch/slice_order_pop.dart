@@ -118,7 +118,7 @@ class _SliceOrderSheetState extends State<SliceOrderSheet> {
                                 fw: 1,
                               ),
                               TextWidget.captionText(
-                                text: " X ${widget.quantity >= 20 ? 20 : widget.quantity}",
+                                text: " X ${widget.quantity >= orders.frezQtyOrderSliceMaxLimit ? orders.frezQtyOrderSliceMaxLimit : widget.quantity}",
                                 color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
                                 theme: theme.isDarkMode,
                                 fw: 0,
