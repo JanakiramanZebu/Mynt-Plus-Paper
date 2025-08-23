@@ -111,114 +111,114 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
         final internet = ref.watch(networkStateProvider);
         return GestureDetector(
             onTap: () => FocusScope.of(context).unfocus(),
-            child: SafeArea(
-              child: Scaffold(
-                  resizeToAvoidBottomInset: true,
-                  appBar: AppBar(
-                    leadingWidth: 41,
-                    centerTitle: false,
-                    titleSpacing: 6,
-                    leading: Material(
-                      color: Colors.transparent,
-                  shape: const CircleBorder(),
-                  clipBehavior: Clip.hardEdge,
-                      child: InkWell(
-                         customBorder: const CircleBorder(),
-                  splashColor: theme.isDarkMode
-                                                    ? colors.splashColorDark
-                                                    : colors.splashColorLight,
-                                                highlightColor: theme.isDarkMode
-                                                    ? colors.highlightDark
-                                                    : colors.highlightLight,
-                          onTap: () {
-                            orderInput.clearTextField();
-                            Navigator.pop(context);
-                          },
-                          child:  Container(
-                      width: 44, // Increased touch area
-                      height: 44,
-                      alignment: Alignment.center,
-                      child: Icon(
-                        Icons.arrow_back_ios_outlined,
-                        size: 18,
-                        color: theme.isDarkMode
-                            ? colors.textSecondaryDark
-                            : colors.textSecondaryLight,
-                      ),
-                    ),),
+            child: Scaffold(
+                resizeToAvoidBottomInset: true,
+                appBar: AppBar(
+                  leadingWidth: 41,
+                  centerTitle: false,
+                  titleSpacing: 6,
+                  leading: Material(
+                    color: Colors.transparent,
+                shape: const CircleBorder(),
+                clipBehavior: Clip.hardEdge,
+                    child: InkWell(
+                       customBorder: const CircleBorder(),
+                splashColor: theme.isDarkMode
+                                                  ? colors.splashColorDark
+                                                  : colors.splashColorLight,
+                                              highlightColor: theme.isDarkMode
+                                                  ? colors.highlightDark
+                                                  : colors.highlightLight,
+                        onTap: () {
+                          orderInput.clearTextField();
+                          Navigator.pop(context);
+                        },
+                        child:  Container(
+                    width: 44, // Increased touch area
+                    height: 44,
+                    alignment: Alignment.center,
+                    child: Icon(
+                      Icons.arrow_back_ios_outlined,
+                      size: 18,
+                      color: theme.isDarkMode
+                          ? colors.textSecondaryDark
+                          : colors.textSecondaryLight,
                     ),
-                    elevation: .2,
-                    title: Column(
-                      children: [
-                        Row(children: [
-                          TextWidget.subText(text: "${widget.scripInfo.symbol!} ", theme: theme.isDarkMode, color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight, fw: 3, maxLines: 1, textOverflow: TextOverflow.ellipsis),
-              
-              
-              
-                          // Text("${widget.scripInfo.symbol!} ",
-                          //     style: textStyles.scripNameTxtStyle.copyWith(
-                          //         color: theme.isDarkMode
-                          //             ? colors.colorWhite
-                          //             : colors.colorBlack),
+                  ),),
+                  ),
+                  elevation: .2,
+                  title: Column(
+                    children: [
+                      Row(children: [
+                        TextWidget.subText(text: "${widget.scripInfo.symbol!} ", theme: theme.isDarkMode, color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight, fw: 3, maxLines: 1, textOverflow: TextOverflow.ellipsis),
+            
+            
+            
+                        // Text("${widget.scripInfo.symbol!} ",
+                        //     style: textStyles.scripNameTxtStyle.copyWith(
+                        //         color: theme.isDarkMode
+                        //             ? colors.colorWhite
+                        //             : colors.colorBlack),
+                        //     overflow: TextOverflow.ellipsis,
+                        //     maxLines: 1),
+                        if (widget.scripInfo.option!.isNotEmpty)
+            
+            
+                        TextWidget.subText(text: widget.scripInfo.option!, theme: theme.isDarkMode, color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight, fw: 3, maxLines: 1, textOverflow: TextOverflow.ellipsis),
+            
+            
+                          // Text(widget.scripInfo.option!,
+                          //     style: textStyles.scripNameTxtStyle
+                          //         .copyWith(color: const Color(0xff666666)),
                           //     overflow: TextOverflow.ellipsis,
                           //     maxLines: 1),
-                          if (widget.scripInfo.option!.isNotEmpty)
-              
-              
-                          TextWidget.subText(text: widget.scripInfo.option!, theme: theme.isDarkMode, color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight, fw: 3, maxLines: 1, textOverflow: TextOverflow.ellipsis),
-              
-              
-                            // Text(widget.scripInfo.option!,
-                            //     style: textStyles.scripNameTxtStyle
-                            //         .copyWith(color: const Color(0xff666666)),
-                            //     overflow: TextOverflow.ellipsis,
-                            //     maxLines: 1),
-                          if (widget.scripInfo.expDate!.isNotEmpty)
-              
-              
-                          TextWidget.subText(text: " ${widget.scripInfo.expDate} ", theme: theme.isDarkMode, color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight, fw: 3, maxLines: 1, textOverflow: TextOverflow.ellipsis),
-              
-              
-                            // Text(" ${widget.scripInfo.expDate} ",
-                            //     style: textStyles.scripExchTxtStyle.copyWith(
-                            //         color: theme.isDarkMode
-                            //             ? colors.colorWhite
-                            //             : colors.colorBlack)),
-                          Container(
-                              margin: const EdgeInsets.only(right: 4),
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 6, vertical: 2),
-                              decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(2),
-                                  color: const Color(0xffF1F3F8)),
-                              child: Text("${widget.scripInfo.exch}",
-                                  overflow: TextOverflow.ellipsis,
-                                  style: textStyle(const Color(0xff666666), 10,
-                                      FontWeight.w500)))
-                        ]),
-                        const SizedBox(height: 4),
-                        Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              OrderScreenHeader(headerData: headerData!),
-                              // Row(children: [
-                              //   SvgPicture.asset(assets.buyIcon),
-                              //   const SizedBox(width: 6),
-                              //   CustomSwitch(
-                              //       onChanged: (bool value) {
-                              //         setState(() {
-                              //           isBuy = value;
-                              //         });
-                              //       },
-                              //       value: isBuy!),
-                              //   const SizedBox(width: 6),
-                              //   SvgPicture.asset(assets.sellIcon)
-                              // ])
-                            ])
-                      ],
-                    ),
+                        if (widget.scripInfo.expDate!.isNotEmpty)
+            
+            
+                        TextWidget.subText(text: " ${widget.scripInfo.expDate} ", theme: theme.isDarkMode, color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight, fw: 3, maxLines: 1, textOverflow: TextOverflow.ellipsis),
+            
+            
+                          // Text(" ${widget.scripInfo.expDate} ",
+                          //     style: textStyles.scripExchTxtStyle.copyWith(
+                          //         color: theme.isDarkMode
+                          //             ? colors.colorWhite
+                          //             : colors.colorBlack)),
+                        Container(
+                            margin: const EdgeInsets.only(right: 4),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(2),
+                                color: const Color(0xffF1F3F8)),
+                            child: Text("${widget.scripInfo.exch}",
+                                overflow: TextOverflow.ellipsis,
+                                style: textStyle(const Color(0xff666666), 10,
+                                    FontWeight.w500)))
+                      ]),
+                      const SizedBox(height: 4),
+                      Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            OrderScreenHeader(headerData: headerData!),
+                            // Row(children: [
+                            //   SvgPicture.asset(assets.buyIcon),
+                            //   const SizedBox(width: 6),
+                            //   CustomSwitch(
+                            //       onChanged: (bool value) {
+                            //         setState(() {
+                            //           isBuy = value;
+                            //         });
+                            //       },
+                            //       value: isBuy!),
+                            //   const SizedBox(width: 6),
+                            //   SvgPicture.asset(assets.sellIcon)
+                            // ])
+                          ])
+                    ],
                   ),
-                  body: Stack(
+                ),
+                body: SafeArea(
+                  child: Stack(
                     children: [
                       SingleChildScrollView(
                           reverse: true,
@@ -249,7 +249,7 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                               onChanged: (value) {
                                                 double inputPrice =
                                                     double.tryParse(value) ?? 0;
-              
+                              
                                                 if (value.isNotEmpty &&
                                                     inputPrice > 0) {
                                                   final regex = RegExp(
@@ -300,7 +300,7 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                               textAlign: TextAlign.start)),
                                     ]),
                               ),
-              
+                              
                               const SizedBox(height: 16),
                               // GttCondition(
                               //     isOco: false, isGtt: isGtt, isModify: true),
@@ -473,16 +473,16 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                         "Price", theme),
                                                     const SizedBox(width: 4),
                                                     TextWidget.subText(text: "${orderInput.actPrcType}", theme: theme.isDarkMode, color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight, fw: 0, ),
-              
-              
-              
-              
-              
-              
-              
-              
-              
-              
+                              
+                              
+                              
+                              
+                              
+                              
+                              
+                              
+                              
+                              
                                                   ]),
                                               const SizedBox(height: 8),
                                               SizedBox(
@@ -545,7 +545,7 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                       //             ? const Color(0xff555555)
                                                       //             : colors.colorWhite),
                                                       //     child: SvgPicture.asset(color: theme.isDarkMode ? colors.colorWhite : colors.colorGrey, orderInput.actPrcType == "Limit" || orderInput.actPrcType == "SL Limit" ? assets.ruppeIcon : assets.lock, fit: BoxFit.scaleDown)),
-              
+                              
                                                       suffixIcon: InkWell(
                                                         onTap: () {
                                                           setState(() {
@@ -766,21 +766,21 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                           const SizedBox(width: 16),
                                           Row(children: [
                                             TextWidget.subText(text: "OCO", theme: theme.isDarkMode, color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight, fw: 0, ),
-              
-              
-              
-              
-              
-              
-              
-              
-              
-              
+                              
+                              
+                              
+                              
+                              
+                              
+                              
+                              
+                              
+                              
                                             IconButton(
                                                 onPressed: () {
                                                   // setState(() {
                                                   //   isOco = !isOco;
-              
+                              
                                                   //   if (isOco) {
                                                   //     orderInput.chngAlert("LTP");
                                                   //     orderInput.chngCond("Less");
@@ -793,7 +793,7 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                   //         .disableCondGTT(false);
                                                   //   }
                                                   // });
-              
+                              
                                                   // context
                                                   //     .read(ordInputProvider)
                                                   //     .chngInvesType(
@@ -843,7 +843,7 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                 //         ? colors.darkColorDivider
                                 //         : colors.colorDivider),
                                 const SizedBox(height: 16),
-              
+                              
                                 Padding(
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 16.0),
@@ -868,7 +868,7 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                 onChanged: (value) {
                                                   double inputPrice =
                                                       double.tryParse(value) ?? 0;
-              
+                              
                                                   if (value.isNotEmpty &&
                                                       inputPrice > 0) {
                                                     final regex = RegExp(
@@ -915,7 +915,7 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                 textAlign: TextAlign.start)),
                                       ]),
                                 ),
-              
+                              
                                 const SizedBox(height: 16),
                                 Padding(
                                     padding: const EdgeInsets.symmetric(
@@ -998,7 +998,7 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                       //           .parse(orderInput
                                                       //               .ocoQtyCtrl
                                                       //               .text);
-              
+                              
                                                       //       if (orderInput
                                                       //           .ocoQtyCtrl
                                                       //           .text
@@ -1128,7 +1128,7 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                         //             BorderRadius.circular(20),
                                                         //         color: theme.isDarkMode ? const Color(0xff555555) : colors.colorWhite),
                                                         //     child: SvgPicture.asset(color: theme.isDarkMode ? colors.colorWhite : colors.colorGrey, orderInput.actOcoPrcType == "Limit" || orderInput.actOcoPrcType == "SL Limit" ? assets.ruppeIcon : assets.lock, fit: BoxFit.scaleDown)),
-              
+                              
                                                         suffixIcon: InkWell(
                                                           onTap: () {
                                                             setState(() {
@@ -1300,10 +1300,13 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                           ConnectivityResult.none) ...[const NoInternetWidget()]
                     ],
                   ),
-                  bottomSheet: internet.connectionStatus ==
-                          ConnectivityResult.none
-                      ? const NoInternetWidget()
-                      : SafeArea(
+                ),
+                bottomNavigationBar: internet.connectionStatus ==
+                        ConnectivityResult.none
+                    ? const NoInternetWidget()
+                    : SafeArea(
+                        child: Padding(
+                          padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
                           child: Container(
                               color: theme.isDarkMode
                                   ? colors.colorBlack
@@ -1366,7 +1369,7 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                         //   }
                                                         // }
                                                         // else {
-              
+                                      
                                                         double ltp = double.parse(
                                                             widget.gttOrderBook
                                                                     .ltp ??
@@ -1381,7 +1384,7 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                                 orderInput
                                                                     .val2Ctrl
                                                                     .text);
-              
+                                      
                                                         if (val1 > ltp &&
                                                             val2 < ltp) {
                                                           prepareToModifyOCOOrder(
@@ -1445,13 +1448,13 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                                     .val1Ctrl
                                                                     .text);
                                                         // double val2 = double.parse(orderInput.val2Ctrl.text);
-              
+                                      
                                                         if (val1 > ltp) {
                                                           // orderInput.chngCond("Greater than");
                                                           // orderInput.chngAlert("LTP");
                                                           prepareToModifyGttOrder(
                                                               orderInput);
-              
+                                      
                                                           // } else if (val1 < ltp) {
                                                           //   // orderInput.chngCond("Less than");
                                                           //   // orderInput.chngAlert("LTP");
@@ -1509,8 +1512,8 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                         TargetPlatform.iOS)
                                       const SizedBox(height: 18)
                                   ])),
-                        )),
-            ));
+                        ),
+                      )));
       }),
     );
   }

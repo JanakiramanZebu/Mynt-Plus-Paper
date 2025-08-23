@@ -722,13 +722,11 @@ class MarketWatchProvider extends DefaultChangeNotifier {
           ),
         ),
         context: context,
-        builder: (context) => SafeArea(
-          child: Container(
-              padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewInsets.bottom,
-              ),
-              child: ScripDepthInfo(wlValue: depthArgs, isBasket: basket)),
-        ));
+        builder: (context) => Container(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+            ),
+            child: ScripDepthInfo(wlValue: depthArgs, isBasket: basket)));
 
     await ref.read(websocketProvider).establishConnection(
         channelInput:
