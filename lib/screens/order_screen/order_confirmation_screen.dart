@@ -135,9 +135,9 @@ class _OrderConfirmationScreenState extends ConsumerState<OrderConfirmationScree
             theme: false,
           ),
         ),
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: SafeArea(
+        body: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
