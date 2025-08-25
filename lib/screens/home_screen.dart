@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:mynt_plus/provider/ledger_provider.dart';
 import 'package:mynt_plus/screens/dashboard_screen.dart';
+import 'package:mynt_plus/screens/stocks/explore/stocks/etf_category_detail_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../locator/constant.dart';
 import '../locator/preference.dart';
@@ -839,6 +840,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         context: context, isSubscribe: false);
     await portfolio.requestWSPosition(context: context, isSubscribe: false);
     await marketWatchList.requestMWScrip(context: context, isSubscribe: true);
+    marketWatchList.setETF(false);
 
     // Load any additional watchlist data in the background
     // Future.microtask(() {
@@ -856,6 +858,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     final fundProviderRef = ref.read(fundProvider);
 
     indexProvide.bottomMenu(2, context);
+    marketWatchList.setETF(false);
 
     // Run websocket subscription changes immediately (no await)
     await marketWatchList.requestMWScrip(context: context, isSubscribe: false);
@@ -920,6 +923,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
     indexProvide.bottomMenu(4, context);
     portfolio.cancelTimer();
+    marketWatchList.setETF(false);
 
     // Ensure years are set before prefetching
     reportsprovider.calendarProvider();
@@ -1087,6 +1091,36 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       mktwth.calldepthApis(context, mktwth.getQuotes, "");
 
       mktwth.singlePageloader(false);
+
+            if(ref.read(marketWatchProvider).scripsize){
+              Navigator.pop(context);
+            }
+            if(ref.read(marketWatchProvider).isETF){
+              Navigator.push(
+                context,
+                PageRouteBuilder(
+                  pageBuilder: (_, __, ___) =>
+                      ETFCategoryDetailScreen(
+                    categoryTitle:
+                        ref.read(marketWatchProvider).etfCategoryTitle,
+                    categoryIcon:
+                        ref.read(marketWatchProvider).etfCategoryIcon,
+                    categoryDescription:
+                        ref.read(marketWatchProvider).etfCategoryDescription,
+                  ),
+                  transitionsBuilder: (_, animation, __, child) {
+                    return SlideTransition(
+                      position: Tween<Offset>(
+                        begin: const Offset(-1.0, 0.0),
+                        end: Offset.zero,
+                      ).animate(animation),
+                      child: child,
+                    );
+                  },
+                ),
+              );
+              ref.read(marketWatchProvider).setETF(false);
+            }
 
       // Update state locally if needed
       if (mounted) setState(() {});

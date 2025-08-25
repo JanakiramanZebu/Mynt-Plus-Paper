@@ -315,6 +315,8 @@ class _TradeActionState extends ConsumerState<TradeAction>
             ? Colors.white.withOpacity(0.08)
             : Colors.black.withOpacity(0.08),
         onTap: () async {
+          marketWatch.scripdepthsize(false);
+          marketWatch.setETF(false);
           DepthInputArgs depthArgs = DepthInputArgs(
               exch: stock.exch.toString(),
               token: stock.token.toString(),
@@ -375,8 +377,16 @@ class _TradeActionState extends ConsumerState<TradeAction>
 
   Widget _buildPriceData(TopGainers stock, ThemesProvider theme) {
     final displayLtp = stock.lp ?? "0.00";
-    final displayChange = stock.c ?? "0.00";
-    final displayPerChange = stock.pc ?? "0.00";
+    
+    // Calculate change: (lp - c) where lp is last price and c is close price
+    final displayChange = (stock.lp != null && stock.c != null) 
+        ? (double.tryParse(stock.lp.toString())! - double.tryParse(stock.c.toString())!).toStringAsFixed(2)
+        : "0.00";
+    
+    // Calculate percentage change: ((ch / lp) * 100) where ch is the calculated change and lp is last price
+    final displayPerChange = (stock.lp != null && double.tryParse(displayChange) != 0) 
+        ? ((double.tryParse(displayChange)! / double.tryParse(stock.lp.toString())!) * 100).toStringAsFixed(2)
+        : "0.00";
 
     final changeColor =
         displayChange.startsWith("-") || displayPerChange.startsWith('-')

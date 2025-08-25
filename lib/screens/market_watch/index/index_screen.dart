@@ -131,6 +131,8 @@ class _DefaultIndexListState extends ConsumerState<DefaultIndexList>
                               marketWatch,
                               item.token?.toString() ?? "",
                               item.exch?.toString() ?? "");
+                          marketWatch.scripdepthsize(false);
+                          marketWatch.setETF(false);
                         },
                         child: Container(
                           width: double.infinity,

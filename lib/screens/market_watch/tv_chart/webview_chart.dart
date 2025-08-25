@@ -21,6 +21,7 @@ import '../../../routes/route_names.dart';
 import '../../../sharedWidget/functions.dart';
 import '../../../res/global_state_text.dart';
 import '../../portfolio_screens/holdings/holding_detail_screen.dart';
+import '../../stocks/explore/stocks/etf_category_detail_screen.dart';
 // import '../scrip_depth_info.dart';
 
 class ChartScreenWebView extends StatefulWidget {
@@ -235,7 +236,8 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
 
                     userProfile.setChartdialog(false);
                     if (tvChart.scripsize) {
-                      tvChart.chngDephBtn("Overview");
+                      // tvChart.chngDephBtn("Overview");
+                      tvChart.scripdepthsize(false);
                     } else {
                       tvChart.chngDephBtn("Overview");
                       tvChart.singlePageloader(true);
@@ -245,6 +247,32 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
                     }
                     tvChart.setChartScript('ABC', '0123', 'ABCD');
                     chartUpdate.changeOrientation('portrait');
+                    if(tvChart.isETF){
+                      Navigator.push(
+                              context,
+                              PageRouteBuilder(
+                                pageBuilder: (_, __, ___) =>
+                                    ETFCategoryDetailScreen(
+                                  categoryTitle:
+                                      tvChart.etfCategoryTitle,
+                                  categoryIcon:
+                                      tvChart.etfCategoryIcon,
+                                  categoryDescription:
+                                      tvChart.etfCategoryDescription,
+                                ),
+                                transitionsBuilder: (_, animation, __, child) {
+                                  return SlideTransition(
+                                    position: Tween<Offset>(
+                                      begin: const Offset(-1.0, 0.0),
+                                      end: Offset.zero,
+                                    ).animate(animation),
+                                    child: child,
+                                  );
+                                },
+                              ),
+                            );
+                            tvChart.setETF(false);
+                    }
                   },
                   child: Container(
                     width: 44,

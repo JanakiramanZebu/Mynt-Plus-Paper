@@ -792,6 +792,31 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
+  bool _isETF = false;
+  bool get isETF => _isETF;
+  
+  // Store ETF category information
+  String _etfCategoryTitle = '';
+  String _etfCategoryIcon = '';
+  String _etfCategoryDescription = '';
+  
+  String get etfCategoryTitle => _etfCategoryTitle;
+  String get etfCategoryIcon => _etfCategoryIcon;
+  String get etfCategoryDescription => _etfCategoryDescription;
+  
+  setETF(bool value) {
+    _isETF = value;
+    print("isETF: $_isETF");
+    notifyListeners();
+  }
+  
+  setETFCategory(String title, String icon, String description) {
+    _etfCategoryTitle = title;
+    _etfCategoryIcon = icon;
+    _etfCategoryDescription = description;
+    notifyListeners();
+  }
+
   List<String> shareHoldType = [
     "Promoter Holding",
     "Foriegn Institution",
@@ -3067,6 +3092,18 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         return double.parse(a.d ?? "0.00")
             .compareTo(double.parse(b.d ?? "0.00"));
       });
+    }  else if (sorting == "CHANGEASC") {
+      _alertPendingModel!.sort((a, b) {
+        final aChange = double.tryParse(a.change ?? '0.0') ?? 0.0;
+        final bChange = double.tryParse(b.change ?? '0.0') ?? 0.0;
+        return aChange.compareTo(bChange);
+      });
+    } else if (sorting == "CHANGEDSC") {
+      _alertPendingModel!.sort((a, b) {
+        final bChange = double.tryParse(b.change ?? '0.0') ?? 0.0;
+        final aChange = double.tryParse(a.change ?? '0.0') ?? 0.0;
+        return bChange.compareTo(aChange);
+      });
     }
     notifyListeners();
   }
@@ -3725,13 +3762,22 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         // Close the alert creation screens
         Navigator.pop(context);
         Navigator.pop(context);
+        if(scripsize){
+         Navigator.pop(context);
+        }
 
         // Navigate to the Alert tab after closing the alert creation screens
         ref.read(indexListProvider).bottomMenu(2, context);
         ref.read(portfolioProvider).changeTabIndex(2);
         ref.read(orderProvider).changeTabIndex(5, context);
-      } else if (_setAlertModel!.stat! == "Not_Ok") {
+      } else if (_setAlertModel!.stat! == "Not_Ok" &&
+          _setAlertModel!.stat == "Session Expired :  Invalid Session Key") {
         ref.read(authProvider).ifSessionExpired(context);
+      }
+
+      if (_setAlertModel!.stat! != "OI created") {
+        ScaffoldMessenger.of(context).showSnackBar(
+            warningMessage(context, "Alert not created"));
       }
 
       notifyListeners();

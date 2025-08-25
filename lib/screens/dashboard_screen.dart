@@ -31,31 +31,80 @@ class DashboardScreen extends ConsumerStatefulWidget {
 }
 
 class _DashboardScreenState extends ConsumerState<DashboardScreen>
-    with SingleTickerProviderStateMixin, RouteAware {
-  late TabController _tabController;
+    with TickerProviderStateMixin, RouteAware {
+  late TabController _mainTabController;
+  late PageController _pageController;
   final FocusNode _searchFocusNode = FocusNode();
+  
+  // Track current main tab
+  int _currentMainTab = 0;
+
+  // Callback function to handle child tab boundary navigation
+  void _onChildTabBoundaryReached(bool isLeftSwipe) {
+    if (isLeftSwipe) {
+      // Swiping left (going to previous parent tab)
+      if (_currentMainTab > 0) {
+        _switchToParentTab(_currentMainTab - 1);
+      }
+    } else {
+      // Swiping right (going to next parent tab)
+      if (_currentMainTab < 3) {
+        _switchToParentTab(_currentMainTab + 1);
+      }
+    }
+  }
+
+  void _switchToParentTab(int newTabIndex) {
+    setState(() {
+      _currentMainTab = newTabIndex;
+    });
+    _mainTabController.animateTo(newTabIndex);
+    _pageController.animateToPage(
+      newTabIndex,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
+  }
 
   @override
   void initState() {
     super.initState();
 
-    _tabController = TabController(
+    _mainTabController = TabController(
       length: 4,
       vsync: this,
       initialIndex: 0,
     );
-    // Sync initial tab index with provider
-    _tabController.addListener(() {
-      setState(() {});
-      // Sync with provider when tab changes
-      if (mounted && _tabController.indexIsChanging) {
-        ref.read(stocksProvide).syncTabIndex(_tabController.index);
-      }
-      // Clear search when switching tabs
-      if (mounted) {
-        ref.read(stocksProvide).searchController.clear();
+    
+    _pageController = PageController(initialPage: 0);
+
+    // Main tab listener
+    _mainTabController.addListener(() {
+      if (_mainTabController.indexIsChanging) {
+        setState(() {
+          _currentMainTab = _mainTabController.index;
+        });
+        
+        // Synchronize PageController with TabController
+        if (_pageController.page != _mainTabController.index) {
+          _pageController.animateToPage(
+            _mainTabController.index,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
+        }
+        
+        // Sync with provider when tab changes
+        if (mounted) {
+          ref.read(stocksProvide).syncTabIndex(_mainTabController.index);
+        }
+        // Clear search when switching tabs
+        if (mounted) {
+          ref.read(stocksProvide).searchController.clear();
+        }
       }
     });
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         ref.read(stocksProvide).syncTabIndex(0);
@@ -77,6 +126,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
 
     // Initialize provider state after dependencies are available
     WidgetsBinding.instance.addPostFrameCallback((_) async {
+      // Check if widget is still mounted before proceeding
+      if (!mounted) return;
+      
       final reportsprovider = ref.read(ledgerProvider);
       // await ref.read(stocksProvide).getNews();
 
@@ -84,6 +136,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
       // Initialize calendar provider
       final currentFY = reportsprovider.availableFinancialYears.first;
       if ((reportsprovider.hasDataForAllSegments)) {
+        // Check mounted before using context
+        if (!mounted) return;
         reportsprovider.fetchDataForAllSegmentsIfEmpty(
           context,
           reportsprovider.startDate,
@@ -91,12 +145,25 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
         );
         // Calendar PnL data will be fetched when needed
       }
+      
+      // Check mounted before async operations
+      if (!mounted) return;
       await ref.read(mfProvider).fetchEtfCategory();
+      
+      // Check mounted after async operation
+      if (!mounted) return;
+      
       // Immediately set the default year and segment to show correct data from cache
       reportsprovider.setFinancialYear(currentFY);
       reportsprovider.setSegment(reportsprovider.availableSegments.first);
+      
       if (reportsprovider.ledgerAllData == null) {
+        // Check mounted before async operation
+        if (!mounted) return;
         await reportsprovider.getCurrentDate('else');
+        
+        // Check mounted after async operation before using context
+        if (!mounted) return;
         reportsprovider.fetchLegerData(
             context, reportsprovider.startDate, reportsprovider.endDate);
       }
@@ -121,7 +188,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
   void dispose() {
     routeObserver.unsubscribe(this);
     _searchFocusNode.dispose();
-    _tabController.dispose();
+    _mainTabController.dispose();
+    _pageController.dispose();
     super.dispose();
   }
 
@@ -175,10 +243,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
                     height: 40,
                     child: InkWell(
                       onTap: () {
-                        if (_tabController.index == 1) {
+                        if (_mainTabController.index == 1) {
                           // FocusScope.of(context).unfocus();
                           Navigator.pushNamed(context, Routes.mfsearchscreen);
-                        } else if (_tabController.index == 0) {
+                        } else if (_mainTabController.index == 0) {
                           FocusScope.of(context).unfocus();
                           final mw = ref.read(marketWatchProvider);
                           WidgetsBinding.instance
@@ -195,8 +263,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
                         }
                       },
                       child: AbsorbPointer(
-                        absorbing: _tabController.index == 1 ||
-                            _tabController.index == 0,
+                        absorbing: _mainTabController.index == 1 ||
+                            _mainTabController.index == 0,
                         child: TextField(
                           focusNode: _searchFocusNode,
                           controller: stocks.searchController,
@@ -208,8 +276,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
                                 ? colors.textPrimaryDark
                                 : colors.textPrimaryLight,
                           ),
-                          readOnly: _tabController.index == 2 ||
-                                  _tabController.index == 3
+                          readOnly: _mainTabController.index == 2 ||
+                                  _mainTabController.index == 3
                               ? false
                               : true,
                           keyboardType: TextInputType.text,
@@ -260,12 +328,12 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
                                               stocks.searchController.clear();
                                               FocusScope.of(context).unfocus();
                                               stocks.clearsearchlist(context);
-                                              if (_tabController.index == 2) {
+                                              if (_mainTabController.index == 2) {
                                                 ref
                                                     .read(ipoProvide)
                                                     .setIpoSearchQuery("");
                                                 ;
-                                              } else if (_tabController.index ==
+                                              } else if (_mainTabController.index ==
                                                   3) {
                                                 ref
                                                     .read(bondsProvider)
@@ -275,7 +343,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
                                               //   if (positionBook.positionSearchCtrl.text.isEmpty) {
                                               //     positionBook.showPositionSearch(false);
                                               //   }
-                                              // });
+                                              // });)
                                             },
                                             child: SvgPicture.asset(
                                               assets.removeIcon,
@@ -302,7 +370,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
                                   borderRadius: BorderRadius.circular(20))),
                           onChanged: (value) {
                             stocks.searchdashboard(value, context,
-                                tabIndex: _tabController.index);
+                                tabIndex: _mainTabController.index);
                           },
                         ),
                       ),
@@ -313,58 +381,95 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
             ],
           ),
           bottom: PreferredSize(
-            preferredSize: const Size.fromHeight(40),
-            child: SizedBox(
-              width: MediaQuery.of(context).size.width,
-              height: 40,
-              child: TabBar(
-                onTap: (index) {
-                  // Sync the tab index with the provider
-                  ref.read(stocksProvide).syncTabIndex(index);
-                  FocusScope.of(context).unfocus();
-                  stocks.searchController.clear();
-                  stocks.clearsearchlist(context);
-                  ref.read(ipoProvide).setSelectedTab(0);
-                },
-                tabAlignment: TabAlignment.start,
-                indicatorSize: TabBarIndicatorSize.tab,
-                isScrollable: true,
-                indicatorColor: theme.isDarkMode
-                    ? colors.secondaryDark
-                    : colors.secondaryLight,
-                unselectedLabelColor: theme.isDarkMode
-                    ? colors.textSecondaryDark
-                    : colors.textSecondaryLight,
-                unselectedLabelStyle: TextWidget.textStyle(
-                  fontSize: 14,
-                  theme: false,
-                  fw: 3,
+            preferredSize: const Size.fromHeight(40), // Height for main tabs only
+            child: Column(
+              children: [
+                // Main tabs
+                SizedBox(
+                  width: MediaQuery.of(context).size.width,
+                  height: 40,
+                  child: TabBar(
+                    onTap: (index) {
+                      // Sync the tab index with the provider
+                      ref.read(stocksProvide).syncTabIndex(index);
+                      FocusScope.of(context).unfocus();
+                      stocks.searchController.clear();
+                      stocks.clearsearchlist(context);
+                      ref.read(ipoProvide).setSelectedTab(0);
+                    },
+                    tabAlignment: TabAlignment.start,
+                    indicatorSize: TabBarIndicatorSize.tab,
+                    isScrollable: true,
+                    indicatorColor: theme.isDarkMode
+                        ? colors.secondaryDark
+                        : colors.secondaryLight,
+                    unselectedLabelColor: theme.isDarkMode
+                        ? colors.textSecondaryDark
+                        : colors.textSecondaryLight,
+                    unselectedLabelStyle: TextWidget.textStyle(
+                      fontSize: 14,
+                      theme: false,
+                      fw: 3,
+                    ),
+                    labelColor: theme.isDarkMode
+                        ? colors.secondaryDark
+                        : colors.secondaryLight,
+                    labelStyle:
+                        TextWidget.textStyle(fontSize: 14, theme: false, fw: 2),
+                    controller: _mainTabController,
+                    tabs: stocks.exploreTabName,
+                  ),
                 ),
-                labelColor: theme.isDarkMode
-                    ? colors.secondaryDark
-                    : colors.secondaryLight,
-                labelStyle:
-                    TextWidget.textStyle(fontSize: 14, theme: false, fw: 2),
-                controller: _tabController,
-                tabs: stocks.exploreTabName,
-              ),
+                Divider(
+                  height: 1,
+                  thickness: 1,
+                  color:
+                      theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
+                ),
+              ],
             ),
           ),
         ),
-        body: TabBarView(
-          controller: _tabController,
-          children: [
-            const StockScreen(),
-            MFExploreScreens(theme: ref.watch(themeProvider)),
-            const IPOScreen(initialTabIndex: 0, isIpo: false),
-            const BondsScreen(isBonds: false),
-          ],
-        ),
+                 body: PageView(
+           controller: _pageController,
+           onPageChanged: (index) {
+             setState(() {
+               _currentMainTab = index;
+             });
+             _mainTabController.animateTo(index);
+           },
+           children: [
+             // Stocks - no child tabs
+             const StockScreen(),
+             // Mutual Fund - with child tabs
+             MFExploreScreens(
+               theme: ref.watch(themeProvider),
+               onBoundaryReached: _onChildTabBoundaryReached,
+             ),
+             // IPO - with child tabs
+             IPOScreen(
+               initialTabIndex: 0, 
+               isIpo: false,
+               onBoundaryReached: _onChildTabBoundaryReached,
+             ),
+             // Bond - with child tabs
+             BondsScreen(
+               isBonds: false,
+               onBoundaryReached: _onChildTabBoundaryReached,
+             ),
+           ],
+         ),
       );
     });
   }
+
+
+
+
 
   TextStyle textStyle(Color color, double fontSize, fWeight) {
     return TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize);
   }
 }
+
+

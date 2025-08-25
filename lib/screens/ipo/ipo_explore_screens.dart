@@ -13,15 +13,16 @@ import 'main_sme_list/main_sme_list.dart';
 class IpoExploreScreens extends ConsumerStatefulWidget {
   final ThemesProvider theme;
   final int? initialTabIndex;
+  final Function(bool)? onBoundaryReached; // Callback for boundary detection
   const IpoExploreScreens(
-      {super.key, required this.theme, this.initialTabIndex});
+      {super.key, required this.theme, this.initialTabIndex, this.onBoundaryReached});
 
   @override
   ConsumerState<IpoExploreScreens> createState() => _ExploreScreensState();
 }
 
 class _ExploreScreensState extends ConsumerState<IpoExploreScreens>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late TabController _tabController;
   
   int selectedTab = 0;
@@ -32,8 +33,17 @@ class _ExploreScreensState extends ConsumerState<IpoExploreScreens>
     super.initState();
     _tabController = TabController(
         length: 3, vsync: this, initialIndex: widget.initialTabIndex ?? 0);
-    _tabController.animation!.addListener(_onTabChanged);
+    selectedTab = widget.initialTabIndex ?? 0;
     
+    _tabController.animation!.addListener(() {
+      final newIndex = _tabController.animation!.value.round();
+      if (selectedTab != newIndex) {
+        setState(() {
+          selectedTab = newIndex;
+        });
+        ref.read(ipoProvide).setSelectedTab(newIndex);
+      }
+    });
   }
 
   @override
@@ -53,16 +63,7 @@ class _ExploreScreensState extends ConsumerState<IpoExploreScreens>
     });
   }
 
-  void _onTabChanged() {
-    final newIndex = _tabController.animation!.value.round();
-    if (selectedTab != newIndex) {
-      setState(() {
-        selectedTab = newIndex;
-      });
-      // Also update the provider's selected tab
-      ref.read(ipoProvide).setSelectedTab(newIndex);
-    }
-  }
+
 
   @override
   void dispose() {
@@ -113,6 +114,10 @@ class _ExploreScreensState extends ConsumerState<IpoExploreScreens>
                           selectedTab = tab;
                         });
                         _tabController.animateTo(tab);
+                        // Also update the page controller to jump directly
+                        if (_tabController.index != tab) {
+                          _tabController.index = tab;
+                        }
                         
                         ref.read(ipoProvide).clearCommonIpoSearch();
                         ref.read(ipoProvide).setIpoSearchQuery("");
@@ -127,7 +132,15 @@ class _ExploreScreensState extends ConsumerState<IpoExploreScreens>
             ),
           ),
           Expanded(
-            child: _TabBarViewSection(tabController: _tabController),
+            child: _CustomTabBarView(
+              controller: _tabController,
+              children: const [
+                MainSmeListCard(),
+                UpcomingIpo(),
+                IpoOrderbookMainScreen(),
+              ],
+              onBoundaryReached: widget.onBoundaryReached,
+            ),
           ),
         ],
       ),
@@ -174,20 +187,126 @@ class _ExploreScreensState extends ConsumerState<IpoExploreScreens>
   }
 }
 
-class _TabBarViewSection extends StatelessWidget {
-  final TabController tabController;
+// Custom TabBarView that handles edge swipe gestures to parent tabs
+class _CustomTabBarView extends StatefulWidget {
+  final TabController controller;
+  final List<Widget> children;
+  final Function(bool)? onBoundaryReached;
 
-  const _TabBarViewSection({required this.tabController});
+  const _CustomTabBarView({
+    required this.controller,
+    required this.children,
+    this.onBoundaryReached,
+  });
+
+  @override
+  State<_CustomTabBarView> createState() => _CustomTabBarViewState();
+}
+
+class _CustomTabBarViewState extends State<_CustomTabBarView> {
+  late PageController _pageController;
+  bool _isExternalTabChange = false;
+
+  // Track pointer events for edge swipes
+  double _startX = 0;
+  double _startY = 0;
+  double _currentX = 0;
+  double _currentY = 0;
+  bool _isTracking = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController(initialPage: widget.controller.index);
+
+    // Listen to internal tab controller changes (sync with page)
+    widget.controller.addListener(() {
+      if (_isExternalTabChange) {
+        return; // Avoid sync during external tab transition
+      }
+
+      final currentPage = _pageController.page?.round();
+      final newIndex = widget.controller.index;
+
+      if (_pageController.hasClients && currentPage != newIndex) {
+        // Use jumpToPage for distant tabs to avoid scrolling through all intermediate tabs
+        // Use animateToPage only for adjacent tabs (distance of 1)
+        final distance = (currentPage! - newIndex).abs();
+        if (distance > 1) {
+          _pageController.jumpToPage(newIndex);
+        } else {
+          _pageController.animateToPage(
+            newIndex,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.ease,
+          );
+        }
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return TabBarView(
-      controller: tabController,
-      children: const [
-        MainSmeListCard(),
-        UpcomingIpo(),
-        IpoOrderbookMainScreen(),
-      ],
+    return Listener(
+      onPointerDown: (PointerDownEvent event) {
+        _startX = event.position.dx;
+        _startY = event.position.dy;
+        _currentX = _startX;
+        _currentY = _startY;
+        _isTracking = true;
+      },
+      onPointerMove: (PointerMoveEvent event) {
+        if (_isTracking) {
+          _currentX = event.position.dx;
+          _currentY = event.position.dy;
+        }
+      },
+      onPointerUp: (PointerUpEvent event) {
+        if (!_isTracking) return;
+        _isTracking = false;
+
+        final deltaX = _currentX - _startX;
+        final deltaY = _currentY - _startY;
+        final currentPage = _pageController.page?.round() ?? 0;
+
+        // Only process if horizontal movement is greater than vertical
+        if (deltaX.abs() <= deltaY.abs()) return;
+
+        // Minimum distance for edge swipe
+        const minDistance = 50.0;
+
+        // Right swipe from first tab (Open) -> notify parent to go to previous tab (Mutual Fund)
+        if (deltaX > minDistance && currentPage == 0) {
+          if (widget.onBoundaryReached != null) {
+            widget.onBoundaryReached!(true); // true = previous tab (Mutual Fund)
+          }
+        }
+
+        // Left swipe from last tab (My Bids) -> notify parent to go to next tab (Bond)
+        if (deltaX < -minDistance && currentPage == widget.children.length - 1) {
+          if (widget.onBoundaryReached != null) {
+            widget.onBoundaryReached!(false); // false = next tab (Bond)
+          }
+        }
+      },
+      onPointerCancel: (PointerCancelEvent event) {
+        _isTracking = false;
+      },
+      child: PageView.builder(
+        controller: _pageController,
+        itemCount: widget.children.length,
+        onPageChanged: (index) {
+          // Jump directly to the tapped tab without animation
+          widget.controller.animateTo(index);
+        },
+        itemBuilder: (context, index) => widget.children[index],
+      ),
     );
   }
 }

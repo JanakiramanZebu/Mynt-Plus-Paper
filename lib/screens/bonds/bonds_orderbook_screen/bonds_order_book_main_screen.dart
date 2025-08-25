@@ -39,10 +39,7 @@ class _BondsOrderbookMainScreenState
       final devHeight = MediaQuery.of(context).size.height;
 
       return Scaffold(
-        body: LogoLoaderScreen(
-          isLoading: bonds.bondsMyBidsload,
-          child: _buildContent(bonds, theme, devHeight),
-        ),
+        body: _buildContent(bonds, theme, devHeight),
       );
     });
   }

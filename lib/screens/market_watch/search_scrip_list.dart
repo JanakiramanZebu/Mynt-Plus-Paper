@@ -75,6 +75,8 @@ print(!searchScrip.exarr.contains('"${scrip.exch}"'));
                     ? Colors.white.withOpacity(0.08)
                     : Colors.black.withOpacity(0.08),
                 onTap: () async {
+                  searchScrip.setETF(false);
+                  searchScrip.scripdepthsize(false);
                   if (widget.isBasket == "Chart||Is") {
                     await searchScrip.fetchScripQuoteIndex(
                       scrip.token.toString(),

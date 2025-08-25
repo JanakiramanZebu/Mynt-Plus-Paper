@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mynt_plus/provider/market_watch_provider.dart';
 import '../../models/order_book_model/order_history_model.dart';
 import '../../models/order_book_model/place_order_model.dart';
 import '../../provider/order_provider.dart';
@@ -107,6 +108,7 @@ class _OrderConfirmationScreenState extends ConsumerState<OrderConfirmationScree
 
   void _navigateToOrderBook() {
     // Navigate to order book
+    ref.read(marketWatchProvider).setETF(false);
     ref.read(indexListProvider).bottomMenu(2, context);
     ref.read(portfolioProvider).changeTabIndex(2);
     ref.read(orderProvider).changeTabIndex(0, context);
