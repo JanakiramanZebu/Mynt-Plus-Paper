@@ -381,88 +381,88 @@ class BasketScripList extends ConsumerWidget {
     final theme = ref.read(themeProvider);
     final basket = ref.watch(orderProvider);
 
-    return SafeArea(
-      child: Scaffold(
-          appBar: AppBar(
-              elevation: .2,
-              leadingWidth: 41,
-              centerTitle: false,
-              titleSpacing: 6,
-              leading: const CustomBackBtn(),
-              title: TextWidget.titleText(
-                  text:
-                      "${bsktName}   (${basket.bsktScripList.length} / ${20})",
-                  theme: false,
-                  color: theme.isDarkMode
-                      ? colors.textPrimaryDark
-                      : colors.textPrimaryLight,
-                  fw: 1),
-              actions: basket.bsktScripList.length < 20
-                  ? [
-                      Row(
-                        children: [
-                          Container(
-                            margin: const EdgeInsets.only(right: 16),
-                            decoration: BoxDecoration(
-                              color: theme.isDarkMode
-                                  ? colors.textSecondaryDark.withOpacity(0.6)
-                                  : colors.btnBg,
-                              borderRadius: BorderRadius.circular(5),
-                              border: theme.isDarkMode
-                                  ? null
-                                  : Border.all(
-                                      color: colors.btnOutlinedBorder,
-                                      width: 1),
-                            ),
-                            child: Material(
-                              color: Colors.transparent,
-                              shape: const BeveledRectangleBorder(),
-                              child: InkWell(
-                                  customBorder: const BeveledRectangleBorder(),
-                                  splashColor: theme.isDarkMode
-                                      ? colors.splashColorDark
-                                      : colors.splashColorLight,
-                                  highlightColor: theme.isDarkMode
-                                      ? colors.highlightDark
-                                      : colors.highlightLight,
-                                  onTap: () async {
-                                    // Check if basket already has 20 items
-                                    if (basket.bsktScripList.length >= 20) {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(SnackBar(
-                                        content: const Text(
-                                            "Basket limit reached. Please create a new basket as you are exceeding the 20 item limit."),
-                                        backgroundColor: colors.darkred,
-                                        duration: const Duration(seconds: 3),
-                                      ));
-                                      return;
-                                    }
-
-                                    await ref
-                                        .watch(marketWatchProvider)
-                                        .searchClear();
-                                    Navigator.pushNamed(
-                                        context, Routes.searchScrip,
-                                        arguments: "Basket");
-                                  },
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 12, vertical: 8),
-                                    child: TextWidget.subText(
-                                        text: "Add symbol",
-                                        theme: theme.isDarkMode,
-                                        color: theme.isDarkMode
-                                            ? colors.colorWhite
-                                            : colors.primaryLight,
-                                        fw: 2),
-                                  )),
-                            ),
+    return Scaffold(
+        appBar: AppBar(
+            elevation: .2,
+            leadingWidth: 41,
+            centerTitle: false,
+            titleSpacing: 6,
+            leading: const CustomBackBtn(),
+            title: TextWidget.titleText(
+                text:
+                    "${bsktName}   (${basket.bsktScripList.length} / ${basket.frezQtyOrderSliceMaxLimit})",
+                theme: false,
+                color: theme.isDarkMode
+                    ? colors.textPrimaryDark
+                    : colors.textPrimaryLight,
+                fw: 1),
+            actions: basket.bsktScripList.length < basket.frezQtyOrderSliceMaxLimit
+                ? [
+                    Row(
+                      children: [
+                        Container(
+                          margin: const EdgeInsets.only(right: 16),
+                          decoration: BoxDecoration(
+                            color: theme.isDarkMode
+                                ? colors.textSecondaryDark.withOpacity(0.6)
+                                : colors.btnBg,
+                            borderRadius: BorderRadius.circular(5),
+                            border: theme.isDarkMode
+                                ? null
+                                : Border.all(
+                                    color: colors.btnOutlinedBorder,
+                                    width: 1),
                           ),
-                        ],
-                      ),
-                    ]
-                  : null),
-          body: Column(children: [
+                          child: Material(
+                            color: Colors.transparent,
+                            shape: const BeveledRectangleBorder(),
+                            child: InkWell(
+                                customBorder: const BeveledRectangleBorder(),
+                                splashColor: theme.isDarkMode
+                                    ? colors.splashColorDark
+                                    : colors.splashColorLight,
+                                highlightColor: theme.isDarkMode
+                                    ? colors.highlightDark
+                                    : colors.highlightLight,
+                                onTap: () async {
+                                  // Check if basket already has frezQtyOrderSliceMaxLimit items
+                                  if (basket.bsktScripList.length >= basket.frezQtyOrderSliceMaxLimit) {
+                                    ScaffoldMessenger.of(context)
+                                        .showSnackBar(SnackBar(
+                                      content: Text(
+                                          "Basket limit reached. Please create a new basket as you are exceeding the ${basket.frezQtyOrderSliceMaxLimit} item limit."),
+                                      backgroundColor: colors.darkred,
+                                      duration: const Duration(seconds: 3),
+                                    ));
+                                    return;
+                                  }
+    
+                                  await ref
+                                      .watch(marketWatchProvider)
+                                      .searchClear();
+                                  Navigator.pushNamed(
+                                      context, Routes.searchScrip,
+                                      arguments: "Basket");
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12, vertical: 8),
+                                  child: TextWidget.subText(
+                                      text: "Add symbol",
+                                      theme: theme.isDarkMode,
+                                      color: theme.isDarkMode
+                                          ? colors.colorWhite
+                                          : colors.primaryLight,
+                                      fw: 2),
+                                )),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ]
+                : null),
+        body: SafeArea(
+          child: Column(children: [
             Container(
                 padding: const EdgeInsets.all(16),
                 child: Column(
@@ -543,11 +543,11 @@ class BasketScripList extends ConsumerWidget {
                         stream: ref.watch(websocketProvider).socketDataStream,
                         builder: (context, snapshot) {
                           final socketDatas = snapshot.data ?? {};
-
+              
                           // Check if we have socket data and need to update
                           if (snapshot.hasData && socketDatas.isNotEmpty) {
                             bool updated = false;
-
+              
                             // Update basket script list with real-time values
                             for (var script in basket.bsktScripList) {
                               final token = script['token']?.toString();
@@ -555,14 +555,14 @@ class BasketScripList extends ConsumerWidget {
                                   socketDatas.containsKey(token)) {
                                 final lp = socketDatas[token]['lp']?.toString();
                                 final pc = socketDatas[token]['pc']?.toString();
-
+              
                                 if (lp != null && lp != "null") {
                                   if (script['lp']?.toString() != lp) {
                                     script['lp'] = lp;
                                     updated = true;
                                   }
                                 }
-
+              
                                 if (pc != null && pc != "null") {
                                   if (script['pc']?.toString() != pc) {
                                     script['pc'] = pc;
@@ -571,7 +571,7 @@ class BasketScripList extends ConsumerWidget {
                                 }
                               }
                             }
-
+              
                             // Force a refresh if we have updates
                             if (updated) {
                               // Update in the next frame to avoid rebuild conflicts
@@ -583,7 +583,7 @@ class BasketScripList extends ConsumerWidget {
                               });
                             }
                           }
-
+              
                           return ListView.separated(
                             shrinkWrap: true,
                             itemCount: basket.bsktScripList.length,
@@ -597,7 +597,7 @@ class BasketScripList extends ConsumerWidget {
                                     .bsktScripList[index]["dname"]
                                     .toString()
                                     .split(" ");
-
+              
                                 basket.bsktScripList[index]['symbol'] =
                                     splitVal[0];
                                 basket.bsktScripList[index]['expDate'] =
@@ -610,7 +610,7 @@ class BasketScripList extends ConsumerWidget {
                                 Map spilitSymbol = spilitTsym(
                                     value:
                                         "${basket.bsktScripList[index]['tsym']}");
-
+              
                                 basket.bsktScripList[index]['symbol'] =
                                     "${spilitSymbol["symbol"]}";
                                 basket.bsktScripList[index]['expDate'] =
@@ -618,7 +618,7 @@ class BasketScripList extends ConsumerWidget {
                                 basket.bsktScripList[index]['option'] =
                                     "${spilitSymbol["option"]}";
                               }
-
+              
                               return InkWell(
                                 onLongPress: () async {
                                   showDialog(
@@ -774,7 +774,7 @@ class BasketScripList extends ConsumerWidget {
                                   basket.bsktScripList[index]['index'] = index;
                                   basket.bsktScripList[index]['prctyp'] =
                                       basket.bsktScripList[index]['prctype'];
-
+              
                                   // Ensure lp and pc values are not null for OrderScreenArgs
                                   final ltp = basket.bsktScripList[index]['lp']
                                           ?.toString() ??
@@ -783,7 +783,7 @@ class BasketScripList extends ConsumerWidget {
                                               ['pc']
                                           ?.toString() ??
                                       "0.00";
-
+              
                                   OrderScreenArgs orderArgs = OrderScreenArgs(
                                       exchange:
                                           '${basket.bsktScripList[index]['exch']}',
@@ -983,7 +983,7 @@ class BasketScripList extends ConsumerWidget {
                                                 ),
                                               ]),
                                           const SizedBox(height: 8),
-
+              
                                           // TextWidget.paraText(
                                           //           text:
                                           //               " (${basket.bsktScripList[index]['pc']?.toString() ?? "0.00"}%)",
@@ -1003,7 +1003,7 @@ class BasketScripList extends ConsumerWidget {
                                           //                   ? colors.ltpgrey
                                           //                   : colors.ltpgreen,
                                           //           fw: 0),
-
+              
                                           Row(
                                               mainAxisAlignment:
                                                   MainAxisAlignment
@@ -1068,119 +1068,124 @@ class BasketScripList extends ConsumerWidget {
                         },
                       )),
           ]),
-          bottomNavigationBar: basket.bsktScripList.isEmpty
-              ? null
-              : Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Static error message for multiple exchanges
-                    if (basket.bsktScripList.isNotEmpty &&
-                        _hasMultipleExchanges(basket.bsktScripList))
+        ),
+        bottomNavigationBar: basket.bsktScripList.isEmpty
+            ? null
+            : SafeArea(
+              child: Padding(
+                padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+                child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Static error message for multiple exchanges
+                      if (basket.bsktScripList.isNotEmpty &&
+                          _hasMultipleExchanges(basket.bsktScripList))
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 8, horizontal: 12),
+                          decoration: BoxDecoration(
+                            color: colors.loss,
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              TextWidget.paraText(
+                                text:
+                                    "Basket should contain orders of only 1 segment",
+                                theme: false,
+                                color: colors.colorWhite,
+                              ),
+                            ],
+                          ),
+                        ),
                       Container(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 8, horizontal: 12),
+                        height: 70,
+                        padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: colors.loss,
+                          color: theme.isDarkMode
+                              ? colors.colorBlack
+                              : colors.colorWhite,
                         ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            TextWidget.paraText(
-                              text:
-                                  "Basket should contain orders of only 1 segment",
-                              theme: false,
-                              color: colors.colorWhite,
-                            ),
-                          ],
-                        ),
-                      ),
-                    Container(
-                      height: 70,
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: theme.isDarkMode
-                            ? colors.colorBlack
-                            : colors.colorWhite,
-                      ),
-                      child: SizedBox(
-                        width: double.infinity,
-                        child: _hasOrdersPlacedInBasket(bsktName, basket)
-                            ? OutlinedButton.icon(
-                                onPressed: () {
-                                  basket.resetBasketOrderTracking(bsktName);
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: const Text(
-                                          "Basket reset. You can place orders again."),
-                                      backgroundColor: colors.ltpgreen,
-                                      duration: const Duration(seconds: 2),
-                                    ),
-                                  );
-                                },
-                                label: TextWidget.subText(
-                                  text: "Reset Orders",
-                                  theme: false,
-                                    color: theme.isDarkMode
-                                                                ? colors
-                                                                    .colorWhite
-                                                                : colors
-                                                                    .primaryLight,
-                                  fw: 2,
-                                ),
-                                style: OutlinedButton.styleFrom(
-                                    minimumSize: const Size(0, 45),
-                                    side: BorderSide(
+                        child: SizedBox(
+                          width: double.infinity,
+                          child: _hasOrdersPlacedInBasket(bsktName, basket)
+                              ? OutlinedButton.icon(
+                                  onPressed: () {
+                                    basket.resetBasketOrderTracking(bsktName);
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: const Text(
+                                            "Basket reset. You can place orders again."),
+                                        backgroundColor: colors.ltpgreen,
+                                        duration: const Duration(seconds: 2),
+                                      ),
+                                    );
+                                  },
+                                  label: TextWidget.subText(
+                                    text: "Reset Orders",
+                                    theme: false,
                                       color: theme.isDarkMode
-                                          ? colors.colorGrey
-                                          : colors.primaryLight,
+                                                                  ? colors
+                                                                      .colorWhite
+                                                                  : colors
+                                                                      .primaryLight,
+                                    fw: 2,
+                                  ),
+                                  style: OutlinedButton.styleFrom(
+                                      minimumSize: const Size(0, 45),
+                                      side: BorderSide(
+                                        color: theme.isDarkMode
+                                            ? colors.colorGrey
+                                            : colors.primaryLight,
+                                      ),
+                                       backgroundColor:theme.isDarkMode
+                                                            ? colors
+                                                                .textSecondaryDark
+                                                                .withOpacity(0.6)
+                                                            : colors.btnBg,
+                                      shape: const RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.all(
+                                              Radius.circular(5)))),
+                                )
+                              : OutlinedButton.icon(
+                                  onPressed:
+                                      _hasMultipleExchanges(basket.bsktScripList)
+                                          ? () {}
+                                          : () async {
+                                              await basket.placeBasketOrder(
+                                                  context,
+                                                  navigateToOrderBook: false);
+                                            },
+                                  label: TextWidget.subText(
+                                    text: "Place Order",
+                                    theme: false,
+                                    color: _hasMultipleExchanges(
+                                            basket.bsktScripList)
+                                            ? colors.colorWhite.withOpacity(0.3) : colors.colorWhite,
+                                    fw: 2,
+                                  ),
+                                  style: OutlinedButton.styleFrom(
+                                      side: BorderSide.none,
+                                    minimumSize: const Size(0, 45),
+                                    backgroundColor: _hasMultipleExchanges(
+                                            basket.bsktScripList)
+                                        ? (theme.isDarkMode
+                                            ? colors.textSecondaryDark.withOpacity(0.3)
+                                            : colors.textSecondaryLight.withOpacity(0.3))
+                                        : (theme.isDarkMode
+                                            ? colors.primaryDark
+                                            : colors.primaryLight),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(5),
                                     ),
-                                     backgroundColor:theme.isDarkMode
-                                                          ? colors
-                                                              .textSecondaryDark
-                                                              .withOpacity(0.6)
-                                                          : colors.btnBg,
-                                    shape: const RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.all(
-                                            Radius.circular(5)))),
-                              )
-                            : OutlinedButton.icon(
-                                onPressed:
-                                    _hasMultipleExchanges(basket.bsktScripList)
-                                        ? () {}
-                                        : () async {
-                                            await basket.placeBasketOrder(
-                                                context,
-                                                navigateToOrderBook: false);
-                                          },
-                                label: TextWidget.subText(
-                                  text: "Place Order",
-                                  theme: false,
-                                  color: _hasMultipleExchanges(
-                                          basket.bsktScripList)
-                                          ? colors.colorWhite.withOpacity(0.3) : colors.colorWhite,
-                                  fw: 2,
-                                ),
-                                style: OutlinedButton.styleFrom(
-                                    side: BorderSide.none,
-                                  minimumSize: const Size(0, 45),
-                                  backgroundColor: _hasMultipleExchanges(
-                                          basket.bsktScripList)
-                                      ? (theme.isDarkMode
-                                          ? colors.textSecondaryDark.withOpacity(0.3)
-                                          : colors.textSecondaryLight.withOpacity(0.3))
-                                      : (theme.isDarkMode
-                                          ? colors.primaryDark
-                                          : colors.primaryLight),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(5),
                                   ),
                                 ),
-                              ),
+                        ),
                       ),
-                    ),
-                  ],
-                )),
-    );
+                    ],
+                  ),
+              ),
+            ));
   }
 
   String formatToTimeOnly(String rawDate) {

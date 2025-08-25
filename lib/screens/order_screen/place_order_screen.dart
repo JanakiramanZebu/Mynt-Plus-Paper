@@ -4684,8 +4684,6 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                         quantity);
                                                                 maxQty = frezQty *
                                                                     frezQtyOrderSliceMaxLimit;
-                                                                print(
-                                                                    "objectobject{$quantity | $reminder | $maxQty}");
                                                               });
                                                               if (convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount)
                                                                       .trim()

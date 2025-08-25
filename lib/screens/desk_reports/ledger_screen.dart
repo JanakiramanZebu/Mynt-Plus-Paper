@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:intl/intl.dart';
 import 'package:mynt_plus/provider/ledger_provider.dart';
 import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/screens/desk_reports/bottom_sheets/ledger_bill.dart';
@@ -630,31 +631,33 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                                 : colors.textSecondaryLight,
                                                   ),
                                                 ),
-                                                onTap: () async {
-                                                  await Future.delayed(
-                                                      const Duration(
-                                                          milliseconds: 150));
-                                                  ledgerprovider.pdfdownloadforledger(
-                                                      context,
-                                                      ledgerprovider
-                                                              .ledgerAllData
-                                                              ?.toJson() ??
-                                                          {},
-                                                      ledgerprovider.ledgerAllData
-                                                              ?.drAmt ??
-                                                          '0.00',
-                                                      ledgerprovider.ledgerAllData
-                                                              ?.crAmt ??
-                                                          '0.00',
-                                                      ledgerprovider.ledgerAllData
-                                                              ?.closingBalance ??
-                                                          '0.00',
-                                                      ledgerprovider.ledgerAllData
-                                                              ?.openingBalance ??
-                                                          '0.00',
-                                                      ledgerprovider.startDate,
-                                                      ledgerprovider.endDate);
-                                                },
+                                                                                                 onTap: () async {
+                                                   await Future.delayed(
+                                                       const Duration(
+                                                           milliseconds: 150));
+                                                   String currentDate = DateFormat("dd/MM/yyyy").format(DateTime.now());
+                                                   
+                                                   ledgerprovider.pdfdownloadforledger(
+                                                       context,
+                                                       ledgerprovider
+                                                               .ledgerAllData
+                                                               ?.toJson() ??
+                                                           {},
+                                                       ledgerprovider.ledgerAllData
+                                                               ?.drAmt ??
+                                                           '0.00',
+                                                       ledgerprovider.ledgerAllData
+                                                               ?.crAmt ??
+                                                           '0.00',
+                                                       ledgerprovider.ledgerAllData
+                                                               ?.closingBalance ??
+                                                           '0.00',
+                                                       ledgerprovider.ledgerAllData
+                                                               ?.openingBalance ??
+                                                           '0.00',
+                                                       ledgerprovider.startDate,
+                                                       currentDate);
+                                                 },
                                               ),
                                             ),
                                           ],

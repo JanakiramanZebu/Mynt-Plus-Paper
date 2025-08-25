@@ -882,7 +882,7 @@ class OrderProvider extends DefaultChangeNotifier {
       List<Future<PlaceOrderModel?>> orderFutures = [];
 
       // Create futures for all slice orders
-      final iterations = quantity >= 20 ? 20 : quantity;
+      final iterations = quantity >= frezQtyOrderSliceMaxLimit ? frezQtyOrderSliceMaxLimit : quantity;
 
       for (var i = 0; i < iterations; i++) {
         orderFutures.add(_placeSliceOrderInternal(placeOrderInputs[0]));
@@ -1973,7 +1973,7 @@ class OrderProvider extends DefaultChangeNotifier {
     _bsktList.add({
       "bsketName": trimmedName,
       "createdDate": curDate,
-      "max": '20',
+      "max": frezQtyOrderSliceMaxLimit.toString(),
       "curLength": '0'
     });
     final userId = pref.clientId;
@@ -2280,11 +2280,11 @@ class OrderProvider extends DefaultChangeNotifier {
       List currentScripts = data[basketName] ?? [];
       print("Current scripts count: ${currentScripts.length}");
       
-      // Check basket limit (20 items max)
-      if (currentScripts.length >= 20) {
+      // Check basket limit (frezQtyOrderSliceMaxLimit items max)
+      if (currentScripts.length >= frezQtyOrderSliceMaxLimit) {
         if (context != null) {
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: const Text("Basket limit reached. Cannot add more than 20 items to a basket."),
+            content: Text("Basket limit reached. Cannot add more than $frezQtyOrderSliceMaxLimit items to a basket."),
             backgroundColor: Colors.red,
             duration: const Duration(seconds: 3),
           ));
