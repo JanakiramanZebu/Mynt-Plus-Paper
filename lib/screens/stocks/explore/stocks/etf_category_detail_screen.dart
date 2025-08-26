@@ -50,6 +50,16 @@ class _ETFCategoryDetailScreenState extends ConsumerState<ETFCategoryDetailScree
   void initState() {
     super.initState();
 
+    // Store ETF category information in MarketWatchProvider
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final marketWatch = ref.read(marketWatchProvider);
+      marketWatch.setETFCategory(
+        widget.categoryTitle,
+        widget.categoryIcon,
+        widget.categoryDescription,
+      );
+    });
+
     // Find the initial tab index based on the title passed as argument
     int initialIndex = 0;
     for (int i = 0; i < tabTitles.length; i++) {
@@ -132,91 +142,128 @@ class _ETFCategoryDetailScreenState extends ConsumerState<ETFCategoryDetailScree
   Widget build(BuildContext context) {
     final theme = ref.watch(themeProvider);
 
-    return Scaffold(
-      backgroundColor: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-      appBar: AppBar(
-          elevation: 0,
-          leadingWidth: 41,
-          centerTitle: false,
-          titleSpacing: 6,
-          leading: CustomBackBtn(),
-          title: TextWidget.titleText(
-            text: "ETF Collections",
-            color: theme.
-                isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-            fw: 1,
-            theme: theme.isDarkMode,
-          ),
-        ),
-     
-      body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Custom tabs section
-            Container(
-              width: MediaQuery.of(context).size.width,
-              padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
-              decoration: BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(
-                    color: theme.isDarkMode
-                        ? colors.darkColorDivider
-                        : colors.colorDivider,
-                    width: 0,
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+       ref.read(marketWatchProvider).setETF(false);
+       Navigator.pop(context);
+      },
+      child: Scaffold(
+        backgroundColor: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+        appBar: AppBar(
+            elevation: 0,
+            leadingWidth: 41,
+            centerTitle: false,
+            titleSpacing: 6,
+            leading: Material(
+                  color: Colors.transparent,
+                  shape: const CircleBorder(),
+                  clipBehavior: Clip.hardEdge,
+                  child: InkWell(
+                    customBorder: const CircleBorder(),
+                  splashColor: theme.isDarkMode
+                                                    ? colors.splashColorDark
+                                                    : colors.splashColorLight,
+                                                highlightColor: theme.isDarkMode
+                                                    ? colors.highlightDark
+                                                    : colors.highlightLight,
+                    onTap: () {                  
+                      ref.read(marketWatchProvider).setETF(false);
+                      Navigator.pop(context);
+                    },
+                    child: Container(
+                      width: 44, // Increased touch area
+                      height: 44,
+                      alignment: Alignment.center,
+                      child: Icon(
+                        Icons.arrow_back_ios_outlined,
+                        size: 18,
+                        color: theme.isDarkMode
+                            ? colors.textSecondaryDark
+                            : colors.textSecondaryLight,
+                      ),
+                    ),
                   ),
                 ),
-              ),
-              child: SingleChildScrollView(
-                controller: _scrollController,
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: List.generate(
-                    tabTitles.length,
-                    (tab) => Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        canRequestFocus: false,
-                        splashColor: theme.isDarkMode
-                            ? Colors.white.withOpacity(0.05)
-                            : Colors.black.withOpacity(0.05),
-                        highlightColor: theme.isDarkMode
-                            ? Colors.white.withOpacity(0.01)
-                            : Colors.black.withOpacity(0.01),
-                        onTap: () {
-                          setState(() {
-                            selectedTab = tab;
-                          });
-                          _tabController.animateTo(tab);
-                          // Scroll to center the active tab
-                          WidgetsBinding.instance.addPostFrameCallback((_) {
-                            _scrollToActiveTab(tab);
-                          });
-                        },
-                        child: tabConstruct(
-                          tabTitles[tab],
-                          theme,
-                          tab,
+            title: TextWidget.titleText(
+              text: "ETF Collections",
+              color: theme.
+                  isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+              fw: 1,
+              theme: theme.isDarkMode,
+            ),
+          ),
+       
+        body: SafeArea(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Custom tabs section
+              Container(
+                width: MediaQuery.of(context).size.width,
+                padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(
+                      color: theme.isDarkMode
+                          ? colors.darkColorDivider
+                          : colors.colorDivider,
+                      width: 0,
+                    ),
+                  ),
+                ),
+                child: SingleChildScrollView(
+                  controller: _scrollController,
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: List.generate(
+                      tabTitles.length,
+                      (tab) => Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          canRequestFocus: false,
+                          splashColor: theme.isDarkMode
+                              ? Colors.white.withOpacity(0.05)
+                              : Colors.black.withOpacity(0.05),
+                          highlightColor: theme.isDarkMode
+                              ? Colors.white.withOpacity(0.01)
+                              : Colors.black.withOpacity(0.01),
+                          onTap: () {
+                            setState(() {
+                              selectedTab = tab;
+                            });
+                            _tabController.animateTo(tab);
+                            // Scroll to center the active tab
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              _scrollToActiveTab(tab);
+                            });
+                          },
+                          child: tabConstruct(
+                            tabTitles[tab],
+                            theme,
+                            tab,
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
               ),
-            ),
-        
-            
-            // TabBarView with ETF lists
-            Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: tabTitles.map((tabTitle) {
-                  return buildETFList(tabTitle, theme);
-                }).toList(),
+          
+              
+              // TabBarView with ETF lists
+              Expanded(
+                child: TabBarView(
+                  controller: _tabController,
+                  children: tabTitles.map((tabTitle) {
+                    return buildETFList(tabTitle, theme);
+                  }).toList(),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -307,17 +354,18 @@ class _ETFCategoryDetailScreenState extends ConsumerState<ETFCategoryDetailScree
         canRequestFocus: false,
         onTap: () async {
           final marketWatch = ref.read(marketWatchProvider);
-          marketWatch.scripdepthsize(false);
           final depthArgs = <String, dynamic>{
             'exch': (etf.exch ?? '').toString(),
             'token': (etf.zebuToken ?? '').toString(),
-            'tsym': (etf.sYMBOL ?? etf.nseSymbol ?? etf.nSESymbol ?? '').toString(),
+            'tsym': (etf.nSESymbol ?? '').toString().split(':').last,
             'instname': '',
             'symbol': (etf.sYMBOL ?? '').toString(),
             'expDate': '',
             'option': '',
           };
-          await marketWatch.calldepthApis(context, depthArgs, "");
+           marketWatch.calldepthApis(context, depthArgs, "");
+          marketWatch.scripdepthsize(true);
+          marketWatch.setETF(true);
         },
         child: ListTile(
           contentPadding: const EdgeInsets.symmetric(horizontal: 16),

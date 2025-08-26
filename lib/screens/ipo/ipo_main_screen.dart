@@ -20,7 +20,8 @@ import '../../sharedWidget/no_data_found.dart';
 class IPOScreen extends StatefulWidget {
   final int? initialTabIndex;
   final bool? isIpo;
-  const IPOScreen({super.key, this.initialTabIndex, this.isIpo});
+  final Function(bool)? onBoundaryReached; // Callback for boundary detection
+  const IPOScreen({super.key, this.initialTabIndex, this.isIpo, this.onBoundaryReached});
 
   @override
   State<IPOScreen> createState() => _IPOmainScreenState();
@@ -52,6 +53,7 @@ class _IPOmainScreenState extends State<IPOScreen> {
               body: IpoExploreScreens(
                 theme: theme,
                 initialTabIndex: widget.initialTabIndex,
+                onBoundaryReached: widget.onBoundaryReached,
               ),
             ),
           ),

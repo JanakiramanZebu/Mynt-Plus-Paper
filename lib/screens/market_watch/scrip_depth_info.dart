@@ -424,6 +424,9 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
           onPopInvokedWithResult: (didPop, result) async {
             if (didPop) return; // If system handled back, do nothing
 
+            // Reset ETF flag when going back from scrip depth info
+            ref.read(marketWatchProvider).setETF(false);
+
             await ref.read(marketWatchProvider).chngDephBtn("Overview");
 
             // Initialize and cancel the timer
@@ -491,6 +494,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                       onVerticalDragEnd: (details) {
                         if (details.primaryVelocity != null &&
                             details.primaryVelocity! > 500) {
+                              ref.read(marketWatchProvider).setETF(false);
                           // A fast enough downward swipe detected
                           Navigator.of(context).pop();
                         }

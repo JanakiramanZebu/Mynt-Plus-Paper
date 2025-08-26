@@ -81,9 +81,7 @@ class _OrderbookFilterBottomSheetState
   void _applySortForType(String type) {
     String sortingValue = "";
 
-    // Debug current values
-    print("Before sort - Current type: $currentSortType");
-    print("Before sort - Sort state: Scrip: $scripisAscending, Price: $pricepisAscending, Qty: $qtyisAscending, Product: $productisAscending, Time: $timeisAscending");
+   
 
     // Update current sort type
     setState(() {

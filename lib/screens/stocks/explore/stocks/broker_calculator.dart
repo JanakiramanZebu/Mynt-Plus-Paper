@@ -309,6 +309,9 @@ double brokerageRate = (sellPrice == 0 || buyPrice == 0)
             controller: controller,
             keyboardType: TextInputType.number,
             onChanged: (_) => _calculateCharges(),
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+            ],
             decoration: InputDecoration(
                 prefixIcon:
                     Icon(icon, color: colors.textPrimaryLight, size: 18),
@@ -372,6 +375,9 @@ double brokerageRate = (sellPrice == 0 || buyPrice == 0)
                   controller: _brokerageController,
                   keyboardType: TextInputType.numberWithOptions(decimal: true),
                   onChanged: (_) => _calculateCharges(),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                  ],
                   decoration: InputDecoration(
                       prefixIcon: Icon(
                           _isPercentageBrokerage

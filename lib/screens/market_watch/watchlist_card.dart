@@ -67,6 +67,7 @@ class _WatchlistCardState extends ConsumerState<WatchlistCard> {
             });
             // Add a small delay for the UI to reflect loading state if needed
             marketWatch.scripdepthsize(false);
+            marketWatch.setETF(false);
             await marketWatch.calldepthApis(context, widget.watchListData, "");
           } catch (e) {
             // Handle any errors

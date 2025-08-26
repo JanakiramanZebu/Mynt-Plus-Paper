@@ -677,7 +677,7 @@ class OrderProvider extends DefaultChangeNotifier {
         //           element.sipName!.toUpperCase().contains(value.toUpperCase()))
         //       .toList();
         //   break;
-        case 6: // Alerts
+        case 5: // Alerts
           final alertProvider = ref.read(marketWatchProvider);
           if (alertProvider.alertPendingModel != null) {
             final searchResult = alertProvider.alertPendingModel!
@@ -1540,7 +1540,12 @@ class OrderProvider extends DefaultChangeNotifier {
       // GTT orders - handle separately since it's a different model type
       _sortGttOrders(sorting);
       return;
-    } else {
+    } else if(_selectedTab == 4){
+      // Alerts - handle separately since it's a different model type
+      ref.read(marketWatchProvider).filterPendingAlert(sorting);
+      return;
+    }
+    else {
       mainListToSort = _allOrder;
       searchListToSort = _orderSearchItem;
     }
@@ -1741,22 +1746,30 @@ class OrderProvider extends DefaultChangeNotifier {
         });
         break;
       case "PRODUCTASC":
-        listToSort.sort((a, b) => a.sPrdtAli!.compareTo(b.sPrdtAli!));
+        listToSort.sort((a, b) {
+          final aProduct = a.placeOrderParams?.sPrdtAli ?? '';
+          final bProduct = b.placeOrderParams?.sPrdtAli ?? '';
+          return aProduct.compareTo(bProduct);
+        });
         break;
       case "PRODUCTDSC":
-        listToSort.sort((a, b) => b.sPrdtAli!.compareTo(a.sPrdtAli!));
+        listToSort.sort((a, b) {
+          final aProduct = a.placeOrderParams?.sPrdtAli ?? '';
+          final bProduct = b.placeOrderParams?.sPrdtAli ?? '';
+          return bProduct.compareTo(aProduct);
+        });
         break;
       case "QTYASC":
         listToSort.sort((a, b) {
-          final aQty = int.tryParse(a.qty ?? '0') ?? 0;
-          final bQty = int.tryParse(b.qty ?? '0') ?? 0;
+          final aQty = a.qty ?? 0;
+          final bQty = b.qty ?? 0;
           return aQty.compareTo(bQty);
         });
         break;
       case "QTYDSC":
         listToSort.sort((a, b) {
-          final aQty = int.tryParse(a.qty ?? '0') ?? 0;
-          final bQty = int.tryParse(b.qty ?? '0') ?? 0;
+          final aQty = a.qty ?? 0;
+          final bQty = b.qty ?? 0;
           return bQty.compareTo(aQty);
         });
         break;

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mynt_plus/screens/order_book/filter_alert_pending.dart';
 
 import '../../provider/order_provider.dart';
 import '../../provider/portfolio_provider.dart';
@@ -303,6 +304,7 @@ class _OrderBookScreenState extends ConsumerState<OrderBookScreen>
               //   indent: 8,
               //   endIndent: 8,
               // ),
+              if(order.selectedTab != 4)
               Material(
                 color: Colors.transparent,
                 shape: CircleBorder(),
@@ -326,7 +328,7 @@ class _OrderBookScreenState extends ConsumerState<OrderBookScreen>
                         ),
                         context: context,
                         builder: (context) {
-                          return const OrderbookFilterBottomSheet();
+                          return order.selectedTab == 5 ? const OrderbookPendingAlertkFilterBottomSheet() : const OrderbookFilterBottomSheet();
                         },
                       );
                     });

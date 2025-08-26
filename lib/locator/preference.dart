@@ -174,6 +174,9 @@ class Preferences {
   Future setPAPriceAlert(bool isselect) async =>
       await _prefInstance!.setBool(_isPApricealert, isselect);
 
+   Future setPAChange(bool isselect) async =>
+      await _prefInstance!.setBool(_isPAChange, isselect);
+
   //// TRADE BOOK FILTER
   Future setTbScrip(bool isselect) async =>
       await _prefInstance!.setBool(_isTbScripName, isselect);
@@ -262,6 +265,7 @@ class Preferences {
   bool? get isPAScripname => _prefInstance?.getBool(_isPAScripName) ?? true;
   bool? get isPAPrice => _prefInstance?.getBool(_isPAPrice) ?? true;
   bool? get isPAPricealert => _prefInstance?.getBool(_isPApricealert) ?? true;
+  bool? get isPAChange => _prefInstance?.getBool(_isPAChange) ?? true;
 
   /// TRADE BOOK FILTER
   bool? get isTBScripname => _prefInstance?.getBool(_isTbScripName) ?? true;
@@ -413,6 +417,7 @@ const String _isGttProduct = "isgttProduct";
 const String _isPAScripName = "ispaScripName";
 const String _isPAPrice = "ispaPrice";
 const String _isPApricealert = "ispapricealert";
+const String _isPAChange = "ispaChange";
 
 ////TRADE BOOK FILTER
 const String _isTbScripName = "isTbScripName";

@@ -722,7 +722,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
       pref.setPosPrice(true);
       pref.setPosPerchnage(true);
       pref.setPosqty(true);
-      pref.setPostion(true);
+      pref.setPostion(false); // Default to show 0 qty positions at bottom
       if (_postionBookModel!.isNotEmpty) {
         if (_postionBookModel![0].stat != "Not_Ok") {
           for (var i = 0; i < _postionBookModel!.length; i++) {
@@ -2416,7 +2416,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
   bool get isExitingAll => _isExitingAll;
 
   // Add this near the other state variables
-  String _currentPositionSortOption = "Open";
+  String _currentPositionSortOption = "OpenDSC"; // Default to show 0 qty positions at bottom
   String get currentPositionSortOption => _currentPositionSortOption;
 
   // Add this near the other state variables and _currentHoldingSortOption
