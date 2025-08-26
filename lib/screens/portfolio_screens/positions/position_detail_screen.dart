@@ -87,26 +87,18 @@ class _PositionDetailScreenState extends ConsumerState<PositionDetailScreen> {
                       widget.positionList.chng = chng;
                     }
 
-                    // Calculate MTM/PNL values based on updated data
+                    // Update position calculations using provider's positionCal method
                     if (widget.positionList.lp != null &&
                         widget.positionList.netqty != null) {
+                      // Delay provider update to avoid modifying during build
+                      Future(() {
+                        positions.positionCal(positions.isDay);
+                      });
+
+                      // Only calculate change value if needed
                       final ltp =
                           double.tryParse(widget.positionList.lp ?? "0.0") ??
                               0.0;
-                      final qty =
-                          int.tryParse(widget.positionList.netqty ?? "0") ?? 0;
-                      final avgPrice = double.tryParse(
-                              widget.positionList.avgPrc ?? "0.0") ??
-                          0.0;
-
-                      if (ltp > 0 && qty != 0 && avgPrice > 0) {
-                        final pnl = (ltp - avgPrice) * qty;
-                        widget.positionList.profitNloss =
-                            pnl.toStringAsFixed(2);
-                        widget.positionList.mTm = pnl.toStringAsFixed(2);
-                      }
-
-                      // Calculate change value if needed
                       if ((widget.positionList.chng == null ||
                               widget.positionList.chng == "null" ||
                               widget.positionList.chng == "0" ||
