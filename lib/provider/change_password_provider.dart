@@ -122,7 +122,7 @@ class ChangePasswordProvider extends DefaultChangeNotifier {
 // If Change pass validation is successful, activate the button.
 
   activateChangePass() {
-    if (newPasswordError == "" && oldPasswordError == "") {
+    if ((newPasswordError == "" || newPasswordError == null) && (oldPasswordError == "" || oldPasswordError == null)) {
       _isDisableChangepassbtn = false;
     } else {
       _isDisableChangepassbtn = true;
@@ -231,7 +231,7 @@ class ChangePasswordProvider extends DefaultChangeNotifier {
       if (_forgetPasswordModel!.stat == "Ok") {
         ConstantName.sessCheck = true;
         ScaffoldMessenger.of(context).showSnackBar(successMessage(
-            context, 'New password is sended through Email/SMS'));
+            context, 'New Password has been sent to your registered Mobile Number /Email'));
 
         userIdController.text = '${_forgetPasswordModel!.clientid}';
 
@@ -275,18 +275,22 @@ class ChangePasswordProvider extends DefaultChangeNotifier {
       if (_changepasswordmodel!.stat == "Ok") {
         ConstantName.sessCheck = true;
         ref.read(authProvider).clearTextField();
-
+// FocusScope.of(context).unfocus();
         ScaffoldMessenger.of(context).showSnackBar(
             successMessage(context, '${_changepasswordmodel!.dmsg}'));
         pref.setHideLoginOptBtn(false);
         ref.read(authProvider).loginMethCtrl.text = pref.clientId!;
         pref.setMobileLogin(false);
+        changePassMethod();
 
-        Future.delayed(const Duration(seconds: 2), () {
-          changePassMethod();
           Navigator.pushNamedAndRemoveUntil(
-              context, Routes.loginScreen, (route) => false);
-        });
+      context, Routes.loginScreen, (route) => route.isFirst);
+
+      //   Future.delayed(const Duration(seconds: 2), () {
+      //     changePassMethod();
+      //    Navigator.pushNamedAndRemoveUntil(
+      // context, Routes.loginScreen, (route) => route.isFirst);
+      //   });
       } else if (_changepasswordmodel!.stat == "Not_Ok") {
         warningToaster(context,
             _changepasswordmodel!.emsg!.replaceAll("Error Occurred :", ""));

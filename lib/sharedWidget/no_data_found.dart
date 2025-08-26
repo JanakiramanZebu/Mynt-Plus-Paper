@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../provider/thems.dart';
 import '../../res/res.dart';
+import '../res/global_state_text.dart';
 
 class NoDataFound extends ConsumerWidget {
   const NoDataFound({super.key});
@@ -17,11 +18,16 @@ class NoDataFound extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         SvgPicture.asset(assets.noDatafound,
-        color:  theme.isDarkMode?colors.darkColorDivider: colors.colorDivider
+        color:   Color(0xff777777)
         ),
         const SizedBox(height: 2),
-        Text("No Data Found",
-            style: textStyle(  const Color(0xff777777), 15, FontWeight.w500))
+        TextWidget.subText(
+            text: "No Data Found",
+            color: theme.isDarkMode
+                ? colors.textSecondaryDark
+                : colors.textSecondaryLight,
+                fw:0,
+            theme: theme.isDarkMode)
       ]
     );
   }

@@ -208,6 +208,7 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
       return Scaffold(
         appBar: AppBar(
           // automaticallyImplyLeading: false,
+          backgroundColor: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
           leadingWidth: 41,
           titleSpacing: 6,
           centerTitle: false,
@@ -216,9 +217,12 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
           title: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              TextWidget.heroText(
+              TextWidget.titleText(
                   text: "Pledge",
                   textOverflow: TextOverflow.ellipsis,
+                  color: theme.isDarkMode
+                      ? colors.textPrimaryDark
+                      : colors.textPrimaryLight,
                   theme: theme.isDarkMode,
                   fw: 1),
               // IconButton(
@@ -232,10 +236,10 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
               //     icon: const Icon(Icons.history))
             ],
           ),
-
+      
           // leading: InkWell(
           //   onTap: () {
-
+      
           //   },
           //   child: Icon(Icons.ios_share)),
         ),
@@ -246,376 +250,165 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                   child: CircularLoaderImage(),
                 ),
               )
-            : RefreshIndicator(
-                onRefresh: _refresh,
-                child: Stack(
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Text("${ddd}")
-                        // Padding(
-                        //     padding: EdgeInsets.only(left: 4.0, top: 10.0),
-                        //     child: Text(
-                        //       "Financial activities through debits and credits ",
-                        //       style: textStyle(colors.colorBlack, 14, FontWeight.w600),
-                        //     )),
-                        // Container(
-                        //   width: screenWidth,
-                        //   child: Container(
-                        //     decoration: BoxDecoration(
-                        //         color: theme.isDarkMode
-                        //             ? const Color(0xffB5C0CF).withOpacity(.15)
-                        //             : const Color(0xffF1F3F8)),
-                        //     child: Column(
-                        //       children: [
-                        //         Padding(
-                        //           padding: const EdgeInsets.all(16.0),
-                        //           child: Row(
-                        //             mainAxisAlignment:
-                        //                 MainAxisAlignment.spaceBetween,
-                        //             children: [
-                        //               headingstat(
-                        //                   "Total value",
-                        //                   '${ledgerprovider.pledgeandunpledge?.stocksValue ?? 0}',
-                        //                   theme,
-                        //                   "left"),
-                        //               headingstat(
-                        //                   "Est/Ava Mrg",
-                        //                   "${ledgerprovider.pledgeandunpledge?.estTotalAvailable ?? 0} / ${ledgerprovider.pledgeandunpledge?.marginTotalAvailable ?? 0} ",
-                        //                   theme,
-                        //                   "right"),
-                        //             ],
-                        //           ),
-                        //         ),
-                        //         Padding(
-                        //           padding: const EdgeInsets.only(
-                        //               left: 16.0, right: 16.0, bottom: 16.0),
-                        //           child: Row(
-                        //             mainAxisAlignment:
-                        //                 MainAxisAlignment.spaceBetween,
-                        //             children: [
-                        //               headingstat(
-                        //                   "Cash Equivalent ",
-                        //                   "${ledgerprovider.pledgeandunpledge?.cashEquivalent ?? 0}",
-                        //                   theme,
-                        //                   "left"),
-                        //               headingstat(
-                        //                   "Total/Pledged",
-                        //                   "${ledgerprovider.pledgeandunpledge?.noOfStocks ?? 0} / ${displaypledgedvalue.length}",
-                        //                   theme,
-                        //                   "right"),
-                        //             ],
-                        //           ),
-                        //         ),
-                        //         Padding(
-                        //           padding: const EdgeInsets.only(
-                        //               left: 16.0, right: 16.0, bottom: 16.0),
-                        //           child: Row(
-                        //             mainAxisAlignment:
-                        //                 MainAxisAlignment.spaceBetween,
-                        //             children: [
-                        //               headingstat(
-                        //                   "Cash Equivalent ",
-                        //                   "${ledgerprovider.pledgeandunpledge?.noncashEquivalent ?? 0}",
-                        //                   theme,
-                        //                   "left"),
-                        //               headingstat(
-                        //                   "Non-approved",
-                        //                   '${ledgerprovider.pledgeandunpledge?.noOfNonApprovedStocks ?? 0}',
-                        //                   theme,
-                        //                   "right"),
-                        //             ],
-                        //           ),
-                        //         ),
-                        //       ],
-                        //     ),
-                        //   ),
-                        // ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 16.0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Column(
-                                children: [
-                                  TextWidget.subText(
-                                      text: 'Est Margin',
-                                      color: theme.isDarkMode
-                                          ? colors.textPrimaryDark
-                                          : colors.textPrimaryLight,
-                                      textOverflow: TextOverflow.ellipsis,
-                                      theme: theme.isDarkMode,
-                                      fw: 3),
-                                  SizedBox(height: 5),
-                                  TextWidget.headText(
-                                      text: "${displayValue}",
-                                      maxLines: 1,
-                                      color: theme.isDarkMode
-                                          ? colors.textSecondaryDark
-                                          : colors.textPrimaryLight,
-                                      textOverflow: TextOverflow.ellipsis,
-                                      theme: theme.isDarkMode,
-                                      fw: 0),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                        RepaintBoundary(
-                            child: Padding(
-                                padding: const EdgeInsets.only(
-                                    left: 16, right: 16, top: 10, bottom: 22),
-                                child: Column(
+            : SafeArea(
+              child: RefreshIndicator(
+                  onRefresh: _refresh,
+                  child: Stack(
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Text("${ddd}")
+                          // Padding(
+                          //     padding: EdgeInsets.only(left: 4.0, top: 10.0),
+                          //     child: Text(
+                          //       "Financial activities through debits and credits ",
+                          //       style: textStyle(colors.colorBlack, 14, FontWeight.w600),
+                          //     )),
+                          // Container(
+                          //   width: screenWidth,
+                          //   child: Container(
+                          //     decoration: BoxDecoration(
+                          //         color: theme.isDarkMode
+                          //             ? const Color(0xffB5C0CF).withOpacity(.15)
+                          //             : const Color(0xffF1F3F8)),
+                          //     child: Column(
+                          //       children: [
+                          //         Padding(
+                          //           padding: const EdgeInsets.all(16.0),
+                          //           child: Row(
+                          //             mainAxisAlignment:
+                          //                 MainAxisAlignment.spaceBetween,
+                          //             children: [
+                          //               headingstat(
+                          //                   "Total value",
+                          //                   '${ledgerprovider.pledgeandunpledge?.stocksValue ?? 0}',
+                          //                   theme,
+                          //                   "left"),
+                          //               headingstat(
+                          //                   "Est/Ava Mrg",
+                          //                   "${ledgerprovider.pledgeandunpledge?.estTotalAvailable ?? 0} / ${ledgerprovider.pledgeandunpledge?.marginTotalAvailable ?? 0} ",
+                          //                   theme,
+                          //                   "right"),
+                          //             ],
+                          //           ),
+                          //         ),
+                          //         Padding(
+                          //           padding: const EdgeInsets.only(
+                          //               left: 16.0, right: 16.0, bottom: 16.0),
+                          //           child: Row(
+                          //             mainAxisAlignment:
+                          //                 MainAxisAlignment.spaceBetween,
+                          //             children: [
+                          //               headingstat(
+                          //                   "Cash Equivalent ",
+                          //                   "${ledgerprovider.pledgeandunpledge?.cashEquivalent ?? 0}",
+                          //                   theme,
+                          //                   "left"),
+                          //               headingstat(
+                          //                   "Total/Pledged",
+                          //                   "${ledgerprovider.pledgeandunpledge?.noOfStocks ?? 0} / ${displaypledgedvalue.length}",
+                          //                   theme,
+                          //                   "right"),
+                          //             ],
+                          //           ),
+                          //         ),
+                          //         Padding(
+                          //           padding: const EdgeInsets.only(
+                          //               left: 16.0, right: 16.0, bottom: 16.0),
+                          //           child: Row(
+                          //             mainAxisAlignment:
+                          //                 MainAxisAlignment.spaceBetween,
+                          //             children: [
+                          //               headingstat(
+                          //                   "Cash Equivalent ",
+                          //                   "${ledgerprovider.pledgeandunpledge?.noncashEquivalent ?? 0}",
+                          //                   theme,
+                          //                   "left"),
+                          //               headingstat(
+                          //                   "Non-approved",
+                          //                   '${ledgerprovider.pledgeandunpledge?.noOfNonApprovedStocks ?? 0}',
+                          //                   theme,
+                          //                   "right"),
+                          //             ],
+                          //           ),
+                          //         ),
+                          //       ],
+                          //     ),
+                          //   ),
+                          // ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 16.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Column(
                                   children: [
-                                    SizedBox(
-                                      height: 45,
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 5),
-                                        decoration: BoxDecoration(
-                                          color: colors.searchBg,
-                                          borderRadius:
-                                              BorderRadius.circular(5),
-                                        ),
-                                        child: Row(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.center,
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Padding(
-                                              padding: const EdgeInsets.only(
-                                                  right: 10),
-                                              child: Row(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.center,
-                                                children: [
-                                                  if (!isSearching)
-                                                    Material(
-                                                      color: Colors.transparent,
-                                                      shape:
-                                                          const CircleBorder(),
-                                                      clipBehavior:
-                                                          Clip.hardEdge,
-                                                      child: InkWell(
-                                                        customBorder:
-                                                            const CircleBorder(),
-                                                        splashColor: theme
-                                                                .isDarkMode
-                                                            ? colors
-                                                                .splashColorDark
-                                                            : colors
-                                                                .splashColorLight,
-                                                        highlightColor: theme
-                                                                .isDarkMode
-                                                            ? colors
-                                                                .highlightDark
-                                                            : colors
-                                                                .highlightLight,
-                                                        onTap: () {
-                                                          Future.delayed(
-                                                              const Duration(
-                                                                  milliseconds:
-                                                                      150),
-                                                              () async {
-                                                            _toggleSearch();
-                                                          });
-                                                        },
-                                                        child: Padding(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .all(8.0),
-                                                          child:
-                                                              SvgPicture.asset(
-                                                            assets.searchIcon,
-                                                            color: colors
-                                                                .textPrimaryLight,
-                                                            width: 20,
-                                                            fit: BoxFit
-                                                                .scaleDown,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  if (isSearching)
-                                                    Row(
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .center,
-                                                      children: [
-                                                        const SizedBox(
-                                                            width: 4),
-                                                        SvgPicture.asset(
-                                                          assets.searchIcon,
-                                                          color: colors
-                                                              .textPrimaryLight,
-                                                          width: 20,
-                                                          fit: BoxFit.scaleDown,
-                                                        ),
-                                                        SizedBox(
-                                                          width: MediaQuery.of(
-                                                                      context)
-                                                                  .size
-                                                                  .width *
-                                                              0.6,
-                                                          child: TextField(
-                                                            controller:
-                                                                searchController,
-                                                            focusNode:
-                                                                searchFocusNode,
-                                                            onChanged:
-                                                                _onSearchChanged,
-                                                            style: TextStyle(
-                                                              color: theme.isDarkMode
-                                                                  ? colors
-                                                                      .textPrimaryDark
-                                                                  : colors
-                                                                      .textPrimaryLight,
-                                                              fontSize: 14,
-                                                            ),
-                                                            decoration:
-                                                                InputDecoration(
-                                                              hintText:
-                                                                  'Search...',
-                                                              hintStyle:
-                                                                  TextStyle(
-                                                                color: theme.isDarkMode
-                                                                    ? colors
-                                                                        .textSecondaryDark
-                                                                    : colors
-                                                                        .textSecondaryLight,
-                                                                fontSize: 14,
-                                                              ),
-                                                              border:
-                                                                  InputBorder
-                                                                      .none,
-                                                              contentPadding:
-                                                                  const EdgeInsets
-                                                                      .symmetric(
-                                                                horizontal: 12,
-                                                                vertical: 8,
-                                                              ),
-                                                            ),
-                                                          ),
-                                                        ),
-                                                        // if (searchController
-                                                        //     .text.isNotEmpty)
-                                                        //   Material(
-                                                        //     color: Colors
-                                                        //         .transparent,
-                                                        //     shape:
-                                                        //         const CircleBorder(),
-                                                        //     clipBehavior:
-                                                        //         Clip.hardEdge,
-                                                        //     child: InkWell(
-                                                        //       customBorder:
-                                                        //           const CircleBorder(),
-                                                        //       splashColor: theme
-                                                        //               .isDarkMode
-                                                        //           ? colors
-                                                        //               .splashColorDark
-                                                        //           : colors
-                                                        //               .splashColorLight,
-                                                        //       highlightColor: theme
-                                                        //               .isDarkMode
-                                                        //           ? colors
-                                                        //               .highlightDark
-                                                        //           : colors
-                                                        //               .highlightLight,
-                                                        //       onTap: () {
-                                                        //         searchController
-                                                        //             .clear();
-                                                        //         _onSearchChanged(
-                                                        //             '');
-                                                        //       },
-                                                        //       child: Padding(
-                                                        //         padding:
-                                                        //             const EdgeInsets
-                                                        //                 .all(
-                                                        //                 8.0),
-                                                        //         child: Icon(
-                                                        //           Icons.clear,
-                                                        //           color: colors
-                                                        //               .textPrimaryLight,
-                                                        //           size: 16,
-                                                        //         ),
-                                                        //       ),
-                                                        //     ),
-                                                        //   ),
-                                                      ],
-                                                    ),
-                                                ],
-                                              ),
-                                            ),
-                                            Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.end,
-                                              children: [
-                                                isSearching
-                                                    ?
-                                                    // if (hasHoldings && showEdis)
-                                                    Row(
-                                                        children: [
-                                                          Material(
-                                                            color: Colors
-                                                                .transparent,
-                                                            shape:
-                                                                const CircleBorder(),
-                                                            clipBehavior:
-                                                                Clip.hardEdge,
-                                                            child: InkWell(
-                                                              customBorder:
-                                                                  const CircleBorder(),
-                                                              splashColor: theme
-                                                                      .isDarkMode
-                                                                  ? colors
-                                                                      .splashColorDark
-                                                                  : colors
-                                                                      .splashColorLight,
-                                                              highlightColor: theme
-                                                                      .isDarkMode
-                                                                  ? colors
-                                                                      .highlightDark
-                                                                  : colors
-                                                                      .highlightLight,
-                                                              onTap: () async {
-                                                                Future.delayed(
-                                                                    const Duration(
-                                                                        milliseconds:
-                                                                            150),
-                                                                    () {
-                                                                  _toggleSearch();
-                                                                });
-                                                              },
-                                                              child: Padding(
-                                                                padding:
-                                                                    const EdgeInsets
-                                                                        .all(
-                                                                        8.0),
-                                                                child: SvgPicture.asset(
-                                                                    assets
-                                                                        .removeIcon,
-                                                                    fit: BoxFit
-                                                                        .scaleDown,
-                                                                    width: 20),
-                                                              ),
-                                                            ),
-                                                          ),
-                                                          const SizedBox(
-                                                              width: 4),
-                                                        ],
-                                                      )
-                                                    : Material(
+                                    TextWidget.subText(
+                                        text: 'Est Margin',
+                                        color: theme.isDarkMode
+                                            ? colors.textPrimaryDark
+                                            : colors.textPrimaryLight,
+                                        textOverflow: TextOverflow.ellipsis,
+                                        theme: theme.isDarkMode,
+                                        fw: 3),
+                                    SizedBox(height: 5),
+                                    TextWidget.headText(
+                                        text: "${displayValue}",
+                                        maxLines: 1,
+                                        color: theme.isDarkMode
+                                            ? colors.textSecondaryDark
+                                            : colors.textPrimaryLight,
+                                        textOverflow: TextOverflow.ellipsis,
+                                        theme: theme.isDarkMode,
+                                        fw: 0),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          RepaintBoundary(
+                              child: Padding(
+                                  padding: const EdgeInsets.only(
+                                      left: 16, right: 16, top: 10, bottom: 22),
+                                  child: Column(
+                                    children: [
+                                      SizedBox(
+                                        height: 40,
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 5),
+                                          decoration: BoxDecoration(
+                                            color: theme.isDarkMode
+                                                ? colors.searchBgDark
+                                                : colors.searchBg,
+                                            borderRadius:
+                                                BorderRadius.circular(5),
+                                          ),
+                                          child: Row(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.center,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Padding(
+                                                padding: const EdgeInsets.only(
+                                                    right: 10),
+                                                child: Row(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.center,
+                                                  children: [
+                                                    if (!isSearching)
+                                                      Material(
                                                         color:
                                                             Colors.transparent,
                                                         shape:
-                                                            const RoundedRectangleBorder(),
+                                                            const CircleBorder(),
                                                         clipBehavior:
                                                             Clip.hardEdge,
                                                         child: InkWell(
                                                           customBorder:
-                                                              const RoundedRectangleBorder(),
+                                                              const CircleBorder(),
                                                           splashColor: theme
                                                                   .isDarkMode
                                                               ? colors
@@ -628,404 +421,644 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                                                                   .highlightDark
                                                               : colors
                                                                   .highlightLight,
-                                                          onTap: () async {
-                                                            ledgerprovider
-                                                                .fetchunpledgehistory(
-                                                                    context);
-                                                            ledgerprovider
-                                                                .fetchpledgehistory(
-                                                                    context);
-                                                            ledgerprovider
-                                                                .taxpnlExTabchange(
-                                                                    0);
-                                                            Navigator.pushNamed(
-                                                                context,
-                                                                Routes
-                                                                    .pledgehistorymainscreen,
-                                                                arguments:
-                                                                    "DDDDD");
+                                                          onTap: () {
+                                                            Future.delayed(
+                                                                const Duration(
+                                                                    milliseconds:
+                                                                        150),
+                                                                () async {
+                                                              _toggleSearch();
+                                                            });
                                                           },
                                                           child: Padding(
                                                             padding:
                                                                 const EdgeInsets
-                                                                    .symmetric(
-                                                                    horizontal:
-                                                                        10,
-                                                                    vertical:
-                                                                        5),
-                                                            child: TextWidget
-                                                                .subText(
-                                                              text: "History",
-                                                              theme: false,
+                                                                    .all(8.0),
+                                                            child: SvgPicture
+                                                                .asset(
+                                                              assets.searchIcon,
                                                               color: theme.isDarkMode
                                                                   ? colors
-                                                                      .secondaryDark
+                                                                      .textSecondaryDark
                                                                   : colors
-                                                                      .secondaryLight,
-                                                              fw: 3,
+                                                                      .textSecondaryLight,
+                                                              width: 20,
+                                                              fit: BoxFit
+                                                                  .scaleDown,
                                                             ),
                                                           ),
                                                         ),
                                                       ),
-                                              ],
-                                            )
-                                          ],
+                                                    if (isSearching)
+                                                      Row(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .center,
+                                                        children: [
+                                                          const SizedBox(
+                                                              width: 4),
+                                                          SvgPicture.asset(
+                                                            assets.searchIcon,
+                                                            color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                                                            width: 20,
+                                                            fit: BoxFit
+                                                                .scaleDown,
+                                                          ),
+                                                          SizedBox(
+                                                            width: MediaQuery.of(
+                                                                        context)
+                                                                    .size
+                                                                    .width *
+                                                                0.6,
+                                                            child: TextField(
+                                                              controller:
+                                                                  searchController,
+                                                              focusNode:
+                                                                  searchFocusNode,
+                                                              onChanged:
+                                                                  _onSearchChanged,
+                                                              style: TextWidget
+                                                                  .textStyle(
+                                                                fontSize: 16,
+                                                                color: theme.isDarkMode
+                                                                    ? colors
+                                                                        .textPrimaryDark
+                                                                    : colors
+                                                                        .textPrimaryLight,
+                                                                theme: theme
+                                                                    .isDarkMode,
+                                                              ),
+                                                              decoration:
+                                                                  InputDecoration(
+                                                                hintText:
+                                                                    'Search...',
+                                                                hintStyle:
+                                                                    TextWidget
+                                                                        .textStyle(
+                                                                  fontSize: 14,
+                                                                  theme: theme
+                                                                      .isDarkMode,
+                                                                  color: theme.isDarkMode
+                                                                      ? colors
+                                                                          .textSecondaryDark
+                                                                      : colors
+                                                                          .textSecondaryLight,
+                                                                ),
+                                                                border:
+                                                                    InputBorder
+                                                                        .none,
+                                                                contentPadding:
+                                                                    const EdgeInsets
+                                                                        .symmetric(
+                                                                  horizontal:
+                                                                      12,
+                                                                  vertical: 8,
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ),
+                                                          // if (searchController
+                                                          //     .text.isNotEmpty)
+                                                          //   Material(
+                                                          //     color: Colors
+                                                          //         .transparent,
+                                                          //     shape:
+                                                          //         const CircleBorder(),
+                                                          //     clipBehavior:
+                                                          //         Clip.hardEdge,
+                                                          //     child: InkWell(
+                                                          //       customBorder:
+                                                          //           const CircleBorder(),
+                                                          //       splashColor: theme
+                                                          //               .isDarkMode
+                                                          //           ? colors
+                                                          //               .splashColorDark
+                                                          //           : colors
+                                                          //               .splashColorLight,
+                                                          //       highlightColor: theme
+                                                          //               .isDarkMode
+                                                          //           ? colors
+                                                          //               .highlightDark
+                                                          //           : colors
+                                                          //               .highlightLight,
+                                                          //       onTap: () {
+                                                          //         searchController
+                                                          //             .clear();
+                                                          //         _onSearchChanged(
+                                                          //             '');
+                                                          //       },
+                                                          //       child: Padding(
+                                                          //         padding:
+                                                          //             const EdgeInsets
+                                                          //                 .all(
+                                                          //                 8.0),
+                                                          //         child: Icon(
+                                                          //           Icons.clear,
+                                                          //           color: colors
+                                                          //               .textPrimaryLight,
+                                                          //           size: 16,
+                                                          //         ),
+                                                          //       ),
+                                                          //     ),
+                                                          //   ),
+                                                        ],
+                                                      ),
+                                                  ],
+                                                ),
+                                              ),
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.end,
+                                                children: [
+                                                  isSearching
+                                                      ?
+                                                      // if (hasHoldings && showEdis)
+                                                      Row(
+                                                          children: [
+                                                            Material(
+                                                              color: Colors
+                                                                  .transparent,
+                                                              shape:
+                                                                  const CircleBorder(),
+                                                              clipBehavior:
+                                                                  Clip.hardEdge,
+                                                              child: InkWell(
+                                                                customBorder:
+                                                                    const CircleBorder(),
+                                                                splashColor: theme
+                                                                        .isDarkMode
+                                                                    ? colors
+                                                                        .splashColorDark
+                                                                    : colors
+                                                                        .splashColorLight,
+                                                                highlightColor: theme
+                                                                        .isDarkMode
+                                                                    ? colors
+                                                                        .highlightDark
+                                                                    : colors
+                                                                        .highlightLight,
+                                                                onTap:
+                                                                    () async {
+                                                                  Future.delayed(
+                                                                      const Duration(
+                                                                          milliseconds:
+                                                                              150),
+                                                                      () {
+                                                                    _toggleSearch();
+                                                                  });
+                                                                },
+                                                                child: Padding(
+                                                                  padding:
+                                                                      const EdgeInsets
+                                                                          .all(
+                                                                          8.0),
+                                                                  child: SvgPicture.asset(
+                                                                      assets
+                                                                          .removeIcon,
+                                                                      fit: BoxFit
+                                                                          .scaleDown,
+                                                                      color: theme.isDarkMode
+                                                                          ? colors
+                                                                              .textSecondaryDark
+                                                                          : colors
+                                                                              .textSecondaryLight,
+                                                                      width:
+                                                                          20),
+                                                                ),
+                                                              ),
+                                                            ),
+                                                            const SizedBox(
+                                                                width: 4),
+                                                          ],
+                                                        )
+                                                      : Material(
+                                                          color: Colors
+                                                              .transparent,
+                                                          shape:
+                                                              const RoundedRectangleBorder(),
+                                                          clipBehavior:
+                                                              Clip.hardEdge,
+                                                          child: InkWell(
+                                                            customBorder:
+                                                                const RoundedRectangleBorder(),
+                                                            splashColor: theme
+                                                                    .isDarkMode
+                                                                ? colors
+                                                                    .splashColorDark
+                                                                : colors
+                                                                    .splashColorLight,
+                                                            highlightColor: theme
+                                                                    .isDarkMode
+                                                                ? colors
+                                                                    .highlightDark
+                                                                : colors
+                                                                    .highlightLight,
+                                                            onTap: () async {
+                                                              ledgerprovider
+                                                                  .fetchunpledgehistory(
+                                                                      context);
+                                                              ledgerprovider
+                                                                  .fetchpledgehistory(
+                                                                      context);
+                                                              ledgerprovider
+                                                                  .taxpnlExTabchange(
+                                                                      0);
+                                                              Navigator.pushNamed(
+                                                                  context,
+                                                                  Routes
+                                                                      .pledgehistorymainscreen,
+                                                                  arguments:
+                                                                      "DDDDD");
+                                                            },
+                                                            child: Padding(
+                                                              padding:
+                                                                  const EdgeInsets
+                                                                      .symmetric(
+                                                                      horizontal:
+                                                                          10,
+                                                                      vertical:
+                                                                          5),
+                                                              child: TextWidget
+                                                                  .subText(
+                                                                text: "History",
+                                                                theme: false,
+                                                                color: theme.isDarkMode
+                                                                    ? colors
+                                                                        .secondaryDark
+                                                                    : colors
+                                                                        .secondaryLight,
+                                                                fw: 2,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                ],
+                                              )
+                                            ],
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                  ],
-                                ))),
-                        // Padding(
-                        //   padding: const EdgeInsets.only(
-                        //     top: 2.0,
-                        //     bottom: 0.0,
-                        //   ),
-                        //   child: Divider(
-                        //     color: theme.isDarkMode
-                        //         ? const Color(0xffB5C0CF).withOpacity(.15)
-                        //         : const Color(0xffF1F3F8),
-                        //     thickness: 7.0,
-                        //   ),
-                        // ),
-
-                        // Padding(
-                        //   padding: const EdgeInsets.only(left: 30 , right: 30),
-                        //   child: Row(
-                        //     children: [
-                        //       // Static Column
-                        //       Column(
-                        //         children: [
-                        //           Container(
-                        //             margin: EdgeInsets.only(top: 20),
-                        //             width: 100,
-                        //             color: Colors
-                        //                 .cardbgrey, // Header cell for the static column
-                        //             padding: EdgeInsets.all(8.0),
-                        //             child: Text(
-                        //               'Exchange',
-                        //               style: TextStyle(fontWeight: FontWeight.bold),
-                        //             ),
-                        //           ),
-                        //           for (var item in ledgerprovider.ledgerAllData!.fullStat!)
-                        //             Container(
-                        //               width: 100, // Fixed width for the static column
-                        //               height: 50,
-
-                        //               padding: EdgeInsets.all(8.0),
-                        //               decoration: BoxDecoration(
-                        //                 border: Border.all(color: const Color.fromARGB(255, 224, 224, 224)),
-                        //               ),
-                        //               child: Text("${item.cOCD}",
-                        //               style: textStyle(Colors.black, 14, FontWeight.w600),
-                        //               ),
-                        //             ),
-                        //         ],
-                        //       ),
-                        //       // Scrollable Content
-
-                        //       Expanded(
-                        //         child: SingleChildScrollView(
-                        //           scrollDirection: Axis.horizontal,
-                        //           child: Column(
-                        //             children: [
-                        //               // Header Row for the scrollable content
-                        //               Row(
-                        //                 children: [
-                        //                   for (int i = 0; i < Header.length; i++)
-                        //                     Container(
-                        //                        margin: EdgeInsets.only(top: 20),
-                        //                       width: i == 4 ? 275 : 100, // Column width
-
-                        //                       padding: EdgeInsets.all(8.0),
-                        //                       color: Color(0xFFEEEEEE),
-                        //                       child: Text(
-                        //                         '${Header[i]}',
-                        //                         style:
-                        //                             TextStyle(fontWeight: FontWeight.bold),
-                        //                       ),
-                        //                     ),
-                        //                 ],
-                        //               ),
-                        //               // Data Rows for the scrollable content
-                        //               for (int rowIndex = 0;
-                        //                   rowIndex <
-                        //                       ledgerprovider
-                        //                           .ledgerAllData!.fullStat!.length;
-                        //                   rowIndex++)
-                        //                 Row(
-                        //                   children: [
-                        //                     for (int colIndex = 0; colIndex < 5; colIndex++)
-                        //                       Container(
-                        //                          width: colIndex == 4 ? 275 : 100,  // Column width
-                        //                         height: 50,
-                        //                         padding: EdgeInsets.all(8.0),
-                        //                         decoration: BoxDecoration(
-                        //                           border: Border.all(color: Color.fromARGB(255, 224, 224, 224)),
-                        //                         ),
-                        //                         child: Text(colIndex == 0 ? dateFormatChangeForLedger(ledgerprovider
-                        //                             .tablearray[rowIndex][colIndex]) : ledgerprovider
-                        //                             .tablearray[rowIndex][colIndex] ,
-                        //                             textAlign: colIndex == 1 ||colIndex == 2 || colIndex == 3  ? TextAlign.right : TextAlign.start ,
-                        //                             ) ,
-                        //                         //  child: Text(  ledgerprovider
-                        //                         //     .tablearray[rowIndex][colIndex] ) ,
-                        //                       ),
-                        //                   ],
-                        //                 ),
-                        //             ],
-                        //           ),
-                        //         ),
-                        //       ),
-                        //     ],
-                        //   ),
-                        // ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
-                          height: 35,
-                          // decoration: BoxDecoration(
-                          //   border: Border(
-                          //     bottom: BorderSide(
-                          //       color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
-                          //       width: 1,
-                          //     ),
+                                    ],
+                                  ))),
+                          // Padding(
+                          //   padding: const EdgeInsets.only(
+                          //     top: 2.0,
+                          //     bottom: 0.0,
+                          //   ),
+                          //   child: Divider(
+                          //     color: theme.isDarkMode
+                          //         ? const Color(0xffB5C0CF).withOpacity(.15)
+                          //         : const Color(0xffF1F3F8),
+                          //     thickness: 7.0,
                           //   ),
                           // ),
-                          child: TabBar(
-                            onTap: (int index) {
-                              print("Tab tapped: $index");
-                              activeTab = index;
-                              // Do something on tap
-                            },
-                            controller: tabController,
-                            tabAlignment: TabAlignment.start,
-                            isScrollable: true,
-                            indicatorSize: TabBarIndicatorSize.label,
-                            indicatorColor:
-                                colors.colorWhite, // hide default underline
-                            indicator: BoxDecoration(
-                              // pill-shaped highlight[4]
-                              color: const Color(0xffF1F3F8),
-                              borderRadius: BorderRadius.circular(6),
-                              // border: Border.all(
-                              //   color: theme.isDarkMode
-                              //       ? colors.darkColorDivider
-                              //       : colors.colorDivider,
-                              // ),
-                            ),
-                            // labelColor: theme.isDarkMode
-                            //     ? colors.colorLightBlue
-                            //     : colors.colorBlue,
-                            unselectedLabelColor: const Color(0XFF777777),
-                            labelStyle: TextWidget.textStyle(
-                                fontSize: 14, theme: false, fw: 1),
-                            unselectedLabelStyle: TextWidget.textStyle(
-                                fontSize: 14,
-                                theme: false,
-                                fw: 0,
-                                letterSpacing: -0.28),
-                            labelPadding:
-                                const EdgeInsets.symmetric(horizontal: 4),
-
-                            // build the "Open 4" badge and the rest of the tabs
-                            tabs: orderTabName.map((tabString) {
-                              /// If the value looks like "Open 4", split it once on the space
-
-                              final title = tabString.text.toString(); // "Open"
-
-                              return Tab(
-                                child: Padding(
-                                  padding: const EdgeInsets.only(
-                                      left: 10, right: 10, top: 0, bottom: 0),
-                                  child: Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      TextWidget.paraText(
-                                          text: "${title}",
-                                          theme: false,
-                                          color: theme.isDarkMode
-                                              ? colors.textPrimaryDark
-                                              : colors.textPrimaryLight,
-                                          fw: 3),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            }).toList(),
-                          ),
-                        ),
-                        SizedBox(height: 10),
-                        Expanded(
-                            child: TabBarView(
-                                controller: tabController,
-                                children: [
-                              PledgeFilter(
-                                  activetabe: '0', searchQuery: searchQuery),
-                              PledgeFilter(
-                                  activetabe: '1', searchQuery: searchQuery),
-                              PledgeFilter(
-                                  activetabe: '2', searchQuery: searchQuery),
-                              // OrderBook(orderBook: orderBook.allOrder!),
-                            ])),
-
-                        if (ledgerprovider.listforpledge.length > 0)
+                    
+                          // Padding(
+                          //   padding: const EdgeInsets.only(left: 30 , right: 30),
+                          //   child: Row(
+                          //     children: [
+                          //       // Static Column
+                          //       Column(
+                          //         children: [
+                          //           Container(
+                          //             margin: EdgeInsets.only(top: 20),
+                          //             width: 100,
+                          //             color: Colors
+                          //                 .cardbgrey, // Header cell for the static column
+                          //             padding: EdgeInsets.all(8.0),
+                          //             child: Text(
+                          //               'Exchange',
+                          //               style: TextStyle(fontWeight: FontWeight.bold),
+                          //             ),
+                          //           ),
+                          //           for (var item in ledgerprovider.ledgerAllData!.fullStat!)
+                          //             Container(
+                          //               width: 100, // Fixed width for the static column
+                          //               height: 50,
+                    
+                          //               padding: EdgeInsets.all(8.0),
+                          //               decoration: BoxDecoration(
+                          //                 border: Border.all(color: const Color.fromARGB(255, 224, 224, 224)),
+                          //               ),
+                          //               child: Text("${item.cOCD}",
+                          //               style: textStyle(Colors.black, 14, FontWeight.w600),
+                          //               ),
+                          //             ),
+                          //         ],
+                          //       ),
+                          //       // Scrollable Content
+                    
+                          //       Expanded(
+                          //         child: SingleChildScrollView(
+                          //           scrollDirection: Axis.horizontal,
+                          //           child: Column(
+                          //             children: [
+                          //               // Header Row for the scrollable content
+                          //               Row(
+                          //                 children: [
+                          //                   for (int i = 0; i < Header.length; i++)
+                          //                     Container(
+                          //                        margin: EdgeInsets.only(top: 20),
+                          //                       width: i == 4 ? 275 : 100, // Column width
+                    
+                          //                       padding: EdgeInsets.all(8.0),
+                          //                       color: Color(0xFFEEEEEE),
+                          //                       child: Text(
+                          //                         '${Header[i]}',
+                          //                         style:
+                          //                             TextStyle(fontWeight: FontWeight.bold),
+                          //                       ),
+                          //                     ),
+                          //                 ],
+                          //               ),
+                          //               // Data Rows for the scrollable content
+                          //               for (int rowIndex = 0;
+                          //                   rowIndex <
+                          //                       ledgerprovider
+                          //                           .ledgerAllData!.fullStat!.length;
+                          //                   rowIndex++)
+                          //                 Row(
+                          //                   children: [
+                          //                     for (int colIndex = 0; colIndex < 5; colIndex++)
+                          //                       Container(
+                          //                          width: colIndex == 4 ? 275 : 100,  // Column width
+                          //                         height: 50,
+                          //                         padding: EdgeInsets.all(8.0),
+                          //                         decoration: BoxDecoration(
+                          //                           border: Border.all(color: Color.fromARGB(255, 224, 224, 224)),
+                          //                         ),
+                          //                         child: Text(colIndex == 0 ? dateFormatChangeForLedger(ledgerprovider
+                          //                             .tablearray[rowIndex][colIndex]) : ledgerprovider
+                          //                             .tablearray[rowIndex][colIndex] ,
+                          //                             textAlign: colIndex == 1 ||colIndex == 2 || colIndex == 3  ? TextAlign.right : TextAlign.start ,
+                          //                             ) ,
+                          //                         //  child: Text(  ledgerprovider
+                          //                         //     .tablearray[rowIndex][colIndex] ) ,
+                          //                       ),
+                          //                   ],
+                          //                 ),
+                          //             ],
+                          //           ),
+                          //         ),
+                          //       ),
+                          //     ],
+                          //   ),
+                          // ),
                           Container(
-                            height: screenheight * 0.07,
-                            decoration: BoxDecoration(
-                                color: theme.isDarkMode
-                                    ? const Color(0xffB5C0CF).withOpacity(.15)
-                                    : const Color(0xffF1F3F8)),
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            height: 35,
+                            // decoration: BoxDecoration(
+                            //   border: Border(
+                            //     bottom: BorderSide(
+                            //       color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+                            //       width: 1,
+                            //     ),
+                            //   ),
+                            // ),
+                            child: TabBar(
+                              onTap: (int index) {
+                                print("Tab tapped: $index");
+                                activeTab = index;
+                                // Do something on tap
+                              },
+                              controller: tabController,
+                              tabAlignment: TabAlignment.start,
+                              isScrollable: true,
+                              indicatorSize: TabBarIndicatorSize.label,
+                              indicatorColor:
+                                  colors.colorWhite, // hide default underline
+                              indicator: BoxDecoration(
+                                // pill-shaped highlight[4]
+                               color: theme.isDarkMode ? colors.searchBgDark : const Color(0xffF1F3F8),
+                          borderRadius: BorderRadius.circular(5),
+                                // border: Border.all(
+                                //   color: theme.isDarkMode
+                                //       ? colors.darkColorDivider
+                                //       : colors.colorDivider,
+                                // ),
+                              ),
+                              // labelColor: theme.isDarkMode
+                              //     ? colors.colorLightBlue
+                              //     : colors.colorBlue,
+                              unselectedLabelColor: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                        labelStyle: TextWidget.textStyle(
+                            fontSize: 14, theme: false, fw: 1, color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight),
+                        unselectedLabelStyle: TextWidget.textStyle(
+                            fontSize: 14,
+                            theme: false,
+                            color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                            fw: 0,
+                            letterSpacing: -0.28),
+                        labelPadding: const EdgeInsets.symmetric(horizontal: 4),
+                    
+                    
+                              // build the "Open 4" badge and the rest of the tabs
+                              tabs: orderTabName.map((tabString) {
+                                /// If the value looks like "Open 4", split it once on the space
+                    
+                                final title =
+                                    tabString.text.toString(); // "Open"
+                    
+                                return Tab(
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(
+                                        left: 10, right: 10, top: 0, bottom: 0),
+                                    child: Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        TextWidget.paraText(
+                                            text: "${title}",
+                                            theme: false,
+                                          color :  theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                                            
+                                            fw: 3),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                            ),
                           ),
-                      ],
-                    ),
-                    if (ledgerprovider.listforpledge.length > 0)
-                      Positioned(
-                        bottom: 1,
-                        left: 1,
-                        right: 1,
-                        child: Column(
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.only(left: 16.0),
-                                  child: TextWidget.subText(
-                                      text:
-                                          "You ${ledgerprovider.listforpledge.length} Script For ${ledgerprovider.pledgeoruppledgedelete == 'unpledgedelete' ? 'Delete' : ledgerprovider.screenpledge == 'pledge' ? "Pledge" : "Unpledge"}",
-                                      textOverflow: TextOverflow.ellipsis,
-                                      theme: theme.isDarkMode,
-                                      fw: 3),
-                                ),
-                                Row(
+                          SizedBox(height: 10),
+                          Expanded(
+                              child: TabBarView(
+                                  controller: tabController,
                                   children: [
-                                    Padding(
-                                      padding:
-                                          const EdgeInsets.only(bottom: 12.0),
-                                      child: Container(
-                                          height: 35,
-                                          width: 75,
-                                          margin: const EdgeInsets.only(
-                                              right: 12, top: 15),
-                                          child: OutlinedButton(
-                                              style: OutlinedButton.styleFrom(
-                                                  side: BorderSide(
-                                                    color: theme.isDarkMode
+                                PledgeFilter(
+                                    activetabe: '0', searchQuery: searchQuery),
+                                PledgeFilter(
+                                    activetabe: '1', searchQuery: searchQuery),
+                                PledgeFilter(
+                                    activetabe: '2', searchQuery: searchQuery),
+                                // OrderBook(orderBook: orderBook.allOrder!),
+                              ])),
+                    
+                          if (ledgerprovider.listforpledge.length > 0)
+                            Container(
+                              height: screenheight * 0.07,
+                              decoration: BoxDecoration(
+                                  color: theme.isDarkMode
+                                      ? const Color(0xffB5C0CF).withOpacity(.15)
+                                      : const Color(0xffF1F3F8)),
+                            ),
+                        ],
+                      ),
+                      if (ledgerprovider.listforpledge.length > 0)
+                        Positioned(
+                          bottom: 1,
+                          left: 1,
+                          right: 1,
+                          child: Column(
+                            children: [
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 16.0),
+                                    child: TextWidget.subText(
+                                        text:
+                                            "You ${ledgerprovider.listforpledge.length} Script For ${ledgerprovider.pledgeoruppledgedelete == 'unpledgedelete' ? 'Delete' : ledgerprovider.screenpledge == 'pledge' ? "Pledge" : "Unpledge"}",
+                                        textOverflow: TextOverflow.ellipsis,
+                                        theme: theme.isDarkMode,
+                                        fw: 3),
+                                  ),
+                                  Row(
+                                    children: [
+                                      Padding(
+                                        padding:
+                                            const EdgeInsets.only(bottom: 12.0),
+                                        child: Container(
+                                            height: 35,
+                                            width: 75,
+                                            margin: const EdgeInsets.only(
+                                                right: 12, top: 15),
+                                            child: OutlinedButton(
+                                                style: OutlinedButton.styleFrom(
+                                                    side: BorderSide(
+                                                      color: theme.isDarkMode
+                                                          ? colors.primaryDark
+                                                          : colors.primaryLight,
+                                                    ),
+                                                    elevation: 0,
+                                                    shadowColor:
+                                                        Colors.transparent,
+                                                    shape:
+                                                        RoundedRectangleBorder(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        5))),
+                                                onPressed: () {
+                                                  ledgerprovider
+                                                      .cancelpledgetotal(
+                                                          ledgerprovider
+                                                              .screenpledge);
+                                                  ledgerprovider
+                                                      .changesegvaldummy('');
+                                                  // ledgerprovider.screenclickedpledge = '';
+                                                },
+                                                child: Text("Cancel",
+                                                    textAlign: TextAlign.center,
+                                                    style: textStyle(
+                                                        theme.isDarkMode
+                                                            ? colors.primaryDark
+                                                            : colors
+                                                                .primaryLight,
+                                                        12,
+                                                        FontWeight.w500)))),
+                                      ),
+                                      Padding(
+                                        padding:
+                                            const EdgeInsets.only(bottom: 12.0),
+                                        child: Container(
+                                            height: 35,
+                                            width: 75,
+                                            margin: const EdgeInsets.only(
+                                                right: 12, top: 15),
+                                            child: ElevatedButton(
+                                                style: ElevatedButton.styleFrom(
+                                                    elevation: 0,
+                                                    shadowColor:
+                                                        Colors.transparent,
+                                                    backgroundColor: theme
+                                                            .isDarkMode
                                                         ? colors.primaryDark
                                                         : colors.primaryLight,
-                                                  ),
-                                                  elevation: 0,
-                                                  shadowColor:
-                                                      Colors.transparent,
-                                                  shape: RoundedRectangleBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              5))),
-                                              onPressed: () {
-                                                ledgerprovider
-                                                    .cancelpledgetotal(
-                                                        ledgerprovider
-                                                            .screenpledge);
-                                                ledgerprovider
-                                                    .changesegvaldummy('');
-                                                // ledgerprovider.screenclickedpledge = '';
-                                              },
-                                              child: Text("Cancel",
-                                                  textAlign: TextAlign.center,
-                                                  style: textStyle(
-                                                      theme.isDarkMode
-                                                          ? colors.primaryDark
-                                                          : colors.primaryLight,
-                                                      12,
-                                                      FontWeight.w500)))),
-                                    ),
-                                    Padding(
-                                      padding:
-                                          const EdgeInsets.only(bottom: 12.0),
-                                      child: Container(
-                                          height: 35,
-                                          width: 75,
-                                          margin: const EdgeInsets.only(
-                                              right: 12, top: 15),
-                                          child: ElevatedButton(
-                                              style: ElevatedButton.styleFrom(
-                                                  elevation: 0,
-                                                  shadowColor:
-                                                      Colors.transparent,
-                                                  backgroundColor:
-                                                      theme.isDarkMode
-                                                          ? colors.primaryDark
-                                                          : colors.primaryLight,
-                                                  shape: RoundedRectangleBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              5))),
-                                              onPressed: () {
-                                                ledgerprovider
-                                                    .changesegvaldummy('');
-                                                print(
-                                                    "${ledgerprovider.pledgeoruppledgedelete} ${ledgerprovider.pledgeorunpledge == 'unpledge'} loakdsdejkvh ");
-                                                if (ledgerprovider
-                                                        .pledgeoruppledgedelete ==
-                                                    'unpledgedelete') {
-                                                  print("loakdsdejkvh");
+                                                    shape:
+                                                        RoundedRectangleBorder(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        5))),
+                                                onPressed: () {
                                                   ledgerprovider
-                                                      .unpldgedeletefun(
+                                                      .changesegvaldummy('');
+                                                  print(
+                                                      "${ledgerprovider.pledgeoruppledgedelete} ${ledgerprovider.pledgeorunpledge == 'unpledge'} loakdsdejkvh ");
+                                                  if (ledgerprovider
+                                                          .pledgeoruppledgedelete ==
+                                                      'unpledgedelete') {
+                                                    print("loakdsdejkvh");
+                                                    ledgerprovider
+                                                        .unpldgedeletefun(
+                                                            context,
+                                                            ledgerprovider
+                                                                .pledgeandunpledge!
+                                                                .cLIENTCODE
+                                                                .toString(),
+                                                            ledgerprovider
+                                                                .listforpledge);
+                                                  } else {
+                                                    if (ledgerprovider
+                                                            .pledgeorunpledge ==
+                                                        'unpledge') {
+                                                      ledgerprovider.sendunpledgerequest(
                                                           context,
                                                           ledgerprovider
                                                               .pledgeandunpledge!
                                                               .cLIENTCODE
                                                               .toString(),
                                                           ledgerprovider
+                                                              .pledgeandunpledge!
+                                                              .bOID
+                                                              .toString(),
+                                                          ledgerprovider
+                                                              .pledgeandunpledge!
+                                                              .cLIENTNAME
+                                                              .toString(),
+                                                          ledgerprovider
                                                               .listforpledge);
-                                                } else {
-                                                  if (ledgerprovider
-                                                          .pledgeorunpledge ==
-                                                      'unpledge') {
-                                                    ledgerprovider.sendunpledgerequest(
-                                                        context,
-                                                        ledgerprovider
-                                                            .pledgeandunpledge!
-                                                            .cLIENTCODE
-                                                            .toString(),
-                                                        ledgerprovider
-                                                            .pledgeandunpledge!
-                                                            .bOID
-                                                            .toString(),
-                                                        ledgerprovider
-                                                            .pledgeandunpledge!
-                                                            .cLIENTNAME
-                                                            .toString(),
-                                                        ledgerprovider
-                                                            .listforpledge);
-                                                  } else if (ledgerprovider
-                                                          .pledgeorunpledge ==
-                                                      'pledge') {
-                                                    _showBottomSheet(
-                                                        context, PledgeList());
+                                                    } else if (ledgerprovider
+                                                            .pledgeorunpledge ==
+                                                        'pledge') {
+                                                      _showBottomSheet(context,
+                                                          PledgeList());
+                                                    }
                                                   }
-                                                }
-                                              },
-                                              child: Text("Submit",
-                                                  textAlign: TextAlign.center,
-                                                  style: textStyle(
-                                                      !theme.isDarkMode
-                                                          ? colors.colorWhite
-                                                          : colors.colorBlack,
-                                                      12,
-                                                      FontWeight.w500)))),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ],
+                                                },
+                                                child: Text("Submit",
+                                                    textAlign: TextAlign.center,
+                                                    style: textStyle(
+                                                        !theme.isDarkMode
+                                                            ? colors.colorWhite
+                                                            : colors.colorBlack,
+                                                        12,
+                                                        FontWeight.w500)))),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
+            ),
       );
     });
   }

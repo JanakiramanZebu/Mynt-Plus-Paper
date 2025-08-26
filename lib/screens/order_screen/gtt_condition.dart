@@ -177,7 +177,7 @@ class GttCondition extends ConsumerWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Text(
             isOco 
-              ? "OCO: One-Cancels-the-Other order. When one condition is met, the other order is automatically canceled." 
+              ? "OCO: One-Cancels-the-Other order. When one condition is met, the other order is automatically cancelled." 
               : "GTT: Good-Till-Triggered order. Will execute when the condition is met.",
             style: textStyle(
               theme.isDarkMode ? Colors.grey[400]! : Colors.grey[600]!, 

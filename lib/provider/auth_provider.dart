@@ -1,7 +1,8 @@
 import 'dart:async';
 // Guarded imports: For web, use typed exceptions from `package:http` only
 import 'dart:io' show SocketException, HttpException; // Used in non-web builds
-import 'package:flutter/foundation.dart' show kIsWeb, defaultTargetPlatform, TargetPlatform;
+import 'package:flutter/foundation.dart'
+    show kIsWeb, defaultTargetPlatform, TargetPlatform;
 import 'package:device_info_plus/device_info_plus.dart';
 // import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/foundation.dart';
@@ -60,7 +61,8 @@ class AuthProvider extends DefaultChangeNotifier {
   final Preferences pref = locator<Preferences>();
   final Ref ref;
   final String _version = "1.0.86(25)";
-  late final String _versiontext = "Version 3.0.2 Build $_version Released on 1 Aug";
+  late final String _versiontext =
+      "Version 3.0.2 Build $_version Released on 1 Aug";
   String get versiontext => _versiontext;
 
   //  Text field controller for Login and otp screen
@@ -99,15 +101,20 @@ class AuthProvider extends DefaultChangeNotifier {
       builder: (BuildContext dialogContext) {
         final theme = ref.read(themeProvider);
         return AlertDialog(
-          backgroundColor: colors.colorWhite,
+          backgroundColor: theme.isDarkMode
+              ? const Color(0xFF121212)
+              : const Color(0xFFF1F3F8),
           shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.all(Radius.circular(8)),
           ),
           scrollable: true,
           titlePadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-          insetPadding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
-          actionsPadding: const EdgeInsets.only(bottom: 16, right: 16, left: 16, top: 8),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          insetPadding:
+              const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+          actionsPadding:
+              const EdgeInsets.only(bottom: 16, right: 16, left: 16, top: 8),
           title: Column(
             children: [
               Row(
@@ -122,14 +129,20 @@ class AuthProvider extends DefaultChangeNotifier {
                         Navigator.pop(context);
                       },
                       borderRadius: BorderRadius.circular(20),
-                      splashColor: theme.isDarkMode ? colors.splashColorDark : colors.splashColorLight,
-                      highlightColor: theme.isDarkMode ? colors.splashColorDark : colors.splashColorLight,
+                      splashColor: theme.isDarkMode
+                          ? colors.splashColorDark
+                          : colors.splashColorLight,
+                      highlightColor: theme.isDarkMode
+                          ? colors.splashColorDark
+                          : colors.splashColorLight,
                       child: Padding(
                         padding: const EdgeInsets.all(6.0),
                         child: Icon(
                           Icons.close_rounded,
                           size: 22,
-                          color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                          color: theme.isDarkMode
+                              ? colors.textSecondaryDark
+                              : colors.textSecondaryLight,
                         ),
                       ),
                     ),
@@ -145,7 +158,9 @@ class AuthProvider extends DefaultChangeNotifier {
                     TextWidget.subText(
                       text: "Do you like to remove this account from devices?",
                       theme: theme.isDarkMode,
-                      color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                      color: theme.isDarkMode
+                          ? colors.textSecondaryDark
+                          : colors.textPrimaryLight,
                       fw: 3,
                       align: TextAlign.center,
                     ),
@@ -162,7 +177,8 @@ class AuthProvider extends DefaultChangeNotifier {
                   if (i >= 0 && i < _loggedMobile.length) {
                     _loggedMobile.removeAt(i);
                     notifyListeners();
-                    final List<String> jsonList = _loggedMobile.map((obj) => obj.toJson()).toList();
+                    final List<String> jsonList =
+                        _loggedMobile.map((obj) => obj.toJson()).toList();
                     pref.setLoggedClientList(jsonList);
                   }
                   Navigator.pop(context);
@@ -179,8 +195,8 @@ class AuthProvider extends DefaultChangeNotifier {
                 child: TextWidget.titleText(
                   text: "Remove",
                   theme: theme.isDarkMode,
-                  color: !theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                  fw: 0,
+                  color: colors.colorWhite,
+                  fw: 2,
                 ),
               ),
             ),
@@ -368,7 +384,10 @@ class AuthProvider extends DefaultChangeNotifier {
   }
 
   activeBtnLogin() {
-    if (loginMethError == "" && passError == "" && loginMethCtrl.text.isNotEmpty && passCtrl.text.isNotEmpty) {
+    if (loginMethError == "" &&
+        passError == "" &&
+        loginMethCtrl.text.isNotEmpty &&
+        passCtrl.text.isNotEmpty) {
       _isDisableBtn = false;
     } else {
       _isDisableBtn = true;
@@ -430,7 +449,9 @@ class AuthProvider extends DefaultChangeNotifier {
       // TargetPlatform.macOS => null,
       // TargetPlatform.windows => null
     } on PlatformException {
-      deviceData = <String, dynamic>{'Error:': 'Failed to get platform version.'};
+      deviceData = <String, dynamic>{
+        'Error:': 'Failed to get platform version.'
+      };
     }
     _deviceData = deviceData;
 
@@ -443,11 +464,19 @@ class AuthProvider extends DefaultChangeNotifier {
   }
 
   Map<String, dynamic> _readAndroidDeviceInfo(AndroidDeviceInfo build) {
-    return <String, dynamic>{'brand': build.brand, 'id': build.id, 'model': build.model};
+    return <String, dynamic>{
+      'brand': build.brand,
+      'id': build.id,
+      'model': build.model
+    };
   }
 
   Map<String, dynamic> _readIosDeviceInfo(IosDeviceInfo data) {
-    return <String, dynamic>{'name': data.name, 'model': data.model, 'identifierForVendor': data.identifierForVendor};
+    return <String, dynamic>{
+      'name': data.name,
+      'model': data.model,
+      'identifierForVendor': data.identifierForVendor
+    };
   }
 
   bool _switchback = false;
@@ -503,7 +532,8 @@ class AuthProvider extends DefaultChangeNotifier {
     // }
 
     if (loginMethError == "" && passError == "") {
-      fetchMobileLogin(context, passCtrl.text, loginMethCtrl.text.toUpperCase(), navi ? "pop" : "", imieJson(loginMethCtrl.text.toUpperCase()), _totp);
+      fetchMobileLogin(context, passCtrl.text, loginMethCtrl.text.toUpperCase(),
+          navi ? "pop" : "", imieJson(loginMethCtrl.text.toUpperCase()), _totp);
     }
   }
 
@@ -521,7 +551,8 @@ class AuthProvider extends DefaultChangeNotifier {
 
 // Fetching data from the api and stored in a variable
 
-  fetchMobileLogin(BuildContext context, String password, String mobileRclint, String s, String imei, bool totp) async {
+  fetchMobileLogin(BuildContext context, String password, String mobileRclint,
+      String s, String imei, bool totp) async {
     try {
       print('def $imei');
       pref.setImei(imei);
@@ -533,7 +564,12 @@ class AuthProvider extends DefaultChangeNotifier {
       notifyListeners();
 
       _mobileLogin = await api.getMobileLogin(
-          uniqueId: "${pref.deviceName!} ${pref.imei}", mobileRclient: mobileRclint, password: password, context: context, imei: imei, totp: totp);
+          uniqueId: "${pref.deviceName!} ${pref.imei}",
+          mobileRclient: mobileRclint,
+          password: password,
+          context: context,
+          imei: imei,
+          totp: totp);
       // final localstorage = await SharedPreferences.getInstance();
 
       if ((_mobileLogin!.stat == "Ok" && s.isNotEmpty) || s == "pop") {
@@ -544,12 +580,16 @@ class AuthProvider extends DefaultChangeNotifier {
       }
 
       if (_mobileLogin!.stat == "Ok" &&
-          (totp && _mobileLogin!.msg != null || (_mobileLogin!.msg == "otp sended" || _mobileLogin!.msg == "otp sended, already logged in another device"))) {
+          (totp && _mobileLogin!.msg != null ||
+              (_mobileLogin!.msg == "otp sended" ||
+                  _mobileLogin!.msg ==
+                      "otp sended, already logged in another device"))) {
         otpCtrl.clear();
         mobile_client = mobileRclint;
         if (!totp) {
           if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(successMessage(context, 'The OTP is sent via email and SMS'));
+            ScaffoldMessenger.of(context).showSnackBar(
+                successMessage(context, 'The OTP is sent via email and SMS'));
           }
         }
         _isDisableBtn = true;
@@ -597,38 +637,52 @@ class AuthProvider extends DefaultChangeNotifier {
           // // );
           // // }
         }
-      } else if (_mobileLogin!.emsg == "Invalid Input : User Blocked due to multiple wrong attempts") {
-        ref.read(changePasswordProvider).userIdController.text = "${_mobileLogin!.clientid}";
-        ScaffoldMessenger.of(context).showSnackBar(warningMessage(context, _mobileLogin!.emsg!));
+      } else if (_mobileLogin!.emsg ==
+          "Invalid Input : User Blocked due to multiple wrong attempts") {
+        ref.read(changePasswordProvider).userIdController.text =
+            "${_mobileLogin!.clientid}";
+        ScaffoldMessenger.of(context)
+            .showSnackBar(warningMessage(context, _mobileLogin!.emsg!));
         Future.delayed(const Duration(seconds: 3), () {
           Navigator.pushNamed(context, Routes.forgotPass);
         });
-      } else if (_mobileLogin!.emsg == "Invalid Input : Change Password" || _mobileLogin!.emsg == "Invalid Input : Password Expired") {
-        ref.read(changePasswordProvider).userIdController.text = "${_mobileLogin!.clientid}";
+      } else if (_mobileLogin!.emsg == "Invalid Input : Change Password" ||
+          _mobileLogin!.emsg == "Invalid Input : Password Expired") {
+        ref.read(changePasswordProvider).userIdController.text =
+            "${_mobileLogin!.clientid}";
         if (_mobileLogin!.emsg == "Invalid Input : Password Expired") {
-          ref.read(changePasswordProvider).oldPassword.text = password.toString();
+          ref.read(changePasswordProvider).oldPassword.text =
+              password.toString();
         }
-        ScaffoldMessenger.of(context).showSnackBar(warningMessage(context, _mobileLogin!.emsg!));
-        Navigator.pushNamed(context, Routes.changePass, arguments: _mobileLogin!.emsg == "Invalid Input : Password Expired" ? 'Yes' : "No");
-      } else if (_mobileLogin!.emsg == "Your mobile registered in multiple accounts, Please login with client ID") {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(warningMessage(context, _mobileLogin!.emsg!));
+        Navigator.pushNamed(context, Routes.changePass,
+            arguments: _mobileLogin!.emsg == "Invalid Input : Password Expired"
+                ? 'Yes'
+                : "No");
+      } else if (_mobileLogin!.emsg ==
+          "Your mobile registered in multiple accounts, Please login with client ID") {
         loginMethod();
         pref.setHideLoginOptBtn(false);
-        ScaffoldMessenger.of(context).showSnackBar(warningMessage(context, "Multiple accounts linked to your mobile no. Login with Client ID"));
+        ScaffoldMessenger.of(context).showSnackBar(warningMessage(context,
+            "Multiple accounts linked to your mobile no. Login with Client ID"));
       } else if (_mobileLogin!.emsg == "mobile_unique not valid") {
         if (s.isNotEmpty) {
           Navigator.pop(context);
         }
-        ScaffoldMessenger.of(context).showSnackBar(warningMessage(context, "This user id logged in another device, Please login again"));
+        ScaffoldMessenger.of(context).showSnackBar(warningMessage(context,
+            "This user id logged in another device, Please login again"));
         _isDisableBtn = true;
         pref.setHideLoginOptBtn(false);
         clearError();
         clearTextField();
         pref.setMobileLogin(false);
         pref.setLogout(true);
-        ref.read(indexListProvider).bottomMenu(1, context);
+        ref.read(indexListProvider).bottomMenu(0, context);
         loginMethCtrl.text = pref.clientId!;
         if (currentRouteName != Routes.loginScreen) {
-          Navigator.pushNamedAndRemoveUntil(context, Routes.loginScreen, (route) => false);
+          Navigator.pushNamedAndRemoveUntil(
+              context, Routes.loginScreen, (route) => false);
         }
       } else if (_mobileLogin!.apitoken != null && _mobileLogin!.stat == "Ok") {
         clearError();
@@ -641,7 +695,12 @@ class AuthProvider extends DefaultChangeNotifier {
         pref.setApiToken("${_mobileLogin!.token}");
 
         List<LoggedMobile> currentUser = [
-          LoggedMobile(clientId: pref.clientId!, mobile: pref.clientMob!, sesstion: pref.clientSession!, userName: pref.clientName!, imei: imei)
+          LoggedMobile(
+              clientId: pref.clientId!,
+              mobile: pref.clientMob!,
+              sesstion: pref.clientSession!,
+              userName: pref.clientName!,
+              imei: imei)
         ];
         _loggedMobile = await getLocalData();
 
@@ -654,19 +713,30 @@ class AuthProvider extends DefaultChangeNotifier {
           ref.read(themeProvider).navigateToNewPage(context);
           initialLoadMethods(context, s);
         }
-      } else if (password.isEmpty && _mobileLogin!.emsg == "Invalid Input : Wrong Password") {
+      } else if (password.isEmpty &&
+          _mobileLogin!.emsg == "Invalid Input : Wrong Password") {
         _isDisableBtn = true;
         clearError();
         clearTextField();
         if (currentRouteName != Routes.loginScreen) {
-          Navigator.pushNamedAndRemoveUntil(context, Routes.loginScreen, arguments: "login", (route) => false);
+          Navigator.pushNamedAndRemoveUntil(
+              context,
+              Routes.loginScreen,
+              arguments: "login",
+              (route) => false);
         }
       } else if (_mobileLogin == null) {
-        _handleNetworkFailure(context, "Network error. Please check your connection.");
+        _handleNetworkFailure(
+            context, "Network error. Please check your connection.");
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(warningMessage(context, _mobileLogin!.emsg!));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(warningMessage(context, _mobileLogin!.emsg!));
         if (currentRouteName != Routes.loginScreen) {
-          Navigator.pushNamedAndRemoveUntil(context, Routes.loginScreen, arguments: "login", (route) => false);
+          Navigator.pushNamedAndRemoveUntil(
+              context,
+              Routes.loginScreen,
+              arguments: "login",
+              (route) => false);
         }
       }
 
@@ -677,7 +747,8 @@ class AuthProvider extends DefaultChangeNotifier {
       notifyListeners();
     } catch (e) {
       print(e);
-      _handleNetworkFailure(context, "Network error. Please check your connection.");
+      _handleNetworkFailure(
+          context, "Network error. Please check your connection.");
     } finally {
       toggleLoadingOn(false);
     }
@@ -689,17 +760,27 @@ class AuthProvider extends DefaultChangeNotifier {
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       toggleLoadingOn(true);
       _mobileLogin = await api.getMobileLogin(
-          uniqueId: "${pref.deviceName!} ${pref.imei}", mobileRclient: mobileRclint, password: password, context: context, imei: pref.imei!, totp: _totp);
+          uniqueId: "${pref.deviceName!} ${pref.imei}",
+          mobileRclient: mobileRclint,
+          password: password,
+          context: context,
+          imei: pref.imei!,
+          totp: _totp);
 
       print('def ${pref.imei!}');
       otpCtrl.clear();
       _isDisableOtpBtn = true;
-      if (_mobileLogin!.stat == "Ok" && (_mobileLogin!.msg == "otp sended" || _mobileLogin!.msg == "otp sended, already logged in another device")) {
+      if (_mobileLogin!.stat == "Ok" &&
+          (_mobileLogin!.msg == "otp sended" ||
+              _mobileLogin!.msg ==
+                  "otp sended, already logged in another device")) {
         mobile_client = mobileRclint;
-        ScaffoldMessenger.of(context).showSnackBar(successMessage(context, 'The OTP is re-sent via SMS and email.'));
+        ScaffoldMessenger.of(context).showSnackBar(
+            successMessage(context, 'The OTP is re-sent via SMS and email.'));
         // _isDisableBtn = true;
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(warningMessage(context, _mobileLogin!.emsg!));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(warningMessage(context, _mobileLogin!.emsg!));
       }
       notifyListeners();
     } catch (e) {
@@ -714,8 +795,12 @@ class AuthProvider extends DefaultChangeNotifier {
     try {
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       toggleLoadingOn(true);
-      _mobileOtp =
-          await api.getMobileOtp(uniqueId: "${pref.deviceName!} ${pref.imei}", mobileRclient: mobile_client, otp: otp, context: context, imei: pref.imei!);
+      _mobileOtp = await api.getMobileOtp(
+          uniqueId: "${pref.deviceName!} ${pref.imei}",
+          mobileRclient: mobile_client,
+          otp: otp,
+          context: context,
+          imei: pref.imei!);
 
       print('def sd ${pref.imei!}');
       // final localstorage = await SharedPreferences.getInstance();
@@ -732,7 +817,12 @@ class AuthProvider extends DefaultChangeNotifier {
         pref.setApiToken("${_mobileOtp!.token}");
 
         List<LoggedMobile> currentUser = [
-          LoggedMobile(clientId: pref.clientId!, mobile: pref.clientMob!, sesstion: pref.clientSession!, userName: pref.clientName!, imei: pref.imei!)
+          LoggedMobile(
+              clientId: pref.clientId!,
+              mobile: pref.clientMob!,
+              sesstion: pref.clientSession!,
+              userName: pref.clientName!,
+              imei: pref.imei!)
         ];
         await deviceAuth(context, "");
         // Future.delayed(const Duration(seconds: 3), () async {
@@ -752,11 +842,13 @@ class AuthProvider extends DefaultChangeNotifier {
       }
       if (_mobileOtp?.emsg == "otp not valid") {
         validateOtp('wrong');
-      } else if (_mobileOtp!.emsg == "Invalid Input : User Blocked due to multiple wrong attempts") {
+      } else if (_mobileOtp!.emsg ==
+          "Invalid Input : User Blocked due to multiple wrong attempts") {
         final ctx = context;
         ref.read(changePasswordProvider).userIdController.text = mobile_client;
         Navigator.pushNamed(ctx, Routes.forgotPass);
-        ScaffoldMessenger.of(context).showSnackBar(warningMessage(context, _mobileOtp!.emsg!));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(warningMessage(context, _mobileOtp!.emsg!));
         // Future.delayed(const Duration(seconds: 1), () {
         Navigator.pop(context);
         // });
@@ -770,7 +862,8 @@ class AuthProvider extends DefaultChangeNotifier {
   }
 
 // Storing client login information locally
-  Future<void> setLocalData(List<LoggedMobile> list, List<LoggedMobile> currentUser) async {
+  Future<void> setLocalData(
+      List<LoggedMobile> list, List<LoggedMobile> currentUser) async {
     List<LoggedMobile> uniqueList = [];
     list.add(currentUser[0]);
 
@@ -784,7 +877,8 @@ class AuthProvider extends DefaultChangeNotifier {
       }
     }
 
-    final List<String> jsonList = uniqueList.map((obj) => obj.toJson()).toList();
+    final List<String> jsonList =
+        uniqueList.map((obj) => obj.toJson()).toList();
 
     pref.setLoggedClientList(jsonList);
   }
@@ -794,7 +888,9 @@ class AuthProvider extends DefaultChangeNotifier {
     List<String>? jsonList = pref.loggedClient;
 
     if (jsonList != null) {
-      return jsonList.map((jsonString) => LoggedMobile.fromJson(jsonString)).toList();
+      return jsonList
+          .map((jsonString) => LoggedMobile.fromJson(jsonString))
+          .toList();
     } else {
       return [];
     }
@@ -826,7 +922,7 @@ class AuthProvider extends DefaultChangeNotifier {
         ref.read(fundProvider).clearFunds();
 
         // Update UI state
-        ref.read(indexListProvider).bottomMenu(1, context);
+        ref.read(indexListProvider).bottomMenu(0, context);
 
         // Pre-fill login field with last client ID for convenience
         if (pref.clientId != null && pref.clientId!.isNotEmpty) {
@@ -843,7 +939,8 @@ class AuthProvider extends DefaultChangeNotifier {
         }
 
         if (currentRouteName != Routes.loginScreen) {
-          Navigator.pushNamedAndRemoveUntil(context, Routes.loginScreen, (route) => false);
+          Navigator.pushNamedAndRemoveUntil(
+              context, Routes.loginScreen, (route) => false);
         }
       }
     } catch (e) {
@@ -1121,7 +1218,8 @@ class AuthProvider extends DefaultChangeNotifier {
     try {
       bool authenticated = await localAuth.authenticate(
           localizedReason: 'Authenticate to access the app',
-          options: const AuthenticationOptions(useErrorDialogs: false, stickyAuth: true, biometricOnly: false));
+          options: const AuthenticationOptions(
+              useErrorDialogs: false, stickyAuth: true, biometricOnly: false));
 
       if (authenticated) {
         ref.read(themeProvider).navigateToNewPage(context);
@@ -1133,14 +1231,16 @@ class AuthProvider extends DefaultChangeNotifier {
       print("cvbghnjmk ${e}");
       if (e.code == auth_error.notAvailable) {
         if (defaultTargetPlatform == TargetPlatform.iOS) {
-          _showAuthenticationRequiredDialog(context, s, ref.read(themeProvider));
+          _showAuthenticationRequiredDialog(
+              context, s, ref.read(themeProvider));
         } else {
           initialLoadMethods(context, s);
         }
       } else if (e.code == auth_error.notEnrolled) {
         _showBiometricNotSetupDialog(context, s, ref.read(themeProvider));
       } else {
-        _showAuthenticationErrorDialog(context, s, e.message ?? 'Unknown error', ref.read(themeProvider));
+        _showAuthenticationErrorDialog(
+            context, s, e.message ?? 'Unknown error', ref.read(themeProvider));
       }
     }
 
@@ -1153,16 +1253,21 @@ class AuthProvider extends DefaultChangeNotifier {
       barrierDismissible: false,
       builder: (BuildContext dialogContext) {
         return AlertDialog(
-          backgroundColor: colors.colorWhite,
+          backgroundColor: theme.isDarkMode
+              ? const Color(0xFF121212)
+              : const Color(0xFFF1F3F8),
           titlePadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(8))),
+          shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(8))),
           scrollable: true,
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 12,
             vertical: 12,
           ),
-          actionsPadding: const EdgeInsets.only(bottom: 16, right: 16, left: 16, top: 8),
-          insetPadding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+          actionsPadding:
+              const EdgeInsets.only(bottom: 16, right: 16, left: 16, top: 8),
+          insetPadding:
+              const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
           title: Column(
             children: [
               Row(
@@ -1177,14 +1282,20 @@ class AuthProvider extends DefaultChangeNotifier {
                         Navigator.pop(context);
                       },
                       borderRadius: BorderRadius.circular(20),
-                      splashColor: theme.isDarkMode ? colors.splashColorDark : colors.splashColorLight,
-                      highlightColor: theme.isDarkMode ? colors.splashColorDark : colors.splashColorLight,
+                      splashColor: theme.isDarkMode
+                          ? colors.splashColorDark
+                          : colors.splashColorLight,
+                      highlightColor: theme.isDarkMode
+                          ? colors.splashColorDark
+                          : colors.splashColorLight,
                       child: Padding(
                         padding: const EdgeInsets.all(6.0),
                         child: Icon(
                           Icons.close_rounded,
                           size: 22,
-                          color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                          color: theme.isDarkMode
+                              ? colors.textSecondaryDark
+                              : colors.textSecondaryLight,
                         ),
                       ),
                     ),
@@ -1201,7 +1312,9 @@ class AuthProvider extends DefaultChangeNotifier {
                     TextWidget.subText(
                       text: "Authentication is required to proceed further!",
                       theme: theme.isDarkMode,
-                      color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                      color: theme.isDarkMode
+                          ? colors.textSecondaryDark
+                          : colors.textPrimaryLight,
                       fw: 3,
                       align: TextAlign.center,
                     ),
@@ -1230,15 +1343,19 @@ class AuthProvider extends DefaultChangeNotifier {
                   });
                 },
                 style: OutlinedButton.styleFrom(
-                  minimumSize: const Size(0, 40), // width, height
-                  side: BorderSide(color: colors.btnOutlinedBorder), // Outline border color
+                  minimumSize: const Size(0, 45), // width, height
+                  side: BorderSide(
+                      color: colors.btnOutlinedBorder), // Outline border color
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(5),
                   ),
                   backgroundColor: colors.primaryDark, // Transparent background
                 ),
-                child:
-                    TextWidget.titleText(text: "Try Again", theme: theme.isDarkMode, color: !theme.isDarkMode ? colors.colorWhite : colors.colorBlack, fw: 0),
+                child: TextWidget.titleText(
+                    text: "Try Again",
+                    theme: theme.isDarkMode,
+                    color: colors.colorWhite,
+                    fw: 2),
               ),
             ),
           ],
@@ -1247,7 +1364,8 @@ class AuthProvider extends DefaultChangeNotifier {
     );
   }
 
-  void _showAuthenticationRequiredDialog(BuildContext context, String s, theme) {
+  void _showAuthenticationRequiredDialog(
+      BuildContext context, String s, theme) {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -1259,9 +1377,12 @@ class AuthProvider extends DefaultChangeNotifier {
             borderRadius: BorderRadius.all(Radius.circular(8)),
           ),
           scrollable: true,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-          actionsPadding: const EdgeInsets.only(bottom: 16, right: 16, left: 16, top: 8),
-          insetPadding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          actionsPadding:
+              const EdgeInsets.only(bottom: 16, right: 16, left: 16, top: 8),
+          insetPadding:
+              const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
           title: Column(
             children: [
               Row(
@@ -1276,14 +1397,20 @@ class AuthProvider extends DefaultChangeNotifier {
                         Navigator.pop(context);
                       },
                       borderRadius: BorderRadius.circular(20),
-                      splashColor: theme.isDarkMode ? colors.splashColorDark : colors.splashColorLight,
-                      highlightColor: theme.isDarkMode ? colors.splashColorDark : colors.splashColorLight,
+                      splashColor: theme.isDarkMode
+                          ? colors.splashColorDark
+                          : colors.splashColorLight,
+                      highlightColor: theme.isDarkMode
+                          ? colors.splashColorDark
+                          : colors.splashColorLight,
                       child: Padding(
                         padding: const EdgeInsets.all(6.0),
                         child: Icon(
                           Icons.close_rounded,
                           size: 22,
-                          color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                          color: theme.isDarkMode
+                              ? colors.colorWhite
+                              : colors.colorBlack,
                         ),
                       ),
                     ),
@@ -1308,7 +1435,9 @@ class AuthProvider extends DefaultChangeNotifier {
                     TextWidget.subText(
                       text: "Authentication is required to proceed further!",
                       theme: theme.isDarkMode,
-                      color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                      color: theme.isDarkMode
+                          ? colors.textPrimaryDark
+                          : colors.textPrimaryLight,
                       fw: 3,
                       align: TextAlign.center,
                     ),
@@ -1338,7 +1467,8 @@ class AuthProvider extends DefaultChangeNotifier {
                 child: TextWidget.titleText(
                   text: "Proceed",
                   theme: theme.isDarkMode,
-                  color: !theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                  color:
+                      !theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
                   fw: 0,
                 ),
               ),
@@ -1361,9 +1491,12 @@ class AuthProvider extends DefaultChangeNotifier {
             borderRadius: BorderRadius.all(Radius.circular(8)),
           ),
           scrollable: true,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-          actionsPadding: const EdgeInsets.only(bottom: 16, right: 16, left: 16, top: 8),
-          insetPadding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          actionsPadding:
+              const EdgeInsets.only(bottom: 16, right: 16, left: 16, top: 8),
+          insetPadding:
+              const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
           title: Column(
             children: [
               Row(
@@ -1378,14 +1511,20 @@ class AuthProvider extends DefaultChangeNotifier {
                         Navigator.pop(context);
                       },
                       borderRadius: BorderRadius.circular(20),
-                      splashColor: theme.isDarkMode ? colors.splashColorDark : colors.splashColorLight,
-                      highlightColor: theme.isDarkMode ? colors.splashColorDark : colors.splashColorLight,
+                      splashColor: theme.isDarkMode
+                          ? colors.splashColorDark
+                          : colors.splashColorLight,
+                      highlightColor: theme.isDarkMode
+                          ? colors.splashColorDark
+                          : colors.splashColorLight,
                       child: Padding(
                         padding: const EdgeInsets.all(6.0),
                         child: Icon(
                           Icons.close_rounded,
                           size: 22,
-                          color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                          color: theme.isDarkMode
+                              ? colors.colorWhite
+                              : colors.colorBlack,
                         ),
                       ),
                     ),
@@ -1408,9 +1547,12 @@ class AuthProvider extends DefaultChangeNotifier {
                     // ),
                     const SizedBox(height: 10),
                     TextWidget.subText(
-                      text: "Please setup biometric authentication in your device settings.",
+                      text:
+                          "Please setup biometric authentication in your device settings.",
                       theme: theme.isDarkMode,
-                      color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                      color: theme.isDarkMode
+                          ? colors.textPrimaryDark
+                          : colors.textPrimaryLight,
                       fw: 3,
                       align: TextAlign.center,
                     ),
@@ -1438,7 +1580,8 @@ class AuthProvider extends DefaultChangeNotifier {
                 child: TextWidget.titleText(
                   text: "Continue",
                   theme: theme.isDarkMode,
-                  color: !theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                  color:
+                      !theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
                   fw: 0,
                 ),
               ),
@@ -1449,7 +1592,8 @@ class AuthProvider extends DefaultChangeNotifier {
     );
   }
 
-  void _showAuthenticationErrorDialog(BuildContext context, String s, String error, theme) {
+  void _showAuthenticationErrorDialog(
+      BuildContext context, String s, String error, theme) {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -1461,9 +1605,12 @@ class AuthProvider extends DefaultChangeNotifier {
             borderRadius: BorderRadius.all(Radius.circular(8)),
           ),
           scrollable: true,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-          actionsPadding: const EdgeInsets.only(bottom: 16, right: 16, left: 16, top: 8),
-          insetPadding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          actionsPadding:
+              const EdgeInsets.only(bottom: 16, right: 16, left: 16, top: 8),
+          insetPadding:
+              const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
           title: Column(
             children: [
               Row(
@@ -1478,14 +1625,20 @@ class AuthProvider extends DefaultChangeNotifier {
                         Navigator.pop(context);
                       },
                       borderRadius: BorderRadius.circular(20),
-                      splashColor: theme.isDarkMode ? colors.splashColorDark : colors.splashColorLight,
-                      highlightColor: theme.isDarkMode ? colors.splashColorDark : colors.splashColorLight,
+                      splashColor: theme.isDarkMode
+                          ? colors.splashColorDark
+                          : colors.splashColorLight,
+                      highlightColor: theme.isDarkMode
+                          ? colors.splashColorDark
+                          : colors.splashColorLight,
                       child: Padding(
                         padding: const EdgeInsets.all(6.0),
                         child: Icon(
                           Icons.close_rounded,
                           size: 22,
-                          color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                          color: !theme.isDarkMode
+                              ? colors.colorWhite
+                              : colors.colorBlack,
                         ),
                       ),
                     ),
@@ -1506,11 +1659,13 @@ class AuthProvider extends DefaultChangeNotifier {
                     //       : colors.textPrimaryLight,
                     //   fw: 3,
                     // ),
-                    const SizedBox(height: 10),
                     TextWidget.subText(
                       text: "An error occurred: $error",
                       theme: theme.isDarkMode,
-                      color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                      color: !theme.isDarkMode
+                          ? colors.textPrimaryDark
+                          : colors.textPrimaryLight,
+                      align: TextAlign.center,
                       fw: 3,
                     ),
                   ],
@@ -1539,8 +1694,8 @@ class AuthProvider extends DefaultChangeNotifier {
                 child: TextWidget.titleText(
                   text: "Retry",
                   theme: theme.isDarkMode,
-                  color: !theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                  fw: 0,
+                  color: colors.colorWhite,
+                  fw: 2,
                 ),
               ),
             ),
@@ -1559,9 +1714,10 @@ class AuthProvider extends DefaultChangeNotifier {
       if (s != "switchAc") {
         initLaod(true);
       }
-      ConstantName.timer = Timer.periodic(const Duration(seconds: 1), (timer) {});
+      ConstantName.timer =
+          Timer.periodic(const Duration(seconds: 1), (timer) {});
       ConstantName.timer!.cancel();
-      ref.read(indexListProvider).bottomMenu(s.isEmpty ? 1 : 4, context);
+      ref.read(indexListProvider).bottomMenu(s.isEmpty ? 0 : 4, context);
 
       if (s.isNotEmpty || pref.clientSession!.isNotEmpty) {
         ref.read(websocketProvider).closeSocket(true);
@@ -1600,7 +1756,7 @@ class AuthProvider extends DefaultChangeNotifier {
           ref.read(userProfileProvider).fetchUserDetail(context);
           ref.read(portfolioProvider).fetchPosGroupSymbol("", false);
           ref.read(transcationProvider).fetchc(context);
-          ref.read(ipoProvide).getDashboardIpos();
+          // ref.read(ipoProvide).getDashboardIpos();
 
           // FirebaseAnalytics.instance.setUserId(id: pref.clientId);
           // // IPOs
@@ -1631,11 +1787,14 @@ class AuthProvider extends DefaultChangeNotifier {
           ref.read(orderProvider).setOrderIp();
           // End Explore
           if (s.isEmpty) {
-            Navigator.pushNamedAndRemoveUntil(context, Routes.homeScreen, (route) => false);
+            Navigator.pushNamedAndRemoveUntil(
+                context, Routes.homeScreen, (route) => false);
             // if (pref.islogIn!) {
             if (pref.showRiskDis != 'true') {
               showModalBottomSheet(
-                  shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+                  shape: const RoundedRectangleBorder(
+                      borderRadius:
+                          BorderRadius.vertical(top: Radius.circular(16))),
                   backgroundColor: const Color(0xffffffff),
                   isDismissible: false,
                   enableDrag: false,
@@ -1674,7 +1833,8 @@ class AuthProvider extends DefaultChangeNotifier {
     } on SocketException catch (e) {
       _handleNetworkFailure(context, "Network connection issue: ${e.message}");
     } on HttpException catch (e) {
-      _handleNetworkFailure(context, "Server communication error: ${e.message}");
+      _handleNetworkFailure(
+          context, "Server communication error: ${e.message}");
     } on TimeoutException catch (_) {
       _handleNetworkFailure(context, "Connection timed out");
     } catch (_) {
@@ -1696,7 +1856,7 @@ class AuthProvider extends DefaultChangeNotifier {
     pref.setMobileLogin(false);
 
     // Update UI state
-    ref.read(indexListProvider).bottomMenu(1, context);
+    ref.read(indexListProvider).bottomMenu(0, context);
 
     // If we have client ID, prefill the login field
     if (pref.clientId != null && pref.clientId!.isNotEmpty) {
@@ -1714,17 +1874,19 @@ class AuthProvider extends DefaultChangeNotifier {
 
     // Navigate to login screen if not already there
     if (context.mounted && currentRouteName != Routes.loginScreen) {
-      Navigator.pushNamedAndRemoveUntil(context, Routes.loginScreen, (route) => false);
+      Navigator.pushNamedAndRemoveUntil(
+          context, Routes.loginScreen, (route) => false);
 
       // Show error message
-      ScaffoldMessenger.of(context).showSnackBar(warningMessage(context, "Connection issue. Please check your internet and try again."));
+      ScaffoldMessenger.of(context).showSnackBar(warningMessage(context,
+          "Connection issue. Please check your internet and try again."));
     }
   }
 
-  setIposAPicalls() async {
-    await ref.read(ipoProvide).getDashboardIpos();
+  setIposAPicalls(BuildContext context) async {
+    // await ref.read(ipoProvide).getDashboardIpos();
     await ref.read(ipoProvide).getSmeIpo();
-    await ref.read(ipoProvide).getmainstreamipo();
+    await ref.read(ipoProvide).getmainstreamipo(context);
     await ref.read(ipoProvide).getUpcomingIpoModel();
     await ref.read(ipoProvide).getipoperfomance(currentYear);
     await ref.read(ipoProvide).mergemainsme();
@@ -1749,16 +1911,30 @@ class AuthProvider extends DefaultChangeNotifier {
       getapplocal = pref.showOrderpref!;
     }
 
-    if (getsavedOrderPreference.isNotEmpty && getsavedOrderPreference.containsKey("metadata") && getsavedOrderPreference["metadata"].containsKey("expos")) {
+    if (getsavedOrderPreference.isNotEmpty &&
+        getsavedOrderPreference.containsKey("metadata") &&
+        getsavedOrderPreference["metadata"].containsKey("expos")) {
       _savedOrderPreference = getsavedOrderPreference['metadata'];
     } else if ((getapplocal.isNotEmpty && getapplocal.contains("expos"))) {
-      local = {"clientid": pref.clientId, "metadata": jsonDecode(getapplocal), "source": "MOB"};
+      local = {
+        "clientid": pref.clientId,
+        "metadata": jsonDecode(getapplocal),
+        "source": "MOB"
+      };
       _savedOrderPreference = jsonDecode(getapplocal);
       await api.setOrderprefer(local, true, context);
     } else {
       local = {
         "clientid": pref.clientId,
-        "metadata": {"prc": "Limit", "prd": "Delivery", "qtypref": "qty", "qty": "1", "validity": "DAY", "mrkprot": "1", "expos": "Market"},
+        "metadata": {
+          "prc": "Limit",
+          "prd": "Delivery",
+          "qtypref": "qty",
+          "qty": "1",
+          "validity": "DAY",
+          "mrkprot": "1",
+          "expos": "Market"
+        },
         "source": "MOB"
       };
       _savedOrderPreference = local['metadata'];
@@ -1809,10 +1985,12 @@ class AuthProvider extends DefaultChangeNotifier {
         // A short delay ensures that any pending UI operations are completed
         Future.delayed(Duration.zero, () {
           if (context.mounted) {
-            Navigator.pushNamedAndRemoveUntil(context, Routes.loginScreen, (route) => false);
+            Navigator.pushNamedAndRemoveUntil(
+                context, Routes.loginScreen, (route) => false);
 
             // Show the message only after navigation for better UX
-            ScaffoldMessenger.of(context).showSnackBar(warningMessage(context, "Session Expired, Please log in again"));
+            ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+                context, "Session Expired, Please log in again"));
           }
 
           // Reset the flag after navigation is complete

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mynt_plus/models/mf_model/mutual_fundmodel.dart';
-import 'package:mynt_plus/provider/fund_provider.dart';
 import 'package:mynt_plus/sharedWidget/loader_ui.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import 'package:mynt_plus/sharedWidget/snack_bar.dart';
@@ -11,9 +10,9 @@ import '../../provider/thems.dart';
 import '../../res/global_state_text.dart';
 import '../../res/res.dart';
 import '../../routes/route_names.dart';
-import '../../sharedWidget/custom_back_btn.dart';
-import '../../sharedWidget/custom_exch_badge.dart';
-import '../../sharedWidget/functions.dart';
+ 
+ 
+ 
 import '../../sharedWidget/list_divider.dart';
 import 'mf_stock_detail_screen.dart';
 
@@ -54,14 +53,18 @@ class _MfCommonSearchState extends ConsumerState<MfCommonSearch> {
   Widget build(BuildContext context) {
     final mfData = ref.watch(mfProvider);
     final theme = ref.watch(themeProvider);
-    final isDarkMode = theme.isDarkMode;
-    final deviceHeight = MediaQuery.of(context).size.height;
+    
+    
 
     return PopScope(
-      canPop: true, // Allows back navigation
+      canPop: true,
       onPopInvokedWithResult: (didPop, result) async {
-        mfData.mfsearchcontroller.clear();
-        mfData.clearMfSearchResult();
+                mfData.clearMfSearchResult();
+                mfData.mfsearchcontroller.clear();
+                // FocusScope.of(context).unfocus();
+        if (!didPop) {
+          Navigator.pop(context);
+        }
       },
       child: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
@@ -84,9 +87,9 @@ class _MfCommonSearchState extends ConsumerState<MfCommonSearch> {
                     ? colors.highlightDark
                     : colors.highlightLight,
                 onTap: () {
-                  Navigator.pop(context);
+                  mfData.clearMfSearchResult();
                   mfData.mfsearchcontroller.clear();
-                  mfData.fetchmfCommonsearch("", context);
+                  Navigator.pop(context);
                 },
                 child: Container(
                   width: 44, // Increased touch area
@@ -107,7 +110,9 @@ class _MfCommonSearchState extends ConsumerState<MfCommonSearch> {
               child: Container(
                 height: 40,
                 decoration: BoxDecoration(
-                  color: colors.searchBg,
+                  color: theme.isDarkMode
+                ? colors.searchBgDark
+                : colors.searchBg,
                   borderRadius: BorderRadius.circular(5),
                   // border: Border.all(
                   //   color: theme.isDarkMode ? const Color(0xFF2A2A2A) : const Color(0xFFEEEEEE),
@@ -121,8 +126,8 @@ class _MfCommonSearchState extends ConsumerState<MfCommonSearch> {
                     SvgPicture.asset(
                       assets.searchIcon,
                       color: theme.isDarkMode
-                          ? colors.textPrimaryDark
-                          : colors.textPrimaryLight,
+                          ? colors.textSecondaryDark
+                          : colors.textSecondaryLight,
                       width: 18,
                       height: 18,
                     ),
@@ -133,7 +138,7 @@ class _MfCommonSearchState extends ConsumerState<MfCommonSearch> {
                           focusNode: searchFocusNode,
                           controller: mfData.mfsearchcontroller,
                           style: TextWidget.textStyle(
-                            fontSize: 14,
+                            fontSize: 16,
                             color: theme.isDarkMode
                                 ? colors.textPrimaryDark
                                 : colors.textPrimaryLight,
@@ -158,8 +163,8 @@ class _MfCommonSearchState extends ConsumerState<MfCommonSearch> {
                               fontSize: 14,
                               theme: theme.isDarkMode,
                               color: theme.isDarkMode
-                                  ? colors.textPrimaryDark
-                                  : colors.textPrimaryLight,
+                                  ? colors.textSecondaryDark
+                                  : colors.textSecondaryLight,
                             ),
                             contentPadding: const EdgeInsets.symmetric(
                                 horizontal: 0, vertical: 12),
@@ -167,10 +172,12 @@ class _MfCommonSearchState extends ConsumerState<MfCommonSearch> {
                           onChanged: (value) async {
                             if (value.isNotEmpty) {
                               mfData.fetchmfCommonsearch(value, context);
-                            }
+                             }else{
+                            mfData.clearMfSearchResult();
+                          }
                           }),
                     ),
-
+        
                     // Clear button
                     if (mfData.mfsearchcontroller.text.isNotEmpty)
                       Padding(
@@ -189,6 +196,7 @@ class _MfCommonSearchState extends ConsumerState<MfCommonSearch> {
                               padding: const EdgeInsets.all(8.0),
                               child: SvgPicture.asset(
                                 assets.removeIcon,
+                                color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                                 width: 20,
                                 height: 20,
                               ),
@@ -203,12 +211,12 @@ class _MfCommonSearchState extends ConsumerState<MfCommonSearch> {
           ),
           body: TransparentLoaderScreen(
             isLoading: mfData.bestmfloader ?? false,
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  if (mfData.mutualFundsearchdata != null) ...[
-                    mfData.mutualFundsearchdata!.isNotEmpty
-                        ? ListView.separated(
+            child: Column(
+              children: [
+                if (mfData.mutualFundsearchdata != null) ...[
+                  mfData.mutualFundsearchdata!.isNotEmpty
+                      ? Expanded(
+                        child: ListView.separated(
                             shrinkWrap: true,
                             // padding: const EdgeInsets.symmetric(horizontal: 8),
                             separatorBuilder: (context, index) =>
@@ -369,14 +377,14 @@ class _MfCommonSearchState extends ConsumerState<MfCommonSearch> {
                                       ),
                                     ),
                                   ),
-
+                        
                                   // CustomExchBadge(
                                   //         exch: fund.type ?? ""),
                                   // const SizedBox(width: 5),
                                   // CustomExchBadge(
                                   //     exch: fund.subtype ?? ""),
                                 ),
-
+                        
                                 //  Container(
                                 //   padding: const EdgeInsets.all(8),
                                 //   child: Column(
@@ -473,23 +481,21 @@ class _MfCommonSearchState extends ConsumerState<MfCommonSearch> {
                                 // ),
                               );
                             },
-                          )
-                        : const Center(
-                            child: Padding(
-                              padding: EdgeInsets.only(top: 225),
-                              child: NoDataFound(),
-                            ),
-                          )
-                  ] else ...[
-                    const Center(
-                      child: Padding(
-                        padding: EdgeInsets.only(top: 225),
-                        child: NoDataFound(),
-                      ),
-                    )
-                  ]
-                ],
-              ),
+                          ),
+                      )
+                      : Expanded(
+                        child: const Center(
+                            child: NoDataFound(),
+                          ),
+                      )
+                ] else ...[
+                  Expanded(
+                    child: const Center(
+                      child: NoDataFound(),
+                    ),
+                  )
+                ]
+              ],
             ),
           ),
         ),

@@ -11,6 +11,7 @@ import 'package:mynt_plus/sharedWidget/functions.dart';
 import '../../provider/thems.dart';
 import '../../res/global_state_text.dart';
 import '../../sharedWidget/loader_ui.dart';
+import '../../sharedWidget/snack_bar.dart';
 import 'tax_pnl_screens/charges_value_screen.dart';
 import 'tax_pnl_screens/chart_for_tax_scree.dart';
 import 'tax_pnl_screens/pnl_value_screen.dart';
@@ -41,9 +42,9 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
     }
   ];
   late TabController _tabController;
-  bool isLoading = false;
   String? errorMessage;
   String? yearErrorMessage;
+  // bool isLoading = false;
 
   void showError(String message) {
     setState(() {
@@ -73,10 +74,7 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
         child: Stack(
           children: [
             Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-              ),
+             
               child: Padding(
                 padding: const EdgeInsets.only(bottom: 24),
                 child: Column(
@@ -102,6 +100,7 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
                                 await Future.delayed(
                                     const Duration(milliseconds: 150));
                                 Navigator.pop(context);
+                                ledgerprovider.setistaxpnlclosed(true);
                               },
                               borderRadius: BorderRadius.circular(20),
                               splashColor: theme.isDarkMode
@@ -137,6 +136,7 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
                       child: TextWidget.subText(
                         text: "Financial Year",
                         theme: theme.isDarkMode,
+                        color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -150,7 +150,7 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 6, vertical: 6),
                             decoration: BoxDecoration(
-                              color: const Color(0xffF1F3F8),
+                           color:   theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
                               border: Border.all(
                                 color: colors.colorBlue,
                               ),
@@ -200,6 +200,7 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
                                   "Apr ${ledgerprovider.yearforTaxpnl} - Mar ${ledgerprovider.yearforTaxpnl + 1}",
                                   style: TextWidget.textStyle(
                                     fontSize: 14,
+                                    color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
                                     theme: theme.isDarkMode,
                                     fw: 1,
                                   ),
@@ -266,11 +267,11 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
                       padding: const EdgeInsets.symmetric(horizontal: 24.0),
                       child: SizedBox(
                         width: double.infinity,
-                        height: 48,
+                        height: 45,
                         child: OutlinedButton(
                           style: OutlinedButton.styleFrom(
                             elevation: 0,
-                            minimumSize: const Size(0, 48),
+                            minimumSize: const Size(0, 45),
                             backgroundColor: theme.isDarkMode
                                 ? colors.primaryDark
                                 : colors.primaryLight,
@@ -279,39 +280,50 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
                             ),
                             padding: EdgeInsets.zero,
                           ),
-                          onPressed: isLoading
-                              ? null
-                              : () async {
-                                  try {
-                                    setState(() {
-                                      isLoading = true;
-                                      errorMessage = null;
-                                    });
-                                    await ledgerprovider.pdfdownloadfortaxpnl(
-                                      context,
-                                      ledgerprovider.taxpnleq?.data?.toJson() ??
-                                          {},
-                                      ledgerprovider.taxpnldercomcur?.data
-                                              ?.toJson() ??
-                                          {},
-                                      ledgerprovider.taxpnleqCharge?.toJson() ??
-                                          {},
-                                      ledgerprovider.yearforTaxpnl,
-                                    );
-                                    setState(() {
-                                      errorMessage = null;
-                                    });
-                                  } catch (e) {
-                                    setState(() {
-                                      errorMessage = e.toString();
-                                    });
-                                  } finally {
-                                    setState(() {
-                                      isLoading = false;
-                                    });
-                                  }
-                                },
-                          child: isLoading
+                          onPressed: () async {
+                            // Check if already loading using provider state
+                            if (ledgerprovider.taxpnlloading) {
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                warningMessage(context,
+                                    'Previous request is still processing'),
+                              );
+                              return;
+                            }
+                            try {
+                              setState(() {
+                                errorMessage = null;
+                              });
+
+                                ledgerprovider.pdfdownloadfortaxpnl(
+                                context,
+                                ledgerprovider.taxpnleq?.data?.toJson() ?? {},
+                                ledgerprovider.taxpnldercomcur?.data
+                                        ?.toJson() ??
+                                    {},
+                                ledgerprovider.taxpnleqCharge?.toJson() ?? {},
+                                ledgerprovider.yearforTaxpnl,
+                              );
+
+                              setState(() {
+                                errorMessage = null;
+                              });
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context).showSnackBar(successMessage(context, 'The file will be sent to your email shortly.'),);
+
+                            } catch (e) {
+                              // Show error in ScaffoldMessenger
+                              // Navigator.pop(context);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                warningMessage(
+                                    context, 'Error: ${e.toString()}'),
+                              );
+                              setState(() {
+                                errorMessage = e.toString();
+                              });
+                            }
+                          },
+                          child: ledgerprovider.taxpnlloading
                               ? SizedBox(
                                   width: 18,
                                   height: 20,

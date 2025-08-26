@@ -53,8 +53,7 @@ class PledgeHistoryScreen extends StatelessWidget {
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-                                 SizedBox(height: 10),
-
+            SizedBox(height: 10),
             ledgerprovider.pledgeHistoryData?.data?.isEmpty ?? true
                 ? Center(
                     child: Padding(
@@ -63,564 +62,551 @@ class PledgeHistoryScreen extends StatelessWidget {
                   ))
                 : Expanded(
                     child: SingleChildScrollView(
-                      child: 
-                      // ListView.separated(
-                      //   physics: ScrollPhysics(),
-                      //   itemCount:
-                      //       ledgerprovider.pledgeHistoryData?.data?.length ?? 0,
-                      //   shrinkWrap: true,
-                      //   itemBuilder: (context, index) {
-                      //     final value =
-                      //         ledgerprovider.pledgeHistoryData!.data![index];
-                      //     return InkWell(
-                      //       onTap: () {
-                      //         _showBottomSheet(
-                      //             context, PledgeHistoryDetails(data: value));
-                      //       },
-                      //       child: Column(
-                      //         children: [
-                                
-                      //           Padding(
-                      //             padding: const EdgeInsets.only(
-                      //                 left: 16.0, top: 8.0),
-                      //             child: Row(
-                      //               mainAxisAlignment:
-                      //                   MainAxisAlignment.spaceBetween,
-                      //               children: [
-                      //                 Row(
-                      //                   children: [
-                      //                     // TextWidget.captionText(
-                      //                     //     text: ((value.reqid).toString())
-                      //                     //         .substring(
-                      //                     //             0,
-                      //                     //             (value.reqid)
-                      //                     //                     .toString()
-                      //                     //                     .length -
-                      //                     //                 4),
-                      //                     //     color: theme.isDarkMode
-                      //                     //         ? colors.colorWhite
-                      //                     //         : colors.colorBlack,
-                      //                     //     textOverflow:
-                      //                     //         TextOverflow.ellipsis,
-                      //                     //     theme: theme.isDarkMode,
-                      //                     //     fw: 1),
-                      //                     // TextWidget.subText(
-                      //                     //     text: ((value.reqid).toString())
-                      //                     //         .substring((value.reqid)
-                      //                     //                 .toString()
-                      //                     //                 .length -
-                      //                     //             4),
-                      //                     //     color: theme.isDarkMode
-                      //                     //         ? colors.colorWhite
-                      //                     //         : colors.colorBlack,
-                      //                     //     textOverflow:
-                      //                     //         TextOverflow.ellipsis,
-                      //                     //     theme: theme.isDarkMode,
-                      //                     //     fw: 1),
-                      //                       TextWidget.subText(
-                      //                         text: ((value.reqid).toString()),
-                      //                         color: theme.isDarkMode
-                      //                             ? colors.colorWhite
-                      //                             : colors.colorBlack,
-                      //                         textOverflow:
-                      //                             TextOverflow.ellipsis,
-                      //                         theme: theme.isDarkMode,
-                      //                         fw: 3),
-                      //                   ],
-                      //                 ),
-                      //                 Padding(
-                      //                   padding:
-                      //                       const EdgeInsets.only(right: 16.0),
-                      //                   child: Container(
-                      //                     margin:
-                      //                         const EdgeInsets.only(right: 4),
-                      //                     padding: const EdgeInsets.symmetric(
-                      //                         horizontal: 6, vertical: 3),
-                      //                     decoration: BoxDecoration(
-                      //                       borderRadius:
-                      //                           BorderRadius.circular(2),
-                      //                       color: value.status == 'completed'
-                      //                           ? const Color.fromARGB(
-                      //                                   255, 177, 255, 208)
-                      //                               .withOpacity(.3)
-                      //                           : const Color(0xffF6F6C5),
-                      //                     ),
-                      //                     child: Text(
-                      //                         value.status == 'completed'
-                      //                             ? 'Completed'
-                      //                             : 'Requested',
-                      //                         overflow: TextOverflow.ellipsis,
-                      //                         maxLines: 1,
-                      //                         style: textStyle(
-                      //                             value.status == 'completed'
-                      //                                 ? const Color.fromARGB(
-                      //                                     193, 68, 168, 53)
-                      //                                 : const Color(0xffF9B039),
-                      //                             10,
-                      //                             FontWeight.w500)),
-                      //                   ),
-                      //                 ),
-                      //               ],
-                      //             ),
-                      //           ),
-                      //            SizedBox(height: 10),
-                      //           Padding(
-                      //             padding: const EdgeInsets.only(
-                      //                 top: 2.0, left: 14.0, bottom: 4.0),
-                      //             child: Row(
-                      //               mainAxisAlignment:
-                      //                   MainAxisAlignment.spaceBetween,
-                      //               children: [
-                      //                 Padding(
-                      //                   padding:
-                      //                       const EdgeInsets.only(right: 16.0),
-                      //                   child: Row(
-                      //                     children: [
-                      //                       TextWidget.paraText(
-                      //                           align: TextAlign.right,
-                      //                           text: "Req : ",
-                      //                           color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                      //                           textOverflow:
-                      //                               TextOverflow.ellipsis,
-                      //                           theme: theme.isDarkMode,
-                      //                           fw: 3),
-                      //                       Row(
-                      //                         children: [
-                      //                           TextWidget.paraText(
-                      //                               align: TextAlign.right,
-                      //                               text: " ${value.datTim}",
-                      //                               color: theme.isDarkMode
-                      //                                   ? colors.textPrimaryDark
-                      //                                   : colors.textPrimaryLight,
-                      //                               textOverflow:
-                      //                                   TextOverflow.ellipsis,
-                      //                               theme: theme.isDarkMode,
-                      //                               fw: 3),
-                      //                           // TextWidget.captionText(
-                      //                           //     align: TextAlign.right,
-                      //                           //     text:
-                      //                           //         " ${value.cdslReqTime!.split(" ")[0]  }",
-                      //                           //     color: theme.isDarkMode
-                      //                           //         ? colors.colorWhite
-                      //                           //         : colors.colorBlack,
-                      //                           //     textOverflow:
-                      //                           //         TextOverflow.ellipsis,
-                      //                           //     theme: theme.isDarkMode,
-                      //                           //     fw: 0),
-                      //                         ],
-                      //                       ),
-                      //                     ],
-                      //                   ),
-                      //                 ),
-                      //               ],
-                      //             ),
-                      //           ),
-                      //           Padding(
-                      //             padding: const EdgeInsets.only(
-                      //                 top: 2.0, left: 14.0, bottom: 4.0),
-                      //             child: Row(
-                      //               mainAxisAlignment:
-                      //                   MainAxisAlignment.spaceBetween,
-                      //               children: [
-                      //                 Padding(
-                      //                   padding:
-                      //                       const EdgeInsets.only(right: 16.0),
-                      //                   child: Row(
-                      //                     children: [
-                      //                       TextWidget.paraText(
-                      //                           align: TextAlign.right,
-                      //                           text: "Res : ",
-                      //                           color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                      //                           textOverflow:
-                      //                               TextOverflow.ellipsis,
-                      //                           theme: theme.isDarkMode,
-                      //                           fw: 3),
-                      //                       Row(
-                      //                         children: [
-                      //                           TextWidget.paraText(
-                      //                               align: TextAlign.right,
-                      //                               text:
-                      //                                   " ${value.cdslReqTime}",
-                      //                              color: theme.isDarkMode
-                      //                                   ? colors.textPrimaryDark
-                      //                                   : colors.textPrimaryLight,
-                      //                               textOverflow:
-                      //                                   TextOverflow.ellipsis,
-                      //                               theme: theme.isDarkMode,
-                      //                               fw: 3),
+                      child:
+                          // ListView.separated(
+                          //   physics: ScrollPhysics(),
+                          //   itemCount:
+                          //       ledgerprovider.pledgeHistoryData?.data?.length ?? 0,
+                          //   shrinkWrap: true,
+                          //   itemBuilder: (context, index) {
+                          //     final value =
+                          //         ledgerprovider.pledgeHistoryData!.data![index];
+                          //     return InkWell(
+                          //       onTap: () {
+                          //         _showBottomSheet(
+                          //             context, PledgeHistoryDetails(data: value));
+                          //       },
+                          //       child: Column(
+                          //         children: [
 
-                      //                           // TextWidget.captionText(
-                      //                           //     align: TextAlign.right,
-                      //                           //     text:
-                      //                           //         " ${value.datTim  }",
-                      //                           //     color: theme.isDarkMode
-                      //                           //         ? colors.colorWhite
-                      //                           //         : colors.colorBlack,
-                      //                           //     textOverflow:
-                      //                           //         TextOverflow.ellipsis,
-                      //                           //     theme: theme.isDarkMode,
-                      //                           //     fw: 0),
-                      //                         ],
-                      //                       ),
-                      //                     ],
-                      //                   ),
-                      //                 ),
-                      //               ],
-                      //             ),
-                      //           ),
-                      //         ],
-                      //       ),
-                      //     );
-                      //   },
-                      //   separatorBuilder: (BuildContext context, int index) {
-                      //     // if (index != 0 &&
-                      //     //     ledgerprovider.ledgerAllData!.fullStat![index - 1]
-                      //     //             .vOUCHERDATE ==
-                      //     //         ledgerprovider.ledgerAllData!
-                      //     //             .fullStat![index ].vOUCHERDATE) {
-                      //     return Padding(
-                      //       padding: const EdgeInsets.only(
-                      //         top: 2.0,
-                      //         bottom: 0.0,
-                      //       ),
-                      //       child: Divider(
-                      //         color: theme.isDarkMode
-                      //             ? const Color(0xffB5C0CF).withOpacity(.15)
-                      //             : const Color(0xffF1F3F8),
-                      //         thickness: 1.0,
-                      //       ),
-                      //     );
-                      //     // }else{
-                      //     // return SizedBox();
-                      //     // }
-                      //   },
-                      // ),
-                      ListView.separated(
-                          physics: ScrollPhysics(),
-                          itemCount: ledgerprovider.historyalterlist.length,
-                          shrinkWrap: true,
-                          itemBuilder: (context, index) {
-                            final value = ledgerprovider.historyalterlist[index];
-                            return Column(
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.only(
-                                      left: 16.0, top: 8.0),
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Row(
-                                            children: [
-                                              TextWidget.subText(
-                                                  text: "${value.symbol}",
-                                                  color: theme.isDarkMode
-                                                      ? colors.colorWhite
-                                                      : colors.colorBlack,
-                                                  textOverflow:
-                                                      TextOverflow.ellipsis,
-                                                  theme: theme.isDarkMode,
-                                                  fw: 0),
-Padding(
-                                        padding:
-                                            const EdgeInsets.only(left: 8.0),
-                                        child: Container(
-                                          margin:
-                                              const EdgeInsets.only(right: 4),
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 6, vertical: 3),
-                                          decoration: BoxDecoration(
-                                            borderRadius:
-                                                BorderRadius.circular(2),
-                                            color: value.status == '0'
-                                                ? const Color.fromARGB(
-                                                        255, 177, 255, 208)
-                                                    .withOpacity(.3)
-                                                : value.status == '1'
-                                                    ? const Color.fromARGB(
-                                                        255, 246, 197, 197)
-                                                    : const Color(0xffF6F6C5),
-                                          ),
-                                          child: Text(
-                                              value.status == '0'
-                                                  ? 'Success'
-                                                  : value.status == '1'
-                                                      ? 'Rejected'
-                                                      : 'Pending',
-                                              overflow: TextOverflow.ellipsis,
-                                              maxLines: 1,
-                                              style: textStyle(
+                          //           Padding(
+                          //             padding: const EdgeInsets.only(
+                          //                 left: 16.0, top: 8.0),
+                          //             child: Row(
+                          //               mainAxisAlignment:
+                          //                   MainAxisAlignment.spaceBetween,
+                          //               children: [
+                          //                 Row(
+                          //                   children: [
+                          //                     // TextWidget.captionText(
+                          //                     //     text: ((value.reqid).toString())
+                          //                     //         .substring(
+                          //                     //             0,
+                          //                     //             (value.reqid)
+                          //                     //                     .toString()
+                          //                     //                     .length -
+                          //                     //                 4),
+                          //                     //     color: theme.isDarkMode
+                          //                     //         ? colors.colorWhite
+                          //                     //         : colors.colorBlack,
+                          //                     //     textOverflow:
+                          //                     //         TextOverflow.ellipsis,
+                          //                     //     theme: theme.isDarkMode,
+                          //                     //     fw: 1),
+                          //                     // TextWidget.subText(
+                          //                     //     text: ((value.reqid).toString())
+                          //                     //         .substring((value.reqid)
+                          //                     //                 .toString()
+                          //                     //                 .length -
+                          //                     //             4),
+                          //                     //     color: theme.isDarkMode
+                          //                     //         ? colors.colorWhite
+                          //                     //         : colors.colorBlack,
+                          //                     //     textOverflow:
+                          //                     //         TextOverflow.ellipsis,
+                          //                     //     theme: theme.isDarkMode,
+                          //                     //     fw: 1),
+                          //                       TextWidget.subText(
+                          //                         text: ((value.reqid).toString()),
+                          //                         color: theme.isDarkMode
+                          //                             ? colors.colorWhite
+                          //                             : colors.colorBlack,
+                          //                         textOverflow:
+                          //                             TextOverflow.ellipsis,
+                          //                         theme: theme.isDarkMode,
+                          //                         fw: 3),
+                          //                   ],
+                          //                 ),
+                          //                 Padding(
+                          //                   padding:
+                          //                       const EdgeInsets.only(right: 16.0),
+                          //                   child: Container(
+                          //                     margin:
+                          //                         const EdgeInsets.only(right: 4),
+                          //                     padding: const EdgeInsets.symmetric(
+                          //                         horizontal: 6, vertical: 3),
+                          //                     decoration: BoxDecoration(
+                          //                       borderRadius:
+                          //                           BorderRadius.circular(2),
+                          //                       color: value.status == 'completed'
+                          //                           ? const Color.fromARGB(
+                          //                                   255, 177, 255, 208)
+                          //                               .withOpacity(.3)
+                          //                           : const Color(0xffF6F6C5),
+                          //                     ),
+                          //                     child: Text(
+                          //                         value.status == 'completed'
+                          //                             ? 'Completed'
+                          //                             : 'Requested',
+                          //                         overflow: TextOverflow.ellipsis,
+                          //                         maxLines: 1,
+                          //                         style: textStyle(
+                          //                             value.status == 'completed'
+                          //                                 ? const Color.fromARGB(
+                          //                                     193, 68, 168, 53)
+                          //                                 : const Color(0xffF9B039),
+                          //                             10,
+                          //                             FontWeight.w500)),
+                          //                   ),
+                          //                 ),
+                          //               ],
+                          //             ),
+                          //           ),
+                          //            SizedBox(height: 10),
+                          //           Padding(
+                          //             padding: const EdgeInsets.only(
+                          //                 top: 2.0, left: 14.0, bottom: 4.0),
+                          //             child: Row(
+                          //               mainAxisAlignment:
+                          //                   MainAxisAlignment.spaceBetween,
+                          //               children: [
+                          //                 Padding(
+                          //                   padding:
+                          //                       const EdgeInsets.only(right: 16.0),
+                          //                   child: Row(
+                          //                     children: [
+                          //                       TextWidget.paraText(
+                          //                           align: TextAlign.right,
+                          //                           text: "Req : ",
+                          //                           color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                          //                           textOverflow:
+                          //                               TextOverflow.ellipsis,
+                          //                           theme: theme.isDarkMode,
+                          //                           fw: 3),
+                          //                       Row(
+                          //                         children: [
+                          //                           TextWidget.paraText(
+                          //                               align: TextAlign.right,
+                          //                               text: " ${value.datTim}",
+                          //                               color: theme.isDarkMode
+                          //                                   ? colors.textPrimaryDark
+                          //                                   : colors.textPrimaryLight,
+                          //                               textOverflow:
+                          //                                   TextOverflow.ellipsis,
+                          //                               theme: theme.isDarkMode,
+                          //                               fw: 3),
+                          //                           // TextWidget.captionText(
+                          //                           //     align: TextAlign.right,
+                          //                           //     text:
+                          //                           //         " ${value.cdslReqTime!.split(" ")[0]  }",
+                          //                           //     color: theme.isDarkMode
+                          //                           //         ? colors.colorWhite
+                          //                           //         : colors.colorBlack,
+                          //                           //     textOverflow:
+                          //                           //         TextOverflow.ellipsis,
+                          //                           //     theme: theme.isDarkMode,
+                          //                           //     fw: 0),
+                          //                         ],
+                          //                       ),
+                          //                     ],
+                          //                   ),
+                          //                 ),
+                          //               ],
+                          //             ),
+                          //           ),
+                          //           Padding(
+                          //             padding: const EdgeInsets.only(
+                          //                 top: 2.0, left: 14.0, bottom: 4.0),
+                          //             child: Row(
+                          //               mainAxisAlignment:
+                          //                   MainAxisAlignment.spaceBetween,
+                          //               children: [
+                          //                 Padding(
+                          //                   padding:
+                          //                       const EdgeInsets.only(right: 16.0),
+                          //                   child: Row(
+                          //                     children: [
+                          //                       TextWidget.paraText(
+                          //                           align: TextAlign.right,
+                          //                           text: "Res : ",
+                          //                           color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                          //                           textOverflow:
+                          //                               TextOverflow.ellipsis,
+                          //                           theme: theme.isDarkMode,
+                          //                           fw: 3),
+                          //                       Row(
+                          //                         children: [
+                          //                           TextWidget.paraText(
+                          //                               align: TextAlign.right,
+                          //                               text:
+                          //                                   " ${value.cdslReqTime}",
+                          //                              color: theme.isDarkMode
+                          //                                   ? colors.textPrimaryDark
+                          //                                   : colors.textPrimaryLight,
+                          //                               textOverflow:
+                          //                                   TextOverflow.ellipsis,
+                          //                               theme: theme.isDarkMode,
+                          //                               fw: 3),
+
+                          //                           // TextWidget.captionText(
+                          //                           //     align: TextAlign.right,
+                          //                           //     text:
+                          //                           //         " ${value.datTim  }",
+                          //                           //     color: theme.isDarkMode
+                          //                           //         ? colors.colorWhite
+                          //                           //         : colors.colorBlack,
+                          //                           //     textOverflow:
+                          //                           //         TextOverflow.ellipsis,
+                          //                           //     theme: theme.isDarkMode,
+                          //                           //     fw: 0),
+                          //                         ],
+                          //                       ),
+                          //                     ],
+                          //                   ),
+                          //                 ),
+                          //               ],
+                          //             ),
+                          //           ),
+                          //         ],
+                          //       ),
+                          //     );
+                          //   },
+                          //   separatorBuilder: (BuildContext context, int index) {
+                          //     // if (index != 0 &&
+                          //     //     ledgerprovider.ledgerAllData!.fullStat![index - 1]
+                          //     //             .vOUCHERDATE ==
+                          //     //         ledgerprovider.ledgerAllData!
+                          //     //             .fullStat![index ].vOUCHERDATE) {
+                          //     return Padding(
+                          //       padding: const EdgeInsets.only(
+                          //         top: 2.0,
+                          //         bottom: 0.0,
+                          //       ),
+                          //       child: Divider(
+                          //         color: theme.isDarkMode
+                          //             ? const Color(0xffB5C0CF).withOpacity(.15)
+                          //             : const Color(0xffF1F3F8),
+                          //         thickness: 1.0,
+                          //       ),
+                          //     );
+                          //     // }else{
+                          //     // return SizedBox();
+                          //     // }
+                          //   },
+                          // ),
+                          ListView.separated(
+                        physics: ScrollPhysics(),
+                        itemCount: ledgerprovider.historyalterlist.length,
+                        shrinkWrap: true,
+                        itemBuilder: (context, index) {
+                          final value = ledgerprovider.historyalterlist[index];
+                          return Column(
+                            children: [
+                              Padding(
+                                padding:
+                                    const EdgeInsets.only(left: 16.0, top: 8.0),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Row(
+                                          children: [
+                                            TextWidget.subText(
+                                              text: "${value.symbol}",
+                                              color: theme.isDarkMode
+                                                  ? colors.textPrimaryDark
+                                                  : colors.textPrimaryLight,
+                                              textOverflow:
+                                                  TextOverflow.ellipsis,
+                                              theme: theme.isDarkMode,
+                                            ),
+                                            SizedBox(width: 8),
+                                            Container(
+                                              
+                                            padding:
+                                                                  const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                                              decoration: BoxDecoration(
+                                                borderRadius:
+                                                    BorderRadius.circular(4),
+                                                color: value.status == '0'
+                                                    ?  theme.isDarkMode ? colors.profitDark.withOpacity(0.1) : colors.profitLight.withOpacity(0.1)
+                                                    : value.status == '1'
+                                                        ?  theme.isDarkMode ? colors.lossDark.withOpacity(0.1) : colors.lossLight.withOpacity(0.1)
+                                                        :  theme.isDarkMode ? colors.pending.withOpacity(0.1) : colors.pending.withOpacity(0.1),
+                                              ),
+                                              child: Text(
                                                   value.status == '0'
-                                                      ? const Color.fromARGB(
-                                                          193, 68, 168, 53)
+                                                      ? 'Success'
                                                       : value.status == '1'
-                                                          ? const Color
-                                                              .fromARGB(
-                                                              193, 187, 41, 41)
-                                                          : const Color(
-                                                              0xffF9B039),
-                                                  10,
-                                                  FontWeight.w600)),
+                                                          ? 'Rejected'
+                                                          : 'Pending',
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  maxLines: 1,
+                                                  style: textStyle(
+                                                      value.status == '0'
+                                                          ?  theme.isDarkMode ? colors.profitDark : colors.profitLight
+                                                          : value.status ==
+                                                                  '1'
+                                                              ?  theme.isDarkMode ? colors.lossDark : colors.lossLight
+                                                              :  theme.isDarkMode ? colors.pending : colors.pending,
+                                                      12,
+                                                      FontWeight.w500)),
+                                            ),
+                                            // TextWidget.captionText(
+                                            // text: "${value.reqid}",
+                                            // color: theme.isDarkMode
+                                            //     ? colors.colorWhite
+                                            //     : colors.colorBlack,
+                                            // textOverflow:
+                                            //     TextOverflow.ellipsis,
+                                            // theme: theme.isDarkMode,
+                                            // fw: 0),
+                                          ],
                                         ),
-                                      ),
-                                                  // TextWidget.captionText(
-                                                  // text: "${value.reqid}",
-                                                  // color: theme.isDarkMode
-                                                  //     ? colors.colorWhite
-                                                  //     : colors.colorBlack,
-                                                  // textOverflow:
-                                                  //     TextOverflow.ellipsis,
-                                                  // theme: theme.isDarkMode,
-                                                  // fw: 0),
-                                            ],
-                                          ),
+                                      ],
+                                    ),
+                                    Padding(
+                                      padding:
+                                          const EdgeInsets.only(right: 16.0),
+                                      child: TextWidget.subText(
+                                          align: TextAlign.right,
+                                          text:
+                                              " ${value.datetime.split(' ')[0]}",
+                                          color: theme.isDarkMode
+                                              ? colors.textPrimaryDark
+                                              : colors.textPrimaryLight,
+                                          textOverflow: TextOverflow.ellipsis,
+                                          theme: theme.isDarkMode,
+                                          fw: 3),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              // Padding(
+                              //   padding: const EdgeInsets.only(
+                              //       top: 6.0, left: 14.0,  ),
+                              //   child: Row(
+                              //     mainAxisAlignment:
+                              //         MainAxisAlignment.spaceBetween,
+                              //     children: [
+                              //       Padding(
+                              //         padding:
+                              //             const EdgeInsets.only(right: 16.0),
+                              //         child: Row(
+
+                              //           children: [
+
+                              //             TextWidget.captionText(
+                              //                 align: TextAlign.right,
+                              //                 text: " ${value.reqid}",
+                              //                      color: theme.isDarkMode
+                              //                     ? colors.textPrimaryDark
+                              //                     : colors.textPrimaryLight,
+                              //                 textOverflow:
+                              //                     TextOverflow.ellipsis,
+                              //                 theme: theme.isDarkMode,
+                              //                 fw: 3),
+                              //           ],
+                              //         ),
+                              //       ),
+                              //       Padding(
+                              //         padding:
+                              //             const EdgeInsets.only(right: 16.0),
+                              //         child: Row(
+
+                              //           children: [
+
+                              //             TextWidget.captionText(
+                              //                 align: TextAlign.right,
+                              //                 text: " ${value.datetime}",
+                              //                      color: theme.isDarkMode
+                              //                     ? colors.textPrimaryDark
+                              //                     : colors.textPrimaryLight,
+                              //                 textOverflow:
+                              //                     TextOverflow.ellipsis,
+                              //                 theme: theme.isDarkMode,
+                              //                 fw: 3),
+                              //           ],
+                              //         ),
+                              //       ),
+
+                              //     ],
+                              //   ),
+                              // ),
+                              // Padding(
+                              //   padding: const EdgeInsets.only(
+                              //       top: 8.0, left: 14.0,  ),
+                              //   child: Row(
+                              //     mainAxisAlignment:
+                              //         MainAxisAlignment.spaceBetween,
+                              //     children: [
+                              //       Padding(
+                              //         padding:
+                              //             const EdgeInsets.only(right: 16.0),
+                              //         child: Row(
+                              //           children: [
+                              //             TextWidget.paraText(
+                              //                 align: TextAlign.right,
+                              //                 text: "ISIN : ",
+                              //                 color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                              //                 textOverflow:
+                              //                     TextOverflow.ellipsis,
+                              //                 theme: theme.isDarkMode,
+                              //                 fw: 3),
+                              //             TextWidget.paraText(
+                              //                 align: TextAlign.right,
+                              //                 text: " ${value.isin}",
+                              //                      color: theme.isDarkMode
+                              //                     ? colors.textPrimaryDark
+                              //                     : colors.textPrimaryLight,
+                              //                 textOverflow:
+                              //                     TextOverflow.ellipsis,
+                              //                 theme: theme.isDarkMode,
+                              //                 fw: 3),
+                              //           ],
+                              //         ),
+                              //       ),
+                              //       Padding(
+                              //         padding:
+                              //             const EdgeInsets.only(right: 16.0),
+                              //         child: Row(
+                              //           children: [
+                              //             TextWidget.paraText(
+                              //                 align: TextAlign.right,
+                              //                 text: "Req ID : ",
+                              //                 color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                              //                 textOverflow:
+                              //                     TextOverflow.ellipsis,
+                              //                 theme: theme.isDarkMode,
+                              //                 fw: 3),
+                              //             TextWidget.paraText(
+                              //                 align: TextAlign.right,
+                              //                 text: " ${value.isinreqid}",
+                              //                     color: theme.isDarkMode
+                              //                     ? colors.textPrimaryDark
+                              //                     : colors.textPrimaryLight,
+                              //                 textOverflow:
+                              //                     TextOverflow.ellipsis,
+                              //                 theme: theme.isDarkMode,
+                              //                 fw: 3),
+                              //           ],
+                              //         ),
+                              //       ),
+                              //     ],
+                              //   ),
+                              // ),
+                              Padding(
+                                padding:
+                                    const EdgeInsets.only(top: 8.0, left: 14.0),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Padding(
+                                      padding:
+                                          const EdgeInsets.only(right: 16.0),
+                                      child: Row(
+                                        children: [
+                                          // TextWidget.paraText(
+                                          //     align: TextAlign.right,
+                                          //     text: "Qty : ",
+                                          //     color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                                          //     textOverflow:
+                                          //         TextOverflow.ellipsis,
+                                          //     theme: theme.isDarkMode,
+                                          //     fw: 3),
+                                          TextWidget.paraText(
+                                              align: TextAlign.right,
+                                              text: " ${value.quantity} Qty",
+                                              color: theme.isDarkMode
+                                                  ? colors.textSecondaryDark
+                                                  : colors.textSecondaryLight,
+                                              textOverflow:
+                                                  TextOverflow.ellipsis,
+                                              theme: theme.isDarkMode,
+                                              fw: 3),
                                         ],
                                       ),
-                                      Padding(
-                                        padding: const EdgeInsets.only(right : 16.0),
-                                        child: TextWidget.paraText(
-                                                  align: TextAlign.right,
-                                                  text: " ${value.datetime.split(' ')[0]}",
-                                                       color: theme.isDarkMode
-                                                      ? colors.textPrimaryDark
-                                                      : colors.textPrimaryLight,
-                                                  textOverflow:
-                                                      TextOverflow.ellipsis,
-                                                  theme: theme.isDarkMode,
-                                                  fw: 3),
+                                    ),
+                                    Padding(
+                                      padding:
+                                          const EdgeInsets.only(right: 16.0),
+                                      child: Row(
+                                        children: [
+                                          TextWidget.paraText(
+                                              align: TextAlign.right,
+                                              text:
+                                                  " ${value.datetime.split(' ')[1]}",
+                                              color: theme.isDarkMode
+                                                  ? colors.textSecondaryDark
+                                                  : colors.textSecondaryLight,
+                                              textOverflow:
+                                                  TextOverflow.ellipsis,
+                                              theme: theme.isDarkMode,
+                                              fw: 3),
+                                        ],
                                       ),
-                                    ],
-                                  ),
+                                    ),
+                                    // Padding(
+                                    //   padding:
+                                    //       const EdgeInsets.only(right: 16.0),
+                                    //   child: Row(
+                                    //     children: [
+                                    //       TextWidget.paraText(
+                                    //           align: TextAlign.right,
+                                    //           text: "Seg : ",
+                                    //           color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                                    //           textOverflow:
+                                    //               TextOverflow.ellipsis,
+                                    //           theme: theme.isDarkMode,
+                                    //           fw: 3),
+                                    //       Row(
+                                    //         children: [
+                                    //           TextWidget.paraText(
+                                    //               align: TextAlign.right,
+                                    //               text: " ${value.segments}",
+                                    //                   color: theme.isDarkMode
+                                    //               ? colors.textPrimaryDark
+                                    //               : colors.textPrimaryLight,
+                                    //               textOverflow:
+                                    //                   TextOverflow.ellipsis,
+                                    //               theme: theme.isDarkMode,
+                                    //               fw: 3),
+                                    //         ],
+                                    //       ),
+                                    //     ],
+                                    //   ),
+                                    // ),
+                                  ],
                                 ),
-                                // Padding(
-                                //   padding: const EdgeInsets.only(
-                                //       top: 6.0, left: 14.0,  ),
-                                //   child: Row(
-                                //     mainAxisAlignment:
-                                //         MainAxisAlignment.spaceBetween,
-                                //     children: [
-                                //       Padding(
-                                //         padding:
-                                //             const EdgeInsets.only(right: 16.0),
-                                //         child: Row(
-                                          
-                                //           children: [
-                                             
-                                //             TextWidget.captionText(
-                                //                 align: TextAlign.right,
-                                //                 text: " ${value.reqid}",
-                                //                      color: theme.isDarkMode
-                                //                     ? colors.textPrimaryDark
-                                //                     : colors.textPrimaryLight,
-                                //                 textOverflow:
-                                //                     TextOverflow.ellipsis,
-                                //                 theme: theme.isDarkMode,
-                                //                 fw: 3),
-                                //           ],
-                                //         ),
-                                //       ),
-                                //       Padding(
-                                //         padding:
-                                //             const EdgeInsets.only(right: 16.0),
-                                //         child: Row(
-                                           
-                                //           children: [
-                                             
-                                //             TextWidget.captionText(
-                                //                 align: TextAlign.right,
-                                //                 text: " ${value.datetime}",
-                                //                      color: theme.isDarkMode
-                                //                     ? colors.textPrimaryDark
-                                //                     : colors.textPrimaryLight,
-                                //                 textOverflow:
-                                //                     TextOverflow.ellipsis,
-                                //                 theme: theme.isDarkMode,
-                                //                 fw: 3),
-                                //           ],
-                                //         ),
-                                //       ),
-                                      
-                                //     ],
-                                //   ),
-                                // ),
-                                // Padding(
-                                //   padding: const EdgeInsets.only(
-                                //       top: 8.0, left: 14.0,  ),
-                                //   child: Row(
-                                //     mainAxisAlignment:
-                                //         MainAxisAlignment.spaceBetween,
-                                //     children: [
-                                //       Padding(
-                                //         padding:
-                                //             const EdgeInsets.only(right: 16.0),
-                                //         child: Row(
-                                //           children: [
-                                //             TextWidget.paraText(
-                                //                 align: TextAlign.right,
-                                //                 text: "ISIN : ",
-                                //                 color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                                //                 textOverflow:
-                                //                     TextOverflow.ellipsis,
-                                //                 theme: theme.isDarkMode,
-                                //                 fw: 3),
-                                //             TextWidget.paraText(
-                                //                 align: TextAlign.right,
-                                //                 text: " ${value.isin}",
-                                //                      color: theme.isDarkMode
-                                //                     ? colors.textPrimaryDark
-                                //                     : colors.textPrimaryLight,
-                                //                 textOverflow:
-                                //                     TextOverflow.ellipsis,
-                                //                 theme: theme.isDarkMode,
-                                //                 fw: 3),
-                                //           ],
-                                //         ),
-                                //       ),
-                                //       Padding(
-                                //         padding:
-                                //             const EdgeInsets.only(right: 16.0),
-                                //         child: Row(
-                                //           children: [
-                                //             TextWidget.paraText(
-                                //                 align: TextAlign.right,
-                                //                 text: "Req ID : ",
-                                //                 color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                                //                 textOverflow:
-                                //                     TextOverflow.ellipsis,
-                                //                 theme: theme.isDarkMode,
-                                //                 fw: 3),
-                                //             TextWidget.paraText(
-                                //                 align: TextAlign.right,
-                                //                 text: " ${value.isinreqid}",
-                                //                     color: theme.isDarkMode
-                                //                     ? colors.textPrimaryDark
-                                //                     : colors.textPrimaryLight,
-                                //                 textOverflow:
-                                //                     TextOverflow.ellipsis,
-                                //                 theme: theme.isDarkMode,
-                                //                 fw: 3),
-                                //           ],
-                                //         ),
-                                //       ),
-                                //     ],
-                                //   ),
-                                // ),
-                                Padding(
-                                  padding: const EdgeInsets.only(
-                                      top: 8.0, left: 14.0),
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Padding(
-                                        padding:
-                                            const EdgeInsets.only(right: 16.0),
-                                        child: Row(
-                                          children: [
-                                            // TextWidget.paraText(
-                                            //     align: TextAlign.right,
-                                            //     text: "Qty : ",
-                                            //     color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                                            //     textOverflow:
-                                            //         TextOverflow.ellipsis,
-                                            //     theme: theme.isDarkMode,
-                                            //     fw: 3),
-                                            TextWidget.paraText(
-                                                align: TextAlign.right,
-                                                text: " ${value.quantity} Qty",
-                                                color: theme.isDarkMode
-                                                    ? colors.textPrimaryDark
-                                                    : colors.textPrimaryLight,
-                                                textOverflow:
-                                                    TextOverflow.ellipsis,
-                                                theme: theme.isDarkMode,
-                                                fw: 3),
-                                          ],
-                                        ),
-                                      ),
-                                      Padding(
-                                        padding:
-                                            const EdgeInsets.only(right: 16.0),
-                                        child: Row(
-                                           
-                                          children: [
-                                             
-                                            TextWidget.captionText(
-                                                align: TextAlign.right,
-                                                text: " ${value.datetime.split(' ')[1]}",
-                                                     color: theme.isDarkMode
-                                                    ? colors.textPrimaryDark
-                                                    : colors.textPrimaryLight,
-                                                textOverflow:
-                                                    TextOverflow.ellipsis,
-                                                theme: theme.isDarkMode,
-                                                fw: 3),
-                                          ],
-                                        ),
-                                      ),
-                                      // Padding(
-                                      //   padding:
-                                      //       const EdgeInsets.only(right: 16.0),
-                                      //   child: Row(
-                                      //     children: [
-                                      //       TextWidget.paraText(
-                                      //           align: TextAlign.right,
-                                      //           text: "Seg : ",
-                                      //           color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                                      //           textOverflow:
-                                      //               TextOverflow.ellipsis,
-                                      //           theme: theme.isDarkMode,
-                                      //           fw: 3),
-                                      //       Row(
-                                      //         children: [
-                                      //           TextWidget.paraText(
-                                      //               align: TextAlign.right,
-                                      //               text: " ${value.segments}",
-                                      //                   color: theme.isDarkMode
-                                      //               ? colors.textPrimaryDark
-                                      //               : colors.textPrimaryLight,
-                                      //               textOverflow:
-                                      //                   TextOverflow.ellipsis,
-                                      //               theme: theme.isDarkMode,
-                                      //               fw: 3),
-                                      //         ],
-                                      //       ),
-                                      //     ],
-                                      //   ),
-                                      // ),
-                                      
-                                    ],
-                                  ),
-                                ),
-                                
-                              ],
-                            );
-                          },
-                          separatorBuilder: (BuildContext context, int index) {
-                            // if (index != 0 &&
-                            //     ledgerdata.ledgerAllData!.fullStat![index - 1]
-                            //             .vOUCHERDATE ==
-                            //         ledgerdata.ledgerAllData!
-                            //             .fullStat![index ].vOUCHERDATE) {
-                            return Padding(
-                              padding: const EdgeInsets.only(
-                                top: 8.0,
-                                bottom: 0.0,
                               ),
-                              child: Divider(
-                                color: theme.isDarkMode
-                                    ? const Color(0xffB5C0CF).withOpacity(.15)
-                                    : const Color(0xffF1F3F8),
-                                thickness: 1.0,
-                              ),
-                            );
-                            // }else{
-                            // return SizedBox();
-                            // }
-                          },
-                        ),
+                            ],
+                          );
+                        },
+                        separatorBuilder: (BuildContext context, int index) {
+                          // if (index != 0 &&
+                          //     ledgerdata.ledgerAllData!.fullStat![index - 1]
+                          //             .vOUCHERDATE ==
+                          //         ledgerdata.ledgerAllData!
+                          //             .fullStat![index ].vOUCHERDATE) {
+                          return Padding(
+                            padding: const EdgeInsets.only(
+                              top: 8.0,
+                              bottom: 0.0,
+                            ),
+                            child: Divider(
+        thickness: 0,
+        color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+        height: 0)
+                          );
+                          // }else{
+                          // return SizedBox();
+                          // }
+                        },
+                      ),
                     ),
                   ),
             SizedBox(height: 4.0),

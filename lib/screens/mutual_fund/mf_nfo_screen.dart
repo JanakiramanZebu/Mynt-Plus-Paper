@@ -35,14 +35,19 @@ class MFNFOScreen extends ConsumerWidget {
           leading: const CustomBackBtn(),
           title: TextWidget.titleText(
             text: "New Fund Offer",
+            color: theme.isDarkMode
+                ? colors.textPrimaryDark
+                : colors.textPrimaryLight,
             theme: theme.isDarkMode,
             fw: 1,
           ),
         ),
       ),
-      body: TransparentLoaderScreen(
-        isLoading: mf.investloader,
-        child: _buildContent(context, mf, theme, ref, fund),
+      body: SafeArea(
+        child: TransparentLoaderScreen(
+          isLoading: mf.investloader,
+          child: _buildContent(context, mf, theme, ref, fund),
+        ),
       ),
     );
   }
@@ -75,7 +80,13 @@ class MFNFOScreen extends ConsumerWidget {
                           schemeCode != null)) {
                         mf.invertfun(isin, schemeCode, context);
                       }
-                      mf.invAmt.text = "${nfoItem.minimumPurchaseAmount}";
+                      if (mf.mfOrderTpye == "One-time") {
+                        String amt = nfoItem.minimumPurchaseAmount ?? "0";
+                        mf.invAmt.text = amt.split('.').first;
+                      } else {
+                        String amt = nfoItem.minimumPurchaseAmount ?? "0";
+                        mf.installmentAmt.text = amt.split('.').first;
+                      }
                       fund.fetchFunds(context);
                       ref.read(transcationProvider).initialdata(context);
 

@@ -85,8 +85,8 @@ class _CloseOrderItem extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            _buildTopRow(),
-            const SizedBox(height: 16),
+            _buildTopRow(context),
+            const SizedBox(height: 8),
             _buildBottomRow(),
           ],
         ),
@@ -94,23 +94,24 @@ class _CloseOrderItem extends StatelessWidget {
     );
   }
 
-  Widget _buildTopRow() {
+  Widget _buildTopRow(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         SizedBox(
-          width: 250,
+          width: MediaQuery.of(context).size.width * 0.6,
           child: TextWidget.subText(
             text: order.companyName.toString(),
             theme: false,
             color: theme.isDarkMode
                 ? colors.textPrimaryDark
                 : colors.textPrimaryLight,
+            maxLines: 2,
             textOverflow: TextOverflow.ellipsis,
           ),
         ),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
           decoration: BoxDecoration(
             color: order.reponseStatus == "cancel success"
                 ? colors.pending.withOpacity(0.1)
@@ -119,12 +120,12 @@ class _CloseOrderItem extends StatelessWidget {
                     : colors.lossLight.withOpacity(0.1),
             borderRadius: BorderRadius.circular(5),
           ),
-          child: TextWidget.subText(
+          child: TextWidget.paraText(
             text: order.reponseStatus == "cancel success"
                 ? "Cancelled"
                 : "Failed",
             theme: false,
-            fw: 0,
+            fw: 3,
             color: order.reponseStatus == "cancel success"
                 ? theme.isDarkMode
                     ? colors.pending
@@ -152,7 +153,7 @@ class _CloseOrderItem extends StatelessWidget {
               ? colors.textSecondaryDark
               : colors.textSecondaryLight,
         ),
-        TextWidget.paraText(
+        TextWidget.subText(
           text: _getInvestedAmount(),
           theme: false,
           fw: 3,

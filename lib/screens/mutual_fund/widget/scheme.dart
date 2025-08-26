@@ -67,7 +67,7 @@ class MFSchemeInfo extends ConsumerWidget {
                     CircleAvatar(
                         maxRadius: 24,
                         backgroundImage: NetworkImage(
-                            "https://v3.mynt.in/mfapi/static/images/manager/${factSheetData.fundManager?.toLowerCase().trim() ?? "default"}.png")),
+                            "https://v3.mynt.in/mfapi/get-image/manager/${factSheetData.fundManager?.toLowerCase().trim() ?? "default"}.png")),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Column(
@@ -159,8 +159,8 @@ class MFSchemeInfo extends ConsumerWidget {
                 ReadMoreText(factSheetData.managerDetailedDescription ?? "",
                     style: TextWidget.textStyle(
                            color : isDarkMode
-                                ? colors.colorWhite
-                                : const Color(0xff666666),
+                                  ? colors.textSecondaryDark
+                                  : colors.textSecondaryLight,
                            fontSize: 12,
                            theme: false,
                            height: 1.2
@@ -172,13 +172,13 @@ class MFSchemeInfo extends ConsumerWidget {
                       color: colors.primaryLight,
                       fontSize: 12,
                       theme: false,
-                      fw:0
+                      fw:2
                     ),
                     lessStyle: TextWidget.textStyle(
                       color: colors.primaryLight,
                       fontSize: 12,
                       theme: false,
-                      fw:0
+                      fw:2
                     ),
                     colorClickableText: const Color(0xff0037B7),
                     trimMode: TrimMode.Line,

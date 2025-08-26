@@ -40,41 +40,7 @@ class _UPIIDPaymentCancelAlertState
     final mfProv = ref.read(mfProvider);
     final txnProv = ref.read(transcationProvider);
 
-    if (mfProv.triggerfromMF == true) {
-      _timer = Timer.periodic(const Duration(seconds: 3), (timer) async {
-        await mfProv.getpaymentstatus(
-            widget.data, context); // Use await if async
-
-        final status = mfProv.statusCheckUpi?.status;
-        if (status == 'PAYMENT REJECTED' || status == 'PAYMENT COMPLETED') {
-          _timer?.cancel(); // This is safe even if already cancelled
-          _autoPopTimer?.cancel(); // Cancel auto-pop if running
-
-          mfProv.setterformftrigger(false);
-          ref.read(mfProvider).IsPaymentCalled(false);
-
-          if (Navigator.of(context).canPop()) {
-            Navigator.of(context).pop();
-          }
-          ScaffoldMessenger.of(context).showSnackBar(
-                warningMessage(context, '$status'));
-          }
-        
-      });
-
-      _autoPopTimer = Timer(const Duration(minutes: 3), () {
-        _timer?.cancel(); // Also stop periodic timer here as a fallback
-        mfProv.setterformftrigger(false);
-        ref.read(mfProvider).IsPaymentCalled(false);
-
-        if (Navigator.of(context).canPop()) {
-          Navigator.of(context).pop();
-          ScaffoldMessenger.of(context).showSnackBar(
-                warningMessage(context, 'Timeout try again'));
-          
-        }
-      });
-    } else {
+      
       _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
         final status = txnProv.hdfcpaymentstatus?.upiId?.status;
         if (status != "REJECTED" || status != "SUCCESS") {
@@ -85,7 +51,7 @@ class _UPIIDPaymentCancelAlertState
           );
         }
       });
-    }
+    
   }
 
   @override
@@ -97,19 +63,13 @@ class _UPIIDPaymentCancelAlertState
 
   void _triggerButtonAction() {
     // Clear the amount text field
-    if (ref.read(mfProvider).triggerfromMF == true) {
-      ref.read(mfProvider).setterformftrigger(false);
-      _timer?.cancel(); // This is safe even if already cancelled
-          _autoPopTimer?.cancel();
-      Navigator.pop(context);
-      ref.read(mfProvider).IsPaymentCalled(false);
-    } else {
+      
       ref.read(transcationProvider).amount.clear();
       Navigator.pop(context);
       _timer?.cancel();
       FocusScope.of(context).unfocus();
       ref.read(mfProvider).IsPaymentCalled(false);
-    }
+     
   }
 
   @override
@@ -122,71 +82,96 @@ class _UPIIDPaymentCancelAlertState
         onPopInvokedWithResult: (didPop, result) {
           if (didPop) return; // If system handled back, do nothing
         },
-        child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-            ),
-            child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const CustomDragHandler(),
-                  const SizedBox(height: 10),
-                  Container(
-                    padding: const EdgeInsets.only(top: 10, bottom: 5),
-                    alignment: Alignment.center,
-                    child: TextWidget.subText(
-                      text: 'Awaiting UPI conformation',
-                      theme: false,
-                      color: theme.isDarkMode
-                          ? colors.textPrimaryDark
-                          : colors.textPrimaryLight,
+        child: SafeArea(
+          child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              decoration: BoxDecoration(
+                 borderRadius: const BorderRadius.only(
+      topLeft: Radius.circular(16),
+      topRight: Radius.circular(16),
+    ),
+         color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+         border: Border(
+                                  top: BorderSide(
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                            .withOpacity(0.5)
+                                        : colors.colorWhite,
+                                  ),
+                                  left: BorderSide(
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                            .withOpacity(0.5)
+                                        : colors.colorWhite,
+                                  ),
+                                  right: BorderSide(
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                            .withOpacity(0.5)
+                                        : colors.colorWhite,
+                                  ),
+                                ),
+              ),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const CustomDragHandler(),
+                    const SizedBox(height: 10),
+                    Container(
+                      padding: const EdgeInsets.only(top: 10, bottom: 5),
+                      alignment: Alignment.center,
+                      child: TextWidget.subText(
+                        text: 'Awaiting UPI conformation',
+                        theme: false,
+                        color: theme.isDarkMode
+                            ? colors.textPrimaryDark
+                            : colors.textPrimaryLight,
+                      ),
                     ),
-                  ),
-                  SizedBox(
-                      width: MediaQuery.of(context).size.width,
-                      child: Column(children: [
-                        // const ListDivider(),
-                        const SizedBox(height: 3),
-                        const ProgressiveDotsLoader(),
-                        const SizedBox(height: 3),
-                        TextWidget.subText(
-                          text: 'This will take a few seconds.',
-                          theme: false,
-                          color: colors.textPrimaryLight,
-                        ),
-                      ])),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    child: SizedBox(
+                    SizedBox(
                         width: MediaQuery.of(context).size.width,
-                        child: ElevatedButton(
-                            onPressed: _triggerButtonAction,
-                            style: ElevatedButton.styleFrom(
-                              elevation: 0,
-                              minimumSize: const Size(0, 45),
-                              backgroundColor: theme.isDarkMode
-                                  ? colors.primaryDark
-                                  : colors.primaryLight,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(5),
+                        child: Column(children: [
+                          // const ListDivider(),
+                          const SizedBox(height: 3),
+                          const ProgressiveDotsLoader(),
+                          const SizedBox(height: 3),
+                          TextWidget.subText(
+                            text: 'This will take a few seconds.',
+                            theme: false,
+                            color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                          ),
+                        ])),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: SizedBox(
+                          width: MediaQuery.of(context).size.width,
+                          child: ElevatedButton(
+                              onPressed: _triggerButtonAction,
+                              style: ElevatedButton.styleFrom(
+                                elevation: 0,
+                                minimumSize: const Size(0, 45),
+                                backgroundColor: theme.isDarkMode
+                                    ? colors.primaryDark
+                                    : colors.primaryLight,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(5),
+                                ),
                               ),
-                            ),
-                            child: TextWidget.subText(
-                                text: "Cancel Transaction",
-                                theme: false,
-                                color: colors.colorWhite,
-                                fw: 2))),
-                  ),
-                  SizedBox(
-                    height: 10,
-                  )
-                ])));
+                              child: TextWidget.subText(
+                                  text: "Cancel Transaction",
+                                  theme: false,
+                                  color: colors.colorWhite,
+                                  fw: 2))),
+                    ),
+                    SizedBox(
+                      height: 10,
+                    )
+                  ])),
+        ));
   }
 }

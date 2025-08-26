@@ -180,7 +180,7 @@ class _ForgotPassUnblockUserState extends State<ForgotPassUnblockUser> {
                               ],
                               decoration: InputDecoration(
                                 filled: true,
-                                fillColor: const Color(0xffFFFFFF),
+                                fillColor: !theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
                                 labelText: "Mobile / Client ID",
 
                                 floatingLabelBehavior:
@@ -200,13 +200,13 @@ class _ForgotPassUnblockUserState extends State<ForgotPassUnblockUser> {
                                         ? colors.colorWhite
                                         : colors.colorBlack,
                                     fw: 3),
-                                enabledBorder: const UnderlineInputBorder(
+                                enabledBorder:  UnderlineInputBorder(
                                   borderSide: BorderSide(
-                                      color: Color(0xFFDBDBDB), width: 1),
+                                       color: theme.isDarkMode ? colors.textSecondaryDark.withOpacity(0.2) :  Color(0xffDBDBDB), width: 1),
                                 ),
-                                focusedBorder: const UnderlineInputBorder(
+                                focusedBorder:  UnderlineInputBorder(
                                   borderSide: BorderSide(
-                                      color: Color(0xFFDBDBDB), width: 1),
+                                       color: theme.isDarkMode ? colors.textSecondaryDark.withOpacity(0.2) :  Color(0xffDBDBDB), width: 1),
                                 ),
                                 counterText: "",
                                 contentPadding: const EdgeInsets.symmetric(
@@ -255,13 +255,14 @@ class _ForgotPassUnblockUserState extends State<ForgotPassUnblockUser> {
                                         text:
                                             "${authForgetpassword.forgetpassError}",
                                         theme: false,
-                                        color: colors.kColorRedText,
+                                        color: theme.isDarkMode ? colors.lossDark : colors.lossLight,
                                         fw: 0)
                                     : const SizedBox(),
                                 TextWidget.captionText(
                                     text:
                                         "${authForgetpassword.forGetloginMethCtrl.text.length}/10",
                                     theme: theme.isDarkMode,
+                                    color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                                     fw: 0),
                               ],
                             )
@@ -277,10 +278,10 @@ class _ForgotPassUnblockUserState extends State<ForgotPassUnblockUser> {
                               elevation: 0,
                               backgroundColor: !theme.isDarkMode
                                   ? authForgetpassword.isDisableforgetbtn
-                                      ? const Color(0xFF0037B7).withOpacity(0.3)
+                                      ? colors.primaryLight.withOpacity(0.5)
                                       : colors.primaryLight
                                   : authForgetpassword.isDisableforgetbtn
-                                      ?  const Color(0xFF002A8F).withOpacity(0.3)
+                                      ?  colors.primaryDark.withOpacity(0.5)
                                       : colors.primaryDark,
                               side: BorderSide.none,
                               padding: const EdgeInsets.symmetric(vertical: 13),
@@ -303,11 +304,12 @@ class _ForgotPassUnblockUserState extends State<ForgotPassUnblockUser> {
                                   theme: false,
                                   color: !theme.isDarkMode
                                       ? authForgetpassword.isDisableforgetbtn
-                                          ? const Color(0xffFFFFFF)
-                                          : const Color(0xffFFFFFF)
+                                          ? colors.colorWhite.withOpacity(0.5)
+                                          : colors.colorWhite
                                       : authForgetpassword.isDisableforgetbtn
-                                          ? colors.darkGrey
-                                          : colors.colorBlack,
+                                           ? colors.colorWhite
+                                                      .withOpacity(0.5)
+                                                  : colors.colorWhite,
                                   fw: 2),
                         )),
                   ],

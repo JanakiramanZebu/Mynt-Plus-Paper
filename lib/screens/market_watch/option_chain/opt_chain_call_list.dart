@@ -353,12 +353,12 @@ Widget _buildOIData(ThemesProvider theme) {
         Text(
           _oiLack,
           style: _getTextStyle(
-              theme.isDarkMode ? colors.colorWhite : colors.colorBlack,_oiPerChng),
+              theme.isDarkMode ? colors.colorWhite : colors.colorBlack,_oiPerChng, theme),
         ),
         const SizedBox(height: 3),
         Text(
           "(${_oiPerChng == "NaN" ? "0.00" : _oiPerChng}%)",
-          style: _getPercentageStyle(_oiPerChng),
+          style: _getPercentageStyle(_oiPerChng, theme),
         ),
         const SizedBox(height: 2),
         // Dynamic width line based on OI
@@ -398,12 +398,12 @@ Widget _buildPriceData(ThemesProvider theme) {
         Text(
           _lp,
           style: _getTextStyle(
-              theme.isDarkMode ? colors.colorWhite : colors.colorBlack,_perChange),
+              theme.isDarkMode ? colors.colorWhite : colors.colorBlack,_perChange, theme),
         ),
         const SizedBox(height: 3),
         Text(
           "(${_perChange}%)",
-          style: _getPercentageStyle(_perChange),
+          style: _getPercentageStyle(_perChange, theme),
         ),
         const SizedBox(height: 2),
         // Dynamic width line based on OI
@@ -413,7 +413,7 @@ Widget _buildPriceData(ThemesProvider theme) {
             height: 1.5,
             width: MediaQuery.of(context).size.width * 0.25 * lineWidthPercentage,
             decoration: BoxDecoration(
-              color: colors.profitLight,
+              color: theme.isDarkMode ? colors.profitDark : colors.profitLight,
               borderRadius: BorderRadius.circular(1),
             ),
           ),
@@ -533,24 +533,24 @@ Widget _buildPriceData(ThemesProvider theme) {
     );
   }
 
-  static TextStyle _getTextStyle(Color color, String perChange) {
+  static TextStyle _getTextStyle(Color color, String perChange, ThemesProvider theme) {
     // return _textStyleCache.putIfAbsent(
     //   color,
       // () {
-      Color color = colors.textSecondaryLight;
+      Color color =  theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight;
         if (perChange != null && perChange != "0.00") {
-          color = perChange.startsWith("-") ? colors.lossLight : colors.profitLight;
+          color = perChange.startsWith("-") ?  theme.isDarkMode ? colors.lossDark : colors.lossLight : theme.isDarkMode ? colors.profitDark : colors.profitLight;
         }
           return TextWidget.textStyle(fontSize: 14, color: color, theme: false, );
     
   }
 
-  static TextStyle _getPercentageStyle(String? value) {
+  static TextStyle _getPercentageStyle(String? value, ThemesProvider theme) {
     final key = value ?? "0.00";
     // return _percentageStyleCache.putIfAbsent(
     //   key,
     //   () {
-        Color color = colors.textSecondaryLight;
+        Color color = theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight;
         // if (value != null && value != "0.00") {
         //   color = value.startsWith("-") ? colors.darkred : colors.ltpgreen;
         // } 

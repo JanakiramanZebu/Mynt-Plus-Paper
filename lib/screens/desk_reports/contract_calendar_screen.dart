@@ -36,95 +36,114 @@ class _ContractCalendarScreenState extends State<ContractCalendarScreen> {
         final ledgerprovider = ref.watch(ledgerProvider);
         final theme = ref.watch(themeProvider);
 
-        return Stack(
-          children: [
-            Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-                boxShadow: const [
-                  BoxShadow(
-                    color: Color(0xff999999),
-                    blurRadius: 4.0,
-                    offset: Offset(2.0, 0.0),
-                  )
-                ],
+        return SafeArea(
+          child: Stack(
+            children: [
+              Container(
+               decoration: BoxDecoration(
+             borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(16),
+                topRight: Radius.circular(16),
               ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 8.0, horizontal: 16.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        TextWidget.titleText(
-                          text: "Contract Note",
-                          theme: theme.isDarkMode,
-                          fw: 1,
-                        ),
-                        Material(
-                          color: Colors.transparent,
-                          shape: const CircleBorder(),
-                          child: InkWell(
-                            onTap: () async {
-                              await Future.delayed(
-                                  const Duration(milliseconds: 150));
-                              Navigator.pop(context);
-                            },
-                            borderRadius: BorderRadius.circular(20),
-                            splashColor: theme.isDarkMode
-                                ? Colors.white.withOpacity(0.15)
-                                : Colors.black.withOpacity(0.15),
-                            highlightColor: theme.isDarkMode
-                                ? Colors.white.withOpacity(0.08)
-                                : Colors.black.withOpacity(0.08),
-                            child: Padding(
-                              padding: const EdgeInsets.all(6.0),
-                              child: Icon(
-                                Icons.close_rounded,
-                                size: 22,
-                                color: theme.isDarkMode
-                                    ? const Color(0xffBDBDBD)
-                                    : colors.colorGrey,
+           color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+           border: Border(
+                                    top: BorderSide(
+                                      color: theme.isDarkMode
+                                          ? colors.textSecondaryDark
+                                              .withOpacity(0.5)
+                                          : colors.colorWhite,
+                                    ),
+                                    left: BorderSide(
+                                      color: theme.isDarkMode
+                                          ? colors.textSecondaryDark
+                                              .withOpacity(0.5)
+                                          : colors.colorWhite,
+                                    ),
+                                    right: BorderSide(
+                                      color: theme.isDarkMode
+                                          ? colors.textSecondaryDark
+                                              .withOpacity(0.5)
+                                          : colors.colorWhite,
+                                    ),
+                                  ),
+          
+           
+          ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 8.0, horizontal: 16.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          TextWidget.titleText(
+                            text: "Contract Note",
+                            theme: theme.isDarkMode,
+                              color : theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                            fw: 1,
+                          ),
+                          Material(
+                            color: Colors.transparent,
+                            shape: const CircleBorder(),
+                            child: InkWell(
+                              onTap: () async {
+                                await Future.delayed(
+                                    const Duration(milliseconds: 150));
+                                Navigator.pop(context);
+                              },
+                              borderRadius: BorderRadius.circular(20),
+                              splashColor: theme.isDarkMode
+                                  ? Colors.white.withOpacity(0.15)
+                                  : Colors.black.withOpacity(0.15),
+                              highlightColor: theme.isDarkMode
+                                  ? Colors.white.withOpacity(0.08)
+                                  : Colors.black.withOpacity(0.08),
+                              child: Padding(
+                                padding: const EdgeInsets.all(6.0),
+                                child: Icon(
+                                  Icons.close_rounded,
+                                  size: 22,
+                                  color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                  Divider(
-                    color: theme.isDarkMode
-                        ? colors.darkColorDivider
-                        : colors.colorDivider,
-                    height: 0,
-                  ),
-
-                  // Calendar
-                  _buildCalendar(context, ledgerprovider, theme),
-                  const SizedBox(height: 24),
-                ],
+                    Divider(
+                      color: theme.isDarkMode
+                          ? colors.darkColorDivider
+                          : colors.colorDivider,
+                      height: 0,
+                    ),
+          
+                    // Calendar
+                    _buildCalendar(context, ledgerprovider, theme),
+                    const SizedBox(height: 24),
+                  ],
+                ),
               ),
-            ),
-
-            // Loading overlay
-            if (ledgerprovider.isContractCalendarLoading)
-              Positioned.fill(
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.3),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: const Center(
-                    child: CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+          
+              // Loading overlay
+              if (ledgerprovider.isContractCalendarLoading)
+                Positioned.fill(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.3),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: const Center(
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+                      ),
                     ),
                   ),
                 ),
-              ),
-          ],
+            ],
+          ),
         );
       },
     );
@@ -229,8 +248,8 @@ class _ContractCalendarState extends State<_ContractCalendar> {
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
           elevation: 0,
-          color:
-              widget.theme.isDarkMode ? const Color(0xff1E1E1E) : Colors.white,
+            color:
+                widget.theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
           margin: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
           child: Column(
             children: [
@@ -245,15 +264,18 @@ class _ContractCalendarState extends State<_ContractCalendar> {
                       children: [
                         IconButton(
                           icon: const Icon(Icons.chevron_left),
+                          color: theme.isDarkMode ? colors.textSecondaryDark : colors.textPrimaryLight,
                           onPressed: _goToPreviousMonth,
                         ),
                         TextWidget.titleText(
                           text: _formatMonthYear(_month),
                           theme: widget.theme.isDarkMode,
+                          color: theme.isDarkMode ? colors.textSecondaryDark : colors.textPrimaryLight,
                           fw: 1,
                         ),
                         IconButton(
                           icon: const Icon(Icons.chevron_right),
+                          color: theme.isDarkMode ? colors.textSecondaryDark : colors.textPrimaryLight,
                           onPressed: _goToNextMonth,
                         ),
                       ],
@@ -263,7 +285,7 @@ class _ContractCalendarState extends State<_ContractCalendar> {
                     Container(
                       padding: const EdgeInsets.all(4),
                       decoration: BoxDecoration(
-                        color: const Color(0xffF1F3F8),
+                        color: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Row(
@@ -287,12 +309,12 @@ class _ContractCalendarState extends State<_ContractCalendar> {
                                 color: isSelected
                                     ? colors.primaryLight
                                     : Colors.transparent,
-                                borderRadius: BorderRadius.circular(6),
+                                borderRadius: BorderRadius.circular(5),
                               ),
                               child: TextWidget.paraText(
                                 text: displayName,
                                 theme: theme.isDarkMode,
-                                color: isSelected ? Colors.white : Colors.black,
+                                color: isSelected ? theme.isDarkMode ?  colors.colorWhite : colors.colorWhite : theme.isDarkMode ? colors.textSecondaryDark : colors.textPrimaryLight,
                                 fw: 0,
                               ),
                             ),
@@ -310,19 +332,19 @@ class _ContractCalendarState extends State<_ContractCalendar> {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     TextWidget.paraText(
-                        text: "Mon", theme: widget.theme.isDarkMode, fw: 1),
+                        text: "Mon", color: theme.isDarkMode ? colors.textSecondaryDark : colors.textPrimaryLight, theme: widget.theme.isDarkMode, fw: 1),
                     TextWidget.paraText(
-                        text: "Tue", theme: widget.theme.isDarkMode, fw: 1),
+                        text: "Tue", color: theme.isDarkMode ? colors.textSecondaryDark : colors.textPrimaryLight, theme: widget.theme.isDarkMode, fw: 1),
                     TextWidget.paraText(
-                        text: "Wed", theme: widget.theme.isDarkMode, fw: 1),
+                        text: "Wed", color: theme.isDarkMode ? colors.textSecondaryDark : colors.textPrimaryLight, theme: widget.theme.isDarkMode, fw: 1),
                     TextWidget.paraText(
-                        text: "Thu", theme: widget.theme.isDarkMode, fw: 1),
+                        text: "Thu", color: theme.isDarkMode ? colors.textSecondaryDark : colors.textPrimaryLight, theme: widget.theme.isDarkMode, fw: 1),
                     TextWidget.paraText(
-                        text: "Fri", theme: widget.theme.isDarkMode, fw: 1),
+                        text: "Fri", color: theme.isDarkMode ? colors.textSecondaryDark : colors.textPrimaryLight, theme: widget.theme.isDarkMode, fw: 1),
                     TextWidget.paraText(
-                        text: "Sat", theme: widget.theme.isDarkMode, fw: 1),
+                        text: "Sat", color: theme.isDarkMode ? colors.textSecondaryDark : colors.textPrimaryLight, theme: widget.theme.isDarkMode, fw: 1),
                     TextWidget.paraText(
-                        text: "Sun", theme: widget.theme.isDarkMode, fw: 1),
+                        text: "Sun", color: theme.isDarkMode ? colors.textSecondaryDark : colors.textPrimaryLight, theme: widget.theme.isDarkMode, fw: 1),
                   ],
                 ),
               ),

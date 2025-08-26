@@ -39,8 +39,8 @@ class InformationMessage extends ConsumerWidget {
                             TextWidget.paraText(
                               text: _formatDateTime(item.datetime),
                               theme: false,
-                              color: colors.textSecondaryLight,
-                              fw: 0,
+                              color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                              
                             ),
                             const SizedBox(height: 5),
                             if (item.title.isNotEmpty) ...[
@@ -73,6 +73,7 @@ class InformationMessage extends ConsumerWidget {
                                 color: theme.isDarkMode
                                     ? colors.colorLightBlue
                                     : colors.colorBlue,
+                                    fw: 2,
                               ),
                               lessStyle: TextWidget.textStyle(
                                 fontSize: 12,
@@ -80,6 +81,7 @@ class InformationMessage extends ConsumerWidget {
                                 color: theme.isDarkMode
                                     ? colors.colorLightBlue
                                     : colors.colorBlue,
+                                    fw: 2,
                               ),
                               colorClickableText: theme.isDarkMode
                                   ? colors.colorLightBlue

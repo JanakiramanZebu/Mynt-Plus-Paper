@@ -23,18 +23,46 @@ class BondCancelAlert extends ConsumerWidget {
     final bonds = ref.watch(bondsProvider);
     
     return AlertDialog(
-       backgroundColor: colors.colorWhite,
-      shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(8))),
-          scrollable: true,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 12,
-            vertical: 12,
-          ),
-          actionsPadding:
-              const EdgeInsets.only(bottom: 16, right: 16, left: 16, top: 8),
-          insetPadding:
-              const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+       backgroundColor: theme
+                                                                        .isDarkMode
+                                                                    ? const Color(
+                                                                        0xFF121212)
+                                                                    : const Color(
+                                                                        0xFFF1F3F8),
+       titlePadding:
+                                                                    const EdgeInsets
+                                                                        .symmetric(
+                                                                        horizontal:
+                                                                            8,
+                                                                        vertical:
+                                                                            8),
+                                                                shape: const RoundedRectangleBorder(
+                                                                    borderRadius:
+                                                                        BorderRadius.all(
+                                                                            Radius.circular(
+                                                                                8))),
+                                                                scrollable: true,
+                                                                contentPadding:
+                                                                    const EdgeInsets
+                                                                        .symmetric(
+                                                                  horizontal: 12,
+                                                                  vertical: 12,
+                                                                ),
+                                                                actionsPadding:
+                                                                    const EdgeInsets
+                                                                        .only(
+                                                                        bottom:
+                                                                            16,
+                                                                        right: 16,
+                                                                        left: 16,
+                                                                        top: 8),
+                                                                insetPadding:
+                                                                    const EdgeInsets
+                                                                        .symmetric(
+                                                                        horizontal:
+                                                                            30,
+                                                                        vertical:
+                                                                            12),
       title: Column(
             children: [
               Row(
@@ -60,9 +88,7 @@ class BondCancelAlert extends ConsumerWidget {
                         child: Icon(
                           Icons.close_rounded,
                           size: 22,
-                          color: theme.isDarkMode
-                              ? colors.colorWhite
-                              : colors.colorBlack,
+                           color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                         ),
                       ),
                     ),
@@ -79,9 +105,9 @@ class BondCancelAlert extends ConsumerWidget {
                     TextWidget.subText(
                       text:"Are you sure you want to cancel the (${bondcancel.symbol} order)",
                       theme: theme.isDarkMode,
-                      color: theme.isDarkMode
-                          ? colors.textPrimaryDark
-                          : colors.textPrimaryLight,
+                     color: theme.isDarkMode
+                                                                                ? colors.textSecondaryDark
+                                                                                : colors.textPrimaryLight,
                       fw: 3,
                       align: TextAlign.center,
                     ),
@@ -105,7 +131,7 @@ class BondCancelAlert extends ConsumerWidget {
               child: OutlinedButton(
                 onPressed: () => _handleCancelOrder(context, ref, bondcancel),
                 style: OutlinedButton.styleFrom(
-                  minimumSize: const Size(0, 40), // width, height
+                  minimumSize: const Size(0, 45), // width, height
                   side: BorderSide(
                       color: colors.btnOutlinedBorder), // Outline border color
                   shape: RoundedRectangleBorder(

@@ -150,150 +150,169 @@ class _SaveTaxesScreenState extends ConsumerState<SaveTaxesScreen>
           ),
         ),
       ),
-      body: Stack(
-        children: [
-          TransparentLoaderScreen(
-            isLoading: mf.bestmfloader ?? false,
-            child: Column(
-              children: [
-                // Custom tabs section
-                Container(
-                  width: MediaQuery.of(context).size.width,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
-                  decoration: BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(
-                        color: isDarkMode
-                            ? colors.darkColorDivider
-                            : colors.colorDivider,
-                        width: 0,
+      body: SafeArea(
+        child: Stack(
+          children: [
+            TransparentLoaderScreen(
+              isLoading: mf.bestmfloader ?? false,
+              child: Column(
+                children: [
+                  // Custom tabs section
+                  Container(
+                    width: MediaQuery.of(context).size.width,
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(
+                          color: isDarkMode
+                              ? colors.darkColorDivider
+                              : colors.colorDivider,
+                          width: 0,
+                        ),
                       ),
                     ),
-                  ),
-                  child: SingleChildScrollView(
-                    controller: _scrollController,
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: List.generate(
-                        tabTitles.length,
-                        (tab) => Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            splashColor: isDarkMode
-                                ? Colors.white.withOpacity(0.05)
-                                : Colors.black.withOpacity(0.05),
-                            highlightColor: isDarkMode
-                                ? Colors.white.withOpacity(0.01)
-                                : Colors.black.withOpacity(0.01),
-                            onTap: () {
-                              setState(() {
-                                selectedTab = tab;
-                              });
-                              _tabController.animateTo(tab);
-                              // Update the selected chip in your provider
-                              mf.changetitle(tabTitles[tab]);
-                              // Scroll to center the active tab
-                              WidgetsBinding.instance.addPostFrameCallback((_) {
-                                _scrollToActiveTab(tab);
-                              });
-                            },
-                            child: tabConstruct(
-                              tabTitles[tab],
-                              theme,
-                              tab,
+                    child: SingleChildScrollView(
+                      controller: _scrollController,
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: List.generate(
+                          tabTitles.length,
+                          (tab) => Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              splashColor: isDarkMode
+                                  ? Colors.white.withOpacity(0.05)
+                                  : Colors.black.withOpacity(0.05),
+                              highlightColor: isDarkMode
+                                  ? Colors.white.withOpacity(0.01)
+                                  : Colors.black.withOpacity(0.01),
+                              onTap: () {
+                                setState(() {
+                                  selectedTab = tab;
+                                });
+                                _tabController.animateTo(tab);
+                                // Update the selected chip in your provider
+                                mf.changetitle(tabTitles[tab]);
+                                // Scroll to center the active tab
+                                WidgetsBinding.instance.addPostFrameCallback((_) {
+                                  _scrollToActiveTab(tab);
+                                });
+                              },
+                              child: tabConstruct(
+                                tabTitles[tab],
+                                theme,
+                                tab,
+                              ),
                             ),
                           ),
                         ),
                       ),
                     ),
                   ),
-                ),
-                // Header row for "Funds" and "3Y Returns"
-                Container(
-                  padding: const EdgeInsets.only(
-                      left: 12, bottom: 8, top: 16, right: 8),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      TextWidget.paraText(
-                        align: TextAlign.right,
-                        text: 'Funds',
-                        color: theme.isDarkMode
-                            ? colors.textSecondaryDark
-                            : colors.textSecondaryLight,
-                        textOverflow: TextOverflow.ellipsis,
-                        theme: theme.isDarkMode,
-                        fw: 3,
-                      ),
-                      PopupMenuButton<String>(
-                        onSelected: (value) {
-                          setState(() {
-                            selectedReturn = value;
-                          });
-                        },
-                        itemBuilder: (context) => [
-                           PopupMenuItem(
-                              value: '1Y Returns', 
-                              child: TextWidget.paraText(
-                                text: '1Y Returns',
-                                color: theme.isDarkMode
-                                    ? colors.textSecondaryDark
-                                    : colors.textSecondaryLight,
-                                theme: theme.isDarkMode,
-                                fw: 3,
-                              )),
-                           PopupMenuItem(
-                              value: '2Y Returns', 
-                              child: TextWidget.paraText(
-                                text: '2Y Returns',
-                                color: theme.isDarkMode
-                                    ? colors.textSecondaryDark
-                                    : colors.textSecondaryLight,
-                                theme: theme.isDarkMode,
-                                fw: 3,
-                              )),
-                           PopupMenuItem(
-                              value: '3Y Returns', 
-                              child: TextWidget.paraText(
-                                text: '3Y Returns',
-                                color: theme.isDarkMode
-                                    ? colors.textSecondaryDark
-                                    : colors.textSecondaryLight,
-                                theme: theme.isDarkMode,
-                                fw: 3,
-                              )),
-                        ],
-                        child: InkWell(
-                          child: TextWidget.paraText(
-                            align: TextAlign.right,
-                            text: selectedReturn,
-                            color: theme.isDarkMode
-                                ? colors.textSecondaryDark
-                                : colors.textSecondaryLight,
-                            textOverflow: TextOverflow.ellipsis,
-                            theme: theme.isDarkMode,
-                            fw: 3,
-                          ),
+                  // Header row for "Funds" and "3Y Returns"
+                  Container(
+                    padding: const EdgeInsets.only(
+                        left: 12, bottom: 8, top: 16, right: 8),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        TextWidget.paraText(
+                          align: TextAlign.right,
+                          text: 'Funds',
+                          color: theme.isDarkMode
+                              ? colors.textSecondaryDark
+                              : colors.textSecondaryLight,
+                          textOverflow: TextOverflow.ellipsis,
+                          theme: theme.isDarkMode,
+                          fw: 3,
                         ),
-                      )
-                    ],
+                        PopupMenuButton<String>(
+                          color: theme.isDarkMode
+                              ? colors.searchBgDark
+                              : colors.searchBg,
+                          onSelected: (value) {
+                            setState(() {
+                              selectedReturn = value;
+                            });
+                          },
+                          itemBuilder: (context) => [
+                            PopupMenuItem(
+                                value: '1Y Returns',
+                                child: TextWidget.paraText(
+                                  text: '1Y Returns',
+                                  color: theme.isDarkMode
+                                      ? colors.textSecondaryDark
+                                      : colors.textSecondaryLight,
+                                  theme: theme.isDarkMode,
+                                  fw: 3,
+                                )),
+                            PopupMenuItem(
+                                value: '3Y Returns',
+                                child: TextWidget.paraText(
+                                  text: '3Y Returns',
+                                  color: theme.isDarkMode
+                                      ? colors.textSecondaryDark
+                                      : colors.textSecondaryLight,
+                                  theme: theme.isDarkMode,
+                                  fw: 3,
+                                )),
+                            PopupMenuItem(
+                                value: '5Y Returns',
+                                child: TextWidget.paraText(
+                                  text: '5Y Returns',
+                                  color: theme.isDarkMode
+                                      ? colors.textSecondaryDark
+                                      : colors.textSecondaryLight,
+                                  theme: theme.isDarkMode,
+                                  fw: 3,
+                                )),
+                          ],
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              splashColor: theme.isDarkMode
+                                            ? Colors.white.withOpacity(0.15)
+                                            : Colors.black.withOpacity(0.15),
+                                        highlightColor: theme.isDarkMode
+                                            ? Colors.white.withOpacity(0.08)
+                                            : Colors.black.withOpacity(0.08),
+                                        borderRadius: BorderRadius.circular(8),
+                              child: Padding(
+                                padding: const EdgeInsets.all(5.0),
+                                child: TextWidget.paraText(
+                                  align: TextAlign.right,
+                                  text: selectedReturn,
+                                  color: theme.isDarkMode
+                                      ? colors.textSecondaryDark
+                                      : colors.textSecondaryLight,
+                                  textOverflow: TextOverflow.ellipsis,
+                                  theme: theme.isDarkMode,
+                                  fw: 3,
+                                ),
+                              ),
+                            ),
+                          ),
+                        )
+                      ],
+                    ),
                   ),
-                ),
-                // TabBarView with fund lists
-                Expanded(
-                  child: TabBarView(
-                    controller: _tabController,
-                    children: tabTitles.map((tabTitle) {
-                      return buildFundList(tabTitle, mf, theme, context);
-                    }).toList(),
+                  // TabBarView with fund lists
+                  Expanded(
+                    child: TabBarView(
+                      controller: _tabController,
+                      children: tabTitles.map((tabTitle) {
+                        return buildFundList(
+                            tabTitle, mf, theme, context, selectedReturn);
+                      }).toList(),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -315,7 +334,9 @@ class _SaveTaxesScreenState extends ConsumerState<SaveTaxesScreen>
                 ? theme.isDarkMode
                     ? colors.secondaryDark
                     : colors.secondaryLight
-                : colors.textSecondaryLight,
+                : theme.isDarkMode
+                    ? colors.textSecondaryDark
+                    : colors.textSecondaryLight,
             textOverflow: TextOverflow.ellipsis,
             maxLines: 1,
             theme: theme.isDarkMode,
@@ -326,10 +347,12 @@ class _SaveTaxesScreenState extends ConsumerState<SaveTaxesScreen>
           duration: const Duration(milliseconds: 250),
           curve: Curves.easeInOut,
           height: 2,
-          width: isActive ? (tabWidth - 12) : 0, 
-          margin: const EdgeInsets.only(top: 6), 
+          width: isActive ? (tabWidth - 12) : 0,
+          margin: const EdgeInsets.only(top: 6),
           decoration: BoxDecoration(
-            color: colors.colorBlue,
+            color: theme.isDarkMode
+                    ? colors.secondaryDark
+                    : colors.secondaryLight,
             borderRadius: BorderRadius.circular(2),
           ),
         ),
@@ -338,7 +361,7 @@ class _SaveTaxesScreenState extends ConsumerState<SaveTaxesScreen>
   }
 
   Widget buildFundList(String selectedTab, MFProvider mf, ThemesProvider theme,
-      BuildContext context) {
+      BuildContext context, String selectedReturn) {
     dynamic newlisst;
 
     // Get the appropriate basket based on selected tab
@@ -369,11 +392,33 @@ class _SaveTaxesScreenState extends ConsumerState<SaveTaxesScreen>
       newlisst = null;
     }
 
-    // Sort by 3-year data if available
+    // Sort by selected return period
     final sortedList = newlisst != null ? List.from(newlisst) : null;
     if (sortedList != null) {
-      sortedList.sort((a, b) => (double.tryParse(b.s3Year ?? "0") ?? 0)
-          .compareTo(double.tryParse(a.s3Year ?? "0") ?? 0));
+      sortedList.sort((a, b) {
+        String? aValue, bValue;
+
+        switch (selectedReturn) {
+          case '1Y Returns':
+            aValue = a.s1Year;
+            bValue = b.s1Year;
+            break;
+          case '3Y Returns':
+            aValue = a.s3Year;
+            bValue = b.s3Year;
+            break;
+          case '5Y Returns':
+            aValue = a.s5Year;
+            bValue = b.s5Year;
+            break;
+          default:
+            aValue = a.s3Year;
+            bValue = b.s3Year;
+        }
+
+        return (double.tryParse(bValue ?? "0") ?? 0)
+            .compareTo(double.tryParse(aValue ?? "0") ?? 0);
+      });
     }
 
     if (sortedList == null || sortedList.isEmpty) {
@@ -390,12 +435,26 @@ class _SaveTaxesScreenState extends ConsumerState<SaveTaxesScreen>
         final isin = item.iSIN;
         final type = item.schemeType ?? "";
         final subType = item.subType ?? "";
-        final threeYearData = item.s3Year ?? "0.00";
 
-        // Parse 3-year performance data safely
+        // Get the appropriate return data based on selected period
+        String returnData;
+        switch (selectedReturn) {
+          case '1Y Returns':
+            returnData = item.s1Year ?? "0.00";
+            break;
+          case '3Y Returns':
+            returnData = item.s3Year ?? "0.00";
+            break;
+          case '5Y Returns':
+            returnData = item.s5Year ?? "0.00";
+            break;
+          default:
+            returnData = item.s3Year ?? "0.00";
+        }
+
+        // Parse performance data safely
         final performanceValue =
-            double.tryParse(threeYearData.isEmpty ? "0.00" : threeYearData) ??
-                0.0;
+            double.tryParse(returnData.isEmpty ? "0.00" : returnData) ?? 0.0;
 
         // Determine if performance is positive or negative
         final isPositive = performanceValue >= 0;
@@ -498,7 +557,7 @@ class _SaveTaxesScreenState extends ConsumerState<SaveTaxesScreen>
                 color: theme.isDarkMode
                     ? colors.textPrimaryDark
                     : colors.textPrimaryLight,
-                text: "$threeYearData%",
+                text: "$returnData%",
                 textOverflow: TextOverflow.ellipsis,
                 theme: theme.isDarkMode,
                 fw: 3,

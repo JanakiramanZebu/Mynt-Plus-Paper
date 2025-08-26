@@ -122,82 +122,29 @@ class _OrderConfirmationScreenState extends ConsumerState<OrderConfirmationScree
       return Scaffold(
         backgroundColor: theme.isDarkMode ? colors.colorBlack : colors.kColorLightGrey,
         appBar: AppBar(
-          leadingWidth: 41,
+          leadingWidth: 48,
           centerTitle: false,
           titleSpacing: 0,
           leading: const CustomBackBtn(),
-          elevation: 0.4,
+          elevation: 0.2,
           backgroundColor: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-          title: TextWidget.subText(
+          title: TextWidget.titleText(
             text: "Order Confirmation",
-            fw: 2,
-            color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+            fw: 1,
+            color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
             theme: false,
           ),
         ),
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Success Header
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    _getStatusIcon(),
-                    const SizedBox(height: 16),
-                    TextWidget.subText(
-                      text: _getStatusText(),
-                      fw: 2,
-                      color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                      theme: false,
-                    ),
-                    const SizedBox(height: 8),
-                    TextWidget.subText(
-                      text: _getStatusMessage(),
-                      color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                      theme: false,
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 20),
-
-              // Orders List
-              TextWidget.subText(
-                text: widget.orderData.length == 1 ? "Order Details" : "Order List",
-                fw: 2,
-                color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                theme: false,
-              ),
-
-              const SizedBox(height: 12),
-
-              // Build expandable list for each order
-              ...widget.orderData.asMap().entries.map((entry) {
-                final index = entry.key;
-                final order = entry.value;
-                final orderNumber = order.norenordno ?? '';
-                final isExpanded = expandedOrders.contains(orderNumber);
-                final isLoading = loadingStates[orderNumber] ?? false;
-                final orderHistory = orderHistories[orderNumber];
-
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 12),
+        body: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Success Header
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
                     color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
                     borderRadius: BorderRadius.circular(12),
@@ -209,142 +156,201 @@ class _OrderConfirmationScreenState extends ConsumerState<OrderConfirmationScree
                       ),
                     ],
                   ),
-                  child: ExpansionTile(
-                    initiallyExpanded: widget.orderData.length == 1 && isExpanded,
-                    tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    childrenPadding: const EdgeInsets.all(16),
-                    title: Row(
-                      children: [
-                        Container(
-                          width: 32,
-                          height: 32,
-                          decoration: BoxDecoration(
-                            color: colors.primary.withOpacity(0.1),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Center(
-                            child: TextWidget.subText(
-                              text: "${index + 1}",
-                              color: colors.primary,
-                              fw: 2,
-                              theme: false,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // TextWidget.subText(
-                              //   text: "Order ${index + 1}",
-                              //   fw: 2,
-                              //   color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                              //   theme: false,
-                              // ),
-                              if (orderNumber.isNotEmpty) ...[
-                                // const SizedBox(height: 4),
-                                TextWidget.subText(
-                                  text: "#$orderNumber",
-                                  color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                                  theme: false,
-                                ),
-                              ],
-                              if (order.requestTime != null) ...[
-                                const SizedBox(height: 2),
-                                TextWidget.subText(
-                                  text: order.requestTime!,
-                                  color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                                  theme: false,
-                                ),
-                              ],
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    trailing: Icon(
-                      isExpanded ? Icons.expand_less : Icons.expand_more,
-                      color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    ),
-                    onExpansionChanged: (expanded) {
-                      _toggleExpanded(orderNumber);
-                    },
+                  child: Column(
                     children: [
-                      if (isLoading) ...[
-                        Center(
-                          child: Padding(
-                            padding: const EdgeInsets.all(20),
-                            child: CircularProgressIndicator(
-                              color: colors.primary,
-                            ),
-                          ),
-                        ),
-                      ] else if (orderHistory != null && orderHistory.isNotEmpty && orderHistory[0].stat != "Not_Ok") ...[
-                        Column(
-                          children: [
-                            _buildOrderDetailRow("Symbol", orderHistory[0].tsym ?? "-", theme),
-                            _buildOrderDetailRow("Exchange", orderHistory[0].exch ?? "-", theme),
-                            _buildOrderDetailRow("Transaction Type", orderHistory[0].trantype == "B" ? "Buy" : "Sell", theme),
-                            _buildOrderDetailRow("Quantity", orderHistory[0].qty ?? "-", theme),
-                            _buildOrderDetailRow("Price", "₹${orderHistory[0].prc ?? "0.00"}", theme),
-                            _buildOrderDetailRow("Product", _getProductName(orderHistory[0].prd ?? ""), theme),
-                            _buildOrderDetailRow("Price Type", orderHistory[0].prctyp ?? "-", theme),
-                            _buildOrderDetailRow("Validity", orderHistory[0].ret ?? "-", theme),
-                            _buildOrderDetailRow("Status", _formatStatus(orderHistory[0].status ?? ""), theme),
-                            if (orderHistory[0].status == "REJECTED") ...[
-                              _buildOrderDetailRow("Reason", "", theme),
-                              Padding(
-                                padding: const EdgeInsets.only(top: 8),
-                                child: TextWidget.subText(
-                                  text: orderHistory[0].rejreason ?? "",
-                                  color: colors.tertiary,
-                                  theme: false,
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
-                      ] else ...[
-                        Padding(
-                          padding: const EdgeInsets.all(20),
-                          child: Center(
-                            child: TextWidget.subText(
-                              text: "Order details will be available in the order book shortly.",
-                              color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                              theme: false,
-                            ),
-                          ),
-                        ),
-                      ],
+                      _getStatusIcon(),
+                      const SizedBox(height: 16),
+                      TextWidget.subText(
+                        text: _getStatusText(),
+                        fw: 3,
+                        color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                        theme: false,
+                      ),
+                      const SizedBox(height: 8),
+                      TextWidget.paraText(
+                        text: _getStatusMessage(),
+                        color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                        theme: false,
+                      ),
                     ],
                   ),
-                );
-              }),
-
-              const SizedBox(height: 30),
-
-              // Action Button
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _navigateToOrderBook,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: colors.primary,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                ),
+                  
+                const SizedBox(height: 20),
+                  
+                // Orders List
+                TextWidget.subText(
+                  text: widget.orderData.length == 1 ? "Order Details" : "Order List",
+                  fw: 0,
+                  color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                  theme: false,
+                ),
+                  
+                const SizedBox(height: 12),
+                  
+                // Build expandable list for each order
+                ...widget.orderData.asMap().entries.map((entry) {
+                  final index = entry.key;
+                  final order = entry.value;
+                  final orderNumber = order.norenordno ?? '';
+                  final isExpanded = expandedOrders.contains(orderNumber);
+                  final isLoading = loadingStates[orderNumber] ?? false;
+                  final orderHistory = orderHistories[orderNumber];
+                  
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    decoration: BoxDecoration(
+                      color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: ExpansionTile(
+                      initiallyExpanded: widget.orderData.length == 1 && isExpanded,
+                      tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      childrenPadding: const EdgeInsets.all(16),
+                      title: Row(
+                        children: [
+                          Container(
+                            width: 32,
+                            height: 32,
+                            decoration: BoxDecoration(
+                              color: colors.primary.withOpacity(0.1),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Center(
+                              child: TextWidget.subText(
+                                text: "${index + 1}",
+                                color: colors.primary,
+                                fw: 2,
+                                theme: false,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // TextWidget.subText(
+                                //   text: "Order ${index + 1}",
+                                //   fw: 2,
+                                //   color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                                //   theme: false,
+                                // ),
+                                if (orderNumber.isNotEmpty) ...[
+                                  // const SizedBox(height: 4),
+                                  TextWidget.subText(
+                                    text: "#$orderNumber",
+                                    color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                                    theme: false,
+                                  ),
+                                ],
+                                if (order.requestTime != null) ...[
+                                  const SizedBox(height: 2),
+                                  TextWidget.paraText(
+                                    text: order.requestTime!,
+                                    color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                                    theme: false,
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      trailing: Icon(
+                        isExpanded ? Icons.expand_less : Icons.expand_more,
+                        color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                      ),
+                      onExpansionChanged: (expanded) {
+                        _toggleExpanded(orderNumber);
+                      },
+                      children: [
+                        if (isLoading) ...[
+                          Center(
+                            child: Padding(
+                              padding: const EdgeInsets.all(20),
+                              child: CircularProgressIndicator(
+                                color: colors.primary,
+                              ),
+                            ),
+                          ),
+                        ] else if (orderHistory != null && orderHistory.isNotEmpty && orderHistory[0].stat != "Not_Ok") ...[
+                          Column(
+                            children: [
+                              _buildOrderDetailRow("Symbol", orderHistory[0].tsym ?? "-", theme),
+                              _buildOrderDetailRow("Exchange", orderHistory[0].exch ?? "-", theme),
+                              _buildOrderDetailRow("Transaction Type", orderHistory[0].trantype == "B" ? "Buy" : "Sell", theme),
+                              _buildOrderDetailRow("Quantity", orderHistory[0].qty ?? "-", theme),
+                              _buildOrderDetailRow("Price", "₹${orderHistory[0].prc ?? "0.00"}", theme),
+                              _buildOrderDetailRow("Product", _getProductName(orderHistory[0].prd ?? ""), theme),
+                              _buildOrderDetailRow("Price Type", orderHistory[0].prctyp ?? "-", theme),
+                              _buildOrderDetailRow("Validity", orderHistory[0].ret ?? "-", theme),
+                              _buildOrderDetailRow("Status", _formatStatus(orderHistory[0].status ?? ""), theme),
+                              if (orderHistory[0].status == "REJECTED") ...[
+                                _buildOrderDetailRow("Reason", "", theme),
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 8),
+                                  child: TextWidget.subText(
+                                    text: orderHistory[0].rejreason ?? "",
+                                    color: theme.isDarkMode ? colors.lossDark : colors.lossLight,
+                                    theme: false,
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ] else ...[
+                          Padding(
+                            padding: const EdgeInsets.all(20),
+                            child: Center(
+                              child: TextWidget.subText(
+                                text: "Order details will be available in the order book shortly.",
+                                color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                                theme: false,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  );
+                }),
+                  
+                const SizedBox(height: 30),
+                  
+                // Action Button
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _navigateToOrderBook,
+                    style: ElevatedButton.styleFrom(
+                        minimumSize: const Size(0, 45),
+                        elevation: 0,
+                      backgroundColor: theme.isDarkMode
+                                ? colors.primaryDark
+                                : colors.primaryLight,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                    ),
+                    child: TextWidget.subText(
+                      text: "View Order Book",
+                      color: colors.colorWhite,
+                      theme: false,
+                      fw: 2,
                     ),
                   ),
-                  child: TextWidget.subText(
-                    text: "View Order Book",
-                    color: colors.colorWhite,
-                    theme: false,
-                    fw: 2,
-                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       );
@@ -368,7 +374,7 @@ class _OrderConfirmationScreenState extends ConsumerState<OrderConfirmationScree
         body: Center(
           child: TextWidget.subText(
             text: "Failed to load order confirmation screen.",
-            color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+            color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
             theme: false,
           ),
         ),
@@ -378,7 +384,7 @@ class _OrderConfirmationScreenState extends ConsumerState<OrderConfirmationScree
 
   Widget _buildOrderDetailRow(String label, String value, ThemesProvider theme) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(bottom: 16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -390,9 +396,9 @@ class _OrderConfirmationScreenState extends ConsumerState<OrderConfirmationScree
           ),
           TextWidget.subText(
             text: value,
-            color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+            color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
             theme: false,
-            fw: 1,
+            fw: 3,
             // fontSize: 14,
           ),
         ],

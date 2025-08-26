@@ -20,6 +20,7 @@ import '../models/mf_model/mf_all_payment_model.dart';
 import '../models/mf_model/mf_category_list_model.dart';
 import '../models/mf_model/mf_categorytype_model.dart';
 import '../models/mf_model/mf_create_mandate.dart';
+import '../models/mf_model/mf_etf_category_model.dart';
 import '../models/mf_model/mf_factsheet_data_model.dart';
 import '../models/mf_model/mf_factsheet_graph.dart';
 import '../models/mf_model/mf_lumpsum_order.dart';
@@ -161,6 +162,21 @@ mixin MutualFundApi on ApiCore {
     }
   }
 
+  Future<MfEtfCategoryModel> getetfcategory() async {
+    try {
+      final uri = Uri.parse(apiLinks.etfcategory);
+      final res = await apiClient.get(uri,
+          headers: defaultHeaders);
+      final json = jsonDecode(res.body);
+
+      // log("ETF Category ==>$json");
+
+      return MfEtfCategoryModel.fromJson(json as Map<String, dynamic>);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   // Future<MfPlaceOrderResponces> getLumpSumOrder(
   //     MfPlaceOrderInput mforderlumpsuminput) async {
   //   try {
@@ -221,10 +237,10 @@ mixin MutualFundApi on ApiCore {
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
           body: jsonEncode({"ClientCode": "${prefs.clientId}"}));
-          
+
       final res2 = {"client_code": "${prefs.clientId}"};
       final json = jsonDecode((res.body));
-      
+
       // log("MF orderBook ==>${json}");
 
       return MFOrderBookModel.fromJson(json as Map<String, dynamic>);
@@ -284,7 +300,7 @@ mixin MutualFundApi on ApiCore {
     }
   }
 
-  pausesipapi(orderno, notext, freqty, nxtdate,scode) async {
+  pausesipapi(orderno, notext, freqty, nxtdate, scode) async {
     // print("pausee ordermo ${orderno} ,siprefno ${notext}");
     try {
       final uri = Uri.parse(apiLinks.mfsippausenew);
@@ -364,14 +380,15 @@ mixin MutualFundApi on ApiCore {
     try {
       print("remm apiii");
 
-      final uri = Uri.parse(apiLinks.redemption);
+      final uri = Uri.parse(apiLinks.mfredemptionenew);
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
           body: jsonEncode({
-            "client_code": "${prefs.clientId}",
+            "ClientCode": "${prefs.clientId}",
             "scheme_code": scheme,
-            "qty": qty,
-            "all_redeem": "N"
+            "redqty": qty,
+            "source": "WEB",
+            "placed_by": "${prefs.clientId}",
           }));
 
       final json = jsonDecode((res.body));
@@ -407,6 +424,8 @@ mixin MutualFundApi on ApiCore {
             "placed_by": prefs.clientId,
             "source": "MOB"
           }));
+
+      print("MF X-sip PlaceOrder ==>${res.body}");
 
       final json = jsonDecode((res.body));
 
@@ -772,6 +791,7 @@ mixin MutualFundApi on ApiCore {
             "allow_loop_back": "Y"
           }));
       final json = jsonDecode((res.body));
+      print("mf======>${json}");
       return UpiIdOrderResponse.fromJson(json as Map<String, dynamic>);
     } catch (e) {
       rethrow;

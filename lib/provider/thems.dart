@@ -66,10 +66,12 @@ class ThemesProvider extends DefaultChangeNotifier {
       pref.setTheme(themeMode == ThemeMode.dark);
       log('themeMode   ::: $themeMode');
       pref.setAppTheme("Dark");
-      SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+      SystemChrome.setSystemUIOverlayStyle( SystemUiOverlayStyle(
           statusBarIconBrightness: Brightness.light, // For Android (dark icons)
           statusBarBrightness: Brightness.dark,
-          statusBarColor: Colors.black));
+          statusBarColor: Colors.black,
+          systemNavigationBarColor: Colors.black,
+          systemNavigationBarIconBrightness: Brightness.dark));
     }
     // else if (pref.userAppTheme == "System Default") {
     //   final brightness = SchedulerBinding.instance.window.platformBrightness;
@@ -80,10 +82,12 @@ class ThemesProvider extends DefaultChangeNotifier {
     //    pref.setTheme(themeMode == ThemeMode.dark);
     // }
     else if (pref.userAppTheme == "Light") {
-      SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+      SystemChrome.setSystemUIOverlayStyle( SystemUiOverlayStyle(
           statusBarIconBrightness: Brightness.dark, // For Android (light icons)
           statusBarBrightness: Brightness.light,
-          statusBarColor: Colors.white));
+          statusBarColor: Colors.white,
+          systemNavigationBarColor: Colors.grey[200],
+          systemNavigationBarIconBrightness: Brightness.dark));
       themeMode = ThemeMode.light;
       pref.setTheme(themeMode == ThemeMode.dark);
       pref.setAppTheme("Light");
@@ -104,18 +108,22 @@ class ThemesProvider extends DefaultChangeNotifier {
         brightness == Brightness.dark ? ThemeMode.dark : ThemeMode.light;
 
     if (pref.userAppTheme == "Dark") {
-      SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+      SystemChrome.setSystemUIOverlayStyle( SystemUiOverlayStyle(
           statusBarIconBrightness: Brightness.light, // For Android (dark icons)
           statusBarBrightness: Brightness.dark,
-          statusBarColor: Colors.black));
+          statusBarColor: Colors.black,
+          systemNavigationBarColor: Colors.black,
+          systemNavigationBarIconBrightness: Brightness.dark));
       _deviceTheme = "Dark";
       themeMode = ThemeMode.dark;
       pref.setTheme(true);
     } else if (pref.userAppTheme == "Light") {
-      SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+      SystemChrome.setSystemUIOverlayStyle( SystemUiOverlayStyle(
           statusBarIconBrightness: Brightness.dark, // For Android (light icons)
           statusBarBrightness: Brightness.light,
-          statusBarColor: Colors.white));
+          statusBarColor: Colors.white,
+          systemNavigationBarColor: Colors.grey[200],
+          systemNavigationBarIconBrightness: Brightness.dark));
       _deviceTheme = "Light";
       themeMode = ThemeMode.light;
       pref.setTheme(false);

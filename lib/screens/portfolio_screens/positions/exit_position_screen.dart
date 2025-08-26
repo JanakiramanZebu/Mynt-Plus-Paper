@@ -41,7 +41,18 @@ class ExitPositionScreen extends ConsumerWidget {
           centerTitle: false,
           leadingWidth: 41,
           titleSpacing: 6,
-          leading: InkWell(
+          leading: Material(
+            color: Colors.transparent,
+            shape: const CircleBorder(),
+            clipBehavior: Clip.hardEdge,
+            child: InkWell(
+              customBorder: const CircleBorder(),
+              splashColor: theme.isDarkMode
+                  ? colors.splashColorDark
+                  : colors.splashColorLight,
+              highlightColor: theme.isDarkMode
+                  ? colors.highlightDark
+                  : colors.highlightLight,
               onTap: () {
                 try {
                   positions.selectExitAllPosition(false);
@@ -53,12 +64,19 @@ class ExitPositionScreen extends ConsumerWidget {
                   debugPrint("Navigation error: $e");
                 }
               },
-              child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 9),
-                  child: SvgPicture.asset(assets.backArrow,
-                      color: theme.isDarkMode
-                          ? colors.colorWhite
-                          : colors.colorBlack))),
+              child: Container(
+                width: 44, // Increased touch area
+                height: 44,
+                alignment: Alignment.center,
+                child: Icon(
+                  Icons.arrow_back_ios_outlined,
+                  size: 18,
+                  color:
+                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                ),
+              ),
+            ),
+          ),
           title: TextWidget.titleText(
               text:
                   "Exit Position (${positions.openPosition?.where((p) => p.qty != "0").length ?? 0})",
@@ -130,19 +148,8 @@ class ExitPositionScreen extends ConsumerWidget {
                       position.chng = chng;
                     }
 
-                    // Calculate profit/loss based on latest price
-                    if (position.avgPrc != null && position.netqty != null) {
-                      final avgPrice =
-                          double.tryParse(position.avgPrc ?? "0.0") ?? 0.0;
-                      final qty = int.tryParse(position.netqty ?? "0") ?? 0;
-                      final ltp = double.tryParse(position.lp ?? "0.0") ?? 0.0;
-
-                      if (avgPrice > 0 && qty != 0 && ltp > 0) {
-                        final pnl = (ltp - avgPrice) * qty;
-                        position.profitNloss = pnl.toStringAsFixed(2);
-                        position.mTm = pnl.toStringAsFixed(2);
-                      }
-                    }
+                    // Calculate profit/loss - use the same logic as position screen
+                    // P&L is already calculated by the portfolio provider, no need to recalculate manually
                   }
                 }
               }
@@ -189,8 +196,10 @@ class ExitPositionScreen extends ConsumerWidget {
                     },
                     child: Container(
                       color: position.isExitSelection!
-                          ? colors.dividerDark.withOpacity(.6)
-                          : colors.colorWhite,
+                          ? theme.isDarkMode
+                              ? colors.textSecondaryDark.withOpacity(0.2)
+                              : colors.textSecondaryLight.withOpacity(0.2)
+                          : null,
                       padding: const EdgeInsets.all(16),
                       child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -251,7 +260,7 @@ class ExitPositionScreen extends ConsumerWidget {
                                             : colors.textSecondaryLight,
                                         fw: 3),
                                     TextWidget.paraText(
-                                        text: "${position.netqty}",
+                                        text: "${((int.tryParse(position.qty.toString()) ?? 0) / (position.exch == 'MCX' ? (int.tryParse(position.ls.toString()) ?? 1) : 1)).toInt()}",
                                         theme: false,
                                         color: theme.isDarkMode
                                             ? colors.textSecondaryDark
@@ -288,44 +297,15 @@ class ExitPositionScreen extends ConsumerWidget {
                                             CrossAxisAlignment.center,
                                         children: [
                                           TextWidget.titleText(
-                                              text:
-                                                  "${position.profitNloss ?? position.rpnl}",
+                                              text: positions.isNetPnl
+                                                  ? "${position.profitNloss ?? position.rpnl}"
+                                                  : "${position.mTm}",
                                               theme: false,
-                                              color: position.profitNloss !=
-                                                      null
-                                                  ? position.profitNloss!
-                                                          .startsWith("-")
-                                                      ? theme.isDarkMode
-                                                          ? colors.lossDark
-                                                          : colors.lossLight
-                                                      : position.profitNloss ==
-                                                              "0.00"
-                                                          ? theme.isDarkMode
-                                                              ? colors
-                                                                  .textSecondaryDark
-                                                              : colors
-                                                                  .textSecondaryLight
-                                                          : theme.isDarkMode
-                                                              ? colors
-                                                                  .profitDark
-                                                              : colors
-                                                                  .profitLight
-                                                  : position.rpnl!
-                                                          .startsWith("-")
-                                                      ? theme.isDarkMode
-                                                          ? colors.lossDark
-                                                          : colors.lossLight
-                                                      : position.rpnl == "0.00"
-                                                          ? theme.isDarkMode
-                                                              ? colors
-                                                                  .textSecondaryDark
-                                                              : colors
-                                                                  .textSecondaryLight
-                                                          : theme.isDarkMode
-                                                              ? colors
-                                                                  .profitDark
-                                                              : colors
-                                                                  .profitLight,
+                                              color: _getPnlColor(
+                                                  positions.isNetPnl
+                                                      ? (position.profitNloss ?? position.rpnl)
+                                                      : position.mTm,
+                                                  theme),
                                               fw: 3),
                                         ],
                                       )
@@ -409,11 +389,16 @@ class ExitPositionScreen extends ConsumerWidget {
                 separatorBuilder: (BuildContext context, int index) {
                   final position = exitablePositions[index];
 
-                  return Container(
-                      color: !position.isExitSelection!
-                          ? colors.dividerLight
-                          : colors.dividerDark,
-                      height: 1);
+                  
+
+                  return Divider(
+                      // color: !position.isExitSelection!
+                      //     ? colors.dividerDark 
+                      //     : colors.dividerLight ,
+
+                          color:colors.dividerDark 
+                           ,
+                      height: 0);
                 },
               );
             }),
@@ -422,15 +407,15 @@ class ExitPositionScreen extends ConsumerWidget {
             shape: const CircularNotchedRectangle(),
             child: SafeArea(
               child: Container(
-                  height: 38,
+                  height: 45,
                   padding: const EdgeInsets.symmetric(
                     vertical: 8,
                   ),
                   decoration: BoxDecoration(
                       color: positions.exitPositionQty == 0
-                          ? const Color(0XFFD34645).withOpacity(.8)
-                          : const Color(0XFFD34645),
-                      borderRadius: BorderRadius.circular(32)),
+                          ? colors.tertiary.withOpacity(.8)
+                          : colors.tertiary,
+                      borderRadius: BorderRadius.circular(5)),
                   width: MediaQuery.of(context).size.width,
                   child: InkWell(
                     onTap: positions.exitPositionQty == 0
@@ -459,12 +444,25 @@ class ExitPositionScreen extends ConsumerWidget {
                               ? "Exit"
                               : "Exit (${positions.exitPositionQty})",
                           theme: false,
-                          color: const Color(0xffFFFFFF),
+                          color: colors.colorWhite,
                           fw: 2),
                     ),
                   )),
             )),
       ),
     );
+  }
+
+  // Helper method to get P&L color (matching position screen logic)
+  Color _getPnlColor(String? pnlValue, ThemesProvider theme) {
+    if (pnlValue == null || pnlValue == "0.00") {
+      return theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight;
+    }
+
+    if (pnlValue.startsWith("-")) {
+      return theme.isDarkMode ? colors.lossDark : colors.lossLight;
+    }
+
+    return theme.isDarkMode ? colors.profitDark : colors.profitLight;
   }
 }

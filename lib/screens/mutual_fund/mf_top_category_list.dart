@@ -161,149 +161,168 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
           theme: theme.isDarkMode,
         ),
       ),
-      body: TransparentLoaderScreen(
-        isLoading: mfData.bestmfloader ?? false,
-        child: tabTitles.isEmpty
-            ? const Center(child: NoDataFound())
-            : Column(
-                children: [
-                  // Custom tabs section
-                  Container(
-                    width: MediaQuery.of(context).size.width,
-                    decoration: BoxDecoration(
-                      border: Border(
-                        bottom: BorderSide(
-                          color: theme.isDarkMode
-                              ? colors.darkColorDivider
-                              : colors.colorDivider,
-                          width: 0,
+      body: SafeArea(
+        child: TransparentLoaderScreen(
+          isLoading: mfData.bestmfloader ?? false,
+          child: tabTitles.isEmpty
+              ? const Center(child: NoDataFound())
+              : Column(
+                  children: [
+                    // Custom tabs section
+                    Container(
+                      width: MediaQuery.of(context).size.width,
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(
+                            color: theme.isDarkMode
+                                ? colors.darkColorDivider
+                                : colors.colorDivider,
+                            width: 0,
+                          ),
                         ),
                       ),
-                    ),
-                    child: SingleChildScrollView(
-                      controller: _scrollController,
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: List.generate(
-                          tabTitles.length,
-                          (tab) => Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              splashColor: theme.isDarkMode
-                                  ? Colors.white.withOpacity(0.05)
-                                  : Colors.black.withOpacity(0.05),
-                              highlightColor: theme.isDarkMode
-                                  ? Colors.white.withOpacity(0.01)
-                                  : Colors.black.withOpacity(0.01),
-                              onTap: () {
-                                setState(() {
-                                  selectedTab = tab;
-                                });
-                                _tabController.animateTo(tab);
-                                // Update the selected chip in your provider
-                                mfData.changetitle(tabTitles[tab]);
-                                mfData.fetchcatdatanew(
-                                    widget.title, tabTitles[tab]);
-                                // Scroll to center the active tab
-                                WidgetsBinding.instance
-                                    .addPostFrameCallback((_) {
-                                  _scrollToActiveTab(tab);
-                                });
-                              },
-                              child: _tabConstruct(
-                                tabTitles[tab],
-                                theme,
-                                tab,
+                      child: SingleChildScrollView(
+                        controller: _scrollController,
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: List.generate(
+                            tabTitles.length,
+                            (tab) => Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                splashColor: theme.isDarkMode
+                                    ? Colors.white.withOpacity(0.05)
+                                    : Colors.black.withOpacity(0.05),
+                                highlightColor: theme.isDarkMode
+                                    ? Colors.white.withOpacity(0.01)
+                                    : Colors.black.withOpacity(0.01),
+                                onTap: () {
+                                  setState(() {
+                                    selectedTab = tab;
+                                  });
+                                  _tabController.animateTo(tab);
+                                  // Update the selected chip in your provider
+                                  mfData.changetitle(tabTitles[tab]);
+                                  mfData.fetchcatdatanew(
+                                      widget.title, tabTitles[tab]);
+                                  // Scroll to center the active tab
+                                  WidgetsBinding.instance
+                                      .addPostFrameCallback((_) {
+                                    _scrollToActiveTab(tab);
+                                  });
+                                },
+                                child: _tabConstruct(
+                                  tabTitles[tab],
+                                  theme,
+                                  tab,
+                                ),
                               ),
                             ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                  // Header row for "Funds" and "3Y Returns"
-                  Container(
-                    padding: const EdgeInsets.only(
-                        left: 12, bottom: 8, top: 16, right: 8),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        TextWidget.paraText(
-                          align: TextAlign.right,
-                          text: 'Funds',
-                          color: theme.isDarkMode
-                              ? colors.textSecondaryDark
-                              : colors.textSecondaryLight,
-                          textOverflow: TextOverflow.ellipsis,
-                          theme: theme.isDarkMode,
-                          fw: 3,
-                        ),
-                        PopupMenuButton<String>(
-                          onSelected: (value) {
-                            setState(() {
-                              selectedReturn = value;
-                            });
-                          },
-                          itemBuilder: (context) => [
-                            PopupMenuItem(
-                                value: '1Y Returns',
-                                child: TextWidget.paraText(
-                                  text: '1Y Returns',
-                                  color: theme.isDarkMode
-                                      ? colors.textSecondaryDark
-                                      : colors.textSecondaryLight,
-                                  theme: theme.isDarkMode,
-                                  fw: 3,
-                                )),
-                            PopupMenuItem(
-                                value: '2Y Returns',
-                                child: TextWidget.paraText(
-                                  text: '2Y Returns',
-                                  color: theme.isDarkMode
-                                      ? colors.textSecondaryDark
-                                      : colors.textSecondaryLight,
-                                  theme: theme.isDarkMode,
-                                  fw: 3,
-                                )),
-                            PopupMenuItem(
-                                value: '3Y Returns',
-                                child: TextWidget.paraText(
-                                  text: '3Y Returns',
-                                  color: theme.isDarkMode
-                                      ? colors.textSecondaryDark
-                                      : colors.textSecondaryLight,
-                                  theme: theme.isDarkMode,
-                                  fw: 3,
-                                )),
-                          ],
-                          child: InkWell(
-                            child: TextWidget.paraText(
-                              align: TextAlign.right,
-                              text: selectedReturn,
-                              color: theme.isDarkMode
-                                  ? colors.textSecondaryDark
-                                  : colors.textSecondaryLight,
-                              textOverflow: TextOverflow.ellipsis,
-                              theme: theme.isDarkMode,
-                              fw: 3,
-                            ),
+                    // Header row for "Funds" and "3Y Returns"
+                    Container(
+                      padding: const EdgeInsets.only(
+                          left: 12, bottom: 8, top: 12, right: 8),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          TextWidget.paraText(
+                            align: TextAlign.right,
+                            text: 'Funds',
+                            color: theme.isDarkMode
+                                ? colors.textSecondaryDark
+                                : colors.textSecondaryLight,
+                            textOverflow: TextOverflow.ellipsis,
+                            theme: theme.isDarkMode,
+                            fw: 3,
                           ),
-                        )
-                      ],
+                          PopupMenuButton<String>(
+                            color: theme.isDarkMode
+                                ? colors.searchBgDark
+                                : colors.searchBg,
+                            onSelected: (value) {
+                              setState(() {
+                                selectedReturn = value;
+                              });
+                            },
+                            itemBuilder: (context) => [
+                              PopupMenuItem(
+                                  value: '1Y Returns',
+                                  child: TextWidget.paraText(
+                                    text: '1Y Returns',
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                        : colors.textSecondaryLight,
+                                    theme: theme.isDarkMode,
+                                    fw: 3,
+                                  )),
+                              PopupMenuItem(
+                                  value: '3Y Returns',
+                                  child: TextWidget.paraText(
+                                    text: '3Y Returns',
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                        : colors.textSecondaryLight,
+                                    theme: theme.isDarkMode,
+                                    fw: 3,
+                                  )),
+                              PopupMenuItem(
+                                  value: '5Y Returns',
+                                  child: TextWidget.paraText(
+                                    text: '5Y Returns',
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                        : colors.textSecondaryLight,
+                                    theme: theme.isDarkMode,
+                                    fw: 3,
+                                  )),
+                            ],
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                        splashColor: theme.isDarkMode
+                                            ? Colors.white.withOpacity(0.15)
+                                            : Colors.black.withOpacity(0.15),
+                                        highlightColor: theme.isDarkMode
+                                            ? Colors.white.withOpacity(0.08)
+                                            : Colors.black.withOpacity(0.08),
+                                        borderRadius: BorderRadius.circular(8),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(5.0),
+                                  child: TextWidget.paraText(
+                                    align: TextAlign.right,
+                                    text: selectedReturn,
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                        : colors.textSecondaryLight,
+                                    textOverflow: TextOverflow.ellipsis,
+                                    theme: theme.isDarkMode,
+                                    fw: 3,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          )
+                        ],
+                      ),
                     ),
-                  ),
-                  // TabBarView with fund lists
-                  Expanded(
-                    child: TabBarView(
-                      controller: _tabController,
-                      children: tabTitles.map((tabTitle) {
-                        return _buildFundList(tabTitle, mfData, theme, context);
-                      }).toList(),
+                    // TabBarView with fund lists
+                    Expanded(
+                      child: TabBarView(
+                        controller: _tabController,
+                        children: tabTitles.map((tabTitle) {
+                          return _buildFundList(
+                              tabTitle, mfData, theme, context, selectedReturn);
+                        }).toList(),
+                      ),
                     ),
-                  ),
-                ],
-              ),
+                  ],
+                ),
+        ),
       ),
     );
   }
@@ -339,7 +358,9 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
           width: isActive ? (tabWidth - 12) : 0, // Dynamic underline width
           margin: const EdgeInsets.only(top: 6),
           decoration: BoxDecoration(
-            color: colors.colorBlue,
+            color: theme.isDarkMode
+                ? colors.secondaryDark
+                : colors.secondaryLight,
             borderRadius: BorderRadius.circular(2),
           ),
         ),
@@ -348,15 +369,35 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
   }
 
   Widget _buildFundList(String selectedTab, dynamic mfData,
-      ThemesProvider theme, BuildContext context) {
-    // Sort the list based on s3Year in descending order
+      ThemesProvider theme, BuildContext context, String selectedReturn) {
+    // Sort the list based on selected return period
     final sortedList = mfData.catnewlist?.toList();
 
     if (sortedList != null) {
       sortedList.sort((a, b) {
-        final aValue = double.tryParse(a.s3Year ?? '0.00') ?? 0.00;
-        final bValue = double.tryParse(b.s3Year ?? '0.00') ?? 0.00;
-        return bValue.compareTo(aValue); // Sort in descending order
+        String? aValue, bValue;
+
+        switch (selectedReturn) {
+          case '1Y Returns':
+            aValue = a.s1Year;
+            bValue = b.s1Year;
+            break;
+          case '3Y Returns':
+            aValue = a.s3Year;
+            bValue = b.s3Year;
+            break;
+          case '5Y Returns':
+            aValue = a.s5Year;
+            bValue = b.s5Year;
+            break;
+          default:
+            aValue = a.s3Year;
+            bValue = b.s3Year;
+        }
+
+        final aDouble = double.tryParse(aValue ?? '0.00') ?? 0.00;
+        final bDouble = double.tryParse(bValue ?? '0.00') ?? 0.00;
+        return bDouble.compareTo(aDouble); // Sort in descending order
       });
     }
 
@@ -371,13 +412,13 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
         final item = sortedList[index];
         if (item == null) return const SizedBox.shrink();
 
-        return _buildListItem(context, item, theme, mfData);
+        return _buildListItem(context, item, theme, mfData, selectedReturn);
       },
     );
   }
 
   Widget _buildListItem(BuildContext context, dynamic item,
-      ThemesProvider theme, dynamic mfData) {
+      ThemesProvider theme, dynamic mfData, String selectedReturn) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -496,6 +537,19 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
             ),
           )),
     );
+  }
+
+  String _getReturnValue(dynamic item, String selectedReturn) {
+    switch (selectedReturn) {
+      case '1Y Returns':
+        return item.s1Year ?? "0.00";
+      case '3Y Returns':
+        return item.s3Year ?? "0.00";
+      case '5Y Returns':
+        return item.s5Year ?? "0.00";
+      default:
+        return item.s3Year ?? "0.00";
+    }
   }
 
   String _formatReturns(String? returns) {

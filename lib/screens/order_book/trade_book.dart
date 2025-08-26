@@ -224,7 +224,7 @@ class TradeBook extends ConsumerWidget {
                                           text:
                                               "${tradeBook[index].symbol?.replaceAll("-EQ", "")} ${tradeBook[index].expDate} ${tradeBook[index].option ?? ''}",
                                           theme: theme.isDarkMode,
-                                          fw: 3,
+                                          fw: 0,
                                           maxLines: 1,
                                           textOverflow: TextOverflow.ellipsis,
                                           color: theme.isDarkMode
@@ -278,7 +278,7 @@ class TradeBook extends ConsumerWidget {
                                           color: theme.isDarkMode
                                               ? colors.textSecondaryDark
                                               : colors.textSecondaryLight,
-                                          fw: 3,
+                                          fw: 0,
                                         ),
                                       ),
 
@@ -289,7 +289,7 @@ class TradeBook extends ConsumerWidget {
                                             ? colors.textSecondaryDark
                                             : colors.textSecondaryLight,
                                         theme: theme.isDarkMode,
-                                        fw: 3,
+                                        fw: 0,
                                       ),
                                       // TextWidget.paraText(
                                       //   text:
@@ -320,7 +320,7 @@ class TradeBook extends ConsumerWidget {
                                         color: theme.isDarkMode
                                             ? colors.textSecondaryDark
                                             : colors.textSecondaryLight,
-                                        fw: 3,
+                                        fw: 0,
                                       ),
                                       TextWidget.paraText(
                                         text:
@@ -329,7 +329,7 @@ class TradeBook extends ConsumerWidget {
                                             ? colors.textSecondaryDark
                                             : colors.textSecondaryLight,
                                         theme: theme.isDarkMode,
-                                        fw: 3,
+                                        fw: 0,
                                       ),
                                       // Avg Price
                                       // TextWidget.paraText(

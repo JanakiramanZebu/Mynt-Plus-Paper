@@ -14,19 +14,56 @@ import '../../sharedWidget/functions.dart';
 import '../../sharedWidget/list_divider.dart';
 import 'mf_stock_detail_screen.dart';
 
-class MFWatchlistScreen extends ConsumerWidget {
+class MFWatchlistScreen extends ConsumerStatefulWidget {
   const MFWatchlistScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<MFWatchlistScreen> createState() => _MFWatchlistScreenState();
+}
+
+class _MFWatchlistScreenState extends ConsumerState<MFWatchlistScreen> {
+  String selectedReturn = '3Y Returns'; // Track selected return period
+
+  @override
+  Widget build(BuildContext context) {
     final theme = ref.watch(themeProvider);
     final fund = ref.watch(fundProvider);
     final mfData = ref.watch(mfProvider);
 
+    // Sort the list based on selected return period
+    final sortedList = mfData.mfWatchlist?.toList();
+    if (sortedList != null) {
+      sortedList.sort((a, b) {
+        String? aValue, bValue;
+
+        switch (selectedReturn) {
+          case '1Y Returns':
+            aValue = a.oneYearData;
+            bValue = b.oneYearData;
+            break;
+          case '3Y Returns':
+            aValue = a.tHREEYEARDATA;
+            bValue = b.tHREEYEARDATA;
+            break;
+          case '5Y Returns':
+            aValue = a.fIVEYEARDATA;
+            bValue = b.fIVEYEARDATA;
+            break;
+          default:
+            aValue = a.tHREEYEARDATA;
+            bValue = b.tHREEYEARDATA;
+        }
+
+        final aDouble = double.tryParse(aValue ?? '0.00') ?? 0.00;
+        final bDouble = double.tryParse(bValue ?? '0.00') ?? 0.00;
+        return bDouble.compareTo(aDouble); // Sort in descending order
+      });
+    }
+
     return Scaffold(
       body: TransparentLoaderScreen(
         isLoading: mfData.bestmfloader ?? false,
-        child: mfData.mfWatchlist?.isEmpty ?? true
+        child: sortedList?.isEmpty ?? true
             ? const Center(child: NoDataFound())
             : Column(
                 children: [
@@ -34,13 +71,14 @@ class MFWatchlistScreen extends ConsumerWidget {
                   Expanded(
                     child: ListView.separated(
                       // padding: const EdgeInsets.all(8),
-                      itemCount: mfData.mfWatchlist?.length ?? 0,
+                      itemCount: sortedList?.length ?? 0,
                       separatorBuilder: (_, __) => const ListDivider(),
                       itemBuilder: (BuildContext context, int index) {
-                        final item = mfData.mfWatchlist?[index];
+                        final item = sortedList?[index];
                         if (item == null) return const SizedBox.shrink();
 
-                        return _buildListItem(context, item, theme, mfData);
+                        return _buildListItem(
+                            context, item, theme, mfData, selectedReturn);
                       },
                     ),
                   ),
@@ -67,22 +105,80 @@ class MFWatchlistScreen extends ConsumerWidget {
             textOverflow: TextOverflow.ellipsis,
             theme: theme.isDarkMode,
           ),
-          TextWidget.paraText(
-            align: TextAlign.right,
-            text: '3Y Returns',
-            color: theme.isDarkMode
-                ? colors.textSecondaryDark
-                : colors.textSecondaryLight,
-            textOverflow: TextOverflow.ellipsis,
-            theme: theme.isDarkMode,
-          ),
+          PopupMenuButton<String>(
+             color: theme.isDarkMode
+                              ? colors.searchBgDark
+                              : colors.searchBg,
+            onSelected: (value) {
+              setState(() {
+                selectedReturn = value;
+              });
+            },
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                  value: '1Y Returns',
+                  child: TextWidget.paraText(
+                    text: '1Y Returns',
+                    color: theme.isDarkMode
+                        ? colors.textSecondaryDark
+                        : colors.textSecondaryLight,
+                    theme: theme.isDarkMode,
+                    fw: 3,
+                  )),
+              PopupMenuItem(
+                  value: '3Y Returns',
+                  child: TextWidget.paraText(
+                    text: '3Y Returns',
+                    color: theme.isDarkMode
+                        ? colors.textSecondaryDark
+                        : colors.textSecondaryLight,
+                    theme: theme.isDarkMode,
+                    fw: 3,
+                  )),
+              PopupMenuItem(
+                  value: '5Y Returns',
+                  child: TextWidget.paraText(
+                    text: '5Y Returns',
+                    color: theme.isDarkMode
+                        ? colors.textSecondaryDark
+                        : colors.textSecondaryLight,
+                    theme: theme.isDarkMode,
+                    fw: 3,
+                  )),
+            ],
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                 splashColor: theme.isDarkMode
+                                            ? Colors.white.withOpacity(0.15)
+                                            : Colors.black.withOpacity(0.15),
+                                        highlightColor: theme.isDarkMode
+                                            ? Colors.white.withOpacity(0.08)
+                                            : Colors.black.withOpacity(0.08),
+                                        borderRadius: BorderRadius.circular(8),
+                child: Padding(
+                  padding: const EdgeInsets.all(5.0),
+                  child: TextWidget.paraText(
+                    align: TextAlign.right,
+                    text: selectedReturn,
+                    color: theme.isDarkMode
+                        ? colors.textSecondaryDark
+                        : colors.textSecondaryLight,
+                    textOverflow: TextOverflow.ellipsis,
+                    theme: theme.isDarkMode,
+                    fw: 3,
+                  ),
+                ),
+              ),
+            ),
+          )
         ],
       ),
     );
   }
 
   Widget _buildListItem(BuildContext context, dynamic item,
-      ThemesProvider theme, dynamic mfData) {
+      ThemesProvider theme, dynamic mfData, String selectedReturn) {
     return Material(
         color: Colors.transparent,
         child: InkWell(
@@ -152,7 +248,9 @@ class MFWatchlistScreen extends ConsumerWidget {
               }
             },
             child: ListTile(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 8,),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 8,
+              ),
               dense: false,
               leading: CircleAvatar(
                 backgroundImage: NetworkImage(
@@ -205,13 +303,26 @@ class MFWatchlistScreen extends ConsumerWidget {
               ),
               trailing: TextWidget.subText(
                 align: TextAlign.right,
-                text: _formatReturns(item.tHREEYEARDATA),
+                text: _formatReturns(_getReturnValue(item, selectedReturn)),
                 color: colors.colorBlack,
                 // _getReturnColor(item.tHREEYEARDATA, theme.isDarkMode)
                 textOverflow: TextOverflow.ellipsis,
                 theme: theme.isDarkMode,
               ),
             )));
+  }
+
+  String _getReturnValue(dynamic item, String selectedReturn) {
+    switch (selectedReturn) {
+      case '1Y Returns':
+        return item.oneYearData ?? "0.00";
+      case '3Y Returns':
+        return item.tHREEYEARDATA ?? "0.00";
+      case '5Y Returns':
+        return item.fIVEYEARDATA ?? "0.00";
+      default:
+        return item.tHREEYEARDATA ?? "0.00";
+    }
   }
 
   String _formatReturns(String? returns) {

@@ -87,6 +87,7 @@ class _ExploreScreensState extends ConsumerState<MFExploreScreens>
         length: 4,
         vsync: this,
         initialIndex: ref.read(mfProvider).activeTab ?? 0);
+    selectedTab = ref.read(mfProvider).activeTab ?? 0;
     _tabController.animation!.addListener(() {
       final newIndex = _tabController.animation!.value.round();
       if (selectedTab != newIndex) {
@@ -112,68 +113,73 @@ class _ExploreScreensState extends ConsumerState<MFExploreScreens>
 
     return TransparentLoaderScreen(
       isLoading: explore.loading,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // const CustomDragHandler(),
-          Container(
-            width: MediaQuery.of(context).size.width,
-            padding: const EdgeInsets.only(top: 8),
-            decoration: BoxDecoration(
-              border: Border(
-                bottom: BorderSide(
-                  color: theme.isDarkMode
-                      ? colors.darkColorDivider
-                      : colors.colorDivider,
-                  width: 0,
+      child: GestureDetector(
+        onTap: () {
+          FocusScope.of(context).unfocus();
+        },
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // const CustomDragHandler(),
+            Container(
+              width: MediaQuery.of(context).size.width,
+              padding: const EdgeInsets.only(top: 8),
+              decoration: BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(
+                    color: theme.isDarkMode
+                        ? colors.darkColorDivider
+                        : colors.colorDivider,
+                    width: 0,
+                  ),
                 ),
               ),
-            ),
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: List.generate(
-                  tablistitems.length,
-                  (tab) => Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      splashColor: theme.isDarkMode
-                          ? Colors.white.withOpacity(0.05)
-                          : Colors.black.withOpacity(0.05),
-                      highlightColor: theme.isDarkMode
-                          ? Colors.white.withOpacity(0.01)
-                          : Colors.black.withOpacity(0.01),
-                      onTap: () {
-                        setState(() {
-                          selectedTab = tab;
-                        });
-                        _tabController.animateTo(tab);
-                      },
-                      child: _tabConstruct(
-                          tablistitems[tab]['title'].toString(), theme, tab),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: List.generate(
+                    tablistitems.length,
+                    (tab) => Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        splashColor: theme.isDarkMode
+                            ? Colors.white.withOpacity(0.05)
+                            : Colors.black.withOpacity(0.05),
+                        highlightColor: theme.isDarkMode
+                            ? Colors.white.withOpacity(0.01)
+                            : Colors.black.withOpacity(0.01),
+                        onTap: () {
+                          setState(() {
+                            selectedTab = tab;
+                          });
+                          _tabController.animateTo(tab);
+                        },
+                        child: _tabConstruct(
+                            tablistitems[tab]['title'].toString(), theme, tab),
+                      ),
                     ),
                   ),
                 ),
               ),
             ),
-          ),
-
-          Expanded(
-            child: TabBarView(
-              physics: const BouncingScrollPhysics(),
-              controller: _tabController,
-              children: [
-                MutualFundNewScreen(
-                  tabController: _tabController,
-                ),
-                const MFWatchlistScreen(),
-                const MfOrderBookScreen(),
-                const MFSipdetScreen()
-              ],
+        
+            Expanded(
+              child: TabBarView(
+                physics: const BouncingScrollPhysics(),
+                controller: _tabController,
+                children: [
+                  MutualFundNewScreen(
+                    tabController: _tabController,
+                  ),
+                  const MFWatchlistScreen(),
+                  const MfOrderBookScreen(),
+                  const MFSipdetScreen()
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -193,7 +199,9 @@ class _ExploreScreensState extends ConsumerState<MFExploreScreens>
                 ? theme.isDarkMode
                     ? colors.secondaryDark
                     : colors.secondaryLight
-                : colors.textSecondaryLight,
+                : theme.isDarkMode
+                    ? colors.textSecondaryDark
+                    : colors.textSecondaryLight,
             textOverflow: TextOverflow.ellipsis,
             maxLines: 1,
             theme: theme.isDarkMode,

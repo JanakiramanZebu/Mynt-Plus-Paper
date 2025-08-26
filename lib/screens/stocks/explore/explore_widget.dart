@@ -31,7 +31,7 @@ class ExploreWidget extends ConsumerWidget {
                           borderRadius: BorderRadius.all(Radius.circular(40))),
                     ),
                     onPressed: () async {
-                    explore. chngExpName(explore.exploreNames[index],index);
+                      explore.chngExpName(explore.exploreNames[index], index);
                     },
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 5.0),

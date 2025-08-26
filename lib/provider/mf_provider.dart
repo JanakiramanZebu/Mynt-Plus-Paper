@@ -30,6 +30,7 @@ import '../models/mf_model/mf_bank_detail_model.dart';
 import '../models/mf_model/mf_category_list_model.dart';
 import '../models/mf_model/mf_categorytype_model.dart';
 import '../models/mf_model/mf_create_mandate.dart';
+import '../models/mf_model/mf_etf_category_model.dart';
 import '../models/mf_model/mf_factsheet_data_model.dart';
 import '../models/mf_model/mf_factsheet_graph.dart';
 import '../models/mf_model/mf_lumpsum_order.dart';
@@ -158,6 +159,10 @@ class MFProvider extends DefaultChangeNotifier {
 
   List<MutualFundList>? _mutualFundsearchdata = [];
   List<MutualFundList>? get mutualFundsearchdata => _mutualFundsearchdata;
+
+  // Current MF Holdings sort option tracking
+  String _currentMFSortOption = "";
+  String get currentMFSortOption => _currentMFSortOption;
 
   List<TopSchemesModelData>? _topSchemesdata = [];
   List<TopSchemesModelData>? get topSchemesdata => _topSchemesdata;
@@ -952,7 +957,7 @@ class MFProvider extends DefaultChangeNotifier {
     await fetchMFMandateDetail();
     // fetchBankDetail();
     await fetchUpiDetail('', context);
-    await chngMandate("Lumpsum");
+    await chngMandate(mandateId);
     _singleloader = false;
   }
 
@@ -1186,6 +1191,23 @@ class MFProvider extends DefaultChangeNotifier {
       _investloader = false;
 
       notifyListeners();
+    }
+  }
+
+  MfEtfCategoryModel? _etfCategorydata;
+  MfEtfCategoryModel? get etfCategorydata => _etfCategorydata;
+
+  Future fetchEtfCategory() async {
+    try {
+      _investloader = true;
+      var etfCategorydata = await api.getetfcategory();
+      _etfCategorydata = etfCategorydata;
+      // print("ETF Category ==>${_etfCategorydata}");
+      notifyListeners();
+    } catch (e) {
+      debugPrint("Error fetching ETF Category: $e");
+    } finally {
+      _investloader = false;
     }
   }
 
@@ -2236,6 +2258,7 @@ class MFProvider extends DefaultChangeNotifier {
 //   final watchlistIsins = _mfWatchlist!.map((item) => item.iSIN).toSet();
 
 //   if (_factSheetDataModel!.data!. == isin) {
+
 //     _factSheetDataModel!.data!.isAdd = watchlistIsins.contains(isin);
 //   }
 // }
@@ -2289,13 +2312,13 @@ class MFProvider extends DefaultChangeNotifier {
     });
 
     // Start 1-minute auto pop timer
-    _autoPopTimer = Timer(const Duration(minutes: 1), () {
-      _threeSecondTimer?.cancel(); // Stop the repeating timer
-      if (Navigator.of(context).canPop()) {
-        Navigator.of(context).pop(); // Auto pop after 1 minute
-        _triggerfromMF = false;
-      }
-    });
+    // _autoPopTimer = Timer(const Duration(minutes: 1), () {
+    //   _threeSecondTimer?.cancel(); // Stop the repeating timer
+    //   if (Navigator.of(context).canPop()) {
+    //     Navigator.of(context).pop(); // Auto pop after 1 minute
+    //     _triggerfromMF = false;
+    //   }
+    // });
   }
 
   Future upipaymenttrigger(
@@ -2312,125 +2335,124 @@ class MFProvider extends DefaultChangeNotifier {
           _triggerfromMF = true;
           notifyListeners();
         }
-      }else{
-                        Navigator.pop(context);
+      } else {
+        // Navigator.pop(context);
 
         // if (_upiApiresponse!.data!.responsestring!.contains('Could not validate payment create request due to')) {
-          showModalBottomSheet(
-              context: context,
-              shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-              ),
-              isScrollControlled: true,
-              builder: (context) {
-                return Wrap(
-                  children: [
-                    const SizedBox(
-                      height: 24,
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(16),
-                          color: colors.colorWhite,
-                          boxShadow: const [
-                            BoxShadow(
-                                color: Color(0xff999999),
-                                blurRadius: 4.0,
-                                offset: Offset(2.0, 0.0))
-                          ]),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            alignment: Alignment.center,
-                            child: Column(
-                              children: [
-                                const CustomDragHandler(),
-                                Icon(
-                                  Icons.cancel_rounded,
-                                  //
-                                  color: colors.kColorRedButton,
-                                  size: 70,
-                                ),
-                                const SizedBox(
-                                  height: 16,
-                                ),
-                                TextWidget.subText(
-                                  text: "UPI ID not liked with bank",
-                                  theme: false,
-                                  color: colors.textPrimaryLight,
-                                ),
-                                const SizedBox(
-                                  height: 5,
-                                ),
-                                TextWidget.paraText(
-                                  text: "Payment trigger fail",
-                                  theme: false,
-                                  color: colors.textSecondaryLight,
-                                ),
-                                const SizedBox(
-                                  height: 10,
-                                ),
-                                // TextWidget.custmText(
-                                //     text: "",
-                                //     theme: false,
-                                //     color:  colors.colorBlack,
-                                //     fs: 40),
-                                const SizedBox(
-                                  height: 10,
-                                ),
-                                // TextWidget.paraText(
-                                //   text: "${widget.upiData?["datetime"]}",
-                                //   theme: false,
-                                //   color: colors.textSecondaryLight,
-                                // ),
-                              ],
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 8),
-                            child: SizedBox(
-                              width: MediaQuery.of(context).size.width,
-                              child: ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                    elevation: 0,
-                                    minimumSize: const Size(0, 40),
-                                    backgroundColor: colors.primaryLight,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(5),
-                                    ),
-                                  ),
-                                  onPressed: () {
-                                    // Clear the amount text field
-                                    Navigator.pop(context);
-                                    FocusScope.of(context).unfocus();
-                                  },
-                                  child: TextWidget.subText(
-                                      text: 'Done',
-                                      theme: false,
-                                      color: colors.colorWhite,
-                                      fw: 2)),
-                            ),
-                          ),
-                          const SizedBox(
-                            height: 20,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                );
-              });
+        // showModalBottomSheet(
+        //     context: context,
+        //     shape: const RoundedRectangleBorder(
+        //       borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        //     ),
+        //     isScrollControlled: true,
+        //     builder: (context) {
+        //       return Wrap(
+        //         children: [
+        //           const SizedBox(
+        //             height: 24,
+        //           ),
+        //           Container(
+        //             padding: const EdgeInsets.symmetric(horizontal: 16),
+        //             decoration: BoxDecoration(
+        //                 borderRadius: BorderRadius.circular(16),
+        //                 color: colors.colorWhite,
+        //                 boxShadow: const [
+        //                   BoxShadow(
+        //                       color: Color(0xff999999),
+        //                       blurRadius: 4.0,
+        //                       offset: Offset(2.0, 0.0))
+        //                 ]),
+        //             child: Column(
+        //               crossAxisAlignment: CrossAxisAlignment.start,
+        //               mainAxisSize: MainAxisSize.min,
+        //               children: [
+        //                 Container(
+        //                   alignment: Alignment.center,
+        //                   child: Column(
+        //                     children: [
+        //                       const CustomDragHandler(),
+        //                       Icon(
+        //                         Icons.cancel_rounded,
+        //                         //
+        //                         color: colors.kColorRedButton,
+        //                         size: 70,
+        //                       ),
+        //                       const SizedBox(
+        //                         height: 16,
+        //                       ),
+        //                       TextWidget.subText(
+        //                         text: "UPI ID not liked with bank",
+        //                         theme: false,
+        //                         color: colors.textPrimaryLight,
+        //                       ),
+        //                       const SizedBox(
+        //                         height: 5,
+        //                       ),
+        //                       TextWidget.paraText(
+        //                         text: "Payment trigger fail",
+        //                         theme: false,
+        //                         color: colors.textSecondaryLight,
+        //                       ),
+        //                       const SizedBox(
+        //                         height: 10,
+        //                       ),
+        //                       // TextWidget.custmText(
+        //                       //     text: "",
+        //                       //     theme: false,
+        //                       //     color:  colors.colorBlack,
+        //                       //     fs: 40),
+        //                       const SizedBox(
+        //                         height: 10,
+        //                       ),
+        //                       // TextWidget.paraText(
+        //                       //   text: "${widget.upiData?["datetime"]}",
+        //                       //   theme: false,
+        //                       //   color: colors.textSecondaryLight,
+        //                       // ),
+        //                     ],
+        //                   ),
+        //                 ),
+        //                 Padding(
+        //                   padding: const EdgeInsets.symmetric(horizontal: 8),
+        //                   child: SizedBox(
+        //                     width: MediaQuery.of(context).size.width,
+        //                     child: ElevatedButton(
+        //                         style: ElevatedButton.styleFrom(
+        //                           elevation: 0,
+        //                           minimumSize: const Size(0, 40),
+        //                           backgroundColor: colors.primaryLight,
+        //                           shape: RoundedRectangleBorder(
+        //                             borderRadius: BorderRadius.circular(5),
+        //                           ),
+        //                         ),
+        //                         onPressed: () {
+        //                           // Clear the amount text field
+        //                           Navigator.pop(context);
+        //                           FocusScope.of(context).unfocus();
+        //                         },
+        //                         child: TextWidget.subText(
+        //                             text: 'Done',
+        //                             theme: false,
+        //                             color: colors.colorWhite,
+        //                             fw: 2)),
+        //                   ),
+        //                 ),
+        //                 const SizedBox(
+        //                   height: 20,
+        //                 ),
+        //               ],
+        //             ),
+        //           ),
+        //         ],
+        //       );
+        //     });
         // }else{
         //        ScaffoldMessenger.of(context)
         //       .showSnackBar(warningMessage(context, _upiApiresponse!.data!.responsestring!));
         // // }
-       ispaymentcalled = false; 
-      // Navigator.pop(context);
+        ispaymentcalled = false;
+        // Navigator.pop(context);
 
-       
         // if (_upiApiresponse!.data!.responsestring!.contains('Could not validate payment create request due to')) {
         //   ScaffoldMessenger.of(context).showSnackBar(
         //     warningMessage(context, 'UPI ID not liked with bank'),
@@ -3263,61 +3285,73 @@ class MFProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
-  bool isValidUpiId(MutualFundList mfData) {
-    // print("Change made");
+  bool isValidUpiId(dynamic mfData, String val) {
     final RegExp upiRegex =
         RegExp(r'^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+$', caseSensitive: false);
+    if (val == 'reinitiatefromportfolio') {
+      if (upiId.text.isEmpty) {
+        upiError = "Please enter UPI ID";
+      } else if (!upiRegex.hasMatch(upiId.text)) {
+        upiError = "Please enter valid UPI ID";
+      } else {
+        upiError = "";
+      }
+    } else {
+      if (mfOrderTpye == "One-time") {
+        if (invAmt.text.isEmpty) {
+          invAmtError = "Please enter Investment amount";
+        } else if (double.parse(invAmt.text) <
+            double.parse(mfData.minimumPurchaseAmount!)) {
+          invAmtError =
+              "Investment amount should not be less than ${mfData.minimumPurchaseAmount!}";
+        } else {
+          invAmtError = "";
+        }
+      } else {
+        if (invAmt.text.isEmpty) {
+          invAmtError = "Please enter Investment amount";
+        } else if (double.parse(invAmt.text) <
+                double.parse(mfData.minimumPurchaseAmount!) &&
+            isInitalPay) {
+          invAmtError =
+              "Investment amount should not be less than ${mfData.minimumPurchaseAmount!}";
+        } else {
+          invAmtError = "";
+        }
+
+        if (installmentAmt.text.isEmpty) {
+          installmentAmtError = "Please enter Installment amount";
+        } else if (double.parse(installmentAmt.text) <
+            double.parse(mfData.minimumPurchaseAmount!)) {
+          installmentAmtError =
+              "Installment amount should not be less than ${mfData.minimumPurchaseAmount!}";
+        } else {
+          installmentAmtError = "";
+        }
+      }
+
+      if (upiId.text.isEmpty) {
+        upiError = "Please enter UPI ID";
+      } else if (!upiRegex.hasMatch(upiId.text)) {
+        upiError = "Please enter valid UPI ID";
+      } else {
+        upiError = "";
+      }
+
+      if (invDuration.text.isEmpty) {
+        invDurationError = "Please enter Investment duration";
+      } else if (double.parse(invDuration.text) < double.parse(_sipDuration)) {
+        invDurationError =
+            "Installment Duration should not be less than $_sipDuration";
+      } else {
+        invDurationError = "";
+      }
+      notifyListeners();
+    }
+    // print("Change made");
+
     // print("mfOrderTpye${mfOrderTpye}");
-    if (mfOrderTpye == "One-time") {
-      if (invAmt.text.isEmpty) {
-        invAmtError = "Please enter Investment amount";
-      } else if (double.parse(invAmt.text) <
-          double.parse(mfData.minimumPurchaseAmount!)) {
-        invAmtError =
-            "Investment amount should not be less than ${mfData.minimumPurchaseAmount!}";
-      } else {
-        invAmtError = "";
-      }
-    } else {
-      if (invAmt.text.isEmpty) {
-        invAmtError = "Please enter Investment amount";
-      } else if (double.parse(invAmt.text) <
-              double.parse(mfData.minimumPurchaseAmount!) &&
-          isInitalPay) {
-        invAmtError =
-            "Investment amount should not be less than ${mfData.minimumPurchaseAmount!}";
-      } else {
-        invAmtError = "";
-      }
 
-      if (installmentAmt.text.isEmpty) {
-        installmentAmtError = "Please enter Installment amount";
-      } else if (double.parse(installmentAmt.text) <
-          double.parse(mfData.minimumPurchaseAmount!)) {
-        installmentAmtError =
-            "Installment amount should not be less than ${mfData.minimumPurchaseAmount!}";
-      } else {
-        installmentAmtError = "";
-      }
-    }
-
-    if (upiId.text.isEmpty) {
-      upiError = "Please enter UPI ID";
-    } else if (!upiRegex.hasMatch(upiId.text)) {
-      upiError = "Please enter valid UPI ID";
-    } else {
-      upiError = "";
-    }
-
-    if (invDuration.text.isEmpty) {
-      invDurationError = "Please enter Investment duration";
-    } else if (double.parse(invDuration.text) < double.parse(_sipDuration)) {
-      invDurationError =
-          "Installment Duration should not be less than $_sipDuration";
-    } else {
-      invDurationError = "";
-    }
-    notifyListeners();
     return invAmtError == "" &&
         upiError == "" &&
         installmentAmtError == "" &&
@@ -3368,8 +3402,8 @@ class MFProvider extends DefaultChangeNotifier {
       _redemptionData = await api.getMFRedemption(scheme, qty);
       if (_redemptionData!.stat == "Ok") {
         fetchMfOrderbook(context);
-        ScaffoldMessenger.of(context)
-            .showSnackBar(successMessage(context, "${_redemptionData!.msg}"));
+        ScaffoldMessenger.of(context).showSnackBar(
+            successMessage(context, "${_redemptionData!.remarks}"));
         Navigator.pop(context);
       } else {
         redemptionOrderError = _redemptionData!.emsg;
@@ -3391,6 +3425,9 @@ class MFProvider extends DefaultChangeNotifier {
   void filterMFHoldings(
       {required String sorting, required BuildContext context}) {
     if (_mfholdingnew?.data == null) return;
+
+    // Track current sort option
+    _currentMFSortOption = sorting;
 
     if (sorting == "NAMEASC") {
       _mfholdingnew!.data!
@@ -3451,4 +3488,3 @@ class MFProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 }
-

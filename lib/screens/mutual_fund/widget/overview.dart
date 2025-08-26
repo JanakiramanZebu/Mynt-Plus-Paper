@@ -146,7 +146,7 @@ class MFOverview extends ConsumerWidget {
                   Icon(
                     Icons.circle,
                     size: 16,
-                    color: colors.ltpgreen,
+                    color: theme.isDarkMode ? colors.profitDark  : colors.profitLight,
                   ),
                   const SizedBox(
                     width: 6,
@@ -155,8 +155,8 @@ class MFOverview extends ConsumerWidget {
                       align: TextAlign.start,
                       text: "Benchmark",
                       color: theme.isDarkMode
-                          ? colors.textSecondaryDark
-                          : colors.textSecondaryLight,
+                          ? colors.textPrimaryDark
+                          : colors.textPrimaryLight,
                       textOverflow: TextOverflow.ellipsis,
                       theme: theme.isDarkMode,
                       fw: 3),
@@ -165,8 +165,8 @@ class MFOverview extends ConsumerWidget {
                         align: TextAlign.start,
                         text: "  (${factSheetData.benchmark ?? ""})",
                         color: theme.isDarkMode
-                            ? colors.textPrimaryDark
-                            : colors.textPrimaryLight,
+                            ? colors.textSecondaryDark
+                            : colors.textSecondaryLight,
                         textOverflow: TextOverflow.ellipsis,
                         theme: theme.isDarkMode,
                         fw: 3),
@@ -195,12 +195,15 @@ class MFOverview extends ConsumerWidget {
 
                     return Container(
                       decoration: BoxDecoration(
-                          color: isDarkMode
-                              ? const Color(0xFF2A2A2A)
-                              : Color(isNegative ? 0xffFFFCFB : 0xffFBFFFA),
-                          borderRadius: BorderRadius.circular(5),
-                          border: Border.all(
-                              color: const Color(0xff999999), width: .2)),
+                        color: isNegative
+                            ? isDarkMode
+                                ? colors.lossDark.withOpacity(0.1)
+                                : colors.lossLight.withOpacity(0.1)
+                            : isDarkMode
+                                ? colors.profitDark.withOpacity(0.1)
+                                : colors.profitLight.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(5),
+                      ),
                       child: Stack(
                         children: [
                           Padding(
@@ -212,7 +215,6 @@ class MFOverview extends ConsumerWidget {
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   const SizedBox(height: 8),
-
                                   TextWidget.subText(
                                       align: TextAlign.start,
                                       text: "$value%",
@@ -246,20 +248,22 @@ class MFOverview extends ConsumerWidget {
                               width: MediaQuery.of(context).size.width,
                               padding: const EdgeInsets.symmetric(vertical: 8),
                               decoration: BoxDecoration(
-                                  color: Color(isReturnNegative
-                                      ? 0xffFF1717
-                                      : 0xff43A833),
+                                  color: isReturnNegative
+                                      ? isDarkMode
+                                          ? colors.lossDark.withOpacity(0.5)
+                                          : colors.lossLight.withOpacity(0.3)
+                                      : isDarkMode
+                                          ? colors.profitDark.withOpacity(0.5)
+                                          : colors.profitLight.withOpacity(0.3),
                                   borderRadius: const BorderRadius.vertical(
                                       bottom: Radius.circular(5))),
-                              child: 
-                              TextWidget.paraText(
-                                      align: TextAlign.start,
-                                      text: "$returnValue%",
-                                      color:   colors.textPrimaryDark,
-                                      textOverflow: TextOverflow.ellipsis,
-                                      theme: theme.isDarkMode,
-                                      fw: 0),
-                                     
+                              child: TextWidget.paraText(
+                                  align: TextAlign.start,
+                                  text: "$returnValue%",
+                                  color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                                  textOverflow: TextOverflow.ellipsis,
+                                  theme: theme.isDarkMode,
+                                  fw: 0),
                             ),
                           ),
                         ],
@@ -359,20 +363,21 @@ class MFOverview extends ConsumerWidget {
         ]);
   }
 
-  Widget _buildFundMetrics(BuildContext context, ThemesProvider theme, MFProvider mfData) {
+  Widget _buildFundMetrics(
+      BuildContext context, ThemesProvider theme, MFProvider mfData) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
+        _buildMetricColumn("Aum (cr)",
+            _formatAum(mfData.factSheetDataModel?.data?.AUM), theme),
+        _buildMetricColumn("NAV",
+            _formatValue(mfData.factSheetDataModel?.data?.currentNAV), theme),
         _buildMetricColumn(
-            "Aum (cr)", _formatAum(mfStockData.aUM), theme),
-        _buildMetricColumn(
-            "NAV",
-            _formatValue(mfData.factSheetDataModel?.data?.currentNAV),
+            "Min. Inv",
+            _formatValue(mfData.factSheetDataModel?.data?.purchaseMinAmount),
             theme),
-        _buildMetricColumn("Min. Inv",
-            _formatValue(mfStockData.minimumPurchaseAmount), theme),
         _buildMetricColumn("5Yr CAGR",
-            _formatYearData(mfStockData.fIVEYEARDATA), theme),
+            _formatYearData(mfData.factSheetDataModel?.data?.fiveYear), theme),
       ],
     );
   }

@@ -2,15 +2,17 @@ class UpiIdOrderResponse {
   String? stat;
   Data? data;
   String? msg;
+  String? emsg;
   String? type;
   String? file;
 
-  UpiIdOrderResponse({this.stat, this.data, this.msg, this.type});
+  UpiIdOrderResponse({this.stat, this.data, this.msg,this.emsg, this.type});
 
   UpiIdOrderResponse.fromJson(Map<String, dynamic> json) {
     stat = json['stat'];
     data = json['data'] != null ? new Data.fromJson(json['data']) : null;
     msg = json['msg'];
+    emsg = json['emsg'];
     type = json['type'];
     file = json['file'];
   }
@@ -22,6 +24,7 @@ class UpiIdOrderResponse {
       data['data'] = this.data!.toJson();
     }
     data['msg'] = this.msg;
+    data['emsg'] = this.emsg;
     data['type'] = this.type;
     data['file'] = this.file;
     return data;

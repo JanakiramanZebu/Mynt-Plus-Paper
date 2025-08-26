@@ -53,6 +53,7 @@ class WebSocketProvider extends ChangeNotifier {
   Completer<void>? _connectionCompleter;
   final Map<String, Timer> _subscriptionTimers = {};
   final Map<String, dynamic> _socketDatas = {};
+  final Map<String, String> _ltpCache = {}; // Cache for last known LTP values
   Timer? _holdStartTime;
   Timer? _reconnectBackoff; // Add backoff timer
 
@@ -65,6 +66,29 @@ class WebSocketProvider extends ChangeNotifier {
   bool get retryScreen => _retryScreen;
   Map get socketDatas => _socketDatas;
   bool get reconnectionSuccess => _reconnectionSuccess;
+  
+  // Get cached LTP for a token
+  String? getCachedLTP(String token) => _ltpCache[token];
+  
+  // Get best available LTP (socket > cache > fallback)
+  String getBestLTP(String token, String fallbackLTP) {
+    // First check if we have current socket data
+    if (_socketDatas.containsKey(token) && _socketDatas[token]['lp'] != null) {
+      final socketLTP = _socketDatas[token]['lp'].toString();
+      if (socketLTP != "0.00" && socketLTP != "null") {
+        return socketLTP;
+      }
+    }
+    
+    // Then check cached LTP
+    final cachedLTP = _ltpCache[token];
+    if (cachedLTP != null && cachedLTP != "0.00") {
+      return cachedLTP;
+    }
+    
+    // Finally fallback to provided value
+    return fallbackLTP;
+  }
 
   // Preferences
   final Preferences _pref = locator<Preferences>();
@@ -481,6 +505,11 @@ class WebSocketProvider extends ChangeNotifier {
       if (data[field] != value) {
         data[field] = value;
         hasUpdates = true;
+        
+        // Cache LTP value for future use during refresh
+        if (field == 'lp') {
+          _ltpCache[key] = value.toString();
+        }
       }
     }
 
@@ -527,6 +556,12 @@ class WebSocketProvider extends ChangeNotifier {
     data["l"] = res["l"] ?? "0.00";
     data["c"] = res["c"] ?? "0.00";
     data["lp"] = res["lp"] ?? "0.00";
+    
+    // Cache initial LTP value
+    if (res["lp"] != null && res["lp"] != "0.00") {
+      _ltpCache[key] = res["lp"].toString();
+    }
+    
     data["v"] = res["v"] ?? "0.00";
     data["oi"] = res["oi"] ?? "0.00";
     data["toi"] = res["toi"] ?? "0.00";

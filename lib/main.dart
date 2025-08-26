@@ -25,6 +25,9 @@ import 'routes/app_routes.dart';
 import 'routes/route_names.dart';
 import 'themes/theme.dart';
 
+// Global route observer to allow screens to react to navigation events
+final RouteObserver<ModalRoute<void>> routeObserver = RouteObserver<ModalRoute<void>>();
+
 // Global provider to track Firebase initialization status
 final firebaseInitializedProvider = StateProvider<bool>((ref) => false);
 
@@ -234,7 +237,8 @@ class MyApp extends ConsumerWidget {
         title: 'MYNT',
         debugShowCheckedModeBanner: false,
         initialRoute: Routes.splash,
-        onGenerateRoute: AppRoutes.router);
+        onGenerateRoute: AppRoutes.router,
+        navigatorObservers: [routeObserver]);
   }
 }
 

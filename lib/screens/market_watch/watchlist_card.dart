@@ -103,6 +103,7 @@ class _WatchlistCardState extends ConsumerState<WatchlistCard> {
                     color: theme.isDarkMode
                         ? colors.textPrimaryDark
                         : colors.textPrimaryLight,
+                    fw: 0,
                     theme: theme.isDarkMode,
                   ),
                 ),
@@ -111,8 +112,11 @@ class _WatchlistCardState extends ConsumerState<WatchlistCard> {
                     "${widget.watchListData["option"]}",
                     style: TextWidget.textStyle(
                       fontSize: 14,
-                      color: colors.textPrimaryLight,
+                      color:theme.isDarkMode
+                        ? colors.textPrimaryDark
+                        : colors.textPrimaryLight,
                       theme: theme.isDarkMode,
+                      fw: 0,
                     ),
                   ),
               ],
@@ -136,13 +140,14 @@ class _WatchlistCardState extends ConsumerState<WatchlistCard> {
                             ? colors.textSecondaryDark
                             : colors.textSecondaryLight,
                         theme: theme.isDarkMode,
+                        fw: 0,
                       ),
                     if (widget.watchListData['holdingQty'] != null &&
                         widget.watchListData['holdingQty']
                             .toString()
                             .isNotEmpty &&
                         widget.watchListData['holdingQty'] != "null") ...[
-                      const SizedBox(width: 4),
+                      const SizedBox(width: 6),
                       SvgPicture.asset(assets.suitcase,
                           height: 12,
                           width: 16,
@@ -152,8 +157,9 @@ class _WatchlistCardState extends ConsumerState<WatchlistCard> {
                       const SizedBox(width: 4),
                       TextWidget.paraText(
                         text: "${widget.watchListData['holdingQty']}",
-                        color: colors.secondaryLight,
+                        color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                         theme: theme.isDarkMode,
+                        fw: 0,
                       ),
                     ]
                   ],
@@ -282,15 +288,18 @@ class _PriceDataWidgetState extends ConsumerState<_PriceDataWidget> {
 
     final changeColor =
         displayChange.startsWith("-") || displayPerChange.startsWith('-')
-            ? colors.lossLight
+            ? theme.isDarkMode ? colors.lossDark : colors.lossLight
             : (displayChange == "0.00" || displayPerChange == "0.00")
-                ? colors.textSecondaryLight
-                : colors.profit;
+                ? theme.isDarkMode
+                    ? colors.textSecondaryDark
+                    : colors.textSecondaryLight
+                : theme.isDarkMode ? colors.profitDark : colors.profitLight;
 
     final changeTextStyle = TextWidget.textStyle(
       fontSize: 16, // or keep 12 if you prefer
       color: changeColor,
       theme: theme.isDarkMode,
+      fw: 0,
       // fw = 0 → FontWeight.w500 as per your logic
     );
 
@@ -312,7 +321,10 @@ class _PriceDataWidgetState extends ConsumerState<_PriceDataWidget> {
             padding: const EdgeInsets.only(top: 4),
             child: TextWidget.paraText(
                 text: "$displayChange ($displayPerChange%)",
-                color: colors.textSecondaryLight,
+                color: theme.isDarkMode
+                    ? colors.textSecondaryDark
+                    : colors.textSecondaryLight,
+                fw: 0,
                 theme: theme.isDarkMode),
           ),
         ]);

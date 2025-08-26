@@ -33,8 +33,32 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
       return SafeArea(
         child: Container(
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(16),
+                topRight: Radius.circular(16),
+              ),
               color: theme.isDarkMode ? Colors.black : Colors.white,
+             border: Border(
+                                  top: BorderSide(
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                            .withOpacity(0.5)
+                                        : colors.colorWhite,
+                                  ),
+                                  left: BorderSide(
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                            .withOpacity(0.5)
+                                        : colors.colorWhite,
+                                  ),
+                                  right: BorderSide(
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                            .withOpacity(0.5)
+                                        : colors.colorWhite,
+                                  ),
+                                ),
+
             ),
             child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -66,7 +90,7 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                       // Add delay for visual feedback
                                       await Future.delayed(
                                           const Duration(milliseconds: 150));
-        
+            
                                       if (context.mounted) {
                                         Navigator.pop(context);
                                       }
@@ -104,6 +128,7 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                                 ? colors.secondaryDark
                                                 : colors.secondaryLight,
                                             theme: theme.isDarkMode,
+                                            fw: 2,
                                           ),
                                         ]))),
                               )
@@ -144,14 +169,14 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                     ref
                                         .read(marketWatchProvider)
                                         .setCurrentWatchlistPageIndex(index);
-        
+            
                                     await ref
                                         .read(marketWatchProvider)
                                         .changeWlName(watchlist[index], "No");
-        
+            
                                     await marketWatch.changeWLScrip(
                                         watchlist[index], context);
-        
+            
                                     Navigator.pop(context);
                                   },
                                   splashColor: theme.isDarkMode
@@ -166,10 +191,12 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                     dense: true,
                                     minLeadingWidth: 16,
                                     leading: SvgPicture.asset(theme.isDarkMode
-                                        ? widget.currentWLName == watchlist[index]
+                                        ? widget.currentWLName ==
+                                                watchlist[index]
                                             ? assets.darkActProductIcon
                                             : assets.darkProductIcon
-                                        : widget.currentWLName == watchlist[index]
+                                        : widget.currentWLName ==
+                                                watchlist[index]
                                             ? assets.actProductIcon
                                             : assets.productIcon),
                                     title: Text(
@@ -194,6 +221,10 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                                 ? colors.secondaryDark
                                                 : colors.secondaryLight,
                                         theme: theme.isDarkMode,
+                                        fw: widget.currentWLName !=
+                                                watchlist[index]
+                                            ? null
+                                            : 2,
                                       ),
                                     ),
                                     trailing: watchlist.length > 1
@@ -209,7 +240,7 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                                     await Future.delayed(
                                                         const Duration(
                                                             milliseconds: 150));
-        
+            
                                                     showModalBottomSheet(
                                                       context: context,
                                                       useSafeArea: true,
@@ -222,11 +253,11 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                                                     .circular(
                                                                         16)),
                                                       ),
-                                                      builder:
-                                                          (BuildContext context) {
+                                                      builder: (BuildContext
+                                                          context) {
                                                         return WatchListRename(
-                                                            wlname:
-                                                                watchlist[index]);
+                                                            wlname: watchlist[
+                                                                index]);
                                                       },
                                                     );
                                                   },
@@ -237,16 +268,21 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                                           .withOpacity(0.15)
                                                       : Colors.black
                                                           .withOpacity(0.15),
-                                                  highlightColor: theme.isDarkMode
+                                                  highlightColor: theme
+                                                          .isDarkMode
                                                       ? Colors.white
                                                           .withOpacity(0.08)
                                                       : Colors.black
                                                           .withOpacity(0.08),
-                                                  child: const Padding(
+                                                  child: Padding(
                                                     padding: EdgeInsets.all(8),
                                                     child: Icon(
                                                       Icons.edit_outlined,
-                                                      color: Color(0xff666666),
+                                                      color: theme.isDarkMode
+                                                          ? colors
+                                                              .textSecondaryDark
+                                                          : colors
+                                                              .textSecondaryLight,
                                                       size: 20,
                                                     ),
                                                   ),
@@ -262,22 +298,26 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                                     await Future.delayed(
                                                         const Duration(
                                                             milliseconds: 150));
-        
+            
                                                     // Click to Delete watchlist name
                                                     await showDialog(
                                                       context: context,
                                                       barrierDismissible: false,
-                                                      builder:
-                                                          (BuildContext context) {
+                                                      // barrierColor: Colors.black.withOpacity(0.5),
+                                                      builder: (BuildContext
+                                                          context) {
                                                         return StatefulBuilder(
                                                           builder: (BuildContext
                                                                   context,
                                                               StateSetter
                                                                   setDialogState) {
                                                             return AlertDialog(
-                                                              backgroundColor:
-                                                                  colors
-                                                                      .colorWhite,
+                                                              backgroundColor: theme
+                                                                      .isDarkMode
+                                                                  ? const Color(
+                                                                      0xFF121212)
+                                                                  : const Color(
+                                                                      0xFFF1F3F8),
                                                               titlePadding:
                                                                   const EdgeInsets
                                                                       .symmetric(
@@ -286,9 +326,9 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                                                       vertical:
                                                                           8),
                                                               shape: const RoundedRectangleBorder(
-                                                                  borderRadius: BorderRadius
-                                                                      .all(Radius
-                                                                          .circular(
+                                                                  borderRadius:
+                                                                      BorderRadius.all(
+                                                                          Radius.circular(
                                                                               8))),
                                                               scrollable: true,
                                                               contentPadding:
@@ -300,7 +340,8 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                                               actionsPadding:
                                                                   const EdgeInsets
                                                                       .only(
-                                                                      bottom: 16,
+                                                                      bottom:
+                                                                          16,
                                                                       right: 16,
                                                                       left: 16,
                                                                       top: 8),
@@ -327,10 +368,8 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                                                             InkWell(
                                                                           onTap:
                                                                               () async {
-                                                                            await Future.delayed(
-                                                                                const Duration(milliseconds: 150));
-                                                                            Navigator.pop(
-                                                                                context);
+                                                                            await Future.delayed(const Duration(milliseconds: 150));
+                                                                            Navigator.pop(context);
                                                                           },
                                                                           borderRadius:
                                                                               BorderRadius.circular(20),
@@ -342,17 +381,13 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                                                               : colors.splashColorLight,
                                                                           child:
                                                                               Padding(
-                                                                            padding: const EdgeInsets
-                                                                                .all(
-                                                                                6.0),
+                                                                            padding:
+                                                                                const EdgeInsets.all(6.0),
                                                                             child:
                                                                                 Icon(
                                                                               Icons.close_rounded,
-                                                                              size:
-                                                                                  22,
-                                                                              color: theme.isDarkMode
-                                                                                  ? colors.colorWhite
-                                                                                  : colors.colorBlack,
+                                                                              size: 22,
+                                                                              color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                                                                             ),
                                                                           ),
                                                                         ),
@@ -360,40 +395,29 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                                                     ],
                                                                   ),
                                                                   const SizedBox(
-                                                                      height: 12),
+                                                                      height:
+                                                                          12),
                                                                   SizedBox(
                                                                     width: MediaQuery.of(
                                                                             context)
                                                                         .size
                                                                         .width,
-                                                                    child: Center(
-                                                                      child:
-                                                                          Column(
-                                                                        children: [
-                                                                          // TextWidget.subText(
-                                                                          //     text:
-                                                                          //         "Delete Watchlist",
-                                                                          //     theme: theme
-                                                                          //         .isDarkMode,
-                                                                          //     color: theme.isDarkMode
-                                                                          //         ? colors.textPrimaryDark
-                                                                          //         : colors.textPrimaryLight,
-                                                                          //     fw: 3),
-                                                                          // const SizedBox(
-                                                                          //     height:
-                                                                          //         10),
-                                                                          TextWidget.subText(
-                                                                              text:
-                                                                                  "Are you sure you want to delete ${watchlist[index]} ?",
-                                                                              theme: theme
-                                                                                  .isDarkMode,
-                                                                              color: theme.isDarkMode
-                                                                                  ? colors.textPrimaryDark
-                                                                                  : colors.textPrimaryLight,
-                                                                              fw: 3,
-                                                                              align: TextAlign.center),
-                                                                        ],
-                                                                      ),
+                                                                    child:
+                                                                        Padding(
+                                                                      padding: const EdgeInsets
+                                                                          .symmetric(
+                                                                          horizontal:
+                                                                              16),
+                                                                      child: TextWidget.subText(
+                                                                          text:
+                                                                              "Are you sure you want to delete ${watchlist[index]} ?",
+                                                                          theme: theme
+                                                                              .isDarkMode,
+                                                                          color: theme.isDarkMode
+                                                                              ? colors.textSecondaryDark
+                                                                              : colors.textPrimaryLight,
+                                                                          fw: 3,
+                                                                          align: TextAlign.center),
                                                                     ),
                                                                   ),
                                                                 ],
@@ -405,20 +429,15 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                                                   child:
                                                                       OutlinedButton(
                                                                     onPressed: (_isDeleting ||
-                                                                            marketWatch
-                                                                                .loading)
+                                                                            marketWatch.loading)
                                                                         ? null
                                                                         : () async {
-                                                                            setDialogState(
-                                                                                () {
-                                                                              _isDeleting =
-                                                                                  true;
+                                                                            setDialogState(() {
+                                                                              _isDeleting = true;
                                                                             });
-                                                                            await marketWatch.deleteWatchList(
-                                                                                watchlist[index],
+                                                                            await marketWatch.deleteWatchList(watchlist[index],
                                                                                 context);
-                                                                            if (context
-                                                                                .mounted) {
+                                                                            if (context.mounted) {
                                                                               await Future.delayed(const Duration(milliseconds: 50));
                                                                               Navigator.pop(context);
                                                                               Navigator.pop(context);
@@ -434,15 +453,14 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                                                       minimumSize:
                                                                           const Size(
                                                                               0,
-                                                                              40), // width, height
+                                                                              45), // width, height
                                                                       side: BorderSide(
-                                                                          color: colors
-                                                                              .btnOutlinedBorder), // Outline border color
+                                                                          color:
+                                                                              colors.btnOutlinedBorder), // Outline border color
                                                                       shape:
                                                                           RoundedRectangleBorder(
                                                                         borderRadius:
-                                                                            BorderRadius.circular(
-                                                                                5),
+                                                                            BorderRadius.circular(5),
                                                                       ),
                                                                       backgroundColor:
                                                                           colors
@@ -456,18 +474,16 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                                                                 18,
                                                                             height:
                                                                                 20,
-                                                                            child: CircularProgressIndicator(
-                                                                                strokeWidth: 2,
-                                                                                color: !theme.isDarkMode ? colors.colorWhite : colors.colorBlack),
+                                                                            child:
+                                                                                CircularProgressIndicator(strokeWidth: 2, color:  colors.colorWhite ),
                                                                           )
-                                                                        : TextWidget.titleText(
+                                                                        : TextWidget.subText(
                                                                             text:
                                                                                 "Delete",
-                                                                            color: !theme.isDarkMode
-                                                                                ? colors.colorWhite
-                                                                                : colors.colorBlack,
+                                                                            color:
+                                                                                colors.colorWhite,
                                                                             theme: theme.isDarkMode,
-                                                                            fw: 0),
+                                                                            fw: 2),
                                                                   ),
                                                                 ),
                                                               ],
@@ -484,7 +500,7 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                                         const EdgeInsets.all(8),
                                                     child: Icon(
                                                       Icons.delete_outlined,
-                                                      color: colors.kColorRedText,
+                                                       color: theme.isDarkMode ? colors.lossDark : colors.lossLight,
                                                       size: 20,
                                                     ),
                                                   ),
@@ -501,12 +517,13 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                               final preDefIndex = (index -
                                       (watchlist.length - 4 >= 10
                                               ? 10
-                                              : math.max(0, watchlist.length - 4))
+                                              : math.max(
+                                                  0, watchlist.length - 4))
                                           .toInt())
                                   .toInt();
                               final isSelected =
                                   widget.currentWLName == preDefWl[preDefIndex];
-        
+            
                               return Material(
                                 color: Colors.transparent,
                                 child: InkWell(
@@ -517,7 +534,7 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                             preDefIndex + watchlist.length - 4);
                                     ref.read(marketWatchProvider).changeWlName(
                                         preDefWl[preDefIndex], "Yes");
-        
+            
                                     if (preDefWl[preDefIndex] == "My Stocks") {
                                       ref
                                           .read(portfolioProvider)
@@ -528,7 +545,7 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                       marketWatch.changeWLScrip(
                                           preDefWl[preDefIndex], context);
                                     }
-        
+            
                                     if (context.mounted) {
                                       Navigator.pop(context);
                                     }
@@ -563,7 +580,7 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                         //         : colors.colorGrey,
                                         //     theme: theme.isDarkMode,
                                         //     fw: 0),
-        
+            
                                         Text(
                                       preDefWl[preDefIndex] == "My Stocks"
                                           ? "Holdings"
@@ -577,10 +594,13 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                         fontSize: 14,
                                         color: isSelected
                                             ? (theme.isDarkMode
-                                                ? colors.colorWhite
-                                                : colors.colorBlack)
-                                            : colors.colorGrey,
+                                                ? colors.secondaryDark
+                                                : colors.secondaryLight)
+                                            : theme.isDarkMode
+                                                ? colors.textSecondaryDark
+                                                : colors.textSecondaryLight,
                                         theme: theme.isDarkMode,
+                                        fw: isSelected ? 2 : null,
                                       ),
                                     ),
                                   ),

@@ -5,6 +5,7 @@ import 'package:mynt_plus/provider/fund_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../provider/order_provider.dart';
 import '../../provider/thems.dart';
+import '../../res/global_state_text.dart';
 import '../../res/res.dart';
 import '../../sharedWidget/custom_drag_handler.dart';
 
@@ -27,10 +28,35 @@ class _MarginDetailsBottomsheetState extends State<MarginDetailsBottomsheet> {
       final theme = ref.watch(themeProvider);
       return SafeArea(
         child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-          ),
+        decoration: BoxDecoration(
+           borderRadius: const BorderRadius.only(
+      topLeft: Radius.circular(16),
+      topRight: Radius.circular(16),
+    ),
+         color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+         border: Border(
+                                  top: BorderSide(
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                            .withOpacity(0.5)
+                                        : colors.colorWhite,
+                                  ),
+                                  left: BorderSide(
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                            .withOpacity(0.5)
+                                        : colors.colorWhite,
+                                  ),
+                                  right: BorderSide(
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                            .withOpacity(0.5)
+                                        : colors.colorWhite,
+                                  ),
+                                ),
+
+         
+        ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.start,
@@ -43,11 +69,12 @@ class _MarginDetailsBottomsheetState extends State<MarginDetailsBottomsheet> {
                   child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text("Order Margin",
-                            style: textStyles.appBarTitleTxt.copyWith(
-                                color: !theme.isDarkMode
-                                    ? colors.colorBlack
-                                    : colors.colorWhite))
+                        TextWidget.titleText(
+                      text: "Order Margin",
+                      color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                      theme: theme.isDarkMode,
+                      fw: 1),
+                      
                       ])),
               Divider(
                   color: theme.isDarkMode
@@ -112,20 +139,18 @@ class _MarginDetailsBottomsheetState extends State<MarginDetailsBottomsheet> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text("Required",
-                            style: textStyle(
-                                !theme.isDarkMode
-                                    ? colors.colorBlack
-                                    : colors.colorWhite,
-                                14,
-                                FontWeight.w500)),
-                        Text("${orderMargin?.ordermargin ?? 0.00}",
-                            style: textStyle(
-                                !theme.isDarkMode
-                                    ? colors.colorBlack
-                                    : colors.colorWhite,
-                                14,
-                                FontWeight.w500))
+                        TextWidget.subText(
+                      text:"Required" ,
+                        color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+              
+                      theme: theme.isDarkMode,
+                      fw: 0),
+                       
+                        TextWidget.subText(
+                      text: "${orderMargin?.ordermargin ?? 0.00}",
+                      color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                      theme: theme.isDarkMode,
+                      fw: 0),
                       ],
                     ),
                     Divider(
@@ -137,20 +162,18 @@ class _MarginDetailsBottomsheetState extends State<MarginDetailsBottomsheet> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text("Balance",
-                            style: textStyle(
-                                !theme.isDarkMode
-                                    ? colors.colorBlack
-                                    : colors.colorWhite,
-                                14,
-                                FontWeight.w500)),
-                        Text("${clientFundDetail?.avlMrg ?? 0.00}",
-                            style: textStyle(
-                                !theme.isDarkMode
-                                    ? colors.colorBlack
-                                    : colors.colorWhite,
-                                14,
-                                FontWeight.w500))
+                        TextWidget.subText(
+                      text:"Balance" ,
+                        color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+              
+                      theme: theme.isDarkMode,
+                      fw: 0),
+                       
+                        TextWidget.subText(
+                      text: "${clientFundDetail?.avlMrg ?? 0.00}",
+                      color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                      theme: theme.isDarkMode,
+                      fw: 0),
                       ],
                     ),
 
@@ -164,21 +187,21 @@ class _MarginDetailsBottomsheetState extends State<MarginDetailsBottomsheet> {
                       Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text("Remarks - ",
-                                style: textStyle(
-                                    !theme.isDarkMode
-                                        ? colors.colorBlack
-                                        : colors.colorWhite,
-                                    14,
-                                    FontWeight.w500)),
-                            Text(orderMargin?.remarks ?? '',
-                                style: textStyle(
-                                    orderMargin?.remarks ==
+                            TextWidget.subText(
+                      text:"Remarks - " ,
+                        color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+              
+                      theme: theme.isDarkMode,
+                      fw: 0),
+                       
+                            TextWidget.subText(
+                      text: orderMargin?.remarks ?? '',
+                      color:  orderMargin?.remarks ==
                                             "Insufficient Balance"
-                                        ? colors.darkred
-                                        : colors.ltpgreen,
-                                    14,
-                                    FontWeight.w500))
+                                        ? theme.isDarkMode ? colors.lossDark : colors.lossLight
+                                        : theme.isDarkMode ? colors.profitDark : colors.profitLight,
+                      theme: theme.isDarkMode,
+                      fw: 0),
                           ])
                     ],
                     const SizedBox(height: 16)
@@ -211,15 +234,12 @@ class _MarginDetailsBottomsheetState extends State<MarginDetailsBottomsheet> {
                               crossAxisAlignment: CrossAxisAlignment.center,
                               //mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Text(
-                                    "Get update your brokerage details. Reach out our support",
-                                    textAlign: TextAlign.center,
-                                    style: textStyle(
-                                        !theme.isDarkMode
-                                            ? colors.colorBlack
-                                            : colors.colorWhite,
-                                        16,
-                                        FontWeight.w500)),
+                                TextWidget.subText(
+                                    text: "Get update your brokerage details. Reach out our support",
+                                    align: TextAlign.center,
+                                    color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                                    theme: theme.isDarkMode,
+                                    fw: 0),
                                 const SizedBox(
                                   height: 10,
                                 ),
@@ -233,20 +253,19 @@ class _MarginDetailsBottomsheetState extends State<MarginDetailsBottomsheet> {
                                       },
                                       style: ElevatedButton.styleFrom(
                                           elevation: 0,
-                                          backgroundColor: !theme.isDarkMode
-                                              ? colors.colorBlack
-                                              : colors.colorWhite,
+                                          minimumSize: const Size(double.infinity, 45),
+                                          backgroundColor: theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
                                           padding: const EdgeInsets.symmetric(
                                               vertical: 13),
                                           shape: RoundedRectangleBorder(
                                             borderRadius:
-                                                BorderRadius.circular(30),
+                                                BorderRadius.circular(5),
                                           )),
-                                      child: Text("Call now",
-                                          style: textStyles.btnText.copyWith(
-                                              color: theme.isDarkMode
-                                                  ? colors.colorBlack
-                                                  : colors.colorWhite))),
+                                      child: TextWidget.subText(
+                                          text: "Call now",
+                                          color: colors.colorWhite,
+                                          theme: theme.isDarkMode,
+                                          fw: 2)),
                                 ),
                               ],
                             ),
@@ -277,13 +296,12 @@ class _MarginDetailsBottomsheetState extends State<MarginDetailsBottomsheet> {
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text("Approx Charges",
-                                        style:
-                                            textStyles.appBarTitleTxt.copyWith(
-                                          color: !theme.isDarkMode
-                                              ? colors.colorBlack
-                                              : colors.colorWhite,
-                                        ))
+                                    TextWidget.titleText(
+                                      text: "Approx Charges",
+                                      color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                                      theme: theme.isDarkMode,
+                                      fw: 1
+                                    )
                                   ])),
                           Divider(
                               color: theme.isDarkMode
@@ -297,20 +315,18 @@ class _MarginDetailsBottomsheetState extends State<MarginDetailsBottomsheet> {
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text("Brokerage Amt",
-                                        style: textStyle(
-                                            !theme.isDarkMode
-                                                ? colors.colorBlack
-                                                : colors.colorWhite,
-                                            14,
-                                            FontWeight.w500)),
-                                    Text("${orderBrokerage?.brkageAmt}",
-                                        style: textStyle(
-                                            !theme.isDarkMode
-                                                ? colors.colorBlack
-                                                : colors.colorWhite,
-                                            14,
-                                            FontWeight.w500))
+                                    TextWidget.subText(
+                                      text: "Brokerage Amt",
+                                      color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                                      theme: theme.isDarkMode,
+                                      fw: 0
+                                    ),
+                                    TextWidget.subText(
+                                      text: "${orderBrokerage?.brkageAmt}",
+                                      color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                                      theme: theme.isDarkMode,
+                                      fw: 0
+                                    ),
                                   ],
                                 ),
                                 Divider(
@@ -322,20 +338,18 @@ class _MarginDetailsBottomsheetState extends State<MarginDetailsBottomsheet> {
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text("STT total",
-                                        style: textStyle(
-                                            !theme.isDarkMode
-                                                ? colors.colorBlack
-                                                : colors.colorWhite,
-                                            14,
-                                            FontWeight.w500)),
-                                    Text("${orderBrokerage?.sttAmt}",
-                                        style: textStyle(
-                                            !theme.isDarkMode
-                                                ? colors.colorBlack
-                                                : colors.colorWhite,
-                                            14,
-                                            FontWeight.w500))
+                                    TextWidget.subText(
+                                      text: "STT total",
+                                      color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                                      theme: theme.isDarkMode,
+                                      fw: 0
+                                    ),
+                                    TextWidget.subText(
+                                      text: "${orderBrokerage?.sttAmt}",
+                                      color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                                      theme: theme.isDarkMode,
+                                      fw: 0
+                                    ),
                                   ],
                                 ),
                                 Divider(
@@ -347,20 +361,18 @@ class _MarginDetailsBottomsheetState extends State<MarginDetailsBottomsheet> {
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text("Exchange charges",
-                                        style: textStyle(
-                                            !theme.isDarkMode
-                                                ? colors.colorBlack
-                                                : colors.colorWhite,
-                                            14,
-                                            FontWeight.w500)),
-                                    Text("${orderBrokerage?.exchChrg}",
-                                        style: textStyle(
-                                            !theme.isDarkMode
-                                                ? colors.colorBlack
-                                                : colors.colorWhite,
-                                            14,
-                                            FontWeight.w500))
+                                    TextWidget.subText(
+                                      text: "Exchange charges",
+                                      color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                                      theme: theme.isDarkMode,
+                                      fw: 0
+                                    ),
+                                    TextWidget.subText(
+                                      text: "${orderBrokerage?.exchChrg}",
+                                      color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                                      theme: theme.isDarkMode,
+                                      fw: 0
+                                    ),
                                   ],
                                 ),
                                 Divider(
@@ -372,20 +384,19 @@ class _MarginDetailsBottomsheetState extends State<MarginDetailsBottomsheet> {
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text("SEBI charges",
-                                        style: textStyle(
-                                            !theme.isDarkMode
-                                                ? colors.colorBlack
-                                                : colors.colorWhite,
-                                            14,
-                                            FontWeight.w500)),
-                                    Text("${orderBrokerage?.sebiChrg}",
-                                        style: textStyle(
-                                            !theme.isDarkMode
-                                                ? colors.colorBlack
-                                                : colors.colorWhite,
-                                            14,
-                                            FontWeight.w500))
+                                    TextWidget.subText(
+                                      text: "SEBI charges",
+                                      color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+              
+                                      theme: theme.isDarkMode,
+                                      fw: 0
+                                    ),
+                                    TextWidget.subText(
+                                      text: "${orderBrokerage?.sebiChrg}",
+                                      color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                                      theme: theme.isDarkMode,
+                                      fw: 0
+                                    ),
                                   ],
                                 ),
                                 Divider(
@@ -397,20 +408,18 @@ class _MarginDetailsBottomsheetState extends State<MarginDetailsBottomsheet> {
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
                                     children: [
-                                      Text("Stamp duty",
-                                          style: textStyle(
-                                              !theme.isDarkMode
-                                                  ? colors.colorBlack
-                                                  : colors.colorWhite,
-                                              14,
-                                              FontWeight.w500)),
-                                      Text("${orderBrokerage?.stampDuty}",
-                                          style: textStyle(
-                                              !theme.isDarkMode
-                                                  ? colors.colorBlack
-                                                  : colors.colorWhite,
-                                              14,
-                                              FontWeight.w500))
+                                      TextWidget.subText(
+                                      text: "Stamp duty",
+                                      color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                                      theme: theme.isDarkMode,
+                                      fw: 0
+                                    ),
+                                      TextWidget.subText(
+                                      text: "${orderBrokerage?.stampDuty}",
+                                      color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                                      theme: theme.isDarkMode,
+                                      fw: 0
+                                    ),
                                     ]),
                                 Divider(
                                     color: theme.isDarkMode
@@ -421,20 +430,18 @@ class _MarginDetailsBottomsheetState extends State<MarginDetailsBottomsheet> {
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
                                     children: [
-                                      Text("Clearing charges",
-                                          style: textStyle(
-                                              !theme.isDarkMode
-                                                  ? colors.colorBlack
-                                                  : colors.colorWhite,
-                                              14,
-                                              FontWeight.w500)),
-                                      Text("${orderBrokerage?.clrChrg}",
-                                          style: textStyle(
-                                              !theme.isDarkMode
-                                                  ? colors.colorBlack
-                                                  : colors.colorWhite,
-                                              14,
-                                              FontWeight.w500))
+                                      TextWidget.subText(
+                                      text: "Clearing charges",
+                                      color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                                      theme: theme.isDarkMode,
+                                      fw: 0
+                                    ),
+                                      TextWidget.subText(
+                                      text: "${orderBrokerage?.clrChrg}",
+                                      color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                                      theme: theme.isDarkMode,
+                                      fw: 0
+                                    ),
                                     ]),
                                 Divider(
                                     color: theme.isDarkMode
@@ -445,33 +452,29 @@ class _MarginDetailsBottomsheetState extends State<MarginDetailsBottomsheet> {
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
                                     children: [
-                                      Text("GST",
-                                          style: textStyle(
-                                              !theme.isDarkMode
-                                                  ? colors.colorBlack
-                                                  : colors.colorWhite,
-                                              14,
-                                              FontWeight.w500)),
-                                      Text("${orderBrokerage?.gst}",
-                                          style: textStyle(
-                                              !theme.isDarkMode
-                                                  ? colors.colorBlack
-                                                  : colors.colorWhite,
-                                              14,
-                                              FontWeight.w500))
+                                      TextWidget.subText(
+                                      text: "GST",
+                                      color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                                      theme: theme.isDarkMode,
+                                      fw: 0
+                                    ),
+                                      TextWidget.subText(
+                                      text: "${orderBrokerage?.gst}",
+                                      color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                                      theme: theme.isDarkMode,
+                                      fw: 0
+                                    ),
                                     ]),
                                 const SizedBox(height: 16),
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Text(
-                                        "View exact charges in contract note at the end of the day",
-                                        style: textStyle(
-                                            !theme.isDarkMode
-                                                ? colors.colorBlack
-                                                : colors.colorWhite,
-                                            12,
-                                            FontWeight.w400)),
+                                    TextWidget.paraText(
+                                      text: "View exact charges in contract note at the end of the day",
+                                      color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                                      theme: theme.isDarkMode,
+                                     
+                                    ),
                                   ],
                                 ),
                                 const SizedBox(height: 16),

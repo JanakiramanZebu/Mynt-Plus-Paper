@@ -63,8 +63,8 @@ class SetAlertScreen extends ConsumerWidget {
                   Icons.arrow_back_ios_outlined,
                   size: 18,
                   color: theme.isDarkMode
-                      ? colors.colorWhite
-                      : colors.colorBlack,
+                      ? colors.textSecondaryDark
+                      : colors.textSecondaryLight,
                 ),
               ),
             ),
@@ -115,11 +115,11 @@ class SetAlertScreen extends ConsumerWidget {
                     color: (depthdata.chng == "null" ||
                                 depthdata.chng == null) ||
                             depthdata.chng == "0.00"
-                        ? colors.textSecondaryLight
+                        ? theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight
                         : depthdata.chng!.startsWith("-") ||
                                 depthdata.pc!.startsWith("-")
-                            ? colors.error
-                            : colors.success,
+                            ? theme.isDarkMode ? colors.lossDark : colors.lossLight
+                            : theme.isDarkMode ? colors.profitDark : colors.profitLight,
                     theme: theme.isDarkMode,
                   ),
                   const SizedBox(height: 8),
@@ -141,9 +141,11 @@ class SetAlertScreen extends ConsumerWidget {
           },
         ),
       ),
-      body: SetAlert(
-        depthdata: depthdata,
-        wlvalue: wlvalue,
+      body: SafeArea(
+        child: SetAlert(
+          depthdata: depthdata,
+          wlvalue: wlvalue,
+        ),
       ),
     );
   }

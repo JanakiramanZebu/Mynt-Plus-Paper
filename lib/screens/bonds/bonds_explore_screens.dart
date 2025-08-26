@@ -18,7 +18,8 @@ import '../../../res/global_state_text.dart';
 class BondsExploreScreens extends ConsumerStatefulWidget {
   final ThemesProvider theme;
   final int? initialTabIndex;
-  const BondsExploreScreens({super.key, required this.theme, this.initialTabIndex});
+  const BondsExploreScreens(
+      {super.key, required this.theme, this.initialTabIndex});
 
   @override
   ConsumerState<BondsExploreScreens> createState() => _ExploreScreensState();
@@ -26,9 +27,9 @@ class BondsExploreScreens extends ConsumerStatefulWidget {
 
 class _ExploreScreensState extends ConsumerState<BondsExploreScreens>
     with SingleTickerProviderStateMixin {
-  late  TabController _allBondsTabController;
+  late TabController _allBondsTabController;
 
-   final tablistitems = [
+  final tablistitems = [
     {
       "Aimgpath": "",
       // "imgpath": assets.exportIcon,
@@ -53,7 +54,7 @@ class _ExploreScreensState extends ConsumerState<BondsExploreScreens>
     //   "title": "SGB",
     //   "index": 3,
     // },
-     {
+    {
       "Aimgpath": "",
       // "imgpath": assets.bag,
       "title": "My Bids",
@@ -63,30 +64,27 @@ class _ExploreScreensState extends ConsumerState<BondsExploreScreens>
 
   int selectedTab = 0;
 
-
   @override
   void initState() {
     super.initState();
     // _tabController = TabController(length: tablistitems.length, vsync: this, initialIndex: 0);
-  _allBondsTabController = TabController(length: 2, vsync: this, initialIndex: widget.initialTabIndex ?? 0) ;
+    _allBondsTabController = TabController(
+        length: 2, vsync: this, initialIndex: widget.initialTabIndex ?? 0);
 
-   _allBondsTabController.animation!.addListener(() {
-    final newIndex = _allBondsTabController.animation!.value.round();
-    if (selectedTab != newIndex) {
-      setState(() {
-        selectedTab = newIndex; // Update activeTab immediately on swipe
-      });
-    }
-   }
-   );
+    _allBondsTabController.animation?.addListener(() {
+      final newIndex = _allBondsTabController.animation?.value.round() ?? 0;
+      if (selectedTab != newIndex) {
+        setState(() {
+          selectedTab = newIndex; // Update activeTab immediately on swipe
+        });
+      }
+    });
   }
-
 
 // TabController(
 //           length: ref.read(bondsProvider).tablistitems.length,
 //           vsync: this,
 //           initialIndex: ref.read(bondsProvider).selectedBondTab["index"])
-  
 
   @override
   Widget build(BuildContext context) {
@@ -101,7 +99,6 @@ class _ExploreScreensState extends ConsumerState<BondsExploreScreens>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              
               Container(
                 width: MediaQuery.of(context).size.width,
                 padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
@@ -134,6 +131,11 @@ class _ExploreScreensState extends ConsumerState<BondsExploreScreens>
                             selectedTab = tab;
                           });
                           _allBondsTabController.animateTo(tab);
+                          ref.read(bondsProvider).bondscommonsearchcontroller.clear();
+                          ref.read(bondsProvider).clearCommonBondsSearch();
+                          FocusScope.of(context).unfocus();
+                          
+
                         },
                         child: tabConstruce(
                           tablistitems[tab]['title'].toString(),
@@ -149,10 +151,8 @@ class _ExploreScreensState extends ConsumerState<BondsExploreScreens>
               Expanded(
                 child: TabBarView(
                   controller: _allBondsTabController,
-                  children: const [
-                    BondsListScreen(),
-                    BondsOrderbookMainScreen()
-                  ],
+                  children: [
+                    BondsListScreen(), BondsOrderbookMainScreen()],
                 ),
               ),
             ],
@@ -162,9 +162,10 @@ class _ExploreScreensState extends ConsumerState<BondsExploreScreens>
     );
   }
 
-  Widget tabConstruce(String title, ThemesProvider theme, int tab, VoidCallback onPressed) {
+  Widget tabConstruce(
+      String title, ThemesProvider theme, int tab, VoidCallback onPressed) {
     final isActive = selectedTab == tab;
-   
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -189,7 +190,7 @@ class _ExploreScreensState extends ConsumerState<BondsExploreScreens>
           duration: const Duration(milliseconds: 250),
           curve: Curves.easeInOut,
           height: 2,
-          width: isActive ? 82 : 0, 
+          width: isActive ? 82 : 0,
           margin: const EdgeInsets.only(top: 1),
           decoration: BoxDecoration(
             color: colors.colorBlue,
@@ -199,8 +200,6 @@ class _ExploreScreensState extends ConsumerState<BondsExploreScreens>
       ],
     );
   }
-
-
 }
 
 

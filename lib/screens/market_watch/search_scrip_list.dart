@@ -123,6 +123,7 @@ print(!searchScrip.exarr.contains('"${scrip.exch}"'));
                             color: theme.isDarkMode
                                 ? colors.textPrimaryDark
                                 : colors.textPrimaryLight,
+                            fw: 0,
                           ),
                         ),
                         if (scrip.option != null)
@@ -134,6 +135,7 @@ print(!searchScrip.exarr.contains('"${scrip.exch}"'));
                                   ? colors.textPrimaryDark
                                   : colors.textPrimaryLight,
                               theme: theme.isDarkMode,
+                              fw: 0,
                             ),
                           )
                       ],
@@ -157,6 +159,7 @@ print(!searchScrip.exarr.contains('"${scrip.exch}"'));
                                     ? colors.textSecondaryDark
                                     : colors.textSecondaryLight,
                                 theme: theme.isDarkMode,
+                                fw: 0,
                               ),
                             if (scrip.expDate == "" && scrip.cname != null)
                               Expanded(
@@ -167,6 +170,7 @@ print(!searchScrip.exarr.contains('"${scrip.exch}"'));
                                       ? colors.textSecondaryDark
                                       : colors.textSecondaryLight,
                                   theme: theme.isDarkMode,
+                                  fw: 0,
                                 ),
                               ),
                           ],
@@ -267,7 +271,7 @@ print(!searchScrip.exarr.contains('"${scrip.exch}"'));
                                       ? colors.colorLightBlue
                                       : searchScrip.isAdded![index]
                                           ? colors.colorBlue
-                                          : colors.colorGrey,
+                                          : colors.textSecondaryDark,
                                 ),
                               ),
                             ),

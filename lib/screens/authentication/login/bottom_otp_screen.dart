@@ -123,10 +123,10 @@ class _BottomSheetContentState extends State<BottomSheetContent>
         width: 50,
         height: 56,
         decoration: BoxDecoration(
-          color: const Color(0xffFFFFFF),
-          border: Border.all(color: const Color(0xFFDBDBDB), width: 1),
+          color: theme.isDarkMode ? colors.textSecondaryDark.withOpacity(0.2) : const Color(0xffFFFFFF),
+          border: Border.all(color:  theme.isDarkMode ?  colors.textSecondaryDark.withOpacity(0.4) :  const Color(0xFFDBDBDB), width: 1),
         ),
-        textStyle: TextWidget.textStyle(fontSize: 16, theme: theme.isDarkMode),
+        textStyle: TextWidget.textStyle(fontSize: 16 , color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight, theme: false),
       );
       final focusedPinTheme = defaultPinThemes.copyBorderWith(
         border: Border.all(color: const Color(0xff0037B7), width: 1),
@@ -381,8 +381,8 @@ class _BottomSheetContentState extends State<BottomSheetContent>
                                       theme: false,
                                       color: auth.optError ==
                                               "${auth.totp ? 'TOTP' : 'OTP'} Verified"
-                                          ? colors.ltpgreen
-                                          : colors.kColorRedText,
+                                          ? theme.isDarkMode ? colors.profitDark : colors.profitLight
+                                          : theme.isDarkMode ? colors.lossDark : colors.lossLight,
                                       fw: 0),
                                 ),
                               )
@@ -408,12 +408,12 @@ class _BottomSheetContentState extends State<BottomSheetContent>
                             backgroundColor: !theme.isDarkMode
                                 ? otpController.length <= (auth.totp ? 5 : 3) ||
                                         otpController.text.isEmpty
-                                    ? const Color(0xff0037B7).withOpacity(0.3)
-                                    : const Color(0xff0037B7)
+                                    ? colors.primaryDark.withOpacity(0.5)
+                                    : colors.primaryLight
                                 : otpController.length <= (auth.totp ? 5 : 3) ||
                                         otpController.text.isEmpty
-                                    ? colors.darkGrey
-                                    : colors.colorbluegrey,
+                                    ? colors.primaryDark.withOpacity(0.5)
+                                    : colors.primaryLight,
                             side: BorderSide.none,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(5),
@@ -442,13 +442,13 @@ class _BottomSheetContentState extends State<BottomSheetContent>
                                     ? otpController.length <=
                                                 (auth.totp ? 5 : 3) ||
                                             otpController.text.isEmpty
-                                        ? const Color(0xffFFFFFF)
-                                        : const Color(0xffFFFFFF)
+                                        ? colors.colorWhite.withOpacity(0.5)
+                                        : colors.colorWhite
                                     : otpController.length <=
                                                 (auth.totp ? 5 : 3) ||
                                             otpController.text.isEmpty
-                                        ? colors.darkGrey
-                                        : colors.colorBlack,
+                                        ? colors.colorWhite.withOpacity(0.5)
+                                        : colors.colorWhite,
                                 fw: 2),
                       ),
                     ),

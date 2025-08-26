@@ -58,6 +58,7 @@ class ApiLinks {
   String get searchScripNew => '${bemynt}global/SearchScrip';
   String get technicalData => '$goMyntURL/GetTechnicals';
   String get watchListrename => '$goMyntURL/RenameMW';
+  String get spanCalc => 'https://go.mynt.in/NorenWClient/SpanCalc';
 
   // Cams
   String get goCamsURL => "https://rekycbe.mynt.in/portfolio";
@@ -169,7 +170,8 @@ class ApiLinks {
 
   // String tradeAction = "https://v3.mynt.in/equity/getadindicesAdvdec";
 
-  String get fundamentalDetail => '$dashBoardURL/equity/stockFundamentalDetails';
+  String get fundamentalDetail =>
+      '$dashBoardURL/equity/stockFundamentalDetails';
   String get topListStock => '$dashBoardURL/equity/TopList';
   String get getGlobalIndex => '$dashBoardURL/equity/getGlobalIndex';
   String get getadindices => '$dashBoardURL/equity/getadindices';
@@ -232,6 +234,7 @@ class ApiLinks {
   String get mfallpayment => "$dashBoardURL/mf/lumsum_purchase_mob";
   String get topSchemes => "$dashBoardURL/mf/getTopschemes";
   String get redemption => "$dashBoardURL/mf/lumsum_redemption_mob";
+  String get etfcategory => "$dashBoardURL/dd//etf-category";
 
   String get mainfund => 'https://fundapi.mynt.in/api';
   String get clientcheck => '$mainfund/client_check';
@@ -273,7 +276,8 @@ class ApiLinks {
 
   // ###### Profile All Details  #############
   String get profileDetailsURL => "https://rekycbe.mynt.in/";
-  String get detailschangecurrentstatusURL => '$profileDetailsURL/add_mob_email_stat';
+  String get detailschangecurrentstatusURL =>
+      '$profileDetailsURL/add_mob_email_stat';
   String get profileAllDetailsURL => '$profileDetailsURL/profile';
 
   // email change
@@ -336,7 +340,8 @@ class ApiLinks {
   String get mfholdingsnewapi => "$newvenketmfurl/order/holdings";
   String get mfnewbestMf => "$newvenketmfurl/dashboard/getMfBaskets";
   String get mfnfoMF => "$newvenketmfurl/dashboard/NFO_datas";
-  String get newmfallcatnewendpoit => "$newvenketmfurl/dashboard/getCategoryschemes";
+  String get newmfallcatnewendpoit =>
+      "$newvenketmfurl/dashboard/getCategoryschemes";
   String get mfnewwatchlist => "$newvenketmfurl/dashboard/watchlist_for_mobile";
   String get mfnewsearch => "$newvenketmfurl/dashboard/mfsearch";
   String get mfsinglepageapi => "$newvenketmfurl/singlepage/getFactSheetData";
@@ -353,4 +358,5 @@ class ApiLinks {
   String get mfsiplistnew => "$newvenketmfurl/order/FetchSIP";
   String get mfsipcancelnew => "$newvenketmfurl/order/xsip_cancel";
   String get mfsippausenew => "$newvenketmfurl/order/xsip_pause";
+  String get mfredemptionenew => "$newvenketmfurl/order/PlaceRedeemOrder";
 }

@@ -70,18 +70,18 @@ class MutualFundList {
   String? reOpeningDate;
   String? name;
   String? mfsearchnamename;
-  
+
   String? aUM;
   String? iNTERNETEXPENSERATIO;
   String? tHREEYEARDATA;
   String? fIVEYEARDATA;
+  String? oneYearData;
   String? nETSCHEMECODE;
   String? nETASSETVALUE;
   String? cUurentnav;
   String? launchDate;
   String? closureDate;
   String? fundname;
-  
 
   String? sCHEMECATEGORY;
   String? sCHEMESUBCATEGORY;
@@ -93,7 +93,6 @@ class MutualFundList {
   String? corpos;
   bool? isAdd;
   String? schemegroupName;
-
 
   MutualFundList(
       {this.uniqueNo,
@@ -157,7 +156,10 @@ class MutualFundList {
       this.type,
       this.subtype,
       this.corpos,
-      this.nAVSchemeType,this.isAdd,this.schemegroupName});
+      this.nAVSchemeType,
+      this.isAdd,
+      this.schemegroupName,
+      this.oneYearData});
 
   MutualFundList.fromJson(Map<String, dynamic> json) {
     print("xxxxxx:: $json");
@@ -210,6 +212,7 @@ class MutualFundList {
     aUM = json['AUM'];
     iNTERNETEXPENSERATIO = json['INTER_NET_EXPENSE_RATIO'];
     tHREEYEARDATA = json['3Year'];
+    oneYearData = json['1Year'];
     fIVEYEARDATA = json['FIVE_YEAR_DATA'] ?? json['5Year'];
     nETSCHEMECODE = json['NET_SCHEME_CODE'];
     nETASSETVALUE = json['NET_ASSET_VALUE'] ?? json['currentNAV'];
@@ -222,11 +225,11 @@ class MutualFundList {
     nAVSchemeType = json['NAV_Scheme_Type'];
     schemegroupName = json['schemeGroupName'];
     fundname = json['fundname'];
-    
+
     type = json['Type'];
     subtype = json['SubType'];
-     corpos = json["corpus"];
-    isAdd=json['isAdd']??false;
+    corpos = json["corpus"];
+    isAdd = json['isAdd'] ?? false;
   }
 
   Map<String, dynamic> toJson() {
@@ -279,10 +282,10 @@ class MutualFundList {
     data['name'] = name;
     data['name'] = mfsearchnamename;
 
-    
     data['AUM'] = aUM;
     data['INTER_NET_EXPENSE_RATIO'] = iNTERNETEXPENSERATIO;
     data['3Year'] = tHREEYEARDATA;
+    data['1Year'] = oneYearData;
     data['FIVE_YEAR_DATA'] = fIVEYEARDATA;
     data['NET_SCHEME_CODE'] = nETSCHEMECODE;
     data['NET_ASSET_VALUE'] = nETASSETVALUE;
@@ -297,7 +300,7 @@ class MutualFundList {
     data['Type'] = type;
     data['SubType'] = subtype;
     data['corpus'] = corpos;
-    data['isAdd']=isAdd;
+    data['isAdd'] = isAdd;
     return data;
   }
 }
@@ -324,18 +327,18 @@ class MFCategory {
 class MFSubCatgory {
   String? name;
 
-  MFSubCatgory({this.name, });
+  MFSubCatgory({
+    this.name,
+  });
 
   MFSubCatgory.fromJson(Map<String, dynamic> json) {
     name = json['name'];
-   
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['name'] = name;
-    
+
     return data;
   }
 }
-

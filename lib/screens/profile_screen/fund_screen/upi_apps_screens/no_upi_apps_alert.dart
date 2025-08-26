@@ -26,66 +26,83 @@ class _NoUPIAppsAlertState extends ConsumerState<NoUPIAppsAlert> {
 
     return GestureDetector(
         onTap: () => fund.focusNode.unfocus(),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
+        child: SafeArea(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            decoration: BoxDecoration(
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(16),
+                topRight: Radius.circular(16),
+              ),
               color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-              boxShadow: const [
-                BoxShadow(
-                    color: Color(0xff999999),
-                    blurRadius: 4.0,
-                    offset: Offset(2.0, 0.0))
-              ]),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const CustomDragHandler(),
-              SvgPicture.asset("assets/icon/ipo_cancel_icon.svg"),
-              const SizedBox(
-                height: 16,
-              ),
-              TextWidget.subText(
-                  text:
-                      "No suitable app available, kindly choose a different mode of payment",
-                  theme: false,
+              border: Border(
+                top: BorderSide(
                   color: theme.isDarkMode
-                      ? colors.textPrimaryDark
-                      : colors.textPrimaryLight,
-                  align: TextAlign.center),
-              const SizedBox(
-                height: 16,
+                      ? colors.textSecondaryDark.withOpacity(0.5)
+                      : colors.colorWhite,
+                ),
+                left: BorderSide(
+                  color: theme.isDarkMode
+                      ? colors.textSecondaryDark.withOpacity(0.5)
+                      : colors.colorWhite,
+                ),
+                right: BorderSide(
+                  color: theme.isDarkMode
+                      ? colors.textSecondaryDark.withOpacity(0.5)
+                      : colors.colorWhite,
+                ),
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: SizedBox(
-                  width: MediaQuery.of(context).size.width,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                        elevation: 0,
-                        minimumSize: const Size(0, 40),
-                        backgroundColor: theme.isDarkMode
-                            ? colors.primaryDark
-                            : colors.primaryLight,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(5),
-                        )),
-                    onPressed: () async {
-                      launch("https://play.google.com/store/apps");
-                    },
-                    child: TextWidget.subText(
-                      text: "Get UPI Apps",
-                      theme: false,
-                      color: colors.colorWhite,
-                      fw: 2,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const CustomDragHandler(),
+                SvgPicture.asset("assets/icon/ipo_cancel_icon.svg"),
+                const SizedBox(
+                  height: 16,
+                ),
+                TextWidget.subText(
+                    text:
+                        "No suitable app available, kindly choose a different mode of payment",
+                    theme: false,
+                    color: theme.isDarkMode
+                        ? colors.textPrimaryDark
+                        : colors.textPrimaryLight,
+                    align: TextAlign.center),
+                const SizedBox(
+                  height: 16,
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: SizedBox(
+                    width: MediaQuery.of(context).size.width,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                          elevation: 0,
+                          minimumSize: const Size(0, 45),
+                          backgroundColor: theme.isDarkMode
+                              ? colors.primaryDark
+                              : colors.primaryLight,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(5),
+                          )),
+                      onPressed: () async {
+                        launch("https://play.google.com/store/apps");
+                      },
+                      child: TextWidget.subText(
+                        text: "Get UPI Apps",
+                        theme: false,
+                        color: colors.colorWhite,
+                        fw: 2,
+                      ),
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(
-                height: 16,
-              )
-            ],
+                const SizedBox(
+                  height: 16,
+                )
+              ],
+            ),
           ),
         ));
   }

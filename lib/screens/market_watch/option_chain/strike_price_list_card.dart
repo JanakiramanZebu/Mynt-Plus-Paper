@@ -20,7 +20,7 @@ class StrikePriceListCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref.watch(themeProvider);
-    final textColor = theme.isDarkMode ? colors.colorWhite : colors.colorBlack;
+    final textColor = theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight;
     
     return ListView.separated(
       physics: const NeverScrollableScrollPhysics(),
@@ -54,7 +54,7 @@ class StrikePriceListCard extends ConsumerWidget {
     //   () => GoogleFonts.inter(
     //     textStyle: 
 return TextWidget.textStyle(
-                 fontSize: 14 ,  theme: false , );
+                 fontSize: 14 ,  theme: false , color: color);
 
 
     //   ).copyWith(color: color),

@@ -117,13 +117,32 @@ class _TradeBookDetailState extends ConsumerState<TradeBookDetail> {
                 backgroundColor: Colors.transparent,
                 body: Container(
                   decoration: BoxDecoration(
-                    color: theme.isDarkMode
-                        ? colors.colorBlack
-                        : colors.colorWhite,
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(16),
-                      topRight: Radius.circular(16),
-                    ),
+                     borderRadius: const BorderRadius.only(
+      topLeft: Radius.circular(16),
+      topRight: Radius.circular(16),
+    ),
+         color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+         border: Border(
+                                  top: BorderSide(
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                            .withOpacity(0.5)
+                                        : colors.colorWhite,
+                                  ),
+                                  left: BorderSide(
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                            .withOpacity(0.5)
+                                        : colors.colorWhite,
+                                  ),
+                                  right: BorderSide(
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                            .withOpacity(0.5)
+                                        : colors.colorWhite,
+                                  ),
+                                ),
+
                   ),
                   child: Column(
                     children: [
@@ -166,7 +185,7 @@ class _TradeBookDetailState extends ConsumerState<TradeBookDetail> {
                                               crossAxisAlignment:
                                                   CrossAxisAlignment.center,
                                               children: [
-                                                TextWidget.headText(
+                                                TextWidget.titleText(
                                                     text:
                                                         "${displayData.symbol?.replaceAll("-EQ", "") ?? ''} ${displayData.expDate ?? ''}",
                                                     theme: false,
@@ -174,8 +193,8 @@ class _TradeBookDetailState extends ConsumerState<TradeBookDetail> {
                                                         ? colors.textPrimaryDark
                                                         : colors
                                                             .textPrimaryLight,
-                                                    fw: 0),
-                                                TextWidget.headText(
+                                                    fw: 1),
+                                                TextWidget.titleText(
                                                     text:
                                                         " ${displayData.option ?? ''} ",
                                                     theme: false,
@@ -183,9 +202,10 @@ class _TradeBookDetailState extends ConsumerState<TradeBookDetail> {
                                                         ? colors.textPrimaryDark
                                                         : colors
                                                             .textPrimaryLight,
-                                                    fw: 0,
+                                                    fw: 1,
                                                     textOverflow:
                                                         TextOverflow.ellipsis),
+                                                        const SizedBox(width: 4),
                                                 CustomExchBadge(
                                                     exch:
                                                         displayData.exch ?? ""),
@@ -242,7 +262,7 @@ class _TradeBookDetailState extends ConsumerState<TradeBookDetail> {
                                                 assets.rightarrowcur,
                                                 width: 12,
                                                 height: 12,
-                                                color: colors.iconColor,
+                                                color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                                               ),
                                             ),
                                           ],

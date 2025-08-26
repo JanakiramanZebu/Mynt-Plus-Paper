@@ -466,7 +466,7 @@ mixin OrderAPI on ApiCore {
       final uri = Uri.parse(apiLinks.placeGTTOrderURL);
       Map payload = {
         "uid": prefs.clientId,
-        "tsym": input.tsym,
+        "tsym": input.tsym.replaceAll("&", "%26"),
         "exch": input.exch,
         "ai_t": input.ait,
         "validity": input.validity,

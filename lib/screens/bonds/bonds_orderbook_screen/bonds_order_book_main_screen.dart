@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+// import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mynt_plus/provider/bonds_provider.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/screens/bonds/bonds_loader/logo_loader.dart';
-import 'package:mynt_plus/sharedWidget/loader_ui.dart';
+// import 'package:mynt_plus/sharedWidget/loader_ui.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
-import '../../../sharedWidget/functions.dart';
+// import '../../../sharedWidget/functions.dart';
 import 'bonds_order_book_tab/close_bonds_tab.dart';
 import 'bonds_order_book_tab/open_bonds_tab.dart';
 
@@ -40,7 +40,7 @@ class _BondsOrderbookMainScreenState
 
       return Scaffold(
         body: LogoLoaderScreen(
-          isLoading: bonds.bondsMyBidsload!,
+          isLoading: bonds.bondsMyBidsload,
           child: _buildContent(bonds, theme, devHeight),
         ),
       );
@@ -49,8 +49,11 @@ class _BondsOrderbookMainScreenState
 
   Widget _buildContent(
       BondsProvider bonds, ThemesProvider theme, double devHeight) {
-    final bool isEmpty = (bonds.openOrderBook?.isEmpty ?? true) &&
-        (bonds.closeOrderBook?.isEmpty ?? true);
+    // Apply search filter for My Bids via provider's search controller
+    final filteredOpen = bonds.filterOpenOrdersBySearch();
+    final filteredClose = bonds.filterCloseOrdersBySearch();
+
+    final bool isEmpty = (filteredOpen.isEmpty) && (filteredClose.isEmpty);
 
     if (isEmpty) {
       return _buildEmptyState(devHeight);
@@ -60,10 +63,18 @@ class _BondsOrderbookMainScreenState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (bonds.openOrderBook != null && bonds.openOrderBook!.isNotEmpty)
-            _buildOrderSection("Open Orders", const BondsOpenOrder(), theme),
-          if (bonds.closeOrderBook != null && bonds.closeOrderBook!.isNotEmpty)
-            _buildOrderSection("Closed Orders", const BondsCloseOrder(), theme),
+          if (filteredOpen.isNotEmpty)
+            _buildOrderSection(
+                "Open Orders",
+                BondsOpenOrderList(
+                    orders: filteredOpen, theme: theme),
+                theme),
+          if (filteredClose.isNotEmpty)
+            _buildOrderSection(
+                "Closed Orders",
+                BondsCloseOrderList(
+                    orders: filteredClose, theme: theme),
+                theme),
         ],
       ),
     );
@@ -95,7 +106,9 @@ class _BondsOrderbookMainScreenState
           child: TextWidget.subText(
             text: title,
             theme: theme.isDarkMode,
-            color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+            color: theme.isDarkMode
+                ? colors.textPrimaryDark
+                : colors.textPrimaryLight,
             fw: 0,
           ),
         ),

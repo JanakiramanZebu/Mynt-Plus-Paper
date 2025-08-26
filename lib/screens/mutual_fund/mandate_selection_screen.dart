@@ -104,206 +104,207 @@ class _MandateSelectionScreenState extends State<MandateSelectionScreen> {
           ),
           backgroundColor:
               theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-          body: Column(
-            children: [
-              // Mandate List
-              Expanded(
-                child: mfOrder.mandateData != null &&
-                        mfOrder.mandateData!.isNotEmpty
-                    ? ListView.separated(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        itemCount: mfOrder.mandateData!.length,
-                        separatorBuilder: (context, index) =>
-                            const ListDivider(),
-                        itemBuilder: (context, index) {
-                          final mandate = mfOrder.mandateData![index];
-                          final isSelected =
-                              mandate.mandateId == widget.currentMandateId;
-
-                          return InkWell(
-                            onTap: () {
-                              widget.onMandateSelected(mandate.mandateId ?? '');
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 16),
-                              decoration: BoxDecoration(
-                                color: isSelected
-                                    ? (theme.isDarkMode
-                                        ? colors.primaryDark.withOpacity(0.1)
-                                        : colors.primaryLight.withOpacity(0.1))
-                                    : Colors.transparent,
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(
+          body: SafeArea(
+            child: Column(
+              children: [
+                // Mandate List
+                Expanded(
+                  child: mfOrder.mandateData != null &&
+                          mfOrder.mandateData!.isNotEmpty
+                      ? ListView.separated(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          itemCount: mfOrder.mandateData!.length,
+                          separatorBuilder: (context, index) =>
+                              const ListDivider(),
+                          itemBuilder: (context, index) {
+                            final mandate = mfOrder.mandateData![index];
+                            final isSelected =
+                                mandate.mandateId == widget.currentMandateId;
+                    
+                            return InkWell(
+                              onTap: () {
+                                widget.onMandateSelected(mandate.mandateId ?? '');
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 16),
+                                decoration: BoxDecoration(
                                   color: isSelected
                                       ? (theme.isDarkMode
-                                          ? colors.primaryDark
-                                          : colors.primaryLight)
+                                          ? colors.primaryDark.withOpacity(0.1)
+                                          : colors.primaryLight.withOpacity(0.1))
                                       : Colors.transparent,
-                                  width: 1,
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: isSelected
+                                        ? (theme.isDarkMode
+                                            ? colors.primaryDark
+                                            : colors.primaryLight)
+                                        : Colors.transparent,
+                                    width: 1,
+                                  ),
                                 ),
-                              ),
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            SizedBox(
-                                              width: MediaQuery.of(context).size.width * 0.5,
-                                              child: TextWidget.subText(
-                                                text:
-                                                    "Mandate Id : ${mandate.mandateId}",
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              SizedBox(
+                                                width: MediaQuery.of(context).size.width * 0.5,
+                                                child: TextWidget.subText(
+                                                  text:
+                                                      "Mandate Id : ${mandate.mandateId}",
+                                                  theme: theme.isDarkMode,
+                                                  color: theme.isDarkMode
+                                                      ? colors.textPrimaryDark
+                                                      : colors.textPrimaryLight,
+                                                      textOverflow: TextOverflow.ellipsis,
+                                                      maxLines: 1,
+                                                      
+                                                  
+                                                ),
+                                              ),
+                                              TextWidget.subText(
+                                                text: "${mandate.amount}",
                                                 theme: theme.isDarkMode,
-                                                color: theme.isDarkMode
+                                                 color: theme.isDarkMode
                                                     ? colors.textPrimaryDark
                                                     : colors.textPrimaryLight,
-                                                    textOverflow: TextOverflow.ellipsis,
-                                                    maxLines: 1,
-                                                    
-                                                
                                               ),
-                                            ),
-                                            TextWidget.subText(
-                                              text: "${mandate.amount}",
-                                              theme: theme.isDarkMode,
-                                               color: theme.isDarkMode
-                                                  ? colors.textPrimaryDark
-                                                  : colors.textPrimaryLight,
-                                            ),
-                                            
-                                            // const SizedBox(height: 4),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 4),
-                                        
-                                        if (mandate.bankName != null) ...[
+                                              
+                                              // const SizedBox(height: 4),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 4),
                                           
+                                          if (mandate.bankName != null) ...[
+                                            
+                                            Row(
+                                               mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                              children: [
+                                                TextWidget.paraText(
+                                                  text: "${mandate.bankName}",
+                                                  theme: theme.isDarkMode,
+                                                  color: colors.colorGrey,
+                                                ),
+                                                
+                                              ],
+                                            ),
+                                            const SizedBox(height: 4),
+                                           
+                                          ],
                                           Row(
                                              mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
+                                                MainAxisAlignment.spaceBetween,
                                             children: [
                                               TextWidget.paraText(
-                                                text: "${mandate.bankName}",
+                                                text: "${mandate.status}",
                                                 theme: theme.isDarkMode,
                                                 color: colors.colorGrey,
+                                              ),
+                                               if (isSelected)
+                                              Icon(
+                                                Icons.check_circle,
+                                                color: theme.isDarkMode
+                                                    ? colors.primaryDark
+                                                    : colors.primaryLight,
+                                                size: 20,
                                               ),
                                               
                                             ],
                                           ),
-                                          const SizedBox(height: 4),
-                                         
+                     const SizedBox(height: 4),
+                                          Row(
+                                            children: [
+                                              TextWidget.paraText(
+                                                text: formatDate(mandate.regnDate ?? ''),
+                                                theme: theme.isDarkMode,
+                                                color: colors.colorGrey,
+                                              ),
+                                            ],
+                                          )
                                         ],
-                                        Row(
-                                           mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            TextWidget.paraText(
-                                              text: "${mandate.status}",
-                                              theme: theme.isDarkMode,
-                                              color: colors.colorGrey,
-                                            ),
-                                             if (isSelected)
-                                            Icon(
-                                              Icons.check_circle,
-                                              color: theme.isDarkMode
-                                                  ? colors.primaryDark
-                                                  : colors.primaryLight,
-                                              size: 20,
-                                            ),
-                                            
-                                          ],
-                                        ),
- const SizedBox(height: 4),
-                                        Row(
-                                          children: [
-                                            TextWidget.paraText(
-                                              text: formatDate(mandate.regnDate ?? ''),
-                                              theme: theme.isDarkMode,
-                                              color: colors.colorGrey,
-                                            ),
-                                          ],
-                                        )
-                                      ],
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
-                            ),
-                          );
-                        },
-                      )
-                    : Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.inbox_outlined,
-                              size: 64,
-                              color: colors.colorGrey,
-                            ),
-                            const SizedBox(height: 16),
-                            TextWidget.subText(
-                              text: "No Mandates Found",
-                              theme: theme.isDarkMode,
-                              color: theme.isDarkMode
-                                  ? colors.textPrimaryDark
-                                  : colors.textPrimaryLight,
-                              fw: 0,
-                            ),
-                            const SizedBox(height: 8),
-                            TextWidget.paraText(
-                              text: "Create a new mandate to get started",
-                              theme: theme.isDarkMode,
-                              color: colors.colorGrey,
-                            ),
-                          ],
+                            );
+                          },
+                        )
+                      : Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.inbox_outlined,
+                                size: 64,
+                                color: colors.colorGrey,
+                              ),
+                              const SizedBox(height: 16),
+                              TextWidget.subText(
+                                text: "No Mandates Found",
+                                theme: theme.isDarkMode,
+                                color: theme.isDarkMode
+                                    ? colors.textPrimaryDark
+                                    : colors.textPrimaryLight,
+                                fw: 0,
+                              ),
+                              const SizedBox(height: 8),
+                              TextWidget.paraText(
+                                text: "Create a new mandate to get started",
+                                theme: theme.isDarkMode,
+                                color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                              ),
+                            ],
+                          ),
                         ),
+                ),
+                // Create Mandate Button at bottom
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          backgroundColor: Colors.transparent,
+                          builder: (BuildContext context) {
+                            return const CreateMandateDialogue();
+                          },
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        elevation: 0,
+                        minimumSize: const Size(0, 45),
+                        backgroundColor: !theme.isDarkMode
+                            ? colors.primaryLight
+                            : colors.primaryDark,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
                       ),
-              ),
-              // Create Mandate Button at bottom
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      showModalBottomSheet(
-                        context: context,
-                        isScrollControlled: true,
-                        backgroundColor: Colors.transparent,
-                        builder: (BuildContext context) {
-                          return const CreateMandateDialogue();
-                        },
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      elevation: 0,
-                      backgroundColor: !theme.isDarkMode
-                          ? colors.primaryLight
-                          : colors.primaryDark,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                      child: TextWidget.subText(
+                        text: "Create New Mandate",
+                        theme: !theme.isDarkMode,
+                        color:  colors.colorWhite,
+                        fw: 2,
                       ),
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                    ),
-                    child: TextWidget.subText(
-                      text: "Create New Mandate",
-                      theme: !theme.isDarkMode,
-                      color: !theme.isDarkMode
-                          ? colors.colorWhite
-                          : colors.colorBlack,
-                      fw: 2,
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },

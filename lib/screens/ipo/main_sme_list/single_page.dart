@@ -48,33 +48,36 @@ class _MainSmeSinglePageState extends State<MainSmeSinglePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer(
-      builder: (context, ref, child) {
-        final theme = ref.watch(themeProvider);
-        final singlepage = ref.watch(ipoProvide);
-        final upi = ref.watch(transcationProvider);
-
-        return DraggableScrollableSheet(
-          initialChildSize: _initialChildSize,
-          maxChildSize: _maxChildSize,
-          expand: false,
-          builder: (context, scrollController) {
-            if (singlepage.iposinglepage?.data == "no data") {
-              return const _NoDataWidget();
-            }
-
-            return _IPODetailsContainer(
-              theme: theme,
-              singlepage: singlepage,
-              upi: upi,
-              widget: widget,
-              scrollController: scrollController,
-              isExpanded: _isExpanded,
-              onExpandToggle: () => setState(() => _isExpanded = !_isExpanded),
-            );
-          },
-        );
-      },
+    return SafeArea(
+      child: Consumer(
+        builder: (context, ref, child) {
+          final theme = ref.watch(themeProvider);
+          final singlepage = ref.watch(ipoProvide);
+          final upi = ref.watch(transcationProvider);
+      
+          return DraggableScrollableSheet(
+            initialChildSize: _initialChildSize,
+            maxChildSize: _maxChildSize,
+            expand: false,
+            builder: (context, scrollController) {
+              if (singlepage.iposinglepage?.data == "no data") {
+                return const _NoDataWidget();
+              }
+      
+              return _IPODetailsContainer(
+                theme: theme,
+                singlepage: singlepage,
+                upi: upi,
+                ref: ref,
+                widget: widget,
+                scrollController: scrollController,
+                isExpanded: _isExpanded,
+                onExpandToggle: () => setState(() => _isExpanded = !_isExpanded),
+              );
+            },
+          );
+        },
+      ),
     );
   }
 }
@@ -105,6 +108,7 @@ class _IPODetailsContainer extends StatelessWidget {
   final ScrollController scrollController;
   final bool isExpanded;
   final VoidCallback onExpandToggle;
+  final WidgetRef ref;
 
   const _IPODetailsContainer({
     required this.theme,
@@ -114,43 +118,69 @@ class _IPODetailsContainer extends StatelessWidget {
     required this.scrollController,
     required this.isExpanded,
     required this.onExpandToggle,
+    required this.ref,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0xff999999),
-            blurRadius: 4.0,
-            offset: Offset(2.0, 0.0),
-          )
-        ],
-      ),
+     decoration: BoxDecoration(
+           borderRadius: const BorderRadius.only(
+      topLeft: Radius.circular(16),
+      topRight: Radius.circular(16),
+    ),
+         color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+         border: Border(
+                                  top: BorderSide(
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                            .withOpacity(0.5)
+                                        : colors.colorWhite,
+                                  ),
+                                  left: BorderSide(
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                            .withOpacity(0.5)
+                                        : colors.colorWhite,
+                                  ),
+                                  right: BorderSide(
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                            .withOpacity(0.5)
+                                        : colors.colorWhite,
+                                  ),
+                                ),
+
+         
+        ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
           Expanded(
+            child: Column(
+            children: [
+               const CustomDragHandler(),
+                  const SizedBox(height: 6),
+                  // _buildStatusBanner(),
+                  _buildCompanyHeader(),
+                  _buildApplyButton(context, ref),
+                  const SizedBox(height: 16),
+                  Expanded(
             child: SingleChildScrollView(
               controller: scrollController,
               child: Column(
                 children: [
-                  const CustomDragHandler(),
-                  const SizedBox(height: 6),
-                  // _buildStatusBanner(),
-                  _buildCompanyHeader(),
-                  _buildApplyButton(context),
-                  const SizedBox(height: 16),
+                 
                   _buildScrollableContent(),
                 ],
               ),
             ),
           ),
+            ],
+          ),),
+          
         ],
       ),
     );
@@ -214,10 +244,10 @@ class _IPODetailsContainer extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        TextWidget.headText(
+        TextWidget.titleText(
           text: "${singlepage.iposinglepage!.data!['Company Name']} ",
           theme: false,
-          fw: 0,
+          fw: 1,
           color: theme.isDarkMode
               ? colors.textPrimaryDark
               : colors.textPrimaryLight,
@@ -242,17 +272,30 @@ class _IPODetailsContainer extends StatelessWidget {
     final status = ipostartdate(widget.startdate, widget.enddate);
     final isOpen = status == "Open";
 
-    return TextWidget.paraText(
-      text: status.toUpperCase(),
-      theme: false,
-      fw: 3,
-      color: isOpen
-          ? theme.isDarkMode
-              ? colors.profitDark
-              : colors.profitLight
-          : theme.isDarkMode
-              ? colors.lossDark
-              : colors.lossLight,
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+      decoration: BoxDecoration(
+        color:isOpen
+                                  ? theme.isDarkMode
+                                      ? colors.profitDark.withOpacity(0.2)
+                                      : colors.profitLight.withOpacity(0.2)
+                                  : theme.isDarkMode
+                                      ? colors.lossDark.withOpacity(0.2)
+                                      : colors.lossLight.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: TextWidget.paraText(
+        text: status.toUpperCase(),
+        theme: false,
+        fw: 3,
+        color: isOpen
+            ? theme.isDarkMode
+                ? colors.profitDark
+                : colors.profitLight
+            : theme.isDarkMode
+                ? colors.lossDark
+                : colors.lossLight,
+      ),
     );
   }
 
@@ -298,7 +341,8 @@ class _IPODetailsContainer extends StatelessWidget {
     );
   }
 
-  Widget _buildApplyButton(BuildContext context) {
+  Widget _buildApplyButton(BuildContext context, WidgetRef ref) {
+    final ipo = ref.watch(ipoProvide);
     bool isApplyButtonEnabled = true;
     // if (singlepage.iposinglepage!.data['status'] == "CLOSED") {
     //   return const SizedBox();
@@ -310,7 +354,7 @@ class _IPODetailsContainer extends StatelessWidget {
         width: double.infinity,
         child: OutlinedButton(
           style: OutlinedButton.styleFrom(
-            minimumSize: const Size(0, 40),
+            minimumSize: const Size(0, 45),
             side: BorderSide(color: colors.btnOutlinedBorder),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(5),
@@ -320,6 +364,7 @@ class _IPODetailsContainer extends StatelessWidget {
           onPressed: () {
             if (isApplyButtonEnabled) {
               isApplyButtonEnabled = false;
+              ref.read(ipoProvide).setSinglepageapply(true);
               _handleApplyIPO(context);
             } else {
               return;
@@ -328,7 +373,7 @@ class _IPODetailsContainer extends StatelessWidget {
           child: TextWidget.subText(
             text: "Apply",
             theme: false,
-            fw: 1,
+            fw: 2,
             color: colors.colorWhite,
           ),
         ),
@@ -496,7 +541,7 @@ class _IPODetailsSection extends StatelessWidget {
                         color: theme.isDarkMode
                             ? colors.primaryDark
                             : colors.primaryLight,
-                        fw: 0),
+                        fw: 2),
                   ),
                 ),
               ],

@@ -178,11 +178,16 @@ class Routes {
   static const String mforderdetscreen = 'mforderdetscreen';
   static const String mfsearchscreen = 'mfsearchscreen';
   static const String redeemNewBottomSheet = 'redeemNewBottomSheet';
+  static const String algoCreate = 'algoCreate';
+  static const String algoList = 'algoList';
 
   static const String mfnfoscreen = 'mfnfoscreen';
   static const String mfCategoryList = 'mfCategoryList';
   static const String mfsipcalscreen = 'mfsipcalscreen';
   static const String mfcagrcalss = 'mfcagrcalss';
+  static const String brokerCalculator = 'brokerCalculator';
+  static const String marginCalculator = 'marginCalculator';
+  static const String portfolioDashboard = 'portfolioDashboard';
 
   //reports
   static const String ledgerscreen = 'LedgerScreen';
@@ -211,4 +216,5 @@ class Routes {
   // rough
   static const String heatmapcalendarscreen = 'HeatmapCalendarScreen ';
   static const String withdrawscreen = 'withdrawscreen';
+
 }

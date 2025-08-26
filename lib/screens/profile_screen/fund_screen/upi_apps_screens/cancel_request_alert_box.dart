@@ -56,83 +56,102 @@ class _PaymentCancelAlertState extends ConsumerState<PaymentCancelAlert> {
         onPopInvokedWithResult: (didPop, result) {
           if (didPop) return; // If system handled back, do nothing
         },
-        child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-                boxShadow: const [
-                  BoxShadow(
-                      color: Color(0xff999999),
-                      blurRadius: 4.0,
-                      offset: Offset(2.0, 0.0))
-                ]),
-            child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const CustomDragHandler(),
-                  const SizedBox(height: 10),
-                  Container(
-                    padding: const EdgeInsets.only(top: 10, bottom: 5),
-                    alignment: Alignment.center,
-                    child: TextWidget.subText(
-                        text: 'Awaiting UPI conformation',
-                        theme: false,
-                        color: theme.isDarkMode
-                                ? colors.textPrimaryDark
-                                : colors.textPrimaryLight,
-                        ),
-                  ),
-                  SizedBox(
-                      width: MediaQuery.of(context).size.width,
-                      child: Column(children: [
-                        // const ListDivider(),
-                        const SizedBox(height: 3),
-                        const ProgressiveDotsLoader(),
-                        const SizedBox(height: 3),
-                        TextWidget.paraText(
-                            text: 'This will take a few seconds.',
-                            theme: false,
-                            color: colors.textPrimaryLight,
-                            ),
-                      ])),
-                  SizedBox(
-                    height: 10,
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    child: SizedBox(
+        child: SafeArea(
+          child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              decoration: BoxDecoration(
+                  borderRadius: const BorderRadius.only(
+      topLeft: Radius.circular(16),
+      topRight: Radius.circular(16),
+    ),
+         color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+         border: Border(
+                                  top: BorderSide(
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                            .withOpacity(0.5)
+                                        : colors.colorWhite,
+                                  ),
+                                  left: BorderSide(
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                            .withOpacity(0.5)
+                                        : colors.colorWhite,
+                                  ),
+                                  right: BorderSide(
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                            .withOpacity(0.5)
+                                        : colors.colorWhite,
+                                  ),
+                                ),),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const CustomDragHandler(),
+                    const SizedBox(height: 10),
+                    Container(
+                      padding: const EdgeInsets.only(top: 10, bottom: 5),
+                      alignment: Alignment.center,
+                      child: TextWidget.subText(
+                          text: 'Awaiting UPI conformation',
+                          theme: false,
+                          color: theme.isDarkMode
+                                  ? colors.textPrimaryDark
+                                  : colors.textPrimaryLight,
+                          ),
+                    ),
+                    SizedBox(
                         width: MediaQuery.of(context).size.width,
-                        child: ElevatedButton(
-                            onPressed: () {
-                              // Clear the amount text field
-                              ref.read(transcationProvider).amount.clear();
-                              Navigator.pop(context);
-                              _timer?.cancel();
-                              FocusScope.of(context).unfocus();
-                            },
-                            style: ElevatedButton.styleFrom(
-                              elevation: 0,
-                              minimumSize: const Size(0, 40),
-                              backgroundColor: theme.isDarkMode
-                            ? colors.primaryDark
-                            : colors.primaryLight,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(5),
+                        child: Column(children: [
+                          // const ListDivider(),
+                          const SizedBox(height: 3),
+                          const ProgressiveDotsLoader(),
+                          const SizedBox(height: 3),
+                          TextWidget.paraText(
+                              text: 'This will take a few seconds.',
+                              theme: false,
+                              color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                               ),
-                            ),
-                            child: TextWidget.subText(
-                                text: "Cancel Transaction",
-                                theme: false,
-                                color:  colors.colorWhite
-                                           ,
-                                fw: 2))),
-                  ),
-                  SizedBox(
-                    height: 10,
-                  )
-                ])));
+                        ])),
+                    SizedBox(
+                      height: 10,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: SizedBox(
+                          width: MediaQuery.of(context).size.width,
+                          child: ElevatedButton(
+                              onPressed: () {
+                                // Clear the amount text field
+                                ref.read(transcationProvider).amount.clear();
+                                Navigator.pop(context);
+                                _timer?.cancel();
+                                FocusScope.of(context).unfocus();
+                              },
+                              style: ElevatedButton.styleFrom(
+                                elevation: 0,
+                                minimumSize: const Size(0, 40),
+                                backgroundColor: theme.isDarkMode
+                              ? colors.primaryDark
+                              : colors.primaryLight,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(5),
+                                ),
+                              ),
+                              child: TextWidget.subText(
+                                  text: "Cancel Transaction",
+                                  theme: false,
+                                  color:  colors.colorWhite
+                                             ,
+                                  fw: 2))),
+                    ),
+                    SizedBox(
+                      height: 10,
+                    )
+                  ])),
+        ));
   }
 }

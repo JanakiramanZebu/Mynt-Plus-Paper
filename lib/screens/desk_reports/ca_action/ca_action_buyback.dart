@@ -204,731 +204,946 @@ class _CABuybackState extends State<CABuyback> with TickerProviderStateMixin {
             //   },
             //   child: Icon(Icons.ios_share)),
           ),
-          body: TransparentLoaderScreen(
-            isLoading: ledgerprovider.cpactionloader,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Text("${ddd}")
-                // Padding(
-                //     padding: EdgeInsets.only(left: 4.0, top: 10.0),
-                //     child: Text(
-                //       "Financial activities through debits and credits ",
-                //       style: textStyle(colors.colorBlack, 14, FontWeight.w600),
-                //     )),
+          body: SafeArea(
+            child: TransparentLoaderScreen(
+              isLoading: ledgerprovider.cpactionloader,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Text("${ddd}")
+                  // Padding(
+                  //     padding: EdgeInsets.only(left: 4.0, top: 10.0),
+                  //     child: Text(
+                  //       "Financial activities through debits and credits ",
+                  //       style: textStyle(colors.colorBlack, 14, FontWeight.w600),
+                  //     )),
 
-                // Padding(
-                //   padding: const EdgeInsets.only(left: 30 , right: 30),
-                //   child: Row(
-                //     children: [
-                //       // Static Column
-                //       Column(
-                //         children: [
-                //           Container(
-                //             margin: EdgeInsets.only(top: 20),
-                //             width: 100,
-                //             color: Colors
-                //                 .cardbgrey, // Header cell for the static column
-                //             padding: EdgeInsets.all(8.0),
-                //             child: Text(
-                //               'Exchange',
-                //               style: TextStyle(fontWeight: FontWeight.bold),
-                //             ),
-                //           ),
-                //           for (var item in ledgerprovider.ledgerAllData!.fullStat!)
-                //             Container(
-                //               width: 100, // Fixed width for the static column
-                //               height: 50,
+                  // Padding(
+                  //   padding: const EdgeInsets.only(left: 30 , right: 30),
+                  //   child: Row(
+                  //     children: [
+                  //       // Static Column
+                  //       Column(
+                  //         children: [
+                  //           Container(
+                  //             margin: EdgeInsets.only(top: 20),
+                  //             width: 100,
+                  //             color: Colors
+                  //                 .cardbgrey, // Header cell for the static column
+                  //             padding: EdgeInsets.all(8.0),
+                  //             child: Text(
+                  //               'Exchange',
+                  //               style: TextStyle(fontWeight: FontWeight.bold),
+                  //             ),
+                  //           ),
+                  //           for (var item in ledgerprovider.ledgerAllData!.fullStat!)
+                  //             Container(
+                  //               width: 100, // Fixed width for the static column
+                  //               height: 50,
 
-                //               padding: EdgeInsets.all(8.0),
-                //               decoration: BoxDecoration(
-                //                 border: Border.all(color: const Color.fromARGB(255, 224, 224, 224)),
-                //               ),
-                //               child: Text("${item.cOCD}",
-                //               style: textStyle(Colors.black, 14, FontWeight.w600),
-                //               ),
-                //             ),
-                //         ],
-                //       ),
-                //       // Scrollable Content
+                  //               padding: EdgeInsets.all(8.0),
+                  //               decoration: BoxDecoration(
+                  //                 border: Border.all(color: const Color.fromARGB(255, 224, 224, 224)),
+                  //               ),
+                  //               child: Text("${item.cOCD}",
+                  //               style: textStyle(Colors.black, 14, FontWeight.w600),
+                  //               ),
+                  //             ),
+                  //         ],
+                  //       ),
+                  //       // Scrollable Content
 
-                //       Expanded(
-                //         child: SingleChildScrollView(
-                //           scrollDirection: Axis.horizontal,
-                //           child: Column(
-                //             children: [
-                //               // Header Row for the scrollable content
-                //               Row(
-                //                 children: [
-                //                   for (int i = 0; i < Header.length; i++)
-                //                     Container(
-                //                        margin: EdgeInsets.only(top: 20),
-                //                       width: i == 4 ? 275 : 100, // Column width
+                  //       Expanded(
+                  //         child: SingleChildScrollView(
+                  //           scrollDirection: Axis.horizontal,
+                  //           child: Column(
+                  //             children: [
+                  //               // Header Row for the scrollable content
+                  //               Row(
+                  //                 children: [
+                  //                   for (int i = 0; i < Header.length; i++)
+                  //                     Container(
+                  //                        margin: EdgeInsets.only(top: 20),
+                  //                       width: i == 4 ? 275 : 100, // Column width
 
-                //                       padding: EdgeInsets.all(8.0),
-                //                       color: Color(0xFFEEEEEE),
-                //                       child: Text(
-                //                         '${Header[i]}',
-                //                         style:
-                //                             TextStyle(fontWeight: FontWeight.bold),
-                //                       ),
-                //                     ),
-                //                 ],
-                //               ),
-                //               // Data Rows for the scrollable content
-                //               for (int rowIndex = 0;
-                //                   rowIndex <
-                //                       ledgerprovider
-                //                           .ledgerAllData!.fullStat!.length;
-                //                   rowIndex++)
-                //                 Row(
-                //                   children: [
-                //                     for (int colIndex = 0; colIndex < 5; colIndex++)
-                //                       Container(
-                //                          width: colIndex == 4 ? 275 : 100,  // Column width
-                //                         height: 50,
-                //                         padding: EdgeInsets.all(8.0),
-                //                         decoration: BoxDecoration(
-                //                           border: Border.all(color: Color.fromARGB(255, 224, 224, 224)),
-                //                         ),
-                //                         child: Text(colIndex == 0 ? dateFormatChangeForLedger(ledgerprovider
-                //                             .tablearray[rowIndex][colIndex]) : ledgerprovider
-                //                             .tablearray[rowIndex][colIndex] ,
-                //                             textAlign: colIndex == 1 ||colIndex == 2 || colIndex == 3  ? TextAlign.right : TextAlign.start ,
-                //                             ) ,
-                //                         //  child: Text(  ledgerprovider
-                //                         //     .tablearray[rowIndex][colIndex] ) ,
-                //                       ),
-                //                   ],
-                //                 ),
-                //             ],
-                //           ),
-                //         ),
-                //       ),
-                //     ],
-                //   ),
-                // ),
-                Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      height: 40,
-                      child: Row(
-                        children: [
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: _buildCATabs(
-                                ref, theme, tabCtrl, ledgerprovider),
-                          ),
-                        ],
+                  //                       padding: EdgeInsets.all(8.0),
+                  //                       color: Color(0xFFEEEEEE),
+                  //                       child: Text(
+                  //                         '${Header[i]}',
+                  //                         style:
+                  //                             TextStyle(fontWeight: FontWeight.bold),
+                  //                       ),
+                  //                     ),
+                  //                 ],
+                  //               ),
+                  //               // Data Rows for the scrollable content
+                  //               for (int rowIndex = 0;
+                  //                   rowIndex <
+                  //                       ledgerprovider
+                  //                           .ledgerAllData!.fullStat!.length;
+                  //                   rowIndex++)
+                  //                 Row(
+                  //                   children: [
+                  //                     for (int colIndex = 0; colIndex < 5; colIndex++)
+                  //                       Container(
+                  //                          width: colIndex == 4 ? 275 : 100,  // Column width
+                  //                         height: 50,
+                  //                         padding: EdgeInsets.all(8.0),
+                  //                         decoration: BoxDecoration(
+                  //                           border: Border.all(color: Color.fromARGB(255, 224, 224, 224)),
+                  //                         ),
+                  //                         child: Text(colIndex == 0 ? dateFormatChangeForLedger(ledgerprovider
+                  //                             .tablearray[rowIndex][colIndex]) : ledgerprovider
+                  //                             .tablearray[rowIndex][colIndex] ,
+                  //                             textAlign: colIndex == 1 ||colIndex == 2 || colIndex == 3  ? TextAlign.right : TextAlign.start ,
+                  //                             ) ,
+                  //                         //  child: Text(  ledgerprovider
+                  //                         //     .tablearray[rowIndex][colIndex] ) ,
+                  //                       ),
+                  //                   ],
+                  //                 ),
+                  //             ],
+                  //           ),
+                  //         ),
+                  //       ),
+                  //     ],
+                  //   ),
+                  // ),
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        height: 40,
+                        child: Row(
+                          children: [
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: _buildCATabs(
+                                  ref, theme, tabCtrl, ledgerprovider),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-                const ListDivider(),
-                datalist.isEmpty
-                    ? const Center(
-                        child: Padding(
-                        padding: EdgeInsets.only(top: 60),
-                        child: NoDataFound(),
-                      ))
-                    : Expanded(
-                        child: SingleChildScrollView(
-                        child: ListView.separated(
-                          physics: ScrollPhysics(),
-                          itemCount: datalist.length,
-                          shrinkWrap: true,
-                          itemBuilder: (context, index) {
-                            final dataval = datalist[index];
-                            return InkWell(
-                              onTap: () {
-                                setState(() {
-                                  ledgerprovider.selectedqtyforcpaction.text =
-                                      dataval.havingqty == 'null'
-                                          ? '0'
-                                          : dataval.havingqty;
-                                  ledgerprovider.selectedpriceforcpaction.text =
-                                      dataval.minPrice;
-                                });
-                                showModalBottomSheet(
-                                  context: context,
-                                  isScrollControlled: true,
-                                  shape: const RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.only(
-                                      topLeft: Radius.circular(16),
-                                      topRight: Radius.circular(16),
-                                    ),
-                                  ),
-                                  builder: (context) =>
-                                      CPActionOrderScreen(data: dataval),
-                                );
-                              },
-                              child: Padding(
-                                padding: const EdgeInsets.all(16.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    // if (index != 0 &&
-                                    //     ledgerprovider.ledgerAllData!
-                                    //             .fullStat![index].vOUCHERDATE !=
-                                    //         ledgerprovider
-                                    //             .ledgerAllData!
-                                    //             .fullStat![index - 1]
-                                    //             .vOUCHERDATE) ...[
-                                    //   Card(
-                                    //     elevation: 0.0,
-                                    //     color: theme.isDarkMode
-                                    //         ? const Color(0xffB5C0CF)
-                                    //             .withOpacity(.15)
-                                    //         : const Color(0xffF1F3F8),
-                                    //     child: Row(
-                                    //       mainAxisAlignment:
-                                    //           MainAxisAlignment.start,
-                                    //       children: [
-                                    //         Padding(
-                                    //           padding: const EdgeInsets.all(8.0),
-                                    //           child: Text(
-                                    //               "${index == 0 ? dateFormatChangeForLedger(ledgerprovider.ledgerAllData!.fullStat![index].vOUCHERDATE.toString()) : ledgerprovider.ledgerAllData!.fullStat![index].vOUCHERDATE == ledgerprovider.ledgerAllData!.fullStat![index - 1].vOUCHERDATE ? '' : dateFormatChangeForLedger(ledgerprovider.ledgerAllData!.fullStat![index].vOUCHERDATE.toString())}",
-                                    //               style: textStyle(
-                                    //                   theme.isDarkMode
-                                    //                       ? colors.colorWhite
-                                    //                       : colors.colorBlack,
-                                    //                   14,
-                                    //                   FontWeight.w600)),
-                                    //         ),
-                                    //       ],
-                                    //     ),
-                                    //   ),
-                                    // ],
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        SizedBox(
-                                          width: screenWidth * 0.40,
-                                          child: TextWidget.subText(
-                                            text: "${dataval?.name}",
-                                            color: theme.isDarkMode
-                                                ? colors.textPrimaryDark
-                                                : colors.textPrimaryLight,
-                                            textOverflow: TextOverflow.ellipsis,
-                                            theme: theme.isDarkMode,
-                                          ),
-                                        ),
-
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 4, vertical: 2),
-                                          decoration: BoxDecoration(
-                                            // border: Border.all(color: _getStatusColor()),
-                                            borderRadius:
-                                                BorderRadius.circular(4),
-                                            color: _getStatusColor(
-                                                    dataval.issueType)
-                                                .withOpacity(0.1),
-                                          ),
-                                          child: TextWidget.paraText(
-                                            text: _getTypeLabel(
-                                                dataval.issueType),
-                                            color: theme.isDarkMode
-                                                ? colors.textSecondaryDark
-                                                : colors.textSecondaryLight,
-                                            textOverflow: TextOverflow.ellipsis,
-                                            theme: theme.isDarkMode,
-                                          ),
-                                        ),
-                                        // const SizedBox(width: 4),
-                                        // if (ledgerprovider.selectvalueofcpaction !=
-                                        //     'OFS') ...[
-                                        //   Row(
-                                        //     children: [
-                                        //       TextWidget.paraText(
-                                        //         text: "Off.prc",
-                                        //         color: theme.isDarkMode
-                                        //             ? colors.textSecondaryDark
-                                        //             : colors.textSecondaryLight,
-                                        //         textOverflow: TextOverflow.ellipsis,
-                                        //         theme: theme.isDarkMode,
-                                        //       ),
-                                        //       TextWidget.paraText(
-                                        //         // align: TextAlign.right,
-                                        //         text: " ${dataval?.cutOffPrice}",
-                                        //         color: theme.isDarkMode
-                                        //             ? colors.textSecondaryDark
-                                        //             : colors.textSecondaryLight,
-                                        //         textOverflow: TextOverflow.ellipsis,
-                                        //         theme: theme.isDarkMode,
-                                        //       ),
-                                        //     ],
-                                        //   ),
-                                        // ],
-                                      ],
-                                    ),
-
-                                    Padding(
-                                      padding: const EdgeInsets.only(
-                                        top: 4.0,
-                                      ),
-                                      child: Row(
+                    ],
+                  ),
+                  const ListDivider(),
+                  datalist.isEmpty
+                      ? const Expanded(child: Center(child: NoDataFound()))
+                      : Expanded(
+                          child: SingleChildScrollView(
+                          child: ListView.separated(
+                            physics: ScrollPhysics(),
+                            itemCount: datalist.length,
+                            shrinkWrap: true,
+                            itemBuilder: (context, index) {
+                              final dataval = datalist[index];
+                              return InkWell(
+                                onTap: () {
+                                  // setState(() {
+                                  //   ledgerprovider.selectedqtyforcpaction.text =
+                                  //       dataval.havingqty == 'null'
+                                  //           ? '0'
+                                  //           : dataval.havingqty;
+                                  //   ledgerprovider.selectedpriceforcpaction
+                                  //       .text = dataval.minPrice;
+                                  // });
+                                  // showModalBottomSheet(
+                                  //   context: context,
+                                  //   isScrollControlled: true,
+                                  //   shape: const RoundedRectangleBorder(
+                                  //     borderRadius: BorderRadius.only(
+                                  //       topLeft: Radius.circular(16),
+                                  //       topRight: Radius.circular(16),
+                                  //     ),
+                                  //   ),
+                                  //   builder: (context) =>
+                                  //       CPActionOrderScreen(data: dataval),
+                                  // );
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      // if (index != 0 &&
+                                      //     ledgerprovider.ledgerAllData!
+                                      //             .fullStat![index].vOUCHERDATE !=
+                                      //         ledgerprovider
+                                      //             .ledgerAllData!
+                                      //             .fullStat![index - 1]
+                                      //             .vOUCHERDATE) ...[
+                                      //   Card(
+                                      //     elevation: 0.0,
+                                      //     color: theme.isDarkMode
+                                      //         ? const Color(0xffB5C0CF)
+                                      //             .withOpacity(.15)
+                                      //         : const Color(0xffF1F3F8),
+                                      //     child: Row(
+                                      //       mainAxisAlignment:
+                                      //           MainAxisAlignment.start,
+                                      //       children: [
+                                      //         Padding(
+                                      //           padding: const EdgeInsets.all(8.0),
+                                      //           child: Text(
+                                      //               "${index == 0 ? dateFormatChangeForLedger(ledgerprovider.ledgerAllData!.fullStat![index].vOUCHERDATE.toString()) : ledgerprovider.ledgerAllData!.fullStat![index].vOUCHERDATE == ledgerprovider.ledgerAllData!.fullStat![index - 1].vOUCHERDATE ? '' : dateFormatChangeForLedger(ledgerprovider.ledgerAllData!.fullStat![index].vOUCHERDATE.toString())}",
+                                      //               style: textStyle(
+                                      //                   theme.isDarkMode
+                                      //                       ? colors.colorWhite
+                                      //                       : colors.colorBlack,
+                                      //                   14,
+                                      //                   FontWeight.w600)),
+                                      //         ),
+                                      //       ],
+                                      //     ),
+                                      //   ),
+                                      // ],
+                                      Row(
                                         mainAxisAlignment:
                                             MainAxisAlignment.spaceBetween,
                                         children: [
-                                          Row(
-                                            children: [
-                                              TextWidget.paraText(
-                                                  text:
-                                                      '${dataval.exchange == 'NSETender' ? 'NSE' : dataval.exchange} -',
-                                                  color: theme.isDarkMode
-                                                      ? colors.textSecondaryDark
-                                                      : colors
-                                                          .textSecondaryLight,
-                                                  theme: theme.isDarkMode),
-                                              const SizedBox(width: 4),
-                                              if (ledgerprovider
-                                                      .selectvalueofcpaction !=
-                                                  'OFS') ...[
-                                                Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.end,
-                                                  children: [
-                                                    Row(
-                                                      children: [
-                                                        TextWidget.paraText(
-                                                          align:
-                                                              TextAlign.right,
-                                                          text: "Closes on",
-                                                          color: theme
-                                                                  .isDarkMode
-                                                              ? colors
-                                                                  .textSecondaryDark
-                                                              : colors
-                                                                  .textSecondaryLight,
-                                                          textOverflow:
-                                                              TextOverflow
-                                                                  .ellipsis,
-                                                          theme:
-                                                              theme.isDarkMode,
-                                                        ),
-                                                        TextWidget.paraText(
-                                                          align:
-                                                              TextAlign.right,
-                                                          text:
-                                                              " ${dataval?.biddingEndDate}",
-                                                          color: theme
-                                                                  .isDarkMode
-                                                              ? colors
-                                                                  .textSecondaryDark
-                                                              : colors
-                                                                  .textSecondaryLight,
-                                                          textOverflow:
-                                                              TextOverflow
-                                                                  .ellipsis,
-                                                          theme:
-                                                              theme.isDarkMode,
-                                                        ),
-                                                      ],
-                                                    ),
-                                                    // Padding(
-                                                    //   padding: const EdgeInsets.only(
-                                                    //       top: 4.0, left: 4.0),
-                                                    //   child: TextWidget.paraText(
-                                                    //       align: TextAlign.right,
-                                                    //       text:
-                                                    //           "${dataval?.dailyEndTime}",
-                                                    //       color: Color(0xFF696969),
-                                                    //       textOverflow:
-                                                    //           TextOverflow.ellipsis,
-                                                    //       theme: theme.isDarkMode,
-                                                    //       fw: 0),
-                                                    // ),
-                                                  ],
-                                                ),
-                                              ]
-                                            ],
+                                          SizedBox(
+                                            width: MediaQuery.of(context)
+                                                    .size
+                                                    .width *
+                                                0.6,
+                                            child: TextWidget.subText(
+                                              text: "${dataval?.name}",
+                                              color: theme.isDarkMode
+                                                  ? colors.textPrimaryDark
+                                                  : colors.textPrimaryLight,
+                                              textOverflow:
+                                                  TextOverflow.ellipsis,
+                                              maxLines: 2,
+                                              theme: theme.isDarkMode,
+                                            ),
                                           ),
-                                          // Row(
-                                          //   children: [
-                                          //     InkWell(
-                                          //       borderRadius:
-                                          //           BorderRadius.circular(5),
-                                          //       splashColor: theme.isDarkMode
-                                          //           ? colors.splashColorDark
-                                          //           : colors.splashColorLight,
-                                          //       highlightColor: theme.isDarkMode
-                                          //           ? colors.highlightDark
-                                          //           : colors.highlightLight,
-                                          //       onTap: () {
-                                          //         // print('Tapped item:');
-                                          //         // print('list type: ' + _getTypeLabel(dataval.issueType));
-                                          //         // print('eligibleornot: ${dataval.eligibleornot}');
-                                          //         // print('approvedqty: ${dataval.approvedqty}');
-                                          //         // print('selectvalueofcpaction: ${ledgerprovider.selectvalueofcpaction}');
-                                          //         if (ledgerprovider
-                                          //                 .selectvalueofcpaction ==
-                                          //             'OFS') {
-                                          //           ledgerprovider
-                                          //               .setordervalueforofs(
-                                          //                   '1',
-                                          //                   dataval.baseprice,
-                                          //                   fundState
-                                          //                           .fundDetailModel
-                                          //                           ?.cash ??
-                                          //                       '0');
-                                          //         } else {
-                                          //           ledgerprovider.setCPActionQty(
-                                          //               '', '', '', '');
-                                          //           ledgerprovider.setCPActionPrice(
-                                          //               '', 0, 0, '', '');
-                                          //         }
-                                          //         if (dataval.orderstatus ==
-                                          //             'pending') {
-                                          //           showModalBottomSheet(
-                                          //               context: context,
-                                          //               builder: (context) =>
-                                          //                   cancelOrderScreenCopAction(
-                                          //                       data: dataval));
-                                          //         } else {
-                                          //           if ((dataval.eligibleornot ==
-                                          //                   'yes') ||
-                                          //               (dataval.approvedqty !=
-                                          //                       '0' &&
-                                          //                   dataval.eligibleornot ==
-                                          //                       'yes') ||
-                                          //               (ledgerprovider
-                                          //                       .selectvalueofcpaction ==
-                                          //                   'OFS')) {
-                                          //             showModalBottomSheet(
-                                          //                 context: context,
-                                          //                 builder: (context) =>
-                                          //                     CPActionOrderScreen(
-                                          //                         data: dataval));
-                                          //           } else {
-                                          //             ScaffoldMessenger.of(context)
-                                          //                 .showSnackBar(error(
-                                          //                     context,
-                                          //                     "Not Eligible"));
-                                          //             return null;
-                                          //           }
-                                          //         }
 
-                                          //         // _showBottomSheet(
-                                          //         //     context, const LedgerBillBottom());
-                                          //       },
-                                          //       child: Padding(
-                                          //         padding: const EdgeInsets.all(5),
-                                          //         child: Column(
-                                          //           children: [
-                                          //             TextWidget.subText(
-                                          //               text:
-                                          //                   dataval.orderstatus == 'pending' ? 'Cancel' : "Order",
-                                          //               theme: theme.isDarkMode,
-                                          //               fw: 2,
-                                          //               color: dataval
-                                          //                           .orderstatus ==
-                                          //                       'pending'
-                                          //                   ? colors.kColorRedButton
-                                          //                   : colors.secondary,
-                                          //             ),
-                                          //             if (dataval.bidqty != 'null')
-                                          //               TextWidget.paraText(
-                                          //                 text:
-                                          //                     "${dataval.bidqty} qty bided",
-                                          //                 color: theme.isDarkMode
-                                          //                     ? colors
-                                          //                         .textSecondaryDark
-                                          //                     : colors
-                                          //                         .textSecondaryLight,
-                                          //                 theme: theme.isDarkMode,
-                                          //               ),
-                                          //             // const SizedBox(height: 4),
-                                          //           ],
-                                          //         ),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 8, vertical: 2),
+                                            decoration: BoxDecoration(
+                                              // border: Border.all(color: _getStatusColor()),
+                                              borderRadius:
+                                                  BorderRadius.circular(4),
+                                              color: _getStatusColor(
+                                                      dataval.issueType, theme)
+                                                  .withOpacity(0.2),
+                                            ),
+                                            child: TextWidget.paraText(
+                                              text: _getTypeLabel(
+                                                  dataval.issueType),
+                                              color: _getStatusColor(
+                                                  dataval.issueType, theme),
+                                              textOverflow:
+                                                  TextOverflow.ellipsis,
+                                              theme: theme.isDarkMode,
+                                            ),
+                                          ),
+                                          // const SizedBox(width: 4),
+                                          // if (ledgerprovider.selectvalueofcpaction !=
+                                          //     'OFS') ...[
+                                          //   Row(
+                                          //     children: [
+                                          //       TextWidget.paraText(
+                                          //         text: "Off.prc",
+                                          //         color: theme.isDarkMode
+                                          //             ? colors.textSecondaryDark
+                                          //             : colors.textSecondaryLight,
+                                          //         textOverflow: TextOverflow.ellipsis,
+                                          //         theme: theme.isDarkMode,
                                           //       ),
-                                          //     ),
-                                          //   ],
-                                          // )
+                                          //       TextWidget.paraText(
+                                          //         // align: TextAlign.right,
+                                          //         text: " ${dataval?.cutOffPrice}",
+                                          //         color: theme.isDarkMode
+                                          //             ? colors.textSecondaryDark
+                                          //             : colors.textSecondaryLight,
+                                          //         textOverflow: TextOverflow.ellipsis,
+                                          //         theme: theme.isDarkMode,
+                                          //       ),
+                                          //     ],
+                                          //   ),
+                                          // ],
                                         ],
                                       ),
-                                    ),
 
-                                    // const ListDivider(),
-                                    if (ledgerprovider.selectvalueofcpaction !=
-                                        'OFS') ...[
-                                      // const Padding(
-                                      //   padding: EdgeInsets.only(
-                                      //       left: 16.0,
-                                      //       right: 16.0,
-                                      //       top: 2.0,
-                                      //       bottom: 4.0),
-                                      //   child: Row(
-                                      //     mainAxisAlignment:
-                                      //         MainAxisAlignment.spaceBetween,
-                                      //     children: [
-                                      //       // Column(
-                                      //       //   crossAxisAlignment:
-                                      //       //       CrossAxisAlignment.start,
-                                      //       //   children: [
-                                      //       //     // Row(
-                                      //       //     //   children: [
-                                      //       //     //     TextWidget.subText(
-                                      //       //     //         align: TextAlign.right,
-                                      //       //     //         text: "Start Date : ",
-                                      //       //     //         color: Color(0xFF696969),
-                                      //       //     //         textOverflow:
-                                      //       //     //             TextOverflow.ellipsis,
-                                      //       //     //         theme: theme.isDarkMode,
-                                      //       //     //         fw: 0),
-                                      //       //     //     TextWidget.subText(
-                                      //       //     //         align: TextAlign.right,
-                                      //       //     //         text:
-                                      //       //     //             " ${dataval?.biddingStartDate}",
-                                      //       //     //         color: theme.isDarkMode
-                                      //       //     //             ? Colors.white
-                                      //       //     //             : Colors.black,
-                                      //       //     //         textOverflow:
-                                      //       //     //             TextOverflow.ellipsis,
-                                      //       //     //         theme: theme.isDarkMode,
-                                      //       //     //         fw: 0),
-                                      //       //     //   ],
-                                      //       //     // ),
-                                      //       //     // Padding(
-                                      //       //     //   padding: const EdgeInsets.only(
-                                      //       //     //       top: 4.0, left: 4.0),
-                                      //       //     //   child: TextWidget.paraText(
-                                      //       //     //       align: TextAlign.right,
-                                      //       //     //       text:
-                                      //       //     //           "${dataval?.dailyStartTime}",
-                                      //       //     //       color: Color(0xFF696969),
-                                      //       //     //       textOverflow:
-                                      //       //     //           TextOverflow.ellipsis,
-                                      //       //     //       theme: theme.isDarkMode,
-                                      //       //     //       fw: 0),
-                                      //       //     // ),
-                                      //       //   ],
-                                      //       // ),
-                                      //       // Column(
-                                      //       //   crossAxisAlignment:
-                                      //       //       CrossAxisAlignment.end,
-                                      //       //   children: [
-                                      //       //     Row(
-                                      //       //       children: [
-                                      //       //         TextWidget.subText(
-                                      //       //             align: TextAlign.right,
-                                      //       //             text: "Closes on : ",
-                                      //       //             color: Color(0xFF696969),
-                                      //       //             textOverflow:
-                                      //       //                 TextOverflow.ellipsis,
-                                      //       //             theme: theme.isDarkMode,
-                                      //       //             fw: 0),
-                                      //       //         TextWidget.subText(
-                                      //       //             align: TextAlign.right,
-                                      //       //             text:
-                                      //       //                 " ${dataval?.biddingEndDate}",
-                                      //       //             color: theme.isDarkMode
-                                      //       //                 ? Colors.white
-                                      //       //                 : Colors.black,
-                                      //       //             textOverflow:
-                                      //       //                 TextOverflow.ellipsis,
-                                      //       //             theme: theme.isDarkMode,
-                                      //       //             fw: 0),
-                                      //       //       ],
-                                      //       //     ),
-                                      //       //     Padding(
-                                      //       //       padding: const EdgeInsets.only(
-                                      //       //           top: 4.0, left: 4.0),
-                                      //       //       child: TextWidget.paraText(
-                                      //       //           align: TextAlign.right,
-                                      //       //           text:
-                                      //       //               "${dataval?.dailyEndTime}",
-                                      //       //           color: Color(0xFF696969),
-                                      //       //           textOverflow:
-                                      //       //               TextOverflow.ellipsis,
-                                      //       //           theme: theme.isDarkMode,
-                                      //       //           fw: 0),
-                                      //       //     ),
-                                      //       //   ],
-                                      //       // ),
-                                      //     ],
-                                      //   ),
-                                      // ),
-                                      // Padding(
-                                      //   padding: const EdgeInsets.only(top: 4.0),
-                                      //   child: Row(
-                                      //     mainAxisAlignment:
-                                      //         MainAxisAlignment.spaceBetween,
-                                      //     children: [
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                          top: 4.0,
+                                        ),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Row(
+                                              children: [
+                                                TextWidget.paraText(
+                                                    text:
+                                                        '${dataval.exchange == 'NSETender' ? 'NSE' : dataval.exchange} -',
+                                                    color: theme.isDarkMode
+                                                        ? colors
+                                                            .textSecondaryDark
+                                                        : colors
+                                                            .textSecondaryLight,
+                                                    theme: theme.isDarkMode),
+                                                const SizedBox(width: 4),
+                                                if (ledgerprovider
+                                                        .selectvalueofcpaction !=
+                                                    'OFS') ...[
+                                                  Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment.end,
+                                                    children: [
+                                                      Row(
+                                                        children: [
+                                                          TextWidget.paraText(
+                                                            align:
+                                                                TextAlign.right,
+                                                            text: "Closes on",
+                                                            color: theme
+                                                                    .isDarkMode
+                                                                ? colors
+                                                                    .textSecondaryDark
+                                                                : colors
+                                                                    .textSecondaryLight,
+                                                            textOverflow:
+                                                                TextOverflow
+                                                                    .ellipsis,
+                                                            theme: theme
+                                                                .isDarkMode,
+                                                          ),
+                                                          TextWidget.paraText(
+                                                            align:
+                                                                TextAlign.right,
+                                                            text:
+                                                                " ${dataval?.biddingEndDate}",
+                                                            color: theme
+                                                                    .isDarkMode
+                                                                ? colors
+                                                                    .textSecondaryDark
+                                                                : colors
+                                                                    .textSecondaryLight,
+                                                            textOverflow:
+                                                                TextOverflow
+                                                                    .ellipsis,
+                                                            theme: theme
+                                                                .isDarkMode,
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      // Padding(
+                                                      //   padding: const EdgeInsets.only(
+                                                      //       top: 4.0, left: 4.0),
+                                                      //   child: TextWidget.paraText(
+                                                      //       align: TextAlign.right,
+                                                      //       text:
+                                                      //           "${dataval?.dailyEndTime}",
+                                                      //       color: Color(0xFF696969),
+                                                      //       textOverflow:
+                                                      //           TextOverflow.ellipsis,
+                                                      //       theme: theme.isDarkMode,
+                                                      //       fw: 0),
+                                                      // ),
+                                                    ],
+                                                  ),
+                                                ]
+                                              ],
+                                            ),
+                                            Row(
+                                              children: [
+                                                InkWell(
+                                                  borderRadius:
+                                                      BorderRadius.circular(5),
+                                                  splashColor: theme.isDarkMode
+                                                      ? colors.splashColorDark
+                                                      : colors.splashColorLight,
+                                                  highlightColor: theme
+                                                          .isDarkMode
+                                                      ? colors.highlightDark
+                                                      : colors.highlightLight,
+                                                  onTap: () {
+                                                    // print('Tapped item:');
+                                                    // print('list type: ' + _getTypeLabel(dataval.issueType));
+                                                    // print('eligibleornot: ${dataval.eligibleornot}');
+                                                    // print('approvedqty: ${dataval.approvedqty}');
+                                                    // print('selectvalueofcpaction: ${ledgerprovider.selectvalueofcpaction}');
+                                                    if (ledgerprovider
+                                                            .selectvalueofcpaction ==
+                                                        'OFS') {
+                                                      ledgerprovider
+                                                          .setordervalueforofs(
+                                                              '1',
+                                                              dataval.baseprice,
+                                                              fundState
+                                                                      .fundDetailModel
+                                                                      ?.cash ??
+                                                                  '0');
+                                                    } else {
+                                                      ledgerprovider
+                                                          .setCPActionQty(
+                                                              '', '', '', '');
+                                                      ledgerprovider
+                                                          .setCPActionPrice(
+                                                              '', 0, 0, '', '');
+                                                    }
+                                                    if (dataval.orderstatus ==
+                                                        'pending') {
+                                                      showDialog(
+                                                        context: context,
+                                                        builder: (BuildContext
+                                                            dialogContext) {
+                                                          return AlertDialog(
+                                                            backgroundColor: theme
+                                                                    .isDarkMode
+                                                                ? const Color(
+                                                                    0xFF121212)
+                                                                : const Color(
+                                                                    0xFFF1F3F8),
+                                                            titlePadding:
+                                                                const EdgeInsets
+                                                                    .symmetric(
+                                                                    horizontal:
+                                                                        8,
+                                                                    vertical:
+                                                                        8),
+                                                            shape: const RoundedRectangleBorder(
+                                                                borderRadius: BorderRadius
+                                                                    .all(Radius
+                                                                        .circular(
+                                                                            8))),
+                                                            scrollable: true,
+                                                            contentPadding:
+                                                                const EdgeInsets
+                                                                    .symmetric(
+                                                              horizontal: 12,
+                                                              vertical: 12,
+                                                            ),
+                                                            actionsPadding:
+                                                                const EdgeInsets
+                                                                    .only(
+                                                                    bottom: 16,
+                                                                    right: 16,
+                                                                    left: 16,
+                                                                    top: 8),
+                                                            insetPadding:
+                                                                const EdgeInsets
+                                                                    .symmetric(
+                                                                    horizontal:
+                                                                        30,
+                                                                    vertical:
+                                                                        12),
+                                                            title: Column(
+                                                              children: [
+                                                                Row(
+                                                                  mainAxisAlignment:
+                                                                      MainAxisAlignment
+                                                                          .end,
+                                                                  children: [
+                                                                    Material(
+                                                                      color: Colors
+                                                                          .transparent,
+                                                                      shape:
+                                                                          const CircleBorder(),
+                                                                      child:
+                                                                          InkWell(
+                                                                        onTap:
+                                                                            () async {
+                                                                          if (ledgerprovider.listforpledge ==
+                                                                              []) {
+                                                                            ledgerprovider.changesegvaldummy('');
+                                                                          }
+                                                                          await Future.delayed(
+                                                                              const Duration(milliseconds: 150));
+                                                                          Navigator.pop(
+                                                                              context);
+                                                                        },
+                                                                        borderRadius:
+                                                                            BorderRadius.circular(20),
+                                                                        splashColor: theme.isDarkMode
+                                                                            ? colors.splashColorDark
+                                                                            : colors.splashColorLight,
+                                                                        highlightColor: theme.isDarkMode
+                                                                            ? colors.splashColorDark
+                                                                            : colors.splashColorLight,
+                                                                        child:
+                                                                            Padding(
+                                                                          padding: const EdgeInsets
+                                                                              .all(
+                                                                              6.0),
+                                                                          child:
+                                                                              Icon(
+                                                                            Icons.close_rounded,
+                                                                            size:
+                                                                                22,
+                                                                            color: theme.isDarkMode
+                                                                                ? colors.textSecondaryDark
+                                                                                : colors.textSecondaryLight,
+                                                                          ),
+                                                                        ),
+                                                                      ),
+                                                                    ),
+                                                                  ],
+                                                                ),
+                                                                const SizedBox(
+                                                                    height: 12),
+                                                                Row(
+                                                                  crossAxisAlignment:
+                                                                      CrossAxisAlignment
+                                                                          .end,
+                                                                  mainAxisAlignment:
+                                                                      MainAxisAlignment
+                                                                          .center,
+                                                                  children: [
+                                                                    TextWidget.subText(
+                                                                        text:
+                                                                            "Cancel Order",
+                                                                        theme: theme
+                                                                            .isDarkMode,
+                                                                        color: theme.isDarkMode
+                                                                            ? colors.textSecondaryDark
+                                                                            : colors.textPrimaryLight,
+                                                                        fw: 3),
+                                                                  ],
+                                                                ),
+                                                                const SizedBox(
+                                                                    height: 5),
+                                                                SizedBox(
+                                                                  width: MediaQuery.of(
+                                                                          context)
+                                                                      .size
+                                                                      .width,
+                                                                  child: Center(
+                                                                    child: TextWidget.subText(
+                                                                        text:
+                                                                            "Do you want to Cancel this order?",
+                                                                        theme: theme
+                                                                            .isDarkMode,
+                                                                        color: theme.isDarkMode
+                                                                            ? colors.textSecondaryDark
+                                                                            : colors.textPrimaryLight,
+                                                                        fw: 3),
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                            actions: [
+                                                              SizedBox(
+                                                                width: double
+                                                                    .infinity,
+                                                                child:
+                                                                    OutlinedButton(
+                                                                  onPressed:
+                                                                      () async {
+                                                                    ledgerprovider
+                                                                        .putordercopaction(
+                                                                      ledgerprovider
+                                                                          .selectvalueofcpaction,
+                                                                      dataval?.symbol ??
+                                                                          '',
+                                                                      dataval?.exchange ??
+                                                                          '',
+                                                                      dataval?.issueType ??
+                                                                          '',
+                                                                      dataval?.bidqty ??
+                                                                          '',
+                                                                      dataval?.orderprice ??
+                                                                          '',
+                                                                      context,
+                                                                      'CR',
+                                                                      dataval?.appno ??
+                                                                          '',
+                                                                    );
+                                                                  },
+                                                                  style: OutlinedButton
+                                                                      .styleFrom(
+                                                                    minimumSize:
+                                                                        const Size(
+                                                                            0,
+                                                                            45), // width, height
+                                                                    side: BorderSide(
+                                                                        color: colors
+                                                                            .btnOutlinedBorder), // Outline border color
+                                                                    shape:
+                                                                        RoundedRectangleBorder(
+                                                                      borderRadius:
+                                                                          BorderRadius.circular(
+                                                                              5),
+                                                                    ),
+                                                                    backgroundColor:
+                                                                        colors
+                                                                            .primaryDark, // Transparent background
+                                                                  ),
+                                                                  child: TextWidget
+                                                                      .titleText(
+                                                                    text:
+                                                                        "Cancel",
+                                                                    color: colors
+                                                                        .colorWhite,
+                                                                    theme: theme
+                                                                        .isDarkMode,
+                                                                    fw: 2,
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          );
+                                                        },
+                                                      );
+                                                      // showModalBottomSheet(
+                                                      //     context: context,
+                                                      //     builder: (context) =>
+                                                      //         cancelOrderScreenCopAction(
+                                                      //             data:
+                                                      //                 dataval));
+                                                    } else {
+                                                      if ((dataval.eligibleornot ==
+                                                              'yes') ||
+                                                          (dataval.approvedqty !=
+                                                                  '0' &&
+                                                              dataval.eligibleornot ==
+                                                                  'yes') ||
+                                                          (ledgerprovider
+                                                                  .selectvalueofcpaction ==
+                                                              'OFS')) {
+                                                        showModalBottomSheet(
+                                                            context: context,
+                                                            builder: (context) =>
+                                                                CPActionOrderScreen(
+                                                                    data:
+                                                                        dataval));
+                                                      } else {
+                                                        ScaffoldMessenger.of(
+                                                                context)
+                                                            .showSnackBar(error(
+                                                                context,
+                                                                "Not Eligible"));
+                                                        return null;
+                                                      }
+                                                    }
 
-                                      //       dataval?.orderstatus != 'null' ?
-                                      //       Row(
-                                      //         children: [
-                                      //           TextWidget.paraText(
-                                      //               // align: TextAlign.right,
-                                      //               text: "Status",
-                                      //               color: theme.isDarkMode
-                                      //                   ? colors.textSecondaryDark
-                                      //                   : colors.textSecondaryLight,
-                                      //               textOverflow:
-                                      //                   TextOverflow.ellipsis,
-                                      //               theme: theme.isDarkMode,
-                                      //               ),
-                                      //           TextWidget.paraText(
-                                      //               // align: TextAlign.right,
-                                      //               text:
-                                      //                   " ${dataval?.orderstatus}",
-                                      //                   // dataval?.orderstatus == 'null' ? '-' :
-                                      //               color: theme.isDarkMode
-                                      //                   ? colors.textSecondaryDark
-                                      //                   : colors.textSecondaryLight,
-                                      //               textOverflow:
-                                      //                   TextOverflow.ellipsis,
-                                      //               theme: theme.isDarkMode,
-                                      //               ),
-                                      //         ],
-                                      //       ) : const SizedBox.shrink(),
-                                      //     ],
-                                      //   ),
-                                      // ),
+                                                    // _showBottomSheet(
+                                                    //     context, const LedgerBillBottom());
+                                                  },
+                                                  child: Padding(
+                                                    padding:
+                                                        const EdgeInsets.all(5),
+                                                    child: Column(
+                                                      children: [
+                                                        TextWidget.subText(
+                                                          text:
+                                                              dataval.orderstatus ==
+                                                                      'pending'
+                                                                  ? 'Cancel'
+                                                                  : "Order",
+                                                          theme:
+                                                              theme.isDarkMode,
+                                                          fw: 2,
+                                                          color: dataval
+                                                                      .orderstatus ==
+                                                                  'pending'
+                                                              ? colors
+                                                                  .kColorRedButton
+                                                              : colors
+                                                                  .secondary,
+                                                        ),
+                                                        if (dataval.bidqty !=
+                                                            'null')
+                                                          TextWidget.paraText(
+                                                            text:
+                                                                "${dataval.bidqty} qty bided",
+                                                            color: theme
+                                                                    .isDarkMode
+                                                                ? colors
+                                                                    .textSecondaryDark
+                                                                : colors
+                                                                    .textSecondaryLight,
+                                                            theme: theme
+                                                                .isDarkMode,
+                                                          ),
+                                                        // const SizedBox(height: 4),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            )
+                                          ],
+                                        ),
+                                      ),
+
+                                      // const ListDivider(),
+                                      if (ledgerprovider
+                                              .selectvalueofcpaction !=
+                                          'OFS') ...[
+                                        // const Padding(
+                                        //   padding: EdgeInsets.only(
+                                        //       left: 16.0,
+                                        //       right: 16.0,
+                                        //       top: 2.0,
+                                        //       bottom: 4.0),
+                                        //   child: Row(
+                                        //     mainAxisAlignment:
+                                        //         MainAxisAlignment.spaceBetween,
+                                        //     children: [
+                                        //       // Column(
+                                        //       //   crossAxisAlignment:
+                                        //       //       CrossAxisAlignment.start,
+                                        //       //   children: [
+                                        //       //     // Row(
+                                        //       //     //   children: [
+                                        //       //     //     TextWidget.subText(
+                                        //       //     //         align: TextAlign.right,
+                                        //       //     //         text: "Start Date : ",
+                                        //       //     //         color: Color(0xFF696969),
+                                        //       //     //         textOverflow:
+                                        //       //     //             TextOverflow.ellipsis,
+                                        //       //     //         theme: theme.isDarkMode,
+                                        //       //     //         fw: 0),
+                                        //       //     //     TextWidget.subText(
+                                        //       //     //         align: TextAlign.right,
+                                        //       //     //         text:
+                                        //       //     //             " ${dataval?.biddingStartDate}",
+                                        //       //     //         color: theme.isDarkMode
+                                        //       //     //             ? Colors.white
+                                        //       //     //             : Colors.black,
+                                        //       //     //         textOverflow:
+                                        //       //     //             TextOverflow.ellipsis,
+                                        //       //     //         theme: theme.isDarkMode,
+                                        //       //     //         fw: 0),
+                                        //       //     //   ],
+                                        //       //     // ),
+                                        //       //     // Padding(
+                                        //       //     //   padding: const EdgeInsets.only(
+                                        //       //     //       top: 4.0, left: 4.0),
+                                        //       //     //   child: TextWidget.paraText(
+                                        //       //     //       align: TextAlign.right,
+                                        //       //     //       text:
+                                        //       //     //           "${dataval?.dailyStartTime}",
+                                        //       //     //       color: Color(0xFF696969),
+                                        //       //     //       textOverflow:
+                                        //       //     //           TextOverflow.ellipsis,
+                                        //       //     //       theme: theme.isDarkMode,
+                                        //       //     //       fw: 0),
+                                        //       //     // ),
+                                        //       //   ],
+                                        //       // ),
+                                        //       // Column(
+                                        //       //   crossAxisAlignment:
+                                        //       //       CrossAxisAlignment.end,
+                                        //       //   children: [
+                                        //       //     Row(
+                                        //       //       children: [
+                                        //       //         TextWidget.subText(
+                                        //       //             align: TextAlign.right,
+                                        //       //             text: "Closes on : ",
+                                        //       //             color: Color(0xFF696969),
+                                        //       //             textOverflow:
+                                        //       //                 TextOverflow.ellipsis,
+                                        //       //             theme: theme.isDarkMode,
+                                        //       //             fw: 0),
+                                        //       //         TextWidget.subText(
+                                        //       //             align: TextAlign.right,
+                                        //       //             text:
+                                        //       //                 " ${dataval?.biddingEndDate}",
+                                        //       //             color: theme.isDarkMode
+                                        //       //                 ? Colors.white
+                                        //       //                 : Colors.black,
+                                        //       //             textOverflow:
+                                        //       //                 TextOverflow.ellipsis,
+                                        //       //             theme: theme.isDarkMode,
+                                        //       //             fw: 0),
+                                        //       //       ],
+                                        //       //     ),
+                                        //       //     Padding(
+                                        //       //       padding: const EdgeInsets.only(
+                                        //       //           top: 4.0, left: 4.0),
+                                        //       //       child: TextWidget.paraText(
+                                        //       //           align: TextAlign.right,
+                                        //       //           text:
+                                        //       //               "${dataval?.dailyEndTime}",
+                                        //       //           color: Color(0xFF696969),
+                                        //       //           textOverflow:
+                                        //       //               TextOverflow.ellipsis,
+                                        //       //           theme: theme.isDarkMode,
+                                        //       //           fw: 0),
+                                        //       //     ),
+                                        //       //   ],
+                                        //       // ),
+                                        //     ],
+                                        //   ),
+                                        // ),
+                                        // Padding(
+                                        //   padding: const EdgeInsets.only(top: 4.0),
+                                        //   child: Row(
+                                        //     mainAxisAlignment:
+                                        //         MainAxisAlignment.spaceBetween,
+                                        //     children: [
+
+                                        //       dataval?.orderstatus != 'null' ?
+                                        //       Row(
+                                        //         children: [
+                                        //           TextWidget.paraText(
+                                        //               // align: TextAlign.right,
+                                        //               text: "Status",
+                                        //               color: theme.isDarkMode
+                                        //                   ? colors.textSecondaryDark
+                                        //                   : colors.textSecondaryLight,
+                                        //               textOverflow:
+                                        //                   TextOverflow.ellipsis,
+                                        //               theme: theme.isDarkMode,
+                                        //               ),
+                                        //           TextWidget.paraText(
+                                        //               // align: TextAlign.right,
+                                        //               text:
+                                        //                   " ${dataval?.orderstatus}",
+                                        //                   // dataval?.orderstatus == 'null' ? '-' :
+                                        //               color: theme.isDarkMode
+                                        //                   ? colors.textSecondaryDark
+                                        //                   : colors.textSecondaryLight,
+                                        //               textOverflow:
+                                        //                   TextOverflow.ellipsis,
+                                        //               theme: theme.isDarkMode,
+                                        //               ),
+                                        //         ],
+                                        //       ) : const SizedBox.shrink(),
+                                        //     ],
+                                        //   ),
+                                        // ),
+                                      ],
+                                      if (ledgerprovider
+                                              .selectvalueofcpaction ==
+                                          'OFS') ...[
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                              
+                                              top: 5.0,
+                                              bottom: 4.0),
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Row(
+                                                children: [
+                                                  TextWidget.subText(
+                                                      text: "Size ",
+                                                      color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                                                      textOverflow:
+                                                          TextOverflow.ellipsis,
+                                                      theme: theme.isDarkMode,
+                                                      fw: 3),
+                                                  TextWidget.subText(
+                                                      // align: TextAlign.right,
+                                                      text:
+                                                          " ${dataval?.issueSize}",
+                                                      color: theme.isDarkMode
+                                                          ? colors.textSecondaryDark
+                                                          : colors.textSecondaryLight,
+                                                      textOverflow:
+                                                          TextOverflow.ellipsis,
+                                                      theme: theme.isDarkMode,
+                                                      fw: 3),
+                                                ],
+                                              ),
+                                              Row(
+                                                children: [
+                                                  TextWidget.subText(
+                                                      text: "Base Price ",
+                                                      color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                                                      textOverflow:
+                                                          TextOverflow.ellipsis,
+                                                      theme: theme.isDarkMode,
+                                                      fw: 3),
+                                                  TextWidget.subText(
+                                                      text:
+                                                          " ${dataval?.baseprice}",
+                                                      color: theme.isDarkMode
+                                                          ? colors.textSecondaryDark
+                                                          : colors.textSecondaryLight,
+                                                      textOverflow:
+                                                          TextOverflow.ellipsis,
+                                                      theme: theme.isDarkMode,
+                                                      fw: 3),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                             top: 5.0,
+                                              bottom: 4.0),
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Row(
+                                                children: [
+                                                  TextWidget.subText(
+                                                      text: "Open Date ",
+                                                      color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                                                      textOverflow:
+                                                          TextOverflow.ellipsis,
+                                                      theme: theme.isDarkMode,
+                                                      fw: 3),
+                                                  TextWidget.subText(
+                                                      text:
+                                                          " ${dataval?.openondate}",
+                                                      color: theme.isDarkMode
+                                                          ? colors.textSecondaryDark
+                                                          : colors.textSecondaryLight,
+                                                      textOverflow:
+                                                          TextOverflow.ellipsis,
+                                                      theme: theme.isDarkMode,
+                                                      fw: 3),
+                                                ],
+                                              ),
+                                              Row(
+                                                children: [
+                                                  TextWidget.subText(
+                                                      text: "Status ",
+                                                      color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                                                      textOverflow:
+                                                          TextOverflow.ellipsis,
+                                                      theme: theme.isDarkMode,
+                                                      fw: 3),
+                                                  TextWidget.subText(
+                                                      text:
+                                                          " ${dataval?.orderstatus == 'null' ? '-' : dataval?.orderstatus}",
+                                                      color: theme.isDarkMode
+                                                          ? colors.textSecondaryDark
+                                                          : colors.textSecondaryLight,
+                                                      textOverflow:
+                                                          TextOverflow.ellipsis,
+                                                      theme: theme.isDarkMode,
+                                                      fw: 3),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ]
                                     ],
-                                    if (ledgerprovider.selectvalueofcpaction ==
-                                        'OFS') ...[
-                                      Padding(
-                                        padding: const EdgeInsets.only(
-                                            left: 16.0,
-                                            right: 16.0,
-                                            top: 2.0,
-                                            bottom: 4.0),
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Row(
-                                              children: [
-                                                TextWidget.subText(
-                                                    align: TextAlign.right,
-                                                    text: "Size : ",
-                                                    color: Color(0xFF696969),
-                                                    textOverflow:
-                                                        TextOverflow.ellipsis,
-                                                    theme: theme.isDarkMode,
-                                                    fw: 0),
-                                                TextWidget.subText(
-                                                    align: TextAlign.right,
-                                                    text:
-                                                        " ${dataval?.issueSize}",
-                                                    color: theme.isDarkMode
-                                                        ? Colors.white
-                                                        : Colors.black,
-                                                    textOverflow:
-                                                        TextOverflow.ellipsis,
-                                                    theme: theme.isDarkMode,
-                                                    fw: 0),
-                                              ],
-                                            ),
-                                            Row(
-                                              children: [
-                                                TextWidget.subText(
-                                                    align: TextAlign.right,
-                                                    text: "Base Price : ",
-                                                    color: Color(0xFF696969),
-                                                    textOverflow:
-                                                        TextOverflow.ellipsis,
-                                                    theme: theme.isDarkMode,
-                                                    fw: 0),
-                                                TextWidget.subText(
-                                                    align: TextAlign.right,
-                                                    text:
-                                                        " ${dataval?.baseprice}",
-                                                    color: theme.isDarkMode
-                                                        ? Colors.white
-                                                        : Colors.black,
-                                                    textOverflow:
-                                                        TextOverflow.ellipsis,
-                                                    theme: theme.isDarkMode,
-                                                    fw: 0),
-                                              ],
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.only(
-                                            left: 16.0,
-                                            right: 16.0,
-                                            top: 8.0,
-                                            bottom: .0),
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Row(
-                                              children: [
-                                                TextWidget.subText(
-                                                    align: TextAlign.right,
-                                                    text: "Open Date : ",
-                                                    color: Color(0xFF696969),
-                                                    textOverflow:
-                                                        TextOverflow.ellipsis,
-                                                    theme: theme.isDarkMode,
-                                                    fw: 0),
-                                                TextWidget.subText(
-                                                    align: TextAlign.right,
-                                                    text:
-                                                        " ${dataval?.openondate}",
-                                                    color: theme.isDarkMode
-                                                        ? Colors.white
-                                                        : Colors.black,
-                                                    textOverflow:
-                                                        TextOverflow.ellipsis,
-                                                    theme: theme.isDarkMode,
-                                                    fw: 0),
-                                              ],
-                                            ),
-                                            Row(
-                                              children: [
-                                                TextWidget.subText(
-                                                    align: TextAlign.right,
-                                                    text: "Status : ",
-                                                    color: Color(0xFF696969),
-                                                    textOverflow:
-                                                        TextOverflow.ellipsis,
-                                                    theme: theme.isDarkMode,
-                                                    fw: 0),
-                                                TextWidget.subText(
-                                                    align: TextAlign.right,
-                                                    text:
-                                                        " ${dataval?.orderstatus == 'null' ? '-' : dataval?.orderstatus}",
-                                                    color: theme.isDarkMode
-                                                        ? Colors.white
-                                                        : Colors.black,
-                                                    textOverflow:
-                                                        TextOverflow.ellipsis,
-                                                    theme: theme.isDarkMode,
-                                                    fw: 0),
-                                              ],
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ]
-                                  ],
+                                  ),
                                 ),
-                              ),
-                            );
-                          },
-                          separatorBuilder: (BuildContext context, int index) {
-                            // if (index != 0 &&
-                            //     ledgerprovider.ledgerAllData!.fullStat![index - 1]
-                            //             .vOUCHERDATE ==
-                            //         ledgerprovider.ledgerAllData!
-                            //             .fullStat![index ].vOUCHERDATE) {
-                            return ListDivider();
-                            // }else{
-                            // return SizedBox();
-                            // }
-                          },
-                        ),
-                      )),
-              ],
+                              );
+                            },
+                            separatorBuilder:
+                                (BuildContext context, int index) {
+                              // if (index != 0 &&
+                              //     ledgerprovider.ledgerAllData!.fullStat![index - 1]
+                              //             .vOUCHERDATE ==
+                              //         ledgerprovider.ledgerAllData!
+                              //             .fullStat![index ].vOUCHERDATE) {
+                              return ListDivider();
+                              // }else{
+                              // return SizedBox();
+                              // }
+                            },
+                          ),
+                        )),
+                ],
+              ),
             ),
           ));
     });
@@ -983,7 +1198,9 @@ class _CABuybackState extends State<CABuyback> with TickerProviderStateMixin {
                             ? theme.isDarkMode
                                 ? colors.secondaryDark
                                 : colors.secondaryLight
-                            : colors.textSecondaryLight,
+                            : theme.isDarkMode
+                                ? colors.textSecondaryDark
+                                : colors.textSecondaryLight,
                         textOverflow: TextOverflow.ellipsis,
                         maxLines: 1,
                         theme: theme.isDarkMode,
@@ -996,7 +1213,9 @@ class _CABuybackState extends State<CABuyback> with TickerProviderStateMixin {
                     width: isCurrentSelected ? 82 : 0,
                     margin: const EdgeInsets.only(top: 1),
                     decoration: BoxDecoration(
-                      color: colors.colorBlue,
+                      color: theme.isDarkMode
+                          ? colors.secondaryDark
+                          : colors.secondaryLight,
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -1071,22 +1290,22 @@ class _CABuybackState extends State<CABuyback> with TickerProviderStateMixin {
     }
   }
 
-  Color _getStatusColor(String issueType) {
+  Color _getStatusColor(String issueType, ThemesProvider theme) {
     switch (issueType) {
       case 'BB':
       case 'BUYBACK':
-        return Colors.red;
+        return theme.isDarkMode ? colors.lossDark : colors.lossLight;
       case 'DLST':
       case 'DS':
-        return Colors.orange;
+        return theme.isDarkMode ? colors.lossDark : colors.lossLight;
       case 'TAKEOVER':
       case 'TO':
-        return Colors.green;
+        return theme.isDarkMode ? colors.profitDark : colors.profitLight;
       case 'IS':
       case 'RS':
-        return Colors.yellow;
+        return theme.isDarkMode ? colors.lossDark : colors.lossLight;
       default:
-        return Colors.blue;
+        return theme.isDarkMode ? colors.lossDark : colors.lossLight;
     }
   }
 }

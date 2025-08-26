@@ -152,13 +152,7 @@ class BondsCommonSearch extends ConsumerWidget {
     return SingleChildScrollView(
       child: bonds.bondsCommonSearchList.isNotEmpty
           ? _buildSearchResults(bonds, theme)
-          : const Align(
-              alignment: Alignment.center,
-              child: Padding(
-                padding: _noDataPadding,
-                child: NoDataFound(),
-              ),
-            ),
+          : const Center(child: NoDataFound()),
     );
   }
 

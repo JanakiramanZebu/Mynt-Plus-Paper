@@ -8,7 +8,9 @@ import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/screens/bonds/bonds_order_screen/orderscreenbottompage.dart';
 
+import '../../../provider/stocks_provider.dart';
 import '../../../res/global_state_text.dart';
+import '../../../sharedWidget/list_divider.dart';
 
 class TreasuryBondsScreen extends StatelessWidget {
   const TreasuryBondsScreen({super.key});
@@ -36,7 +38,7 @@ class TreasuryBondsScreen extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          _buildBondsList(context, bonds, theme),
+          _buildBondsList(context, bonds, theme, ref),
           _buildDivider(theme),
         ],
       );
@@ -44,18 +46,24 @@ class TreasuryBondsScreen extends StatelessWidget {
   }
 
   Widget _buildBondsList(
-      BuildContext context, BondsProvider bonds, ThemesProvider theme) {
+      BuildContext context, BondsProvider bonds, ThemesProvider theme, WidgetRef ref) {
+    // Safe null checks for bonds data
+    final treasuryBonds = bonds.treasuryBonds?.ncbTBill;
+    if (treasuryBonds == null || treasuryBonds.isEmpty) {
+      return const SizedBox();
+    }
+
     // Filter bonds based on search query
-    List<dynamic> filteredBonds = bonds.treasuryBonds!.ncbTBill!;
-    if (bonds.bondscommonsearchcontroller.text.isNotEmpty) {
-      filteredBonds = bonds.treasuryBonds!.ncbTBill!
+    List<dynamic> filteredBonds = treasuryBonds;
+    if (ref.watch(stocksProvide).searchController.text.isNotEmpty) {
+      filteredBonds = treasuryBonds
           .where((bond) => bonds.bondsCommonSearchList.contains(bond))
           .toList();
     }
 
-    if (filteredBonds.isEmpty) {
-      return const SizedBox();
-    }
+    // if (filteredBonds.isEmpty) {
+    //   return const SizedBox();
+    // }
 
     return ListView.separated(
       padding: EdgeInsets.zero,
@@ -64,7 +72,7 @@ class TreasuryBondsScreen extends StatelessWidget {
       itemBuilder: (context, index) =>
           _buildBondItem(context, bonds, theme, index, filteredBonds),
       itemCount: filteredBonds.length,
-      separatorBuilder: (context, index) => _buildDivider(theme),
+      separatorBuilder: (context, index) => ListDivider(),
     );
   }
 

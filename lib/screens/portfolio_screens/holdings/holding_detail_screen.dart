@@ -496,8 +496,31 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
         builder: (context, scrollController) {
           return Container(
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(16),
+                topRight: Radius.circular(16),
+              ),
               color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+               border: Border(
+                                  top: BorderSide(
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                            .withOpacity(0.5)
+                                        : colors.colorWhite,
+                                  ),
+                                  left: BorderSide(
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                            .withOpacity(0.5)
+                                        : colors.colorWhite,
+                                  ),
+                                  right: BorderSide(
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                            .withOpacity(0.5)
+                                        : colors.colorWhite,
+                                  ),
+                                ),
             ),
             child: Scaffold(
               backgroundColor: Colors.transparent,
@@ -524,7 +547,7 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
                               color: theme.isDarkMode
                                   ? colors.colorBlack
                                   : colors.colorWhite,
-                              borderRadius: const BorderRadius.only(
+                                   borderRadius: const BorderRadius.only(
                                 topLeft: Radius.circular(16),
                                 topRight: Radius.circular(16),
                               ),
@@ -578,7 +601,7 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
                                                         CrossAxisAlignment
                                                             .start,
                                                     children: [
-                                                      TextWidget.headText(
+                                                      TextWidget.titleText(
                                                           text:
                                                               "${_exchTsym.tsym?.replaceAll("-EQ", "").toUpperCase() ?? ''} ${_exchTsym.expDate ?? ''} ${_exchTsym.option ?? ''} ${_exchTsym.exch ?? ''}",
                                                           color: theme
@@ -589,7 +612,7 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
                                                                   .textPrimaryLight,
                                                           theme:
                                                               theme.isDarkMode,
-                                                          fw: 0),
+                                                          fw: 1),
                                                       const SizedBox(height: 6),
                                                       FadeTransition(
                                                         opacity:
@@ -603,8 +626,8 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
                                                                         ? colors.lossDark
                                                                         : colors.lossLight
                                                                     : theme.isDarkMode
-                                                                        ? colors.successDark
-                                                                        : colors.successLight,
+                                                                        ? colors.profitDark
+                                                                        : colors.profitLight,
                                                             theme: false,
                                                             fw: 3),
                                                       ),
@@ -633,7 +656,11 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
                                                         assets.rightarrowcur,
                                                         width: 12,
                                                         height: 12,
-                                                        color: colors.iconColor,
+                                                        color: theme.isDarkMode
+                                                            ? colors
+                                                                .textSecondaryDark
+                                                            : colors
+                                                                .textSecondaryLight,
                                                       ),
                                                     ),
                                                   ],
@@ -655,12 +682,16 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
                                           child: Container(
                                               height: 45,
                                               decoration: BoxDecoration(
-                                                  border: Border.all(
-                                                    color: colors
-                                                        .btnOutlinedBorder,
-                                                    width: 1,
-                                                  ),
-                                                  color: colors.btnBg,
+                                                   border: theme.isDarkMode
+                                                          ? null
+                                                          : Border.all(
+                                                              color: colors
+                                                                  .primaryLight),
+                                                   color: theme.isDarkMode
+                                                          ? colors
+                                                              .textSecondaryDark
+                                                              .withOpacity(0.6)
+                                                          : colors.btnBg,
                                                   borderRadius:
                                                       BorderRadius.circular(5)),
                                               child: Material(
@@ -698,13 +729,12 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
                                                         : TextWidget.subText(
                                                             text: "Exit",
                                                             theme: false,
-                                                            color: theme
-                                                                    .isDarkMode
+                                                            color: theme.isDarkMode
                                                                 ? colors
-                                                                    .primaryDark
+                                                                    .colorWhite
                                                                 : colors
                                                                     .primaryLight,
-                                                            fw: 0),
+                                                            fw: 2),
                                                   ),
                                                 ),
                                               ))),
@@ -718,7 +748,7 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
                                                 //       colors.btnOutlinedBorder,
                                                 //   width: 1,
                                                 // ),
-                                                color: colors.primaryLight,
+                                                color: theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
                                                 borderRadius:
                                                     BorderRadius.circular(5)),
                                             child: Material(
@@ -749,7 +779,7 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
                                                                 AlwaysStoppedAnimation<
                                                                         Color>(
                                                                     colors
-                                                                        .secondary),
+                                                                        .colorWhite),
                                                           ),
                                                         )
                                                       : TextWidget.subText(
@@ -757,7 +787,7 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
                                                           theme: false,
                                                           color:
                                                               colors.colorWhite,
-                                                          fw: 0),
+                                                          fw: 2),
                                                 ),
                                               ),
                                             )),
@@ -802,12 +832,11 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
                                               mainAxisSize: MainAxisSize.min,
                                               children: [
                                                 TextWidget.subText(
-                                                  text: "Pledge-Unpledge",
-                                                  color:
-                                                      colors.btnOutlinedBorder,
-                                                  theme: false,
-                                                  // fw: 2
-                                                ),
+                                                    text: "Pledge-Unpledge",
+                                                    color: colors
+                                                        .btnOutlinedBorder,
+                                                    theme: false,
+                                                    fw: 2),
                                               ],
                                             ),
                                           ),
@@ -851,9 +880,9 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
                                                             ? colors.lossDark
                                                             : colors.lossLight
                                                         : theme.isDarkMode
-                                                            ? colors.successDark
+                                                            ? colors.profitDark
                                                             : colors
-                                                                .successLight,
+                                                                .profitLight,
                                                     fw: 3),
                                                 SizedBox(height: 4),
                                                 TextWidget.subText(

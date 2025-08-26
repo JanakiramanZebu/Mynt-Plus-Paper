@@ -24,23 +24,30 @@ class MFSipdetScreen extends ConsumerWidget {
     final theme = ref.watch(themeProvider);
     final mfData = ref.watch(mfProvider);
 
-    return Scaffold(
-      body: Stack(
-        children: [
-          TransparentLoaderScreen(
-            isLoading: mfData.bestmfloader ?? false,
-            child: mfData.mfsiporderlist?.data?.isEmpty ?? true
-                ? const Center(child: NoDataFound())
-                : Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: _buildSipOrderList(context, mfData, theme),
+    return SafeArea(
+      child: Scaffold(
+        body: Stack(
+          children: [
+            TransparentLoaderScreen(
+              isLoading: mfData.bestmfloader ?? false,
+              child: mfData.mfsiporderlist?.data?.isEmpty ?? true
+                  ? const Center(child: NoDataFound())
+                  : RefreshIndicator(
+                      onRefresh: () async {
+                        await mfData.fetchmfsipnotlivelist();
+                      },
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: _buildSipOrderList(context, mfData, theme),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-          ),
-        ],
+                    ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -53,7 +60,6 @@ class MFSipdetScreen extends ConsumerWidget {
       // padding: const EdgeInsets.all(0),
       itemCount: (mfData.mfsiporderlist?.data?.length ?? 0) + 1,
       itemBuilder: (BuildContext context, int index) {
-       
         if (index == mfData.mfsiporderlist?.data?.length) {
           return InkWell(
             onTap: () {
@@ -91,7 +97,7 @@ class MFSipdetScreen extends ConsumerWidget {
             ),
           );
         }
-        
+
         final item = mfData.mfsiporderlist?.data?[index];
         if (item == null) return const SizedBox.shrink();
 
@@ -108,6 +114,12 @@ class MFSipdetScreen extends ConsumerWidget {
               showModalBottomSheet(
                   context: context,
                   isScrollControlled: true,
+                  shape: const RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.only(
+                                              topLeft: Radius.circular(16),
+                                              topRight: Radius.circular(16),
+                                            ),
+                                          ),
                   // backgroundColor: Colors.transparent,
                   builder: (context) => mfSipdetScren(data: item));
               // Navigator.pushNamed(context, Routes.mfSipdetScren);
@@ -155,16 +167,17 @@ class MFSipdetScreen extends ConsumerWidget {
                             horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
                           color: item.status == "ACTIVE"
-                              ? colors.profit.withOpacity(0.1)
-                              : colors.loss.withOpacity(0.1),
+                              ? theme.isDarkMode ? colors.profitDark.withOpacity(0.1) : colors.profitLight.withOpacity(0.1)
+                              : theme.isDarkMode ? colors.lossDark.withOpacity(0.1) : colors.lossLight.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: TextWidget.paraText(
                             // align: TextAlign.start,
-                            text: item.status == "ACTIVE" ? "Live" : item.status,
+                            text:
+                                item.status == "ACTIVE" ? "LIVE" : item.status,
                             color: item.status == "ACTIVE"
-                                ? colors.profit
-                                : colors.loss,
+                                ? theme.isDarkMode ? colors.profitDark : colors.profitLight
+                                : theme.isDarkMode ? colors.lossDark : colors.lossLight,
                             textOverflow: TextOverflow.ellipsis,
                             theme: theme.isDarkMode,
                             maxLines: 2,
@@ -199,13 +212,13 @@ class MFSipdetScreen extends ConsumerWidget {
                       //     maxLines: 2,
                       //     fw: 3),
                       // const SizedBox(width: 5),
-                      if (item.status == "ACTIVE" && item.startDate != null)
+                      if (item.status == "ACTIVE" && item.NextSIPDate != "")
                         TextWidget.paraText(
                             align: TextAlign.start,
                             text: "Due Date : ${item.NextSIPDate}",
                             color: theme.isDarkMode
-                                ? colors.textPrimaryDark
-                                : colors.textPrimaryLight,
+                                ? colors.textSecondaryDark
+                                : colors.textSecondaryLight,
                             textOverflow: TextOverflow.ellipsis,
                             theme: theme.isDarkMode,
                             maxLines: 2,
@@ -215,8 +228,8 @@ class MFSipdetScreen extends ConsumerWidget {
                           align: TextAlign.start,
                           text: item.installmentAmount ?? 'N/A',
                           color: theme.isDarkMode
-                              ? colors.textPrimaryDark
-                              : colors.textPrimaryLight,
+                              ? colors.textSecondaryDark
+                              : colors.textSecondaryLight,
                           textOverflow: TextOverflow.ellipsis,
                           theme: theme.isDarkMode,
                           maxLines: 2,

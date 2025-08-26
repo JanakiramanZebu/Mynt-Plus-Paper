@@ -164,7 +164,7 @@ class _UpcomingIPOItem extends StatelessWidget {
                   child: TextWidget.subText(
                     text: 'DRHP',
                     theme: false,
-                    fw: 0,
+                    fw: 2,
                     color: theme.isDarkMode
                         ? colors.primaryDark
                         : colors.primaryLight,

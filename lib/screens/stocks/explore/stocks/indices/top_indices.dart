@@ -51,32 +51,32 @@ class _TopIndicesState extends State<TopIndices> {
     return Consumer(builder: (context, ref, child) {
       final theme = ref.watch(themeProvider);
       // final indices = ref.watch(indexListProvider);
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      return const Padding(
+        padding:  EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-              TextWidget.titleText(
-                text: "Indices",
-                theme: false,
-                color: theme.isDarkMode
-                    ? colors.textPrimaryDark
-                    : colors.textPrimaryLight,
-                fw: 1,
-              ),
-              // TextButton(
-              //     onPressed: () async {
-              //       await ref.read(indexListProvider).fetchAllIndex();
-              //       await ref.read(stocksProvide).getGlobalIndices();
-              //       Navigator.pushNamed(context, Routes.allIndex);
-              //     },
-              //     child: Text('See all',
-              //         style: GoogleFonts.inter(
-              //             color: const Color(0xff0037B7),
-              //             fontSize: 14,
-              //             fontWeight: FontWeight.w600)))
-            ]),
+            // Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+            //   TextWidget.titleText(
+            //     text: "Indices",
+            //     theme: false,
+            //     color: theme.isDarkMode
+            //         ? colors.textPrimaryDark
+            //         : colors.textPrimaryLight,
+            //     fw: 1,
+            //   ),
+            //   // TextButton(
+            //   //     onPressed: () async {
+            //   //       await ref.read(indexListProvider).fetchAllIndex();
+            //   //       await ref.read(stocksProvide).getGlobalIndices();
+            //   //       Navigator.pushNamed(context, Routes.allIndex);
+            //   //     },
+            //   //     child: Text('See all',
+            //   //         style: GoogleFonts.inter(
+            //   //             color: const Color(0xff0037B7),
+            //   //             fontSize: 14,
+            //   //             fontWeight: FontWeight.w600)))
+            // ]),
             DefaultIndexList(src: false)
             // SizedBox(
             //   height: 90,

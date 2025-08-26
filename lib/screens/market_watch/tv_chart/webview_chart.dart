@@ -104,97 +104,104 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
 
         bool transbtn = tvChart.getQuotes?.instname != "UNDIND" &&
             tvChart.getQuotes?.instname != "COM";
-        return Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            _buildTopBar(tvChart, theme, userProfile, chartUpdate),
-            _buildWebView(
-                tvChart, theme, userProfile.showchartof, chartUpdate, context),
-            const SizedBox(height: 4),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
-              child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    // IconButton(
-                    //   padding: const EdgeInsets.all(0),
-                    //   icon: Icon(Icons.restart_alt,
-                    //       color: theme.isDarkMode
-                    //           ? colors.colorWhite
-                    //           : colors.colorBlack), // Back icon
-                    //   onPressed: () {
-                    //     ConstantName.chartwebViewController?.loadUrl(
-                    //       urlRequest: URLRequest(
-                    //         url: WebUri(
-                    //           "https://mynt.zebuetrade.com/tv?src=app&symbol=${widget.chartArgs.tsym}&user=${prefs.clientId}&usession=${prefs.clientSession}&token=${widget.chartArgs.token}&exch=${widget.chartArgs.exch}&dark=${theme.isDarkMode}",
-                    //         ),
-                    //       ),
-                    //     );
-                    //   },
-                    // ),
-                    Expanded(
-                      child: InkWell(
-                        onTap: () async {
-                          if (transbtn) {
-                            userProfile.setChartdialog(false);
-                            await placeOrderInput(
-                                tvChart, context, tvChart.getQuotes!, true);
-                          }
-                        },
-                        child: Container(
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: transbtn
-                                ? const Color(0xFF0037B7) // Blue color for Buy
-                                : const Color(0xFF0037B7).withOpacity(0.2),
-                            borderRadius:
-                                const BorderRadius.all(Radius.circular(6)),
-                          ),
-                          child: Center(
-                            child: TextWidget.subText(
-                              text: "Buy",
-                              color: const Color(0XFFFFFFFF),
-                              theme: theme.isDarkMode,
-                              fw: 2,
+        return SafeArea(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              _buildTopBar(tvChart, theme, userProfile, chartUpdate),
+              _buildWebView(
+                  tvChart, theme, userProfile.showchartof, chartUpdate, context),
+              const SizedBox(height: 4),
+          
+               if (transbtn) ...[
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+                child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // IconButton(
+                      //   padding: const EdgeInsets.all(0),
+                      //   icon: Icon(Icons.restart_alt,
+                      //       color: theme.isDarkMode
+                      //           ? colors.colorWhite
+                      //           : colors.colorBlack), // Back icon
+                      //   onPressed: () {
+                      //     ConstantName.chartwebViewController?.loadUrl(
+                      //       urlRequest: URLRequest(
+                      //         url: WebUri(
+                      //           "https://mynt.zebuetrade.com/tv?src=app&symbol=${widget.chartArgs.tsym}&user=${prefs.clientId}&usession=${prefs.clientSession}&token=${widget.chartArgs.token}&exch=${widget.chartArgs.exch}&dark=${theme.isDarkMode}",
+                      //         ),
+                      //       ),
+                      //     );
+                      //   },
+                      // ),
+          
+                      
+                      Expanded(
+                        child: InkWell(
+                          onTap: () async {
+                            if (transbtn) {
+                              userProfile.setChartdialog(false);
+                              await placeOrderInput(
+                                  tvChart, context, tvChart.getQuotes!, true);
+                            }
+                          },
+                          child: Container(
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: transbtn
+                                  ? const Color(0xFF0037B7) // Blue color for Buy
+                                  : const Color(0xFF0037B7).withOpacity(0.2),
+                              borderRadius:
+                                  const BorderRadius.all(Radius.circular(6)),
+                            ),
+                            child: Center(
+                              child: TextWidget.subText(
+                                text: "Buy",
+                                color: const Color(0XFFFFFFFF),
+                                theme: theme.isDarkMode,
+                                fw: 2,
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 18),
-                    Expanded(
-                      child: InkWell(
-                        onTap: () async {
-                          if (transbtn) {
-                            userProfile.setChartdialog(false);
-                            await placeOrderInput(
-                                tvChart, context, tvChart.getQuotes!, false);
-                          }
-                        },
-                        child: Container(
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: transbtn
-                                ? const Color(0xFFC40024) // Red color for Sell
-                                : const Color(0xFFC40024).withOpacity(0.2),
-                            borderRadius:
-                                const BorderRadius.all(Radius.circular(6)),
-                          ),
-                          child: Center(
-                            child: TextWidget.subText(
-                              text: "Sell",
-                              color: const Color(0XFFFFFFFF),
-                              theme: theme.isDarkMode,
-                              fw: 2,
+                      const SizedBox(width: 18),
+                      Expanded(
+                        child: InkWell(
+                          onTap: () async {
+                            if (transbtn) {
+                              userProfile.setChartdialog(false);
+                              await placeOrderInput(
+                                  tvChart, context, tvChart.getQuotes!, false);
+                            }
+                          },
+                          child: Container(
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: transbtn
+                                  ? const Color(0xFFC40024) // Red color for Sell
+                                  : const Color(0xFFC40024).withOpacity(0.2),
+                              borderRadius:
+                                  const BorderRadius.all(Radius.circular(6)),
+                            ),
+                            child: Center(
+                              child: TextWidget.subText(
+                                text: "Sell",
+                                color: const Color(0XFFFFFFFF),
+                                theme: theme.isDarkMode,
+                                fw: 2,
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                  ]),
-            )
-          ],
+                    ]),
+              ) 
+               ]
+            ],
+          ),
         );
       },
     );
@@ -247,8 +254,8 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
                       Icons.arrow_back_ios_outlined,
                       size: 18,
                       color: theme.isDarkMode
-                          ? colors.colorWhite
-                          : colors.colorBlack,
+                          ? colors.textSecondaryDark
+                          : colors.textSecondaryLight,
                     ),
                   ),
                 ),
@@ -358,6 +365,7 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
                     assets.rotationIcon,
                     width: 20,
                     height: 20,
+                    color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                   ),
                 ),
               ),
@@ -394,6 +402,7 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
                     assets.searchIcon1,
                     width: 20,
                     height: 20,
+                    color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                   ),
                 ),
               ),

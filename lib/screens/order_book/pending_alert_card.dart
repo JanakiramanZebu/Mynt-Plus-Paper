@@ -15,6 +15,7 @@ import '../../res/res.dart';
 import '../../routes/route_names.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
 import '../../sharedWidget/custom_text_form_field.dart';
+import '../../sharedWidget/list_divider.dart';
 import '../../sharedWidget/no_data_found.dart';
 import 'filter_alert_pending.dart';
 import '../../provider/order_provider.dart';
@@ -139,8 +140,8 @@ class _PendingAlertState extends ConsumerState<PendingAlert> {
   Widget _buildTriggeredAlertCard(BrokerMessage alert, theme) {
     return Container(
       color: theme.isDarkMode
-          ? colors.listItembg.withOpacity(0.4)
-          : colors.listItembg.withOpacity(0.4),
+          ? colors.textSecondaryDark.withOpacity(0.2)
+          : colors.textSecondaryLight.withOpacity(0.2),
       child: Column(
         children: [
           // Divider(
@@ -197,10 +198,7 @@ class _PendingAlertState extends ConsumerState<PendingAlert> {
             ),
           ),
           const SizedBox(height: 8),
-          Container(
-            color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
-            height: 1,
-          ),
+          ListDivider(),
           // Divider(
           //   color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
           //   thickness: 0,
@@ -243,14 +241,14 @@ class _PendingAlertState extends ConsumerState<PendingAlert> {
                       text: "${alert.tsym?.replaceAll("-EQ", "")} ",
                       theme: theme.isDarkMode,
                       color: theme.isDarkMode
-                          ? colors.textPrimary
+                          ? colors.textPrimaryDark
                           : colors.textPrimaryLight,
                       fw: 0,
                       textOverflow: TextOverflow.ellipsis,
                     ),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
+                          horizontal: 8, vertical: 2),
                       decoration: BoxDecoration(
                         color: colors.pending.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(4),
@@ -273,7 +271,7 @@ class _PendingAlertState extends ConsumerState<PendingAlert> {
                       color: theme.isDarkMode
                           ? colors.textSecondaryDark
                           : colors.textSecondaryLight,
-                      fw: 3,
+                      fw: 0,
                     ),
                     const Spacer(),
                     Row(
@@ -284,7 +282,7 @@ class _PendingAlertState extends ConsumerState<PendingAlert> {
                           color: theme.isDarkMode
                               ? colors.textSecondaryDark
                               : colors.textSecondaryLight,
-                          fw: 3,
+                          fw: 0,
                         ),
                         TextWidget.paraText(
                           text: "${alert.ltp ?? alert.close ?? 0.00}",
@@ -292,7 +290,7 @@ class _PendingAlertState extends ConsumerState<PendingAlert> {
                           color: theme.isDarkMode
                               ? colors.textSecondaryDark
                               : colors.textSecondaryLight,
-                          fw: 3,
+                          fw: 0,
                         ),
                         TextWidget.paraText(
                           text: " (${alert.perChange ?? 0.00}%)",
@@ -300,7 +298,7 @@ class _PendingAlertState extends ConsumerState<PendingAlert> {
                           color: theme.isDarkMode
                               ? colors.textSecondaryDark
                               : colors.textSecondaryLight,
-                          fw: 3,
+                          fw: 0,
                         ),
                       ],
                     ),
@@ -318,7 +316,7 @@ class _PendingAlertState extends ConsumerState<PendingAlert> {
                           color: theme.isDarkMode
                               ? colors.textSecondaryDark
                               : colors.textSecondaryLight,
-                          fw: 3,
+                          fw: 0,
                         ),
                         TextWidget.paraText(
                           text: alert.aiT == "LTP_A"
@@ -332,7 +330,7 @@ class _PendingAlertState extends ConsumerState<PendingAlert> {
                           color: theme.isDarkMode
                               ? colors.textSecondaryDark
                               : colors.textSecondaryLight,
-                          fw: 3,
+                          fw: 0,
                         ),
                         const SizedBox(width: 4),
                         Transform.rotate(
@@ -376,7 +374,7 @@ class _PendingAlertState extends ConsumerState<PendingAlert> {
                           color: theme.isDarkMode
                               ? colors.textSecondaryDark
                               : colors.textSecondaryLight,
-                          fw: 3,
+                          fw: 0,
                         ),
                       ],
                     ),
@@ -386,18 +384,11 @@ class _PendingAlertState extends ConsumerState<PendingAlert> {
             ),
           ),
           const SizedBox(height: 8),
-          Container(
-            color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
-            height: 1,
-          ),
+          ListDivider(),
         ],
       ),
     );
   }
 
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
-  }
+ 
 }

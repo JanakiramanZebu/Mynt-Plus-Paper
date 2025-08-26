@@ -8,6 +8,7 @@ import '../../../../provider/thems.dart';
 import '../../../../res/res.dart';
 import '../../../../routes/route_names.dart';
 import '../../../../sharedWidget/functions.dart';
+import '../../../../sharedWidget/list_divider.dart';
 import '../ipo_orderbook_details/open_order_details.dart';
 
 class IpoOpenOrder extends ConsumerWidget {
@@ -152,10 +153,7 @@ class _OpenOrderList extends StatelessWidget {
         isSearch: isSearch,
       ),
       separatorBuilder: (BuildContext context, int index) {
-        return Divider(
-          height: 1,
-          color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
-        );
+        return ListDivider();
       },
     );
   }
@@ -202,8 +200,8 @@ class _OpenOrderItem extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            _buildTopRow(),
-            const SizedBox(height: 16),
+            _buildTopRow(context),
+            const SizedBox(height: 8),
             _buildBottomRow(),
           ],
         ),
@@ -211,12 +209,12 @@ class _OpenOrderItem extends StatelessWidget {
     );
   }
 
-  Widget _buildTopRow() {
+  Widget _buildTopRow(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         SizedBox(
-          width: 250,
+          width: MediaQuery.of(context).size.width * 0.6,
           child: TextWidget.subText(
             text: order.companyName.toString(),
             theme: false,
@@ -224,6 +222,7 @@ class _OpenOrderItem extends StatelessWidget {
                 ? colors.textPrimaryDark
                 : colors.textPrimaryLight,
             textOverflow: TextOverflow.ellipsis,
+            maxLines: 2,
           ),
         ),
         Row(
@@ -233,7 +232,7 @@ class _OpenOrderItem extends StatelessWidget {
             //     : "assets/icon/pendingicon.svg"),
             // SizedBox(width: isSearch ? 4 : 5),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
               decoration: BoxDecoration(
                 color: order.reponseStatus == "new success"
                     ? theme.isDarkMode
@@ -242,12 +241,12 @@ class _OpenOrderItem extends StatelessWidget {
                     : colors.pending.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(5),
               ),
-              child: TextWidget.subText(
+              child: TextWidget.paraText(
                 text: order.reponseStatus == "new success"
                     ? "Success"
                     : "Pending",
                 theme: false,
-                fw: 0,
+                fw: 3,
                 color: order.reponseStatus == "new success"
                     ? theme.isDarkMode
                         ? colors.profitDark
@@ -277,10 +276,10 @@ class _OpenOrderItem extends StatelessWidget {
               ? colors.textSecondaryDark
               : colors.textSecondaryLight,
         ),
-        TextWidget.paraText(
+        TextWidget.subText(
           text: _getInvestedAmount(),
           theme: false,
-          fw: 0,
+          
           color: theme.isDarkMode
               ? colors.textPrimaryDark
               : colors.textPrimaryLight,

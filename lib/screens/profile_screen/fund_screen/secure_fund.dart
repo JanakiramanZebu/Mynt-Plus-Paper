@@ -30,12 +30,12 @@ class _SecureFundState extends ConsumerState<SecureFund> {
     final trancation = ref.watch(transcationProvider);
 
     return Scaffold(
-      backgroundColor: colors.colorWhite,
+      backgroundColor: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
       body: ListView(
         children: [
           // Available Margin Section
           Container(
-            color: colors.colorWhite,
+            color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
@@ -51,7 +51,7 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                           color: theme.isDarkMode
                               ? colors.textSecondaryDark
                               : colors.textSecondaryLight,
-                          fw: 3,
+                          fw: 0,
                           theme: false),
                       const SizedBox(height: 8),
                       Text(
@@ -91,7 +91,7 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                                       : colors.primaryLight,
                                   width: 1.5),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: BorderRadius.circular(5),
                               ),
                               backgroundColor: theme.isDarkMode
                                   ? colors.primaryDark
@@ -105,10 +105,8 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                             child: TextWidget.subText(
                                 text: "Add Money",
                                 theme: false,
-                                color: !theme.isDarkMode
-                                    ? colors.textPrimaryDark
-                                    : colors.textPrimaryLight,
-                                fw: 0),
+                                color: colors.colorWhite,
+                                fw: 2),
                           ),
                         ),
                       ),
@@ -119,7 +117,8 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                           height: 45,
                           child: OutlinedButton(
                             style: OutlinedButton.styleFrom(
-                              side: BorderSide(
+                              side: theme.isDarkMode
+                                                          ? null : BorderSide(
                                   color: theme.isDarkMode
                                       ? colors.primaryLight
                                       : colors.primaryDark,
@@ -127,7 +126,11 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(5),
                               ),
-                              backgroundColor: colors.fundbuttonBg,
+                              backgroundColor:   theme.isDarkMode
+                                                          ? colors
+                                                              .textSecondaryDark
+                                                              .withOpacity(0.6)
+                                                          : colors.fundbuttonBg,
                             ),
                             onPressed: () async {
                               await trancation.fetchValidateToken(context);
@@ -154,8 +157,10 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                               style: TextWidget.textStyle(
                                 fontSize: 14,
                                 theme: false,
-                                color: colors.colorBlue,
-                                fw: 0,
+                                color: theme.isDarkMode
+                                    ? colors.colorWhite
+                                    : colors.primaryLight,
+                                fw: 2,
                               ),
                             ),
                           ),
@@ -165,14 +170,14 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                   ),
                 ),
                 const SizedBox(height: 12),
-                Divider(color: colors.colorDivider),
+                Divider(color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,),
               ],
             ),
           ),
 
           // Detailed Financial Information
           Container(
-            color: colors.colorWhite,
+            color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
             child: Column(
               children: [
                 // Available cash - Expandable
@@ -244,7 +249,7 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                         color: theme.isDarkMode
                             ? colors.textSecondaryDark
                             : colors.textSecondaryLight,
-                        fw: 3),
+                        fw: 0),
                   ],
                 ),
                 Row(
@@ -255,7 +260,7 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                         color: theme.isDarkMode
                             ? colors.textPrimaryDark
                             : colors.textPrimaryLight,
-                        fw: 3),
+                        fw: 0),
                     const SizedBox(width: 4),
                     Icon(
                       isExpanded
@@ -273,7 +278,7 @@ class _SecureFundState extends ConsumerState<SecureFund> {
           ),
         ),
         if (isExpanded && expandedContent != null) expandedContent,
-        Divider(color: colors.colorDivider),
+        Divider(color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider),
       ],
     );
   }
@@ -306,7 +311,7 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                       color: theme.isDarkMode
                           ? colors.textSecondaryDark
                           : colors.textSecondaryLight,
-                      fw: 3),
+                      fw: 0),
                   TextWidget.subText(
                       text: getFormatter(
                           value: funds.listOfCredits.isNotEmpty
@@ -319,13 +324,13 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                       color: theme.isDarkMode
                           ? colors.textPrimaryDark
                           : colors.textPrimaryLight,
-                      fw: 3),
+                      fw: 0),
                 ],
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 child: Divider(
-                  color: colors.colorDivider,
+                  color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
                 ),
               ),
               Row(
@@ -337,7 +342,7 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                     color: theme.isDarkMode
                         ? colors.textSecondaryDark
                         : colors.textSecondaryLight,
-                    fw: 3,
+                    fw: 0,
                   ),
                   TextWidget.subText(
                     text:
@@ -346,14 +351,14 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                     color: theme.isDarkMode
                         ? colors.textPrimaryDark
                         : colors.textPrimaryLight,
-                    fw: 3,
+                    fw: 0,
                   ),
                 ],
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 child: Divider(
-                  color: colors.colorDivider,
+                  color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
                 ),
               ),
               Row(
@@ -365,7 +370,7 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                     color: theme.isDarkMode
                         ? colors.textSecondaryDark
                         : colors.textSecondaryLight,
-                    fw: 3,
+                    fw: 0,
                   ),
                   TextWidget.subText(
                     text:
@@ -374,14 +379,14 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                     color: theme.isDarkMode
                         ? colors.textPrimaryDark
                         : colors.textPrimaryLight,
-                    fw: 3,
+                    fw: 0,
                   ),
                 ],
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 child: Divider(
-                  color: colors.colorDivider,
+                  color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
                 ),
               ),
               Row(
@@ -393,7 +398,7 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                     color: theme.isDarkMode
                         ? colors.textSecondaryDark
                         : colors.textSecondaryLight,
-                    fw: 3,
+                    fw: 0,
                   ),
                   TextWidget.subText(
                     text:
@@ -402,14 +407,14 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                     color: theme.isDarkMode
                         ? colors.textPrimaryDark
                         : colors.textPrimaryLight,
-                    fw: 3,
+                    fw: 0,
                   ),
                 ],
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 child: Divider(
-                  color: colors.colorDivider,
+                  color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
                 ),
               ),
               (funds.fundDetailModel?.brkcollamt == null &&
@@ -423,7 +428,7 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                           color: theme.isDarkMode
                               ? colors.textSecondaryDark
                               : colors.textSecondaryLight,
-                          fw: 3,
+                          fw: 0,
                         ),
                         TextWidget.subText(
                           text:
@@ -432,7 +437,7 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                           color: theme.isDarkMode
                               ? colors.textPrimaryDark
                               : colors.textPrimaryLight,
-                          fw: 3,
+                          fw: 0,
                         ),
                       ],
                     )
@@ -441,7 +446,7 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                   ? Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8),
                       child: Divider(
-                        color: colors.colorDivider,
+                        color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
                       ),
                     )
                   : const SizedBox.shrink(),
@@ -462,7 +467,7 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                           color: theme.isDarkMode
                               ? colors.textSecondaryDark
                               : colors.textSecondaryLight,
-                          fw: 3),
+                          fw: 0),
                       TextWidget.subText(
                           text: getFormatter(
                               value: _safeParseDouble(
@@ -473,7 +478,7 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                           color: theme.isDarkMode
                               ? colors.textPrimaryDark
                               : colors.textPrimaryLight,
-                          fw: 3),
+                          fw: 0),
                     ],
                   );
                 },
@@ -483,7 +488,7 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 8),
                         child: Divider(
-                          color: colors.colorDivider,
+                          color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
                         ),
                       ),
                     ],
@@ -620,11 +625,11 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                 },
                 separatorBuilder: (BuildContext context, int index) {
                   return Divider(
-                    color: colors.colorDivider.withOpacity(0.5),
+                    color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
                   );
                 }),
             Divider(
-              color: colors.colorDivider.withOpacity(0.5),
+              color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
             ),
           ],
 
@@ -709,7 +714,7 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                 color: isDarkMode
                     ? colors.textSecondaryDark
                     : colors.textSecondaryLight,
-                fw: 3,
+                fw: 0,
               ),
               TextWidget.subText(
                 text: value,
@@ -717,13 +722,13 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                 color: isDarkMode
                     ? colors.textPrimaryDark
                     : colors.textPrimaryLight,
-                fw: 3,
+                fw: 0,
               ),
             ],
           ),
         ),
         Divider(
-          color: colors.colorDivider.withOpacity(0.5),
+          color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
         ),
       ],
     );

@@ -8,6 +8,7 @@ import '../../res/res.dart';
 import '../../sharedWidget/functions.dart';
 import '../../sharedWidget/list_divider.dart';
 import '../../sharedWidget/custom_drag_handler.dart';
+import '../../sharedWidget/cust_text_formfield.dart';
 
 class WatchListRename extends ConsumerStatefulWidget {
   final String wlname;
@@ -54,182 +55,202 @@ class _WatchListRenameState extends ConsumerState<WatchListRename> {
       ),
       child: Container(
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          color: theme.isDarkMode ? Colors.black : Colors.white,
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0xff999999),
-              blurRadius: 4.0,
-              offset: Offset(2.0, 0.0),
-            )
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const CustomDragHandler(),
-            Container(
-              padding: const EdgeInsets.only(left: 16.0, right: 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  TextWidget.titleText(
-                    text: 'Edit Watchlist Name',
-                    color: theme.isDarkMode
-                        ? colors.textPrimaryDark
-                        : colors.textPrimaryLight,
-                    theme: theme.isDarkMode,
-                    fw: 1,
-                  ),
-                  Material(
-                    color: Colors.transparent,
-                    shape: const CircleBorder(),
-                    child: InkWell(
-                      onTap: () {
-                        Navigator.pop(context);
-                      },
-                      borderRadius: BorderRadius.circular(20),
-                      child: Padding(
-                        padding: const EdgeInsets.all(6.0),
-                        child: Icon(
-                          Icons.close_rounded,
-                          size: 22,
-                          color: theme.isDarkMode
-                              ? const Color(0xffBDBDBD)
-                              : colors.colorGrey,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Divider(
-              color: theme.isDarkMode
-                  ? colors.darkColorDivider
-                  : colors.colorDivider,
-              height: 0,
-            ),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  Container(
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: Colors.transparent,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: theme.isDarkMode
-                            ? const Color(0xFF2A2A2A)
-                            : const Color(0xFFEEEEEE),
-                        width: 1,
-                      ),
-                    ),
-                    child: TextFormField(
-                      controller: textCtrl,
-                      autofocus: true,
-                      inputFormatters: [
-                        FilteringTextInputFormatter.allow(
-                            RegExp(r'[a-zA-Z0-9 ]')),
-                      ],
-                      style:  TextWidget.textStyle(
-                                  fontSize: 14,
-                                  color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                                  theme: theme.isDarkMode,
-                                 
+           borderRadius: const BorderRadius.only(
+      topLeft: Radius.circular(16),
+      topRight: Radius.circular(16),
+    ),
+          color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+          border: Border(
+                                  top: BorderSide(
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                            .withOpacity(0.5)
+                                        : colors.colorWhite,
+                                  ),
+                                  left: BorderSide(
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                            .withOpacity(0.5)
+                                        : colors.colorWhite,
+                                  ),
+                                  right: BorderSide(
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                            .withOpacity(0.5)
+                                        : colors.colorWhite,
+                                  ),
                                 ),
-                      decoration: InputDecoration(
-                        hintText: "Enter watchlist name",
-                        hintStyle: TextWidget.textStyle(
-                          fontSize: 14,
-                          color: const Color(0xff666666),
-                          theme: theme.isDarkMode,
-                          fw: 0,
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 14),
-                        border: InputBorder.none,
-                        enabledBorder: InputBorder.none,
-                        focusedBorder: InputBorder.none,
-                        isCollapsed: false,
-                      ),
-                      textAlignVertical: TextAlignVertical.center,
-                      onChanged: (value) {
-                        setState(() {
-                          if (textCtrl.text.trim().isNotEmpty) {
-                            errorText = null;
-                            wlName = value.trim();
-                          } else {
-                            errorText = "Please enter watchlist name";
-                          }
-                        });
-                      },
+
+        ),
+        child: SafeArea(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // const CustomDragHandler(),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    TextWidget.titleText(
+                      text: 'Edit Watchlist Name',
+                      color: theme.isDarkMode
+                          ? colors.textPrimaryDark
+                          : colors.textPrimaryLight,
+                      theme: theme.isDarkMode,
+                      fw: 1,
                     ),
-                  ),
-                  if (errorText != null) ...[
-                    const SizedBox(height: 8),
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: TextWidget.captionText(
-                        text: errorText!,
-                        color: colors.error,
-                        theme: theme.isDarkMode,
-                        fw: 0,
+                    Material(
+                      color: Colors.transparent,
+                      shape: const CircleBorder(),
+                      child: InkWell(
+                        onTap: () {
+                          Navigator.pop(context);
+                        },
+                        borderRadius: BorderRadius.circular(20),
+                        child: Padding(
+                          padding: const EdgeInsets.all(6.0),
+                          child: Icon(
+                            Icons.close_rounded,
+                            size: 22,
+                            color: theme.isDarkMode
+                                ? const Color(0xffBDBDBD)
+                                : colors.colorGrey,
+                          ),
+                        ),
                       ),
                     ),
                   ],
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: _isProcessing
-                          ? null
-                          : () async {
-                              if (textCtrl.text.trim().isEmpty) {
-                                setState(() {
-                                  errorText = "Please enter watchlist name";
-                                });
-                              } else {
-                                await _handlebutton();
-                              }
-                            },
-                      style: ElevatedButton.styleFrom(
-                        elevation: 0,
-                         minimumSize: const Size(0, 40), // width, height
-                        backgroundColor: theme.isDarkMode
-                          ? colors.primaryDark
-                          : colors.primaryLight,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(5),
+                ),
+              ),
+              Divider(
+                color: theme.isDarkMode
+                    ? colors.darkColorDivider
+                    : colors.colorDivider,
+                height: 0,
+              ),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    Container(
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: Colors.transparent,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: theme.isDarkMode
+                              ? const Color(0xFF2A2A2A)
+                              : const Color(0xFFEEEEEE),
+                          width: 1,
                         ),
                       ),
-                      child: (_isProcessing ||
-                              ref.read(marketWatchProvider).loading)
-                          ?  SizedBox(
-                              width: 18,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                  strokeWidth: 2, color:  colors.textSecondaryLight),
-                            )
-                          : TextWidget.subText(
-                              text: "Update",
-                              color: !theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : colors.colorBlack,
+                      child: SizedBox(
+                        height: 45,
+                        child: CustomTextFormField(
+                          fillColor: theme.isDarkMode
+                              ? colors.darkGrey
+                              : const Color(0xffF1F3F8),
+                          onChanged: (value) {
+                            setState(() {
+                              if (textCtrl.text.trim().isNotEmpty) {
+                                errorText = null;
+                                wlName = value.trim();
+                              } else {
+                                errorText = "Please enter watchlist name";
+                              }
+                            });
+                          },
+                          hintText: "Enter watchlist name",
+                          hintStyle: TextWidget.textStyle(
+                              fontSize: 14,
+                              color: theme.isDarkMode
+                                  ? colors.textSecondaryDark
+                                  : colors.textSecondaryLight,
                               theme: theme.isDarkMode,
-                              fw: 2,
-                            ),
+                              ),
+                          keyboardType: TextInputType.text,
+                          style: TextWidget.textStyle(
+                              fontSize: 16,
+                              color: theme.isDarkMode
+                                  ? colors.textPrimaryDark
+                                  : colors.textPrimaryLight,
+                              theme: theme.isDarkMode,
+                              ),
+                          textCtrl: textCtrl,
+                          textAlign: TextAlign.start,
+                          autofocus: true,
+                          inputFormate: [
+                            FilteringTextInputFormatter.allow(
+                                RegExp(r'[a-zA-Z0-9 ]')),
+                          ],
+                        ),
+                      ),
                     ),
-                  ),
-                ],
+                    if (errorText != null) ...[
+                      const SizedBox(height: 8),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: TextWidget.captionText(
+                          text: errorText!,
+                          color: colors.error,
+                          theme: theme.isDarkMode,
+                          fw: 0,
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: _isProcessing
+                            ? (){}
+                            : () async {
+                                if (textCtrl.text.trim().isEmpty) {
+                                  setState(() {
+                                    errorText = "Please enter watchlist name";
+                                  });
+                                } else {
+                                  await _handlebutton();
+                                }
+                              },
+                        style: ElevatedButton.styleFrom(
+                          elevation: 0,
+                          minimumSize: const Size(0, 45), // width, height
+                          backgroundColor: theme.isDarkMode
+                              ? colors.primaryDark
+                              : colors.primaryLight,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                        ),
+                        child: (_isProcessing ||
+                                ref.read(marketWatchProvider).loading)
+                            ? SizedBox(
+                                width: 18,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: colors.colorWhite),
+                              )
+                            : TextWidget.subText(
+                                text: "Update",
+                                color: colors.colorWhite,
+                                theme: theme.isDarkMode,
+                                fw: 2,
+                              ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: 24),
-          ],
+              const SizedBox(height: 24),
+            ],
+          ),
         ),
       ),
     );

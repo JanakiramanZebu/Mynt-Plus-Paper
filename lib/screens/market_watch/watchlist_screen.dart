@@ -430,7 +430,9 @@ void _initializeWithStoredData() {
         child: Container(
           height: 40,
           decoration: BoxDecoration(
-            color: colors.searchBg,
+            color: theme.isDarkMode
+                ? colors.searchBgDark
+                : colors.searchBg,
             borderRadius: BorderRadius.circular(5),
           ),
           child: Row(
@@ -452,14 +454,16 @@ void _initializeWithStoredData() {
                   child: Row(
                     children: [
                       const SizedBox(width: 12),
-                      SvgPicture.asset(assets.searchIcon, width: 18, height: 18),
+                      SvgPicture.asset(assets.searchIcon, width: 18, height: 18, color: theme.isDarkMode
+                              ? colors.textSecondaryDark
+                              : colors.textSecondaryLight,),
                       const SizedBox(width: 8),
                       Expanded(
                         child: TextWidget.subText(
                           text: 'Search & add',
                           color: theme.isDarkMode
-                              ? colors.textPrimaryDark
-                              : colors.textPrimaryLight,
+                              ? colors.textSecondaryDark
+                              : colors.textSecondaryLight,
                           theme: theme.isDarkMode,
                         ),
                       ),
@@ -626,7 +630,7 @@ void _initializeWithStoredData() {
                 highlightColor: theme.isDarkMode
                     ? Colors.white.withOpacity(.01)
                     : Colors.black.withOpacity(.01),
-                onTapDown: (_) => HapticFeedback.lightImpact(),
+                // onTapDown: (_) => HapticFeedback.lightImpact(),
                 onTap: () => _handleTabTap(name, i, ref),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -641,7 +645,9 @@ void _initializeWithStoredData() {
                             ? (theme.isDarkMode
                                 ? colors.secondaryDark
                                 : colors.secondaryLight)
-                            : colors.textSecondaryLight,
+                            : (theme.isDarkMode
+                                ? colors.textSecondaryDark
+                                : colors.textSecondaryLight),
                         textOverflow: TextOverflow.ellipsis,
                         maxLines: 1,
                         theme: theme.isDarkMode,

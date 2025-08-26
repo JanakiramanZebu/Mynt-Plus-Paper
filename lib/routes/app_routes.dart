@@ -2,7 +2,9 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/models/order_book_model/place_order_model.dart';
+import 'package:mynt_plus/screens/algo/algo_create.dart';
 import 'package:mynt_plus/screens/bonds/bonds_common_search_screen.dart';
+import 'package:mynt_plus/screens/algo/algo_strategytlist.dart';
 // import 'package:mynt_plus/screens/ipo/ipo_common_search_screen.dart';
 import 'package:mynt_plus/screens/mutual_fund/cagr_calculator_screen.dart';
 import 'package:mynt_plus/screens/mutual_fund/mf_hold_singlepage.dart';
@@ -109,8 +111,11 @@ import '../screens/profile_screen/setting_screen/settingmaincscreen.dart';
 import '../screens/profile_screen/setting_screen/window_settings.dart';
 import '../screens/profile_screen/settingui.dart' as settingUI;
 import '../screens/splash_screen.dart';
+import '../screens/stocks/explore/stocks/broker_calculator.dart';
 import '../screens/stocks/explore/stocks/indices/all_index_screen.dart';
+import '../screens/stocks/explore/stocks/margin_calculator.dart';
 import '../screens/stocks/explore/stocks/news/news_listdata.dart';
+import '../screens/stocks/explore/stocks/portfolio_analysis.dart';
 import '../screens/stocks/explore/stocks/stock_screens.dart';
 import '../screens/stocks/explore/stocks/trade_action/all_trade.dart';
 import '../screens/stocks/explore/stocks/trade_action/sector_themeatic_details.dart';
@@ -238,6 +243,17 @@ class AppRoutes {
       case Routes.editScrip:
         return _createRoute(
           pageBuilder: (_, __, ___) => EditScrip(wlName: args),
+          beginOffset: const Offset(-1.0, 0.0),
+        );
+      case Routes.algoCreate:
+        return _createRoute(
+          pageBuilder: (_, __, ___) => const AlgoCreate(),
+          beginOffset: const Offset(-1.0, 0.0),
+        );
+
+      case Routes.algoList:
+        return _createRoute(
+          pageBuilder: (_, __, ___) => const AlgoStrategyList(),
           beginOffset: const Offset(-1.0, 0.0),
         );
 
@@ -667,7 +683,7 @@ class AppRoutes {
 
       case Routes.ipo:
         return _createRoute(
-          pageBuilder: (_, __, ___) => IPOScreen(initialTabIndex: args as int?),
+          pageBuilder: (_, __, ___) => IPOScreen(initialTabIndex: args as int?, isIpo: true),
           beginOffset: const Offset(-1.0, 0.0),
         );
 
@@ -732,7 +748,7 @@ class AppRoutes {
 
       case Routes.bonds:
         return _createRoute(
-          pageBuilder: (_, __, ___) => const BondsScreen(),
+          pageBuilder: (_, __, ___) => const BondsScreen(isBonds: true),
           beginOffset: const Offset(-1.0, 0.0),
         );
       case Routes.mfmainscreen:
@@ -754,6 +770,21 @@ class AppRoutes {
       case Routes.mfsipcalscreen:
         return _createRoute(
           pageBuilder: (_, __, ___) => const MFSIPSCREEN(),
+          beginOffset: const Offset(-1.0, 0.0),
+        );
+      case Routes.brokerCalculator:
+        return _createRoute(
+          pageBuilder: (_, __, ___) =>  BrokerageCalculatorScreen(),
+          beginOffset: const Offset(-1.0, 0.0),
+        );
+      case Routes.marginCalculator:
+        return _createRoute(
+          pageBuilder: (_, __, ___) =>  MarginCalculatorScreen(),
+          beginOffset: const Offset(-1.0, 0.0),
+        );
+      case Routes.portfolioDashboard:
+        return _createRoute(
+          pageBuilder: (_, __, ___) => const PortfolioDashboardScreen(),
           beginOffset: const Offset(-1.0, 0.0),
         );
       case Routes.mfcagrcalss:
@@ -829,7 +860,7 @@ class AppRoutes {
       case Routes.mfsearchscreen:
         return _createRoute(
           pageBuilder: (_, __, ___) => const MfCommonSearch(),
-          beginOffset: const Offset(0.0, 1.0),
+          beginOffset: const Offset(-1.0, 0.0),
         );
       // case Routes.mfWatchlist:
       //   return _createRoute(

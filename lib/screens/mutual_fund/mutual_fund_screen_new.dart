@@ -195,20 +195,27 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
             padding: const EdgeInsets.only(left: 8, right: 8,  bottom: 8),
             height: 35,
             child: TabBar(
+              // physics: const NeverScrollableScrollPhysics(),
               controller: _tabController, 
               tabAlignment: TabAlignment.start,
               isScrollable: true,
               indicatorSize: TabBarIndicatorSize.tab,
               indicatorColor: colors.colorWhite,
               indicator: BoxDecoration(
-                color: const Color(0xffF1F3F8),
-                borderRadius: BorderRadius.circular(6),
+                color: theme.isDarkMode ? colors.searchBgDark : const Color(0xffF1F3F8),
+                          borderRadius: BorderRadius.circular(5),
               ),
-              unselectedLabelColor:  colors.textSecondaryLight,
-              labelStyle:
-                  TextWidget.textStyle(fontSize: 14, theme: false, fw: 2),
-              unselectedLabelStyle: TextWidget.textStyle(
-                  fontSize: 14, theme: false, fw: 3, letterSpacing: -0.28, color: colors.textSecondaryLight),
+              unselectedLabelColor:  theme.isDarkMode
+                  ? colors.textSecondaryDark
+                  : colors.textSecondaryLight,
+               labelStyle: TextWidget.textStyle(
+                            fontSize: 14, theme: false, fw: 2, color:theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight),
+               unselectedLabelStyle: TextWidget.textStyle(
+                            fontSize: 14,
+                            theme: false,
+                            color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                            
+                            letterSpacing: -0.28),
               labelPadding: const EdgeInsets.symmetric(horizontal: 4),
             tabs: const [
                 Tab(
@@ -233,6 +240,7 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
           SizedBox(
             height: 450 ,
             child: TabBarView(
+              physics: const NeverScrollableScrollPhysics(),
               controller: _tabController,
               children: [
                 buildCollectionsTab(mfData, theme),
@@ -496,7 +504,9 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
               : Colors.white,
           borderRadius: BorderRadius.circular(5.0),
           border: Border.all(
-            color: const Color(0xFFECEDEE),
+            color: theme.isDarkMode
+                ? colors.textSecondaryDark
+                : const Color(0xFFECEDEE),
             width: 1,
           ),
         ),
@@ -530,7 +540,7 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
                             align: TextAlign.left,
                             text: "New Fund Offerings",
                             color: theme.isDarkMode
-                                ? colors.textPrimaryDark
+                                ? colors.textSecondaryDark
                                 : colors.textPrimaryLight,
                             textOverflow: TextOverflow.ellipsis,
                             theme: theme.isDarkMode,
@@ -610,7 +620,7 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
         ),
         title: TextWidget.subText(
           // align: TextAlign.right,
-          text: "Systematic Investment Plan (SIP)",
+          text: "SIP Calculator",
           color: theme.isDarkMode
               ? colors.textSecondaryDark
               : colors.textSecondaryLight,
@@ -637,7 +647,7 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
         ),
         title: TextWidget.subText(
           // align: TextAlign.right,
-          text: "Compund Annual Growth Rate (CAGR)",
+          text: "CAGR Calculator",
           color: theme.isDarkMode
               ? colors.textSecondaryDark
               : colors.textSecondaryLight,

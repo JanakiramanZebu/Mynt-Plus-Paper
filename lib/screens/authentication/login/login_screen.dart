@@ -116,6 +116,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         await pref.setImei(auth.loggedMobile[activeIndex].imei);
         await pref.setMobileLogin(true);
 
+        // Calendar PnL cache cleared automatically when switching accounts
+        ref.read(ledgerProvider).clearCalendarPnLData();
+
         // Fetch account data
         await ref.read(authProvider).fetchMobileLogin(
             context,
@@ -275,8 +278,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                                 TextWidget.custmText(
                                                     text: "Sign in with MYNT",
                                                     theme: false,
-                                                    color:
-                                                        const Color(0xFF141414),
+                                                    color: theme.isDarkMode
+                                                        ? colors.textPrimaryDark
+                                                        : colors
+                                                            .textPrimaryLight,
                                                     fw: 1,
                                                     fs: 20),
                                               ],
@@ -294,8 +299,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                                 height: 100,
                                                 decoration: BoxDecoration(
                                                   shape: BoxShape.circle,
-                                                  color: const Color(
-                                                      0xFFF1F3F8), // light gray background
+                                                  color: theme.isDarkMode
+                                                      ? colors.textSecondaryDark
+                                                          .withOpacity(0.1)
+                                                      : const Color(
+                                                          0xFFF1F3F8), // light gray background
                                                   border: Border.all(
                                                     color: Color(
                                                         0xFF0037B7), // blue border
@@ -314,7 +322,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                                         : '',
                                                     style: TextWidget.textStyle(
                                                         fontSize: 24,
-                                                        color: colors.colorBlue,
+                                                        color: theme.isDarkMode
+                                                            ? colors.colorWhite
+                                                            : const Color(
+                                                                0xff0037B7),
                                                         theme: theme.isDarkMode,
                                                         fw: 2),
                                                   ),
@@ -324,6 +335,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                               TextWidget.custmText(
                                                 text: pref.clientName ?? '',
                                                 theme: theme.isDarkMode,
+                                                color: theme.isDarkMode
+                                                    ? colors.textPrimaryDark
+                                                    : colors.textPrimaryLight,
                                                 fw: 2,
                                                 fs: 20,
                                               ),
@@ -331,6 +345,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                               TextWidget.custmText(
                                                 text: pref.clientId ?? '',
                                                 theme: theme.isDarkMode,
+                                                color: theme.isDarkMode
+                                                    ? colors.textPrimaryDark
+                                                    : colors.textPrimaryLight,
                                                 fw: 1,
                                                 fs: 16,
                                               ),
@@ -392,8 +409,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                                     fontSize: 16,
                                                     theme: theme.isDarkMode,
                                                     color: theme.isDarkMode
-                                                        ? colors.colorWhite
-                                                        : colors.colorBlack,
+                                                        ? colors.textPrimaryDark
+                                                        : colors
+                                                            .textPrimaryLight,
 
                                                     // height: 1.5,
                                                   ),
@@ -404,9 +422,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                                                     .isNotEmpty ||
                                                                 pref.clientMob!
                                                                     .isNotEmpty)
-                                                        ? const Color(
-                                                            0xffEDEDED)
-                                                        : colors.colorWhite,
+                                                        ? theme.isDarkMode
+                                                            ? colors.colorBlack
+                                                            : const Color(
+                                                                0xffEDEDED)
+                                                        : !theme.isDarkMode
+                                                            ? colors.colorWhite
+                                                            : colors.colorBlack,
                                                     labelText: pref.islogOut! &&
                                                             (pref.clientId!
                                                                     .isNotEmpty ||
@@ -438,17 +460,29 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                                                     .colorBlack,
                                                             fw: 3),
                                                     enabledBorder:
-                                                        const UnderlineInputBorder(
+                                                        UnderlineInputBorder(
                                                       borderSide: BorderSide(
-                                                          color:
-                                                              Color(0xffDBDBDB),
+                                                          color: theme
+                                                                  .isDarkMode
+                                                              ? colors
+                                                                  .textSecondaryDark
+                                                                  .withOpacity(
+                                                                      0.2)
+                                                              : Color(
+                                                                  0xffDBDBDB),
                                                           width: 1),
                                                     ),
                                                     focusedBorder:
-                                                        const UnderlineInputBorder(
+                                                        UnderlineInputBorder(
                                                       borderSide: BorderSide(
-                                                          color:
-                                                              Color(0xffDBDBDB),
+                                                          color: theme
+                                                                  .isDarkMode
+                                                              ? colors
+                                                                  .textSecondaryDark
+                                                                  .withOpacity(
+                                                                      0.2)
+                                                              : Color(
+                                                                  0xffDBDBDB),
                                                           width: 1),
                                                     ),
                                                     counterText: "",
@@ -486,13 +520,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                                             text:
                                                                 "${auth.loginMethError}",
                                                             theme: false,
-                                                            color: colors
-                                                                .kColorRedText,
+                                                            color: theme
+                                                                    .isDarkMode
+                                                                ? colors
+                                                                    .lossDark
+                                                                : colors
+                                                                    .lossLight,
                                                             fw: 0)
                                                         : const SizedBox(),
                                                     TextWidget.captionText(
                                                         text:
                                                             "${auth.loginMethCtrl.text.length}/10",
+                                                        color: theme.isDarkMode
+                                                            ? colors
+                                                                .textSecondaryDark
+                                                            : colors
+                                                                .textSecondaryLight,
                                                         theme: theme.isDarkMode,
                                                         fw: 0),
                                                   ],
@@ -527,8 +570,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                           fontSize: 16,
                                           theme: theme.isDarkMode,
                                           color: theme.isDarkMode
-                                              ? colors.colorWhite
-                                              : colors.colorBlack,
+                                              ? colors.textPrimaryDark
+                                              : colors.textPrimaryLight,
                                         ),
                                         decoration: InputDecoration(
                                           labelText: "Password",
@@ -578,23 +621,29 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                                   auth.hidePass
                                                       ? "assets/icon/eye-off.svg"
                                                       : "assets/icon/eye.svg",
-                                                  color:
-                                                      const Color(0xff999999),
+                                                  color: theme.isDarkMode
+                                                      ? colors.textSecondaryDark
+                                                      : colors
+                                                          .textSecondaryLight,
                                                   width: 22,
                                                 ),
                                               ),
                                             ),
                                           ),
-                                          enabledBorder:
-                                              const UnderlineInputBorder(
+                                          enabledBorder: UnderlineInputBorder(
                                             borderSide: BorderSide(
-                                                color: Color(0xffDBDBDB),
+                                                color: theme.isDarkMode
+                                                    ? colors.textSecondaryDark
+                                                        .withOpacity(0.2)
+                                                    : Color(0xffDBDBDB),
                                                 width: 1),
                                           ),
-                                          focusedBorder:
-                                              const UnderlineInputBorder(
+                                          focusedBorder: UnderlineInputBorder(
                                             borderSide: BorderSide(
-                                                color: Color(0xffDBDBDB),
+                                                color: theme.isDarkMode
+                                                    ? colors.textSecondaryDark
+                                                        .withOpacity(0.2)
+                                                    : Color(0xffDBDBDB),
                                                 width: 1),
                                           ),
                                           contentPadding:
@@ -603,7 +652,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                           hintStyle: TextWidget.textStyle(
                                               fontSize: 12,
                                               theme: theme.isDarkMode,
-                                              color: Colors.grey,
+                                              color: theme.isDarkMode
+                                                  ? colors.textSecondaryDark
+                                                  : colors.textSecondaryLight,
                                               fw: 3),
                                         ),
                                         inputFormatters: [
@@ -629,7 +680,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                         TextWidget.captionText(
                                             text: "${auth.passError}",
                                             theme: false,
-                                            color: colors.kColorRedText,
+                                            color: theme.isDarkMode
+                                                ? colors.lossDark
+                                                : colors.lossLight,
                                             fw: 0)
                                       ],
                                     ]),
@@ -647,10 +700,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                                       .isEmpty ||
                                                   auth.passCtrl.text.isEmpty)
                                           ? theme.isDarkMode
-                                              ? const Color(0xFF002A8F)
+                                              ? colors.primaryDark
                                                   .withOpacity(0.5)
                                               : colors.primaryLight
-                                                  .withOpacity(0.3)
+                                                  .withOpacity(0.5)
                                           : theme.isDarkMode
                                               ? colors.primaryDark
                                               : colors.primaryLight,
@@ -676,13 +729,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                           theme: false,
                                           color: !theme.isDarkMode
                                               ? auth.isDisableBtn
-                                                  ? const Color(0xffFFFFFF)
+                                                  ? colors.colorWhite
                                                       .withOpacity(0.5)
-                                                  : const Color(0xffFFFFFF)
+                                                  : colors.colorWhite
                                               : auth.isDisableBtn
-                                                  ? const Color(0xffFFFFFF)
+                                                  ? colors.colorWhite
                                                       .withOpacity(0.5)
-                                                  : const Color(0xffFFFFFF),
+                                                  : colors.colorWhite,
                                           fw: 2),
                                 ),
                               ),

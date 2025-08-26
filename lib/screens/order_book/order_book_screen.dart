@@ -83,12 +83,12 @@ class _OrderBookScreenState extends ConsumerState<OrderBookScreen>
                         tabAlignment: TabAlignment.start,
                         isScrollable: true,
                         indicatorSize: TabBarIndicatorSize.label,
-                        indicatorColor:
-                            colors.colorWhite, // hide default underline
+                        // indicatorColor:
+                        //    theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight, // hide default underline
                         indicator: BoxDecoration(
                           // pill-shaped highlight[4]
-                          color: const Color(0xffF1F3F8),
-                          borderRadius: BorderRadius.circular(6),
+                          color: theme.isDarkMode ? colors.searchBgDark : const Color(0xffF1F3F8),
+                          borderRadius: BorderRadius.circular(5),
                           // border: Border.all(
                           //   color: theme.isDarkMode
                           //       ? colors.darkColorDivider
@@ -98,18 +98,22 @@ class _OrderBookScreenState extends ConsumerState<OrderBookScreen>
                         // labelColor: theme.isDarkMode
                         //     ? colors.colorLightBlue
                         //     : colors.colorBlue,
-                        unselectedLabelColor: const Color(0XFF777777),
+                        unselectedLabelColor: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                         labelStyle: TextWidget.textStyle(
-                            fontSize: 14, theme: false, fw: 1),
+                            fontSize: 14, theme: false, fw: 1, color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight),
                         unselectedLabelStyle: TextWidget.textStyle(
                             fontSize: 14,
                             theme: false,
+                            color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                             fw: 0,
                             letterSpacing: -0.28),
                         labelPadding: const EdgeInsets.symmetric(horizontal: 4),
 
                         // build the "Open 4" badge and the rest of the tabs
-                        tabs: orderBook.orderTabName.map((tabString) {
+                        tabs: orderBook.orderTabName.asMap().entries.map((entry) {
+                          final index = entry.key;
+                          final tabString = entry.value;
+                          
                           /// If the value looks like "Open 4", split it once on the space
                           final parts = tabString.text?.split(' ') ??
                               []; // Dart's split()[3]
@@ -118,39 +122,45 @@ class _OrderBookScreenState extends ConsumerState<OrderBookScreen>
                               parts.length > 1 ? parts[1] : null; // "4" or null
 
                           return Tab(
-                            child: Padding(
-                              padding: const EdgeInsets.only(
-                                  left: 10, right: 10, top: 0, bottom: 0),
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  TextWidget.paraText(
-                                      text: title,
-                                      theme: false,
-                                      color: theme.isDarkMode
-                                          ? colors.textPrimaryDark
-                                          : colors.textPrimaryLight,
-                                      fw: 3),
-                                  if (badge != null) ...[
-                                    const SizedBox(width: 3),
-                                    Container(
-                                      margin: const EdgeInsets.only(bottom: 6),
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 4, vertical: 1),
-                                      // decoration: BoxDecoration(
-                                      //   color: colors.colorWhite,
-                                      //   borderRadius: BorderRadius.circular(4),
-                                      // ),
-                                      child: Text(
-                                        badge,
-                                        style: TextWidget.textStyle(
-                                            fontSize: 12, theme: false, fw: 3),
-                                      ),
-                                    ),
-                                  ],
-                                ],
-                              ),
+                            child: Builder(
+                              builder: (context) {
+                                final isSelected = orderBook.tabCtrl.index == index;
+                                
+                                return Padding(
+                                  padding: const EdgeInsets.only(
+                                      left: 10, right: 10, top: 0, bottom: 0),
+                                  child: Row(
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      TextWidget.paraText(
+                                          text: title,
+                                          theme: false,
+                                           color: isSelected ? theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight :  theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                                          fw: isSelected ? 2 : 3),
+                                      if (badge != null) ...[
+                                        const SizedBox(width: 3),
+                                        Container(
+                                          margin: const EdgeInsets.only(bottom: 6),
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 4, vertical: 1),
+                                          // decoration: BoxDecoration(
+                                          //   color: colors.colorWhite,
+                                          //   borderRadius: BorderRadius.circular(4),
+                                          // ),
+                                          child: Text(
+                                            badge,
+                                            style: TextWidget.textStyle(
+                                                fontSize: 12, theme: false, 
+                                                color: isSelected ? theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight :  theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight, fw : isSelected ? 2 : 3),
+                                                
+                                          ),
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                );
+                              },
                             ),
                           );
                         }).toList(),
@@ -212,7 +222,7 @@ class _OrderBookScreenState extends ConsumerState<OrderBookScreen>
         child: Container(
           height: 40,
           decoration: BoxDecoration(
-            color: const Color(0xffF1F3F8).withOpacity(0.5),
+          color: theme.isDarkMode ? colors.searchBgDark : colors.searchBg,
             borderRadius: BorderRadius.circular(5),
           ),
           child: Row(
@@ -220,9 +230,10 @@ class _OrderBookScreenState extends ConsumerState<OrderBookScreen>
               const SizedBox(width: 12),
               SvgPicture.asset(
                 assets.searchIcon,
-                width: 14,
-                height: 14,
-                color: const Color(0xff121212),
+                width: 20,
+                height: 20,
+                fit: BoxFit.scaleDown,
+                color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
               ),
               const SizedBox(width: 8),
               Expanded(
@@ -232,7 +243,7 @@ class _OrderBookScreenState extends ConsumerState<OrderBookScreen>
                   textCapitalization: TextCapitalization.characters,
                   inputFormatters: [UpperCaseTextFormatter()],
                   style: TextWidget.textStyle(
-                    fontSize: 14,
+                    fontSize: 16,
                     theme: theme.isDarkMode,
                     color: theme.isDarkMode
                         ? colors.textPrimaryDark
@@ -258,18 +269,30 @@ class _OrderBookScreenState extends ConsumerState<OrderBookScreen>
                 ),
               ),
               if (order.orderSearchCtrl.text.isNotEmpty)
-                InkWell(
-                  onTap: () {
-                    FocusScope.of(context).unfocus();
-                    order.clearOrderSearch();
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    child: SvgPicture.asset(
-                      assets.removeIcon,
-                      width: 14,
-                      height: 14,
-                      color: const Color(0xff121212),
+                Material(
+                   color: Colors.transparent,
+                      shape: const CircleBorder(),
+                  child: InkWell(
+                   borderRadius: BorderRadius.circular(20),
+                        splashColor: theme.isDarkMode
+                            ? Colors.white.withOpacity(0.15)
+                            : Colors.black.withOpacity(0.15),
+                        highlightColor: theme.isDarkMode
+                            ? Colors.white.withOpacity(0.08)
+                            : Colors.black.withOpacity(0.08),
+                    onTap: () {
+                      FocusScope.of(context).unfocus();
+                      order.clearOrderSearch();
+                    },
+                    child: Padding(
+                       padding: const EdgeInsets.all(6.0),
+                      child: SvgPicture.asset(
+                        assets.removeIcon,
+                        width: 20,
+                        height: 20,
+                         fit: BoxFit.scaleDown,
+                               color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                      ),
                     ),
                   ),
                 ),
@@ -314,7 +337,7 @@ class _OrderBookScreenState extends ConsumerState<OrderBookScreen>
                       assets.filterIcon,
                       width: 14,
                       height: 14,
-                      color: colors.textPrimaryLight,
+                      color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                     ),
                   ),
                 ),
@@ -366,11 +389,18 @@ class _CustomTabBarViewState extends State<_CustomTabBarView> {
       final newIndex = widget.controller.index;
 
       if (_pageController.hasClients && currentPage != newIndex) {
-        _pageController.animateToPage(
-          newIndex,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.ease,
-        );
+        // Use jumpToPage for distant tabs to avoid scrolling through all intermediate tabs
+        // Use animateToPage only for adjacent tabs (distance of 1)
+        final distance = (currentPage! - newIndex).abs();
+        if (distance > 1) {
+          _pageController.jumpToPage(newIndex);
+        } else {
+          _pageController.animateToPage(
+            newIndex,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.ease,
+          );
+        }
       }
     });
   }

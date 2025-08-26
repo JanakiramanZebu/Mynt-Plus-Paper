@@ -17,10 +17,12 @@ import '../provider/auth_provider.dart';
 import '../provider/fund_provider.dart';
 import '../provider/index_list_provider.dart';
 import '../provider/market_watch_provider.dart';
+import '../provider/mf_provider.dart';
 import '../provider/network_state_provider.dart';
 import '../provider/notification_provider.dart';
 import '../provider/order_provider.dart';
 import '../provider/portfolio_provider.dart';
+import '../provider/stocks_provider.dart';
 import '../provider/thems.dart';
 import '../provider/transcation_provider.dart';
 import '../provider/user_profile_provider.dart';
@@ -440,7 +442,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         shadowColor: isDarkMode ? colors.darkColorDivider : colors.colorDivider,
         elevation: 0,
         backgroundColor:
-            isDarkMode ? const Color(0xff121212) : colors.colorWhite,
+            isDarkMode ? colors.colorBlack : colors.colorWhite,
         automaticallyImplyLeading: false,
         title: null,
         bottom: _buildAppBarBottom(selectedTab),
@@ -659,13 +661,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
-          // _buildBottomNavItem(0, assets.home, "Home", selectedTab, theme),
+          _buildBottomNavItem(0, assets.home, "Home", selectedTab, theme),
           _buildBottomNavItem(
               1, assets.watchlistIcon, "Watchlists", selectedTab, theme),
           _buildBottomNavItem(
               2, assets.portfolioIcon, "Portfolio", selectedTab, theme),
-          _buildBottomNavItem(
-              3, assets.mfIcon, "Mutual Fund", selectedTab, theme),
+          // _buildBottomNavItem(
+          //     3, assets.mfIcon, "Mutual Fund", selectedTab, theme),
           _buildBottomNavItem(4, assets.profileIcon, uid, selectedTab, theme,
               useHeight: true, height: 18),
         ],
@@ -689,9 +691,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             // Always allow navigation taps regardless of internet status
             // This ensures UI stays interactive even during reconnection
             switch (index) {
-              // case 0:
-              //   _handleDashboardTap();
-              //   break;
+              case 0:
+                _handleDashboardTap();
+                break;
               case 1:
                 _handleWatchlistTap();
                 break;
@@ -741,11 +743,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                 Text(
                   label,
                   style: TextWidget.textStyle(
-                    fontSize: 12,
-                    color: _getBottomNavColor(theme, isSelected),
-                    theme: theme.isDarkMode, 
-                    // fw: isSelected ? 1 : 00
-                  ),
+                      fontSize: 12,
+                      color: _getBottomNavColor(theme, isSelected),
+                      theme: theme.isDarkMode,
+                      fw: isSelected ? 2 : null),
                   textAlign: TextAlign.center,
                   // softWrap: true,
                   // maxLines: 1,
@@ -762,11 +763,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   // Helper for nav item color
   Color _getBottomNavColor(ThemesProvider theme, bool isSelected) {
     if (theme.isDarkMode && isSelected) {
-      return colors.colorLightBlue;
-    } else if (isSelected) {
-      return colors.colorBlue;
+      return colors.secondaryDark;
+    } else if (theme.isDarkMode && !isSelected) {
+      return colors.textSecondaryDark;
+    } else if (!theme.isDarkMode && isSelected) {
+      return colors.secondaryLight;
     } else {
-      return colors.colorGrey;
+      return colors.textSecondaryLight;
     }
   }
 
@@ -777,12 +780,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     final marketWatchList = ref.read(marketWatchProvider);
     final orderProviderRef = ref.read(orderProvider);
     final fundProviderRef = ref.read(fundProvider);
+    final reportsprovider = ref.read(ledgerProvider);
+
 
     indexProvide.bottomMenu(0, context);
     portfolio.cancelTimer();
 
     // Unsubscribe from real-time data for other tabs
-    marketWatchList.requestMWScrip(context: context, isSubscribe: false);
     portfolio.requestWSHoldings(context: context, isSubscribe: false);
     orderProviderRef.requestWSOrderBook(context: context, isSubscribe: false);
     portfolio.requestWSPosition(context: context, isSubscribe: false);
@@ -796,8 +800,29 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
         // Funds data
         fundProviderRef.fetchFunds(context);
+        ref.read(stocksProvide).getNews();
+        ref.read(mfProvider).fetchEtfCategory();
       }
     });
+
+     reportsprovider.calendarProvider();
+    // Initialize calendar provider
+    final currentFY = reportsprovider.availableFinancialYears.first;
+    if ((reportsprovider.hasDataForAllSegments)) {
+         reportsprovider.fetchDataForAllSegmentsIfEmpty(
+          context,
+          reportsprovider.startDate,
+          reportsprovider.today,
+        );
+      }
+    reportsprovider.setFinancialYear(currentFY);
+    reportsprovider.setSegment(reportsprovider.availableSegments.first);
+    if (reportsprovider.ledgerAllData == null) {
+          await reportsprovider.getCurrentDate('else');
+          reportsprovider.fetchLegerData(
+              context, reportsprovider.startDate, reportsprovider.endDate);
+        }
+
   }
 
   void _handleWatchlistTap() async {
@@ -901,10 +926,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     // Prefetch only the current financial year for all segments
     final currentFY = reportsprovider.availableFinancialYears.first;
     if ((reportsprovider.pnlAllData == null)) {
-      for (final segment in reportsprovider.availableSegments) {
-        reportsprovider.prefetchAllCalendarPnlDataForSegment(context, segment,
-            years: [currentFY]);
-      }
+      // Calendar PnL data will be fetched when needed
     }
     // Immediately set the default year and segment to show correct data from cache
     reportsprovider.setFinancialYear(currentFY);
@@ -931,7 +953,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         fundProviderRef.fetchFunds(context);
 
         // IPOs
-        authProviderRef.setIposAPicalls();
+        // authProviderRef.setIposAPicalls();
         // mf
         authProviderRef.setmfapicalls(context);
 
@@ -983,12 +1005,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             reportsprovider.taxpnleq == null) {
           await reportsprovider.getYearlistTaxpnl();
           reportsprovider.getCurrentDate('');
-          reportsprovider.fetchtaxpnleqdata(
-              context, reportsprovider.yearforTaxpnl);
+          // reportsprovider.fetchtaxpnleqdata(
+          //     context, reportsprovider.yearforTaxpnl);
 
-          reportsprovider.taxpnlExTabchange(0);
-          reportsprovider.chargesforeqtaxpnl(
-              context, reportsprovider.yearforTaxpnl);
+          // reportsprovider.taxpnlExTabchange(0);
+          // reportsprovider.chargesforeqtaxpnl(
+          //     context, reportsprovider.yearforTaxpnl);
         }
         if (reportsprovider.tradebookdata == null) {
           await reportsprovider.getCurrentDate('tradebook');
@@ -1078,7 +1100,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                 // Use ref.read where state is not needed for building the dialog
                 final theme = ref.read(themeProvider);
                 return AlertDialog(
-                    backgroundColor: colors.colorWhite,
+                   backgroundColor: theme
+                                                                        .isDarkMode
+                                                                    ? const Color(
+                                                                        0xFF121212)
+                                                                    : const Color(
+                                                                        0xFFF1F3F8),
                     titlePadding:
                         const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                     shape: const RoundedRectangleBorder(
@@ -1118,9 +1145,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                                   child: Icon(
                                     Icons.close_rounded,
                                     size: 22,
-                                    color: theme.isDarkMode
-                                        ? colors.colorWhite
-                                        : colors.colorBlack,
+                                   color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                                   ),
                                 ),
                               ),
@@ -1135,8 +1160,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                               text: "Do you want to Exit the App?",
                               theme: false,
                               color: theme.isDarkMode
-                                  ? colors.textPrimaryDark
-                                  : colors.textPrimaryLight,
+                                                                                ? colors.textSecondaryDark
+                                                                                : colors.textPrimaryLight,
                               fw: 3,
                             ),
                           ),
@@ -1149,7 +1174,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                         child: OutlinedButton(
                           onPressed: () => Navigator.of(context).pop(true),
                           style: OutlinedButton.styleFrom(
-                            minimumSize: const Size(0, 40), // width, height
+                            minimumSize: const Size(0, 45), // width, height
                             side: BorderSide(
                                 color: colors
                                     .btnOutlinedBorder), // Outline border color
@@ -1163,7 +1188,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                             text: "Exit",
                             color: colors.colorWhite,
                             theme: theme.isDarkMode,
-                            fw: 0,
+                            fw: 2,
                           ),
                         ),
                       ),

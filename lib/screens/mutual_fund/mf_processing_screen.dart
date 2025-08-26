@@ -42,7 +42,7 @@ class _MfUPIProcessingScreen extends ConsumerState<MfUPIProcessingScreen> {
       await mfProv.getpaymentstatus(widget.data, context); // Use await if async
 
       final status = mfProv.statusCheckUpi?.status;
-      if ((status == 'PAYMENT REJECTED') || (status == 'PAYMENT COMPLETED')) {
+      if ( mfProv.statusCheckUpi?.stat == 'Not_Ok' || (status == 'PAYMENT REJECTED') || (status == 'PAYMENT COMPLETED' ||status ==  'PAYMENT PROCESSING')) {
         _timer?.cancel(); // This is safe even if already cancelled
         _autoPopTimer?.cancel(); // Cancel auto-pop if running
 
@@ -51,6 +51,10 @@ class _MfUPIProcessingScreen extends ConsumerState<MfUPIProcessingScreen> {
 
         if (Navigator.of(context).canPop()) {
           if (mfProv.paymentName == "UPI") {
+            Navigator.of(context).pop();
+          }
+          if (mfProv.paymentName == "NET BANKING") {
+            Navigator.of(context).pop();
             Navigator.of(context).pop();
           }
           showModalBottomSheet(
@@ -64,17 +68,18 @@ class _MfUPIProcessingScreen extends ConsumerState<MfUPIProcessingScreen> {
             ),
             builder: (context) => MfPaymentRespAlert(
               upiData: mfProv.statusCheckUpi?.toJson(),
+              conditionval : mfProv.statusCheckUpi?.stat == 'Not_Ok' ? mfProv.statusCheckUpi?.remarks : '',
             ),
           );
         }
         ScaffoldMessenger.of(context)
             .showSnackBar(warningMessage(context, '$status'));
             mfProv.fetchmfsiplist();
-      mfProv.fetchMfOrderbook(context);
+        mfProv.fetchMfOrderbook(context);
       }
     });
 
-    _autoPopTimer = Timer(const Duration(minutes: 1), () {
+    _autoPopTimer = Timer(const Duration(minutes: 3), () {
       _timer?.cancel(); // Also stop periodic timer here as a fallback
       mfProv.setterformftrigger(false);
       ref.read(mfProvider).IsPaymentCalled(false);
@@ -92,7 +97,7 @@ class _MfUPIProcessingScreen extends ConsumerState<MfUPIProcessingScreen> {
             ),
             builder: (context) => MfPaymentRespAlert(
               upiData: mfProv.statusCheckUpi?.toJson(),
-              timeout : 'timeout'
+              conditionval : 'timeout'
             ),
           );
         ScaffoldMessenger.of(context)
@@ -131,70 +136,62 @@ class _MfUPIProcessingScreen extends ConsumerState<MfUPIProcessingScreen> {
         onPopInvokedWithResult: (didPop, result) {
           if (didPop) return; // If system handled back, do nothing
         },
-        child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-            ),
-            child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const CustomDragHandler(),
-                  const SizedBox(height: 10),
-                  Container(
-                    padding: const EdgeInsets.only(top: 10, bottom: 5),
-                    alignment: Alignment.center,
-                    child: TextWidget.subText(
-                      text: 'Awaiting ${mfprovider.paymentName} confirmation',
+        child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const CustomDragHandler(),
+              const SizedBox(height: 10),
+              Container(
+                padding: const EdgeInsets.only(top: 10, bottom: 5),
+                alignment: Alignment.center,
+                child: TextWidget.subText(
+                  text: 'Awaiting ${mfprovider.paymentName} confirmation',
+                  theme: false,
+                  color: theme.isDarkMode
+                      ? colors.textPrimaryDark
+                      : colors.textPrimaryLight,
+                ),
+              ),
+              SizedBox(
+                  width: MediaQuery.of(context).size.width,
+                  child: Column(children: [
+                    // const ListDivider(),
+                    const SizedBox(height: 16),
+                    const ProgressiveDotsLoader(),
+                    const SizedBox(height: 16),
+        
+                    TextWidget.paraText(
+                      text: 'This will take a few seconds.',
                       theme: false,
-                      color: theme.isDarkMode
-                          ? colors.textPrimaryDark
-                          : colors.textPrimaryLight,
+                      color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                     ),
-                  ),
-                  SizedBox(
-                      width: MediaQuery.of(context).size.width,
-                      child: Column(children: [
-                        // const ListDivider(),
-                        const SizedBox(height: 16),
-                        const ProgressiveDotsLoader(),
-                        const SizedBox(height: 16),
-
-                        TextWidget.subText(
-                          text: 'This will take a few seconds.',
-                          theme: false,
-                          color: colors.textPrimaryLight,
+                  ])),
+              const SizedBox(height: 24),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: SizedBox(
+                    width: MediaQuery.of(context).size.width,
+                    child: ElevatedButton(
+                        onPressed: _triggerButtonAction,
+                        style: ElevatedButton.styleFrom(
+                          elevation: 0,
+                          minimumSize: const Size(0, 45),
+                          backgroundColor: theme.isDarkMode
+                              ? colors.primaryDark
+                              : colors.primaryLight,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(5),
+                          ),
                         ),
-                      ])),
-                  const SizedBox(height: 24),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    child: SizedBox(
-                        width: MediaQuery.of(context).size.width,
-                        child: ElevatedButton(
-                            onPressed: _triggerButtonAction,
-                            style: ElevatedButton.styleFrom(
-                              elevation: 0,
-                              minimumSize: const Size(0, 45),
-                              backgroundColor: theme.isDarkMode
-                                  ? colors.primaryDark
-                                  : colors.primaryLight,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(5),
-                              ),
-                            ),
-                            child: TextWidget.subText(
-                                text: "Cancel Transaction",
-                                theme: false,
-                                color: colors.colorWhite,
-                                fw: 2))),
-                  ),
-                  SizedBox(
-                    height: 10,
-                  )
-                ])));
+                        child: TextWidget.subText(
+                            text: "Cancel Transaction",
+                            theme: false,
+                            color: colors.colorWhite,
+                            fw: 2))),
+              ),
+             
+            ]));
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:intl/intl.dart';
 
 import '../../../models/order_book_model/order_book_model.dart';
 import '../../../provider/market_watch_provider.dart';
@@ -19,8 +20,6 @@ import 'create_basket.dart';
 
 class BasketList extends ConsumerWidget {
   const BasketList({super.key});
-
-
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -45,9 +44,13 @@ class BasketList extends ConsumerWidget {
             children: [
               Container(
                 decoration: BoxDecoration(
-                  color: colors.btnBg,
+                  color: theme.isDarkMode
+                      ? colors.textSecondaryDark.withOpacity(0.6)
+                      : colors.btnBg,
                   borderRadius: BorderRadius.circular(5),
-                  border: Border.all(color: colors.btnOutlinedBorder, width: 1),
+                  border: theme.isDarkMode
+                      ? null
+                      : Border.all(color: colors.btnOutlinedBorder, width: 1),
                 ),
                 child: Material(
                   color: Colors.transparent,
@@ -77,14 +80,14 @@ class BasketList extends ConsumerWidget {
                       },
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 5),
+                            horizontal: 12, vertical: 8),
                         child: TextWidget.subText(
                             text: "Create Basket",
                             theme: theme.isDarkMode,
                             color: theme.isDarkMode
-                                ? colors.primaryDark
+                                ? colors.colorWhite
                                 : colors.primaryLight,
-                            fw: 0),
+                            fw: 2),
                       )),
                 ),
               ),
@@ -92,177 +95,254 @@ class BasketList extends ConsumerWidget {
           ),
         ),
         basket.isBasketLoading
-            ? const SizedBox(height: 400, child: Center(child: CircularProgressIndicator()))
+            ? const SizedBox(
+                height: 400, child: Center(child: CircularProgressIndicator()))
             : basket.bsktList.isEmpty
-                ? SizedBox(height: 400, child: const NoDataFound())
-                : ListView.separated(
-                shrinkWrap: true,
-                itemCount: basket.bsktList.length,
-                itemBuilder: (BuildContext context, int index) {
-                  final bsktName = basket.bsktList[index]['bsketName'];
-                  
-                  return ListTile(
-                      onLongPress: () {
-                        showDialog(
-                          context: context,
-                          barrierDismissible: false,
-                          builder: (BuildContext context) {
-                            return StatefulBuilder(
-                              builder: (BuildContext context, StateSetter setDialogState) {
-                                return AlertDialog(
-                                  backgroundColor: colors.colorWhite,
-                                  titlePadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                                  shape: const RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.all(Radius.circular(8))),
-                                  scrollable: true,
-                                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                                  actionsPadding: const EdgeInsets.only(bottom: 16, right: 16, left: 16, top: 8),
-                                  insetPadding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
-                                  title: Column(
-                                    children: [
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.end,
+                ? const SizedBox(height: 400, child: NoDataFound())
+                : Expanded(
+                    child: ListView.separated(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      shrinkWrap: true,
+                      itemCount: basket.bsktList.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        final bsktName = basket.bsktList[index]['bsketName'];
+
+                        return ListTile(
+                          dense: false,
+                          contentPadding:
+                              const EdgeInsets.symmetric(horizontal: 16),
+                          onLongPress: () {
+                            showDialog(
+                              context: context,
+                              barrierDismissible: false,
+                              builder: (BuildContext context) {
+                                return StatefulBuilder(
+                                  builder: (BuildContext context,
+                                      StateSetter setDialogState) {
+                                    return AlertDialog(
+                                      backgroundColor: colors.colorWhite,
+                                      titlePadding: const EdgeInsets.symmetric(
+                                          horizontal: 8, vertical: 8),
+                                      shape: const RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.all(
+                                              Radius.circular(8))),
+                                      scrollable: true,
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                              horizontal: 12, vertical: 12),
+                                      actionsPadding: const EdgeInsets.only(
+                                          bottom: 16,
+                                          right: 16,
+                                          left: 16,
+                                          top: 8),
+                                      insetPadding: const EdgeInsets.symmetric(
+                                          horizontal: 30, vertical: 12),
+                                      title: Column(
                                         children: [
-                                          Material(
-                                            color: Colors.transparent,
-                                            shape: const CircleBorder(),
-                                            child: InkWell(
-                                              onTap: () => Navigator.pop(context),
-                                              borderRadius: BorderRadius.circular(20),
-                                              splashColor: theme.isDarkMode
-                                                  ? colors.splashColorDark
-                                                  : colors.splashColorLight,
-                                              highlightColor: theme.isDarkMode
-                                                  ? colors.splashColorDark
-                                                  : colors.splashColorLight,
-                                              child: Padding(
-                                                padding: const EdgeInsets.all(6.0),
-                                                child: Icon(
-                                                  Icons.close_rounded,
-                                                  size: 22,
-                                                  color: theme.isDarkMode
-                                                      ? const Color(0xffBDBDBD)
-                                                      : colors.colorGrey,
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.end,
+                                            children: [
+                                              Material(
+                                                color: Colors.transparent,
+                                                shape: const CircleBorder(),
+                                                child: InkWell(
+                                                  onTap: () =>
+                                                      Navigator.pop(context),
+                                                  borderRadius:
+                                                      BorderRadius.circular(20),
+                                                  splashColor: theme.isDarkMode
+                                                      ? colors.splashColorDark
+                                                      : colors.splashColorLight,
+                                                  highlightColor: theme
+                                                          .isDarkMode
+                                                      ? colors.splashColorDark
+                                                      : colors.splashColorLight,
+                                                  child: Padding(
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                            6.0),
+                                                    child: Icon(
+                                                      Icons.close_rounded,
+                                                      size: 22,
+                                                      color: theme.isDarkMode
+                                                          ? const Color(
+                                                              0xffBDBDBD)
+                                                          : colors.colorGrey,
+                                                    ),
+                                                  ),
                                                 ),
                                               ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 12),
+                                          SizedBox(
+                                            width: MediaQuery.of(context)
+                                                .size
+                                                .width,
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.center,
+                                              children: [
+                                                const SizedBox(height: 5),
+                                                TextWidget.subText(
+                                                  text:
+                                                      "Are you sure you want to delete this basket ${bsktName.toString().toUpperCase()}?",
+                                                  theme: theme.isDarkMode,
+                                                  color: theme.isDarkMode
+                                                      ? colors.textPrimaryDark
+                                                      : colors.textPrimaryLight,
+                                                  fw: 3,
+                                                  align: TextAlign.center,
+                                                ),
+                                              ],
                                             ),
                                           ),
                                         ],
                                       ),
-                                      const SizedBox(height: 12),
-                                      SizedBox(
-                                        width: MediaQuery.of(context).size.width,
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.center,
-                                          children: [
-                                            const SizedBox(height: 5),
-                                            TextWidget.subText(
-                                              text: "Are you sure you want to delete this basket ${bsktName.toString().toUpperCase()}?",
-                                              theme: theme.isDarkMode,
-                                              color: theme.isDarkMode
-                                                  ? colors.textPrimaryDark
-                                                  : colors.textPrimaryLight,
-                                              fw: 3,
-                                              align: TextAlign.center,
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  actions: [
-                                    SizedBox(
-                                      width: double.infinity,
-                                      child: OutlinedButton(
-                                        onPressed: _isDeleting
-                                            ? null
-                                            : () async {
-                                                setDialogState(() {
-                                                  _isDeleting = true;
-                                                });
-                                                Navigator.pop(context);
-                                                await basket.removeBasket(index);
-                                                if (context.mounted) {
-                                                  setDialogState(() {
-                                                    _isDeleting = false;
-                                                  });
-                                                }
-                                              },
-                                        style: OutlinedButton.styleFrom(
-                                          minimumSize: const Size(0, 40),
-                                          side: BorderSide(color: colors.btnOutlinedBorder),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(5),
-                                          ),
-                                          backgroundColor: colors.primaryDark,
-                                        ),
-                                        child: _isDeleting
-                                            ? SizedBox(
-                                                width: 18,
-                                                height: 20,
-                                                child: CircularProgressIndicator(
-                                                  strokeWidth: 2,
-                                                  color: theme.isDarkMode
-                                                      ? colors.textSecondaryDark
-                                                      : colors.textSecondaryLight,
-                                                ),
-                                              )
-                                            : TextWidget.titleText(
-                                                text: "Delete",
-                                                theme: theme.isDarkMode,
-                                                color: !theme.isDarkMode
-                                                    ? colors.colorWhite
-                                                    : colors.colorBlack,
-                                                fw: 0,
+                                      actions: [
+                                        SizedBox(
+                                          width: double.infinity,
+                                          child: OutlinedButton(
+                                            onPressed: _isDeleting
+                                                ? null
+                                                : () async {
+                                                    setDialogState(() {
+                                                      _isDeleting = true;
+                                                    });
+                                                    Navigator.pop(context);
+                                                    await basket
+                                                        .removeBasket(index);
+                                                    if (context.mounted) {
+                                                      setDialogState(() {
+                                                        _isDeleting = false;
+                                                      });
+                                                    }
+                                                  },
+                                            style: OutlinedButton.styleFrom(
+                                              minimumSize: const Size(0, 40),
+                                              side: BorderSide(
+                                                  color:
+                                                      colors.btnOutlinedBorder),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(5),
                                               ),
-                                      ),
-                                    ),
-                                  ],
+                                              backgroundColor:
+                                                  colors.primaryDark,
+                                            ),
+                                            child: _isDeleting
+                                                ? SizedBox(
+                                                    width: 18,
+                                                    height: 20,
+                                                    child:
+                                                        CircularProgressIndicator(
+                                                      strokeWidth: 2,
+                                                      color: theme.isDarkMode
+                                                          ? colors
+                                                              .textSecondaryDark
+                                                          : colors
+                                                              .textSecondaryLight,
+                                                    ),
+                                                  )
+                                                : TextWidget.titleText(
+                                                    text: "Delete",
+                                                    theme: theme.isDarkMode,
+                                                    color: !theme.isDarkMode
+                                                        ? colors.colorWhite
+                                                        : colors.colorBlack,
+                                                    fw: 0,
+                                                  ),
+                                          ),
+                                        ),
+                                      ],
+                                    );
+                                  },
                                 );
                               },
                             );
                           },
+                          onTap: () async {
+                            await basket.fetchBasketMargin();
+                            basket.chngBsktName(
+                                basket.bsktList[index]['bsketName'],
+                                context,
+                                false);
+                          },
+                          minLeadingWidth: 25,
+                          leading: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              SvgPicture.asset(
+                                assets.basketdashboard,
+                                color: theme.isDarkMode
+                                    ? colors.textSecondaryDark
+                                    : colors.textSecondaryLight,
+                              ),
+                            ],
+                          ),
+                          title: Padding(
+                            padding: const EdgeInsets.only(bottom: 4),
+                            child: TextWidget.subText(
+                              text: bsktName,
+                              theme: false,
+                              color: theme.isDarkMode
+                                  ? colors.textPrimaryDark
+                                  : colors.textPrimaryLight,
+                              fw: 0,
+                            ),
+                          ),
+                          subtitle: Padding(
+                            padding: const EdgeInsets.only(top: 4),
+                            child: Row(
+                              children: [
+                                TextWidget.paraText(
+                                  text:
+                                      "${basket.bsktList[index]['createdDate']}",
+                                  theme: false,
+                                  color: theme.isDarkMode
+                                      ? colors.textSecondaryDark
+                                      : colors.textSecondaryLight,
+                                  fw: 0,
+                                ),
+                                // const SizedBox(width: 4),
+                                // TextWidget.paraText(
+                                //   text:
+                                //       " - ${basket.bsktList[index]['curLength']} items",
+                                //   theme: false,
+                                //   color: colors.textPrimary,
+                                // ),
+                              ],
+                            ),
+                          ),
+                          trailing: Container(
+                            width: 20,
+                            height: 20,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: theme.isDarkMode
+                                    ? colors.textSecondaryDark
+                                    : colors.textPrimaryLight,
+                              ),
+                            ),
+                            alignment: Alignment.center,
+                            child: TextWidget.paraText(
+                              text: "${basket.bsktList[index]['curLength']}",
+                              theme: false,
+                              color: theme.isDarkMode
+                                  ? colors.textSecondaryDark
+                                  : colors.textPrimaryLight,
+                              fw: 0,
+                            ),
+                          ),
                         );
                       },
-                      onTap: () async {
-                        await basket.fetchBasketMargin();
-                        basket.chngBsktName(basket.bsktList[index]['bsketName'], context, false);
+                      separatorBuilder: (BuildContext context, int index) {
+                        return const ListDivider();
                       },
-                      leading: Icon(
-                        Icons.folder,
-                        color: theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
-                        size: 28,
-                      ),
-                      title: TextWidget.subText(
-                        text: bsktName,
-                        theme: false,
-                        color: theme.isDarkMode
-                            ? colors.textPrimaryDark
-                            : colors.textPrimaryLight,
-                        fw: 3,
-                      ),
-                      subtitle: TextWidget.captionText(
-                        text: "Created: ${basket.bsktList[index]['createdDate']} • ${basket.bsktList[index]['curLength']} items",
-                        theme: false,
-                        color: theme.isDarkMode
-                            ? colors.textSecondaryDark
-                            : colors.textSecondaryLight,
-                        fw: 0,
-                      ),
-                      trailing: TextWidget.captionText(
-                        text: "${basket.bsktList[index]['curLength']}",
-                        theme: false,
-                        color: theme.isDarkMode
-                            ? colors.textSecondaryDark
-                            : colors.textSecondaryLight,
-                        fw: 1,
-                      ),
-                  );
-                },
-                separatorBuilder: (BuildContext context, int index) {
-                  return const ListDivider();
-                },
-              ),
+                    ),
+                  ),
       ],
     );
   }
@@ -289,12 +369,12 @@ class BasketScripList extends ConsumerWidget {
   }
 
   /// Checks if the current basket has any orders placed
-  bool _hasOrdersPlacedInBasket(String basketName, OrderProvider orderProvider) {
+  bool _hasOrdersPlacedInBasket(
+      String basketName, OrderProvider orderProvider) {
     // Check if this basket has any order tracking
-    return orderProvider.basketOrderIds.containsKey(basketName) && 
-           orderProvider.basketOrderIds[basketName]!.isNotEmpty;
+    return orderProvider.basketOrderIds.containsKey(basketName) &&
+        orderProvider.basketOrderIds[basketName]!.isNotEmpty;
   }
-
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -308,33 +388,55 @@ class BasketScripList extends ConsumerWidget {
             centerTitle: false,
             titleSpacing: 6,
             leading: const CustomBackBtn(),
-            shadowColor: const Color(0xffECEFF3),
-            title: TextWidget.subText(
-                text: "${bsktName}   (${basket.bsktScripList.length} / ${20})",
+            title: TextWidget.titleText(
+                text:
+                    "${bsktName}   (${basket.bsktScripList.length} / ${basket.frezQtyOrderSliceMaxLimit})",
                 theme: false,
-                color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                color: theme.isDarkMode
+                    ? colors.textPrimaryDark
+                    : colors.textPrimaryLight,
                 fw: 1),
-            actions: basket.bsktScripList.length < 20
+            actions: basket.bsktScripList.length < basket.frezQtyOrderSliceMaxLimit
                 ? [
                     Row(
                       children: [
                         Container(
-                            margin: const EdgeInsets.only(right: 8),
-                            height: 30,
-                            child: OutlinedButton(
-                                onPressed: () async {
-                                  // Check if basket already has 20 items
-                                  if (basket.bsktScripList.length >= 20) {
+                          margin: const EdgeInsets.only(right: 16),
+                          decoration: BoxDecoration(
+                            color: theme.isDarkMode
+                                ? colors.textSecondaryDark.withOpacity(0.6)
+                                : colors.btnBg,
+                            borderRadius: BorderRadius.circular(5),
+                            border: theme.isDarkMode
+                                ? null
+                                : Border.all(
+                                    color: colors.btnOutlinedBorder,
+                                    width: 1),
+                          ),
+                          child: Material(
+                            color: Colors.transparent,
+                            shape: const BeveledRectangleBorder(),
+                            child: InkWell(
+                                customBorder: const BeveledRectangleBorder(),
+                                splashColor: theme.isDarkMode
+                                    ? colors.splashColorDark
+                                    : colors.splashColorLight,
+                                highlightColor: theme.isDarkMode
+                                    ? colors.highlightDark
+                                    : colors.highlightLight,
+                                onTap: () async {
+                                  // Check if basket already has frezQtyOrderSliceMaxLimit items
+                                  if (basket.bsktScripList.length >= basket.frezQtyOrderSliceMaxLimit) {
                                     ScaffoldMessenger.of(context)
                                         .showSnackBar(SnackBar(
                                       content: Text(
-                                          "Basket limit reached. Please create a new basket as you are exceeding the 20 item limit."),
+                                          "Basket limit reached. Please create a new basket as you are exceeding the ${basket.frezQtyOrderSliceMaxLimit} item limit."),
                                       backgroundColor: colors.darkred,
-                                      duration: Duration(seconds: 3),
+                                      duration: const Duration(seconds: 3),
                                     ));
                                     return;
                                   }
-
+    
                                   await ref
                                       .watch(marketWatchProvider)
                                       .searchClear();
@@ -342,736 +444,780 @@ class BasketScripList extends ConsumerWidget {
                                       context, Routes.searchScrip,
                                       arguments: "Basket");
                                 },
-                                style: OutlinedButton.styleFrom(
-                                    side: BorderSide(
-                                        color: theme.isDarkMode
-                                            ? colors.colorGrey
-                                            : colors.colorBlack),
-                                    shape: const RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.all(
-                                            Radius.circular(32)))),
-                                child: TextWidget.paraText(
-                                    text: "Add symbol",
-                                    theme: false,
-                                    color: theme.isDarkMode
-                                        ? colors.colorWhite
-                                        : colors.colorBlack,
-                                    fw: 1))),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12, vertical: 8),
+                                  child: TextWidget.subText(
+                                      text: "Add symbol",
+                                      theme: theme.isDarkMode,
+                                      color: theme.isDarkMode
+                                          ? colors.colorWhite
+                                          : colors.primaryLight,
+                                      fw: 2),
+                                )),
+                          ),
+                        ),
                       ],
                     ),
                   ]
                 : null),
-        body: Column(children: [
-          Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                  color: theme.isDarkMode
-                      ? const Color(0xffB5C0CF).withOpacity(.15)
-                      : const Color(0xffF1F3F8)),
-              child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Margin Information Row
-                    Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              TextWidget.paraText(
+        body: SafeArea(
+          child: Column(children: [
+            Container(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Margin Information Row
+                      Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                TextWidget.subText(
                                   text: "Pre Trade Margin",
                                   theme: false,
-                                  color: const Color(0xff5E6B7D),
-                                  fw: 0),
-                              const SizedBox(height: 6),
-                              TextWidget.subText(
+                                  color: theme.isDarkMode
+                                      ? colors.textSecondaryDark
+                                      : colors.textSecondaryLight,
+                                ),
+                                const SizedBox(height: 6),
+                                TextWidget.subText(
                                   text: basket.bsktScripList.isEmpty ||
                                           basket.bsktOrderMargin == null
-                                      ? "₹0.00"
-                                      : "₹${basket.bsktOrderMargin!.marginusedtrade ?? 0.00}",
+                                      ? "0.00"
+                                      : "${basket.bsktOrderMargin!.marginusedtrade ?? 0.00}",
+                                  color: theme.isDarkMode
+                                      ? colors.textPrimaryDark
+                                      : colors.textPrimaryLight,
                                   theme: theme.isDarkMode,
-                                  fw: 0),
-                            ],
-                          ),
-                          Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                TextWidget.paraText(
+                                ),
+                              ],
+                            ),
+                            Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  TextWidget.subText(
                                     text: "Post Trade Margin",
                                     theme: false,
-                                    color: const Color(0xff5E6B7D),
-                                    fw: 0),
-                                const SizedBox(height: 6),
-                                TextWidget.titleText(
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                        : colors.textSecondaryLight,
+                                  ),
+                                  const SizedBox(height: 6),
+                                  TextWidget.subText(
                                     text: basket.bsktScripList.isEmpty ||
                                             basket.bsktOrderMargin == null
-                                        ? "₹0.00"
-                                        : "₹${basket.bsktOrderMargin!.marginused ?? 0.00}",
+                                        ? "0.00"
+                                        : "${basket.bsktOrderMargin!.marginused ?? 0.00}",
                                     theme: theme.isDarkMode,
-                                    fw: 0),
-                              ])
-                        ]),
-                  ])),
-          if (basket.bsktScripList.isNotEmpty &&
-              _hasMultipleExchanges(basket.bsktScripList))
+                                    color: theme.isDarkMode
+                                        ? colors.textPrimaryDark
+                                        : colors.textPrimaryLight,
+                                  ),
+                                ])
+                          ]),
+                    ])),
             Container(
-              margin: const EdgeInsets.only(top: 12),
-              padding: const EdgeInsets.symmetric(vertical: 3),
-              decoration: BoxDecoration(
-                  color: const Color(0xffe3f2fd),
-                  borderRadius: BorderRadius.circular(6)),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.error_outline, color: colors.darkred, size: 16),
-                  const SizedBox(width: 8),
-                  TextWidget.subText(
-                      text: "Basket should contain orders of only 1 exchange",
-                      theme: false,
-                      color: colors.darkred,
-                      fw: 0),
-                ],
-              ),
-            ),
-          Container(
-              padding: const EdgeInsets.symmetric(vertical: 3),
-              decoration: BoxDecoration(
-                  color: const Color(0xffe3f2fd),
-                  borderRadius: BorderRadius.circular(6)),
-              child:
-                  Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                SvgPicture.asset(assets.dInfo, color: colors.colorBlue),
-                TextWidget.paraText(
+                padding: const EdgeInsets.symmetric(vertical: 6),
+                decoration: BoxDecoration(
+                  color: theme.isDarkMode ? colors.primaryDark.withOpacity(0.3) : colors.primaryLight.withOpacity(0.3),
+                  // color: const Color(0xffe3f2fd),
+                ),
+                child:
+                    Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                  SvgPicture.asset(assets.dInfo, color: colors.colorBlue),
+                  TextWidget.paraText(
                     text: " On Script Tap to edit / long press to delete.",
                     theme: false,
-                    color: colors.colorBlue,
-                    fw: 0),
-              ])),
-          Expanded(
-              child: basket.bsktScripList.isEmpty
-                  ? const NoDataFound()
-                  : StreamBuilder<Map>(
-                      stream: ref.watch(websocketProvider).socketDataStream,
-                      builder: (context, snapshot) {
-                        final socketDatas = snapshot.data ?? {};
-
-                        // Check if we have socket data and need to update
-                        if (snapshot.hasData && socketDatas.isNotEmpty) {
-                          bool updated = false;
-
-                          // Update basket script list with real-time values
-                          for (var script in basket.bsktScripList) {
-                            final token = script['token']?.toString();
-                            if (token != null &&
-                                socketDatas.containsKey(token)) {
-                              final lp = socketDatas[token]['lp']?.toString();
-                              final pc = socketDatas[token]['pc']?.toString();
-
-                              if (lp != null && lp != "null") {
-                                if (script['lp']?.toString() != lp) {
-                                  script['lp'] = lp;
-                                  updated = true;
+                    color: theme.isDarkMode
+                        ? colors.secondaryDark
+                        : colors.secondaryLight,
+                  ),
+                ])),
+            Expanded(
+                child: basket.bsktScripList.isEmpty
+                    ? const NoDataFound()
+                    : StreamBuilder<Map>(
+                        stream: ref.watch(websocketProvider).socketDataStream,
+                        builder: (context, snapshot) {
+                          final socketDatas = snapshot.data ?? {};
+              
+                          // Check if we have socket data and need to update
+                          if (snapshot.hasData && socketDatas.isNotEmpty) {
+                            bool updated = false;
+              
+                            // Update basket script list with real-time values
+                            for (var script in basket.bsktScripList) {
+                              final token = script['token']?.toString();
+                              if (token != null &&
+                                  socketDatas.containsKey(token)) {
+                                final lp = socketDatas[token]['lp']?.toString();
+                                final pc = socketDatas[token]['pc']?.toString();
+              
+                                if (lp != null && lp != "null") {
+                                  if (script['lp']?.toString() != lp) {
+                                    script['lp'] = lp;
+                                    updated = true;
+                                  }
                                 }
-                              }
-
-                              if (pc != null && pc != "null") {
-                                if (script['pc']?.toString() != pc) {
-                                  script['pc'] = pc;
-                                  updated = true;
+              
+                                if (pc != null && pc != "null") {
+                                  if (script['pc']?.toString() != pc) {
+                                    script['pc'] = pc;
+                                    updated = true;
+                                  }
                                 }
                               }
                             }
-                          }
-
-                          // Force a refresh if we have updates
-                          if (updated) {
-                            // Update in the next frame to avoid rebuild conflicts
-                            WidgetsBinding.instance.addPostFrameCallback((_) {
-                              if (context.mounted) {
-                                // This will trigger a rebuild with the new values
-                                basket.notifyBasketUpdates();
-                              }
-                            });
-                          }
-                        }
-
-                        return ListView.separated(
-                          shrinkWrap: true,
-                          itemCount: basket.bsktScripList.length,
-                          itemBuilder: (BuildContext context, int index) {
-                            if (basket.bsktScripList[index]['exch'] == "BFO" &&
-                                basket.bsktScripList[index]["dname"] !=
-                                    "null") {
-                              List<String> splitVal = basket
-                                  .bsktScripList[index]["dname"]
-                                  .toString()
-                                  .split(" ");
-
-                              basket.bsktScripList[index]['symbol'] =
-                                  splitVal[0];
-                              basket.bsktScripList[index]['expDate'] =
-                                  "${splitVal[1]} ${splitVal[2]}";
-                              basket.bsktScripList[index]['option'] =
-                                  splitVal.length > 4
-                                      ? "${splitVal[3]} ${splitVal[4]}"
-                                      : splitVal[3];
-                            } else {
-                              Map spilitSymbol = spilitTsym(
-                                  value:
-                                      "${basket.bsktScripList[index]['tsym']}");
-
-                              basket.bsktScripList[index]['symbol'] =
-                                  "${spilitSymbol["symbol"]}";
-                              basket.bsktScripList[index]['expDate'] =
-                                  "${spilitSymbol["expDate"]}";
-                              basket.bsktScripList[index]['option'] =
-                                  "${spilitSymbol["option"]}";
+              
+                            // Force a refresh if we have updates
+                            if (updated) {
+                              // Update in the next frame to avoid rebuild conflicts
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                if (context.mounted) {
+                                  // This will trigger a rebuild with the new values
+                                  basket.notifyBasketUpdates();
+                                }
+                              });
                             }
-
-                            return InkWell(
-                              onLongPress: () async {
-                                showDialog(
-                                    context: context,
-                                    builder: (BuildContext context) {
-                                      return AlertDialog(
-                                          backgroundColor: theme.isDarkMode
-                                              ? const Color.fromARGB(
-                                                  255, 18, 18, 18)
-                                              : colors.colorWhite,
-                                          shape: const RoundedRectangleBorder(
+                          }
+              
+                          return ListView.separated(
+                            shrinkWrap: true,
+                            itemCount: basket.bsktScripList.length,
+                            separatorBuilder: (_, __) => const ListDivider(),
+                            itemBuilder: (BuildContext context, int index) {
+                              if (basket.bsktScripList[index]['exch'] ==
+                                      "BFO" &&
+                                  basket.bsktScripList[index]["dname"] !=
+                                      "null") {
+                                List<String> splitVal = basket
+                                    .bsktScripList[index]["dname"]
+                                    .toString()
+                                    .split(" ");
+              
+                                basket.bsktScripList[index]['symbol'] =
+                                    splitVal[0];
+                                basket.bsktScripList[index]['expDate'] =
+                                    "${splitVal[1]} ${splitVal[2]}";
+                                basket.bsktScripList[index]['option'] =
+                                    splitVal.length > 4
+                                        ? "${splitVal[3]} ${splitVal[4]}"
+                                        : splitVal[3];
+                              } else {
+                                Map spilitSymbol = spilitTsym(
+                                    value:
+                                        "${basket.bsktScripList[index]['tsym']}");
+              
+                                basket.bsktScripList[index]['symbol'] =
+                                    "${spilitSymbol["symbol"]}";
+                                basket.bsktScripList[index]['expDate'] =
+                                    "${spilitSymbol["expDate"]}";
+                                basket.bsktScripList[index]['option'] =
+                                    "${spilitSymbol["option"]}";
+                              }
+              
+                              return InkWell(
+                                onLongPress: () async {
+                                  showDialog(
+                                      context: context,
+                                      barrierDismissible: false,
+                                      builder: (BuildContext context) {
+                                        return AlertDialog(
+                                             backgroundColor: theme
+                                                                        .isDarkMode
+                                                                    ? const Color(
+                                                                        0xFF121212)
+                                                                    : const Color(
+                                                                        0xFFF1F3F8),
+                                            titlePadding:
+                                                const EdgeInsets.symmetric(
+                                                    horizontal: 8, vertical: 8),
+                                            shape: const RoundedRectangleBorder(
                                               borderRadius: BorderRadius.all(
-                                                  Radius.circular(10))),
-                                          scrollable: true,
-                                          contentPadding:
-                                              const EdgeInsets.symmetric(
-                                                  horizontal: 16),
-                                          insetPadding:
-                                              const EdgeInsets.symmetric(
-                                                  horizontal: 24),
-                                          titlePadding: const EdgeInsets.all(0),
-                                          title: Padding(
-                                            padding: const EdgeInsets.all(10),
-                                            child: SvgPicture.asset(
-                                                "assets/icon/ipo_cancel_icon.svg"),
-                                          ),
-                                          content: Column(
-                                            children: [
-                                              TextWidget.titleText(
-                                                  text:
-                                                      "Are you sure you want to delete this basket Script ${basket.bsktScripList[index]['symbol']?.replaceAll("-EQ", "")}",
-                                                  theme: theme.isDarkMode,
-                                                  fw: 1,
-                                                  align: TextAlign.center),
-                                            ],
-                                          ),
-                                          actions: [
-                                            Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                children: [
-                                                  Expanded(
-                                                    child: ElevatedButton(
-                                                        style: ElevatedButton
-                                                            .styleFrom(
-                                                                elevation: 0,
-                                                                backgroundColor:
-                                                                    const Color(
-                                                                        0xffF1F3F8),
-                                                                shape:
-                                                                    RoundedRectangleBorder(
-                                                                  borderRadius:
-                                                                      BorderRadius
-                                                                          .circular(
-                                                                              50),
-                                                                )),
-                                                        onPressed: () {
+                                                  Radius.circular(8)),
+                                            ),
+                                            scrollable: true,
+                                            contentPadding:
+                                                const EdgeInsets.symmetric(
+                                                    horizontal: 12,
+                                                    vertical: 12),
+                                            actionsPadding:
+                                                const EdgeInsets.only(
+                                                    bottom: 16,
+                                                    right: 16,
+                                                    left: 16,
+                                                    top: 8),
+                                            insetPadding:
+                                                const EdgeInsets.symmetric(
+                                                    horizontal: 30,
+                                                    vertical: 12),
+                                            title: Column(
+                                              children: [
+                                                Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.end,
+                                                  children: [
+                                                    Material(
+                                                      color: Colors.transparent,
+                                                      shape:
+                                                          const CircleBorder(),
+                                                      child: InkWell(
+                                                        onTap: () async {
+                                                          await Future.delayed(
+                                                              const Duration(
+                                                                  milliseconds:
+                                                                      150));
                                                           Navigator.pop(
                                                               context);
                                                         },
-                                                        child:
-                                                            TextWidget.paraText(
-                                                                text: "No",
-                                                                theme: theme
-                                                                      .isDarkMode,
-                                                                color: colors
-                                                                    .colorGrey,
-                                                                fw: 1)),
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(20),
+                                                        splashColor: theme
+                                                                .isDarkMode
+                                                            ? colors
+                                                                .splashColorDark
+                                                            : colors
+                                                                .splashColorLight,
+                                                        highlightColor: theme
+                                                                .isDarkMode
+                                                            ? colors
+                                                                .splashColorDark
+                                                            : colors
+                                                                .splashColorLight,
+                                                        child: Padding(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .all(6.0),
+                                                          child: Icon(
+                                                            Icons.close_rounded,
+                                                            size: 22,
+                                                              color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                const SizedBox(height: 12),
+                                                SizedBox(
+                                                    width:
+                                                        MediaQuery.of(context)
+                                                            .size
+                                                            .width,
+                                                    child: Column(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .center,
+                                                        children: [
+                                                          TextWidget.subText(
+                                                              text:
+                                                                  "Are you sure you want to delete this basket Script ${basket.bsktScripList[index]['symbol']?.replaceAll("-EQ", "")}",
+                                                              theme: theme
+                                                                  .isDarkMode,
+                                                              color: theme.isDarkMode
+                                                                                ? colors.textSecondaryDark
+                                                                                : colors.textPrimaryLight,
+                                                              align: TextAlign
+                                                                  .center),
+                                                        ]))
+                                              ],
+                                            ),
+                                            actions: [
+                                              SizedBox(
+                                                width: double.infinity,
+                                                child: OutlinedButton(
+                                                  onPressed: () async {
+                                                    await basket
+                                                        .removeBsktScrip(
+                                                            index, bsktName);
+                                                    await basket
+                                                        .fetchBasketMargin();
+                                                    Navigator.pop(context);
+                                                  },
+                                                  style:
+                                                      OutlinedButton.styleFrom(
+                                                    minimumSize:
+                                                        const Size(0, 45),
+                                                    side: BorderSide(
+                                                        color: colors
+                                                            .btnOutlinedBorder),
+                                                    shape:
+                                                        RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              5),
+                                                    ),
+                                                    backgroundColor:
+                                                        colors.primaryDark,
                                                   ),
-                                                  const SizedBox(width: 16),
-                                                  Expanded(
-                                                      child: ElevatedButton(
-                                                          style: ElevatedButton
-                                                              .styleFrom(
-                                                                  elevation: 0,
-                                                                  backgroundColor: theme
-                                                                          .isDarkMode
-                                                                      ? colors
-                                                                          .colorbluegrey
-                                                                      : colors
-                                                                          .colorBlack,
-                                                                  shape:
-                                                                      RoundedRectangleBorder(
-                                                                    borderRadius:
-                                                                        BorderRadius.circular(
-                                                                            50),
-                                                                  )),
-                                                          onPressed: () async {
-                                                            await basket
-                                                                .removeBsktScrip(
-                                                                    index,
-                                                                    bsktName);
-                                                            await basket
-                                                                .fetchBasketMargin();
-                                                            Navigator.pop(
-                                                                context);
-                                                          },
-                                                          child: TextWidget
-                                                              .paraText(
-                                                                  text: "Yes",
-                                                                 theme:!theme.isDarkMode,
-                                                                  fw: 1)))
-                                                ])
-                                          ]);
-                                    });
-                              },
-                              onTap: () async {
-                                await ref.read(marketWatchProvider).fetchScripInfo(
-                                    "${basket.bsktScripList[index]['token']}",
-                                    '${basket.bsktScripList[index]['exch']}',
-                                    context,
-                                    true);
-                                basket.bsktScripList[index]['index'] = index;
-                                basket.bsktScripList[index]['prctyp'] =
-                                    basket.bsktScripList[index]['prctype'];
-
-                                // Ensure lp and pc values are not null for OrderScreenArgs
-                                final ltp = basket.bsktScripList[index]['lp']
-                                        ?.toString() ??
-                                    "0.00";
-                                final perChange = basket.bsktScripList[index]
-                                            ['pc']
-                                        ?.toString() ??
-                                    "0.00";
-
-                                OrderScreenArgs orderArgs = OrderScreenArgs(
-                                    exchange:
-                                        '${basket.bsktScripList[index]['exch']}',
-                                    tSym:
-                                        '${basket.bsktScripList[index]['tsym']}',
-                                    isExit: false,
-                                    token:
-                                        "${basket.bsktScripList[index]['token']}",
-                                    transType: basket.bsktScripList[index]
-                                                ['trantype'] ==
-                                            'B'
-                                        ? true
-                                        : false,
-                                    lotSize: ref
-                                        .read(marketWatchProvider)
-                                        .scripInfoModel
-                                        ?.ls
-                                        .toString(),
-                                    ltp: ltp,
-                                    perChange: perChange,
-                                    orderTpye: '',
-                                    holdQty: '',
-                                    isModify: true,
-                                    prd: basket.bsktScripList[index]['prd']?.toString(),
-                                    raw: basket.bsktScripList[index]);
-                                Navigator.pushNamed(
-                                    context, Routes.placeOrderScreen,
-                                    arguments: {
-                                      "orderArg": orderArgs,
-                                      "scripInfo": ref
+                                                  child: TextWidget.titleText(
+                                                    text: "Yes",
+                                                    theme: theme.isDarkMode,
+                                                    color:  colors.colorWhite,
+                                                    fw: 2,
+                                                  ),
+                                                ),
+                                              ),
+                                            ]);
+                                      });
+                                },
+                                onTap: () async {
+                                  await ref.read(marketWatchProvider).fetchScripInfo(
+                                      "${basket.bsktScripList[index]['token']}",
+                                      '${basket.bsktScripList[index]['exch']}',
+                                      context,
+                                      true);
+                                  basket.bsktScripList[index]['index'] = index;
+                                  basket.bsktScripList[index]['prctyp'] =
+                                      basket.bsktScripList[index]['prctype'];
+              
+                                  // Ensure lp and pc values are not null for OrderScreenArgs
+                                  final ltp = basket.bsktScripList[index]['lp']
+                                          ?.toString() ??
+                                      "0.00";
+                                  final perChange = basket.bsktScripList[index]
+                                              ['pc']
+                                          ?.toString() ??
+                                      "0.00";
+              
+                                  OrderScreenArgs orderArgs = OrderScreenArgs(
+                                      exchange:
+                                          '${basket.bsktScripList[index]['exch']}',
+                                      tSym:
+                                          '${basket.bsktScripList[index]['tsym']}',
+                                      isExit: false,
+                                      token:
+                                          "${basket.bsktScripList[index]['token']}",
+                                      transType: basket.bsktScripList[index]
+                                                  ['trantype'] ==
+                                              'B'
+                                          ? true
+                                          : false,
+                                      lotSize: ref
                                           .read(marketWatchProvider)
-                                          .scripInfoModel!,
-                                      "isBskt": 'BasketEdit'
-                                    });
-                              },
-                              child: Container(
-                                  padding: const EdgeInsets.all(16),
-                                  child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Row(children: [
-                                                TextWidget.subText(
-                                                    text:
-                                                        "${basket.bsktScripList[index]['symbol'].replaceAll("-EQ", "")} ",
-                                                    theme: theme.isDarkMode,
-                                                    fw: 1,
-                                                    textOverflow:
-                                                        TextOverflow.ellipsis),
-                                                TextWidget.subText(
-                                                    text:
-                                                        " ${basket.bsktScripList[index]['option']} ",
-                                                    theme: theme.isDarkMode,
-                                                    fw: 1,
-                                                    textOverflow:
-                                                        TextOverflow.ellipsis),
-                                              ]),
-                                              Row(
-                                                children: [
-                                                  TextWidget.paraText(
-                                                      text: " LTP: ",
-                                                      theme: false,
-                                                      color: const Color(
-                                                          0xff5E6B7D),
-                                                      fw: 1),
+                                          .scripInfoModel
+                                          ?.ls
+                                          .toString(),
+                                      ltp: ltp,
+                                      perChange: perChange,
+                                      orderTpye: '',
+                                      holdQty: '',
+                                      isModify: true,
+                                      prd: basket.bsktScripList[index]['prd']
+                                          ?.toString(),
+                                      raw: basket.bsktScripList[index]);
+                                  Navigator.pushNamed(
+                                      context, Routes.placeOrderScreen,
+                                      arguments: {
+                                        "orderArg": orderArgs,
+                                        "scripInfo": ref
+                                            .read(marketWatchProvider)
+                                            .scripInfoModel!,
+                                        "isBskt": 'BasketEdit'
+                                      });
+                                },
+                                child: Container(
+                                    padding: const EdgeInsets.all(16),
+                                    child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                Row(children: [
                                                   TextWidget.subText(
                                                       text:
-                                                          "₹${basket.bsktScripList[index]['lp']?.toString() ?? "0.00"}",
+                                                          "${basket.bsktScripList[index]['symbol'].replaceAll("-EQ", "")} ",
+                                                      color: theme.isDarkMode
+                                                          ? colors
+                                                              .textPrimaryDark
+                                                          : colors
+                                                              .textPrimaryLight,
                                                       theme: theme.isDarkMode,
-                                                      fw: 0),
-                                                ],
-                                              ),
-                                            ]),
-                                        const SizedBox(height: 4),
-                                        Row(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.center,
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Row(
-                                                children: [
-                                                  CustomExchBadge(
-                                                      exch:
-                                                          "${basket.bsktScripList[index]["exch"]}"),
-                                                  TextWidget.captionText(
-                                                      text:
-                                                          " ${basket.bsktScripList[index]['expDate']} ",
-                                                      theme: theme.isDarkMode,
-                                                      fw: 0,
                                                       textOverflow: TextOverflow
                                                           .ellipsis),
-                                                ],
-                                              ),
-                                              TextWidget.paraText(
-                                                  text:
-                                                      " (${basket.bsktScripList[index]['pc']?.toString() ?? "0.00"}%)",
-                                                  theme: false,
-                                                  color: basket.bsktScripList[
-                                                                  index]['pc']
-                                                              ?.toString()
-                                                              .startsWith(
-                                                                  "-") ??
-                                                          false
-                                                      ? colors.darkred
-                                                      : basket.bsktScripList[
-                                                                      index]
-                                                                      ['pc']
-                                                                  ?.toString() ==
-                                                              "0.00"
-                                                          ? colors.ltpgrey
-                                                          : colors.ltpgreen,
-                                                  fw: 0),
-                                            ]),
-                                        const SizedBox(height: 4),
-                                        Divider(
-                                            color: theme.isDarkMode
-                                                ? colors.darkColorDivider
-                                                : colors.colorDivider),
-                                        const SizedBox(height: 2),
-                                        Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Row(children: [
-                                                Container(
-                                                    padding: const EdgeInsets.symmetric(
+                                                  TextWidget.subText(
+                                                      text:
+                                                          "${basket.bsktScripList[index]['expDate']} ",
+                                                      theme: theme.isDarkMode,
+                                                      color: theme.isDarkMode
+                                                          ? colors
+                                                              .textPrimaryDark
+                                                          : colors
+                                                              .textPrimaryLight,
+                                                      textOverflow: TextOverflow
+                                                          .ellipsis),
+                                                  // const SizedBox(width: 4),
+                                                  TextWidget.subText(
+                                                      text:
+                                                          "${basket.bsktScripList[index]['option']} ",
+                                                      theme: theme.isDarkMode,
+                                                      color: theme.isDarkMode
+                                                          ? colors
+                                                              .textPrimaryDark
+                                                          : colors
+                                                              .textPrimaryLight,
+                                                      textOverflow: TextOverflow
+                                                          .ellipsis),
+                                                ]),
+                                                if (basket.bsktScripList[index]
+                                                        ['orderStatus'] !=
+                                                    null) ...[
+                                                  Container(
+                                                    padding: const EdgeInsets
+                                                        .symmetric(
                                                         horizontal: 8,
                                                         vertical: 2),
                                                     decoration: BoxDecoration(
-                                                        borderRadius:
-                                                            BorderRadius.circular(
-                                                                4),
-                                                        color: theme.isDarkMode
-                                                            ? basket.bsktScripList[index]["trantype"] ==
-                                                                    "S"
-                                                                ? colors.darkred
-                                                                    .withOpacity(
-                                                                        .2)
-                                                                : colors.ltpgreen
-                                                                    .withOpacity(
-                                                                        .2)
-                                                            : Color(basket.bsktScripList[index]["trantype"] == "S"
-                                                                ? 0xffFCF3F3
-                                                                : 0xffECF8F1)),
-                                                    child: TextWidget.paraText(
-                                                        text: basket.bsktScripList[index]["trantype"] == "S"
-                                                            ? "SELL"
-                                                            : "BUY",
-                                                        theme: false,
-                                                        color: basket.bsktScripList[index]
-                                                                    ["trantype"] ==
-                                                                "S"
-                                                            ? colors.darkred
-                                                            : colors.ltpgreen,
-                                                        fw: 1)),
-                                                Container(
-                                                    margin: const EdgeInsets.only(
-                                                        left: 7),
-                                                    padding:
-                                                        const EdgeInsets.symmetric(
-                                                            horizontal: 7,
-                                                            vertical: 2),
-                                                    decoration: BoxDecoration(
-                                                        borderRadius:
-                                                            BorderRadius.circular(
-                                                                4),
-                                                        color: theme.isDarkMode
-                                                            ? const Color(0xff666666)
-                                                                .withOpacity(.2)
-                                                            : const Color(
-                                                                    0xff999999)
-                                                                .withOpacity(
-                                                                    .2)),
-                                                    child: TextWidget.paraText(
-                                                        text:
-                                                            "${basket.bsktScripList[index]["prctype"]}",
-                                                        theme: false,
-                                                        color: const Color(
-                                                            0xff666666),
-                                                        fw: 1)),
-                                                Container(
-                                                    margin: const EdgeInsets.only(
-                                                        left: 7),
-                                                    padding:
-                                                        const EdgeInsets.symmetric(
-                                                            horizontal: 7,
-                                                            vertical: 2),
-                                                    decoration: BoxDecoration(
-                                                        borderRadius:
-                                                            BorderRadius.circular(
-                                                                4),
-                                                        color: theme.isDarkMode
-                                                            ? const Color(0xff666666)
-                                                                .withOpacity(.2)
-                                                            : const Color(
-                                                                    0xff999999)
-                                                                .withOpacity(
-                                                                    .2)),
-                                                    child: TextWidget.paraText(
-                                                        text:
-                                                            "${basket.bsktScripList[index]["ordType"]}",
-                                                        theme: false,
-                                                        color: const Color(
-                                                            0xff666666),
-                                                        fw: 1))
+                                                      color: _getItemStatusColor(
+                                                              basket.bsktScripList[
+                                                                      index][
+                                                                  'orderStatus'], theme)
+                                                          .withOpacity(0.1),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              4),
+                                                    ),
+                                                    child: Row(
+                                                      mainAxisSize:
+                                                          MainAxisSize.min,
+                                                      children: [
+                                                        // Icon(
+                                                        //   _getItemStatusIcon(basket
+                                                        //           .bsktScripList[index]
+                                                        //       ['orderStatus']),
+                                                        //   size: 14,
+                                                        //   color: _getItemStatusColor(
+                                                        //       basket.bsktScripList[
+                                                        //               index]
+                                                        //           ['orderStatus']),
+                                                        // ),
+                                                        // const SizedBox(width: 4),
+                                                        TextWidget.paraText(
+                                                          text: basket
+                                                              .bsktScripList[
+                                                                  index][
+                                                                  'orderStatus']
+                                                              .toString()
+                                                              .toUpperCase(),
+                                                          theme: false,
+                                                          color: _getItemStatusColor(
+                                                              basket.bsktScripList[
+                                                                      index][
+                                                                  'orderStatus'], theme),
+                                                        ),
+                                                        if (basket.bsktScripList[
+                                                                    index]
+                                                                ['avgPrice'] !=
+                                                            null) ...[
+                                                          const SizedBox(
+                                                              width: 8),
+                                                          TextWidget
+                                                              .captionText(
+                                                            text:
+                                                                "@ ₹${basket.bsktScripList[index]['avgPrice']}",
+                                                            theme: false,
+                                                            color: theme
+                                                                    .isDarkMode
+                                                                ? colors
+                                                                    .textSecondaryDark
+                                                                : colors
+                                                                    .textSecondaryLight,
+                                                            fw: 0,
+                                                          ),
+                                                        ],
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ],
                                               ]),
-                                              Row(children: [
-                                                TextWidget.paraText(
-                                                    text: "Qty: ",
-                                                    theme: false,
-                                                    color:
-                                                        const Color(0xff5E6B7D),
-                                                    fw: 1),
-                                                TextWidget.subText(
+                                          const SizedBox(height: 8),
+                                          Row(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.center,
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                Row(
+                                                  children: [
+                                                    Row(
+                                                      children: [
+                                                        TextWidget.paraText(
+                                                          text:
+                                                              "${basket.bsktScripList[index]["exch"]} - ${basket.bsktScripList[index]["ordType"]} - ${basket.bsktScripList[index]["prctype"]} - ${formatToTimeOnly(basket.bsktScripList[index]["date"])}",
+                                                          theme: false,
+                                                          color: theme
+                                                                  .isDarkMode
+                                                              ? colors
+                                                                  .textSecondaryDark
+                                                              : colors
+                                                                  .textSecondaryLight,
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ],
+                                                ),
+                                                Row(
+                                                  children: [
+                                                    TextWidget.paraText(
+                                                      text:
+                                                          "LTP ${basket.bsktScripList[index]['lp']?.toString() ?? "0.00"}",
+                                                      theme: false,
+                                                      color: theme.isDarkMode
+                                                          ? colors
+                                                              .textSecondaryDark
+                                                          : colors
+                                                              .textSecondaryLight,
+                                                    ),
+                                                  ],
+                                                ),
+                                              ]),
+                                          const SizedBox(height: 8),
+              
+                                          // TextWidget.paraText(
+                                          //           text:
+                                          //               " (${basket.bsktScripList[index]['pc']?.toString() ?? "0.00"}%)",
+                                          //           theme: false,
+                                          //           color: basket.bsktScripList[
+                                          //                           index]['pc']
+                                          //                       ?.toString()
+                                          //                       .startsWith(
+                                          //                           "-") ??
+                                          //                   false
+                                          //               ? colors.darkred
+                                          //               : basket.bsktScripList[
+                                          //                               index]
+                                          //                               ['pc']
+                                          //                           ?.toString() ==
+                                          //                       "0.00"
+                                          //                   ? colors.ltpgrey
+                                          //                   : colors.ltpgreen,
+                                          //           fw: 0),
+              
+                                          Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                Row(children: [
+                                                  TextWidget.paraText(
+                                                      text: basket.bsktScripList[
+                                                                      index][
+                                                                  "trantype"] ==
+                                                              "S"
+                                                          ? "SELL"
+                                                          : "BUY",
+                                                      theme: false,
+                                                      color: basket.bsktScripList[
+                                                                      index][
+                                                                  "trantype"] ==
+                                                              "S"
+                                                          ? theme.isDarkMode
+                                                              ? colors.lossDark
+                                                              : colors.lossLight
+                                                          : theme.isDarkMode
+                                                              ? colors
+                                                                  .primaryDark
+                                                              : colors
+                                                                  .primaryLight,
+                                                      fw: 0),
+                                                  const SizedBox(width: 8),
+                                                  TextWidget.paraText(
                                                     text:
                                                         "${basket.bsktScripList[index]["dscqty"]}/${basket.bsktScripList[index]["qty"]}",
                                                     theme: theme.isDarkMode,
-                                                    fw: 0),
-                                              ])
-                                            ]),
-                                        const SizedBox(height: 10),
-                                        // Individual Order Status Display
-                                        if (basket.bsktScripList[index]['orderStatus'] != null) ...[
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                            decoration: BoxDecoration(
-                                              color: _getItemStatusColor(basket.bsktScripList[index]['orderStatus']).withOpacity(0.1),
-                                              borderRadius: BorderRadius.circular(6),
-                                              border: Border.all(
-                                                color: _getItemStatusColor(basket.bsktScripList[index]['orderStatus']).withOpacity(0.3),
-                                                width: 1,
-                                              ),
-                                            ),
-                                            child: Row(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                Icon(
-                                                  _getItemStatusIcon(basket.bsktScripList[index]['orderStatus']),
-                                                  size: 14,
-                                                  color: _getItemStatusColor(basket.bsktScripList[index]['orderStatus']),
-                                                ),
-                                                const SizedBox(width: 4),
-                                                TextWidget.captionText(
-                                                  text: "Order: ${basket.bsktScripList[index]['orderStatus'].toString().toUpperCase()}",
-                                                  theme: false,
-                                                  color: _getItemStatusColor(basket.bsktScripList[index]['orderStatus']),
-                                                  fw: 1,
-                                                ),
-                                                if (basket.bsktScripList[index]['avgPrice'] != null) ...[
-                                                  const SizedBox(width: 8),
-                                                  TextWidget.captionText(
-                                                    text: "@ ₹${basket.bsktScripList[index]['avgPrice']}",
-                                                    theme: false,
-                                                    color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                                                    fw: 0,
-                                                  ),
-                                                ],
-                                              ],
-                                            ),
-                                          ),
-                                          const SizedBox(height: 8),
-                                        ],
-                                        Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Row(children: [
-                                                TextWidget.paraText(
-                                                    text:
-                                                        "${basket.bsktScripList[index]["date"]}",
-                                                    theme: false,
-                                                    color:
-                                                        const Color(0xff666666),
-                                                    fw: 0),
-                                              ]),
-                                              Row(children: [
-                                                if (basket.bsktScripList[index]
-                                                        ["prctype"] !=
-                                                    "MKT") ...[
-                                                  TextWidget.subText(
-                                                      text: "Price: ",
-                                                      theme: false,
-                                                      color: const Color(
-                                                          0xff5E6B7D),
-                                                      fw: 0),
-                                                  TextWidget.subText(
+                                                    color: theme.isDarkMode
+                                                        ? colors
+                                                            .textSecondaryDark
+                                                        : colors
+                                                            .textSecondaryLight,
+                                                  )
+                                                ]),
+                                                Row(children: [
+                                                  if (basket.bsktScripList[
+                                                          index]["prctype"] !=
+                                                      "MKT") ...[
+                                                    TextWidget.paraText(
                                                       text:
                                                           "${basket.bsktScripList[index]['prc'] ?? 0.00}",
                                                       theme: false,
                                                       color: theme.isDarkMode
-                                                          ? colors.colorWhite
-                                                          : colors.colorBlack,
-                                                      fw: 0),
-                                                ]
-                                              ])
-                                            ])
-                                      ])),
-                            );
-                          },
-                          separatorBuilder: (BuildContext context, int index) {
-                            return Container(
-                                color: theme.isDarkMode
-                                    ? colors.darkGrey
-                                    : const Color(0xffF1F3F8),
-                                height: 6);
-                          },
-                        );
-                      },
-                    )),
-        ]),
+                                                          ? colors
+                                                              .textSecondaryDark
+                                                          : colors
+                                                              .textSecondaryLight,
+                                                    ),
+                                                  ]
+                                                ])
+                                              ]),
+                                          // Individual Order Status Display
+                                        ])),
+                              );
+                            },
+                          );
+                        },
+                      )),
+          ]),
+        ),
         bottomNavigationBar: basket.bsktScripList.isEmpty
             ? null
-            : Container(
-                height: 80,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-                  border: Border(
-                    top: BorderSide(
-                      color: theme.isDarkMode 
-                          ? colors.darkColorDivider 
-                          : colors.colorDivider,
-                      width: 0.5,
-                    ),
-                  ),
-                ),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: _hasOrdersPlacedInBasket(bsktName, basket)
-                      ? OutlinedButton.icon(
-                          onPressed: () {
-                            basket.resetBasketOrderTracking(bsktName);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: const Text("Basket reset. You can place orders again."),
-                                backgroundColor: colors.ltpgreen,
-                                duration: const Duration(seconds: 2),
+            : SafeArea(
+              child: Padding(
+                padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+                child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Static error message for multiple exchanges
+                      if (basket.bsktScripList.isNotEmpty &&
+                          _hasMultipleExchanges(basket.bsktScripList))
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 8, horizontal: 12),
+                          decoration: BoxDecoration(
+                            color: colors.loss,
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              TextWidget.paraText(
+                                text:
+                                    "Basket should contain orders of only 1 segment",
+                                theme: false,
+                                color: colors.colorWhite,
                               ),
-                            );
-                          },
-                          icon: const Icon(Icons.refresh, size: 18),
-                          label: TextWidget.subText(
-                            text: "Reset Orders",
-                            theme: false,
-                            color: theme.isDarkMode 
-                                ? colors.colorWhite 
-                                : colors.colorBlack,
-                            fw: 1,
-                          ),
-                          style: OutlinedButton.styleFrom(
-                            minimumSize: const Size(0, 48),
-                            side: BorderSide(
-                              color: theme.isDarkMode 
-                                  ? colors.colorWhite 
-                                  : colors.colorBlack,
-                              width: 1.5,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                        )
-                      : ElevatedButton.icon(
-                          onPressed: _hasMultipleExchanges(basket.bsktScripList)
-                              ? null
-                              : () async {
-                                  await basket.placeBasketOrder(context,navigateToOrderBook:false);
-                                },
-                          icon: const Icon(Icons.play_arrow, size: 18),
-                          label: TextWidget.subText(
-                            text: "Place Order",
-                            theme: false,
-                            color: colors.colorWhite,
-                            fw: 1,
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            minimumSize: const Size(0, 48),
-                            backgroundColor: _hasMultipleExchanges(basket.bsktScripList)
-                                ? Colors.grey
-                                : (theme.isDarkMode
-                                    ? colors.primaryDark
-                                    : colors.primaryLight),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
+                            ],
                           ),
                         ),
-                ),
-              ));
+                      Container(
+                        height: 70,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: theme.isDarkMode
+                              ? colors.colorBlack
+                              : colors.colorWhite,
+                        ),
+                        child: SizedBox(
+                          width: double.infinity,
+                          child: _hasOrdersPlacedInBasket(bsktName, basket)
+                              ? OutlinedButton.icon(
+                                  onPressed: () {
+                                    basket.resetBasketOrderTracking(bsktName);
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: const Text(
+                                            "Basket reset. You can place orders again."),
+                                        backgroundColor: colors.ltpgreen,
+                                        duration: const Duration(seconds: 2),
+                                      ),
+                                    );
+                                  },
+                                  label: TextWidget.subText(
+                                    text: "Reset Orders",
+                                    theme: false,
+                                      color: theme.isDarkMode
+                                                                  ? colors
+                                                                      .colorWhite
+                                                                  : colors
+                                                                      .primaryLight,
+                                    fw: 2,
+                                  ),
+                                  style: OutlinedButton.styleFrom(
+                                      minimumSize: const Size(0, 45),
+                                      side: BorderSide(
+                                        color: theme.isDarkMode
+                                            ? colors.colorGrey
+                                            : colors.primaryLight,
+                                      ),
+                                       backgroundColor:theme.isDarkMode
+                                                            ? colors
+                                                                .textSecondaryDark
+                                                                .withOpacity(0.6)
+                                                            : colors.btnBg,
+                                      shape: const RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.all(
+                                              Radius.circular(5)))),
+                                )
+                              : OutlinedButton.icon(
+                                  onPressed:
+                                      _hasMultipleExchanges(basket.bsktScripList)
+                                          ? () {}
+                                          : () async {
+                                              await basket.placeBasketOrder(
+                                                  context,
+                                                  navigateToOrderBook: false);
+                                            },
+                                  label: TextWidget.subText(
+                                    text: "Place Order",
+                                    theme: false,
+                                    color: _hasMultipleExchanges(
+                                            basket.bsktScripList)
+                                            ? colors.colorWhite.withOpacity(0.3) : colors.colorWhite,
+                                    fw: 2,
+                                  ),
+                                  style: OutlinedButton.styleFrom(
+                                      side: BorderSide.none,
+                                    minimumSize: const Size(0, 45),
+                                    backgroundColor: _hasMultipleExchanges(
+                                            basket.bsktScripList)
+                                        ? (theme.isDarkMode
+                                            ? colors.textSecondaryDark.withOpacity(0.3)
+                                            : colors.textSecondaryLight.withOpacity(0.3))
+                                        : (theme.isDarkMode
+                                            ? colors.primaryDark
+                                            : colors.primaryLight),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(5),
+                                    ),
+                                  ),
+                                ),
+                        ),
+                      ),
+                    ],
+                  ),
+              ),
+            ));
   }
 
-    // Helper methods for individual item status indicators
-  Color _getItemStatusColor(String status) {
-    switch (status.toLowerCase()) {
-      case 'placed':
-        return colors.colorBlue;
-      case 'complete':
-        return colors.ltpgreen;
-      case 'rejected':
-      case 'canceled':
-      case 'failed':
-        return colors.darkred;
-      case 'open':
-      case 'partial':
-      case 'trigger_pending':
-        return Colors.orange;
-      default:
-        return colors.colorGrey;
+  String formatToTimeOnly(String rawDate) {
+    try {
+      final dateTime = DateFormat("dd MMM yyyy, hh:mm a").parse(rawDate);
+      return DateFormat("hh:mm a").format(dateTime);
+    } catch (e) {
+      return ''; // or return rawDate if you want fallback
     }
   }
 
-    IconData _getItemStatusIcon(String status) {
+  // Helper methods for individual item status indicators
+  Color _getItemStatusColor(String status, theme) {
+    switch (status.toLowerCase()) {
+      case 'placed':
+        return  theme.isDarkMode ? colors.primaryDark : colors.primaryLight;
+      case 'complete':
+        return  theme.isDarkMode ? colors.profitDark : colors.profitLight;
+      case 'rejected':
+      case 'canceled':
+      case 'failed':
+        return  theme.isDarkMode ? colors.lossDark : colors.lossLight;
+      case 'open':
+      case 'partial':
+      case 'trigger_pending':
+        return  theme.isDarkMode ? colors.pending : colors.pending;
+      default:
+        return  theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight;
+    }
+  }
+
+  IconData _getItemStatusIcon(String status) {
     switch (status.toLowerCase()) {
       case 'placed':
         return Icons.send;
