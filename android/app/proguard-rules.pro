@@ -31,3 +31,20 @@
 
 ## General rules
 -ignorewarnings
+
+# Please add these rules to your existing keep rules in order to suppress warnings.
+# This is generated automatically by the Android Gradle plugin.
+-dontwarn com.google.j2objc.annotations.RetainedWith
+-dontwarn proguard.annotation.Keep
+-dontwarn proguard.annotation.KeepClassMembers
+-dontwarn com.google.j2objc.annotations.Weak
+-dontwarn java.lang.reflect.AnnotatedType
+
+# For awesome_notifications and shared_preferences
+-keep class **.B2$* { *; }
+-keep class **.B2 { *; }
+-keep class io.flutter.plugins.sharedpreferences.** { *; }
+-keep class me.carda.awesome_notifications.** { *; }
+
+-keep class com.google.common.reflect.** { *; }
+-keep class sun.reflect.** { *; }
