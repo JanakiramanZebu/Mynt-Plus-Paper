@@ -1099,7 +1099,7 @@ class BasketScripList extends ConsumerWidget {
                           ),
                         ),
                       Container(
-                        height: 70,
+                        height: 75,
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
                           color: theme.isDarkMode
@@ -1108,6 +1108,7 @@ class BasketScripList extends ConsumerWidget {
                         ),
                         child: SizedBox(
                           width: double.infinity,
+                          height: 45,
                           child: _hasOrdersPlacedInBasket(bsktName, basket)
                               ? OutlinedButton.icon(
                                   onPressed: () {

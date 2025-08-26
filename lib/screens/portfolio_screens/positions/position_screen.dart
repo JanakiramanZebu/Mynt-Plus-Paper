@@ -997,7 +997,7 @@ class _PositionItemState extends ConsumerState<_PositionItem> {
             ),
 
             const SizedBox(
-              width: 5,
+              width: 4,
             ),
             // Right 50%: P&L value
 

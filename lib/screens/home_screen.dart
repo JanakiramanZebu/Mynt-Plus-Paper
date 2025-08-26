@@ -412,16 +412,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             ),
             height: MediaQuery.of(context).size.height,
             width: MediaQuery.of(context).size.width,
-            child: SafeArea(
-              bottom: false,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  ChartScreenWebView(
-                      chartArgs:
-                          ChartArgs(exch: 'ABC', tsym: 'ABCD', token: '0123')),
-                ],
-              ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                ChartScreenWebView(
+                    chartArgs:
+                        ChartArgs(exch: 'ABC', tsym: 'ABCD', token: '0123')),
+              ],
             ),
           ),
         );
