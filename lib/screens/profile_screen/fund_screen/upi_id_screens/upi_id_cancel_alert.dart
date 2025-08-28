@@ -128,6 +128,7 @@ class _UPIIDPaymentCancelAlertState
                         color: theme.isDarkMode
                             ? colors.textPrimaryDark
                             : colors.textPrimaryLight,
+                        fw: 0,
                       ),
                     ),
                     SizedBox(
@@ -141,6 +142,7 @@ class _UPIIDPaymentCancelAlertState
                             text: 'This will take a few seconds.',
                             theme: false,
                             color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                            fw: 0,
                           ),
                         ])),
                     const SizedBox(

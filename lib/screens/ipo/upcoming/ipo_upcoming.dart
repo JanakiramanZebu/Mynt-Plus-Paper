@@ -144,6 +144,7 @@ class _UpcomingIPOItem extends StatelessWidget {
                     ? colors.textPrimaryDark
                     : colors.textPrimaryLight,
                 textOverflow: TextOverflow.ellipsis,
+                fw: 0,
               ),
             ),
             Material(
@@ -184,7 +185,7 @@ class _UpcomingIPOItem extends StatelessWidget {
     return TextWidget.paraText(
       text: "${ipo.ipoType}",
       theme: false,
-      fw: 3,
+      fw: 0,
       color: theme.isDarkMode
           ? colors.textSecondaryDark
           : colors.textSecondaryLight,

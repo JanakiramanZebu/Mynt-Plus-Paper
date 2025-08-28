@@ -744,7 +744,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                       fontSize: 12,
                       color: _getBottomNavColor(theme, isSelected),
                       theme: theme.isDarkMode,
-                      fw: isSelected ? 2 : null),
+                      fw: isSelected ? 2 : 0),
                   textAlign: TextAlign.center,
                   // softWrap: true,
                   // maxLines: 1,

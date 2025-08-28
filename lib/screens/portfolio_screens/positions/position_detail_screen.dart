@@ -232,16 +232,27 @@ class _PositionDetailScreenState extends ConsumerState<PositionDetailScreen> {
                                                         //       TextOverflow
                                                         //           .ellipsis,
                                                         // ),
-                                                        CustomExchBadge(
-                                                            exch:
-                                                                "${widget.positionList.exch}"),
+
+                                                        TextWidget.subText(
+                                                          fw: 0,
+                                                          text: "${widget.positionList.exch}",
+                                                          textOverflow: TextOverflow.ellipsis,
+                                                          maxLines: 1,
+                                                          color: theme.isDarkMode
+                                                              ? colors.textSecondaryDark
+                                                              : colors.textSecondaryLight,
+                                                          theme: false,
+                                                        ),
+                                                        // CustomExchBadge(
+                                                        //     exch:
+                                                        //         ),
                                                       ],
                                                     ),
                                                     const SizedBox(height: 6),
                                                     TextWidget.titleText(
                                                       text:
                                                           "${widget.positionList.lp}",
-                                                      fw: 3,
+                                                      fw: 0,
                                                       color: (widget.positionList
                                                                           .lp ==
                                                                       "null" ||
@@ -277,7 +288,7 @@ class _PositionDetailScreenState extends ConsumerState<PositionDetailScreen> {
                                                     TextWidget.paraText(
                                                       text:
                                                           "${double.parse("${widget.positionList.chng ?? 0.00}").toStringAsFixed(2)} (${widget.positionList.perChange ?? 0.00}%)",
-                                                      fw: 3,
+                                                      fw: 0,
                                                       color: theme.isDarkMode
                                                           ? colors
                                                               .textSecondaryDark
@@ -694,7 +705,7 @@ class _PositionDetailScreenState extends ConsumerState<PositionDetailScreen> {
                                               text: positions.isNetPnl
                                                   ? "P&L"
                                                   : "MTM",
-                                              fw: 3,
+                                              fw: 0,
                                               color: theme.isDarkMode
                                                   ? colors.textSecondaryDark
                                                   : colors.textSecondaryLight,
@@ -745,7 +756,7 @@ class _PositionDetailScreenState extends ConsumerState<PositionDetailScreen> {
                                                                     .profitDark
                                                                 : colors
                                                                     .profitLight,
-                                                fw: 3,
+                                                fw: 0,
                                               )
                                             else
                                               TextWidget.titleText(
@@ -767,7 +778,7 @@ class _PositionDetailScreenState extends ConsumerState<PositionDetailScreen> {
                                                             ? colors.profitDark
                                                             : colors
                                                                 .profitLight,
-                                                fw: 3,
+                                                fw: 0,
                                                 theme: false,
                                               ),
                                           ],
@@ -850,14 +861,14 @@ class _PositionDetailScreenState extends ConsumerState<PositionDetailScreen> {
               color: theme.isDarkMode
                   ? colors.textSecondaryDark
                   : colors.textSecondaryLight,
-              fw: 3),
+              fw: 0),
           TextWidget.subText(
               text: value1,
               theme: false,
               color: theme.isDarkMode
                   ? colors.textPrimaryDark
                   : colors.textPrimaryLight,
-              fw: 3),
+              fw: 0),
         ],
       ),
       const SizedBox(height: 8),

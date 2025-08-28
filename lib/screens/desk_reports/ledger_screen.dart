@@ -350,6 +350,7 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                                                   : colors.textSecondaryLight,
                                               textOverflow: TextOverflow.ellipsis,
                                               theme: theme.isDarkMode,
+                                              fw: 0,
                                             ),
                                             SizedBox(
                                               height: 6,
@@ -696,6 +697,7 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                                         ? colors.textPrimaryDark
                                         : colors.textPrimaryLight,
                                     theme: theme.isDarkMode,
+                                    fw: 0,
                                   ),
                                     keyboardType: TextInputType.text,
                                     textCapitalization:
@@ -714,6 +716,7 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                                      color: theme.isDarkMode
                                 ? colors.textSecondaryDark
                                 : colors.textSecondaryLight,
+                                fw: 0,
                                     ),
                                          fillColor: theme.isDarkMode ? colors.searchBgDark : colors.searchBg,
                               filled: true,
@@ -1052,6 +1055,7 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                                                               TextOverflow
                                                                   .ellipsis,
                                                           theme: theme.isDarkMode,
+                                                          fw: 0,
                                                         ),
                                                         const SizedBox(width: 4),
                                                         ledgerprovider
@@ -1113,6 +1117,7 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                                                       textOverflow:
                                                           TextOverflow.ellipsis,
                                                       theme: theme.isDarkMode,
+                                                      fw: 0,
                                                     ),
                                                   ],
                                                 ),
@@ -1145,23 +1150,23 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                                                                     .ellipsis,
                                                             theme:
                                                                 theme.isDarkMode,
-                                                            fw: 3),
+                                                            fw: 0),
                             
                                                         TextWidget.paraText(
                                                             text:
                                                                 " ${dateFormatChangeForLedger(ledgerprovider.ledgerAllData!.fullStat![index].vOUCHERDATE.toString())}",
-                                                            color: theme
+                                                             color: theme
                                                                     .isDarkMode
                                                                 ? colors
-                                                                    .textPrimaryDark
+                                                                    .textSecondaryDark
                                                                 : colors
-                                                                    .textPrimaryLight,
+                                                                    .textSecondaryLight,
                                                             textOverflow:
                                                                 TextOverflow
                                                                     .ellipsis,
                                                             theme:
                                                                 theme.isDarkMode,
-                                                            fw: 3),
+                                                            fw: 0),
                                                       ],
                                                     ),
                                                     Row(
@@ -1169,7 +1174,7 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                                                         TextWidget.paraText(
                                                             align:
                                                                 TextAlign.right,
-                                                            text: "Bal : ",
+                                                            text: "BAL ",
                                                             color: theme
                                                                     .isDarkMode
                                                                 ? colors
@@ -1181,24 +1186,24 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                                                                     .ellipsis,
                                                             theme:
                                                                 theme.isDarkMode,
-                                                            fw: 3),
+                                                            fw: 0),
                                                         TextWidget.paraText(
                                                             align:
                                                                 TextAlign.right,
                                                             text:
                                                                 " ${(double.tryParse(ledgerprovider.ledgerAllData!.fullStat![index].nETAMT ?? '')?.toStringAsFixed(2) ?? '0.00')}",
-                                                            color: theme
+                                                          color: theme
                                                                     .isDarkMode
                                                                 ? colors
-                                                                    .textPrimaryDark
+                                                                    .textSecondaryDark
                                                                 : colors
-                                                                    .textPrimaryLight,
+                                                                    .textSecondaryLight,
                                                             textOverflow:
                                                                 TextOverflow
                                                                     .ellipsis,
                                                             theme:
                                                                 theme.isDarkMode,
-                                                            fw: 3),
+                                                            fw: 0),
                                                       ],
                                                     ),
                                                   ],

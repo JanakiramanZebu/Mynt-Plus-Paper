@@ -225,6 +225,7 @@ class _EditScripState extends ConsumerState<EditScrip> {
                           ? colors.textPrimaryDark
                           : colors.textPrimaryLight,
                                             theme: theme.isDarkMode,
+                                            fw: 0,
                                             ),
                                       ),
                                       if (marketwatch.scrips[i]['option']
@@ -238,6 +239,7 @@ class _EditScripState extends ConsumerState<EditScrip> {
                           ? colors.textPrimaryDark
                           : colors.textPrimaryLight,
                                               theme: theme.isDarkMode,
+                                              fw: 0,
                                               ),
                                         )
                                     ],
@@ -251,6 +253,7 @@ class _EditScripState extends ConsumerState<EditScrip> {
                                         text: "${marketwatch.scrips[i]['exch']}",
                                         color: theme.isDarkMode ? colors.textSecondaryDark :  colors.textSecondaryLight,
                                         theme: theme.isDarkMode,
+                                        fw: 0,
                                         ),
                                     const SizedBox(width: 4),
                                     if (marketwatch.scrips[i]['expDate']
@@ -260,6 +263,7 @@ class _EditScripState extends ConsumerState<EditScrip> {
                                           text: "${marketwatch.scrips[i]['expDate']}",
                                           color: theme.isDarkMode ? colors.textSecondaryDark :  colors.textSecondaryLight,
                                           theme: theme.isDarkMode,
+                                          fw: 0,
                                           ),
                                   ],
                                 ),

@@ -416,6 +416,7 @@ class _CABuybackState extends State<CABuyback> with TickerProviderStateMixin {
                                                   TextOverflow.ellipsis,
                                               maxLines: 2,
                                               theme: theme.isDarkMode,
+                                              fw: 0,
                                             ),
                                           ),
 
@@ -438,6 +439,7 @@ class _CABuybackState extends State<CABuyback> with TickerProviderStateMixin {
                                               textOverflow:
                                                   TextOverflow.ellipsis,
                                               theme: theme.isDarkMode,
+                                              fw: 0,
                                             ),
                                           ),
                                           // const SizedBox(width: 4),
@@ -486,7 +488,8 @@ class _CABuybackState extends State<CABuyback> with TickerProviderStateMixin {
                                                             .textSecondaryDark
                                                         : colors
                                                             .textSecondaryLight,
-                                                    theme: theme.isDarkMode),
+                                                    theme: theme.isDarkMode,
+                                                    fw: 0),
                                                 const SizedBox(width: 4),
                                                 if (ledgerprovider
                                                         .selectvalueofcpaction !=
@@ -512,6 +515,7 @@ class _CABuybackState extends State<CABuyback> with TickerProviderStateMixin {
                                                                     .ellipsis,
                                                             theme: theme
                                                                 .isDarkMode,
+                                                            fw: 0,
                                                           ),
                                                           TextWidget.paraText(
                                                             align:
@@ -529,6 +533,7 @@ class _CABuybackState extends State<CABuyback> with TickerProviderStateMixin {
                                                                     .ellipsis,
                                                             theme: theme
                                                                 .isDarkMode,
+                                                            fw: 0,
                                                           ),
                                                         ],
                                                       ),
@@ -1204,7 +1209,7 @@ class _CABuybackState extends State<CABuyback> with TickerProviderStateMixin {
                         textOverflow: TextOverflow.ellipsis,
                         maxLines: 1,
                         theme: theme.isDarkMode,
-                        fw: isCurrentSelected ? 2 : null),
+                        fw: isCurrentSelected ? 2 : 0),
                   ),
                   AnimatedContainer(
                     duration: const Duration(milliseconds: 250),

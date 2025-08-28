@@ -215,7 +215,7 @@ class _ModifyPlaceOrderScreenState
                                       color: theme.isDarkMode
                                           ? colors.textPrimaryDark
                                           : colors.textPrimaryLight,
-                                      fw: 3),
+                                      fw: 0),
                                   // Text("${widget.scripInfo.symbol!} ",
                                   //     style: textStyle(theme.isDarkMode ? colors.colorWhite : colors.colorBlack, 14, FontWeight.w400),
                                   //     overflow: TextOverflow.ellipsis,
@@ -227,7 +227,7 @@ class _ModifyPlaceOrderScreenState
                                         color: theme.isDarkMode
                                             ? colors.textPrimaryDark
                                             : colors.textPrimaryLight,
-                                        fw: 3),
+                                        fw: 0),
                                   // Text(widget.scripInfo.option!,
                                   //     style: textStyle(theme.isDarkMode ? colors.colorWhite : colors.colorBlack, 14, FontWeight.w400),
                                   //     overflow: TextOverflow.ellipsis,
@@ -239,11 +239,23 @@ class _ModifyPlaceOrderScreenState
                                         color: theme.isDarkMode
                                             ? colors.textPrimaryDark
                                             : colors.textPrimaryLight,
-                                        fw: 3),
+                                        fw: 0),
                                   // Text(" ${widget.scripInfo.expDate} ",
                                   //     style: textStyle(theme.isDarkMode ? colors.colorWhite : colors.colorBlack, 14, FontWeight.w400)),
-                                  CustomExchBadge(
-                                      exch: "${widget.scripInfo.exch}"),
+                                  // CustomExchBadge(
+                                  //     exch: ),
+
+                                       TextWidget.subText(
+                                          fw: 0,
+                                          text: "${widget.scripInfo.exch}",
+                                          textOverflow: TextOverflow.ellipsis,
+                                          maxLines: 1,
+                                        color: theme.isDarkMode
+                                                                              ? colors.textPrimaryDark
+                                                                              : colors.textPrimaryLight,
+                                                                          
+                                          theme: false,
+                                        ),
                                 ]),
                           ),
                           Row(
@@ -405,6 +417,7 @@ class _ModifyPlaceOrderScreenState
                                                       ? colors.textSecondaryDark
                                                       : colors
                                                           .textSecondaryLight,
+                                                  fw: 0,
                                                 ),
                                                 inputFormate: [
                                                   FilteringTextInputFormatter
@@ -418,6 +431,7 @@ class _ModifyPlaceOrderScreenState
                                                       ? colors.textPrimaryDark
                                                       : colors.textPrimaryLight,
                                                   theme: theme.isDarkMode,
+                                                  fw: 0,
                                                 ),
                                                 // prefixIcon: InkWell(
                                                 //   onTap: () {
@@ -639,7 +653,7 @@ class _ModifyPlaceOrderScreenState
                                                 children: [
                                                   headerTitleText(
                                                       "Price", theme),
-                                                  const SizedBox(width: 4),
+                                                  const SizedBox(width: 8),
                                                   TextWidget.subText(
                                                       text: prcType == "MKT"
                                                           ? "Market"
@@ -655,7 +669,7 @@ class _ModifyPlaceOrderScreenState
                                                           : colors
                                                               .textPrimaryLight,
                                                       theme: theme.isDarkMode,
-                                                      fw: 0),
+                                                      fw: 1),
                                                 ]),
                                             const SizedBox(height: 8),
                                             SizedBox(
@@ -733,6 +747,7 @@ class _ModifyPlaceOrderScreenState
                                                             .textSecondaryDark
                                                         : colors
                                                             .textSecondaryLight,
+                                                    fw: 0,
                                                   ),
                                                   keyboardType:
                                                       const TextInputType
@@ -745,6 +760,7 @@ class _ModifyPlaceOrderScreenState
                                                         : colors
                                                             .textPrimaryLight,
                                                     theme: theme.isDarkMode,
+                                                    fw: 0,
                                                   ),
                                                   isReadable: prcType ==
                                                               "MKT" ||
@@ -1406,15 +1422,24 @@ class _ModifyPlaceOrderScreenState
                                                                         color: theme.isDarkMode
                                                                             ? colors.textSecondaryDark
                                                                             : colors.textSecondaryLight,
-                                                                        fw: 3),
-                                                                    Text(
-                                                                        "₹${orderProvide.orderMarginModel == null ? 0.00 : orderProvide.orderMarginModel!.ordermargin}  + ${orderProvide.getBrokerageModel == null ? 0.00 : orderProvide.getBrokerageModel!.brkageAmt ?? 0.00}",
-                                                                        style: textStyle(
-                                                                            !theme.isDarkMode
+                                                                        fw: 0),
+
+                                                                        TextWidget.paraText(
+                                                                            text:
+                                                                                "₹${orderProvide.orderMarginModel == null ? 0.00 : orderProvide.orderMarginModel!.ordermargin}  + ${orderProvide.getBrokerageModel == null ? 0.00 : orderProvide.getBrokerageModel!.brkageAmt ?? 0.00}",
+                                                                            theme: theme.isDarkMode,
+                                                                            color: !theme.isDarkMode
                                                                                 ? colors.colorBlue
                                                                                 : colors.colorLightBlue,
-                                                                            12,
-                                                                            FontWeight.w600)),
+                                                                            fw: 2),
+                                                                    // Text(
+                                                                    //     "₹${orderProvide.orderMarginModel == null ? 0.00 : orderProvide.orderMarginModel!.ordermargin}  + ${orderProvide.getBrokerageModel == null ? 0.00 : orderProvide.getBrokerageModel!.brkageAmt ?? 0.00}",
+                                                                    //     style: textStyle(
+                                                                    //         !theme.isDarkMode
+                                                                    //             ? colors.colorBlue
+                                                                    //             : colors.colorLightBlue,
+                                                                    //         12,
+                                                                    //         FontWeight.w600)),
                                                                     Icon(
                                                                       Icons
                                                                           .arrow_drop_down,
@@ -1439,7 +1464,7 @@ class _ModifyPlaceOrderScreenState
                                                                           .textSecondaryDark
                                                                       : colors
                                                                           .textSecondaryLight,
-                                                                  fw: 3),
+                                                                  fw: 0),
 
                                                               // const SizedBox(width: 4),
                                                               TextWidget.paraText(
@@ -1452,7 +1477,7 @@ class _ModifyPlaceOrderScreenState
                                                                           .textPrimaryDark
                                                                       : colors
                                                                           .textPrimaryLight,
-                                                                  fw: 3),
+                                                                  fw: 0),
                                                               // const SizedBox(width: 4),
                                                             ],
                                                           ),
@@ -1881,7 +1906,7 @@ class _ModifyPlaceOrderScreenState
       theme: theme.isDarkMode,
       color:
           theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-      fw: 0,
+      fw: 1,
     );
 
     // Text(text,
@@ -2080,12 +2105,11 @@ class _ModifyPlaceOrderScreenState
         children: [
           Row(
             children: [
-              Text(
-                "Market Protected by",
-                style: textStyle(
-                    theme.isDarkMode ? colors.colorLightBlue : colors.colorBlue,
-                    14,
-                    FontWeight.w600),
+              TextWidget.subText(
+                text: "Market Protected by",
+                theme: theme.isDarkMode,
+                color: theme.isDarkMode ? colors.colorLightBlue : colors.colorBlue,
+                fw: 1,
               ),
               InkWell(
                 // borderRadius: BorderRadius.circular(8),
@@ -2162,6 +2186,7 @@ class _ModifyPlaceOrderScreenState
                                      color: theme.isDarkMode
                                 ? colors.textSecondaryDark
                                 : colors.textSecondaryLight,
+                                fw: 0,
                                     ),
                                     
                               onChanged: (value) {
@@ -2203,6 +2228,7 @@ class _ModifyPlaceOrderScreenState
                                         ? colors.textPrimaryDark
                                         : colors.textPrimaryLight,
                                     theme: theme.isDarkMode,
+                                    fw: 0,
                                   ),
                               textCtrl: mktProtCtrl,
                               prefixIcon: Container(
@@ -2271,18 +2297,28 @@ class _ModifyPlaceOrderScreenState
                 },
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                    " $marketProtection %",
-                    style: textStyle(
-                      theme.isDarkMode
-                          ? colors.colorLightBlue
-                          : colors.colorBlue,
-                      14,
-                      FontWeight.w600,
-                    ).copyWith(
-                      decoration: TextDecoration.underline,
-                    ),
-                  ),
+                  child:
+                  
+                  TextWidget.subText(
+                    text: " $marketProtection %",
+                    theme: theme.isDarkMode,
+                    color: theme.isDarkMode ? colors.colorLightBlue : colors.colorBlue,
+                    fw: 2,
+                    decoration: TextDecoration.underline,
+                  ),       
+                  
+                  //  Text(
+                  //   " $marketProtection %",
+                  //   style: textStyle(
+                  //     theme.isDarkMode
+                  //         ? colors.colorLightBlue
+                  //         : colors.colorBlue,
+                  //     14,
+                  //     FontWeight.w600,
+                  //   ).copyWith(
+                  //     decoration: TextDecoration.underline,
+                  //   ),
+                  // ),
                 ),
               ),
             ],

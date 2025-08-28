@@ -223,6 +223,7 @@ class _CreateBasketState extends ConsumerState<CreateBasket> {
                             color: theme.isDarkMode
                                 ? colors.textSecondaryDark
                                 : colors.textSecondaryLight,
+                            fw: 0,
                         ),
                         keyboardType: TextInputType.text,
                         style: TextWidget.textStyle(
@@ -231,6 +232,7 @@ class _CreateBasketState extends ConsumerState<CreateBasket> {
                                 ? colors.textPrimaryDark
                                 : colors.textPrimaryLight,
                             theme: theme.isDarkMode,
+                            fw: 0,
                         ),
                         textCtrl: textCtrl,
                         textAlign: TextAlign.start,

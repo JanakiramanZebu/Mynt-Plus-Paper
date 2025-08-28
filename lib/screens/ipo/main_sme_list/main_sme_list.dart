@@ -336,13 +336,14 @@ class _IPOListItem extends StatelessWidget {
                       : colors.textPrimaryLight,
                   maxLines: 2,
                   textOverflow: TextOverflow.ellipsis,
+                  fw: 0,
                 ),
               ),
               const SizedBox(height: 8),
               TextWidget.paraText(
                 text: "${ipo.key ?? ""} - $dateText $date",
                 theme: false,
-                fw: 3,
+                fw: 0,
                 color: theme.isDarkMode
                     ? colors.textSecondaryDark
                     : colors.textSecondaryLight,

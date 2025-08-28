@@ -150,7 +150,7 @@ class _DefaultIndexListState extends ConsumerState<DefaultIndexList>
                                 color: theme.isDarkMode
                                     ? colors.textPrimaryDark
                                     : colors.textPrimaryLight,
-                                fw: 3,
+                                fw: 0,
                               ),
                               const SizedBox(height: 4),
                               _LivePriceWidget(
@@ -694,7 +694,7 @@ class _LivePriceWidgetState extends State<_LivePriceWidget> {
                   style: _getTextStyle(
                     changeColor,
                     16,
-                    3,
+                    0,
                   ),
                 ),
                 const SizedBox(height: 3),
@@ -706,7 +706,7 @@ class _LivePriceWidgetState extends State<_LivePriceWidget> {
                               ? colors.textSecondaryDark
                               : colors.textSecondaryLight,
                           12,
-                          3,
+                          0,
                         )),
                     const SizedBox(
                       width: 3,
@@ -717,6 +717,7 @@ class _LivePriceWidgetState extends State<_LivePriceWidget> {
                               ? colors.textSecondaryDark
                               : colors.textSecondaryLight,
                           12,
+                          0,
                         )),
                   ],
                 )

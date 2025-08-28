@@ -26,6 +26,7 @@ Widget data(String name, String value, ThemesProvider theme) {
             color: theme.isDarkMode
                 ? colors.textSecondaryDark
                 : colors.textSecondaryLight,
+            fw: 0,
           ),
           SizedBox(
             width: 200,
@@ -36,6 +37,7 @@ Widget data(String name, String value, ThemesProvider theme) {
                   ? colors.textPrimaryDark
                   : colors.textPrimaryLight,
               align: TextAlign.right,
+              fw: 0,
             ),
           ),
         ],
@@ -310,6 +312,7 @@ class _OrderIdRow extends StatelessWidget {
                   color: theme.isDarkMode
                       ? colors.textSecondaryDark
                       : colors.textSecondaryLight,
+              fw: 0,
                 ),
                 Row(
                   children: [
@@ -336,6 +339,7 @@ class _OrderIdRow extends StatelessWidget {
                             : isFailed
                                 ? theme.isDarkMode ? colors.lossDark : colors.lossLight
                                 : colors.pending,
+                        fw: 0,
                       ),
                     ),
 
@@ -461,6 +465,7 @@ class _PaymentStatusRow extends StatelessWidget {
               color: theme.isDarkMode
                   ? colors.textSecondaryDark
                   : colors.textSecondaryLight,
+              fw: 0,
             ),
             Row(
               children: [
@@ -490,6 +495,7 @@ class _PaymentStatusRow extends StatelessWidget {
                                 "Fund Pending"
                             ? theme.isDarkMode ? colors.pending : colors.pending
                             : theme.isDarkMode ? colors.profitDark : colors.profitLight,
+                    fw: 0,
                   ),
                 ),
                 // SvgPicture.asset(
@@ -610,7 +616,7 @@ class _BidDetailsSection extends StatelessWidget {
             color: theme.isDarkMode
                 ? colors.textPrimaryDark
                 : colors.textPrimaryLight,
-            fw: 0,
+            fw: 1,
           ),
         ),
         Column(
@@ -674,6 +680,7 @@ class _BidDetailsTable extends StatelessWidget {
                 color: theme.isDarkMode
                     ? colors.textPrimaryDark
                     : colors.textPrimaryLight,
+                fw: 0,
               ),
             ),
             DataColumn(
@@ -683,6 +690,7 @@ class _BidDetailsTable extends StatelessWidget {
                 color: theme.isDarkMode
                     ? colors.textPrimaryDark
                     : colors.textPrimaryLight,
+                fw: 0,
               ),
             ),
             DataColumn(
@@ -692,6 +700,7 @@ class _BidDetailsTable extends StatelessWidget {
                 color: theme.isDarkMode
                     ? colors.textPrimaryDark
                     : colors.textPrimaryLight,
+                fw: 0,
               ),
             ),
           ],
@@ -707,6 +716,7 @@ class _BidDetailsTable extends StatelessWidget {
                   color: theme.isDarkMode
                       ? colors.textSecondaryDark
                       : colors.textSecondaryLight,
+                  fw: 0,
                 ),
               ),
               DataCell(
@@ -716,6 +726,7 @@ class _BidDetailsTable extends StatelessWidget {
                   color: theme.isDarkMode
                       ? colors.textSecondaryDark
                       : colors.textSecondaryLight,
+                  fw: 0,
                 ),
               ),
               DataCell(
@@ -729,6 +740,7 @@ class _BidDetailsTable extends StatelessWidget {
                   color: theme.isDarkMode
                       ? colors.textSecondaryDark
                       : colors.textSecondaryLight,
+                  fw: 0,
                 ),
               ),
             ]),

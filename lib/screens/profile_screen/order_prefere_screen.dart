@@ -217,8 +217,8 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                               fontSize: 14,
                                               theme: theme.isDarkMode,
                                               fw: orderType == orderTypes[index]
-                                                  ? 0
-                                                  : null)));
+                                                  ? 2
+                                                  : 0)));
                                 },
                                 separatorBuilder: (context, index) {
                                   return const SizedBox(width: 8);
@@ -277,8 +277,8 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                               theme: theme.isDarkMode,
                                               fw: priceType ==
                                                       priceTypes[index]['type']
-                                                  ? 0
-                                                  : null)));
+                                                  ? 2
+                                                  : 0)));
                                 },
                                 separatorBuilder: (context, index) {
                                   return const SizedBox(width: 8);
@@ -344,7 +344,7 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                                 : colors.textPrimaryLight,
                                             fontSize: 14,
                                             theme: theme.isDarkMode,
-                                            fw: isSelected ? 0 : null,
+                                            fw: isSelected ? 2 : 0,
                                           ),
                                         ),
                                       );
@@ -415,6 +415,7 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                             : colors.textPrimaryLight,
                                         fontSize: 16,
                                         theme: theme.isDarkMode,
+                                        fw: 0,
                                       ),
                                       textCtrl: mktProtCtrl,
                                       prefixIcon: Container(
@@ -479,6 +480,7 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                             : Color(QtyPrefer == OrdQtyPref.mktqty
                                 ? 0xff3E4763
                                 : 0xff666666),
+                        fw: 0,
                       ),
                       Radio<OrdQtyPref>(
                           fillColor: MaterialStateProperty.resolveWith<Color>(
@@ -510,6 +512,7 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                             : Color(QtyPrefer == OrdQtyPref.mktqty
                                 ? 0xff3E4763
                                 : 0xff666666),
+                        fw: 0,
                       ),
                     ]),
                     if (QtyPrefer == OrdQtyPref.mktlot) ...[
@@ -529,6 +532,7 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                       color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                                       fontSize: 14,
                                       theme: theme.isDarkMode,
+                                      fw: 0,
                                     ),
                                     inputFormate: [
                                       FilteringTextInputFormatter.digitsOnly
@@ -539,6 +543,7 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                           : colors.textPrimaryLight,
                                       fontSize: 16,
                                       theme: theme.isDarkMode,
+                                      fw: 0,
                                     ),
                                     textCtrl: qtyCtrl,
                                     textAlign: TextAlign.start,
@@ -620,8 +625,8 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                               theme: theme.isDarkMode,
                                               fw: expriceType ==
                                                       expriceTypes[index]['type']
-                                                  ? 0
-                                                  : null)));
+                                                  ? 2
+                                                  : 0)));
                                 },
                                 separatorBuilder: (context, index) {
                                   return const SizedBox(width: 8);
@@ -685,7 +690,7 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
       theme: false,
       color:
           theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-      fw: null,
+      fw: 1,
     );
   }
 
