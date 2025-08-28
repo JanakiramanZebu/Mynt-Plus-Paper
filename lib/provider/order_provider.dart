@@ -316,6 +316,15 @@ class OrderProvider extends DefaultChangeNotifier {
     FocusScope.of(context).unfocus();
 
     _selectedTab = index;
+
+    if (tabCtrl != null) {
+      try {
+        tabCtrl.animateTo(index);
+      } catch (e) {
+        print("TabController not ready for animation: $e");
+      }
+    }
+    
     tabSize();
     showOrderSearch(false);
     showGTTOrderSearch(false);

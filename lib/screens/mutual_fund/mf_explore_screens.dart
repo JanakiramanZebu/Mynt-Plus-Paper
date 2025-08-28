@@ -196,7 +196,8 @@ class _ExploreScreensState extends ConsumerState<MFExploreScreens>
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          width: 100,
+          width: MediaQuery.of(context).size.width * 0.25,
+          // width: 100,
           alignment: Alignment.center,
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
           child: TextWidget.subText(

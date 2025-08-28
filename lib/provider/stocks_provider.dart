@@ -26,6 +26,7 @@ import '../models/marketwatch_model/get_quotes.dart';
 // duplicate imports removed
 import '../models/strategy_model.dart';
 import '../routes/route_names.dart';
+import 'auth_provider.dart';
 import 'bonds_provider.dart';
 import 'core/default_change_notifier.dart';
 import 'iop_provider.dart';
@@ -452,111 +453,7 @@ class StocksProvider extends DefaultChangeNotifier {
     }
   }
 
-  PortfolioResponse? _portfolioAnalysis;
-  PortfolioResponse? get portfolioAnalysis => _portfolioAnalysis;
-  bool _isPortfolioLoading = false;
-  String? _portfolioError;
-
-  // Portfolio getters
-  bool get isPortfolioLoading => _isPortfolioLoading;
-  String? get portfolioError => _portfolioError;
-  bool get hasPortfolioData => _portfolioAnalysis != null;
-
-  Future getPortfolioAnalysis() async {
-    final Preferences pref = locator<Preferences>();
-
-    try {
-      final clientId = pref.clientId ?? "";
-      final portfolioAnalysis = await api.fetchPortfolioAnalysis(clientId, "81d17903d77d3b70ad87fbb3d823e964846246846b0f6327844731c1b232cc62");
-
-      _portfolioAnalysis = portfolioAnalysis;
-      _portfolioError = null;
-      notifyListeners();
-
-      return _portfolioAnalysis;
-    } catch (e) {
-      print(e);
-      _portfolioError = e.toString();
-      _portfolioAnalysis = null;
-      rethrow;
-    }
-  }
-
-  // Load portfolio data with loading state
-  Future<void> loadPortfolioData({
-    required String clientId,
-    required String session,
-  }) async {
-    _isPortfolioLoading = true;
-    _portfolioError = null;
-    notifyListeners();
-
-    try {
-      final data = await api.fetchPortfolioAnalysis(clientId, session);
-      _portfolioAnalysis = data;
-      _portfolioError = null;
-    } catch (e) {
-      _portfolioError = e.toString();
-      _portfolioAnalysis = null;
-    } finally {
-      _isPortfolioLoading = false;
-      notifyListeners();
-    }
-  }
-
-  // Refresh portfolio data
-  Future<void> refreshPortfolioData({
-    required String clientId,
-    required String session,
-  }) async {
-    await loadPortfolioData(clientId: clientId, session: session);
-  }
-
-  // Clear portfolio data
-  void clearPortfolioData() {
-    _portfolioAnalysis = null;
-    _portfolioError = null;
-    _isPortfolioLoading = false;
-    notifyListeners();
-  }
-
-  // Get top sectors (limited)
-  Map<String, double> getTopSectors({int limit = 5}) {
-    if (_portfolioAnalysis == null) return {};
-    
-    final entries = _portfolioAnalysis!.sectorAllocation.entries.toList()
-      ..sort((a, b) => b.value.compareTo(a.value));
-    
-    if (entries.length <= limit) {
-      return Map.fromEntries(entries);
-    }
-    
-    final topEntries = entries.take(limit).toList();
-    final othersSum = entries.skip(limit).fold(0.0, (sum, entry) => sum + entry.value);
-    
-    if (othersSum > 0) {
-      topEntries.add(MapEntry('Others', othersSum));
-    }
-    
-    return Map.fromEntries(topEntries);
-  }
-
-  // Get current portfolio value
-  double get currentPortfolioValue {
-    if (_portfolioAnalysis?.chartData?.totalCurrentValue.isNotEmpty == true) {
-      return _portfolioAnalysis!.chartData!.totalCurrentValue.last;
-    }
-    return 0.0;
-  }
-
-  // Get total invested value
-  double get totalInvestedValue {
-    if (_portfolioAnalysis?.chartData?.totalInvestedValue.isNotEmpty == true) {
-      return _portfolioAnalysis!.chartData!.totalInvestedValue.last;
-    }
-    return 0.0;
-  }
-
+ 
   Future getGlobalIndices() async {
     try {
       _globalIndicesModel = await api.fetchGlobalIndices();

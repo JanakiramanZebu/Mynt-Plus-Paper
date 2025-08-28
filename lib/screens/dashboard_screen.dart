@@ -38,6 +38,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
   
   // Track current main tab
   int _currentMainTab = 0;
+  
+  // Flag to prevent listener interference during initialization
+  bool _isInitializing = true;
 
   // Callback function to handle child tab boundary navigation
   void _onChildTabBoundaryReached(bool isLeftSwipe) {
@@ -55,15 +58,26 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
   }
 
   void _switchToParentTab(int newTabIndex) {
-    setState(() {
-      _currentMainTab = newTabIndex;
-    });
-    _mainTabController.animateTo(newTabIndex);
-    _pageController.animateToPage(
-      newTabIndex,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
-    );
+    // Only proceed if the tab is actually changing
+    if (_currentMainTab != newTabIndex) {
+      setState(() {
+        _currentMainTab = newTabIndex;
+      });
+      
+      // Only animate if not already at target
+      if (_mainTabController.index != newTabIndex) {
+        _mainTabController.animateTo(newTabIndex);
+      }
+      
+      // Only animate page if not already at target
+      if (_pageController.page?.round() != newTabIndex) {
+        _pageController.animateToPage(
+          newTabIndex,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        );
+      }
+    }
   }
 
   @override
@@ -77,16 +91,23 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
     );
     
     _pageController = PageController(initialPage: 0);
+    
+    // Ensure initial state is synchronized
+    _currentMainTab = 0;
 
     // Main tab listener
     _mainTabController.addListener(() {
+      // Skip listener during initialization
+      if (_isInitializing) return;
+      
       if (_mainTabController.indexIsChanging) {
         setState(() {
           _currentMainTab = _mainTabController.index;
         });
         
-        // Synchronize PageController with TabController
-        if (_pageController.page != _mainTabController.index) {
+        // Only synchronize PageController if it's not already at the target page
+        // This prevents infinite loops between TabController and PageController
+        if (_pageController.page?.round() != _mainTabController.index) {
           _pageController.animateToPage(
             _mainTabController.index,
             duration: const Duration(milliseconds: 300),
@@ -114,6 +135,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
           .requestMWScrip(context: context, isSubscribe: true);
       ref.read(authProvider).setIposAPicalls(context);
       ref.read(bondsProvider).fetchAllBonds();
+      
+      // Mark initialization as complete
+      _isInitializing = false;
     });
   }
 
@@ -188,8 +212,20 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
   void dispose() {
     routeObserver.unsubscribe(this);
     _searchFocusNode.dispose();
-    _mainTabController.dispose();
-    _pageController.dispose();
+    
+    // Safely dispose controllers
+    try {
+      _mainTabController.dispose();
+    } catch (e) {
+      // Controller might already be disposed
+    }
+    
+    try {
+      _pageController.dispose();
+    } catch (e) {
+      // Controller might already be disposed
+    }
+    
     super.dispose();
   }
 
@@ -390,7 +426,25 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
                   height: 40,
                   child: TabBar(
                     onTap: (index) {
-                      // Sync the tab index with the provider
+                      // Only proceed if the tab is actually changing
+                      if (_currentMainTab != index) {
+                        // Update the current main tab
+                        setState(() {
+                          _currentMainTab = index;
+                        });
+                        
+                        // Animate to the selected tab
+                        _mainTabController.animateTo(index);
+                        
+                        // Animate to the selected page
+                        _pageController.animateToPage(
+                          index,
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeInOut,
+                        );
+                      }
+                      
+                      // Always sync the tab index with the provider and perform other actions
                       ref.read(stocksProvide).syncTabIndex(index);
                       FocusScope.of(context).unfocus();
                       stocks.searchController.clear();
@@ -418,6 +472,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
                         TextWidget.textStyle(fontSize: 14, theme: false, fw: 2),
                     controller: _mainTabController,
                     tabs: stocks.exploreTabName,
+                    labelPadding: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.width * 0.055),
                   ),
                 ),
                 Divider(
@@ -433,10 +488,22 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
                  body: PageView(
            controller: _pageController,
            onPageChanged: (index) {
-             setState(() {
-               _currentMainTab = index;
-             });
-             _mainTabController.animateTo(index);
+             // Only update if the page actually changed
+             if (_currentMainTab != index) {
+               setState(() {
+                 _currentMainTab = index;
+               });
+               
+               // Only animate tab controller if it's not already at the target index
+               if (_mainTabController.index != index) {
+                 _mainTabController.animateTo(index);
+               }
+               
+               // Sync with provider when page changes
+               if (mounted) {
+                 ref.read(stocksProvide).syncTabIndex(index);
+               }
+             }
            },
            children: [
              // Stocks - no child tabs

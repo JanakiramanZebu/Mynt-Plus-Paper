@@ -134,10 +134,12 @@ class _DefaultIndexListState extends ConsumerState<DefaultIndexList>
                           marketWatch.scripdepthsize(false);
                           marketWatch.setETF(false);
                         },
+                        onLongPress: () =>
+                            _handleLongPress(context, indexProvider, marketWatch, item),
                         child: Container(
                           width: double.infinity,
                           height: double.infinity,
-                          padding: const EdgeInsets.all(8),
+                          padding: const EdgeInsets.all(0),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -178,6 +180,8 @@ class _DefaultIndexListState extends ConsumerState<DefaultIndexList>
               }),
             ),
           );
+
+          
   }
 
   Widget _buildPageContent(
@@ -253,6 +257,44 @@ class _DefaultIndexListState extends ConsumerState<DefaultIndexList>
       }
     } catch (e) {
       debugPrint("Error in index tap: $e");
+    }
+  }
+
+  Future<void> _handleLongPress(
+      BuildContext context, dynamic indexProvider, dynamic marketWatch, dynamic indexItem) async {
+    try {
+      // Get the index position in the list (0-3 typically)
+      final int indexPosition = indexProvider.defaultIndexList!.indValues!
+          .indexWhere((item) =>
+              item.token == indexItem.token && item.exch == indexItem.exch);
+
+      // Only proceed if we found a valid index position
+      if (indexPosition >= 0) {
+        await indexProvider.fetchIndexList("NSE", context);
+
+        // Pass the indexPosition directly - no conversion needed
+        await showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            useSafeArea: true,
+            isDismissible: true,
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(10),
+                topRight: Radius.circular(10),
+              ),
+            ),
+            builder: (_) => IndexBottomSheet(
+                  defaultIndex: indexItem,
+                  indexPosition: indexPosition, // Pass the index position
+                ));
+
+        await indexProvider.fetchIndexList("exit", context);
+        await marketWatch.requestMWScrip(context: context, isSubscribe: true);
+      }
+    } catch (e) {
+      // Log or handle the error
+      debugPrint("Error in index onLongPress: $e");
     }
   }
 }
