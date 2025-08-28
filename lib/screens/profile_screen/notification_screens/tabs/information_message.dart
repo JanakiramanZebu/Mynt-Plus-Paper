@@ -40,7 +40,7 @@ class InformationMessage extends ConsumerWidget {
                               text: _formatDateTime(item.datetime),
                               theme: false,
                               color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                              
+                              fw: 0,
                             ),
                             const SizedBox(height: 5),
                             if (item.title.isNotEmpty) ...[
@@ -64,6 +64,7 @@ class InformationMessage extends ConsumerWidget {
                                     : colors.textSecondaryLight,
                                 height: 1.5,
                                 letterSpacing: 0.5,
+                                fw: 0,
                               ),
                               textAlign: TextAlign.left,
                               trimLines: 5,

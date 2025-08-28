@@ -150,7 +150,7 @@ class _PledgeList extends State<PledgeList> {
                                               color: theme.isDarkMode
                                                   ? colors.textSecondaryDark
                                                   : colors.textSecondaryLight,
-                                              fw: 3),
+                                              fw: 0),
                                           TextWidget.subText(
                                               align: TextAlign.start,
                                               text: "${value['symbol'] ?? '-'}",
@@ -160,7 +160,7 @@ class _PledgeList extends State<PledgeList> {
                                               color: theme.isDarkMode
                                                   ? colors.textPrimaryDark
                                                   : colors.textPrimaryLight,
-                                              fw: 3),
+                                              fw: 0),
                                         ]),
                                     Padding(
                                       padding: const EdgeInsets.only(top: 8.0),
@@ -177,7 +177,7 @@ class _PledgeList extends State<PledgeList> {
                                                 color: theme.isDarkMode
                                                     ? colors.textSecondaryDark
                                                     : colors.textSecondaryLight,
-                                                fw: 3),
+                                                fw: 0),
                                             TextWidget.subText(
                                                 align: TextAlign.start,
                                                 text:
@@ -188,7 +188,7 @@ class _PledgeList extends State<PledgeList> {
                                                 color: theme.isDarkMode
                                                     ? colors.textPrimaryDark
                                                     : colors.textPrimaryLight,
-                                                fw: 3),
+                                                fw: 0),
                                           ]),
                                     ),
                                     Padding(
@@ -206,7 +206,7 @@ class _PledgeList extends State<PledgeList> {
                                                 color: theme.isDarkMode
                                                     ? colors.textSecondaryDark
                                                     : colors.textSecondaryLight,
-                                                fw: 3),
+                                                fw: 0),
                                             TextWidget.subText(
                                                 align: TextAlign.start,
                                                 text:
@@ -217,7 +217,7 @@ class _PledgeList extends State<PledgeList> {
                                                 color: theme.isDarkMode
                                                     ? colors.textPrimaryDark
                                                     : colors.textPrimaryLight,
-                                                fw: 3),
+                                                fw: 0),
                                           ]),
                                     ),
                                   ],

@@ -172,6 +172,7 @@ class _WatchListRenameState extends ConsumerState<WatchListRename> {
                                   ? colors.textSecondaryDark
                                   : colors.textSecondaryLight,
                               theme: theme.isDarkMode,
+                              fw: 0,
                               ),
                           keyboardType: TextInputType.text,
                           style: TextWidget.textStyle(
@@ -180,6 +181,7 @@ class _WatchListRenameState extends ConsumerState<WatchListRename> {
                                   ? colors.textPrimaryDark
                                   : colors.textPrimaryLight,
                               theme: theme.isDarkMode,
+                              fw: 0,
                               ),
                           textCtrl: textCtrl,
                           textAlign: TextAlign.start,

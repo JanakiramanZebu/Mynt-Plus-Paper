@@ -571,36 +571,79 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                           Row(
                               crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
-                                Text(
-                                    "${widget.scripInfo.symbol!.replaceAll("-EQ", "")} ",
-                                    style: textStyle(
-                                        theme.isDarkMode
-                                            ? colors.colorWhite
-                                            : colors.colorBlack,
-                                        14,
-                                        FontWeight.w400),
-                                    overflow: TextOverflow.ellipsis,
-                                    maxLines: 1),
+
+                                TextWidget.subText(
+                                    text: "${widget.scripInfo.symbol!.replaceAll("-EQ", "")} ",
+                                    theme: theme.isDarkMode,
+                                    color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                                    maxLines: 1,
+                                    textOverflow: TextOverflow.ellipsis,
+                                    fw: 0,
+                                  ),
+
+
+                                // Text(
+                                //     "${widget.scripInfo.symbol!.replaceAll("-EQ", "")} ",
+                                //     style: textStyle(
+                                //         theme.isDarkMode
+                                //             ? colors.colorWhite
+                                //             : colors.colorBlack,
+                                //         14,
+                                //         FontWeight.w400),
+                                //     overflow: TextOverflow.ellipsis,
+                                //     maxLines: 1),
                                 if (widget.scripInfo.expDate!.isNotEmpty)
-                                  Text(" ${widget.scripInfo.expDate} ",
-                                      style: textStyle(
-                                          theme.isDarkMode
-                                              ? colors.colorWhite
-                                              : colors.colorBlack,
-                                          14,
-                                          FontWeight.w400)),
+                                  TextWidget.subText(
+                                    text: " ${widget.scripInfo.expDate} ",
+                                    theme: theme.isDarkMode,
+                                    color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                                    maxLines: 1,
+                                    textOverflow: TextOverflow.ellipsis,
+                                    fw: 0,
+                                  ),
+
+
+                                  // Text(" ${widget.scripInfo.expDate} ",
+                                  //     style: textStyle(
+                                  //         theme.isDarkMode
+                                  //             ? colors.colorWhite
+                                  //             : colors.colorBlack,
+                                  //         14,
+                                  //         FontWeight.w400)),
                                 if (widget.scripInfo.option!.isNotEmpty)
-                                  Text(widget.scripInfo.option!,
-                                      style: textStyle(
-                                          theme.isDarkMode
-                                              ? colors.colorWhite
-                                              : colors.colorBlack,
-                                          14,
-                                          FontWeight.w400),
-                                      overflow: TextOverflow.ellipsis,
-                                      maxLines: 1),
-                                CustomExchBadge(
-                                    exch: " ${widget.scripInfo.exch}"),
+
+                                  TextWidget.subText(
+                                    text: widget.scripInfo.option!,
+                                    theme: theme.isDarkMode,
+                                    color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                                    maxLines: 1,
+                                    textOverflow: TextOverflow.ellipsis,
+                                    fw: 0,
+                                  ),
+
+                                
+                                  // Text(widget.scripInfo.option!,
+                                  //     style: textStyle(
+                                  //         theme.isDarkMode
+                                  //             ? colors.colorWhite
+                                  //             : colors.colorBlack,
+                                  //         14,
+                                  //         FontWeight.w400),
+                                  //     overflow: TextOverflow.ellipsis,
+                                  //     maxLines: 1),
+                                // CustomExchBadge(
+                                //     exch: " ${widget.scripInfo.exch}"),
+
+                                    TextWidget.subText(
+                                            fw: 0,
+                                            text: " ${widget.scripInfo.exch}",
+                                            textOverflow: TextOverflow.ellipsis,
+                                            maxLines: 1,
+                                            color: theme.isDarkMode
+                                                ? colors.textPrimaryDark
+                                                : colors.textPrimaryLight,
+                                            theme: false,
+                                     ),
                               ]),
                           const SizedBox(height: 4),
                           Row(
@@ -788,7 +831,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                 fw: orderType ==
                                                         orderTypes[index]['type']
                                                     ? 2
-                                                    : null)
+                                                    : 0)
               
                                             // Text(
                                             //     orderTypes[index]['type'],
@@ -1287,6 +1330,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                      color: theme.isDarkMode
                                 ? colors.textSecondaryDark
                                 : colors.textSecondaryLight,
+                                fw: 0,
                                     ),
                                                 keyboardType:
                                                     const TextInputType
@@ -1298,6 +1342,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                         ? colors.textPrimaryDark
                                         : colors.textPrimaryLight,
                                     theme: theme.isDarkMode,
+                                    fw: 0,
                                   ),
                                                 textCtrl: orderInput.val1Ctrl,
                                                 textAlign: TextAlign.start)),
@@ -1354,6 +1399,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                      color: theme.isDarkMode
                                 ? colors.textSecondaryDark
                                 : colors.textSecondaryLight,
+                                fw: 0,
                                     ),
                                                         inputFormate: [
                                                           FilteringTextInputFormatter
@@ -1368,6 +1414,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                         ? colors.textPrimaryDark
                                         : colors.textPrimaryLight,
                                     theme: theme.isDarkMode,
+                                    fw: 0,
                                   ),
                                                         // prefixIcon: InkWell(
                                                         //   onTap: () {
@@ -1568,7 +1615,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                           text: "${orderInput.actPrcType}",
                                                           color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
                                                           theme: theme.isDarkMode,
-                                                          fw: 0,
+                                                          fw: 1,
                                                         ),
                                                     ]),
                                                 const SizedBox(height: 8),
@@ -1634,6 +1681,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                      color: theme.isDarkMode
                                 ? colors.textSecondaryDark
                                 : colors.textSecondaryLight,
+                                fw: 0,
                                     ),
                                                         keyboardType:
                                                             const TextInputType
@@ -1645,6 +1693,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                         ? colors.textPrimaryDark
                                         : colors.textPrimaryLight,
                                     theme: theme.isDarkMode,
+                                    fw: 0,
                                   ),
                                                         isReadable: orderInput
                                                                         .actPrcType ==
@@ -1988,6 +2037,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                      color: theme.isDarkMode
                                 ? colors.textSecondaryDark
                                 : colors.textSecondaryLight,
+                                fw: 0,
                                     ),
                                                   keyboardType:
                                                       const TextInputType
@@ -1999,6 +2049,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                         ? colors.textPrimaryDark
                                         : colors.textPrimaryLight,
                                     theme: theme.isDarkMode,
+                                    fw: 0,
                                   ),
                                                   textCtrl: orderInput.val2Ctrl,
                                                   textAlign: TextAlign.start)),
@@ -2032,6 +2083,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                      color: theme.isDarkMode
                                 ? colors.textSecondaryDark
                                 : colors.textSecondaryLight,
+                                fw: 0,
                                     ),
                                                           inputFormate: [FilteringTextInputFormatter.digitsOnly],
                                                           keyboardType: TextInputType.number,
@@ -2041,6 +2093,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                         ? colors.textPrimaryDark
                                         : colors.textPrimaryLight,
                                     theme: theme.isDarkMode,
+                                    fw: 0,
                                   ),
                                                           // prefixIcon: InkWell(
                                                           //   onTap: () {
@@ -2248,7 +2301,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                           text: "${orderInput.actOcoPrcType}",
                                                           color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
                                                           theme: theme.isDarkMode,
-                                                          fw: 0,
+                                                          fw: 1,
                                                         ),
                                                       
                                                       ]),
@@ -2319,6 +2372,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                      color: theme.isDarkMode
                                 ? colors.textSecondaryDark
                                 : colors.textSecondaryLight,
+                                fw: 0,
                                     ),
                                                               keyboardType:
                                                                   const TextInputType
@@ -2331,6 +2385,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                         ? colors.textPrimaryDark
                                         : colors.textPrimaryLight,
                                     theme: theme.isDarkMode,
+                                    fw: 0,
                                   ),
                                                               isReadable: orderInput.actOcoPrcType ==
                                                                           "Limit" ||
@@ -2907,7 +2962,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                 align: TextAlign.center,
                                                 color: theme.isDarkMode ? colors.lossDark : colors.lossLight,
                                                 theme: theme.isDarkMode,
-                                                fw: 3,
+                                                fw: 0,
                                               ),
                                               const SizedBox(height: 24),
                                               SizedBox(
@@ -3007,6 +3062,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                               .textSecondaryDark
                                                           : colors
                                                               .textSecondaryLight,
+                                                      fw: 0,
                                                     ),
                                                     inputFormate: [
                                                       FilteringTextInputFormatter
@@ -3022,6 +3078,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                           : colors
                                                               .textPrimaryLight,
                                                       theme: theme.isDarkMode,
+                                                      fw: 0,
                                                     ),
                                                     // prefixIcon:
                                                     //     InkWell(
@@ -3244,13 +3301,19 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                 //                 FontWeight.w500))
                                                 // ]
                                                 if (_isQtyToAmount)
-                                                  Text(
-                                                      "Qty : ${convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount)}",
-                                                      style: textStyle(
-                                                          const Color(
-                                                              0xff666666),
-                                                          14,
-                                                          FontWeight.w500)),
+                                                TextWidget.subText(
+                                                      text: "Qty : ${convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount)}",
+                                                      theme: theme.isDarkMode,
+                                                      color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                                                      fw: 0,
+                                                    ),
+                                                  // Text(
+                                                  //     "Qty : ${convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount)}",
+                                                  //     style: textStyle(
+                                                  //         const Color(
+                                                  //             0xff666666),
+                                                  //         14,
+                                                  //         FontWeight.w500)),
                                               ],
                                             ),
                                           ),
@@ -3275,7 +3338,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                           text: "$priceType",
                                                           theme:
                                                               theme.isDarkMode,
-                                                          fw: 0,
+                                                          fw: 1,
                                                           color: theme
                                                                   .isDarkMode
                                                               ? colors
@@ -3348,6 +3411,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                   .textSecondaryDark
                                                               : colors
                                                                   .textSecondaryLight,
+                                                          fw: 0,
                                                         ),
                                                         keyboardType:
                                                             const TextInputType
@@ -3364,6 +3428,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                   .textPrimaryLight,
                                                           theme:
                                                               theme.isDarkMode,
+                                                          fw: 0,
                                                         ),
                                                         isReadable: priceType ==
                                                                     "Limit" ||
@@ -3540,14 +3605,21 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          'Stoploss order',
-                          style: textStyle(
-                            theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                            14,
-                            FontWeight.w400,
-                          ),
+
+                        TextWidget.subText(
+                          text: 'Stoploss order',
+                          theme: theme.isDarkMode,
+                          color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                          fw: 0,
                         ),
+                        // Text(
+                        //   'Stoploss order',
+                        //   style: textStyle(
+                        //     theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                        //     14,
+                        //     FontWeight.w400,
+                        //   ),
+                        // ),
                         AnimatedContainer(
                           duration: const Duration(milliseconds: 250),
                           curve: Curves.easeOut,
@@ -3633,14 +3705,21 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          'After market order (AMO)',
-                          style: textStyle(
-                            theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                            14,
-                            FontWeight.w400,
-                          ),
+
+                        TextWidget.subText(
+                          text: 'After market order (AMO)',
+                          theme: theme.isDarkMode,
+                          color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                          fw: 0,
                         ),
+                        // Text(
+                        //   'After market order (AMO)',
+                        //   style: textStyle(
+                        //     theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                        //     14,
+                        //     FontWeight.w400,
+                        //   ),
+                        // ),
                         AnimatedContainer(
                           duration: const Duration(milliseconds: 250),
                           curve: Curves.easeOut,
@@ -3708,14 +3787,21 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          'Add validity & Disclosed quantity',
-                          style: textStyle(
-                            theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                            14,
-                            FontWeight.w400,
-                          ),
+
+                        TextWidget.subText(
+                          text: 'Add validity & Disclosed quantity',
+                          theme: theme.isDarkMode,
+                          color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                          fw: 0,
                         ),
+                        // Text(
+                        //   'Add validity & Disclosed quantity',
+                        //   style: textStyle(
+                        //     theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                        //     14,
+                        //     FontWeight.w400,
+                        //   ),
+                        // ),
                         AnimatedContainer(
                           duration: const Duration(milliseconds: 250),
                           curve: Curves.easeOut,
@@ -3808,14 +3894,21 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
     child: Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          'Cover - Only SL',
-          style: textStyle(
-            theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-            14,
-            FontWeight.w400,
-          ),
+
+        TextWidget.subText(
+          text: 'Cover - Only SL',
+          theme: theme.isDarkMode,
+          color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+          fw: 0,
         ),
+        // Text(
+        //   'Cover - Only SL',
+        //   style: textStyle(
+        //     theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+        //     14,
+        //     FontWeight.w400,
+        //   ),
+        // ),
         AnimatedContainer(
           duration: const Duration(milliseconds: 250),
           curve: Curves.easeOut,
@@ -3879,14 +3972,13 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
     child: Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          'Bracket - TGT / SL',
-          style: textStyle(
-            theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-            14,
-            FontWeight.w400,
-          ),
+        TextWidget.subText(
+          text: 'Bracket - TGT / SL',
+          theme: theme.isDarkMode,
+          color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+          fw: 0,
         ),
+        // Text(
         AnimatedContainer(
           duration: const Duration(milliseconds: 250),
           curve: Curves.easeOut,
@@ -4206,13 +4298,23 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                               : colors.textSecondaryLight,
                                                                           theme: theme
                                                                               .isDarkMode,
+                                                                          fw: 0,
                                                                         ),
-                                                                        Text(
-                                                                            "${orderProvide.orderMarginModel == null ? 0.00 : orderProvide.orderMarginModel!.ordermargin}  + ${orderProvide.getBrokerageModel == null ? 0.00 : orderProvide.getBrokerageModel!.brkageAmt ?? 0.00}",
-                                                                            style: textStyle(
-                                                                                !theme.isDarkMode ? colors.colorBlue : colors.colorLightBlue,
-                                                                                12,
-                                                                                FontWeight.bold)),
+
+                                                                        TextWidget.paraText(
+                                                                          text: "${orderProvide.orderMarginModel == null ? 0.00 : orderProvide.orderMarginModel!.ordermargin}  + ${orderProvide.getBrokerageModel == null ? 0.00 : orderProvide.getBrokerageModel!.brkageAmt ?? 0.00}",
+                                                                          theme: theme.isDarkMode,
+                                                                          color:  !theme.isDarkMode ? colors.colorBlue : colors.colorLightBlue,
+                                                                          fw: 2,
+                                                                        ),
+
+                                                                        
+                                                                        // Text(
+                                                                        //     "${orderProvide.orderMarginModel == null ? 0.00 : orderProvide.orderMarginModel!.ordermargin}  + ${orderProvide.getBrokerageModel == null ? 0.00 : orderProvide.getBrokerageModel!.brkageAmt ?? 0.00}",
+                                                                        //     style: textStyle(
+                                                                        //         !theme.isDarkMode ? colors.colorBlue : colors.colorLightBlue,
+                                                                        //         12,
+                                                                        //         FontWeight.bold)),
                                                                         Icon(
                                                                             Icons
                                                                                 .arrow_drop_down,
@@ -4229,12 +4331,14 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                     text: "Balance ",
                                                                     color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                                                                     theme: theme.isDarkMode,
+                                                                    fw: 0,
                                                                   ),
                                                                   // const SizedBox(width: 4),
                                                                   TextWidget.paraText(
                                                                       text: " ${clientFundDetail?.avlMrg ?? ''}",
                                                                       color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
                                                                       theme: theme.isDarkMode,
+                                                                      fw: 0,
                                                                       ),
                                                                   const SizedBox(
                                                                       width: 4),
@@ -4290,7 +4394,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                               // ),
                                             
                                                                               // "+ Add fund" text in blue
-                                                                              TextWidget.subText(
+                                                                              TextWidget.paraText(
                                                                                   text: '+ Add fund',
                                                                                   color: theme.isDarkMode ? colors.secondaryDark : colors.secondaryLight,
                                                                                   theme: theme.isDarkMode,
@@ -5474,6 +5578,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                         color: theme.isDarkMode
                             ? colors.textSecondaryDark
                             : colors.textSecondaryLight,
+                        fw: 0,
                       ),
                       inputFormate: [FilteringTextInputFormatter.digitsOnly],
                       keyboardType: TextInputType.number,
@@ -5483,6 +5588,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                             ? colors.textPrimaryDark
                             : colors.textPrimaryLight,
                         theme: theme.isDarkMode,
+                        fw: 0,
                       ),
                       // prefixIcon: InkWell(
                       //   onTap: () {
@@ -5587,6 +5693,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                         color: theme.isDarkMode
                             ? colors.textSecondaryDark
                             : colors.textSecondaryLight,
+                        fw: 0,
                       ),
                       onChanged: (value) {
                         if (value.isNotEmpty && double.parse(value) > 0) {
@@ -5620,6 +5727,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                             ? colors.textPrimaryDark
                             : colors.textPrimaryLight,
                         theme: theme.isDarkMode,
+                        fw: 0,
                       ),
                       // prefixIcon: Container(
                       //     margin: const EdgeInsets.all(12),
@@ -5675,6 +5783,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                     color: theme.isDarkMode
                         ? colors.textSecondaryDark
                         : colors.textSecondaryLight,
+                    fw: 0,
                   ),
                   keyboardType:
                       const TextInputType.numberWithOptions(decimal: true),
@@ -5684,6 +5793,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                         ? colors.textPrimaryDark
                         : colors.textPrimaryLight,
                     theme: theme.isDarkMode,
+                    fw: 0,
                   ),
                   // prefixIcon: Container(
                   //   margin: const EdgeInsets.all(12),
@@ -5737,6 +5847,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                     color: theme.isDarkMode
                         ? colors.textSecondaryDark
                         : colors.textSecondaryLight,
+                    fw: 0,
                   ),
                   keyboardType:
                       const TextInputType.numberWithOptions(decimal: true),
@@ -5746,6 +5857,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                         ? colors.textPrimaryDark
                         : colors.textPrimaryLight,
                     theme: theme.isDarkMode,
+                    fw: 0,
                   ),
                   // prefixIcon: Container(
                   //   margin: const EdgeInsets.all(12),
@@ -5886,6 +5998,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                     ? colors.textPrimaryDark
                                     : colors.textPrimaryLight,
                                 theme: theme.isDarkMode,
+                                fw: 0,
                               ),
                               textCtrl: mktProtCtrl,
                               prefixIcon: Container(
@@ -5910,6 +6023,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                 color: theme.isDarkMode
                                     ? colors.textSecondaryDark
                                     : colors.textSecondaryLight,
+                                fw: 0,
                               ),
                             ),
                           ],
@@ -5957,18 +6071,27 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                 },
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                    " $marketProtection %",
-                    style: textStyle(
-                      theme.isDarkMode
-                          ? colors.colorLightBlue
-                          : colors.colorBlue,
-                      14,
-                      FontWeight.w600,
-                    ).copyWith(
-                      decoration: TextDecoration.underline,
-                    ),
+                  child:
+                  TextWidget.paraText(
+                    text: " $marketProtection %",
+                    color: theme.isDarkMode ? colors.colorLightBlue : colors.colorBlue,
+                    theme: theme.isDarkMode,
+                    decoration: TextDecoration.underline,
+                    fw: 2,
                   ),
+                  
+                  //  Text(
+                  //   " $marketProtection %",
+                  //   style: textStyle(
+                  //     theme.isDarkMode
+                  //         ? colors.colorLightBlue
+                  //         : colors.colorBlue,
+                  //     14,
+                  //     FontWeight.w600,
+                  //   ).copyWith(
+                  //     decoration: TextDecoration.underline,
+                  //   ),
+                  // ),
                 ),
               ),
             ],
@@ -6157,7 +6280,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
     return TextWidget.subText(
         text: text,
         theme: theme.isDarkMode,
-        fw: 0,
+        fw: 1,
         color: theme.isDarkMode
             ? colors.textPrimaryDark
             : colors.textPrimaryLight);

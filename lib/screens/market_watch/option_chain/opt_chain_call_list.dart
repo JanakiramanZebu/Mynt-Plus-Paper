@@ -539,7 +539,7 @@ Widget _buildPriceData(ThemesProvider theme) {
         if (perChange != null && perChange != "0.00") {
           color = perChange.startsWith("-") ?  theme.isDarkMode ? colors.lossDark : colors.lossLight : theme.isDarkMode ? colors.profitDark : colors.profitLight;
         }
-          return TextWidget.textStyle(fontSize: 14, color: color, theme: false, );
+          return TextWidget.textStyle(fontSize: 14, color: color, theme: false, fw: 0,);
     
   }
 
@@ -553,7 +553,7 @@ Widget _buildPriceData(ThemesProvider theme) {
         //   color = value.startsWith("-") ? colors.darkred : colors.ltpgreen;
         // } 
         return TextWidget.textStyle(
-            fontSize: 12, color: color, theme: false, );
+            fontSize: 12, color: color, theme: false, fw: 0,);
   }
 }
 

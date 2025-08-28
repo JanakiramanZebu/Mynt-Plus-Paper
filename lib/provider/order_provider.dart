@@ -316,6 +316,15 @@ class OrderProvider extends DefaultChangeNotifier {
     FocusScope.of(context).unfocus();
 
     _selectedTab = index;
+
+    if (tabCtrl != null) {
+      try {
+        tabCtrl.animateTo(index);
+      } catch (e) {
+        print("TabController not ready for animation: $e");
+      }
+    }
+    
     tabSize();
     showOrderSearch(false);
     showGTTOrderSearch(false);
@@ -1299,7 +1308,8 @@ class OrderProvider extends DefaultChangeNotifier {
 
         // ScaffoldMessenger.of(context)
         //     .showSnackBar(successMessage(context, 'Order Modified'));
-        // Navigator.pop(context);
+        
+        Navigator.pop(context);
 
         Navigator.pushNamed(context, Routes.orderConfirmation, arguments: {
           'orderData': [modifyOrderData],

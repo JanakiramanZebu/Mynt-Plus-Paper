@@ -188,7 +188,7 @@ class _IpoOpenOrderDetailsState extends ConsumerState<IpoOpenOrderDetails> {
                                               color: theme.isDarkMode
                                                   ? colors.textSecondaryDark
                                                   : colors.textSecondaryLight,
-                                              fw: 3,
+                                              fw: 0,
                                             ),
                                             Container(
                                               padding:
@@ -223,7 +223,7 @@ class _IpoOpenOrderDetailsState extends ConsumerState<IpoOpenOrderDetails> {
                                                         ? colors.profitDark
                                                         : colors.profitLight
                                                     : colors.pending,
-                                                fw: 3,
+                                                fw: 0,
                                               ),
                                             ),
                                           ],
@@ -245,7 +245,7 @@ class _IpoOpenOrderDetailsState extends ConsumerState<IpoOpenOrderDetails> {
                                               color: theme.isDarkMode
                                                   ? colors.textSecondaryDark
                                                   : colors.textSecondaryLight,
-                                              fw: 3,
+                                              fw: 0,
                                             ),
                                             Container(
                                               padding:
@@ -277,7 +277,7 @@ class _IpoOpenOrderDetailsState extends ConsumerState<IpoOpenOrderDetails> {
                                                         ""
                                                     ? colors.pending
                                                     : colors.profitLight,
-                                                fw: 3,
+                                                fw: 0,
                                               ),
                                             ),
                                           ],
@@ -382,7 +382,7 @@ class _IpoOpenOrderDetailsState extends ConsumerState<IpoOpenOrderDetails> {
                                           color: theme.isDarkMode
                                               ? colors.textPrimaryDark
                                               : colors.textPrimaryLight,
-                                          fw: 3,
+                                          fw: 1,
                                         ),
                                         SizedBox(
                                           width: double.infinity,
@@ -431,7 +431,7 @@ class _IpoOpenOrderDetailsState extends ConsumerState<IpoOpenOrderDetails> {
                                                                   .textPrimaryDark
                                                               : colors
                                                                   .textPrimaryLight,
-                                                          fw: 3),
+                                                          fw: 0),
                                                     ),
                                                   ),
                                                   DataColumn(
@@ -443,7 +443,7 @@ class _IpoOpenOrderDetailsState extends ConsumerState<IpoOpenOrderDetails> {
                                                                 .textPrimaryDark
                                                             : colors
                                                                 .textPrimaryLight,
-                                                        fw: 3),
+                                                        fw: 0),
                                                   ),
                                                   DataColumn(
                                                     label: TextWidget.subText(
@@ -454,7 +454,7 @@ class _IpoOpenOrderDetailsState extends ConsumerState<IpoOpenOrderDetails> {
                                                                 .textPrimaryDark
                                                             : colors
                                                                 .textPrimaryLight,
-                                                        fw: 3),
+                                                        fw: 0),
                                                   ),
                                                   DataColumn(
                                                     label: TextWidget.subText(
@@ -465,7 +465,7 @@ class _IpoOpenOrderDetailsState extends ConsumerState<IpoOpenOrderDetails> {
                                                                 .textPrimaryDark
                                                             : colors
                                                                 .textPrimaryLight,
-                                                        fw: 3),
+                                                        fw: 0),
                                                   ),
                                                   DataColumn(
                                                     label: TextWidget.subText(
@@ -476,7 +476,7 @@ class _IpoOpenOrderDetailsState extends ConsumerState<IpoOpenOrderDetails> {
                                                                 .textPrimaryDark
                                                             : colors
                                                                 .textPrimaryLight,
-                                                        fw: 3),
+                                                        fw: 0),
                                                   ),
                                                 ],
                                                 rows: List<DataRow>.generate(
@@ -498,7 +498,7 @@ class _IpoOpenOrderDetailsState extends ConsumerState<IpoOpenOrderDetails> {
                                                         padding:
                                                             const EdgeInsets
                                                                 .only(left: 8),
-                                                        child: TextWidget.subText(
+                                                        child: TextWidget.paraText(
                                                             text:
                                                                 "${index + 1}",
                                                             theme: false,
@@ -508,10 +508,10 @@ class _IpoOpenOrderDetailsState extends ConsumerState<IpoOpenOrderDetails> {
                                                                     .textSecondaryDark
                                                                 : colors
                                                                     .textSecondaryLight,
-                                                            fw: 3),
+                                                            fw: 0),
                                                       )),
                                                       DataCell(
-                                                        TextWidget.subText(
+                                                        TextWidget.paraText(
                                                             text: bid.quantity!,
                                                             theme: false,
                                                             color: theme
@@ -520,10 +520,10 @@ class _IpoOpenOrderDetailsState extends ConsumerState<IpoOpenOrderDetails> {
                                                                     .textSecondaryDark
                                                                 : colors
                                                                     .textSecondaryLight,
-                                                            fw: 3),
+                                                            fw: 0),
                                                       ),
                                                       DataCell(
-                                                        TextWidget.subText(
+                                                        TextWidget.paraText(
                                                             text: widget.ipodetails
                                                                         .type ==
                                                                     "BSE"
@@ -537,10 +537,10 @@ class _IpoOpenOrderDetailsState extends ConsumerState<IpoOpenOrderDetails> {
                                                                     .textSecondaryDark
                                                                 : colors
                                                                     .textSecondaryLight,
-                                                            fw: 3),
+                                                            fw: 0),
                                                       ),
                                                       DataCell(
-                                                        TextWidget.subText(
+                                                        TextWidget.paraText(
                                                             text: widget.ipodetails
                                                                         .type ==
                                                                     "BSE"
@@ -553,7 +553,7 @@ class _IpoOpenOrderDetailsState extends ConsumerState<IpoOpenOrderDetails> {
                                                                     .textSecondaryDark
                                                                 : colors
                                                                     .textSecondaryLight,
-                                                            fw: 3),
+                                                            fw: 0),
                                                       ),
                                                       DataCell(Padding(
                                                         padding:
@@ -566,8 +566,12 @@ class _IpoOpenOrderDetailsState extends ConsumerState<IpoOpenOrderDetails> {
                                                                   .check_circle
                                                               : Icons.cancel,
                                                           color: isCutOff
-                                                              ? Colors.green
-                                                              : Colors.red,
+                                                              ? theme.isDarkMode
+                                                                  ? colors.profitDark
+                                                                  : colors.profitLight
+                                                              : theme.isDarkMode
+                                                                  ? colors.lossDark
+                                                                  : colors.lossLight,
                                                         ),
                                                       )),
                                                     ]);
@@ -1146,7 +1150,7 @@ class _IpoOpenOrderDetailsState extends ConsumerState<IpoOpenOrderDetails> {
               color: theme.isDarkMode
                   ? colors.textSecondaryDark
                   : colors.textSecondaryLight,
-              fw: 3),
+              fw: 0),
           SizedBox(
             width: MediaQuery.of(context).size.width * 0.6,
             child: TextWidget.subText(
@@ -1157,7 +1161,7 @@ class _IpoOpenOrderDetailsState extends ConsumerState<IpoOpenOrderDetails> {
                     : colors.textPrimaryLight,
                 softWrap: true,
                 align: TextAlign.end,
-                fw: 3),
+                fw: 0),
           ),
         ],
       ),

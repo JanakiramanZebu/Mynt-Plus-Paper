@@ -200,7 +200,7 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                             color: theme.isDarkMode
                                 ? colors.textSecondaryDark
                                 : colors.textSecondaryLight,
-                            fw: 3),
+                            fw: 0),
                         const SizedBox(width: 6),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
@@ -217,7 +217,7 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                           child: TextWidget.paraText(
                             text: status.toUpperCase(),
                             theme: false,
-                            fw: 3,
+                            fw: 0,
                             color: isOpen
                                 ? theme.isDarkMode
                                     ? colors.profitDark
@@ -266,7 +266,7 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                                     unselectedLabelStyle: TextWidget.textStyle(
                                       fontSize: 14,
                                       theme: false,                                    
-                                      fw: 3,
+                                      fw: 0,
                                     ),
                                     labelPadding: const EdgeInsets.symmetric(
                                         horizontal: 16),
@@ -417,14 +417,14 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                                                 TextWidget.subText(
                                                   text: "Qty",
                                                   theme: false,
-                                                  fw: 3,
+                                                  fw: 1,
                                                   color: theme.isDarkMode
                                                       ? colors.textPrimaryDark
                                                       : colors.textPrimaryLight,
                                                 ),
-                                                const SizedBox(height: 10),
+                                                const SizedBox(height: 8),
                                                 SizedBox(
-                                                  height: 50,
+                                                  height: 45,
                                                   child: TextFormField(
                                                     readOnly: true,
                                                     textAlign: TextAlign.center,
@@ -435,6 +435,7 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                                                           ? colors.textPrimaryDark
                                                           : colors
                                                               .textPrimaryLight,
+                                                      fw: 0,
                                                       
                                                     ),
                                                     keyboardType:
@@ -614,7 +615,7 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                                                     TextWidget.subText(
                                                       text: "Bid Price",
                                                       theme: false,
-                                                      fw: 3,
+                                                      fw: 1,
                                                       color: theme.isDarkMode
                                                           ? colors
                                                               .textPrimaryDark
@@ -631,9 +632,9 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                                                     //         FontWeight.w600)),
                                                   ],
                                                 ),
-                                                const SizedBox(height: 10),
+                                                const SizedBox(height: 8),
                                                 SizedBox(
-                                                  height: 50,
+                                                  height: 45,
                                                   child: TextFormField(
                                                     style: TextWidget.textStyle(
                                                       fontSize: 16,
@@ -642,7 +643,7 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                                                           ? colors.textPrimaryDark
                                                           : colors
                                                               .textPrimaryLight,
-                                                      
+                                                      fw: 0,
                                                     ),
                                                     keyboardType:
                                                         TextInputType.number,
@@ -802,7 +803,7 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                                               text:
                                                   addIpo[index].qualityerrortext,
                                               color: colors.error,
-                                              fw: 3,
+                                              fw: 0,
                                             ),
                                           ),
                                           Expanded(
@@ -810,7 +811,7 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                                               theme: false,
                                               text: addIpo[index].biderrortext,
                                               color: colors.error,
-                                              fw: 3,
+                                              fw: 0,
                                             ),
                                           ),
                                         ],
@@ -871,7 +872,7 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                                           TextWidget.subText(
                                             text: "Add another bid",
                                             theme: false,
-                                            fw: 2,
+                                            fw: 0,
                                             color: theme.isDarkMode
                                                 ? colors.primaryDark
                                                 : colors.primaryLight,

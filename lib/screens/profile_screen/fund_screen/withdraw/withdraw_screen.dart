@@ -92,6 +92,7 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
                             "Withdrawable Amount ₹ ${widget.withdarw.payoutdetails!.withdrawAmount}",
                         theme: widget.theme.isDarkMode,
                         color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                        fw: 0,
                       ),
                       const SizedBox(height: 10),
                       TextFormField(
@@ -109,7 +110,7 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
                         keyboardType:
                             const TextInputType.numberWithOptions(decimal: true),
                         style: TextWidget.textStyle(
-                            theme: widget.theme.isDarkMode, color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight, fontSize: 25,),
+                            theme: widget.theme.isDarkMode, color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight, fontSize: 25, fw: 0,),
                         controller: widget.withdarw.withdrawamount,
                         onChanged: (value) {
                           // widget.withdarw.withdrawamount.text = value;
@@ -165,10 +166,12 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
                               theme: false,
                               color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                               fontSize: 25,
+                              fw: 0,
                               ),
                           labelStyle: TextWidget.textStyle(
                               theme: widget.theme.isDarkMode,
                               fontSize: 25,
+                              fw: 0,
                               ),
                           prefixIcon: Padding(
                             padding: const EdgeInsets.all(12.0),
@@ -387,6 +390,7 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
                                     text: "Request on : ",
                                     theme: false,
                                     color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                                    fw: 0,
                                   ),
                                   const SizedBox(height: 4),
                                   TextWidget.paraText(
@@ -394,6 +398,7 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
                                         "${widget.withdarw.withdrawstatus?[0].eNTRYTIME}",
                                     theme: false,
                                     color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                                    fw: 0,
                                   ),
                                 ],
                               ),
@@ -483,6 +488,7 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
               color: theme.isDarkMode
                   ? colors.textSecondaryDark
                   : colors.textSecondaryLight,
+              fw: 0,
             ),
             TextWidget.subText(
               text: value,
@@ -490,6 +496,7 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
               color: theme.isDarkMode
                   ? colors.textPrimaryDark
                   : colors.textPrimaryLight,
+              fw: 0,
             ),
           ],
         ),

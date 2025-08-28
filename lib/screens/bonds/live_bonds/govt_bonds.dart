@@ -125,6 +125,7 @@ class GovtBondsScreen extends StatelessWidget {
                 ? colors.textPrimaryDark
                 : colors.textPrimaryLight,
             textOverflow: TextOverflow.ellipsis,
+            fw: 0,
           ),
         ),
       ],
@@ -140,6 +141,7 @@ class GovtBondsScreen extends StatelessWidget {
           color: theme.isDarkMode
               ? colors.textSecondaryDark
               : colors.textSecondaryLight,
+          fw: 0,
         ),
         const SizedBox(width: 4),
         TextWidget.paraText(
@@ -148,6 +150,7 @@ class GovtBondsScreen extends StatelessWidget {
           color: theme.isDarkMode
               ? colors.textSecondaryDark
               : colors.textSecondaryLight,
+          fw: 0,
         ),
       ],
     );
@@ -175,7 +178,7 @@ class GovtBondsScreen extends StatelessWidget {
           color: theme.isDarkMode
               ? colors.textSecondaryDark
               : colors.textSecondaryLight,
-          // w500
+          fw: 0,
         ),
         const SizedBox(width: 4),
         TextWidget.paraText(
@@ -184,6 +187,7 @@ class GovtBondsScreen extends StatelessWidget {
           color: theme.isDarkMode
               ? colors.textSecondaryDark
               : colors.textSecondaryLight,
+          fw: 0,
         ),
         const SizedBox(height: 4),
         TextWidget.paraText(
@@ -192,6 +196,7 @@ class GovtBondsScreen extends StatelessWidget {
           color: theme.isDarkMode
               ? colors.textSecondaryDark
               : colors.textSecondaryLight,
+          fw: 0,
         ),
       ],
     );

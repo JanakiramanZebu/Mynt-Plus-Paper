@@ -68,7 +68,8 @@ class _NoUPIAppsAlertState extends ConsumerState<NoUPIAppsAlert> {
                     color: theme.isDarkMode
                         ? colors.textPrimaryDark
                         : colors.textPrimaryLight,
-                    align: TextAlign.center),
+                    align: TextAlign.center,
+                    fw: 0),
                 const SizedBox(
                   height: 16,
                 ),

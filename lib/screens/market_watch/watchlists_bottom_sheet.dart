@@ -223,7 +223,7 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                         theme: theme.isDarkMode,
                                         fw: widget.currentWLName !=
                                                 watchlist[index]
-                                            ? null
+                                            ? 0
                                             : 2,
                                       ),
                                     ),
@@ -416,7 +416,7 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                                                           color: theme.isDarkMode
                                                                               ? colors.textSecondaryDark
                                                                               : colors.textPrimaryLight,
-                                                                          fw: 3,
+                                                                          fw: 0,
                                                                           align: TextAlign.center),
                                                                     ),
                                                                   ),
@@ -600,7 +600,7 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                                 ? colors.textSecondaryDark
                                                 : colors.textSecondaryLight,
                                         theme: theme.isDarkMode,
-                                        fw: isSelected ? 2 : null,
+                                        fw: isSelected ? 2 : 0,
                                       ),
                                     ),
                                   ),

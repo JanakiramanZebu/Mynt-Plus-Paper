@@ -59,46 +59,11 @@ class _IpoOrderbookMainScreenState extends ConsumerState<IpoOrderbookMainScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (filteredOpenOrders.isNotEmpty) ...[
-            Container(
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: theme.isDarkMode ? colors.textSecondaryDark.withOpacity(0.2) : colors.textSecondaryLight.withOpacity(0.05),
-                  // border: Border(
-                  //   top: BorderSide(
-                  //     color: theme.isDarkMode
-                  //         ? colors.dividerDark
-                  //         : colors.dividerLight,
-                  //   ),
-                  //   bottom: BorderSide(
-                  //     color: theme.isDarkMode
-                  //         ? colors.dividerDark
-                  //         : colors.dividerLight,
-                  //   ),
-                  // ),
-                ),
-                child: _buildSectionHeader("Open Orders", theme)),
+            _buildSectionHeader("Open Orders", theme),
             IpoOpenOrder(filteredOrders: filteredOpenOrders),
           ],
           if (filteredCloseOrders.isNotEmpty) ...[
-            Container(
-              width: double.infinity,
-              decoration: BoxDecoration(
-               color: theme.isDarkMode ? colors.textSecondaryDark.withOpacity(0.2) : colors.textSecondaryLight.withOpacity(0.05),
-                // border: Border(
-                //   top: BorderSide(
-                //     color: theme.isDarkMode
-                //         ? colors.dividerDark
-                //         : colors.dividerLight,
-                //   ),
-                //   bottom: BorderSide(
-                //     color: theme.isDarkMode
-                //         ? colors.dividerDark
-                //         : colors.dividerLight,
-                //   ),
-                // ),
-              ),
-              child: _buildSectionHeader("Closed Orders", theme),
-            ),
+            _buildSectionHeader("Closed Orders", theme),
             IpoCloseOrder(filteredOrders: filteredCloseOrders),
           ],
         ],
@@ -164,7 +129,7 @@ class _IpoOrderbookMainScreenState extends ConsumerState<IpoOrderbookMainScreen>
       child: TextWidget.subText(
         text: title,
         theme: false,
-        fw: 0,
+        fw: 1,
         color: theme.isDarkMode
             ? colors.textPrimaryDark
             : colors.textPrimaryLight,

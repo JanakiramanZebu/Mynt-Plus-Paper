@@ -108,14 +108,14 @@ class IpoTimeLineWidget extends StatelessWidget {
               color: theme.isDarkMode
                   ? colors.textSecondaryDark
                   : colors.textSecondaryLight,
-              fw: 3),
+              fw: 0),
           TextWidget.subText(
               text: value1,
               theme: false,
               color: theme.isDarkMode
                   ? colors.textPrimaryDark
                   : colors.textPrimaryLight,
-              fw: 3),
+              fw: 0),
         ],
       ),
       const SizedBox(height: 8),

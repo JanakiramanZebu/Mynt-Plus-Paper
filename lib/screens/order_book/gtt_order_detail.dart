@@ -169,7 +169,7 @@ class _GttOrderDetailState extends ConsumerState<GttOrderDetail> {
                                                                   " ${displayData.option} ",
                                                               theme: false,
                                                             color : theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                                                              fw: 3,
+                                                              fw: 1,
                                                               textOverflow:
                                                                   TextOverflow
                                                                       .ellipsis),
@@ -178,7 +178,7 @@ class _GttOrderDetailState extends ConsumerState<GttOrderDetail> {
                                                                   "${displayData.exch}"),
                                                         ],
                                                       ),
-                                                      const SizedBox(height: 6),
+                                                      const SizedBox(height: 4),
                                                       Column(
                                                         crossAxisAlignment:
                                                             CrossAxisAlignment
@@ -207,7 +207,7 @@ class _GttOrderDetailState extends ConsumerState<GttOrderDetail> {
                                                                                   "-")
                                                                       ? theme.isDarkMode ? colors.lossDark : colors.lossLight
                                                                       : theme.isDarkMode ? colors.profitDark : colors.profitLight,
-                                                              fw: 3),
+                                                              fw: 0),
                                                           // TextWidget.paraText(
                                                           //     text:
                                                           //         "  ${displayData.expDate}",
@@ -220,7 +220,7 @@ class _GttOrderDetailState extends ConsumerState<GttOrderDetail> {
                                                                   "${double.parse("${displayData.change ?? 0.00} ").toStringAsFixed(2)} (${displayData.perChange ?? 0.00}%)",
                                                               theme: false,
                                                               color : theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                                                              fw: 3),
+                                                              fw: 0),
                                                         ],
                                                       ),
                                                     ],
@@ -700,8 +700,8 @@ class _GttOrderDetailState extends ConsumerState<GttOrderDetail> {
               color: theme.isDarkMode
                   ? colors.textSecondaryDark
                   : colors.textSecondaryLight,
-              fw: 3),
-          TextWidget.subText(text: value, theme: theme.isDarkMode, color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight, fw: 3),
+              fw: 0),
+          TextWidget.subText(text: value, theme: theme.isDarkMode, color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight, fw: 0),
         ],
       ),
       const SizedBox(height: 8),

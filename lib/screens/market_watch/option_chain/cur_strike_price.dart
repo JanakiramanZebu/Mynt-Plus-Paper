@@ -53,7 +53,7 @@ class CurStrkprice extends ConsumerWidget {
                       text:"₹$price (${double.parse(pc).toStringAsFixed(2)}%)" ,
                       color:Color(0xffffffff) ,
                       theme: false,
-                      fw: 3),
+                      fw: 0),
                     
                     
                     

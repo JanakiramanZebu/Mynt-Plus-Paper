@@ -243,6 +243,7 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                                           ? colors.textPrimaryDark
                                           : colors.textPrimaryLight,
                                       theme: theme.isDarkMode,
+                                      fw: 0,
                                     ),
               inputFormatters: [
                 NoEmojiInputFormatter(),
@@ -253,7 +254,7 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                 hintText: "Enter UPI ID",
                 
                 hintStyle: TextWidget.textStyle(
-                    fontSize: 14, theme: false, color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight),
+                    fontSize: 14,  theme: false, color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight, fw: 0),
                     
 
                 contentPadding:
@@ -528,6 +529,7 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                                   color: theme.isDarkMode
                                       ? colors.textPrimaryDark
                                       : colors.textPrimaryLight,
+                                  fw: 0,
                                 ),
                                 const SizedBox(height: 10),
                                 TextFormField(
@@ -542,6 +544,7 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                                     color: theme.isDarkMode
                                         ? colors.textPrimaryDark
                                         : colors.textPrimaryLight,
+                                    fw: 0,
                                   ),
                                   controller: fund.amount,
                                   onChanged: (value) {
@@ -573,10 +576,12 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                                           ? colors.textSecondaryDark
                                           : colors.textSecondaryLight,
                                       fontSize: 25,
+                                      fw: 0,
                                     ),
                                     labelStyle: TextWidget.textStyle(
                                       theme: theme.isDarkMode,
                                       fontSize: 25,
+                                      fw: 0,
                                     ),
                                     prefixIcon: Padding(
                                       padding: const EdgeInsets.all(12.0),
@@ -763,6 +768,7 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                                             color: theme.isDarkMode
                                                 ? colors.textPrimaryDark
                                                 : colors.textPrimaryLight,
+                                            fw: 0,
                                           ),
                                         ),
                                         subtitle: Padding(
@@ -773,6 +779,7 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                                             color: theme.isDarkMode
                                                 ? colors.textSecondaryDark
                                                 : colors.textSecondaryLight,
+                                            fw: 0,
                                           ),
                                         ),
                                         trailing: Material(
@@ -832,6 +839,7 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                               color: theme.isDarkMode
                                   ? colors.textPrimaryDark
                                   : colors.textPrimaryLight,
+                              fw: 0,
                             ),
                           ),
                           const SizedBox(
@@ -929,6 +937,7 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                                                                 .textPrimaryDark
                                                             : colors
                                                                 .textPrimaryLight,
+                                                        fw: 0,
                                                       ),
                                                       SvgPicture.asset(
                                                         assets.leftArrow,
@@ -1276,11 +1285,12 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                         color: fund.bankdetails!.dATA![index][1] == fund.bankname
                             ? theme.isDarkMode ? colors.textSecondaryDark.withOpacity(0.2) : colors.textSecondaryLight.withOpacity(0.2)
                             : Colors.transparent,
-                        child: TextWidget.titleText(
+                        child: TextWidget.subText(
                           text:
                               '${fund.bankdetails!.dATA![index][1]}-${hideAccountNumber(fund.bankdetails!.dATA![index][2])}',
                           color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
                           theme: theme.isDarkMode,
+                          fw: 0,
                         ),
                       ),
                     );

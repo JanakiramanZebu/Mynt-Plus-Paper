@@ -134,6 +134,7 @@ class _TotpScreenState extends ConsumerState<ApiKeyScreen> {
                                       color: theme.isDarkMode
                                           ? colors.textPrimaryDark
                                           : colors.textPrimaryLight,
+                                      fw: 0,
                                     ),
                                     const SizedBox(height: 8.0),
                                   ],
@@ -199,7 +200,7 @@ class _TotpScreenState extends ConsumerState<ApiKeyScreen> {
                                   color: theme.isDarkMode
                                       ? colors.textPrimaryDark
                                       : colors.textPrimaryLight,
-                                      fw: 0,
+                                      fw: 1,
                                 ),
                                 Row(
                                   children: [
@@ -210,6 +211,7 @@ class _TotpScreenState extends ConsumerState<ApiKeyScreen> {
                                       color: theme.isDarkMode
                                           ? colors.textSecondaryDark
                                           : colors.textSecondaryLight,
+                                          fw: 0,
                                     ),
                                     Padding(
                                       padding: const EdgeInsets.only(left: 8.0),
@@ -231,6 +233,7 @@ class _TotpScreenState extends ConsumerState<ApiKeyScreen> {
                                                   "VALID"
                                               ? theme.isDarkMode ? colors.profitDark : colors.profitLight
                                               : theme.isDarkMode ? colors.lossDark : colors.lossLight,
+                                              fw: 0,
                                           ),
                                         ),
                                       ),
@@ -268,6 +271,7 @@ class _TotpScreenState extends ConsumerState<ApiKeyScreen> {
                                             ? colors.textPrimaryDark
                                             : colors.textPrimaryLight,
                                         textOverflow: TextOverflow.ellipsis,
+                                        fw: 0,
                                       ),
                                     ),
                                     Material(
@@ -405,7 +409,7 @@ class _TotpScreenState extends ConsumerState<ApiKeyScreen> {
                                   text: "Generate API Key",
                                   theme: false,
                                   color: colors.colorWhite,
-                                  fw: 1),
+                                  fw: 2),
                             ),
                           ),
                         )
