@@ -813,11 +813,9 @@ class _CABuybackState extends State<CABuyback> with TickerProviderStateMixin {
                                                                     data:
                                                                         dataval));
                                                       } else {
-                                                        ScaffoldMessenger.of(
-                                                                context)
-                                                            .showSnackBar(error(
+                                                        error(
                                                                 context,
-                                                                "Not Eligible"));
+                                                                "Not Eligible");
                                                         return null;
                                                       }
                                                     }

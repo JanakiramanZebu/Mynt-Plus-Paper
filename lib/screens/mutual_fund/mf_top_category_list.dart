@@ -440,8 +440,8 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
                 );
               }
             } catch (e) {
-              ScaffoldMessenger.of(context).showSnackBar(successMessage(
-                  context, "Error updating watchlist: ${e.toString()}"));
+              successMessage(
+                  context, "Error updating watchlist: ${e.toString()}");
             }
           },
           onTap: () async {
@@ -478,8 +478,7 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
                   //   arguments: bInstance,
                   // );
                 } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                      successMessage(context, "No Single Page Data"));
+                      successMessage(context, "No Single Page Data");
                   final jsondata = MutualFundList.fromJson(item.toJson());
                   Navigator.pushNamed(context, Routes.mforderScreen,
                       arguments: jsondata);
@@ -487,12 +486,11 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
                   mfData.chngOrderType("One-time");
                 }
               } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                    successMessage(context, "Missing fund information"));
+                    successMessage(context, "Missing fund information");
               }
             } catch (e) {
-              ScaffoldMessenger.of(context).showSnackBar(successMessage(
-                  context, "Error loading fund details: ${e.toString()}"));
+              successMessage(
+                  context, "Error loading fund details: ${e.toString()}");
             }
           },
           child: ListTile(

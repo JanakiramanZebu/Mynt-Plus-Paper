@@ -41,8 +41,8 @@ class _WatchlistCardState extends ConsumerState<WatchlistCard> {
             : Colors.black.withOpacity(0.08),
         onLongPress: () {
           if (marketWatch.isPreDefWLs == "Yes") {
-            ScaffoldMessenger.of(context).showSnackBar(warningMessage(context,
-                "This is a pre-defined watchlist that cannot be edited!"));
+            warningMessage(context,
+                "This is a pre-defined watchlist that cannot be edited!");
           } else {
             ref
                 .read(marketWatchProvider)

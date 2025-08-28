@@ -36,11 +36,13 @@ import './set_alert_screen_new.dart';
 class ScripDepthInfo extends ConsumerStatefulWidget {
   final DepthInputArgs wlValue;
   final String isBasket;
+  final bool? isfromOptionChain;
 
   const ScripDepthInfo({
     super.key,
     required this.wlValue,
     required this.isBasket,
+    this.isfromOptionChain = false,
   });
 
   @override
@@ -1538,7 +1540,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                         .exch,
                                                                     widget
                                                                         .wlValue
-                                                                        .token))
+                                                                        .token) && !widget.isfromOptionChain!)
                                                               Expanded(
                                                                 child: Center(
                                                                   child:

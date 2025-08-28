@@ -1437,9 +1437,8 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                                       if (mfOrder.mfPlaceOrderResponces == null &&
                                           mfOrder.mfPlaceOrderResponces?.stat !=
                                               'Ok') {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(warningMessage(context,
-                                                "${mfOrder.mfPlaceOrderResponces?.remarks}"));
+                                        warningMessage(context,
+                                                "${mfOrder.mfPlaceOrderResponces?.remarks}");
                                       }
                                     }
                       
@@ -1473,13 +1472,11 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                                     // }
                                   } else {
                                     if (mfOrder.mfOrderTpye == "One-time") {
-                                      ScaffoldMessenger.of(context).showSnackBar(
                                           warningMessage(context,
-                                              "Enter a valid minimum investment amount."));
+                                              "Enter a valid minimum investment amount.");
                                     } else {
-                                      ScaffoldMessenger.of(context).showSnackBar(
                                           warningMessage(context,
-                                              "Enter a valid minimum installment amount."));
+                                              "Enter a valid minimum installment amount.");
                                     }
                                   }
                                 }

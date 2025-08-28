@@ -945,9 +945,8 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                                 ? () {
                                     if (addIpo[addIpo.length - 1].requriedprice >
                                         ipo.maxUPIAmt) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
                                           warningMessage(context,
-                                              "Maximum investment upto ₹${double.parse(ipo.maxUPIAmt.toString()).toInt()} only "));
+                                              "Maximum investment upto ₹${double.parse(ipo.maxUPIAmt.toString()).toInt()} only ");
                                       _setButtonActiveState(ipo, false);
                                     } else if (addIpo[addIpo.length - 1]
                                             .bidpricecontroller
@@ -957,7 +956,6 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                                                 .bidpricecontroller
                                                 .text ==
                                             "0") {
-                                      ScaffoldMessenger.of(context).showSnackBar(
                                           warningMessage(
                                               context,
                                               addIpo[addIpo.length - 1]
@@ -965,7 +963,7 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                                                           .text ==
                                                       "0"
                                                   ? "Bid Price Value cannot be 0"
-                                                  : "*Bid Price Value is required"));
+                                                  : "*Bid Price Value is required");
                                     } else if (addIpo[addIpo.length - 1]
                                             .qualityController
                                             .text
@@ -974,7 +972,6 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                                                 .qualityController
                                                 .text ==
                                             "0") {
-                                      ScaffoldMessenger.of(context).showSnackBar(
                                           warningMessage(
                                               context,
                                               addIpo[addIpo.length - 1]
@@ -982,7 +979,7 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                                                           .text ==
                                                       "0"
                                                   ? '* Quantity cannot be 0'
-                                                  : '* Quantity cannot be empty'));
+                                                  : '* Quantity cannot be empty');
                                     } else {
                                       if (ipo.checkForErrorsInSMEPlaceOrder(
                                           addIpo)) {
@@ -1008,9 +1005,8 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                                           ),
                                         );
                                       } else {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(warningMessage(context,
-                                                "can't able place Order with current selected combination of Bids"));
+                                        warningMessage(context,
+                                                "can't able place Order with current selected combination of Bids");
                                         _setButtonActiveState(ipo, false);
                                       }
                                     }

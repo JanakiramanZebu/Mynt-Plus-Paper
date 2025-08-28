@@ -192,8 +192,7 @@ class _TotpScreenState extends ConsumerState<TotpScreen> {
                       onTap: () async {
                         await Future.delayed(const Duration(milliseconds: 150));
                         Clipboard.setData(ClipboardData(text: otp));
-                        ScaffoldMessenger.of(context).showSnackBar(
-                            successMessage(context, "TOTP copied to clipboard"));
+                            successMessage(context, "TOTP copied to clipboard");
         
                         Navigator.pop(context);
                       },
@@ -233,8 +232,7 @@ class _TotpScreenState extends ConsumerState<TotpScreen> {
                                       await Future.delayed(
                                           const Duration(milliseconds: 150));
                                       Clipboard.setData(ClipboardData(text: otp));
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                          successMessage(context, "TOTP copied to clipboard"));
+                                          successMessage(context, "TOTP copied to clipboard");
                                       Navigator.pop(context);
                                     },
                                     child: Container(
@@ -362,9 +360,8 @@ class _TotpScreenState extends ConsumerState<TotpScreen> {
                                     const Duration(milliseconds: 150));
                                 Clipboard.setData(
                                     ClipboardData(text: widget.secretKey));
-                                ScaffoldMessenger.of(context).showSnackBar(
                                     successMessage(
-                                        context, "Auth key copied to clipboard"));
+                                        context, "Auth key copied to clipboard");
                                 Navigator.pop(context);
                               },
                               child: Container(

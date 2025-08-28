@@ -403,15 +403,13 @@ class _PledgeFilterState extends State<PledgeFilter>
                                     data: value,
                                   ));
                             } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
                                 warningMessage(context,
-                                    '${value.initiated} Qty is processing'),
+                                    '${value.initiated} Qty is processing'
                               );
                             }
                           } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
                               warningMessage(context,
-                                  'Unpledged initiated so can\'t pledge'),
+                                  'Unpledged initiated so can\'t pledge'
                             );
                           }
                         } else if (widget.activetabe == '1') {
@@ -436,15 +434,13 @@ class _PledgeFilterState extends State<PledgeFilter>
                               //         "${(double.parse(value.cOLQTY.toString()).toInt())}",
                               //         "${(double.parse(value.cOLQTY.toString()).toInt())}");
                             } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
                                 warningMessage(context,
-                                    'Pledged initiated so can\'t unpledge'),
+                                    'Pledged initiated so can\'t unpledge'
                               );
                             }
                           } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
                               warningMessage(
-                                  context, 'Already pledged cant edit'),
+                                  context, 'Already pledged cant edit'
                             );
                           }
                         }
@@ -643,21 +639,15 @@ class _PledgeFilterState extends State<PledgeFilter>
                                                             //         "${(double.parse(value.cOLQTY.toString()).toInt())}",
                                                             //         "${(double.parse(value.cOLQTY.toString()).toInt())}");
                                                           } else {
-                                                            ScaffoldMessenger
-                                                                    .of(context)
-                                                                .showSnackBar(
                                                               warningMessage(
                                                                   context,
-                                                                  'Pledged initiated so can\'t unpledge'),
-                                                            );
+                                                                  'Pledged initiated so can\'t unpledge');
+                                                            
                                                           }
                                                         } else {
-                                                          ScaffoldMessenger.of(
-                                                                  context)
-                                                              .showSnackBar(
                                                             warningMessage(
                                                                 context,
-                                                                'Already pledged cant edit'),
+                                                                'Already pledged cant edit'
                                                           );
                                                         }
 
@@ -812,21 +802,15 @@ class _PledgeFilterState extends State<PledgeFilter>
                                                                   //         "${(double.parse(value.cOLQTY.toString()).toInt())}",
                                                                   //         "${(double.parse(value.cOLQTY.toString()).toInt())}");
                                                                 } else {
-                                                                  ScaffoldMessenger.of(
-                                                                          context)
-                                                                      .showSnackBar(
                                                                     warningMessage(
                                                                         context,
-                                                                        'Pledged initiated so can\'t unpledge'),
+                                                                        'Pledged initiated so can\'t unpledge'
                                                                   );
                                                                 }
                                                               } else {
-                                                                ScaffoldMessenger.of(
-                                                                        context)
-                                                                    .showSnackBar(
                                                                   warningMessage(
                                                                       context,
-                                                                      'Already pledged cant edit'),
+                                                                      'Already pledged cant edit'
                                                                 );
                                                               }
 
@@ -957,21 +941,15 @@ class _PledgeFilterState extends State<PledgeFilter>
                                                                 data: value,
                                                               ));
                                                         } else {
-                                                          ScaffoldMessenger.of(
-                                                                  context)
-                                                              .showSnackBar(
                                                             warningMessage(
                                                                 context,
-                                                                '${value.initiated} Qty is processing'),
+                                                                '${value.initiated} Qty is processing'
                                                           );
                                                         }
                                                       } else {
-                                                        ScaffoldMessenger.of(
-                                                                context)
-                                                            .showSnackBar(
                                                           warningMessage(
                                                               context,
-                                                              'Unpledged initiated so can\'t pledge'),
+                                                              'Unpledged initiated so can\'t pledge'
                                                         );
                                                       }
                                                       // ledgerprovider

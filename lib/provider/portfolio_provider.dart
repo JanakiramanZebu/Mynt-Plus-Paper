@@ -271,8 +271,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
       } else {
         if (consent) {
           Future.delayed(const Duration(seconds: 2), () {
-            ScaffoldMessenger.of(context)
-                .showSnackBar(warningMessage(context, "Unable to fetch data"));
+            warningMessage(context, "Unable to fetch data");
           });
         }
         _allholds = {};
@@ -1632,8 +1631,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
               .contains(value.toUpperCase()))
           .toList();
       if (_mfHoldingSearchItem!.isEmpty) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(warningMessage(context, 'No Data Found'));
+        warningMessage(context, 'No Data Found');
       } else {
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
       }
@@ -2095,8 +2093,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
             _placeOrderModel!.stat == "Not_Ok") {
           ref.read(authProvider).ifSessionExpired(context);
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-              successMessage(context, "${_placeOrderModel!.emsg}"));
+              successMessage(context, "${_placeOrderModel!.emsg}");
         }
       }
 
@@ -2209,20 +2206,17 @@ class PortfolioProvider extends DefaultChangeNotifier {
         // Refresh position book after conversion
         await fetchPositionBook(context, _isDay);
         Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-            successMessage(context, "Position converted successfully"));
+            successMessage(context, "Position converted successfully");
       } else {
         Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-            warningMessage(context, "${_positionConvertionModel!.emsg}"));
+            warningMessage(context, "${_positionConvertionModel!.emsg}");
       }
     } catch (e) {
       ref
           .read(indexListProvider)
           .logError
           .add({"type": "Position Conversion", "Error": "$e"});
-      ScaffoldMessenger.of(context).showSnackBar(
-          warningMessage(context, "Failed to convert position: $e"));
+          warningMessage(context, "Failed to convert position: $e");
     } finally {
       toggleLoadingOn(false);
     }

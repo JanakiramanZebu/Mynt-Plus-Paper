@@ -206,8 +206,7 @@ class _CPActionOrderScreen extends State<CPActionOrderScreen> {
             );
           } else {
             Navigator.pop(context);
-            ScaffoldMessenger.of(context)
-                .showSnackBar(error(context, "Not Eligible"));
+            error(context, "Not Eligible");
             return;
           }
         }

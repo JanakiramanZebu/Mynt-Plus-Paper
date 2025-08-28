@@ -1012,9 +1012,9 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                       } else {
                                                                         ScaffoldMessenger.of(context)
                                                                             .removeCurrentSnackBar();
-                                                                        ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+                                                                        warningMessage(
                                                                             context,
-                                                                            "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit * frezQty}"));
+                                                                            "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit * frezQty}");
                                                                         // sipqtyctrl.text =
                                                                         //     "$multiplayer";
                                                                       }
@@ -1035,12 +1035,9 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                             .hideCurrentSnackBar();
                                                         if (value.isEmpty ||
                                                             value == "0") {
-                                                          ScaffoldMessenger.of(
-                                                                  context)
-                                                              .showSnackBar(
                                                                   warningMessage(
                                                                       context,
-                                                                      "The minimum quantity of this stock is one."));
+                                                                      "The minimum quantity of this stock is one.");
                                                         } else {
                                                           setState(() {
                                                             int inputValue =
@@ -1186,13 +1183,9 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                             if (value.isEmpty ||
                                                                 inputValue <
                                                                     1) {
-                                                              ScaffoldMessenger
-                                                                      .of(
-                                                                          context)
-                                                                  .showSnackBar(
                                                                       warningMessage(
                                                                           context,
-                                                                          "The minimum number of this SIP is one."));
+                                                                          "The minimum number of this SIP is one.");
                                                             }
                                                             //  if (value.isEmpty) {
                                                             //   ScaffoldMessenger
@@ -1281,12 +1274,9 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                       .removeCurrentSnackBar();
                                                   if (value.isEmpty ||
                                                       inputPrice <= 0) {
-                                                    ScaffoldMessenger.of(
-                                                            context)
-                                                        .showSnackBar(
                                                             warningMessage(
                                                                 context,
-                                                                "Trigger Price can not be ${inputPrice <= 0 ? 'zero' : 'empty'}"));
+                                                                "Trigger Price can not be ${inputPrice <= 0 ? 'zero' : 'empty'}");
                                                   }
                                                 },
                                                 hintText:
@@ -1509,12 +1499,9 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                               .removeCurrentSnackBar();
                                                           if (value.isEmpty ||
                                                               value == "0") {
-                                                            ScaffoldMessenger
-                                                                    .of(context)
-                                                                .showSnackBar(
                                                                     warningMessage(
                                                                         context,
-                                                                        "Quantity can not be ${value == "0" ? 'zero' : 'empty'}"));
+                                                                        "Quantity can not be ${value == "0" ? 'zero' : 'empty'}");
                                                           } else {
                                                             String newValue =
                                                                 value.replaceAll(
@@ -1540,13 +1527,9 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                               ScaffoldMessenger
                                                                       .of(context)
                                                                   .removeCurrentSnackBar();
-                                                              ScaffoldMessenger
-                                                                      .of(
-                                                                          context)
-                                                                  .showSnackBar(
                                                                       warningMessage(
                                                                           context,
-                                                                          "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit * frezQty}"));
+                                                                          "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit * frezQty}");
                                                             }
                                   
                                                             if (newValue !=
@@ -1634,12 +1617,9 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                               .removeCurrentSnackBar();
                                                           if (value.isEmpty ||
                                                               inputPrice <= 0) {
-                                                            ScaffoldMessenger
-                                                                    .of(context)
-                                                                .showSnackBar(
                                                                     warningMessage(
                                                                         context,
-                                                                        "Price can not be ${inputPrice <= 0 ? 'zero' : 'empty'}"));
+                                                                        "Price can not be ${inputPrice <= 0 ? 'zero' : 'empty'}");
                                                           } else {
                                                             setState(() {
                                                               ordPrice = value;
@@ -1851,8 +1831,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
   onTap: () {
     if (isBuy! && widget.scripInfo.seg == "EQT") {
       ScaffoldMessenger.of(context).removeCurrentSnackBar();
-      ScaffoldMessenger.of(context).showSnackBar(
-        warningMessage(context, "OCO Order can not be placed for Buy order"),
+        warningMessage(context, "OCO Order can not be placed for Buy order"
       );
       return;
     }
@@ -1996,12 +1975,9 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                         .removeCurrentSnackBar();
                                                     if (value.isEmpty ||
                                                         inputPrice <= 0) {
-                                                      ScaffoldMessenger.of(
-                                                              context)
-                                                          .showSnackBar(
                                                               warningMessage(
                                                                   context,
-                                                                  "Trigger Price can not be ${inputPrice <= 0 ? 'zero' : 'empty'}"));
+                                                                  "Trigger Price can not be ${inputPrice <= 0 ? 'zero' : 'empty'}");
                                                     }
                                                   },
                                                   hintText:
@@ -2198,13 +2174,9 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                 .removeCurrentSnackBar();
                                                             if (value.isEmpty ||
                                                                 value == "0") {
-                                                              ScaffoldMessenger
-                                                                      .of(
-                                                                          context)
-                                                                  .showSnackBar(
                                                                       warningMessage(
                                                                           context,
-                                                                          "Quantity can not be ${value == "0" ? 'zero' : 'empty'}"));
+                                                                          "Quantity can not be ${value == "0" ? 'zero' : 'empty'}");
                                                             } else {
                                                               String newValue =
                                                                   value.replaceAll(
@@ -2231,11 +2203,9 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                 ScaffoldMessenger.of(
                                                                         context)
                                                                     .removeCurrentSnackBar();
-                                                                ScaffoldMessenger.of(
-                                                                        context)
-                                                                    .showSnackBar(warningMessage(
+                                                                warningMessage(
                                                                         context,
-                                                                        "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit * frezQty}"));
+                                                                        "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit * frezQty}");
                                                               }
                                   
                                                               if (newValue !=
@@ -2336,11 +2306,9 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                   ScaffoldMessenger.of(
                                                                           context)
                                                                       .hideCurrentSnackBar();
-                                                                  ScaffoldMessenger.of(
-                                                                          context)
-                                                                      .showSnackBar(warningMessage(
+                                                                  warningMessage(
                                                                           context,
-                                                                          "Price can not be ${inputPrice <= 0 ? 'zero' : 'empty'}"));
+                                                                          "Price can not be ${inputPrice <= 0 ? 'zero' : 'empty'}");
                                                                 }
                                                               },
                                                               hintText:
@@ -3202,12 +3170,9 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                           .hideCurrentSnackBar();
                                                       if (value.isEmpty ||
                                                           value == "0") {
-                                                        ScaffoldMessenger.of(
-                                                                context)
-                                                            .showSnackBar(
                                                                 warningMessage(
                                                                     context,
-                                                                    "${_isQtyToAmount ? 'Amount' : 'Quantity'} can not be ${value == "0" ? 'zero' : 'empty'}"));
+                                                                    "${_isQtyToAmount ? 'Amount' : 'Quantity'} can not be ${value == "0" ? 'zero' : 'empty'}");
                                                       } else {
                                                         String newValue =
                                                             value.replaceAll(
@@ -3234,12 +3199,9 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                           ScaffoldMessenger.of(
                                                                   context)
                                                               .removeCurrentSnackBar();
-                                                          ScaffoldMessenger.of(
-                                                                  context)
-                                                              .showSnackBar(
                                                                   warningMessage(
                                                                       context,
-                                                                      "Minimum Allowed Amount should be greater than $ltp"));
+                                                                      "Minimum Allowed Amount should be greater than $ltp");
                                                         } else if (number >
                                                             (frezQty == lotSize
                                                                 ? 999999
@@ -3251,12 +3213,9 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                           ScaffoldMessenger.of(
                                                                   context)
                                                               .removeCurrentSnackBar();
-                                                          ScaffoldMessenger.of(
-                                                                  context)
-                                                              .showSnackBar(
                                                                   warningMessage(
                                                                       context,
-                                                                      "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit * frezQty}"));
+                                                                      "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit * frezQty}");
                                                         }
                                   
                                                         if (newValue != value) {
@@ -3366,12 +3325,9 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                               .hideCurrentSnackBar();
                                                           if (value.isEmpty ||
                                                               inputPrice <= 0) {
-                                                            ScaffoldMessenger
-                                                                    .of(context)
-                                                                .showSnackBar(
                                                                     warningMessage(
                                                                         context,
-                                                                        "Price can not be ${inputPrice <= 0 ? 'zero' : 'empty'}"));
+                                                                        "Price can not be ${inputPrice <= 0 ? 'zero' : 'empty'}");
                                                           } else {
                                                             setState(() {
                                                               ordPrice = value;
@@ -4445,13 +4401,11 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                   sipqtyctrl
                                                                           .text ==
                                                                       "0") {
-                                                                ScaffoldMessenger.of(
-                                                                        context)
-                                                                    .showSnackBar(warningMessage(
+                                                                warningMessage(
                                                                         context,
                                                                         sipqtyctrl.text.isEmpty
                                                                             ? "Quantity can not be empty"
-                                                                            : "Quantity can not be 0"));
+                                                                            : "Quantity can not be 0");
                                                               } else if (sip
                                                                       .numberofSips
                                                                       .text
@@ -4459,13 +4413,11 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                   sip.numberofSips
                                                                           .text ==
                                                                       "0") {
-                                                                ScaffoldMessenger.of(
-                                                                        context)
-                                                                    .showSnackBar(warningMessage(
+                                                                warningMessage(
                                                                         context,
                                                                         sip.numberofSips.text.isEmpty
                                                                             ? "Number of SIP can not be empty"
-                                                                            : "Number of SIP can not be 0"));
+                                                                            : "Number of SIP can not be 0");
                                                               } else {
                                                                 bool sipQty =
                                                                     int.tryParse(sipqtyctrl.text) !=
@@ -4481,11 +4433,9 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                           
                                                                 if (!sipQty ||
                                                                     !numberOfSips) {
-                                                                  ScaffoldMessenger.of(
-                                                                          context)
-                                                                      .showSnackBar(warningMessage(
+                                                                  warningMessage(
                                                                           context,
-                                                                          "Provide a valid value for SIP"));
+                                                                          "Provide a valid value for SIP");
                                                                 } else {
                                                                   sipOrder(ref);
                                                                 }
@@ -4556,21 +4506,18 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                     prepareToPlaceOCOOrder(
                                                                         orderInput);
                                                                   } else {
-                                                                    ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+                                                                    warningMessage(
                                                                         context,
                                                                         val1 <= ltp
                                                                             ? "Target Trigger Price can not be Less than LTP"
                                                                             : val2 >= ltp
                                                                                 ? "Stoploss Trigger Price can not be Greater than LTP"
-                                                                                : "Trigger Price can not be equal to LTP"));
+                                                                                : "Trigger Price can not be equal to LTP");
                                                                   }
                                                                   // }
-                                                                } else {
-                                                                  ScaffoldMessenger.of(
-                                                                          context)
-                                                                      .showSnackBar(warningMessage(
+                                                                } else {warningMessage(
                                                                           context,
-                                                                          "Enter all Input fields"));
+                                                                          "Enter all Input fields");
                                                                 }
                                                               } else {
                                                                 if ((orderInput
@@ -4634,19 +4581,15 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                     prepareToPlaceGttOrder(
                                                                         orderInput);
                                                                   } else {
-                                                                    ScaffoldMessenger.of(
-                                                                            context)
-                                                                        .showSnackBar(warningMessage(
+                                                                    warningMessage(
                                                                             context,
-                                                                            "Trigger Price can not be equal to LTP"));
+                                                                            "Trigger Price can not be equal to LTP");
                                                                   }
                                                                   // }
                                                                 } else {
-                                                                  ScaffoldMessenger.of(
-                                                                          context)
-                                                                      .showSnackBar(warningMessage(
+                                                                  warningMessage(
                                                                           context,
-                                                                          "Enter all Input fields"));
+                                                                          "Enter all Input fields");
                                                                 }
                                                               }
                                                             } else {
@@ -4691,34 +4634,28 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                   priceCtrl.text
                                                                       .trim()
                                                                       .isEmpty) {
-                                                                ScaffoldMessenger.of(
-                                                                        context)
-                                                                    .showSnackBar(warningMessage(
+                                                                warningMessage(
                                                                         context,
                                                                         convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount).isEmpty
                                                                             ? "Quantity can not be empty"
-                                                                            : "Price can not be empty"));
+                                                                            : "Price can not be empty");
                                                               } else if (convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount).trim() == "0" ||
                                                                   priceCtrl.text.trim() ==
                                                                       "0") {
-                                                                ScaffoldMessenger.of(
-                                                                        context)
-                                                                    .showSnackBar(warningMessage(
+                                                                warningMessage(
                                                                         context,
                                                                         convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount) ==
                                                                                 "0"
                                                                             ? "Quantity can not be 0"
-                                                                            : "Price can not be 0"));
+                                                                            : "Price can not be 0");
                                                               } else if (int.parse(convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount).trim()) >
                                                                   (frezQty == lotSize
                                                                       ? 999999
                                                                       : frezQtyOrderSliceMaxLimit *
                                                                           frezQty)) {
-                                                                ScaffoldMessenger.of(
-                                                                        context)
-                                                                    .showSnackBar(warningMessage(
+                                                                warningMessage(
                                                                         context,
-                                                                        "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit * frezQty}"));
+                                                                        "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit * frezQty}");
                                           
                                                                 // 288192460  288192460
                                                                 // 14409623
@@ -4726,14 +4663,12 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                   (double.parse(ordPrice) >
                                                                       double.parse(
                                                                           "${widget.scripInfo.uc ?? 0.00}"))) {
-                                                                ScaffoldMessenger.of(
-                                                                        context)
-                                                                    .showSnackBar(warningMessage(
+                                                                warningMessage(
                                                                         context,
                                                                         double.parse(ordPrice) <
                                                                                 double.parse("${widget.scripInfo.lc ?? 0.00}")
                                                                             ? "Price can not be lesser than Lower Circuit Limit ${widget.scripInfo.lc ?? 0.00}"
-                                                                            : "Price can not be greater than Upper Circuit Limit ${widget.scripInfo.uc ?? 0.00}"));
+                                                                            : "Price can not be greater than Upper Circuit Limit ${widget.scripInfo.uc ?? 0.00}");
                                                               } else if ((orderType == "Delivery" || orderType == "Intraday") &&
                                                                   (priceType == "SL Limit" ||
                                                                       priceType ==
@@ -4744,13 +4679,13 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                     triggerPriceCtrl
                                                                             .text ==
                                                                         "0") {
-                                                                  ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+                                                                  warningMessage(
                                                                       context,
                                                                       triggerPriceCtrl
                                                                               .text
                                                                               .isEmpty
                                                                           ? "Trigger can not be empty"
-                                                                          : "Trigger can not be 0"));
+                                                                          : "Trigger can not be 0");
                                                                 } else {
                                                                   if (isBuy!) {
                                                                     if (priceType ==
@@ -4759,16 +4694,16 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                               .text) <
                                                                           double.parse(widget.orderArg.ltp ??
                                                                               "0.00")) {
-                                                                        ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+                                                                        warningMessage(
                                                                             context,
-                                                                            "Trigger should be greater than LTP"));
+                                                                            "Trigger should be greater than LTP");
                                                                       } else if (double.parse(triggerPriceCtrl
                                                                               .text) >
                                                                           double.parse(widget.scripInfo.uc ??
                                                                               "0.00")) {
-                                                                        ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+                                                                        warningMessage(
                                                                             context,
-                                                                            "Trigger can not be greater than upper circuit limit of ${widget.scripInfo.uc ?? 0.00}"));
+                                                                            "Trigger can not be greater than upper circuit limit of ${widget.scripInfo.uc ?? 0.00}");
                                                                       } else {
                                                                         if ((int.parse(convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount).isEmpty ? "0" : convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount)) >
                                                                                 frezQty &&
@@ -4790,23 +4725,23 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                               .text) <
                                                                           double.parse(widget.scripInfo.lc ??
                                                                               "0.00")) {
-                                                                        ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+                                                                        warningMessage(
                                                                             context,
-                                                                            "Trigger can not be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}"));
+                                                                            "Trigger can not be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}");
                                                                       } else if (double.parse(
                                                                               ordPrice) <
                                                                           double.parse(triggerPriceCtrl
                                                                               .text)) {
-                                                                        ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+                                                                        warningMessage(
                                                                             context,
-                                                                            "Trigger should be less than price"));
+                                                                            "Trigger should be less than price");
                                                                       } else if (double.parse(triggerPriceCtrl
                                                                               .text) >
                                                                           double.parse(widget.scripInfo.uc ??
                                                                               "0.00")) {
-                                                                        ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+                                                                        warningMessage(
                                                                             context,
-                                                                            "Trigger can not be greater than upper circuit limit of ${widget.scripInfo.uc ?? 0.00}"));
+                                                                            "Trigger can not be greater than upper circuit limit of ${widget.scripInfo.uc ?? 0.00}");
                                                                       } else {
                                                                         if ((int.parse(convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount).isEmpty ? "0" : convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount)) >
                                                                                 frezQty &&
@@ -4831,16 +4766,16 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                               .text) >
                                                                           double.parse(widget.orderArg.ltp ??
                                                                               "0.00")) {
-                                                                        ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+                                                                        warningMessage(
                                                                             context,
-                                                                            "Trigger should be lesser than LTP"));
+                                                                            "Trigger should be lesser than LTP");
                                                                       } else if (double.parse(triggerPriceCtrl
                                                                               .text) <
                                                                           double.parse(widget.scripInfo.lc ??
                                                                               "0.00")) {
-                                                                        ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+                                                                        warningMessage(
                                                                             context,
-                                                                            "Trigger can not be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}"));
+                                                                            "Trigger can not be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}");
                                                                       } else {
                                                                         if ((int.parse(convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount).isEmpty ? "0" : convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount)) >
                                                                                 frezQty &&
@@ -4864,23 +4799,23 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                               .text) >
                                                                           double.parse(widget.scripInfo.uc ??
                                                                               "0.00")) {
-                                                                        ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+                                                                        warningMessage(
                                                                             context,
-                                                                            "Trigger can not be greater than upper circuit limit of ${widget.scripInfo.uc ?? 0.00}"));
+                                                                            "Trigger can not be greater than upper circuit limit of ${widget.scripInfo.uc ?? 0.00}");
                                                                       } else if (double.parse(
                                                                               ordPrice) >
                                                                           double.parse(triggerPriceCtrl
                                                                               .text)) {
-                                                                        ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+                                                                        warningMessage(
                                                                             context,
-                                                                            "Trigger should be greater than price"));
+                                                                            "Trigger should be greater than price");
                                                                       } else if (double.parse(triggerPriceCtrl
                                                                               .text) <
                                                                           double.parse(widget.scripInfo.lc ??
                                                                               "0.00")) {
-                                                                        ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+                                                                        warningMessage(
                                                                             context,
-                                                                            "Trigger can not be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}"));
+                                                                            "Trigger can not be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}");
                                                                       } else {
                                                                         if ((int.parse(convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount).isEmpty ? "0" : convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount)) >
                                                                                 frezQty &&
@@ -4911,13 +4846,13 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                     stopLossCtrl
                                                                             .text ==
                                                                         "0") {
-                                                                  ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+                                                                  warningMessage(
                                                                       context,
                                                                       stopLossCtrl
                                                                               .text
                                                                               .isEmpty
                                                                           ? "Stoploss can not be empty"
-                                                                          : "Stoploss can not be 0"));
+                                                                          : "Stoploss can not be 0");
                                                                 } else {
                                                                   if (isBuy!) {
                                                                     if ((double.parse(ordPrice) -
@@ -4925,9 +4860,9 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                                 .text)) <
                                                                         double.parse(widget.scripInfo.lc ??
                                                                             "0.00")) {
-                                                                      ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+                                                                      warningMessage(
                                                                           context,
-                                                                          "Price(Order price - Stoploss = ${(double.parse(ordPrice) - double.parse(stopLossCtrl.text)).toStringAsFixed(2)}) Stoploss can not be lower than ${widget.scripInfo.lc ?? 0.00}"));
+                                                                          "Price(Order price - Stoploss = ${(double.parse(ordPrice) - double.parse(stopLossCtrl.text)).toStringAsFixed(2)}) Stoploss can not be lower than ${widget.scripInfo.lc ?? 0.00}");
                                                                     } else {
                                                                       if ((int.parse(convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount).isEmpty ? "0" : convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount)) >
                                                                               frezQty &&
@@ -4950,9 +4885,9 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                                 .text)) >
                                                                         double.parse(widget.scripInfo.uc ??
                                                                             "0.00")) {
-                                                                      ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+                                                                      warningMessage(
                                                                           context,
-                                                                          "Price(Order price + Stoploss = ${(double.parse(ordPrice) + double.parse(stopLossCtrl.text))}) Stoploss can not be greater than ${widget.scripInfo.uc ?? 0.00}"));
+                                                                          "Price(Order price + Stoploss = ${(double.parse(ordPrice) + double.parse(stopLossCtrl.text))}) Stoploss can not be greater than ${widget.scripInfo.uc ?? 0.00}");
                                                                     } else {
                                                                       if ((int.parse(convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount).isEmpty ? "0" : convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount)) >
                                                                               frezQty &&
@@ -5151,40 +5086,31 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                     targetCtrl
                                                                         .text
                                                                         .isEmpty) {
-                                                                  ScaffoldMessenger.of(
-                                                                          context)
-                                                                      .showSnackBar(warningMessage(
+                                                                  warningMessage(
                                                                           context,
-                                                                          "${stopLossCtrl.text.isEmpty ? "Stoploss" : "Target"} can not be empty"));
+                                                                          "${stopLossCtrl.text.isEmpty ? "Stoploss" : "Target"} can not be empty");
                                                                 } else if (double.parse(stopLossCtrl.text) <=
                                                                         0 ||
                                                                     double.parse(targetCtrl.text) <=
                                                                         0) {
-                                                                  ScaffoldMessenger.of(
-                                                                          context)
-                                                                      .showSnackBar(warningMessage(
+                                                                  warningMessage(
                                                                           context,
-                                                                          "${double.parse(stopLossCtrl.text) <= 0 ? "Stoploss" : "Target"} can not be zero"));
+                                                                          "${double.parse(stopLossCtrl.text) <= 0 ? "Stoploss" : "Target"} can not be zero");
                                                                 } else if (isBuy! &&
                                                                     (double.parse(ordPrice) -
                                                                             double.parse(stopLossCtrl
                                                                                 .text)) <
                                                                         double.parse(widget.scripInfo.lc ??
-                                                                            "0.00")) {
-                                                                  ScaffoldMessenger.of(
-                                                                          context)
-                                                                      .showSnackBar(warningMessage(
+                                                                            "0.00")) {warningMessage(
                                                                           context,
-                                                                          "Price(Order price - Stoploss = ${(double.parse(ordPrice) - double.parse(stopLossCtrl.text)).toStringAsFixed(2)}) Stoploss can not be lower than ${widget.scripInfo.lc ?? 0.00}"));
+                                                                          "Price(Order price - Stoploss = ${(double.parse(ordPrice) - double.parse(stopLossCtrl.text)).toStringAsFixed(2)}) Stoploss can not be lower than ${widget.scripInfo.lc ?? 0.00}");
                                                                 } else if (!isBuy! &&
                                                                     (double.parse(ordPrice) +
                                                                             double.parse(stopLossCtrl.text)) >
                                                                         double.parse(widget.scripInfo.uc ?? "0.00")) {
-                                                                  ScaffoldMessenger.of(
-                                                                          context)
-                                                                      .showSnackBar(warningMessage(
+                                                                          warningMessage(
                                                                           context,
-                                                                          "Price(Order price + Stoploss = ${(double.parse(ordPrice) + double.parse(stopLossCtrl.text))}) Stoploss can not be greater than ${widget.scripInfo.uc ?? 0.00}"));
+                                                                          "Price(Order price + Stoploss = ${(double.parse(ordPrice) + double.parse(stopLossCtrl.text))}) Stoploss can not be greater than ${widget.scripInfo.uc ?? 0.00}");
                                                                 } else {
                                                                   if ((int.parse(convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount).isEmpty ? "0" : convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount)) >
                                                                           frezQty &&
@@ -5682,9 +5608,8 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                         if (value.isNotEmpty) {
                           marginUpdate();
                         } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
                               warningMessage(
-                                  context, "Trigger can not be empty"));
+                                  context, "Trigger can not be empty");
                         }
                       },
                       keyboardType:
@@ -5741,8 +5666,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
 
                     ScaffoldMessenger.of(context).hideCurrentSnackBar();
                     if (value.isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                          warningMessage(context, "Target can not be empty"));
+                          warningMessage(context, "Target can not be empty");
                     }
                   },
                   hintStyle: TextWidget.textStyle(
@@ -5803,8 +5727,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                     }
                     ScaffoldMessenger.of(context).hideCurrentSnackBar();
                     if (value.isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                          warningMessage(context, "Stoploss can not be empty"));
+                          warningMessage(context, "Stoploss can not be empty");
                     }
                   },
                   hintText: "0.00",
@@ -5932,9 +5855,8 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                   ScaffoldMessenger.of(context)
                                       .hideCurrentSnackBar();
                                   if (value.isEmpty) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
                                         warningMessage(context,
-                                            "Market Protection can not be empty"));
+                                            "Market Protection can not be empty");
                                   }
                                   if (value.isNotEmpty) {
                                     String newValue =
@@ -5947,15 +5869,12 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                   offset: newValue.length));
                                     }
                                     if (int.parse(value) > 20) {
-                                      mktProtCtrl.text = "20";
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(warningMessage(context,
-                                              "can't enter greater than 20% of Market Protection"));
+                                      mktProtCtrl.text = "20";warningMessage(context,
+                                              "can't enter greater than 20% of Market Protection");
                                     } else if (int.parse(value) < 1) {
                                       mktProtCtrl.text = "1";
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(warningMessage(context,
-                                              "can't enter less than 1% of Market Protection"));
+                                      warningMessage(context,
+                                              "can't enter less than 1% of Market Protection");
                                     }
                                   }
                                 });
@@ -6112,8 +6031,8 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
               .toStringAsFixed(2);
           if (double.parse(priceCtrl.text) != double.parse(r)) {
             placeorder = false;
-            ScaffoldMessenger.of(context).showSnackBar(warningMessage(
-                context, "Price should be multiple of tick size $tik => $r"));
+            warningMessage(
+                context, "Price should be multiple of tick size $tik => $r");
           }
         }
         if (placeorder && (priceType == "SL Limit" || priceType == "SL MKT")) {
@@ -6122,8 +6041,8 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                   .toStringAsFixed(2);
           if (double.parse(triggerPriceCtrl.text) != double.parse(r)) {
             placeorder = false;
-            ScaffoldMessenger.of(context).showSnackBar(warningMessage(
-                context, "Trigger should be multiple of tick size $tik => $r"));
+            warningMessage(
+                context, "Trigger should be multiple of tick size $tik => $r");
           }
         }
         int q =
@@ -6135,8 +6054,8 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                 q &&
             widget.scripInfo.exch != 'MCX') {
           placeorder = false;
-          ScaffoldMessenger.of(context).showSnackBar(warningMessage(context,
-              "Quantity should be multiple of lot size $lotSize => $q"));
+          warningMessage(context,
+              "Quantity should be multiple of lot size $lotSize => $q");
         }
 
         if ((priceType == "Market" || priceType == "SL MKT") &&
@@ -6144,8 +6063,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                 int.parse(mktProtCtrl.text.toString()) > 20 ||
                 int.parse(mktProtCtrl.text.toString()) < 1)) {
           placeorder = false;
-          ScaffoldMessenger.of(context).showSnackBar(
-              warningMessage(context, "Market Protection between 1% to 20%"));
+              warningMessage(context, "Market Protection between 1% to 20%");
         }
         if (!isSecu) {
           placeorder = false;
@@ -6196,11 +6114,11 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
         if (int.parse(convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount)) !=
                 q &&
             widget.scripInfo.exch != 'MCX') {
-          ScaffoldMessenger.of(context).showSnackBar(warningMessage(context,
-              "Quantity should be multiple of lot size $lotSize => $q"));
+          warningMessage(context,
+              "Quantity should be multiple of lot size $lotSize => $q");
         } else if (frezQtyOrderSliceMaxLimit < quantity) {
-          ScaffoldMessenger.of(context).showSnackBar(warningMessage(context,
-              "Quantity can only be split into a maximum of $frezQtyOrderSliceMaxLimit slice. (Ex: $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQty * frezQtyOrderSliceMaxLimit})"));
+          warningMessage(context,
+              "Quantity can only be split into a maximum of $frezQtyOrderSliceMaxLimit slice. (Ex: $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQty * frezQtyOrderSliceMaxLimit})");
         } else if (!isSecu) {
           _showSurveillanceBottomSheet(orderInput, isSliceOrd, theme);
         } else {

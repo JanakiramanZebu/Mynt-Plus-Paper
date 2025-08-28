@@ -271,10 +271,9 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                     .removeCurrentSnackBar();
                                                 if (value.isEmpty ||
                                                     inputPrice <= 0) {
-                                                  ScaffoldMessenger.of(context)
-                                                      .showSnackBar(warningMessage(
+                                                  warningMessage(
                                                           context,
-                                                          "Trigger Price can not be ${inputPrice <= 0 ? 'zero' : 'empty'}"));
+                                                          "Trigger Price can not be ${inputPrice <= 0 ? 'zero' : 'empty'}");
                                                 }
                                               },
                                               hintText:
@@ -431,12 +430,9 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                           .hideCurrentSnackBar();
                                                       if (value.isEmpty ||
                                                           value == "0") {
-                                                        ScaffoldMessenger.of(
-                                                                context)
-                                                            .showSnackBar(
                                                                 warningMessage(
                                                                     context,
-                                                                    "Quantity can not be ${value == "0" ? 'zero' : 'empty'}"));
+                                                                    "Quantity can not be ${value == "0" ? 'zero' : 'empty'}");
                                                       } else {
                                                         String newValue =
                                                             value.replaceAll(
@@ -497,12 +493,9 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                                 context)
                                                             .hideCurrentSnackBar();
                                                         if (value.isEmpty) {
-                                                          ScaffoldMessenger.of(
-                                                                  context)
-                                                              .showSnackBar(
                                                                   warningMessage(
                                                                       context,
-                                                                      "Price can not be empty"));
+                                                                      "Price can not be empty");
                                                         } else {
                                                           setState(() {
                                                             price = value;
@@ -890,10 +883,9 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                       .removeCurrentSnackBar();
                                                   if (value.isEmpty ||
                                                       inputPrice <= 0) {
-                                                    ScaffoldMessenger.of(context)
-                                                        .showSnackBar(warningMessage(
+                                                    warningMessage(
                                                             context,
-                                                            "Trigger Price can not be ${inputPrice <= 0 ? 'zero' : 'empty'}"));
+                                                            "Trigger Price can not be ${inputPrice <= 0 ? 'zero' : 'empty'}");
                                                   }
                                                 },
                                                 hintText:
@@ -1037,12 +1029,9 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                             .hideCurrentSnackBar();
                                                         if (value.isEmpty ||
                                                             value == "0") {
-                                                          ScaffoldMessenger.of(
-                                                                  context)
-                                                              .showSnackBar(
                                                                   warningMessage(
                                                                       context,
-                                                                      "Quantity can not be ${value == "0" ? 'zero' : 'empty'}"));
+                                                                      "Quantity can not be ${value == "0" ? 'zero' : 'empty'}");
                                                         } else {
                                                           String newValue =
                                                               value.replaceAll(
@@ -1390,24 +1379,19 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                           prepareToModifyOCOOrder(
                                                               orderInput);
                                                         } else {
-                                                          ScaffoldMessenger.of(
-                                                                  context)
-                                                              .showSnackBar(warningMessage(
+                                                          warningMessage(
                                                                   context,
                                                                   val1 <= ltp
                                                                       ? "Target Trigger Price can not be Less than LTP"
                                                                       : val2 >= ltp
                                                                           ? "Stoploss Trigger Price can not be Greater than LTP"
-                                                                          : "Trigger Price can not be equal to LTP"));
+                                                                          : "Trigger Price can not be equal to LTP");
                                                         }
                                                         // }
                                                       } else {
-                                                        ScaffoldMessenger.of(
-                                                                context)
-                                                            .showSnackBar(
                                                                 warningMessage(
                                                                     context,
-                                                                    "Enter all Input fields"));
+                                                                    "Enter all Input fields");
                                                       }
                                                     } else {
                                                       if ((orderInput
@@ -1460,22 +1444,16 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                           //   // orderInput.chngAlert("LTP");
                                                           //   prepareToModifyGttOrder(orderInput);
                                                         } else {
-                                                          ScaffoldMessenger.of(
-                                                                  context)
-                                                              .showSnackBar(
                                                                   warningMessage(
                                                                       context,
-                                                                      "Trigger Price can not be equal to LTP"));
+                                                                      "Trigger Price can not be equal to LTP");
                                                         }
                                                         // prepareToModifyGttOrder(orderInput);
                                                         // }
                                                       } else {
-                                                        ScaffoldMessenger.of(
-                                                                context)
-                                                            .showSnackBar(
                                                                 warningMessage(
                                                                     context,
-                                                                    "Enter all Input fields"));
+                                                                    "Enter all Input fields");
                                                       }
                                                     }
                                                   },

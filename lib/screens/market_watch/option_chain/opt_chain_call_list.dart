@@ -424,8 +424,7 @@ Widget _buildPriceData(ThemesProvider theme) {
 }
 
   void _symbolenotFound(BuildContext context) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(warningMessage(context, "Scrip Not founded"));
+    warningMessage(context, "Scrip Not founded");
   }
 
   void _handleLongPress(BuildContext context, OptionValues option) {
@@ -488,8 +487,7 @@ Widget _buildPriceData(ThemesProvider theme) {
 
     // Check if a basket is selected
     if (orderProv.selectedBsktName.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-            error(context, "Please select a basket"));
+            error(context, "Please select a basket");
       return;
     }
 

@@ -425,8 +425,7 @@ class WebSocketProvider extends ChangeNotifier {
     // Show alert message in a SnackBar
     if (res['dmsg'] != null && _context != null) {
       // Display the alert message to the user
-      ScaffoldMessenger.of(_context!)
-          .showSnackBar(successMessage(_context!, res['dmsg'].toString()));
+      successMessage(_context!, res['dmsg'].toString());
 
       // Navigate to the alerts tab (tab index 6) when alert is triggered
       // This will take the user to the alerts tab even if they're on another screen

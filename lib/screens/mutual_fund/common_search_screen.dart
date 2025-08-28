@@ -269,10 +269,8 @@ class _MfCommonSearchState extends ConsumerState<MfCommonSearch> {
                                           //   arguments: fund,
                                           // );
                                         } else {
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(
                                             successMessage(
-                                                context, "No Single Page Data"),
+                                                context, "No Single Page Data"
                                           );
                                           final jsondata =
                                               MutualFundList.fromJson(
@@ -286,17 +284,12 @@ class _MfCommonSearchState extends ConsumerState<MfCommonSearch> {
                                           mfData.chngOrderType("One-time");
                                         }
                                       } else {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
                                           successMessage(
-                                              context, "Invalid fund data"),
+                                              context, "Invalid fund data"
                                         );
                                       }
-                                    } catch (e) {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        successMessage(context,
-                                            "Error loading fund details"),
+                                    } catch (e) { successMessage(context,
+                                            "Error loading fund details"
                                       );
                                     }
                                   },

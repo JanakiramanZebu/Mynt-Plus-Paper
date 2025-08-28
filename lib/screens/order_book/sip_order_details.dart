@@ -77,18 +77,18 @@ class _SipOrderDetailsState extends ConsumerState<SipOrderDetails> {
                     )),
                 onPressed: () async {
                   if (sipqtyctrl.text.isEmpty || sipqtyctrl.text == "0") {
-                    ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+                    warningMessage(
                         context,
                         sipqtyctrl.text.isEmpty
                             ? "Quantity can not be empty"
-                            : "Quantity can not be 0"));
+                            : "Quantity can not be 0");
                   } else if (sip.numberofSips.text.isEmpty ||
                       sip.numberofSips.text == "0") {
-                    ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+                    warningMessage(
                         context,
                         sip.numberofSips.text.isEmpty
                             ? "Number of SIP can not be empty"
-                            : "Number of SIP can not be 0"));
+                            : "Number of SIP can not be 0");
                   } else {
                     // modifysipOrder(sip, sipqtyctrl, widget.sipdetails);
                     showDialog(
@@ -367,9 +367,8 @@ class _SipOrderDetailsState extends ConsumerState<SipOrderDetails> {
                             ScaffoldMessenger.of(context)
                                 .hideCurrentSnackBar();
                             if (value.isEmpty) {
-                              ScaffoldMessenger.of(context).showSnackBar(
                                   warningMessage(context,
-                                      "The minimum number of this SIP is one."));
+                                      "The minimum number of this SIP is one.");
                             }
                           },
                         ),
@@ -499,9 +498,8 @@ class _SipOrderDetailsState extends ConsumerState<SipOrderDetails> {
                             ScaffoldMessenger.of(context)
                                 .hideCurrentSnackBar();
                             if (value.isEmpty) {
-                              ScaffoldMessenger.of(context).showSnackBar(
                                   warningMessage(context,
-                                      "The minimum quantity of this stock is one."));
+                                      "The minimum quantity of this stock is one.");
                             }
                             setState(() {
                               // double inputValue =

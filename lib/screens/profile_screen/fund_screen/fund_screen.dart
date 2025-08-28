@@ -856,17 +856,15 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                                     onTap: () {
                                       if (fund.amount.text.isEmpty ||
                                           fund.intValue < 50) {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(warningMessage(
-                                                context, "Min amount ₹50"));
+                                        warningMessage(
+                                                context, "Min amount ₹50");
                                         return;
                                       }
                   
                                       // Check for UPI payment restriction above 1 lakh
                                       if (isUpiPayment && isAmountAbove1Lakh) {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(warningMessage(context,
-                                                "UPI payments are not allowed for amounts above ₹1,00,000. Please use Net Banking."));
+                                        warningMessage(context,
+                                                "UPI payments are not allowed for amounts above ₹1,00,000. Please use Net Banking.");
                                         return;
                                       }
                   
@@ -884,10 +882,9 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                                             context, fund, theme, colors);
                                       } else if (index == 2) {
                                         if (fund.intValue > 5000000) {
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(warningMessage(
+                                          warningMessage(
                                                   context,
-                                                  "Max amount ₹5,000,000"));
+                                                  "Max amount ₹5,000,000");
                                         } else {
                                           _handleRazorpayPayment(context, fund);
                                         }

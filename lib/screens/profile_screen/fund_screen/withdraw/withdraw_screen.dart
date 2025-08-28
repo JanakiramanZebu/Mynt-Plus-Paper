@@ -217,26 +217,22 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
                           ? () {
                               if (widget.withdarw.payoutdetails!.withdrawAmount ==
                                   "0.00") {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                    warningMessage(context, "Insufficient fund"));
+                                    warningMessage(context, "Insufficient fund");
                               } else if (widget
                                   .withdarw.withdrawamount.text.isEmpty) {
-                                ScaffoldMessenger.of(context).showSnackBar(
                                     warningMessage(
-                                        context, "Please enter the amount"));
+                                        context, "Please enter the amount");
                               } else if (double.tryParse(
                                           widget.withdarw.withdrawamount.text) !=
                                       null &&
                                   double.parse(
                                           widget.withdarw.withdrawamount.text) <=
                                       0) {
-                                ScaffoldMessenger.of(context).showSnackBar(
                                     warningMessage(context,
-                                        "Amount must be greater than 0"));
+                                        "Amount must be greater than 0");
                               } else {
-                                ScaffoldMessenger.of(context).showSnackBar(
                                     warningMessage(
-                                        context, "Please enter a valid amount"));
+                                        context, "Please enter a valid amount");
                               }
                             }
                           : () async {
