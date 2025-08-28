@@ -223,6 +223,7 @@ class _OpenOrderItem extends StatelessWidget {
                 : colors.textPrimaryLight,
             textOverflow: TextOverflow.ellipsis,
             maxLines: 2,
+            fw: 0,
           ),
         ),
         Row(
@@ -246,7 +247,7 @@ class _OpenOrderItem extends StatelessWidget {
                     ? "Success"
                     : "Pending",
                 theme: false,
-                fw: 3,
+                fw: 0,
                 color: order.reponseStatus == "new success"
                     ? theme.isDarkMode
                         ? colors.profitDark
@@ -271,7 +272,7 @@ class _OpenOrderItem extends StatelessWidget {
               ? "----"
               : ipodateres(order.responseDatetime.toString()),
           theme: false,
-          fw: 3,
+          fw: 0,
           color: theme.isDarkMode
               ? colors.textSecondaryDark
               : colors.textSecondaryLight,
@@ -279,7 +280,7 @@ class _OpenOrderItem extends StatelessWidget {
         TextWidget.subText(
           text: _getInvestedAmount(),
           theme: false,
-          
+          fw: 0,
           color: theme.isDarkMode
               ? colors.textPrimaryDark
               : colors.textPrimaryLight,

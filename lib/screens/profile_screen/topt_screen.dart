@@ -175,6 +175,7 @@ class _TotpScreenState extends ConsumerState<TotpScreen> {
                         color: theme.isDarkMode
                             ? colors.textSecondaryDark
                             : colors.textSecondaryLight,
+                            fw: 1,
                         ),
                   ),
                   
@@ -268,7 +269,7 @@ class _TotpScreenState extends ConsumerState<TotpScreen> {
                                 color: theme.isDarkMode
                                     ? colors.textSecondaryDark
                                     : colors.textSecondaryLight,
-                                fw: 3),
+                                fw: 0),
                           ],
                         ),
                       ),
@@ -309,7 +310,7 @@ class _TotpScreenState extends ConsumerState<TotpScreen> {
                                 color: theme.isDarkMode
                                     ? colors.textPrimaryDark
                                     : colors.textPrimaryLight,
-                                
+                                fw: 0,
                                 textOverflow: TextOverflow.ellipsis),
                           ),
                           Material(

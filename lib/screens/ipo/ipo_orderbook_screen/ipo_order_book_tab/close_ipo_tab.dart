@@ -108,6 +108,7 @@ class _CloseOrderItem extends StatelessWidget {
                 : colors.textPrimaryLight,
             maxLines: 2,
             textOverflow: TextOverflow.ellipsis,
+            fw: 0,
           ),
         ),
         Container(
@@ -125,7 +126,6 @@ class _CloseOrderItem extends StatelessWidget {
                 ? "Cancelled"
                 : "Failed",
             theme: false,
-            fw: 3,
             color: order.reponseStatus == "cancel success"
                 ? theme.isDarkMode
                     ? colors.pending
@@ -133,6 +133,7 @@ class _CloseOrderItem extends StatelessWidget {
                 : theme.isDarkMode
                     ? colors.lossDark
                     : colors.lossLight,
+            fw: 0,
           ),
         ),
       ],
@@ -148,7 +149,7 @@ class _CloseOrderItem extends StatelessWidget {
               ? "----"
               : ipodateres(order.responseDatetime.toString()),
           theme: false,
-          fw: 3,
+          fw: 0,
           color: theme.isDarkMode
               ? colors.textSecondaryDark
               : colors.textSecondaryLight,
@@ -156,7 +157,7 @@ class _CloseOrderItem extends StatelessWidget {
         TextWidget.subText(
           text: _getInvestedAmount(),
           theme: false,
-          fw: 3,
+          fw: 0,
           color: theme.isDarkMode
               ? colors.textPrimaryDark
               : colors.textPrimaryLight,

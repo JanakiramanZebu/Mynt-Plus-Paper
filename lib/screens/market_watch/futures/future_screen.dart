@@ -95,6 +95,7 @@ class FutureScreen extends ConsumerWidget {
                               "${displayData.symbol}",
                               style: TextWidget.textStyle(
                                   fontSize: 14,
+                                  fw: 0,
                                   color: theme.isDarkMode
                           ? colors.textPrimaryDark
                           : colors.textPrimaryLight,
@@ -107,6 +108,7 @@ class FutureScreen extends ConsumerWidget {
                                 "${displayData.option}",
                                 style: TextWidget.textStyle(
                         fontSize: 14,
+                        fw: 0,
                        color: theme.isDarkMode
                           ? colors.textPrimaryDark
                           : colors.textPrimaryLight,
@@ -128,12 +130,14 @@ class FutureScreen extends ConsumerWidget {
                                     text: "${displayData.exch}",
                                     color:  theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                                     theme: theme.isDarkMode,
+                                    fw: 0,
                                     ),
                                 if (displayData.expDate!.isNotEmpty)
                                   TextWidget.paraText(
                                       text: " ${displayData.expDate}",
                                       color: theme.isDarkMode ? colors.textSecondaryDark :  colors.textSecondaryLight,
                                       theme: theme.isDarkMode,
+                                      fw: 0,
                                       ),
                               ],
                             ),
@@ -162,6 +166,7 @@ class FutureScreen extends ConsumerWidget {
                                         : colors.textSecondaryLight
                                         : theme.isDarkMode ? colors.profitDark : colors.profitLight,
                                 theme: theme.isDarkMode,
+                                fw: 0,
                                 ),
                           ),
                           
@@ -173,6 +178,7 @@ class FutureScreen extends ConsumerWidget {
                                     "${displayData.perChange == "null" ? "(0.00%)" : "(${displayData.perChange ?? 0.00}%)"}",
                                 color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                                 theme: theme.isDarkMode,
+                                fw: 0,
                                 ),
                           ),
                         ],

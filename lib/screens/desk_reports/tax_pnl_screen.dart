@@ -137,6 +137,7 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
                         text: "Financial Year",
                         theme: theme.isDarkMode,
                         color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                        fw: 1,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -199,10 +200,10 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
                                 Text(
                                   "Apr ${ledgerprovider.yearforTaxpnl} - Mar ${ledgerprovider.yearforTaxpnl + 1}",
                                   style: TextWidget.textStyle(
-                                    fontSize: 14,
+                                    fontSize: 16,
                                     color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
                                     theme: theme.isDarkMode,
-                                    fw: 1,
+                                    fw: 0,
                                   ),
                                 ),
                                 Material(

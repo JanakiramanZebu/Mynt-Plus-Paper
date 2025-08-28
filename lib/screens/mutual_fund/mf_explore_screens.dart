@@ -212,7 +212,7 @@ class _ExploreScreensState extends ConsumerState<MFExploreScreens>
             textOverflow: TextOverflow.ellipsis,
             maxLines: 1,
             theme: theme.isDarkMode,
-            fw: isActive ? 2 : null,
+            fw: isActive ? 2 : 0,
           ),
         ),
         AnimatedContainer(

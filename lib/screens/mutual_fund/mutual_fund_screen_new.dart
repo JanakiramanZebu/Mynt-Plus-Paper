@@ -471,6 +471,7 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
               : colors.textPrimaryLight,
           textOverflow: TextOverflow.ellipsis,
           theme: theme.isDarkMode,
+          fw: 0,
         ),
         subtitle: Container(
           margin: EdgeInsets.only(
@@ -484,7 +485,7 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
                   : colors.textSecondaryLight,
               textOverflow: TextOverflow.ellipsis,
               theme: theme.isDarkMode,
-              fw: 3),
+              fw: 0),
         ),
       ),
     );
@@ -529,7 +530,7 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
                               : colors.primaryLight,
                           textOverflow: TextOverflow.ellipsis,
                           theme: theme.isDarkMode,
-                          fw: 3),
+                          fw: 0),
                     ),
                     const SizedBox(height: 8),
                     Row(
@@ -544,7 +545,7 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
                                 : colors.textPrimaryLight,
                             textOverflow: TextOverflow.ellipsis,
                             theme: theme.isDarkMode,
-                            fw: 3),
+                            fw: 0),
                         const SizedBox(width: 4),
                         Icon(
                           Icons.arrow_forward,
@@ -626,6 +627,7 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
               : colors.textSecondaryLight,
           textOverflow: TextOverflow.ellipsis,
           theme: theme.isDarkMode,
+          fw: 0,
         ),
       ),
     );
@@ -653,6 +655,7 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
               : colors.textSecondaryLight,
           textOverflow: TextOverflow.ellipsis,
           theme: theme.isDarkMode,
+          fw: 0,
         ),
       ),
     );
@@ -737,6 +740,7 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
                                   : colors.textPrimaryLight,
                               textOverflow: TextOverflow.ellipsis,
                               theme: theme.isDarkMode,
+                              fw: 0,
                             ),
                             subtitle: TextWidget.paraText(
                               text:
@@ -747,6 +751,7 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
                               maxLines: 2,
                               textOverflow: TextOverflow.ellipsis,
                               theme: theme.isDarkMode,
+                              fw: 0,
                             ),
                           ),
                         );
@@ -790,6 +795,7 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
                   title: mfData.mFCategoryTypesStatic[index]['title'],
                   description: mfData.mFCategoryTypesStatic[index]
                       ['description'],
+                      
                   chips: mfData.mFCategoryTypesStatic[index]['sub'],
                   mfData: mfData,
                   theme: theme);

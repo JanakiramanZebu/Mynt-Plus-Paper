@@ -105,7 +105,7 @@ class _SetAlertState extends State<SetAlert> {
                                       ? colors.textPrimaryDark
                                       : colors.textPrimaryLight,
                                   theme: theme.isDarkMode,
-                                  fw: 0),
+                                  fw: 1),
                               const SizedBox(height: 8),
                               SizedBox(
                                 height: 45,
@@ -193,7 +193,7 @@ class _SetAlertState extends State<SetAlert> {
                                       ? colors.textPrimaryDark
                                       : colors.textPrimaryLight,
                                   theme: theme.isDarkMode,
-                                  fw: 0),
+                                  fw: 1),
                               const SizedBox(height: 8),
                               SizedBox(
                                 height: 45,
@@ -278,7 +278,7 @@ class _SetAlertState extends State<SetAlert> {
                             ? colors.textPrimaryDark
                             : colors.textPrimaryLight,
                         theme: theme.isDarkMode,
-                        fw: 0),
+                        fw: 1),
                     const SizedBox(height: 8),
                     SizedBox(
                       height: 45,
@@ -302,6 +302,7 @@ class _SetAlertState extends State<SetAlert> {
                             color: theme.isDarkMode
                                 ? colors.textSecondaryDark
                                 : colors.textSecondaryLight,
+                            fw: 0,
                         ),
                         keyboardType: TextInputType.number,
                         style: TextWidget.textStyle(
@@ -310,14 +311,15 @@ class _SetAlertState extends State<SetAlert> {
                                 ? colors.textPrimaryDark
                                 : colors.textPrimaryLight,
                             theme: theme.isDarkMode,
+                            fw: 0,
                         ),
                         textCtrl: valueCtrl,
                         textAlign: TextAlign.start,
-                        prefixIcon: SvgPicture.asset(assets.ruppeIcon,
-                            fit: BoxFit.scaleDown,
-                            color: theme.isDarkMode
-                                ? colors.textSecondaryDark
-                                : colors.textSecondaryLight),
+                        // prefixIcon: SvgPicture.asset(assets.ruppeIcon,
+                        //     fit: BoxFit.scaleDown,
+                        //     color: theme.isDarkMode
+                        //         ? colors.textSecondaryDark
+                        //         : colors.textSecondaryLight),
                       ),
                     ),
                     if (errorText.isNotEmpty) ...[
@@ -331,7 +333,7 @@ class _SetAlertState extends State<SetAlert> {
                     const SizedBox(height: 16),
                     // REMARK FIELD
                     TextWidget.subText(
-                        text: 'Remark', theme: theme.isDarkMode, fw: 0),
+                        text: 'Remark', theme: theme.isDarkMode, fw: 1),
                     const SizedBox(height: 8),
                     SizedBox(
                       height: 70,
@@ -346,6 +348,7 @@ class _SetAlertState extends State<SetAlert> {
                           color: theme.isDarkMode
                               ? colors.textSecondaryDark
                               : colors.textSecondaryLight,
+                              fw: 0,
                         ),
                         style: TextWidget.textStyle(
                             fontSize: 16,
@@ -353,6 +356,7 @@ class _SetAlertState extends State<SetAlert> {
                                 ? colors.textPrimaryDark
                                 : colors.textPrimaryLight,
                             theme: theme.isDarkMode,
+                            fw: 0,
                         ),
                         textCtrl: remark,
                         textAlign: TextAlign.start,

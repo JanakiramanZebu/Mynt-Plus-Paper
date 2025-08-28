@@ -290,7 +290,7 @@ class _ETFCategoryDetailScreenState extends ConsumerState<ETFCategoryDetailScree
             textOverflow: TextOverflow.ellipsis,
             maxLines: 1,
             theme: theme.isDarkMode,
-            fw: isActive ? 2 : null,
+            fw: isActive ? 2 : 0,
           ),
         ),
         AnimatedContainer(
@@ -382,6 +382,7 @@ class _ETFCategoryDetailScreenState extends ConsumerState<ETFCategoryDetailScree
                         ? colors.textPrimaryDark
                         : colors.textPrimaryLight,
                     theme: theme.isDarkMode,
+                    fw: 0,
                   ),
                 ),
               ],
@@ -402,6 +403,7 @@ class _ETFCategoryDetailScreenState extends ConsumerState<ETFCategoryDetailScree
                           ? colors.textPrimaryDark
                           : colors.textPrimaryLight,
                       theme: theme.isDarkMode,
+                      fw: 0,
                     ),
                     overflow: TextOverflow.ellipsis,
                     maxLines: 1,
@@ -572,6 +574,7 @@ class _ETFPriceDataWidgetState extends ConsumerState<_ETFPriceDataWidget> {
 
     final changeTextStyle = TextWidget.textStyle(
       fontSize: 16,
+      fw: 0,
       color: changeColor,
       theme: theme.isDarkMode,
     );
@@ -593,6 +596,7 @@ class _ETFPriceDataWidgetState extends ConsumerState<_ETFPriceDataWidget> {
             text: '$displayChange ($displayPerChange%)',
             color: colors.textSecondaryLight,
             theme: theme.isDarkMode,
+            fw: 0,
           ),
         ),
       ],

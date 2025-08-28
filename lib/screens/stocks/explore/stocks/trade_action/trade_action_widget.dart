@@ -226,7 +226,7 @@ class _TradeActionState extends ConsumerState<TradeAction>
                       color: isSelected
                           ? theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight
                           : theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                      fw: isSelected ? 2 : 3,
+                      fw: isSelected ? 2 : 0,
                       theme: !theme.isDarkMode,
                     ),
                   ),
@@ -340,7 +340,7 @@ class _TradeActionState extends ConsumerState<TradeAction>
                   color: theme.isDarkMode
                       ? colors.textPrimaryDark
                       : colors.textPrimaryLight,
-                  fw: 3,
+                  fw: 0,
                   theme: theme.isDarkMode,
                 ),
               ],
@@ -362,7 +362,7 @@ class _TradeActionState extends ConsumerState<TradeAction>
                           ? colors.textSecondaryDark
                           : colors.textSecondaryLight,
                       theme: theme.isDarkMode,
-                      fw: 3,
+                      fw: 0,
                     ),
                   ],
                 ),
@@ -409,7 +409,7 @@ class _TradeActionState extends ConsumerState<TradeAction>
               fontSize: 16,
               color: changeColor,
               theme: theme.isDarkMode,
-              fw: 3,
+              fw: 0,
             ),
           ),
         ),
@@ -421,7 +421,7 @@ class _TradeActionState extends ConsumerState<TradeAction>
                 ? colors.textSecondaryDark
                 : colors.textSecondaryLight,
             theme: theme.isDarkMode,
-            fw: 3,
+            fw: 0,
           ),
         ),
       ],

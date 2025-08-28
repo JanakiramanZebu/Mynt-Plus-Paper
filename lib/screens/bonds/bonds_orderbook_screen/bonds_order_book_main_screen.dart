@@ -106,7 +106,7 @@ class _BondsOrderbookMainScreenState
             color: theme.isDarkMode
                 ? colors.textPrimaryDark
                 : colors.textPrimaryLight,
-            fw: 0,
+            fw: 1,
           ),
         ),
         orderWidget,

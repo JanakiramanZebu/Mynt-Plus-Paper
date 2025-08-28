@@ -481,6 +481,7 @@ class BasketScripList extends ConsumerWidget {
                                   color: theme.isDarkMode
                                       ? colors.textSecondaryDark
                                       : colors.textSecondaryLight,
+                                  fw: 0,
                                 ),
                                 const SizedBox(height: 6),
                                 TextWidget.subText(
@@ -492,6 +493,7 @@ class BasketScripList extends ConsumerWidget {
                                       ? colors.textPrimaryDark
                                       : colors.textPrimaryLight,
                                   theme: theme.isDarkMode,
+                                  fw: 0,
                                 ),
                               ],
                             ),
@@ -504,6 +506,7 @@ class BasketScripList extends ConsumerWidget {
                                     color: theme.isDarkMode
                                         ? colors.textSecondaryDark
                                         : colors.textSecondaryLight,
+                                    fw: 0,
                                   ),
                                   const SizedBox(height: 6),
                                   TextWidget.subText(
@@ -515,6 +518,7 @@ class BasketScripList extends ConsumerWidget {
                                     color: theme.isDarkMode
                                         ? colors.textPrimaryDark
                                         : colors.textPrimaryLight,
+                                    fw: 0,
                                   ),
                                 ])
                           ]),
@@ -534,6 +538,7 @@ class BasketScripList extends ConsumerWidget {
                     color: theme.isDarkMode
                         ? colors.secondaryDark
                         : colors.secondaryLight,
+                    fw: 0,
                   ),
                 ])),
             Expanded(
@@ -718,6 +723,7 @@ class BasketScripList extends ConsumerWidget {
                                                                   "Are you sure you want to delete this basket Script ${basket.bsktScripList[index]['symbol']?.replaceAll("-EQ", "")}",
                                                               theme: theme
                                                                   .isDarkMode,
+                                                              fw: 0,
                                                               color: theme.isDarkMode
                                                                                 ? colors.textSecondaryDark
                                                                                 : colors.textPrimaryLight,
@@ -843,6 +849,7 @@ class BasketScripList extends ConsumerWidget {
                                                           : colors
                                                               .textPrimaryLight,
                                                       theme: theme.isDarkMode,
+                                                      fw: 0,
                                                       textOverflow: TextOverflow
                                                           .ellipsis),
                                                   TextWidget.subText(
@@ -854,6 +861,7 @@ class BasketScripList extends ConsumerWidget {
                                                               .textPrimaryDark
                                                           : colors
                                                               .textPrimaryLight,
+                                                      fw: 0,
                                                       textOverflow: TextOverflow
                                                           .ellipsis),
                                                   // const SizedBox(width: 4),
@@ -866,6 +874,7 @@ class BasketScripList extends ConsumerWidget {
                                                               .textPrimaryDark
                                                           : colors
                                                               .textPrimaryLight,
+                                                      fw: 0,
                                                       textOverflow: TextOverflow
                                                           .ellipsis),
                                                 ]),
@@ -910,6 +919,7 @@ class BasketScripList extends ConsumerWidget {
                                                               .toString()
                                                               .toUpperCase(),
                                                           theme: false,
+                                                          fw: 0,
                                                           color: _getItemStatusColor(
                                                               basket.bsktScripList[
                                                                       index][
@@ -962,6 +972,7 @@ class BasketScripList extends ConsumerWidget {
                                                                   .textSecondaryDark
                                                               : colors
                                                                   .textSecondaryLight,
+                                                          fw: 0,
                                                         ),
                                                       ],
                                                     ),
@@ -978,6 +989,7 @@ class BasketScripList extends ConsumerWidget {
                                                               .textSecondaryDark
                                                           : colors
                                                               .textSecondaryLight,
+                                                          fw: 0,
                                                     ),
                                                   ],
                                                 ),
@@ -1041,6 +1053,7 @@ class BasketScripList extends ConsumerWidget {
                                                             .textSecondaryDark
                                                         : colors
                                                             .textSecondaryLight,
+                                                      fw: 0,
                                                   )
                                                 ]),
                                                 Row(children: [
@@ -1056,6 +1069,7 @@ class BasketScripList extends ConsumerWidget {
                                                               .textSecondaryDark
                                                           : colors
                                                               .textSecondaryLight,
+                                                      fw: 0,
                                                     ),
                                                   ]
                                                 ])
@@ -1094,6 +1108,7 @@ class BasketScripList extends ConsumerWidget {
                                     "Basket should contain orders of only 1 segment",
                                 theme: false,
                                 color: colors.colorWhite,
+                                fw: 0,
                               ),
                             ],
                           ),
@@ -1115,8 +1130,12 @@ class BasketScripList extends ConsumerWidget {
                                     basket.resetBasketOrderTracking(bsktName);
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
-                                        content: const Text(
-                                            "Basket reset. You can place orders again."),
+                                        content: TextWidget.paraText(
+                                            text: "Basket reset. You can place orders again.",
+                                            theme: false,
+                                            color: colors.colorWhite,
+                                            fw: 0,
+                                            ),
                                         backgroundColor: colors.ltpgreen,
                                         duration: const Duration(seconds: 2),
                                       ),

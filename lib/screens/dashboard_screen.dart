@@ -311,6 +311,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
                             color: theme.isDarkMode
                                 ? colors.textPrimaryDark
                                 : colors.textPrimaryLight,
+                            fw: 0,
                           ),
                           readOnly: _mainTabController.index == 2 ||
                                   _mainTabController.index == 3
@@ -329,6 +330,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
                               hintStyle: TextWidget.textStyle(
                                   fontSize: 16,
                                   theme: theme.isDarkMode,
+                                   fw: 0,
                                   color: theme.isDarkMode
                                       ? colors.textSecondaryDark
                                       : colors.textSecondaryLight),
@@ -463,7 +465,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
                     unselectedLabelStyle: TextWidget.textStyle(
                       fontSize: 14,
                       theme: false,
-                      fw: 3,
+                      fw: 0,
                     ),
                     labelColor: theme.isDarkMode
                         ? colors.secondaryDark

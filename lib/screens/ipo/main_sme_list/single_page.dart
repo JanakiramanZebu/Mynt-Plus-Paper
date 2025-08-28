@@ -303,7 +303,7 @@ class _IPODetailsContainer extends StatelessWidget {
     return TextWidget.paraText(
       text: widget.ipotype,
       theme: false,
-      fw: 3,
+      fw: 0,
       color: theme.isDarkMode
           ? colors.textSecondaryDark
           : colors.textSecondaryLight,
@@ -570,14 +570,14 @@ class _IPODetailsSection extends StatelessWidget {
               color: theme.isDarkMode
                   ? colors.textSecondaryDark
                   : colors.textSecondaryLight,
-              fw: 3),
+              fw: 0),
           TextWidget.subText(
               text: value1,
               theme: false,
               color: theme.isDarkMode
                   ? colors.textPrimaryDark
                   : colors.textPrimaryLight,
-              fw: 3),
+              fw: 0),
         ],
       ),
       const SizedBox(height: 8),
@@ -764,28 +764,37 @@ class _SubscriptionSectionState extends State<_SubscriptionSection> {
         Row(
           children: [
             Expanded(
-              child: Text(
-                _getInvestorCategory(text),
-                style: _textStyle(
-                  widget.theme.isDarkMode
-                      ? colors.colorWhite
-                      : colors.colorBlack,
-                  14,
-                  FontWeight.w500,
-                ),
-              ),
+              child: 
+              TextWidget.subText(
+                text: _getInvestorCategory(text),
+                theme: false,
+                fw: 0,
+                color: widget.theme.isDarkMode
+                    ? colors.textPrimaryDark
+                    : colors.textPrimaryLight,
+              ),    
+              // Text(
+              //   _getInvestorCategory(text),
+              //   style: _textStyle(
+              //     widget.theme.isDarkMode
+              //         ? colors.colorWhite
+              //         : colors.colorBlack,
+              //     14,
+              //     FontWeight.w500,
+              //   ),
+              // ),
             ),
-            Text(
-              "$value x",
-              style: _textStyle(
-                widget.theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                14,
-                FontWeight.w500,
-              ),
+            TextWidget.subText(
+              text: "$value x",
+              theme: false,
+              fw: 0,
+              color: widget.theme.isDarkMode
+                  ? colors.textPrimaryDark
+                  : colors.textPrimaryLight,
             ),
           ],
         ),
-        const SizedBox(height: 15),
+        const SizedBox(height: 16),
         ClipRRect(
           borderRadius: BorderRadius.circular(8),
           child: LinearProgressIndicator(

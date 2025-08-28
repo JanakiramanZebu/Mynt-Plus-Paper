@@ -309,7 +309,7 @@ class _NewAppBarTitle extends ConsumerWidget {
         // Symbol Name and Expiry Dropdown
         Row(
           children: [
-            TextWidget.subText(
+            TextWidget.titleText(
               text: wlValue.tsym.toUpperCase(),
               theme: theme.isDarkMode,
               color: theme.isDarkMode
@@ -317,6 +317,7 @@ class _NewAppBarTitle extends ConsumerWidget {
                   : colors.textPrimaryLight,
               maxLines: 1,
               textOverflow: TextOverflow.ellipsis,
+              fw: 1,
             ),
             const SizedBox(width: 8),
             Theme(
@@ -357,6 +358,7 @@ class _NewAppBarTitle extends ConsumerWidget {
                             ? colors.textPrimaryDark
                             : colors.textPrimaryLight,
                         theme: theme.isDarkMode,
+                        fw: 0,
                       ),
                     );
                   }).toList(),
@@ -687,6 +689,7 @@ class _ColumnHeaders extends ConsumerWidget {
                         ? colors.textSecondaryDark
                         : colors.textSecondaryLight,
                     theme: theme.isDarkMode,
+                    fw: 0,
                   ),
                 ),
               ),
@@ -720,6 +723,7 @@ class _ColumnHeaders extends ConsumerWidget {
                               ? colors.textSecondaryDark
                               : colors.textSecondaryLight,
                           theme: theme.isDarkMode,
+                          fw: 0,
                         ),
                         TextWidget.subText(
                           text: "Strike",
@@ -727,6 +731,7 @@ class _ColumnHeaders extends ConsumerWidget {
                               ? colors.textSecondaryDark
                               : colors.textSecondaryLight,
                           theme: theme.isDarkMode,
+                          fw: 0,
                         ),
                         Icon(Icons.arrow_drop_down,
                             color: theme.isDarkMode
@@ -759,6 +764,7 @@ class _ColumnHeaders extends ConsumerWidget {
                         ? colors.textSecondaryDark
                         : colors.textSecondaryLight,
                     theme: theme.isDarkMode,
+                    fw: 0,
                   ),
                 ),
               ),
@@ -789,10 +795,11 @@ class _PreDefinedWatchlistBanner extends ConsumerWidget {
           ),
           child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
             SvgPicture.asset(assets.dInfo, color: colors.colorBlue),
-            TextWidget.captionText(
+            TextWidget.paraText(
               text: " Long press to add Watchlist / Swipe to Trade",
               color: theme.isDarkMode ? colors.secondaryDark : colors.secondaryLight,
               theme: false,
+              fw: 0,
             ),
           ])),
     );
@@ -1264,8 +1271,9 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                 if (orderProv.selectedBsktName.isNotEmpty)
                   TextWidget.subText(
                     text: "${orderProv.bsktScripList.length} items",
-                    color: colors.colorGrey,
+                    color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                     theme: theme.isDarkMode,
+                    fw: 0,
                   ),
               ],
             ),
@@ -1396,6 +1404,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                 color: theme.isDarkMode
                     ? colors.textPrimaryDark
                     : colors.textPrimaryLight,
+                fw: 0,
               ),
             ],
           ),
@@ -1408,6 +1417,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                 color: theme.isDarkMode
                     ? colors.textSecondaryDark
                     : colors.textSecondaryLight,
+                fw: 0,
               ),
               const SizedBox(height: 6),
               TextWidget.titleText(
@@ -1419,6 +1429,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                 color: theme.isDarkMode
                     ? colors.textPrimaryDark
                     : colors.textPrimaryLight,
+                fw: 0,
               ),
             ],
           ),
@@ -1440,6 +1451,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
             text: "Basket should contain orders of only 1 segment",
             theme: false,
             color: colors.colorWhite,
+            fw: 0,
           ),
         ],
       ),
@@ -1669,6 +1681,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                     color: theme.isDarkMode
                         ? colors.textPrimaryDark
                         : colors.textPrimaryLight,
+                    fw: 0,
                   ),
                   TextWidget.subText(
                     text: " ${script['expDate']} ",
@@ -1677,6 +1690,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                     color: theme.isDarkMode
                         ? colors.textPrimaryDark
                         : colors.textPrimaryLight,
+                    fw: 0,
                   ),
                   TextWidget.subText(
                     text: " ${script['option']} ",
@@ -1685,6 +1699,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                     color: theme.isDarkMode
                         ? colors.textPrimaryDark
                         : colors.textPrimaryLight,
+                    fw: 0,
                   ),
                 ],
               ),
@@ -1706,12 +1721,14 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                         text: _getItemStatusText(script['orderStatus']),
                         theme: theme.isDarkMode,
                         color: _getItemStatusColor(script['orderStatus']),
+                        fw: 0,
                       ),
                       if (script['avgPrice'] != null)
                         TextWidget.paraText(
                           text: " @ ₹${script['avgPrice']}",
                           theme: theme.isDarkMode,
                           color: _getItemStatusColor(script['orderStatus']),
+                          fw: 0,
                         ),
                       // Add navigation hint for placed orders
                       if (_isOrderPlaced(script['orderStatus'])) ...[
@@ -1743,6 +1760,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                     color: theme.isDarkMode
                         ? colors.textSecondaryDark
                         : colors.textSecondaryLight,
+                    fw: 0,
                   ),
                 ],
               ),
@@ -1754,6 +1772,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                     color: theme.isDarkMode
                         ? colors.textSecondaryDark
                         : colors.textSecondaryLight,
+                    fw: 0,
                   ),
                 ],
               ),
@@ -1791,6 +1810,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                     color: theme.isDarkMode
                         ? colors.textSecondaryDark
                         : colors.textSecondaryLight,
+                    fw: 0,
                   ),
                 ],
               ),
@@ -1803,6 +1823,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                       color: theme.isDarkMode
                           ? colors.textSecondaryDark
                           : colors.textSecondaryLight,
+                      fw: 0,
                     ),
                   ],
                 ),
@@ -1835,6 +1856,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                       theme: theme.isDarkMode,
                       color: colors.darkred,
                       textOverflow: TextOverflow.ellipsis,
+                      fw: 0,
                     ),
                   ),
                 ],
@@ -2294,6 +2316,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                             color: theme.isDarkMode
                                 ? colors.textSecondaryDark
                                 : colors.textPrimaryLight,
+                            fw: 0,
                             align: TextAlign.center),
                       ]))
             ],
@@ -2483,6 +2506,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                               : colors.textPrimaryLight,
                           textOverflow: TextOverflow.ellipsis,
                           maxLines: 2,
+                          fw: 0,
                         ),
                       ),
                       subtitle: Padding(
@@ -2495,6 +2519,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                           color: ref.read(themeProvider).isDarkMode
                               ? colors.textSecondaryDark
                               : colors.textSecondaryLight,
+                          fw: 0,
                         ),
                       ),
                       trailing: basketName == orderProv.selectedBsktName

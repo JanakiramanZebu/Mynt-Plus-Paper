@@ -482,7 +482,7 @@ class _PledgeFilterState extends State<PledgeFilter>
                                                               .textPrimaryDark
                                                           : colors
                                                               .textPrimaryLight,
-                                                      fw: 3),
+                                                      fw: 0),
                                                   SizedBox(width: 10.0),
                                                   //         ((((value.cashEqColl!.foCashEq != null
                                                   //                 ? value.cashEqColl!
@@ -546,8 +546,10 @@ class _PledgeFilterState extends State<PledgeFilter>
                                                                       .textSecondaryLight
                                                                       .withOpacity(
                                                                           0.1)),
-                                                          child: Text(
-                                                              // ((value.cashEqColl!
+                                                          child:
+                                                          
+                                                          TextWidget.paraText(
+                                                            text:  // ((value.cashEqColl!
                                                               //                     .foCashEq !=
                                                               //                 null
                                                               //             ? value.cashEqColl!
@@ -575,11 +577,11 @@ class _PledgeFilterState extends State<PledgeFilter>
                                                                               'cash'
                                                                           ? 'Case'
                                                                           : '-',
-                                                              overflow:
-                                                                  TextOverflow
-                                                                      .ellipsis,
-                                                              maxLines: 1,
-                                                              style: textStyle(value
+                                                                          theme: false,
+                                                                          fw: 0,
+                                                                          textOverflow: TextOverflow.ellipsis,
+                                                                          maxLines: 1,
+                                                                          color: (value
                                                                           .status ==
                                                                       'Not_ok'
                                                                   ? theme
@@ -593,10 +595,13 @@ class _PledgeFilterState extends State<PledgeFilter>
                                                                       ? colors
                                                                           .textPrimaryDark
                                                                       : colors
-                                                                          .textPrimaryLight,
-                                                                  10,
-                                                                  FontWeight
-                                                                      .w500)),
+                                                                          .textPrimaryLight
+                                                          ) 
+                                                          
+                                                          
+                                                          
+                                                          
+                                                          ),
                                                         )
                                                       : SizedBox(),
                                                 ],
@@ -1080,7 +1085,7 @@ class _PledgeFilterState extends State<PledgeFilter>
                                         : colors.textSecondaryLight,
                                     textOverflow: TextOverflow.ellipsis,
                                     theme: theme.isDarkMode,
-                                    fw: 3),
+                                    fw: 0),
                                 TextWidget.paraText(
                                     text: (double.parse(value.cOLQTY.toString())
                                                 .toInt()) ==
@@ -1096,7 +1101,7 @@ class _PledgeFilterState extends State<PledgeFilter>
                                         : colors.textSecondaryLight,
                                     textOverflow: TextOverflow.ellipsis,
                                     theme: theme.isDarkMode,
-                                    fw: 3),
+                                    fw: 0),
                                 TextWidget.paraText(
                                     text: value.estimated != null
                                         ? "(${double.parse(value.estPercentage.toString()).toInt()}%)"
@@ -1106,7 +1111,7 @@ class _PledgeFilterState extends State<PledgeFilter>
                                         : colors.textSecondaryLight,
                                     textOverflow: TextOverflow.ellipsis,
                                     theme: theme.isDarkMode,
-                                    fw: 3),
+                                    fw: 0),
                               ],
                             ),
                           ],

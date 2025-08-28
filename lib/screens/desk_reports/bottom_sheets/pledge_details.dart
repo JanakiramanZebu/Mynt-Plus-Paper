@@ -269,7 +269,7 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                                         color: theme.isDarkMode
                                             ? colors.textPrimaryDark
                                             : colors.textPrimaryLight,
-                                        fw: 3)
+                                        fw: 0)
                                     : TextWidget.paraText(
                                         text:
                                             "${double.tryParse(widget.data.margin.toString())!.toStringAsFixed(2)}",
@@ -278,7 +278,7 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                                         color: theme.isDarkMode
                                             ? colors.textPrimaryDark
                                             : colors.textPrimaryLight,
-                                        fw: 3),
+                                        fw: 0),
                               ],
                             ),
                             TextWidget.titleText(
@@ -429,7 +429,7 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                             color: theme.isDarkMode
                                 ? colors.textPrimaryDark
                                 : colors.textPrimaryLight,
-                            fw: 3),
+                            fw: 1),
                         Padding(
                           padding: const EdgeInsets.only(top: 8.0),
                           child: Container(
@@ -453,6 +453,7 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                                     color: theme.isDarkMode
                                         ? colors.textSecondaryDark
                                         : colors.textSecondaryLight,
+                                        fw: 0,
                                   ),
                                   style: TextWidget.textStyle(
                                     fontSize: 16,
@@ -460,6 +461,7 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                                         ? colors.textPrimaryDark
                                         : colors.textPrimaryLight,
                                     theme: theme.isDarkMode,
+                                    fw: 0,
                                   ),
                                   textCtrl: ledgerdata.selectnetpledge,
                                   onChanged: (value) {
@@ -493,7 +495,7 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                                     color: theme.isDarkMode
                                         ? colors.textPrimaryDark
                                         : colors.textPrimaryLight,
-                                    fw: 3),
+                                    fw: 0),
                               )
                             : SizedBox(),
                         ledgerdata.screenpledge == 'pledge'
@@ -538,6 +540,7 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                                           ? colors.textPrimaryDark
                                           : colors.textPrimaryLight,
                                       fontSize: 12,
+                                      fw: 0,
                                     ),
                                     hint: TextWidget.subText(
                                       text: "Select Segment",
@@ -545,6 +548,7 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                                       color: theme.isDarkMode
                                           ? colors.textSecondaryDark
                                           : colors.textSecondaryLight,
+                                      fw: 0,
                                     ),
                                     items: dropdownItems.map((item) {
                                       return DropdownMenuItem<String>(
@@ -600,7 +604,7 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                                         ? colors.textSecondaryDark
                                         : colors.textSecondaryLight,
                                     maxLines: 7,
-                                    fw: 3),
+                                    fw: 0),
                               )
                             : SizedBox(),
                         ledgerdata.dayforpledgeunpledge == 'Saturday' ||
@@ -623,7 +627,7 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                                         ? colors.textSecondaryDark
                                         : colors.textSecondaryLight,
                                     maxLines: 7,
-                                    fw: 3),
+                                    fw: 0),
                               )
                             : SizedBox(),
                         SafeArea(

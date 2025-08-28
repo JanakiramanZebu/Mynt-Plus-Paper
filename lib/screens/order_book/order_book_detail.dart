@@ -192,7 +192,7 @@ class _OrderBookDetailState extends ConsumerState<OrderBookDetail> {
                                                         children: [
                                                           TextWidget.titleText(
                                                               text:
-                                                                  "${displayData.symbol?.replaceAll("-EQ", "")} ${displayData.expDate} ${displayData.option}",
+                                                                  "${displayData.symbol?.replaceAll("-EQ", "")} ${displayData.expDate} ${displayData.option} ",
                                                               theme: false,
                                                               color: theme
                                                                       .isDarkMode
@@ -201,14 +201,28 @@ class _OrderBookDetailState extends ConsumerState<OrderBookDetail> {
                                                                   : colors
                                                                       .textPrimaryLight,
                                                               fw: 1),
-                                                          const SizedBox(
-                                                              width: 4),
-                                                          CustomExchBadge(
-                                                              exch: displayData
-                                                                  .exch!),
+                                                          // const SizedBox(
+                                                          //     width: 4),
+
+                                                              TextWidget.subText(
+                                                                    fw: 0,
+                                                                    text: displayData
+                                                                                                                              .exch!,
+                                                                    textOverflow: TextOverflow.ellipsis,
+                                                                    maxLines: 1,
+                                                                    color: theme
+                                                                      .isDarkMode
+                                                                  ? colors
+                                                                      .textPrimaryDark
+                                                                  : colors
+                                                                      .textPrimaryLight,
+                                                                    theme: false,
+                                                               ),
+                                                          // CustomExchBadge(
+                                                          //     exch: ),
                                                         ],
                                                       ),
-                                                      const SizedBox(height: 6),
+                                                      const SizedBox(height: 4),
                                                       TextWidget.titleText(
                                                           text:
                                                               "${displayData.ltp}",
@@ -245,7 +259,7 @@ class _OrderBookDetailState extends ConsumerState<OrderBookDetail> {
                                                                           .profitDark
                                                                       : colors
                                                                           .profitLight,
-                                                          fw: 3),
+                                                          fw: 0),
                                                       const SizedBox(height: 4),
                                                       Row(
                                                         mainAxisAlignment:
@@ -272,7 +286,7 @@ class _OrderBookDetailState extends ConsumerState<OrderBookDetail> {
                                                                       .textSecondaryDark
                                                                   : colors
                                                                       .textSecondaryLight,
-                                                              fw: 3),
+                                                              fw: 0),
                                                         ],
                                                       ),
                                                     ],
@@ -456,7 +470,7 @@ class _OrderBookDetailState extends ConsumerState<OrderBookDetail> {
                                                               "${widget.orderBookData.status![0].toUpperCase()}${widget.orderBookData.status!.replaceAll("_", " ").substring(1)}",
                                                           theme: false,
                                                           color: color,
-                                                          fw: 3),
+                                                          fw: 0),
                                                     ),
                                                   ],
                                                 )
@@ -556,7 +570,7 @@ class _OrderDetailsSection extends ConsumerWidget {
                 color: theme.isDarkMode
                     ? colors.textSecondaryDark
                     : colors.textSecondaryLight,
-                fw: 3),
+                fw: 0),
             Container(
                padding:  const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
               decoration: BoxDecoration(
@@ -643,7 +657,7 @@ class _OrderDetailsSection extends ConsumerWidget {
               color: theme.isDarkMode
                   ? colors.textSecondaryDark
                   : colors.textSecondaryLight,
-              fw: 3),
+              fw: 0),
           SizedBox(
             width: MediaQuery.of(context).size.width * 0.55,
             child: TextWidget.subText(
@@ -656,7 +670,7 @@ class _OrderDetailsSection extends ConsumerWidget {
                 maxLines: null,
                 textOverflow: TextOverflow.visible,
                 softWrap: true,
-                fw: 3),
+                fw: 0),
           ),
         ],
       ),

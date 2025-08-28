@@ -216,7 +216,7 @@ class _PortfolioScreenState extends ConsumerState<PortfolioScreen>
                                           : "Funds",
                               theme: false,
                               color: color,
-                              fw: isSelected ? 2 : null,
+                              fw: isSelected ? 2 : 0,
                             ),
                             const SizedBox(width: 5),
                             if ((index == 0 &&
@@ -239,7 +239,7 @@ class _PortfolioScreenState extends ConsumerState<PortfolioScreen>
                                           : "",
                                   theme: false,
                                   color: color,
-                                  fw: isSelected ? 2 : null,
+                                  fw: isSelected ? 2 : 0,
                                 ),
                               ),
                           ],
