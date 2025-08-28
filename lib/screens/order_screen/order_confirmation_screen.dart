@@ -295,7 +295,7 @@ class _OrderConfirmationScreenState extends ConsumerState<OrderConfirmationScree
                               _buildOrderDetailRow("Price Type", orderHistory[0].prctyp ?? "-", theme),
                               _buildOrderDetailRow("Validity", orderHistory[0].ret ?? "-", theme),
                               _buildOrderDetailRow("Status", _formatStatus(orderHistory[0].status ?? ""), theme),
-                              if (orderHistory[0].status == "REJECTED") ...[
+                              if ((orderHistory[0].status == "REJECTED") || ((orderHistory[0].rpt == "ReplaceRejected") ||(orderHistory[0].rpt == "CancelRejected"))) ...[
                                 _buildOrderDetailRow("Reason", "", theme),
                                 Padding(
                                   padding: const EdgeInsets.only(top: 8),
@@ -488,7 +488,7 @@ class _OrderConfirmationScreenState extends ConsumerState<OrderConfirmationScree
             size: 40,
           ),
           );
-         ;
+        
         case 'REJECTED':
         case 'CANCELLED':
           return  Container(

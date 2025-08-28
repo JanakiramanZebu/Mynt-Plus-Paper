@@ -1306,7 +1306,8 @@ class OrderProvider extends DefaultChangeNotifier {
 
         // ScaffoldMessenger.of(context)
         //     .showSnackBar(successMessage(context, 'Order Modified'));
-        // Navigator.pop(context);
+        
+        Navigator.pop(context);
 
         Navigator.pushNamed(context, Routes.orderConfirmation, arguments: {
           'orderData': [modifyOrderData],
