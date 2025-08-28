@@ -197,8 +197,7 @@ print(!searchScrip.exarr.contains('"${scrip.exch}"'));
                               highlightColor: Colors.grey.withOpacity(0.2),
                               onTap: () async {
                                 if(!searchScrip.exarr.contains('"${scrip.exch}"')){
-        ScaffoldMessenger.of(context).showSnackBar(
-          error(context, "Segment is not active."));
+          error(context, "Segment is not active.");
                                 }
                                 else{
                                 if (searchScrip.isAdded![index]) {

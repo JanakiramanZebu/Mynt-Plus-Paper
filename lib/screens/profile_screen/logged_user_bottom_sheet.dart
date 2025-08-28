@@ -171,6 +171,7 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                                         color: !theme.isDarkMode
                                             ? colors.textSecondaryLight
                                             : colors.textSecondaryDark,
+                                            fw: 0,
                                       ),
                                     ],
                                   ),
@@ -449,6 +450,7 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                                                 color: theme.isDarkMode
                                                     ? colors.textSecondaryDark
                                                     : colors.textSecondaryLight,
+                                                fw: 0,
                                               ),
                                             ],
                                           ),

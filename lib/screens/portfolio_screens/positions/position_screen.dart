@@ -454,6 +454,7 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
               fontSize: 16,
               theme: theme.isDarkMode,
               color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+              fw: 0,
               
             ),
             keyboardType: TextInputType.text,
@@ -468,7 +469,9 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
                 hintStyle: TextWidget.textStyle(
                     fontSize: 14,
                     theme: theme.isDarkMode,
-                    color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight),
+                    color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                    fw: 0,
+                    ),
                 fillColor: theme.isDarkMode ? colors.searchBgDark : colors.searchBg,
                 filled: true,
                 prefixIcon: Padding(

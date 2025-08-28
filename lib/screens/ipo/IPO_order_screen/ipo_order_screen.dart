@@ -200,7 +200,7 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                             color: theme.isDarkMode
                                 ? colors.textSecondaryDark
                                 : colors.textSecondaryLight,
-                            fw: 3),
+                            fw: 0),
                         const SizedBox(width: 6),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
@@ -217,7 +217,7 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                           child: TextWidget.paraText(
                             text: status.toUpperCase(),
                             theme: false,
-                            fw: 3,
+                            fw: 0,
                             color: isOpen
                                 ? theme.isDarkMode
                                     ? colors.profitDark
@@ -266,7 +266,7 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                                     unselectedLabelStyle: TextWidget.textStyle(
                                       fontSize: 14,
                                       theme: false,                                    
-                                      fw: 3,
+                                      fw: 0,
                                     ),
                                     labelPadding: const EdgeInsets.symmetric(
                                         horizontal: 16),
@@ -417,14 +417,14 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                                                 TextWidget.subText(
                                                   text: "Qty",
                                                   theme: false,
-                                                  fw: 3,
+                                                  fw: 1,
                                                   color: theme.isDarkMode
                                                       ? colors.textPrimaryDark
                                                       : colors.textPrimaryLight,
                                                 ),
-                                                const SizedBox(height: 10),
+                                                const SizedBox(height: 8),
                                                 SizedBox(
-                                                  height: 50,
+                                                  height: 45,
                                                   child: TextFormField(
                                                     readOnly: true,
                                                     textAlign: TextAlign.center,
@@ -435,6 +435,7 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                                                           ? colors.textPrimaryDark
                                                           : colors
                                                               .textPrimaryLight,
+                                                      fw: 0,
                                                       
                                                     ),
                                                     keyboardType:
@@ -614,7 +615,7 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                                                     TextWidget.subText(
                                                       text: "Bid Price",
                                                       theme: false,
-                                                      fw: 3,
+                                                      fw: 1,
                                                       color: theme.isDarkMode
                                                           ? colors
                                                               .textPrimaryDark
@@ -631,9 +632,9 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                                                     //         FontWeight.w600)),
                                                   ],
                                                 ),
-                                                const SizedBox(height: 10),
+                                                const SizedBox(height: 8),
                                                 SizedBox(
-                                                  height: 50,
+                                                  height: 45,
                                                   child: TextFormField(
                                                     style: TextWidget.textStyle(
                                                       fontSize: 16,
@@ -642,7 +643,7 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                                                           ? colors.textPrimaryDark
                                                           : colors
                                                               .textPrimaryLight,
-                                                      
+                                                      fw: 0,
                                                     ),
                                                     keyboardType:
                                                         TextInputType.number,
@@ -802,7 +803,7 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                                               text:
                                                   addIpo[index].qualityerrortext,
                                               color: colors.error,
-                                              fw: 3,
+                                              fw: 0,
                                             ),
                                           ),
                                           Expanded(
@@ -810,7 +811,7 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                                               theme: false,
                                               text: addIpo[index].biderrortext,
                                               color: colors.error,
-                                              fw: 3,
+                                              fw: 0,
                                             ),
                                           ),
                                         ],
@@ -871,7 +872,7 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                                           TextWidget.subText(
                                             text: "Add another bid",
                                             theme: false,
-                                            fw: 2,
+                                            fw: 0,
                                             color: theme.isDarkMode
                                                 ? colors.primaryDark
                                                 : colors.primaryLight,
@@ -945,9 +946,8 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                                 ? () {
                                     if (addIpo[addIpo.length - 1].requriedprice >
                                         ipo.maxUPIAmt) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
                                           warningMessage(context,
-                                              "Maximum investment upto ₹${double.parse(ipo.maxUPIAmt.toString()).toInt()} only "));
+                                              "Maximum investment upto ₹${double.parse(ipo.maxUPIAmt.toString()).toInt()} only ");
                                       _setButtonActiveState(ipo, false);
                                     } else if (addIpo[addIpo.length - 1]
                                             .bidpricecontroller
@@ -957,7 +957,6 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                                                 .bidpricecontroller
                                                 .text ==
                                             "0") {
-                                      ScaffoldMessenger.of(context).showSnackBar(
                                           warningMessage(
                                               context,
                                               addIpo[addIpo.length - 1]
@@ -965,7 +964,7 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                                                           .text ==
                                                       "0"
                                                   ? "Bid Price Value cannot be 0"
-                                                  : "*Bid Price Value is required"));
+                                                  : "*Bid Price Value is required");
                                     } else if (addIpo[addIpo.length - 1]
                                             .qualityController
                                             .text
@@ -974,7 +973,6 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                                                 .qualityController
                                                 .text ==
                                             "0") {
-                                      ScaffoldMessenger.of(context).showSnackBar(
                                           warningMessage(
                                               context,
                                               addIpo[addIpo.length - 1]
@@ -982,7 +980,7 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                                                           .text ==
                                                       "0"
                                                   ? '* Quantity cannot be 0'
-                                                  : '* Quantity cannot be empty'));
+                                                  : '* Quantity cannot be empty');
                                     } else {
                                       if (ipo.checkForErrorsInSMEPlaceOrder(
                                           addIpo)) {
@@ -1008,9 +1006,8 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                                           ),
                                         );
                                       } else {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(warningMessage(context,
-                                                "can't able place Order with current selected combination of Bids"));
+                                        warningMessage(context,
+                                                "can't able place Order with current selected combination of Bids");
                                         _setButtonActiveState(ipo, false);
                                       }
                                     }

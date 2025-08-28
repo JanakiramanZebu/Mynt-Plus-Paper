@@ -137,6 +137,7 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
                         text: "Financial Year",
                         theme: theme.isDarkMode,
                         color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                        fw: 1,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -199,10 +200,10 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
                                 Text(
                                   "Apr ${ledgerprovider.yearforTaxpnl} - Mar ${ledgerprovider.yearforTaxpnl + 1}",
                                   style: TextWidget.textStyle(
-                                    fontSize: 14,
+                                    fontSize: 16,
                                     color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
                                     theme: theme.isDarkMode,
-                                    fw: 1,
+                                    fw: 0,
                                   ),
                                 ),
                                 Material(
@@ -284,9 +285,8 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
                             // Check if already loading using provider state
                             if (ledgerprovider.taxpnlloading) {
                               Navigator.pop(context);
-                              ScaffoldMessenger.of(context).showSnackBar(
                                 warningMessage(context,
-                                    'Previous request is still processing'),
+                                    'Previous request is still processing'
                               );
                               return;
                             }
@@ -309,14 +309,13 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
                                 errorMessage = null;
                               });
                               Navigator.pop(context);
-                              ScaffoldMessenger.of(context).showSnackBar(successMessage(context, 'The file will be sent to your email shortly.'),);
+                              successMessage(context, 'The file will be sent to your email shortly.');
 
                             } catch (e) {
                               // Show error in ScaffoldMessenger
                               // Navigator.pop(context);
-                              ScaffoldMessenger.of(context).showSnackBar(
                                 warningMessage(
-                                    context, 'Error: ${e.toString()}'),
+                                    context, 'Error: ${e.toString()}'
                               );
                               setState(() {
                                 errorMessage = e.toString();

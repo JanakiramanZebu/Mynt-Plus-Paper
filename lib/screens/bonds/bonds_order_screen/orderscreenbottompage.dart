@@ -132,6 +132,7 @@ class _BondOrderScreenbottomPageState
                             color: theme.isDarkMode
                                 ? colors.textPrimaryDark
                                 : colors.textPrimaryLight,
+                            fw: 0,
                           ),
                           const SizedBox(
                             height: 4,
@@ -139,7 +140,7 @@ class _BondOrderScreenbottomPageState
                           Row(
                             children: [
                               TextWidget.paraText(
-                                fw: 3,
+                                fw: 0,
                                 text: widget.bondInfo.symbol!,
                                 textOverflow: TextOverflow.ellipsis,
                                 maxLines: 1,
@@ -149,7 +150,7 @@ class _BondOrderScreenbottomPageState
                                 theme: false,
                               ),
                               TextWidget.paraText(
-                                fw: 3,
+                                fw: 0,
                                 text: widget.bondInfo.isin!,
                                 textOverflow: TextOverflow.ellipsis,
                                 maxLines: 1,
@@ -171,6 +172,7 @@ class _BondOrderScreenbottomPageState
                             color: theme.isDarkMode
                                 ? colors.textPrimaryDark
                                 : colors.textPrimaryLight,
+                            fw: 0,
                           ),
                           const SizedBox(
                             height: 4,
@@ -181,6 +183,7 @@ class _BondOrderScreenbottomPageState
                             color: theme.isDarkMode
                                 ? colors.textSecondaryDark
                                 : colors.textSecondaryLight,
+                            fw: 0,
                           ),
                         ],
                       )
@@ -230,7 +233,7 @@ class _BondOrderScreenbottomPageState
                           const SizedBox(width: 4),
 
                           TextWidget.captionText(
-                            fw: 3,
+                            fw: 0,
                             text:
                                 "(${(int.parse(widget.bondInfo.minBidQuantity!) / double.parse(widget.bondInfo.faceValue!)).toInt()} - ${(int.parse(widget.bondInfo.maxQuantity!) / double.parse(widget.bondInfo.faceValue!)).toInt()})",
                             color: theme.isDarkMode
@@ -264,6 +267,7 @@ class _BondOrderScreenbottomPageState
                                         ? colors.textPrimaryDark
                                         : colors.textPrimaryLight,
                                     theme: theme.isDarkMode,
+                                    fw: 0,
                                   ),
                           keyboardType: TextInputType.number,
                           inputFormatters: [
@@ -349,7 +353,7 @@ class _BondOrderScreenbottomPageState
                         theme: false,
                         text: bondDetails.quantityerrortext,
                         color: colors.error,
-                        fw: 3,
+                        fw: 0,
                       )
                     ],
                     if (bondDetails.biderrortext.isNotEmpty) ...[
@@ -360,7 +364,7 @@ class _BondOrderScreenbottomPageState
                         theme: false,
                         text: bondDetails.biderrortext,
                         color: colors.error,
-                        fw: 3,
+                        fw: 0,
                       )
                     ],
                   ]),
@@ -378,7 +382,7 @@ class _BondOrderScreenbottomPageState
                       theme: false,
                       text: bondDetails.ledgerBalErrorText,
                       color: colors.error,
-                      fw: 3,
+                      fw: 0,
                     ),
                   ),
                   SizedBox(
@@ -422,7 +426,7 @@ class _BondOrderScreenbottomPageState
                     subtitle:  TextWidget.paraText(text: "Cash / Invesment",
                         color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                         theme: theme.isDarkMode,
-                        fw: 3),
+                        fw: 0),
                     trailing: OutlinedButton(
                         onPressed:
                             //  bonds.isBondPlaceOrderBtnActive

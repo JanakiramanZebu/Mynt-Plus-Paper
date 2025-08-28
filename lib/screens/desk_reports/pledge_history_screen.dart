@@ -321,6 +321,7 @@ class PledgeHistoryScreen extends StatelessWidget {
                                               textOverflow:
                                                   TextOverflow.ellipsis,
                                               theme: theme.isDarkMode,
+                                              fw: 0,
                                             ),
                                             SizedBox(width: 8),
                                             Container(
@@ -336,24 +337,26 @@ class PledgeHistoryScreen extends StatelessWidget {
                                                         ?  theme.isDarkMode ? colors.lossDark.withOpacity(0.1) : colors.lossLight.withOpacity(0.1)
                                                         :  theme.isDarkMode ? colors.pending.withOpacity(0.1) : colors.pending.withOpacity(0.1),
                                               ),
-                                              child: Text(
-                                                  value.status == '0'
+                                              child: 
+                                              
+                                              TextWidget.paraText(
+                                                text:  value.status == '0'
                                                       ? 'Success'
                                                       : value.status == '1'
                                                           ? 'Rejected'
                                                           : 'Pending',
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                  maxLines: 1,
-                                                  style: textStyle(
-                                                      value.status == '0'
+                                                          theme: false,
+                                                          textOverflow: TextOverflow.ellipsis,
+                                                          fw: 0,
+                                                          maxLines: 1,
+                                                          color :  value.status == '0'
                                                           ?  theme.isDarkMode ? colors.profitDark : colors.profitLight
                                                           : value.status ==
                                                                   '1'
                                                               ?  theme.isDarkMode ? colors.lossDark : colors.lossLight
-                                                              :  theme.isDarkMode ? colors.pending : colors.pending,
-                                                      12,
-                                                      FontWeight.w500)),
+                                                              :  theme.isDarkMode ? colors.pending : colors.pending
+
+                                              )    
                                             ),
                                             // TextWidget.captionText(
                                             // text: "${value.reqid}",
@@ -371,7 +374,7 @@ class PledgeHistoryScreen extends StatelessWidget {
                                     Padding(
                                       padding:
                                           const EdgeInsets.only(right: 16.0),
-                                      child: TextWidget.subText(
+                                      child: TextWidget.paraText(
                                           align: TextAlign.right,
                                           text:
                                               " ${value.datetime.split(' ')[0]}",
@@ -380,7 +383,7 @@ class PledgeHistoryScreen extends StatelessWidget {
                                               : colors.textPrimaryLight,
                                           textOverflow: TextOverflow.ellipsis,
                                           theme: theme.isDarkMode,
-                                          fw: 3),
+                                          fw: 0),
                                     ),
                                   ],
                                 ),
@@ -520,14 +523,14 @@ class PledgeHistoryScreen extends StatelessWidget {
                                           //     fw: 3),
                                           TextWidget.paraText(
                                               align: TextAlign.right,
-                                              text: " ${value.quantity} Qty",
+                                              text: " ${value.quantity} QTY",
                                               color: theme.isDarkMode
                                                   ? colors.textSecondaryDark
                                                   : colors.textSecondaryLight,
                                               textOverflow:
                                                   TextOverflow.ellipsis,
                                               theme: theme.isDarkMode,
-                                              fw: 3),
+                                              fw: 0),
                                         ],
                                       ),
                                     ),
@@ -546,7 +549,7 @@ class PledgeHistoryScreen extends StatelessWidget {
                                               textOverflow:
                                                   TextOverflow.ellipsis,
                                               theme: theme.isDarkMode,
-                                              fw: 3),
+                                              fw: 0),
                                         ],
                                       ),
                                     ),

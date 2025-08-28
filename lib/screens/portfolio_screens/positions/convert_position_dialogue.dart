@@ -126,8 +126,8 @@ class _ConvertPositionDialogueState
                 color: theme.isDarkMode
                     ? colors.textSecondaryDark
                     : colors.textSecondaryLight,
-                fw: 3),
-            const SizedBox(height: 10),
+                fw: 1),
+            const SizedBox(height: 8),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -178,49 +178,34 @@ class _ConvertPositionDialogueState
                   color: theme.isDarkMode
                       ? colors.textPrimaryDark
                       : colors.textPrimaryLight,
-                  fw: 0),
-              const SizedBox(height: 10),
+                  fw: 1),
+              const SizedBox(height: 8),
               SizedBox(
-                  height: 40,
-                  child: TextFormField(
-                      decoration: InputDecoration(
-                         fillColor: theme.isDarkMode
-                              ? colors.darkGrey
-                              : const Color(0xffF1F3F8),
-                        filled: true,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(5),
-                          borderSide: BorderSide(
-                            color: colors.primaryDark,
-                            width: 1,
-                          ),
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 5),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(5),
-                          borderSide: BorderSide(
-                            color: colors.primaryDark,
-                            width: 1,
-                          ),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(5),
-                          borderSide: BorderSide(
-                            color: colors.primaryDark,
-                            width: 1,
-                          ),
-                        ),
-                      ),
-                      controller: qty,
+                  height: 45,
+                  child: CustomTextFormField(
+                      fillColor: theme.isDarkMode
+                      ? colors.darkGrey
+                      : const Color(0xffF1F3F8),
+                      textCtrl: qty,
                       textAlign: TextAlign.center,
+                       keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
+                       hintStyle: TextWidget.textStyle(
+                    fontSize: 14,
+                    theme: theme.isDarkMode,
+                    color: theme.isDarkMode
+                        ? colors.textSecondaryDark
+                        : colors.textSecondaryLight,
+                    fw: 0,
+                  ),
                       style: TextWidget.textStyle(
-                          fontSize: 16,
-                          color: theme.isDarkMode
-                              ? colors.textPrimaryDark
-                              : colors.textPrimaryLight,
-                          theme: false,
-                          ),
+                    fontSize: 16,
+                    color: theme.isDarkMode
+                        ? colors.textPrimaryDark
+                        : colors.textPrimaryLight,
+                    theme: theme.isDarkMode,
+                    fw: 0,
+                  ),
                       onChanged: (value) {
                         if (value.isNotEmpty) {
                           int number = int.tryParse(qty.text) ?? 0;
@@ -266,18 +251,18 @@ class _ConvertPositionDialogueState
                     : colors.highlightLight,
                 onTap: () async {
                   if (qty.text.isEmpty || qty.text == "0") {
-                    ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+                    warningMessage(
                         context,
                         qty.text.isEmpty
                             ? 'Quantity can not be empty'
-                            : "Quantity can not be 0"));
+                            : "Quantity can not be 0");
                   } else if (int.parse(qty.text) > int.parse(maxQty.text)) {
                     setState(() {
                       qty.text = maxQty.text;
                     });
-                    ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+                    warningMessage(
                         context,
-                        'Quantity can not be greater than Max Quantity'));
+                        'Quantity can not be greater than Max Quantity');
                   } else {
                     PositionConvertionInput positionConvertionInput =
                         PositionConvertionInput(

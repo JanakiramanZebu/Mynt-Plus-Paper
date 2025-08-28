@@ -110,6 +110,7 @@ class TextWidget {
     double? letterSpacing,
     double? lineHeight,
     bool? softWrap,
+    TextDecoration? decoration,
   }) {
     return Text(
       text,
@@ -138,29 +139,31 @@ class TextWidget {
                               : FontWeight.normal,
           letterSpacing: letterSpacing ?? 0.5,
           height: lineHeight,
+          decoration: decoration,
         ),
       ),
     );
   }
 
-  static Widget paraText({
-    required String text,
-    required bool theme,
-    Color? color,
-    int? fw,
-    int? maxLines,
-    double? height,
-    TextAlign? align,
-    TextOverflow? textOverflow,
-    double? letterSpacing,
-  }) {
-    return Text(
-      text,
-      maxLines: maxLines,
-      overflow: textOverflow,
-      textAlign: align,
-      style: GoogleFonts.inter(
-          textStyle: TextStyle(
+ static Widget paraText({
+  required String text,
+  required bool theme,
+  Color? color,
+  int? fw,
+  int? maxLines,
+  double? height,
+  TextAlign? align,
+  TextOverflow? textOverflow,
+  double? letterSpacing,
+  TextDecoration? decoration, // ✅ added
+}) {
+  return Text(
+    text,
+    maxLines: maxLines,
+    overflow: textOverflow,
+    textAlign: align,
+    style: GoogleFonts.inter(
+      textStyle: TextStyle(
         fontSize: 12,
         color: (color != null)
             ? color
@@ -178,9 +181,12 @@ class TextWidget {
                         ? FontWeight.w400
                         : FontWeight.normal,
         letterSpacing: letterSpacing ?? 0.5,
-      )),
-    );
-  }
+        decoration: decoration, // ✅ apply optional decoration
+      ),
+    ),
+  );
+}
+
 
   static Widget captionText(
       {required String text,

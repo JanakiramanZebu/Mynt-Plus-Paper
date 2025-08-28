@@ -25,6 +25,9 @@ import 'themes/theme.dart';
 // Global route observer to allow screens to react to navigation events
 final RouteObserver<ModalRoute<void>> routeObserver = RouteObserver<ModalRoute<void>>();
 
+final GlobalKey<ScaffoldMessengerState> rootScaffoldMessengerKey =
+    GlobalKey<ScaffoldMessengerState>();
+
 // Global provider to track Firebase initialization status
 final firebaseInitializedProvider = StateProvider<bool>((ref) => false);
 
@@ -224,6 +227,7 @@ class MyApp extends ConsumerWidget {
     //         themeProvide.isDarkMode ? Brightness.light : Brightness.dark,
     //     statusBarColor: themeProvide.isDarkMode ? Colors.black :Colors.white));
     return MaterialApp(
+        scaffoldMessengerKey: rootScaffoldMessengerKey,
         themeMode: themeProvide.themeMode,
         theme: themeProvide.currentTheme,
         darkTheme: MyThemes.darkTheme,

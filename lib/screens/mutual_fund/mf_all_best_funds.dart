@@ -496,8 +496,7 @@ class _SaveTaxesScreenState extends ConsumerState<SaveTaxesScreen>
                     // Navigator.pushNamed(context, Routes.mfStockDetail,
                     //     arguments: bInstance);
                   } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                        successMessage(context, "No Single Page Data"));
+                        successMessage(context, "No Single Page Data");
 
                     final jsondata = MutualFundList.fromJson(item.toJson());
                     Navigator.pushNamed(context, Routes.mforderScreen,
@@ -507,12 +506,10 @@ class _SaveTaxesScreenState extends ConsumerState<SaveTaxesScreen>
                     mf.chngOrderType("One-time");
                   }
                 } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                      successMessage(context, "Invalid fund data"));
+                      successMessage(context, "Invalid fund data");
                 }
               } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                    successMessage(context, "Error loading fund details"));
+                    successMessage(context, "Error loading fund details");
               }
             },
             child: ListTile(

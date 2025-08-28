@@ -36,11 +36,13 @@ import './set_alert_screen_new.dart';
 class ScripDepthInfo extends ConsumerStatefulWidget {
   final DepthInputArgs wlValue;
   final String isBasket;
+  final bool? isfromOptionChain;
 
   const ScripDepthInfo({
     super.key,
     required this.wlValue,
     required this.isBasket,
+    this.isfromOptionChain = false,
   });
 
   @override
@@ -83,6 +85,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
       () => _getTextStyle(
         color,
         12,
+        0,
       ),
     );
   }
@@ -94,6 +97,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
       () => _getTextStyle(
         color,
         14,
+        0,
       ),
     );
   }
@@ -614,6 +618,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                             : colors.textPrimaryLight,
                                                                         theme: theme
                                                                             .isDarkMode,
+                                                                        fw: 0,
                                                                       ),
                                                                       Material(
                                                                         color: Colors
@@ -773,6 +778,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                               .profitLight,
                                                               theme: theme
                                                                   .isDarkMode,
+                                                              fw: 0,
                                                             ),
                                                             const SizedBox(
                                                                 height: 4),
@@ -786,6 +792,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                       .textSecondaryLight,
                                                               theme: theme
                                                                   .isDarkMode,
+                                                              fw: 0,
                                                             )
                                                           ])),
                             
@@ -1538,7 +1545,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                         .exch,
                                                                     widget
                                                                         .wlValue
-                                                                        .token))
+                                                                        .token) && !widget.isfromOptionChain!)
                                                               Expanded(
                                                                 child: Center(
                                                                   child:
@@ -1764,11 +1771,13 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                                 text: "Quantity",
                                                                                 color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                                                                                 theme: theme.isDarkMode,
+                                                                                fw: 0,
                                                                               ),
                                                                               TextWidget.paraText(
                                                                                 text: "Bid",
                                                                                 color: colors.secondary,
                                                                                 theme: theme.isDarkMode,
+                                                                                fw: 0,
                                                                               )
                                                                             ]),
                                                                             const SizedBox(height: 10),
@@ -1811,11 +1820,13 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                                 text: "Ask",
                                                                                 color: theme.isDarkMode ? colors.lossDark : colors.lossLight,
                                                                                 theme: theme.isDarkMode,
+                                                                                fw: 0,
                                                                               ),
                                                                               TextWidget.paraText(
                                                                                 text: "Quantity",
                                                                                 color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                                                                                 theme: theme.isDarkMode,
+                                                                                fw: 0,
                                                                               )
                                                                             ]),
                                                                             const SizedBox(height: 10),
@@ -2041,6 +2052,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                                             ? colors.profitDark
                                                                                             : colors.profitLight,
                                                                                     theme: theme.isDarkMode,
+                                                                                    fw: 0,
                                                                                   ),
                                                                                   const SizedBox(height: 4),
                                                                                   Center(
@@ -2049,6 +2061,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                                     align: TextAlign.center,
                                                                                     color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                                                                                     theme: theme.isDarkMode,
+                                                                                    fw: 0,
                                                                                   ))
                                                                                 ]));
                                                                           })),
@@ -2312,6 +2325,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
               text: " ${price != "null" ? price : '0.00'} ",
               color: theme.isDarkMode ? colors.lossDark : colors.lossLight,
               theme: theme.isDarkMode,
+              fw: 0,
             ),
             TextWidget.subText(
               text: " ${qty != "null" ? qty : '0'} ",
@@ -2319,6 +2333,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                   ? colors.textSecondaryDark
                   : colors.textSecondaryLight,
               theme: theme.isDarkMode,
+              fw: 0,
             ),
           ],
         ),
@@ -2355,6 +2370,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                   ? colors.textSecondaryDark
                   : colors.textSecondaryLight,
               theme: theme.isDarkMode,
+              fw: 0,
             ),
             TextWidget.subText(
               text: " ${price != "null" ? price : '0.00'} ",
@@ -2362,6 +2378,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                   ? colors.secondaryDark
                   : colors.secondaryLight,
               theme: theme.isDarkMode,
+              fw: 0,
             ),
           ],
         ),
@@ -2396,6 +2413,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                         color: theme.isDarkMode
                             ? colors.textPrimaryDark
                             : colors.textPrimaryLight,
+                        fw: 0,
                       ),
                       AnimatedRotation(
                         turns: scripInfo.isFuturesExpanded ? 0.25 : 0,
@@ -2445,6 +2463,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                 ? colors.secondaryDark
                                 : colors.secondaryLight,
                             theme: theme.isDarkMode,
+                            fw: 0,
                           ),
                         ],
                       ),
@@ -2517,6 +2536,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                         color: theme.isDarkMode
                             ? colors.textPrimaryDark
                             : colors.textPrimaryLight,
+                        fw: 0,
                       ),
                       Icon(
                         Icons.chevron_right,
@@ -2554,6 +2574,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                 color: theme.isDarkMode
                     ? colors.textSecondaryDark
                     : colors.textSecondaryLight,
+                fw: 0,
               ),
               TextWidget.subText(
                 text: value,
@@ -2561,6 +2582,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                 color: theme.isDarkMode
                     ? colors.textPrimaryDark
                     : colors.textPrimaryLight,
+                fw: 0,
               ),
             ],
           ),

@@ -1440,14 +1440,12 @@ class _AlgoCreateState extends ConsumerState<AlgoCreate> {
     final currentLegs = strategy.legs;
     strategy.addLeg();
 
-    ScaffoldMessenger.of(context)
-        .showSnackBar(successMessage(context, 'Leg added successfully!'));
+    successMessage(context, 'Leg added successfully!');
   }
 
   void _removeLeg(int index) {
     final strategy = ref.watch(stocksProvide);
     strategy.removeLeg(index);
-    ScaffoldMessenger.of(context)
-        .showSnackBar(successMessage(context, 'Leg removed successfully!'));
+    successMessage(context, 'Leg removed successfully!');
   }
 }

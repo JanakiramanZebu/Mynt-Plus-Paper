@@ -40,6 +40,7 @@ class ExchangeMessage extends ConsumerWidget {
                                     "${noftification.exchangemessage![index].exchTm} (${noftification.exchangemessage![index].exch})",
                                 theme: false,
                                 color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                                fw: 0,
                                 ),
                             const SizedBox(
                               height: 5,
@@ -53,6 +54,7 @@ class ExchangeMessage extends ConsumerWidget {
                                       ? colors.textPrimaryDark
                                       : colors.textPrimaryLight,
                                   height: 1.5,
+                                  fw: 0,
                                   letterSpacing: 0.5),
                               textAlign: TextAlign.left,
                               trimLines: 5,

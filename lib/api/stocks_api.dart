@@ -39,14 +39,12 @@ mixin StocksAPI on ApiCore {
  
     try {
       final uri = Uri.parse('http://192.168.5.119:8002/AnalysisHoldingsdata?client_id=${clientId}&session=${session}');
-
-      final res = await apiClient.get(uri,
-          headers: defaultHeaders );
-
+      final res = await apiClient.get(uri);
       final json = jsonDecode(res.body);
         
      return PortfolioResponse.fromJson(json as Map<String, dynamic>);
       } catch (e) {
+        print("Portfolio Analysis Error: $e");
        rethrow;
     }
 

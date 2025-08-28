@@ -206,6 +206,7 @@ class _AddScripState extends ConsumerState<SearchScreen>
                                       ? colors.textPrimaryDark
                                       : colors.textPrimaryLight,
                                   theme: theme.isDarkMode,
+                                  fw: 0,
                                 ),
                                 textCapitalization:
                                     TextCapitalization.characters,
@@ -226,6 +227,7 @@ class _AddScripState extends ConsumerState<SearchScreen>
                                   hintStyle: TextWidget.textStyle(
                                     fontSize: 14,
                                     theme: theme.isDarkMode,
+                                     fw: 0,
                                    color: theme.isDarkMode
                               ? colors.textSecondaryDark
                               : colors.textSecondaryLight,
@@ -413,7 +415,7 @@ class _AddScripState extends ConsumerState<SearchScreen>
                         textOverflow: TextOverflow.ellipsis,
                         maxLines: 1,
                         theme: theme.isDarkMode,
-                        fw: isSelected ? 2 : null),
+                        fw: isSelected ? 2 : 0),
                   ),
                   // Animated underline indicator
                   AnimatedContainer(

@@ -44,6 +44,8 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
     super.initState();
     tabController = TabController(length: 3, vsync: this, initialIndex: 0);
     // tabController.animation!.addListener(_onTabChanged);
+     activeTab = 0; // Initialize activeTab to match initial tab index
+    tabController.addListener(_onTabChanged);
 
     // Add listener to search controller to update UI when text changes
     searchController.addListener(() {
@@ -51,8 +53,8 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
     });
   }
 
-  void _onTabChanged(index) {
-    final newIndex = index;
+  void _onTabChanged() {
+    final newIndex = tabController.index;
     if (activeTab != newIndex) {
       setState(() {
         activeTab = newIndex;
@@ -352,7 +354,7 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                                             : colors.textPrimaryLight,
                                         textOverflow: TextOverflow.ellipsis,
                                         theme: theme.isDarkMode,
-                                        fw: 3),
+                                        fw: 0),
                                     SizedBox(height: 5),
                                     TextWidget.headText(
                                         text: "${displayValue}",
@@ -493,6 +495,7 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                                                                         .textPrimaryLight,
                                                                 theme: theme
                                                                     .isDarkMode,
+                                                                fw: 0,
                                                               ),
                                                               decoration:
                                                                   InputDecoration(
@@ -509,6 +512,7 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                                                                           .textSecondaryDark
                                                                       : colors
                                                                           .textSecondaryLight,
+                                                                  fw: 0,
                                                                 ),
                                                                 border:
                                                                     InputBorder
@@ -824,7 +828,9 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                             child: TabBar(
                               onTap: (int index) {
                                 print("Tab tapped: $index");
-                                activeTab = index;
+                                setState(() {
+                                  activeTab = index;
+                                });
                                 // Do something on tap
                               },
                               controller: tabController,
@@ -854,7 +860,7 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                               labelStyle: TextWidget.textStyle(
                                   fontSize: 14,
                                   theme: false,
-                                  fw: 1,
+                                  fw: 2,
                                   color: theme.isDarkMode
                                       ? colors.textPrimaryDark
                                       : colors.textPrimaryLight),
@@ -870,11 +876,17 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                                   const EdgeInsets.symmetric(horizontal: 4),
 
                               // build the "Open 4" badge and the rest of the tabs
-                              tabs: orderTabName.map((tabString) {
-                                /// If the value looks like "Open 4", split it once on the space
+                              // tabs: orderTabName.map((tabString) {
+                              //   /// If the value looks like "Open 4", split it once on the space
 
-                                final title =
-                                    tabString.text.toString(); // "Open"
+                              //   final title =
+                              //       tabString.text.toString(); // "Open"
+
+                               tabs: orderTabName.asMap().entries.map((entry) {
+                                final index = entry.key;
+                                final tabString = entry.value;
+                                final title = tabString.text.toString(); // "Open"
+                                final isActive = activeTab == index;
 
                                 return Tab(
                                   child: Padding(
@@ -888,10 +900,8 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                                         TextWidget.paraText(
                                             text: "${title}",
                                             theme: false,
-                                            color: theme.isDarkMode
-                                                ? colors.textPrimaryDark
-                                                : colors.textPrimaryLight,
-                                            fw: 3),
+                                            fw: isActive ? 2 : 0, // 2 for active (bold), 0 for inactive (w500)
+                                            ),
                                       ],
                                     ),
                                   ),
@@ -1288,17 +1298,13 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                                                   data: index,
                                                 ));
                                           } else {
-                                            ScaffoldMessenger.of(context)
-                                                .showSnackBar(
                                               warningMessage(context,
-                                                  '${value.initiated} Qty is processing'),
+                                                  '${value.initiated} Qty is processing'
                                             );
                                           }
                                         } else {
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(
                                             warningMessage(context,
-                                                'Unpledged initiated so can\'t pledge'),
+                                                'Unpledged initiated so can\'t pledge'
                                           );
                                         }
                                         // ledgerprovider
@@ -1465,19 +1471,13 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                                                       //         "${(double.parse(value.cOLQTY.toString()).toInt())}",
                                                       //         "${(double.parse(value.cOLQTY.toString()).toInt())}");
                                                     } else {
-                                                      ScaffoldMessenger.of(
-                                                              context)
-                                                          .showSnackBar(
                                                         warningMessage(context,
-                                                            'Pledged initiated so can\'t unpledge'),
+                                                            'Pledged initiated so can\'t unpledge'
                                                       );
                                                     }
                                                   } else {
-                                                    ScaffoldMessenger.of(
-                                                            context)
-                                                        .showSnackBar(
                                                       warningMessage(context,
-                                                          'Already pledged cant edit'),
+                                                          'Already pledged cant edit'
                                                     );
                                                   }
 

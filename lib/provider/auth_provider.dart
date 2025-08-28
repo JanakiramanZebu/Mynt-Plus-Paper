@@ -587,8 +587,7 @@ class AuthProvider extends DefaultChangeNotifier {
         mobile_client = mobileRclint;
         if (!totp) {
           if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-                successMessage(context, 'The OTP is sent via email and SMS'));
+                successMessage(context, 'The OTP is sent via email and SMS');
           }
         }
         _isDisableBtn = true;
@@ -640,8 +639,7 @@ class AuthProvider extends DefaultChangeNotifier {
           "Invalid Input : User Blocked due to multiple wrong attempts") {
         ref.read(changePasswordProvider).userIdController.text =
             "${_mobileLogin!.clientid}";
-        ScaffoldMessenger.of(context)
-            .showSnackBar(warningMessage(context, _mobileLogin!.emsg!));
+        warningMessage(context, _mobileLogin!.emsg!);
         Future.delayed(const Duration(seconds: 3), () {
           Navigator.pushNamed(context, Routes.forgotPass);
         });
@@ -653,8 +651,7 @@ class AuthProvider extends DefaultChangeNotifier {
           ref.read(changePasswordProvider).oldPassword.text =
               password.toString();
         }
-        ScaffoldMessenger.of(context)
-            .showSnackBar(warningMessage(context, _mobileLogin!.emsg!));
+        warningMessage(context, _mobileLogin!.emsg!);
         Navigator.pushNamed(context, Routes.changePass,
             arguments: _mobileLogin!.emsg == "Invalid Input : Password Expired"
                 ? 'Yes'
@@ -663,14 +660,14 @@ class AuthProvider extends DefaultChangeNotifier {
           "Your mobile registered in multiple accounts, Please login with client ID") {
         loginMethod();
         pref.setHideLoginOptBtn(false);
-        ScaffoldMessenger.of(context).showSnackBar(warningMessage(context,
-            "Multiple accounts linked to your mobile no. Login with Client ID"));
+        warningMessage(context,
+            "Multiple accounts linked to your mobile no. Login with Client ID");
       } else if (_mobileLogin!.emsg == "mobile_unique not valid") {
         if (s.isNotEmpty) {
           Navigator.pop(context);
         }
-        ScaffoldMessenger.of(context).showSnackBar(warningMessage(context,
-            "This user id logged in another device, Please login again"));
+        warningMessage(context,
+            "This user id logged in another device, Please login again");
         _isDisableBtn = true;
         pref.setHideLoginOptBtn(false);
         clearError();
@@ -730,8 +727,7 @@ class AuthProvider extends DefaultChangeNotifier {
         _handleNetworkFailure(
             context, "Network error. Please check your connection.");
       } else {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(warningMessage(context, _mobileLogin!.emsg!));
+        warningMessage(context, _mobileLogin!.emsg!);
         if (currentRouteName != Routes.loginScreen) {
           Navigator.pushNamedAndRemoveUntil(
               context,
@@ -776,12 +772,10 @@ class AuthProvider extends DefaultChangeNotifier {
               _mobileLogin!.msg ==
                   "otp sended, already logged in another device")) {
         mobile_client = mobileRclint;
-        ScaffoldMessenger.of(context).showSnackBar(
-            successMessage(context, 'The OTP is re-sent via SMS and email.'));
+            successMessage(context, 'The OTP is re-sent via SMS and email.');
         // _isDisableBtn = true;
       } else {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(warningMessage(context, _mobileLogin!.emsg!));
+        warningMessage(context, _mobileLogin!.emsg!);
       }
       notifyListeners();
     } catch (e) {
@@ -848,8 +842,7 @@ class AuthProvider extends DefaultChangeNotifier {
         final ctx = context;
         ref.read(changePasswordProvider).userIdController.text = mobile_client;
         Navigator.pushNamed(ctx, Routes.forgotPass);
-        ScaffoldMessenger.of(context)
-            .showSnackBar(warningMessage(context, _mobileOtp!.emsg!));
+        warningMessage(context, _mobileOtp!.emsg!);
         // Future.delayed(const Duration(seconds: 1), () {
         Navigator.pop(context);
         // });
@@ -1880,8 +1873,8 @@ class AuthProvider extends DefaultChangeNotifier {
           context, Routes.loginScreen, (route) => false);
 
       // Show error message
-      ScaffoldMessenger.of(context).showSnackBar(warningMessage(context,
-          "Connection issue. Please check your internet and try again."));
+      warningMessage(context,
+          "Connection issue. Please check your internet and try again.");
     }
   }
 
@@ -1991,8 +1984,8 @@ class AuthProvider extends DefaultChangeNotifier {
                 context, Routes.loginScreen, (route) => false);
 
             // Show the message only after navigation for better UX
-            ScaffoldMessenger.of(context).showSnackBar(warningMessage(
-                context, "Session Expired, Please log in again"));
+            warningMessage(
+                context, "Session Expired, Please log in again");
           }
 
           // Reset the flag after navigation is complete

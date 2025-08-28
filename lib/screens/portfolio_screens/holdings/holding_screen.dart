@@ -644,7 +644,7 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
                                           : theme.isDarkMode
                                               ? colors.profitDark
                                               : colors.profitLight,
-                                      fw: 3),
+                                      fw: 0),
                                 ])
                           ]),
                       Column(
@@ -1087,6 +1087,7 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
                       ? colors.textPrimaryDark
                       : colors.textPrimaryLight,
                   theme: theme.isDarkMode,
+                  fw: 0,
                 ),
                 keyboardType: TextInputType.text,
                 textCapitalization: TextCapitalization.characters,
@@ -1103,6 +1104,7 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
                       color: theme.isDarkMode
                           ? colors.textSecondaryDark
                           : colors.textSecondaryLight,
+                      fw: 0,
                     ),
                     fillColor: theme.isDarkMode
                         ? colors.searchBgDark

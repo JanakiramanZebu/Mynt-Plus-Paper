@@ -149,8 +149,9 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                   elevation: .2,
                   title: Column(
                     children: [
-                      Row(children: [
-                        TextWidget.subText(text: "${widget.scripInfo.symbol!} ", theme: theme.isDarkMode, color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight, fw: 3, maxLines: 1, textOverflow: TextOverflow.ellipsis),
+                      Row(
+                        children: [
+                        TextWidget.subText(text: "${widget.scripInfo.symbol!} ", theme: theme.isDarkMode, color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight, fw: 0, maxLines: 1, textOverflow: TextOverflow.ellipsis),
             
             
             
@@ -164,7 +165,7 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                         if (widget.scripInfo.option!.isNotEmpty)
             
             
-                        TextWidget.subText(text: widget.scripInfo.option!, theme: theme.isDarkMode, color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight, fw: 3, maxLines: 1, textOverflow: TextOverflow.ellipsis),
+                        TextWidget.subText(text: widget.scripInfo.option!, theme: theme.isDarkMode, color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight, fw: 0, maxLines: 1, textOverflow: TextOverflow.ellipsis),
             
             
                           // Text(widget.scripInfo.option!,
@@ -175,7 +176,7 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                         if (widget.scripInfo.expDate!.isNotEmpty)
             
             
-                        TextWidget.subText(text: " ${widget.scripInfo.expDate} ", theme: theme.isDarkMode, color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight, fw: 3, maxLines: 1, textOverflow: TextOverflow.ellipsis),
+                        TextWidget.subText(text: " ${widget.scripInfo.expDate} ", theme: theme.isDarkMode, color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight, fw: 0, maxLines: 1, textOverflow: TextOverflow.ellipsis),
             
             
                           // Text(" ${widget.scripInfo.expDate} ",
@@ -183,19 +184,15 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                           //         color: theme.isDarkMode
                           //             ? colors.colorWhite
                           //             : colors.colorBlack)),
-                        Container(
-                            margin: const EdgeInsets.only(right: 4),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(2),
-                                color: const Color(0xffF1F3F8)),
-                            child: Text("${widget.scripInfo.exch}",
-                                overflow: TextOverflow.ellipsis,
-                                style: textStyle(const Color(0xff666666), 10,
-                                    FontWeight.w500)))
+                        TextWidget.subText(text: "${widget.scripInfo.exch}", theme: theme.isDarkMode, color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight, fw: 0, textOverflow: TextOverflow.ellipsis)
+                            
+                            
+                             // Text("${widget.scripInfo.exch}",
+                             //    overflow: TextOverflow.ellipsis,
+                             //    style: textStyle(const Color(0xff666666), 10,
+                             //        FontWeight.w500)))
                       ]),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 8),
                       Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -271,10 +268,9 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                     .removeCurrentSnackBar();
                                                 if (value.isEmpty ||
                                                     inputPrice <= 0) {
-                                                  ScaffoldMessenger.of(context)
-                                                      .showSnackBar(warningMessage(
+                                                  warningMessage(
                                                           context,
-                                                          "Trigger Price can not be ${inputPrice <= 0 ? 'zero' : 'empty'}"));
+                                                          "Trigger Price can not be ${inputPrice <= 0 ? 'zero' : 'empty'}");
                                                 }
                                               },
                                               hintText:
@@ -285,6 +281,7 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                        color: theme.isDarkMode
                                   ? colors.textSecondaryDark
                                   : colors.textSecondaryLight,
+                                      fw: 0,
                                       ),
                                               keyboardType: const TextInputType
                                                   .numberWithOptions(
@@ -295,6 +292,7 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                           ? colors.textPrimaryDark
                                           : colors.textPrimaryLight,
                                       theme: theme.isDarkMode,
+                                      fw: 0,
                                     ),
                                               textCtrl: orderInput.val1Ctrl,
                                               textAlign: TextAlign.start)),
@@ -352,6 +350,7 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                        color: theme.isDarkMode
                                   ? colors.textSecondaryDark
                                   : colors.textSecondaryLight,
+                                      fw: 0,
                                       ),
                                                     inputFormate: [
                                                       FilteringTextInputFormatter
@@ -363,6 +362,7 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                           ? colors.textPrimaryDark
                                           : colors.textPrimaryLight,
                                       theme: theme.isDarkMode,
+                                      fw: 0,
                                     ),
                                                     // prefixIcon: InkWell(
                                                     //   onTap: () {
@@ -431,12 +431,9 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                           .hideCurrentSnackBar();
                                                       if (value.isEmpty ||
                                                           value == "0") {
-                                                        ScaffoldMessenger.of(
-                                                                context)
-                                                            .showSnackBar(
                                                                 warningMessage(
                                                                     context,
-                                                                    "Quantity can not be ${value == "0" ? 'zero' : 'empty'}"));
+                                                                    "Quantity can not be ${value == "0" ? 'zero' : 'empty'}");
                                                       } else {
                                                         String newValue =
                                                             value.replaceAll(
@@ -472,7 +469,7 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                     headerTitleText(
                                                         "Price", theme),
                                                     const SizedBox(width: 4),
-                                                    TextWidget.subText(text: "${orderInput.actPrcType}", theme: theme.isDarkMode, color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight, fw: 0, ),
+                                                    TextWidget.subText(text: "${orderInput.actPrcType}", theme: theme.isDarkMode, color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight, fw: 1, ),
                               
                               
                               
@@ -497,12 +494,9 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                                 context)
                                                             .hideCurrentSnackBar();
                                                         if (value.isEmpty) {
-                                                          ScaffoldMessenger.of(
-                                                                  context)
-                                                              .showSnackBar(
                                                                   warningMessage(
                                                                       context,
-                                                                      "Price can not be empty"));
+                                                                      "Price can not be empty");
                                                         } else {
                                                           setState(() {
                                                             price = value;
@@ -517,6 +511,7 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                        color: theme.isDarkMode
                                   ? colors.textSecondaryDark
                                   : colors.textSecondaryLight,
+                                      fw: 0,
                                       ),
                                                         style: TextWidget.textStyle(
                                       fontSize: 16,
@@ -524,6 +519,7 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                           ? colors.textPrimaryDark
                                           : colors.textPrimaryLight,
                                       theme: theme.isDarkMode,
+                                      fw: 0,
                                     ),
                                                       isReadable: orderInput
                                                                       .actPrcType ==
@@ -890,10 +886,9 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                       .removeCurrentSnackBar();
                                                   if (value.isEmpty ||
                                                       inputPrice <= 0) {
-                                                    ScaffoldMessenger.of(context)
-                                                        .showSnackBar(warningMessage(
+                                                    warningMessage(
                                                             context,
-                                                            "Trigger Price can not be ${inputPrice <= 0 ? 'zero' : 'empty'}"));
+                                                            "Trigger Price can not be ${inputPrice <= 0 ? 'zero' : 'empty'}");
                                                   }
                                                 },
                                                 hintText:
@@ -1037,12 +1032,9 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                             .hideCurrentSnackBar();
                                                         if (value.isEmpty ||
                                                             value == "0") {
-                                                          ScaffoldMessenger.of(
-                                                                  context)
-                                                              .showSnackBar(
                                                                   warningMessage(
                                                                       context,
-                                                                      "Quantity can not be ${value == "0" ? 'zero' : 'empty'}"));
+                                                                      "Quantity can not be ${value == "0" ? 'zero' : 'empty'}");
                                                         } else {
                                                           String newValue =
                                                               value.replaceAll(
@@ -1390,24 +1382,19 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                           prepareToModifyOCOOrder(
                                                               orderInput);
                                                         } else {
-                                                          ScaffoldMessenger.of(
-                                                                  context)
-                                                              .showSnackBar(warningMessage(
+                                                          warningMessage(
                                                                   context,
                                                                   val1 <= ltp
                                                                       ? "Target Trigger Price can not be Less than LTP"
                                                                       : val2 >= ltp
                                                                           ? "Stoploss Trigger Price can not be Greater than LTP"
-                                                                          : "Trigger Price can not be equal to LTP"));
+                                                                          : "Trigger Price can not be equal to LTP");
                                                         }
                                                         // }
                                                       } else {
-                                                        ScaffoldMessenger.of(
-                                                                context)
-                                                            .showSnackBar(
                                                                 warningMessage(
                                                                     context,
-                                                                    "Enter all Input fields"));
+                                                                    "Enter all Input fields");
                                                       }
                                                     } else {
                                                       if ((orderInput
@@ -1460,22 +1447,16 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                           //   // orderInput.chngAlert("LTP");
                                                           //   prepareToModifyGttOrder(orderInput);
                                                         } else {
-                                                          ScaffoldMessenger.of(
-                                                                  context)
-                                                              .showSnackBar(
                                                                   warningMessage(
                                                                       context,
-                                                                      "Trigger Price can not be equal to LTP"));
+                                                                      "Trigger Price can not be equal to LTP");
                                                         }
                                                         // prepareToModifyGttOrder(orderInput);
                                                         // }
                                                       } else {
-                                                        ScaffoldMessenger.of(
-                                                                context)
-                                                            .showSnackBar(
                                                                 warningMessage(
                                                                     context,
-                                                                    "Enter all Input fields"));
+                                                                    "Enter all Input fields");
                                                       }
                                                     }
                                                   },
@@ -1521,7 +1502,7 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
    headerTitleText(String text, ThemesProvider theme) {
     return 
     
-    TextWidget.subText(text: text, theme: theme.isDarkMode, color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight, fw: 0, );
+    TextWidget.subText(text: text, theme: theme.isDarkMode, color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight, fw: 1, );
     
     
     

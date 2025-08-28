@@ -172,6 +172,7 @@ class _CreatewatchListState extends ConsumerState<CreatewatchList> {
                                      color: theme.isDarkMode
                                 ? colors.textSecondaryDark
                                 : colors.textSecondaryLight,
+                                    fw: 0,
                                     ),
                             
                           keyboardType: TextInputType.text,
@@ -181,6 +182,7 @@ class _CreatewatchListState extends ConsumerState<CreatewatchList> {
                                         ? colors.textPrimaryDark
                                         : colors.textPrimaryLight,
                                     theme: theme.isDarkMode,
+                                    fw: 0,
                                   ),
                           textCtrl: textCtrl,
                           textAlign: TextAlign.start,

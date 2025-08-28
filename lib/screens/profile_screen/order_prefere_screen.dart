@@ -217,8 +217,8 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                               fontSize: 14,
                                               theme: theme.isDarkMode,
                                               fw: orderType == orderTypes[index]
-                                                  ? 0
-                                                  : null)));
+                                                  ? 2
+                                                  : 0)));
                                 },
                                 separatorBuilder: (context, index) {
                                   return const SizedBox(width: 8);
@@ -277,8 +277,8 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                               theme: theme.isDarkMode,
                                               fw: priceType ==
                                                       priceTypes[index]['type']
-                                                  ? 0
-                                                  : null)));
+                                                  ? 2
+                                                  : 0)));
                                 },
                                 separatorBuilder: (context, index) {
                                   return const SizedBox(width: 8);
@@ -344,7 +344,7 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                                 : colors.textPrimaryLight,
                                             fontSize: 14,
                                             theme: theme.isDarkMode,
-                                            fw: isSelected ? 0 : null,
+                                            fw: isSelected ? 2 : 0,
                                           ),
                                         ),
                                       );
@@ -393,17 +393,13 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                             int parsed = int.tryParse(value) ?? 1;
                                             if (parsed > 20) {
                                               mktProtCtrl.text = "20";
-                                              ScaffoldMessenger.of(context)
-                                                  .showSnackBar(
                                                 warningMessage(context,
-                                                    "Can't enter greater than 20% of Market Protection"),
+                                                    "Can't enter greater than 20% of Market Protection"
                                               );
                                             } else if (parsed < 1) {
                                               mktProtCtrl.text = "1";
-                                              ScaffoldMessenger.of(context)
-                                                  .showSnackBar(
                                                 warningMessage(context,
-                                                    "can't enter less than 1% of Market Protection"),
+                                                    "can't enter less than 1% of Market Protection"
                                               );
                                             }
                                           }
@@ -415,6 +411,7 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                             : colors.textPrimaryLight,
                                         fontSize: 16,
                                         theme: theme.isDarkMode,
+                                        fw: 0,
                                       ),
                                       textCtrl: mktProtCtrl,
                                       prefixIcon: Container(
@@ -479,6 +476,7 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                             : Color(QtyPrefer == OrdQtyPref.mktqty
                                 ? 0xff3E4763
                                 : 0xff666666),
+                        fw: 0,
                       ),
                       Radio<OrdQtyPref>(
                           fillColor: MaterialStateProperty.resolveWith<Color>(
@@ -510,6 +508,7 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                             : Color(QtyPrefer == OrdQtyPref.mktqty
                                 ? 0xff3E4763
                                 : 0xff666666),
+                        fw: 0,
                       ),
                     ]),
                     if (QtyPrefer == OrdQtyPref.mktlot) ...[
@@ -529,6 +528,7 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                       color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                                       fontSize: 14,
                                       theme: theme.isDarkMode,
+                                      fw: 0,
                                     ),
                                     inputFormate: [
                                       FilteringTextInputFormatter.digitsOnly
@@ -539,6 +539,7 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                           : colors.textPrimaryLight,
                                       fontSize: 16,
                                       theme: theme.isDarkMode,
+                                      fw: 0,
                                     ),
                                     textCtrl: qtyCtrl,
                                     textAlign: TextAlign.start,
@@ -547,9 +548,8 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                           .hideCurrentSnackBar();
             
                                       if (value.isEmpty) {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(warningMessage(context,
-                                                "Quantity cannot be empty"));
+                                        warningMessage(context,
+                                                "Quantity cannot be empty");
                                       } else {
                                         String newValue = value.replaceAll(
                                             RegExp(r'[^0-9]'), '');
@@ -620,8 +620,8 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                               theme: theme.isDarkMode,
                                               fw: expriceType ==
                                                       expriceTypes[index]['type']
-                                                  ? 0
-                                                  : null)));
+                                                  ? 2
+                                                  : 0)));
                                 },
                                 separatorBuilder: (context, index) {
                                   return const SizedBox(width: 8);
@@ -652,14 +652,12 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                           if (mktProtCtrl.text.isEmpty ||
                               int.parse(mktProtCtrl.text) > 20 ||
                               int.parse(mktProtCtrl.text) < 1) {
-                            ScaffoldMessenger.of(context).showSnackBar(
                                 warningMessage(context,
-                                    "Market Protection between 1% to 20%"));
+                                    "Market Protection between 1% to 20%");
                           } else if ((QtyPrefer == OrdQtyPref.mktlot) &&
                               qtyCtrl.text == "") {
-                            ScaffoldMessenger.of(context).showSnackBar(
                                 warningMessage(
-                                    context, "Quantity can not be 0 or empty"));
+                                    context, "Quantity can not be 0 or empty");
                           } else {
                             await setPrefOrderPrefer(context);
                           }
@@ -685,7 +683,7 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
       theme: false,
       color:
           theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-      fw: null,
+      fw: 1,
     );
   }
 
@@ -707,8 +705,7 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
     final authProv = ref.read(authProvider);
     await authProv.getPrefOrderPrefer(local, true, context);
 
-    ScaffoldMessenger.of(context).showSnackBar(
-        successMessage(context, "Order Preference hav been saved"));
+        successMessage(context, "Order Preference hav been saved");
     await authProv.setPrefOrderPrefer(context);
     Navigator.pop(context);
     if (gobackOP) {

@@ -1060,10 +1060,7 @@ class LDProvider extends DefaultChangeNotifier {
     } catch (e) {
       _positionloading = false;
       notifyListeners();
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        warningMessage(context, 'Error occurred in positions try again later'),
-      );
+        warningMessage(context, 'Error occurred in positions try again later');
       debugPrint("$e");
     }
   }
@@ -1269,11 +1266,9 @@ class LDProvider extends DefaultChangeNotifier {
 
         // Safely show snackbar
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
             successMessage(
               context,
               ordertype == 'ER' ? 'Order placed' : 'Order cancelled',
-            ),
           );
         }
       } else if (res.msg == 'error occured on data fetch') {
@@ -1282,18 +1277,15 @@ class LDProvider extends DefaultChangeNotifier {
 
         // Safely show snackbar
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
             warningMessage(
               context,
               "${res.msg}", // 'Order cancelled',
-            ),
           );
         }
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          warningMessage(context, '$e'),
+          warningMessage(context, '$e'
         );
       }
       Navigator.pop(context); // Pop after snackbar
@@ -1348,22 +1340,19 @@ class LDProvider extends DefaultChangeNotifier {
         _calendarpnlloading = false;
 
         _ucode = "${_sharingturonandoff!.data!.uqCode}";
-        ScaffoldMessenger.of(context).showSnackBar(
-          successMessage(context, "Sharing Turned on"),
+          successMessage(context, "Sharing Turned on"
         );
       } else {
         if (_sharingturonandoff!.msg != null) {
           if (_sharingturonandoff!.msg == 'Sharing Turned Off') {
             notsharing = true;
             _calendarpnlloading = false;
-            ScaffoldMessenger.of(context).showSnackBar(
-              successMessage(context, "Sharing Turned off"),
+              successMessage(context, "Sharing Turned off"
             );
           } else {
             notsharing = false;
             _calendarpnlloading = false;
-            ScaffoldMessenger.of(context).showSnackBar(
-              successMessage(context, "Sharing Turned on"),
+              successMessage(context, "Sharing Turned on"
             );
           }
         }
@@ -1379,8 +1368,7 @@ class LDProvider extends DefaultChangeNotifier {
       }
       notifyListeners();
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        warningMessage(context, 'Sharing error'),
+        warningMessage(context, 'Sharing error'
       );
       debugPrint("$e");
       print("${e}eeeeee");
@@ -1551,8 +1539,7 @@ class LDProvider extends DefaultChangeNotifier {
       // Download the file
       _pdfresponse = await api.getpdffileapi(recno, filename);
       if (_pdfresponse == 'File downloaded successfully') {
-        ScaffoldMessenger.of(context).showSnackBar(
-          successMessage(context, 'PDF Downloaded, Check Your Download'),
+          successMessage(context, 'PDF Downloaded, Check Your Download'
         );
 
         // Open the Downloads folder
@@ -1627,13 +1614,11 @@ class LDProvider extends DefaultChangeNotifier {
       _pdfresponse =
           await api.getpdffileapiledger(res, dr, cr, op, clb, stdate, edate);
       if (_pdfresponse == 'File downloaded successfully') {
-        ScaffoldMessenger.of(context).showSnackBar(
-          successMessage(context, 'PDF Downloaded, Check Your Download'),
+          successMessage(context, 'PDF Downloaded, Check Your Download'
         );
         _ledgerloading = false;
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          warningMessage(context, '$_pdfresponse'),
+          warningMessage(context, '$_pdfresponse'
         );
         _ledgerloading = false;
       }
@@ -1642,8 +1627,7 @@ class LDProvider extends DefaultChangeNotifier {
       notifyListeners();
     } catch (e) {
       _ledgerloading = false;
-      ScaffoldMessenger.of(context).showSnackBar(
-        warningMessage(context, 'Error occurred try again later'),
+        warningMessage(context, 'Error occurred try again later'
       );
       debugPrint("$e");
     }
@@ -1657,13 +1641,11 @@ class LDProvider extends DefaultChangeNotifier {
       _pdfresponse = await api.getpdffileapipnl(
           res, stdate, edate, string, notional, chargevalue);
       if (_pdfresponse == 'File downloaded successfully') {
-        ScaffoldMessenger.of(context).showSnackBar(
-          successMessage(context, 'PDF Downloaded, Check Your Download'),
+          successMessage(context, 'PDF Downloaded, Check Your Download'
         );
         _pnlloading = false;
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          warningMessage(context, '$_pdfresponse'),
+          warningMessage(context, '$_pdfresponse'
         );
         _pnlloading = false;
       }
@@ -1880,8 +1862,7 @@ class LDProvider extends DefaultChangeNotifier {
         debugPrint("Error fetching tax pnl data: $e");
       }
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        warningMessage(context, 'Cant move already in $_yearforTaxpnlDummy'),
+        warningMessage(context, 'Cant move already in $_yearforTaxpnlDummy'
       );
     }
   }
@@ -1904,8 +1885,7 @@ class LDProvider extends DefaultChangeNotifier {
       debugPrint("$e");
       _ledgerloading = false;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        warningMessage(context, 'Error occurred try again later'),
+        warningMessage(context, 'Error occurred try again later'
       );
     } finally {
       // _ledgerloading = false;
@@ -1947,8 +1927,7 @@ class LDProvider extends DefaultChangeNotifier {
         _pledgeoruppledgedelete = '';
         _pledgeorunpledge = '';
         _listforpledge = [];
-        ScaffoldMessenger.of(context).showSnackBar(
-          successMessage(context, 'Scripts Unpledged'),
+          successMessage(context, 'Scripts Unpledged'
         );
         // _reportsloading = false;
       }
@@ -1963,8 +1942,7 @@ class LDProvider extends DefaultChangeNotifier {
       debugPrint("$e");
       _pledgeloader = false;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        warningMessage(context, 'Error occurred try again later'),
+        warningMessage(context, 'Error occurred try again later'
       );
     }
   }
@@ -1978,8 +1956,7 @@ class LDProvider extends DefaultChangeNotifier {
         _pledgeandunpledge = await api.getpledgeandunpledge();
         _pledgeorunpledge = '';
         _listforpledge = [];
-        ScaffoldMessenger.of(context).showSnackBar(
-          successMessage(context, 'Request Deleted '),
+          successMessage(context, 'Request Deleted '
         );
         // _reportsloading = false;
       }
@@ -1993,8 +1970,7 @@ class LDProvider extends DefaultChangeNotifier {
     } catch (e) {
       _pledgeloader = false;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        warningMessage(context, 'Error occurred try again later'),
+        warningMessage(context, 'Error occurred try again later'
       );
       debugPrint("$e");
     }
@@ -2019,8 +1995,7 @@ class LDProvider extends DefaultChangeNotifier {
     } catch (e) {
       _reportsloadingforcharges = false;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        warningMessage(context, 'Error in getting charges'),
+        warningMessage(context, 'Error in getting charges'
       );
       debugPrint("$e");
     }
@@ -2046,15 +2021,13 @@ class LDProvider extends DefaultChangeNotifier {
         notifyListeners();
       } catch (e) {
         _reportsloadingforcharges = false;
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          warningMessage(context, 'Error occurred try again later'),
+          warningMessage(context, 'Error occurred try again later'
         );
         debugPrint("$e");
       }
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(warningMessage(
-          context, 'Cant move already in ${_yearforTaxpnlDummy}'));
+      warningMessage(
+          context, 'Cant move already in ${_yearforTaxpnlDummy}');
     }
   }
 
@@ -3041,8 +3014,7 @@ class LDProvider extends DefaultChangeNotifier {
     }
     for (var i = 0; i < _listforpledge.length; i++) {
       if (_listforpledge[i] == isin) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          successMessage(context, 'Script Already added'),
+          successMessage(context, 'Script Already added'
         );
         found = true;
         break; // No need to check further
@@ -3051,8 +3023,7 @@ class LDProvider extends DefaultChangeNotifier {
 
     if (!found) {
       _listforpledge.add(isin);
-      ScaffoldMessenger.of(context).showSnackBar(
-        successMessage(context, 'Script Added'),
+        successMessage(context, 'Script Added'
       );
     }
     print("${_listforpledge.length}loakdsdejkvh");
@@ -3124,8 +3095,7 @@ class LDProvider extends DefaultChangeNotifier {
       for (var i = 0; i < _listforpledge.length; i++) {
         if (_listforpledge[i]['isin'] == isin) {
           _listforpledge[i]['quantity'] = qty;
-          ScaffoldMessenger.of(context).showSnackBar(
-            successMessage(context, 'Script Updated'),
+            successMessage(context, 'Script Updated'
           );
           found = true;
           break; // No need to check further
@@ -3141,9 +3111,9 @@ class LDProvider extends DefaultChangeNotifier {
           "quantity": qty,
         });
         ScaffoldMessenger.of(context)
-          ..hideCurrentSnackBar()
-          ..showSnackBar(
-            successMessage(context, 'Script Added'),
+          ..hideCurrentSnackBar();
+          
+            successMessage(context, 'Script Added'
           );
       }
     } else {
@@ -3151,8 +3121,7 @@ class LDProvider extends DefaultChangeNotifier {
         if (_listforpledge[i]['ISIN'] == isin) {
           _listforpledge[i]['COLQTY'] = qty;
           _listforpledge[i]['unplege_qty'] = qty;
-          ScaffoldMessenger.of(context).showSnackBar(
-            successMessage(context, 'Script Updated'),
+            successMessage(context, 'Script Updated'
           );
           found = true;
           break; // No need to check further
@@ -3167,8 +3136,7 @@ class LDProvider extends DefaultChangeNotifier {
           "NSE_SYMBOL": sym,
           "unplege_qty": qty,
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          successMessage(context, 'Script Added'),
+          successMessage(context, 'Script Added'
         );
       }
     }

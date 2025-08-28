@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../res/res.dart';
+import '../main.dart';
 
 //It serves to display information to the user.
 
-SnackBar error(BuildContext context, String error) => SnackBar(
+void error(BuildContext context, String error) => rootScaffoldMessengerKey.currentState?.showSnackBar(SnackBar(
     content: Row(
       children: [
         Container(
@@ -33,7 +34,7 @@ SnackBar error(BuildContext context, String error) => SnackBar(
       label: '✕',
       onPressed: () {
         // Automatically dismisses the snackbar
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        rootScaffoldMessengerKey.currentState?.hideCurrentSnackBar();
       },
       textColor: Colors.white70,
     ),
@@ -49,9 +50,9 @@ SnackBar error(BuildContext context, String error) => SnackBar(
       left: 16,
       right: 0,
     ),
-    elevation: 4);
+    elevation: 4));
 
-SnackBar successMessage(BuildContext context, String success) => SnackBar(
+void successMessage(BuildContext context, String success) => rootScaffoldMessengerKey.currentState?.showSnackBar(SnackBar(
     content: Row(
       children: [
         Container(
@@ -82,7 +83,7 @@ SnackBar successMessage(BuildContext context, String success) => SnackBar(
       label: '✕',
       onPressed: () {
         // Automatically dismisses the snackbar
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        rootScaffoldMessengerKey.currentState?.hideCurrentSnackBar();
       },
       textColor: Colors.white70,
     ),
@@ -98,9 +99,9 @@ SnackBar successMessage(BuildContext context, String success) => SnackBar(
       left: 16,
       right: 0,
     ),
-    elevation: 4);
+    elevation: 4));
 
-SnackBar warningMessage(BuildContext context, String warning) => SnackBar(
+void warningMessage(BuildContext context, String warning) => rootScaffoldMessengerKey.currentState?.showSnackBar(SnackBar(
     content: Row(
       children: [
         Container(
@@ -131,7 +132,7 @@ SnackBar warningMessage(BuildContext context, String warning) => SnackBar(
       label: '✕',
       onPressed: () {
         // Automatically dismisses the snackbar
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        rootScaffoldMessengerKey.currentState?.hideCurrentSnackBar();
       },
       textColor: Colors.white70,
     ),
@@ -149,10 +150,10 @@ SnackBar warningMessage(BuildContext context, String warning) => SnackBar(
     ), // Changed to EdgeInsets.only to avoid unnecessary padding
     // .symmetric(vertical: 0, horizontal: 0),
 
-    elevation: 4);
+    elevation: 4));
 
 void warningToaster(BuildContext context, String warningtoaster) {
-  final snackBar = SnackBar(
+  rootScaffoldMessengerKey.currentState?.showSnackBar(SnackBar(
       content: Row(
         children: [
           Container(
@@ -183,7 +184,7 @@ void warningToaster(BuildContext context, String warningtoaster) {
         label: '✕',
         onPressed: () {
           // Automatically dismisses the snackbar
-          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+          rootScaffoldMessengerKey.currentState?.hideCurrentSnackBar();
         },
         textColor: Colors.white70,
       ),
@@ -199,6 +200,5 @@ void warningToaster(BuildContext context, String warningtoaster) {
         left: 16,
         right: 0,
       ),
-      elevation: 4);
-  ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      elevation: 4));
 }

@@ -164,7 +164,7 @@ class _OrderConfirmationScreenState extends ConsumerState<OrderConfirmationScree
                       const SizedBox(height: 16),
                       TextWidget.subText(
                         text: _getStatusText(),
-                        fw: 3,
+                        fw: 0,
                         color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
                         theme: false,
                       ),
@@ -173,6 +173,7 @@ class _OrderConfirmationScreenState extends ConsumerState<OrderConfirmationScree
                         text: _getStatusMessage(),
                         color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                         theme: false,
+                        fw: 0,
                       ),
                     ],
                   ),
@@ -251,6 +252,7 @@ class _OrderConfirmationScreenState extends ConsumerState<OrderConfirmationScree
                                     text: "#$orderNumber",
                                     color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
                                     theme: false,
+                                    fw: 0,
                                   ),
                                 ],
                                 if (order.requestTime != null) ...[
@@ -259,6 +261,7 @@ class _OrderConfirmationScreenState extends ConsumerState<OrderConfirmationScree
                                     text: order.requestTime!,
                                     color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                                     theme: false,
+                                    fw: 0,
                                   ),
                                 ],
                               ],
@@ -295,7 +298,7 @@ class _OrderConfirmationScreenState extends ConsumerState<OrderConfirmationScree
                               _buildOrderDetailRow("Price Type", orderHistory[0].prctyp ?? "-", theme),
                               _buildOrderDetailRow("Validity", orderHistory[0].ret ?? "-", theme),
                               _buildOrderDetailRow("Status", _formatStatus(orderHistory[0].status ?? ""), theme),
-                              if (orderHistory[0].status == "REJECTED") ...[
+                              if ((orderHistory[0].status == "REJECTED") || ((orderHistory[0].rpt == "ReplaceRejected") ||(orderHistory[0].rpt == "CancelRejected"))) ...[
                                 _buildOrderDetailRow("Reason", "", theme),
                                 Padding(
                                   padding: const EdgeInsets.only(top: 8),
@@ -394,13 +397,14 @@ class _OrderConfirmationScreenState extends ConsumerState<OrderConfirmationScree
             text: label,
             color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
             theme: false,
+            fw: 0,
             // fontSize: 14,
           ),
           TextWidget.subText(
             text: value,
             color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
             theme: false,
-            fw: 3,
+            fw: 0,
             // fontSize: 14,
           ),
         ],
@@ -488,7 +492,7 @@ class _OrderConfirmationScreenState extends ConsumerState<OrderConfirmationScree
             size: 40,
           ),
           );
-         ;
+        
         case 'REJECTED':
         case 'CANCELLED':
           return  Container(

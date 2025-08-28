@@ -109,9 +109,8 @@ class _StocksScreenState extends State<StocksScreen> {
                           return InkWell(
                               onLongPress: () {
                                 if (marketWatch.isPreDefWLs == "Yes") {
-                                  ScaffoldMessenger.of(context).showSnackBar(
                                       warningMessage(context,
-                                          "This is a pre-defined watchlist that cannot be edited!"));
+                                          "This is a pre-defined watchlist that cannot be edited!");
                                 }
                               },
                               onTap: () async {

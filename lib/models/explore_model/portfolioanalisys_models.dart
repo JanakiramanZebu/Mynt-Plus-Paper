@@ -169,7 +169,8 @@ class Fundamental {
       house: json['house'],
       bseCode: json['bse_code']?.toInt(),
       bseGroup: json['bse_group'],
-      bseScripName: json['bse_scrip_name'],
+      // Fixed: Handle the space in field name
+      bseScripName: json['bse_scrip name'] ?? json['bse_scrip_name'],
       tradingStatus: json['trading_status'],
       nseSymbol: json['nse_symbol'],
       nseSeries: json['nse_series'],
@@ -200,6 +201,7 @@ class Fundamental {
     );
   }
 }
+
 
 class ChartData {
   final List<String> dates;

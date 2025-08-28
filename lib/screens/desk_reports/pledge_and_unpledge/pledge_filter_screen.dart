@@ -403,15 +403,13 @@ class _PledgeFilterState extends State<PledgeFilter>
                                     data: value,
                                   ));
                             } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
                                 warningMessage(context,
-                                    '${value.initiated} Qty is processing'),
+                                    '${value.initiated} Qty is processing'
                               );
                             }
                           } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
                               warningMessage(context,
-                                  'Unpledged initiated so can\'t pledge'),
+                                  'Unpledged initiated so can\'t pledge'
                             );
                           }
                         } else if (widget.activetabe == '1') {
@@ -436,15 +434,13 @@ class _PledgeFilterState extends State<PledgeFilter>
                               //         "${(double.parse(value.cOLQTY.toString()).toInt())}",
                               //         "${(double.parse(value.cOLQTY.toString()).toInt())}");
                             } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
                                 warningMessage(context,
-                                    'Pledged initiated so can\'t unpledge'),
+                                    'Pledged initiated so can\'t unpledge'
                               );
                             }
                           } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
                               warningMessage(
-                                  context, 'Already pledged cant edit'),
+                                  context, 'Already pledged cant edit'
                             );
                           }
                         }
@@ -482,7 +478,7 @@ class _PledgeFilterState extends State<PledgeFilter>
                                                               .textPrimaryDark
                                                           : colors
                                                               .textPrimaryLight,
-                                                      fw: 3),
+                                                      fw: 0),
                                                   SizedBox(width: 10.0),
                                                   //         ((((value.cashEqColl!.foCashEq != null
                                                   //                 ? value.cashEqColl!
@@ -546,8 +542,10 @@ class _PledgeFilterState extends State<PledgeFilter>
                                                                       .textSecondaryLight
                                                                       .withOpacity(
                                                                           0.1)),
-                                                          child: Text(
-                                                              // ((value.cashEqColl!
+                                                          child:
+                                                          
+                                                          TextWidget.paraText(
+                                                            text:  // ((value.cashEqColl!
                                                               //                     .foCashEq !=
                                                               //                 null
                                                               //             ? value.cashEqColl!
@@ -575,11 +573,11 @@ class _PledgeFilterState extends State<PledgeFilter>
                                                                               'cash'
                                                                           ? 'Case'
                                                                           : '-',
-                                                              overflow:
-                                                                  TextOverflow
-                                                                      .ellipsis,
-                                                              maxLines: 1,
-                                                              style: textStyle(value
+                                                                          theme: false,
+                                                                          fw: 0,
+                                                                          textOverflow: TextOverflow.ellipsis,
+                                                                          maxLines: 1,
+                                                                          color: (value
                                                                           .status ==
                                                                       'Not_ok'
                                                                   ? theme
@@ -593,10 +591,13 @@ class _PledgeFilterState extends State<PledgeFilter>
                                                                       ? colors
                                                                           .textPrimaryDark
                                                                       : colors
-                                                                          .textPrimaryLight,
-                                                                  10,
-                                                                  FontWeight
-                                                                      .w500)),
+                                                                          .textPrimaryLight
+                                                          ) 
+                                                          
+                                                          
+                                                          
+                                                          
+                                                          ),
                                                         )
                                                       : SizedBox(),
                                                 ],
@@ -643,21 +644,15 @@ class _PledgeFilterState extends State<PledgeFilter>
                                                             //         "${(double.parse(value.cOLQTY.toString()).toInt())}",
                                                             //         "${(double.parse(value.cOLQTY.toString()).toInt())}");
                                                           } else {
-                                                            ScaffoldMessenger
-                                                                    .of(context)
-                                                                .showSnackBar(
                                                               warningMessage(
                                                                   context,
-                                                                  'Pledged initiated so can\'t unpledge'),
-                                                            );
+                                                                  'Pledged initiated so can\'t unpledge');
+                                                            
                                                           }
                                                         } else {
-                                                          ScaffoldMessenger.of(
-                                                                  context)
-                                                              .showSnackBar(
                                                             warningMessage(
                                                                 context,
-                                                                'Already pledged cant edit'),
+                                                                'Already pledged cant edit'
                                                           );
                                                         }
 
@@ -812,21 +807,15 @@ class _PledgeFilterState extends State<PledgeFilter>
                                                                   //         "${(double.parse(value.cOLQTY.toString()).toInt())}",
                                                                   //         "${(double.parse(value.cOLQTY.toString()).toInt())}");
                                                                 } else {
-                                                                  ScaffoldMessenger.of(
-                                                                          context)
-                                                                      .showSnackBar(
                                                                     warningMessage(
                                                                         context,
-                                                                        'Pledged initiated so can\'t unpledge'),
+                                                                        'Pledged initiated so can\'t unpledge'
                                                                   );
                                                                 }
                                                               } else {
-                                                                ScaffoldMessenger.of(
-                                                                        context)
-                                                                    .showSnackBar(
                                                                   warningMessage(
                                                                       context,
-                                                                      'Already pledged cant edit'),
+                                                                      'Already pledged cant edit'
                                                                 );
                                                               }
 
@@ -957,21 +946,15 @@ class _PledgeFilterState extends State<PledgeFilter>
                                                                 data: value,
                                                               ));
                                                         } else {
-                                                          ScaffoldMessenger.of(
-                                                                  context)
-                                                              .showSnackBar(
                                                             warningMessage(
                                                                 context,
-                                                                '${value.initiated} Qty is processing'),
+                                                                '${value.initiated} Qty is processing'
                                                           );
                                                         }
                                                       } else {
-                                                        ScaffoldMessenger.of(
-                                                                context)
-                                                            .showSnackBar(
                                                           warningMessage(
                                                               context,
-                                                              'Unpledged initiated so can\'t pledge'),
+                                                              'Unpledged initiated so can\'t pledge'
                                                         );
                                                       }
                                                       // ledgerprovider
@@ -1080,7 +1063,7 @@ class _PledgeFilterState extends State<PledgeFilter>
                                         : colors.textSecondaryLight,
                                     textOverflow: TextOverflow.ellipsis,
                                     theme: theme.isDarkMode,
-                                    fw: 3),
+                                    fw: 0),
                                 TextWidget.paraText(
                                     text: (double.parse(value.cOLQTY.toString())
                                                 .toInt()) ==
@@ -1096,7 +1079,7 @@ class _PledgeFilterState extends State<PledgeFilter>
                                         : colors.textSecondaryLight,
                                     textOverflow: TextOverflow.ellipsis,
                                     theme: theme.isDarkMode,
-                                    fw: 3),
+                                    fw: 0),
                                 TextWidget.paraText(
                                     text: value.estimated != null
                                         ? "(${double.parse(value.estPercentage.toString()).toInt()}%)"
@@ -1106,7 +1089,7 @@ class _PledgeFilterState extends State<PledgeFilter>
                                         : colors.textSecondaryLight,
                                     textOverflow: TextOverflow.ellipsis,
                                     theme: theme.isDarkMode,
-                                    fw: 3),
+                                    fw: 0),
                               ],
                             ),
                           ],

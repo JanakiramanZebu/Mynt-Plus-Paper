@@ -554,6 +554,7 @@ class UserAccountScreen extends ConsumerWidget {
                     color: !theme.isDarkMode
                         ? colors.textSecondaryLight
                         : colors.textSecondaryDark,
+                        fw: 0,
                   ),
                   trailing: Icon(
                     Icons.arrow_forward_ios,
@@ -661,6 +662,7 @@ class UserAccountScreen extends ConsumerWidget {
                         color: !theme.isDarkMode
                             ? colors.textPrimaryLight
                             : colors.textPrimaryDark,
+                        fw: 0,
                       ),
                       const SizedBox(height: 4),
                       TextWidget.subText(
@@ -670,6 +672,7 @@ class UserAccountScreen extends ConsumerWidget {
                         color: !theme.isDarkMode
                             ? colors.textSecondaryLight
                             : colors.textSecondaryDark,
+                        fw: 0,
                       ),
                     ],
                   ),
@@ -965,6 +968,7 @@ class SettingsScreen extends ConsumerWidget {
                           color: !theme.isDarkMode
                               ? colors.textSecondaryLight
                               : colors.textSecondaryDark,
+                          fw: 0,
                         ),
                         trailing: Icon(
                           Icons.arrow_forward_ios,
@@ -1185,6 +1189,7 @@ class SettingsScreen extends ConsumerWidget {
                     color: !theme.isDarkMode
                         ? colors.textSecondaryLight
                         : colors.textSecondaryDark,
+                    fw: 0,
                   ),
                   trailing: Icon(
                     Icons.arrow_forward_ios,
@@ -1306,6 +1311,7 @@ class SettingsScreen extends ConsumerWidget {
                                       color: theme.isDarkMode
                                           ? colors.textSecondaryDark
                                           : colors.textSecondaryLight,
+                                      fw: 0,
                                     ),
                                     const SizedBox(height: 20.0),
                                     Padding(
@@ -1433,7 +1439,7 @@ class SettingsScreen extends ConsumerWidget {
                                                                       .textSecondaryDark
                                                                   : colors
                                                                       .textPrimaryLight,
-                                                              fw: 3,
+                                                              fw: 0,
                                                               align: TextAlign
                                                                   .center,
                                                             ),
@@ -2025,7 +2031,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                                 : theme.isDarkMode
                                     ? colors.textSecondaryDark
                                     : colors.textSecondaryLight,
-                            fw: _expandedTitle == title ? 0 : 3,
+                            fw: _expandedTitle == title ? 1 : 0,
                           ),
                           children: [
                             // Dynamically build the content based on the title
@@ -2243,6 +2249,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                                       color: theme.isDarkMode
                                           ? colors.textPrimaryDark
                                           : colors.textPrimaryLight,
+                                      fw: 0,
                                     ),
                                   ),
                                   // SizedBox(height: 25.0),
@@ -2255,6 +2262,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                                 color: theme.isDarkMode
                                     ? colors.textSecondaryDark
                                     : colors.textSecondaryLight,
+                                fw: 0,
                               ),
                               SizedBox(height: 5.0),
                               TextWidget.paraText(
@@ -2263,6 +2271,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                                 color: theme.isDarkMode
                                     ? colors.textSecondaryDark
                                     : colors.textSecondaryLight,
+                                fw: 0,
                               ),
                             ],
                           ),
@@ -2284,7 +2293,9 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                                 child: TextWidget.captionText(
                                     text: 'PRIMARY',
                                     theme: theme.isDarkMode,
-                                    color: colors.colorWhite),
+                                    color: colors.colorWhite,
+                                    fw: 0,
+                                    ),
                               ),
                             // if (bank.defaultAc != "Yes")
                             //   PopupMenuButton<String>(
@@ -2394,7 +2405,9 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                         theme: theme.isDarkMode,
                         color: theme.isDarkMode
                             ? colors.textPrimaryDark
-                            : colors.textPrimaryLight),
+                            : colors.textPrimaryLight,
+                            fw: 0,
+                            ),
                     Row(
                       children: [
                         Container(
@@ -2430,6 +2443,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                                 : theme.isDarkMode
                                     ? colors.lossDark
                                     : colors.lossLight,
+                            fw: 0,
                           ),
                         ),
                         Container(
@@ -2459,6 +2473,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                                 : theme.isDarkMode
                                     ? colors.lossDark
                                     : colors.lossLight,
+                            fw: 0,
                           ),
                         ),
                       ],
@@ -2499,6 +2514,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                 color: theme.isDarkMode
                     ? colors.textSecondaryDark
                     : colors.textSecondaryLight,
+                fw: 0,
               ),
               const SizedBox(height: 12),
               ElevatedButton(
@@ -2555,6 +2571,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                 "You need to enable DDPI before you can proceed with processing MTF (Margin Trading Facility).",
             theme: theme.isDarkMode,
             color: theme.isDarkMode ? colors.lossDark : colors.lossLight,
+            fw: 0,
           ),
           const SizedBox(height: 16),
           ElevatedButton(
@@ -2886,6 +2903,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
             color: theme.isDarkMode
                 ? colors.textPrimaryDark
                 : colors.textPrimaryLight,
+                fw: 0,
           ),
           const SizedBox(height: 10),
           Row(
@@ -2956,6 +2974,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
             color: theme.isDarkMode
                 ? colors.textPrimaryDark
                 : colors.textPrimaryLight,
+                fw: 0,
           ),
           const SizedBox(height: 10),
           ElevatedButton(
@@ -3018,6 +3037,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
               color: theme.isDarkMode
                   ? colors.textSecondaryDark
                   : colors.textSecondaryLight,
+              fw: 0,
             ),
             Row(
               children: segments.map<Widget>((segment) {
@@ -3056,7 +3076,9 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                           ? colors.colorWhite
                           : theme.isDarkMode
                               ? colors.lossDark
-                              : colors.lossLight),
+                              : colors.lossLight,
+                              fw: 0,
+                              ),
                 );
               }).toList(),
             ),
@@ -3098,6 +3120,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                     color: theme.isDarkMode
                         ? colors.textSecondaryDark
                         : colors.textSecondaryLight,
+                    fw: 0,
                   ),
                 ),
                 // if (label == "Email" || label == "Mobile" || label == "Address")
@@ -3140,6 +3163,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                 align: TextAlign.right,
                 textOverflow: TextOverflow.ellipsis,
                 maxLines: 4,
+                fw: 0,
               ),
             ),
           ],
@@ -3168,6 +3192,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
               color: theme.isDarkMode
                   ? colors.textSecondaryDark
                   : colors.textSecondaryLight,
+              fw: 0,
             ),
             SizedBox(
               width: 250,
@@ -3178,6 +3203,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                     ? colors.textPrimaryDark
                     : colors.textPrimaryLight,
                 align: TextAlign.right,
+                fw: 0,
               ),
             ),
           ],
@@ -3333,6 +3359,7 @@ class ReportsScreen extends ConsumerWidget {
                         color: !theme.isDarkMode
                             ? colors.textSecondaryLight
                             : colors.textSecondaryDark,
+                        fw: 0,
                       ),
                       trailing: Icon(
                         Icons.arrow_forward_ios,

@@ -242,8 +242,8 @@ class IndexListProvider extends DefaultChangeNotifier {
             ref.read(authProvider).loginMethCtrl.text =
                 localstorage.getString("userId") ?? "";
             ConstantName.timer!.cancel();
-            ScaffoldMessenger.of(context).showSnackBar(warningMessage(context,
-                _indexList!.emsg!.replaceAll("Invalid Input :", "* ")));
+            warningMessage(context,
+                _indexList!.emsg!.replaceAll("Invalid Input :", "* "));
 
             Navigator.pushNamedAndRemoveUntil(
                 context,
@@ -493,8 +493,7 @@ class IndexListProvider extends DefaultChangeNotifier {
     ref
         .read(marketWatchProvider)
         .requestMWScrip(isSubscribe: true, context: context);
-    ScaffoldMessenger.of(context)
-        .showSnackBar(successMessage(context, "Index scrip modified"));
+    successMessage(context, "Index scrip modified");
   }
 
 // Retrieve from locally stored index data

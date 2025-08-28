@@ -283,7 +283,7 @@ class _StockScreenState extends ConsumerState<StockScreen>
                                               color: theme.isDarkMode
                                                   ? colors.textSecondaryDark
                                                   : colors.textSecondaryLight,
-                                              fw: 3,
+                                              fw: 0,
                                             ),
                                             Row(
                                               crossAxisAlignment:
@@ -345,7 +345,7 @@ class _StockScreenState extends ConsumerState<StockScreen>
                                                           .textSecondaryDark
                                                       : colors
                                                           .textSecondaryLight,
-                                                  fw: 3,
+                                                  fw: 0,
                                                 ),
                                                 TextWidget.paraText(
                                                   text:
@@ -370,7 +370,7 @@ class _StockScreenState extends ConsumerState<StockScreen>
                                                           .textSecondaryDark
                                                       : colors
                                                           .textSecondaryLight,
-                                                  fw: 3,
+                                                  fw: 0,
                                                 ),
                                                 TextWidget.paraText(
                                                   text:
@@ -687,7 +687,7 @@ class _StockScreenState extends ConsumerState<StockScreen>
                                     color: theme.isDarkMode
                                         ? colors.textSecondaryDark
                                         : colors.textSecondaryLight,
-                                    fw: 3),
+                                    fw: 0),
                               ],
                             ),
                             // const SizedBox(width: 16),
@@ -1137,7 +1137,7 @@ class _StockScreenState extends ConsumerState<StockScreen>
                         color: theme.isDarkMode
                             ? colors.textPrimaryDark
                             : colors.textPrimaryLight,
-                        fw: 3,
+                        fw: 0,
                       ),
                       const SizedBox(height: 4),
                       TextWidget.paraText(
@@ -1146,7 +1146,7 @@ class _StockScreenState extends ConsumerState<StockScreen>
                         color: theme.isDarkMode
                             ? colors.textSecondaryDark
                             : colors.textSecondaryLight,
-                        fw: 3,
+                        fw: 0,
                       ),
                     ],
                   ),
@@ -1323,7 +1323,7 @@ class _StockScreenState extends ConsumerState<StockScreen>
                               maxLines: 2,
                               textOverflow: TextOverflow.ellipsis,
                               theme: theme.isDarkMode,
-                              fw: 3,
+                              fw: 0,
                             ),
                           ),
                         );

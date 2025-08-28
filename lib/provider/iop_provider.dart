@@ -410,8 +410,7 @@ class IPOProvider extends DefaultChangeNotifier {
             symbol.contains(value.toUpperCase());
       }).toList();
       if (_iposearch!.isEmpty) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(warningMessage(context, 'No Data Found'));
+        warningMessage(context, 'No Data Found');
       } else {
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
       }
@@ -430,8 +429,7 @@ class IPOProvider extends DefaultChangeNotifier {
               element.companyName!.toUpperCase().contains(value.toUpperCase()))
           .toList();
       if (_performancesearch!.isEmpty) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(warningMessage(context, 'No Data Found'));
+        warningMessage(context, 'No Data Found');
       } else {
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
       }
@@ -705,17 +703,14 @@ class IPOProvider extends DefaultChangeNotifier {
           "Maximum investment upto ₹${double.parse(maxUPIAmt.toString()).toInt()} only ";
       ischecked = false;
     } else if (addIpo.bidpricecontroller.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          warningMessage(context, "*Bid Price Value is required"));
+          warningMessage(context, "*Bid Price Value is required");
       ischecked = false;
     } else if (upiid.viewupiid.text.isEmpty) {
       ischecked = false;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(warningMessage(context, '* UPI ID cannot be empty'));
+      warningMessage(context, '* UPI ID cannot be empty');
     } else if (!RegExp(r'^[\w.-]+@[\w]+$').hasMatch(upiid.viewupiid.text)) {
       ischecked = false;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(warningMessage(context, 'Invalid UPI ID format'));
+      warningMessage(context, 'Invalid UPI ID format');
     } else {
       ipoplaceorder(upiid);
     }
@@ -1115,14 +1110,12 @@ class IPOProvider extends DefaultChangeNotifier {
   policyfunction(bool ischecked, IpoDetails addIpo, double maxUPIAmt,
       BuildContext context) {
     ischecked = !ischecked;
-    if (addIpo.requriedprice > maxUPIAmt) {
-      ScaffoldMessenger.of(context).showSnackBar(warningMessage(context,
-          "Maximum investment upto ₹${double.parse(maxUPIAmt.toString()).toInt()} only "));
+    if (addIpo.requriedprice > maxUPIAmt) {warningMessage(context,
+          "Maximum investment upto ₹${double.parse(maxUPIAmt.toString()).toInt()} only ");
 
       ischecked = false;
     } else if (addIpo.bidpricecontroller.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          warningMessage(context, "*Bid Price Value is required"));
+          warningMessage(context, "*Bid Price Value is required");
       ischecked = false;
     }
     notifyListeners();
@@ -1456,8 +1449,7 @@ class IPOProvider extends DefaultChangeNotifier {
       } else {
         _upivalid = true;
         _upierror = "Invalid UPI ID";
-        ScaffoldMessenger.of(context)
-            .showSnackBar(warningMessage(context, 'Invalid UPI ID'));
+        warningMessage(context, 'Invalid UPI ID');
       }
 
       //log("HDFC BANK $_upiIdValidationModel");
@@ -1481,9 +1473,7 @@ class IPOProvider extends DefaultChangeNotifier {
       // ipotab();
 
       setSelectedTab(2); // "My Bids" tab
-
-      ScaffoldMessenger.of(context).showSnackBar(
-          successMessage(context, '${_ipoOrderResponcesModel!.msg}'));
+          successMessage(context, '${_ipoOrderResponcesModel!.msg}');
 
       return _ipoOrderResponcesModel;
     } catch (e) {
