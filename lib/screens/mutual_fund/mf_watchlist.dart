@@ -104,6 +104,7 @@ class _MFWatchlistScreenState extends ConsumerState<MFWatchlistScreen> {
                 : colors.textSecondaryLight,
             textOverflow: TextOverflow.ellipsis,
             theme: theme.isDarkMode,
+            fw: 0,
           ),
           PopupMenuButton<String>(
              color: theme.isDarkMode
@@ -123,7 +124,7 @@ class _MFWatchlistScreenState extends ConsumerState<MFWatchlistScreen> {
                         ? colors.textSecondaryDark
                         : colors.textSecondaryLight,
                     theme: theme.isDarkMode,
-                    fw: 3,
+                    fw: 0,
                   )),
               PopupMenuItem(
                   value: '3Y Returns',
@@ -133,7 +134,7 @@ class _MFWatchlistScreenState extends ConsumerState<MFWatchlistScreen> {
                         ? colors.textSecondaryDark
                         : colors.textSecondaryLight,
                     theme: theme.isDarkMode,
-                    fw: 3,
+                    fw: 0,
                   )),
               PopupMenuItem(
                   value: '5Y Returns',
@@ -143,7 +144,7 @@ class _MFWatchlistScreenState extends ConsumerState<MFWatchlistScreen> {
                         ? colors.textSecondaryDark
                         : colors.textSecondaryLight,
                     theme: theme.isDarkMode,
-                    fw: 3,
+                    fw: 0,
                   )),
             ],
             child: Material(
@@ -166,7 +167,7 @@ class _MFWatchlistScreenState extends ConsumerState<MFWatchlistScreen> {
                         : colors.textSecondaryLight,
                     textOverflow: TextOverflow.ellipsis,
                     theme: theme.isDarkMode,
-                    fw: 3,
+                    fw: 0,
                   ),
                 ),
               ),
@@ -267,6 +268,7 @@ class _MFWatchlistScreenState extends ConsumerState<MFWatchlistScreen> {
                   textOverflow: TextOverflow.ellipsis,
                   maxLines: 2,
                   theme: theme.isDarkMode,
+                  fw: 0,
                 ),
               ),
               subtitle: Padding(
@@ -284,6 +286,7 @@ class _MFWatchlistScreenState extends ConsumerState<MFWatchlistScreen> {
                             ? colors.textSecondaryDark
                             : colors.textSecondaryLight,
                         theme: false,
+                        fw: 0,
                       ),
                       // const SizedBox(width: 4),
                       // TextWidget.paraText(
@@ -306,6 +309,7 @@ class _MFWatchlistScreenState extends ConsumerState<MFWatchlistScreen> {
                 // _getReturnColor(item.tHREEYEARDATA, theme.isDarkMode)
                 textOverflow: TextOverflow.ellipsis,
                 theme: theme.isDarkMode,
+                fw: 0,
               ),
             )));
   }

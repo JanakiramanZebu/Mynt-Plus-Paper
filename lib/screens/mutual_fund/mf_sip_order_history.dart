@@ -126,7 +126,7 @@ class MFSipOrderHistoryScreen extends ConsumerWidget {
                             textOverflow: TextOverflow.ellipsis,
                             theme: theme.isDarkMode,
                             maxLines: 2,
-                            fw: 3),
+                            fw: 0),
                       ),
                       Container(
                         padding: const EdgeInsets.symmetric(
@@ -146,7 +146,7 @@ class MFSipOrderHistoryScreen extends ConsumerWidget {
                             textOverflow: TextOverflow.ellipsis,
                             theme: theme.isDarkMode,
                             maxLines: 2,
-                            fw: 3),
+                            fw: 0),
                       ),
                     ],
                   ),
@@ -187,7 +187,7 @@ class MFSipOrderHistoryScreen extends ConsumerWidget {
                             textOverflow: TextOverflow.ellipsis,
                             theme: theme.isDarkMode,
                             maxLines: 2,
-                            fw: 3),
+                            fw: 0),
                       const Spacer(),
                       TextWidget.paraText(
                           align: TextAlign.start,
@@ -198,7 +198,7 @@ class MFSipOrderHistoryScreen extends ConsumerWidget {
                           textOverflow: TextOverflow.ellipsis,
                           theme: theme.isDarkMode,
                           maxLines: 2,
-                          fw: 3),
+                          fw: 0),
                     ],
                   ),
                 )

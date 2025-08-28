@@ -349,7 +349,7 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
                     scrollDirection: Axis.horizontal,
                     children: [
                       TextWidget.paraText(
-                        fw: 3,
+                        fw: 0,
                         text: widget.mfStockData.type ?? "Unknown",
                         textOverflow: TextOverflow.ellipsis,
                         maxLines: 1,
@@ -458,7 +458,7 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
                 : colors.textPrimaryLight,
             textOverflow: TextOverflow.ellipsis,
             theme: theme.isDarkMode,
-            fw: 3),
+            fw: 0),
         const SizedBox(height: 6),
         TextWidget.paraText(
             align: TextAlign.right,
@@ -468,7 +468,7 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
                 : colors.textPrimaryLight,
             textOverflow: TextOverflow.ellipsis,
             theme: theme.isDarkMode,
-            fw: 3),
+            fw: 0),
       ],
     );
   }

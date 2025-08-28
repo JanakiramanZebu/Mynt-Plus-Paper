@@ -40,7 +40,7 @@ class MFSchemeInfo extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               const SizedBox(height: 10),
-              TextWidget.titleText(
+              TextWidget.subText(
                   align: TextAlign.right,
                   text: "Fund Manager",
                   color: theme.isDarkMode
@@ -48,7 +48,7 @@ class MFSchemeInfo extends ConsumerWidget {
                       : colors.textPrimaryLight,
                   textOverflow: TextOverflow.ellipsis,
                   theme: theme.isDarkMode,
-                  fw: 3),
+                  fw: 1),
               const SizedBox(height: 8),
               Container(
                 margin: const EdgeInsets.symmetric(vertical: 10),
@@ -99,7 +99,7 @@ class MFSchemeInfo extends ConsumerWidget {
                                       : colors.textSecondaryLight,
                                   textOverflow: TextOverflow.ellipsis,
                                   theme: theme.isDarkMode,
-                                  fw: 3),
+                                  fw: 0),
                               const SizedBox(height: 2),
                               TextWidget.paraText(
                                   align: TextAlign.right,
@@ -109,7 +109,7 @@ class MFSchemeInfo extends ConsumerWidget {
                                       : colors.textSecondaryLight,
                                   textOverflow: TextOverflow.ellipsis,
                                   theme: theme.isDarkMode,
-                                  fw: 3),
+                                  fw: 0),
                             ],
                           ),
                           const SizedBox(height: 4),
@@ -126,7 +126,7 @@ class MFSchemeInfo extends ConsumerWidget {
                                       : colors.textSecondaryLight,
                                   textOverflow: TextOverflow.ellipsis,
                                   theme: theme.isDarkMode,
-                                  fw: 3),
+                                  fw: 0),
                               TextWidget.paraText(
                                   align: TextAlign.right,
                                   text: "$fundsManaged funds managed",
@@ -135,7 +135,7 @@ class MFSchemeInfo extends ConsumerWidget {
                                       : colors.textSecondaryLight,
                                   textOverflow: TextOverflow.ellipsis,
                                   theme: theme.isDarkMode,
-                                  fw: 3),
+                                  fw: 0),
                             ],
                           ),
                         ],
@@ -154,7 +154,7 @@ class MFSchemeInfo extends ConsumerWidget {
                         : colors.textPrimaryLight,
                     textOverflow: TextOverflow.ellipsis,
                     theme: theme.isDarkMode,
-                    fw: 3),
+                    fw: 0),
                 const SizedBox(height: 8),
                 ReadMoreText(factSheetData.managerDetailedDescription ?? "",
                     style: TextWidget.textStyle(
@@ -163,7 +163,8 @@ class MFSchemeInfo extends ConsumerWidget {
                                   : colors.textSecondaryLight,
                            fontSize: 12,
                            theme: false,
-                           height: 1.2
+                           height: 1.2,
+                           fw: 0
                            )
                         ,
                     textAlign: TextAlign.left,

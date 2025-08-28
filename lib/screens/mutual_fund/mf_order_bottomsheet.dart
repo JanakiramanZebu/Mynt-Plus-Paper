@@ -323,7 +323,7 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                                             ? colors.textPrimaryDark
                                                             : colors
                                                                 .textPrimaryLight,
-                                                        fw: 3,
+                                                        fw: 0,
                                                       ),
                                                       SizedBox(
                                                         width: 4,
@@ -344,7 +344,7 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                                     color: theme.isDarkMode
                                                         ? colors.textPrimaryDark
                                                         : colors.textPrimaryLight,
-                                                    fw: 3,
+                                                    fw: 0,
                                                   ),
                                                   // const SizedBox(height: 4),
                                                   // TextWidget.paraText(
@@ -490,6 +490,7 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                                    color: theme.isDarkMode
                                                         ? colors.textPrimaryDark
                                                         : colors.textPrimaryLight,
+                                                    fw: 0,
                                                   ),
                                                 ),
                                                 subtitle: Padding(
@@ -502,6 +503,7 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                                      color: theme.isDarkMode
                                                         ? colors.textSecondaryDark
                                                         : colors.textSecondaryLight,
+                                                    fw: 0,
                                                   ),
                                                 ),
                                                 trailing: Material(
@@ -554,7 +556,7 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                     color: theme.isDarkMode
                                         ? colors.textPrimaryDark
                                         : colors.textPrimaryLight,
-                                    fw: 0,
+                                    fw: 1,
                                   ),
                                   const SizedBox(height: 16),
                                   const ListDivider(),
@@ -611,6 +613,7 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                                           color: theme.isDarkMode
                                                               ? colors.textPrimaryDark
                                                               : colors.textPrimaryLight,
+                                                          fw: 0,
                                                         ),
                                                         if (isSelected)
                                                           Icon(
@@ -658,6 +661,7 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                        color: theme.isDarkMode
                                   ? colors.textSecondaryDark
                                   : colors.textSecondaryLight,
+                                                          fw: 0,
                                       ),
                                                       style: TextWidget.textStyle(
                                       fontSize: 16,
@@ -665,6 +669,7 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                           ? colors.textPrimaryDark
                                           : colors.textPrimaryLight,
                                       theme: theme.isDarkMode,
+                                      fw: 0,
                                     ),
                                                       textCtrl: mfOrder.upiId,
                                                       onChanged: (value) {
@@ -1095,10 +1100,11 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                       color: fund.bankdetails!.dATA![index][1] == fund.bankname
                           ? const Color(0xff999999).withOpacity(0.2)
                           : Colors.transparent,
-                      child: TextWidget.titleText(
+                      child: TextWidget.subText(
                         text:
                             '${fund.bankdetails!.dATA![index][1]}-${hideAccountNumber(fund.bankdetails!.dATA![index][2])}',
                         theme: theme.isDarkMode,
+                        fw: 0,
                       ),
                     ),
                   );

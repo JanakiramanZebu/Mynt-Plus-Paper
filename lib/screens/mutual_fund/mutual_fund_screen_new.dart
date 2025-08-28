@@ -214,6 +214,7 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
                             fontSize: 14,
                             theme: false,
                             color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                            fw: 0,
                             
                             letterSpacing: -0.28),
               labelPadding: const EdgeInsets.symmetric(horizontal: 4),

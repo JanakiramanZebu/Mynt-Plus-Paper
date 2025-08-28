@@ -253,7 +253,7 @@ class _mfSipdetScren extends State<mfSipdetScren>
                         ? theme.isDarkMode ? colors.profitDark : colors.profitLight
                         : theme.isDarkMode ? colors.lossDark : colors.lossLight,
                     theme: theme.isDarkMode,
-                    fw: 3,
+                    fw: 0,
                   ),
                 ),
 
@@ -424,7 +424,7 @@ class _mfSipdetScren extends State<mfSipdetScren>
                   : colors.textSecondaryLight,
               textOverflow: TextOverflow.ellipsis,
               theme: theme.isDarkMode,
-              fw: 3),
+              fw: 0),
           SizedBox(
             width: MediaQuery.of(context).size.width * 0.4,
             child: TextWidget.subText(
@@ -435,7 +435,7 @@ class _mfSipdetScren extends State<mfSipdetScren>
                     : colors.textPrimaryLight,
                 // textOverflow: TextOverflow.ellipsis,
                 theme: theme.isDarkMode,
-                fw: 3),
+                fw: 0),
           ),
         ]),
         const SizedBox(height: 8),

@@ -71,6 +71,7 @@ class MfHoldNewScreen extends ConsumerWidget {
                                         ? colors.textSecondaryDark
                                         : colors.textSecondaryLight,
                                     theme: theme.isDarkMode,
+                                    fw: 0,
                                   ),
                                   const SizedBox(height: 4),
                                   TextWidget.subText(
@@ -80,6 +81,7 @@ class MfHoldNewScreen extends ConsumerWidget {
                                         ? colors.textPrimaryDark
                                         : colors.textPrimaryLight,
                                     theme: theme.isDarkMode,
+                                    fw: 0,
                                   ),
                                 ],
                               ),
@@ -94,6 +96,7 @@ class MfHoldNewScreen extends ConsumerWidget {
                                         ? colors.textSecondaryDark
                                         : colors.textSecondaryLight,
                                     theme: theme.isDarkMode,
+                                    fw: 0,
                                   ),
                                   const SizedBox(height: 6),
                                   Row(
@@ -128,6 +131,7 @@ class MfHoldNewScreen extends ConsumerWidget {
                                         ? colors.textSecondaryDark
                                         : colors.textSecondaryLight,
                                     theme: theme.isDarkMode,
+                                    fw: 0,
                                   ),
                                   const SizedBox(height: 4),
                                   TextWidget.subText(
@@ -137,6 +141,7 @@ class MfHoldNewScreen extends ConsumerWidget {
                                         ? colors.textPrimaryDark
                                         : colors.textPrimaryLight,
                                     theme: theme.isDarkMode,
+                                    fw: 0,
                                   ),
                                 ],
                               ),
@@ -149,6 +154,7 @@ class MfHoldNewScreen extends ConsumerWidget {
                                         ? colors.textSecondaryDark
                                         : colors.textSecondaryLight,
                                     theme: theme.isDarkMode,
+                                    fw: 0,
                                   ),
                                   const SizedBox(height: 4),
                                   TextWidget.subText(
@@ -160,6 +166,7 @@ class MfHoldNewScreen extends ConsumerWidget {
                                           theme,
                                     ),
                                     theme: theme.isDarkMode,
+                                    fw: 0,
                                   ),
                                 ],
                               )
@@ -294,6 +301,7 @@ class MfHoldNewScreen extends ConsumerWidget {
                                         ? colors.textPrimaryDark
                                         : colors.textPrimaryLight,
                                     theme: theme.isDarkMode,
+                                    fw: 0,
                                   ),
                             keyboardType: TextInputType.text,
                             decoration: InputDecoration(
@@ -304,6 +312,7 @@ class MfHoldNewScreen extends ConsumerWidget {
                                      color: theme.isDarkMode
                                 ? colors.textSecondaryDark
                                 : colors.textSecondaryLight,
+                                    fw: 0,
                                     ),
                               fillColor: theme.isDarkMode ? colors.searchBgDark : colors.searchBg,
                               filled: true,
@@ -466,6 +475,7 @@ class MfHoldNewScreen extends ConsumerWidget {
                         textOverflow: TextOverflow.ellipsis,
                         maxLines: 2,
                         theme: isDarkMode,
+                        fw: 0,
                       ),
                     ),
 
@@ -478,7 +488,7 @@ class MfHoldNewScreen extends ConsumerWidget {
                                 item.profitLoss.toString(), theme),
                             textOverflow: TextOverflow.ellipsis,
                             theme: isDarkMode,
-                            fw: 3),
+                            fw: 0),
                       ],
                     )
 
@@ -530,7 +540,7 @@ class MfHoldNewScreen extends ConsumerWidget {
                                 : colors.textSecondaryLight,
                             textOverflow: TextOverflow.ellipsis,
                             theme: isDarkMode,
-                            fw: 3),
+                            fw: 0),
                         TextWidget.paraText(
                             align: TextAlign.start,
                             text:
@@ -540,7 +550,7 @@ class MfHoldNewScreen extends ConsumerWidget {
                                 : colors.textSecondaryLight,
                             textOverflow: TextOverflow.ellipsis,
                             theme: theme.isDarkMode,
-                            fw: 3),
+                            fw: 0), 
                       ],
                     ),
                     Row(
@@ -553,7 +563,7 @@ class MfHoldNewScreen extends ConsumerWidget {
                                 item.changeprofitLoss.toString(), theme),
                             textOverflow: TextOverflow.ellipsis,
                             theme: theme.isDarkMode,
-                            fw: 3),
+                            fw: 0),
                       ],
                     ),
                   ],
@@ -576,7 +586,7 @@ class MfHoldNewScreen extends ConsumerWidget {
                                 : colors.textSecondaryLight,
                             textOverflow: TextOverflow.ellipsis,
                             theme: theme.isDarkMode,
-                            fw: 3),
+                            fw: 0),
                         TextWidget.paraText(
                             // align: TextAlign.start,
                             text: "${item.investedValue ?? "0.00"}",
@@ -585,7 +595,7 @@ class MfHoldNewScreen extends ConsumerWidget {
                                 : colors.textSecondaryLight,
                             textOverflow: TextOverflow.ellipsis,
                             theme: theme.isDarkMode,
-                            fw: 3),
+                            fw: 0),
                       ],
                     ),
                     Row(
@@ -598,7 +608,7 @@ class MfHoldNewScreen extends ConsumerWidget {
                                 : colors.textSecondaryLight,
                             textOverflow: TextOverflow.ellipsis,
                             theme: theme.isDarkMode,
-                            fw: 3),
+                            fw: 0),
                         TextWidget.paraText(
                             // align: TextAlign.start,
                             text: "${item.curNav ?? "0.00"}",
@@ -607,7 +617,7 @@ class MfHoldNewScreen extends ConsumerWidget {
                                 : colors.textSecondaryLight,
                             textOverflow: TextOverflow.ellipsis,
                             theme: theme.isDarkMode,
-                            fw: 3),
+                            fw: 0),
                       ],
                     ),
                     // Row(

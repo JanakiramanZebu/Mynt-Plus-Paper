@@ -79,18 +79,18 @@ class MFSipdetScreen extends ConsumerWidget {
                   TextWidget.subText(
                     text: "View SIP Order History",
                     color: theme.isDarkMode
-                        ? colors.textPrimaryDark
-                        : colors.textPrimaryLight,
+                        ? colors.primaryDark
+                        : colors.primaryLight,
                     theme: theme.isDarkMode,
-                    fw: 3,
+                    fw: 2,
                   ),
                   const SizedBox(width: 8),
                   Icon(
                     Icons.arrow_forward_ios,
                     size: 16,
                     color: theme.isDarkMode
-                        ? colors.textPrimaryDark
-                        : colors.textPrimaryLight,
+                        ? colors.primaryDark
+                        : colors.primaryLight,
                   ),
                 ],
               ),
@@ -160,7 +160,7 @@ class MFSipdetScreen extends ConsumerWidget {
                             textOverflow: TextOverflow.ellipsis,
                             theme: theme.isDarkMode,
                             maxLines: 2,
-                            fw: 3),
+                            fw: 0),
                       ),
                       Container(
                         padding: const EdgeInsets.symmetric(
@@ -181,7 +181,7 @@ class MFSipdetScreen extends ConsumerWidget {
                             textOverflow: TextOverflow.ellipsis,
                             theme: theme.isDarkMode,
                             maxLines: 2,
-                            fw: 3),
+                            fw: 0),
                       ),
                     ],
                   ),
@@ -222,7 +222,7 @@ class MFSipdetScreen extends ConsumerWidget {
                             textOverflow: TextOverflow.ellipsis,
                             theme: theme.isDarkMode,
                             maxLines: 2,
-                            fw: 3),
+                            fw: 0),
                       const Spacer(),
                       TextWidget.paraText(
                           align: TextAlign.start,
@@ -233,7 +233,7 @@ class MFSipdetScreen extends ConsumerWidget {
                           textOverflow: TextOverflow.ellipsis,
                           theme: theme.isDarkMode,
                           maxLines: 2,
-                          fw: 3),
+                          fw: 0),
                     ],
                   ),
                 )
