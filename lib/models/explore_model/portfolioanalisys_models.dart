@@ -5,7 +5,7 @@ class PortfolioResponse {
   final Map<String, double> accountAllocation;
   final Map<String, double> marketCapAllocation;
   final Map<String, double> sectorAllocation;
-  final List<TopStock> topStocks;
+  final List<TopStocks> topStocks;
   final List<Fundamental> fundamentals;
   final ChartData? chartData;
 
@@ -38,7 +38,7 @@ class PortfolioResponse {
         ),
       ),
       topStocks: (json['top_stocks'] as List<dynamic>? ?? [])
-          .map((item) => TopStock.fromJson(item))
+          .map((item) => TopStocks.fromJson(item))
           .toList(),
       fundamentals: (json['fundamentals'] as List<dynamic>? ?? [])
           .map((item) => Fundamental.fromJson(item))
@@ -50,28 +50,71 @@ class PortfolioResponse {
   }
 }
 
-class TopStock {
-  final String name;
-  final String tsym;
-  final double allocationPercent;
-  final String marketCapType;
+class TopStocks {
+  String? name;
+  String? tsym;
+  double? allocationPercent;
+  double? inverstedAmount;
+  String? exch;
+  String? qty;
+  String? category;
+  String? zebuToken;
+  String? marketCapType;
+  double? currentPrice;
+  double? currentAmount;
+  double? pnl;
+  double? pnlPercent;
 
-  TopStock({
-    required this.name,
-    required this.tsym,
-    required this.allocationPercent,
-    required this.marketCapType,
-  });
+  TopStocks(
+      {this.name,
+      this.tsym,
+      this.allocationPercent,
+      this.inverstedAmount,
+      this.exch,
+      this.qty,
+      this.category,
+      this.zebuToken,
+      this.marketCapType,
+      this.currentPrice,
+      this.currentAmount,
+      this.pnl,
+      this.pnlPercent});
 
-  factory TopStock.fromJson(Map<String, dynamic> json) {
-    return TopStock(
-      name: json['name'] ?? '',
-      tsym: json['tsym'] ?? '',
-      allocationPercent: (json['allocation_percent'] ?? 0.0).toDouble(),
-      marketCapType: json['market_cap_type'] ?? '',
-    );
+  TopStocks.fromJson(Map<String, dynamic> json) {
+    name = json['name'];
+    tsym = json['tsym'];
+    allocationPercent = json['allocation_percent'];
+    inverstedAmount = json['inversted_amount'];
+    exch = json['exch'];
+    qty = json['qty'].toString();
+    category = json['category'];
+    zebuToken = json['zebuToken'];
+    marketCapType = json['market_cap_type'];
+    currentPrice = json['current_price'];
+    currentAmount = json['current_amount'];
+    pnl = json['pnl'];
+    pnlPercent = json['pnl_percent'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['name'] = this.name;
+    data['tsym'] = this.tsym;
+    data['allocation_percent'] = this.allocationPercent;
+    data['inversted_amount'] = this.inverstedAmount;
+    data['exch'] = this.exch;
+    data['qty'] = this.qty;
+    data['category'] = this.category;
+    data['zebuToken'] = this.zebuToken;
+    data['market_cap_type'] = this.marketCapType;
+    data['current_price'] = this.currentPrice;
+    data['current_amount'] = this.currentAmount;
+    data['pnl'] = this.pnl;
+    data['pnl_percent'] = this.pnlPercent;
+    return data;
   }
 }
+
 
 class Fundamental {
   final int? code;

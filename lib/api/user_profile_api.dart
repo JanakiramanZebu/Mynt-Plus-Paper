@@ -1,10 +1,13 @@
 // import 'dart:developer';
 
+import 'dart:io';
+
 import '../models/profile_model/client_detail_model.dart';
 import '../models/profile_model/qr_login_res.dart';
 import '../models/profile_model/user_detail_model.dart';
 import 'core/api_core.dart';
 import 'package:http/http.dart';
+import 'package:http/http.dart' as http;
 
 mixin UserProfileAPI on ApiCore {
 // get user details from kambala
@@ -83,6 +86,49 @@ mixin UserProfileAPI on ApiCore {
       rethrow;
     }
   }
+
+  Future getProfileImage() async {
+    try {
+      final uri = Uri.parse("https://v3.mynt.in/dd/profile/get_profile_image?client_id=${prefs.clientId}");
+      final response = await apiClient.get(uri);
+      if (response.statusCode == 200) {
+        return response.bodyBytes;
+      } else {
+        return null;
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+Future uploadImage(File imageFile) async {
+  try {
+    final uri = Uri.parse("https://v3.mynt.in/dd/profile/update_image");
+
+    var request = http.MultipartRequest('POST', uri);
+
+    request.headers.addAll(defaultHeaders);
+
+    request.fields['client_id'] = prefs.clientId!; // string
+
+    request.files.add(await http.MultipartFile.fromPath(
+      'image',               
+      imageFile.path,
+    ));
+
+    final streamedResponse = await apiClient.send(request);
+    final response = await http.Response.fromStream(streamedResponse);
+     if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+
+      } else {
+        return {'data': 'ServerSide error'};
+      }
+    } catch (e) {
+      print("error in upload image ${e}");
+      rethrow;
+    }
+}
 
 // get block client account from kambala
 

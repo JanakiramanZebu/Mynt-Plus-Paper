@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -18,6 +19,9 @@ import 'core/default_change_notifier.dart';
 import 'index_list_provider.dart';
 import 'shocase_provider.dart';
 import '../models/profile_model/qr_login_res.dart';
+import 'dart:io';
+import 'package:file_picker/file_picker.dart';
+import 'package:http/http.dart' as http;
 
 final userProfileProvider =
     ChangeNotifierProvider((ref) => UserProfileProvider(ref));
@@ -518,5 +522,181 @@ class UserProfileProvider extends DefaultChangeNotifier {
     } catch (e) {
       notifyListeners();
     } finally {}
+  }
+
+  // Method to pick image from gallery
+  Future<void> pickImageFromGallery(BuildContext context) async {
+    try {
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['jpg', 'jpeg', 'png', 'heic'],
+      );
+
+      if (result != null) {
+        File file = File(result!.files.single.path!);
+        
+        // // Validate file
+        // if (!await _validateImageFile(context, file)) {
+        //   return;
+        // }
+        
+        await uploadImage(context, file);
+      }else{
+        print("No file selected ${result}");
+      }
+    } catch (e) {
+      if (context.mounted) {
+        warningMessage(context, 'Error selecting image: $e');
+      }
+    }
+  }
+
+  // Method to take selfie using camera
+//   Future<void> takeAndUploadSelfie(BuildContext context) async {
+//   try {
+//     final ImagePicker picker = ImagePicker();
+
+//     // Open camera (front by default)
+//     final XFile? photo = await picker.pickImage(
+//       source: ImageSource.camera,
+//       imageQuality: 80,
+//       preferredCameraDevice: CameraDevice.front,
+//     );
+
+//     if (photo != null) {
+//       File file = File(photo.path);
+
+//       if (!await _validateImageFile(context, file)) {
+//         return;
+//       }
+
+//       await uploadImage(context, file);
+
+//     }
+//   } catch (e) {
+//     if (context.mounted) {
+//       warningMessage(context, 'Error taking selfie: $e');
+//     }
+//   }
+// }
+
+
+  // Method to validate image file
+  Future<bool> _validateImageFile(BuildContext context, File file) async {
+    try {
+      // Check if file exists
+      if (!await file.exists()) {
+        if (context.mounted) {
+          warningMessage(context, 'Selected file does not exist');
+        }
+        return false;
+      }
+
+      // Check file size (max 5MB)
+      final int fileSizeInBytes = await file.length();
+      final double fileSizeInMB = fileSizeInBytes / (1024 * 1024);
+      
+      if (fileSizeInMB > 5.0) {
+        if (context.mounted) {
+          warningMessage(context, 'Image size must be less than 5MB. Current size: ${fileSizeInMB.toStringAsFixed(2)}MB');
+        }
+        return false;
+      }
+
+      // Check file extension
+      final String extension = file.path.split('.').last.toLowerCase();
+      final List<String> allowedExtensions = ['jpg', 'jpeg', 'png', 'heic'];
+      
+      if (!allowedExtensions.contains(extension)) {
+        if (context.mounted) {
+          warningMessage(context, 'Only JPG, JPEG, PNG, and HEIC files are allowed');
+        }
+        return false;
+      }
+
+      return true;
+    } catch (e) {
+      if (context.mounted) {
+        warningMessage(context, 'Error validating file: $e');
+      }
+      return false;
+    }
+  }
+
+  Uint8List? _profileimage;
+  Uint8List? get getProfileImage => _profileimage;
+
+  Future<void> getProfileimage() async {
+    final responseData = await api.getProfileImage();
+    if(responseData != null){
+      _profileimage = responseData;
+      notifyListeners();
+    }else{
+      _profileimage = null;
+      notifyListeners();
+    }
+    // _profileimage = responseData;
+    notifyListeners();
+  }
+
+  bool _imageloader = false;
+  bool get imageLoader => _imageloader;
+
+  toggleimageloader(bool value){
+    _imageloader = value;
+    notifyListeners();
+  }
+
+  // Method to upload image to API
+  Future<void> uploadImage(BuildContext context, File imageFile) async {
+    try {
+      toggleimageloader(true);
+      // Show loading indicator
+      // showDialog(
+      //   context: context,
+      //   barrierDismissible: false,
+      //   builder: (BuildContext context) {
+      //     return const Center(
+      //       child: CircularProgressIndicator(
+      //         valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF0037B7)),
+      //       ),
+      //     );
+      //   },
+      // );
+
+      // Get user profile for client_id
+      final clientId = pref.clientId;
+      
+      if (clientId == null || clientId.isEmpty) {
+        Navigator.pop(context); // Close loading dialog
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+          warningMessage(context, 'Client ID not available');
+        }
+        return;
+      }
+
+
+      final responseData = await api.uploadImage(imageFile);
+
+      // Navigator.pop(context); // Close loading dialog
+
+      if (responseData["status"] == "success") {
+            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+          successMessage(context, 'Profile image updated successfully!');
+          _profileimage = await api.getProfileImage();
+          notifyListeners();
+        
+      } else {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+          warningMessage(context, 'Failed to update image: ${responseData.statusCode} - $responseData');
+      }
+    } catch (e) {
+      print("error in upload image ${e}");
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        warningMessage(context, 'Error uploading image: $e');
+    }finally{
+      toggleimageloader(false);
+    }
   }
 }

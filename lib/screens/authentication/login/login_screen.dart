@@ -311,23 +311,50 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                                         1.5, // adjust thickness to match the image
                                                   ),
                                                 ),
-                                                child: Center(
-                                                  child: Text(
-                                                    pref.clientName!.isNotEmpty
-                                                        ? pref.clientName!
-                                                            .split(' ')
-                                                            .map((e) => e[0])
-                                                            .take(2)
-                                                            .join('')
-                                                        : '',
-                                                    style: TextWidget.textStyle(
-                                                        fontSize: 24,
-                                                        color: theme.isDarkMode
-                                                            ? colors.colorWhite
-                                                            : const Color(
-                                                                0xff0037B7),
-                                                        theme: theme.isDarkMode,
-                                                        fw: 2),
+                                                child: ClipOval(
+                                                  child: userProfile.getProfileImage != null
+                                    ? userProfile.imageLoader 
+                                        ? Container(
+                                            width: 100,
+                                            height: 100,
+                                            decoration: BoxDecoration(
+                                              color: theme.isDarkMode
+                                                  ? colors.colorBlack.withOpacity(0.1)
+                                                  : colors.colorWhite.withOpacity(0.1),
+                                            ),
+                                            child: Center(
+                                              child: CircularProgressIndicator(
+                                                color: theme.isDarkMode
+                                                    ? colors.colorWhite
+                                                    : colors.colorBlack,
+                                                strokeWidth: 3,
+                                              ),
+                                            ),
+                                          )
+                                        :  Image.memory(
+                                                                                          userProfile.getProfileImage!,
+                                                                                          width: 100,
+                                                                                          height: 100,
+                                                                                          fit: BoxFit.cover,
+                                                                                        )
+                                                                                     : Center(
+                                                    child: Text(
+                                                      pref.clientName!.isNotEmpty
+                                                          ? pref.clientName!
+                                                              .split(' ')
+                                                              .map((e) => e[0])
+                                                              .take(2)
+                                                              .join('')
+                                                          : '',
+                                                      style: TextWidget.textStyle(
+                                                          fontSize: 24,
+                                                          color: theme.isDarkMode
+                                                              ? colors.colorWhite
+                                                              : const Color(
+                                                                  0xff0037B7),
+                                                          theme: theme.isDarkMode,
+                                                          fw: 2),
+                                                    ),
                                                   ),
                                                 ),
                                               ),
