@@ -177,9 +177,9 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
         widget.isBasket != "BasketEdit" &&
         widget.isBasket != "BasketMode") {
       if (widget.scripInfo.exch == "NSE" || widget.scripInfo.exch == "BSE") {
-        if (widget.scripInfo.instname == "EQ") {
+        // if (widget.scripInfo.instname == "EQ") {
           orderTypes.add({"type": "MTF"});
-        }
+        // }
         if (ref.read(userProfileProvider).userDetailModel != null &&
             ref.read(userProfileProvider).userDetailModel!.stat == "Ok") {
           for (var element
@@ -315,9 +315,9 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
 
     setState(() {
       formattedDate = DateFormat('dd-MM-yyyy').format(now);
-      if (widget.scripInfo.instname != "EQ") {
-        orderTypes.remove("SIP");
-      }
+      // if (widget.scripInfo.exch != "NSE" && widget.scripInfo.exch != "BSE") {
+      //   orderTypes.remove("SIP");
+      // }
       int sfq = int.tryParse(widget.scripInfo.frzqty?.toString() ?? '1') ?? 1;
 
       validityType = isUserOrderPreferenceAvailable &&
@@ -3128,8 +3128,9 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                     // ),
                                   
                                                     suffixIcon: widget.scripInfo
-                                                                .instname ==
-                                                            "EQ"
+                                                                .exch =="NSE" || widget.scripInfo
+                                                                .exch =="BSE"
+                                                            
                                                         ? Material(
                                                             color: Colors
                                                                 .transparent,
