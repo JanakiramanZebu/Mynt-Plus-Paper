@@ -90,6 +90,9 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
   String selectedValue = 'Daily';
   double resultsip = 0.0;
 
+  String mktProtErrorText = "";
+  TextEditingController mktProtDialogCtrl = TextEditingController();
+
   int frezQty = 0;
   int reminder = 0;
   int maxQty = 0;
@@ -362,7 +365,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                   : widget.orderArg.lotSize)
           .toString());
 
-      mktProtCtrl = TextEditingController(
+     mktProtCtrl = TextEditingController(
           text: isUserOrderPreferenceAvailable
               ? userOrderPreference['mrkprot']
               : "5");
@@ -426,6 +429,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                       ?.toInt() ??
                   5)
               .toString();
+
 
       // **FIX FOR BASKET EDIT**: Auto-expand advanced section and set states based on order data
       if (widget.isBasket == "BasketEdit") {
@@ -5891,10 +5895,16 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
               InkWell(
                 // borderRadius: BorderRadius.circular(8),
                 onTap: () {
+                  setState(() {
+                    mktProtDialogCtrl.text = mktProtCtrl.text;
+                    mktProtErrorText = "";
+                  });
                   showDialog(
                     context: context,
                     builder: (BuildContext context) {
-                      return AlertDialog(
+                      return StatefulBuilder(
+                        builder: (BuildContext context, StateSetter dialogSetState) {
+                          return AlertDialog(
                         backgroundColor: theme.isDarkMode
                             ? const Color(0xFF121212)
                             : const Color(0xFFF1F3F8),
@@ -5964,30 +5974,17 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                 FilteringTextInputFormatter.digitsOnly
                               ],
                               onChanged: (value) {
-                                setState(() {
-                                  ScaffoldMessenger.of(context)
-                                      .hideCurrentSnackBar();
+                                dialogSetState(() {
                                   if (value.isEmpty) {
-                                        warningMessage(context,
-                                            "Market Protection can not be empty");
-                                  }
-                                  if (value.isNotEmpty) {
-                                    String newValue =
-                                        value.replaceAll(RegExp(r'[^0-9]'), '');
-                                    if (newValue != value) {
-                                      mktProtCtrl.text = newValue;
-                                      mktProtCtrl.selection =
-                                          TextSelection.fromPosition(
-                                              TextPosition(
-                                                  offset: newValue.length));
-                                    }
-                                    if (int.parse(value) > 20) {
-                                      mktProtCtrl.text = "20";warningMessage(context,
-                                              "can't enter greater than 20% of Market Protection");
-                                    } else if (int.parse(value) < 1) {
-                                      mktProtCtrl.text = "1";
-                                      warningMessage(context,
-                                              "can't enter less than 1% of Market Protection");
+                                    mktProtErrorText = "Market Protection cannot be empty";
+                                  } else if (value.isNotEmpty) {
+                                    int intValue = int.tryParse(value) ?? 0;
+                                    if (intValue > 20) {
+                                      mktProtErrorText = "Cannot enter greater than 20%";
+                                    } else if (intValue < 1) {
+                                      mktProtErrorText = "Cannot enter less than 1% ";
+                                    } else {
+                                      mktProtErrorText = "";
                                     }
                                   }
                                 });
@@ -6001,7 +5998,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                 theme: theme.isDarkMode,
                                 fw: 0,
                               ),
-                              textCtrl: mktProtCtrl,
+                              textCtrl: mktProtDialogCtrl,
                               prefixIcon: Container(
                                 margin: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
@@ -6027,6 +6024,17 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                 fw: 0,
                               ),
                             ),
+                            if (mktProtErrorText.isNotEmpty)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 8.0),
+                                child: Text(
+                                  mktProtErrorText,
+                                  style: TextStyle(
+                                    color: Colors.red,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
                           ],
                         ),
                         actions: [
@@ -6034,6 +6042,23 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                             width: double.infinity,
                             child: OutlinedButton(
                               onPressed: () {
+                                if (mktProtDialogCtrl.text.isEmpty) {
+                                  dialogSetState(() {
+                                    mktProtErrorText = "Market Protection cannot be empty";
+                                  });
+                                  return;
+                                }
+                                
+                                double intValue = double.tryParse(mktProtDialogCtrl.text) ?? 0;
+                                if (intValue > 20 || intValue < 1) {
+                                  return;
+                                }
+                                
+                                updatePriceType();
+                                setState(() {
+                                  mktProtCtrl.text = mktProtDialogCtrl.text;
+                                  mktProtErrorText = "";
+                                });
                                 Navigator.of(context).pop();
                               },
                               style: OutlinedButton.styleFrom(
@@ -6066,10 +6091,12 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                           //   child: const Text('OK'),
                           // ),
                         ],
+                          );
+                        },
                       );
                     },
-                  );
-                },
+                    );
+                 },
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child:
@@ -6094,7 +6121,8 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                   //   ),
                   // ),
                 ),
-              ),
+            
+              )
             ],
           ),
           // const SizedBox(height: 4),
@@ -6184,8 +6212,8 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
 
         if ((priceType == "Market" || priceType == "SL MKT") &&
             (mktProtCtrl.text.isEmpty ||
-                int.parse(mktProtCtrl.text.toString()) > 20 ||
-                int.parse(mktProtCtrl.text.toString()) < 1)) {
+                double.parse(mktProtCtrl.text.toString()) > 20 ||
+                double.parse(mktProtCtrl.text.toString()) < 1)) {
           placeorder = false;
               warningMessage(context, "Market Protection between 1% to 20%");
         }
