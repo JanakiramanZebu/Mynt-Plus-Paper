@@ -249,7 +249,7 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
                         textOverflow: TextOverflow.ellipsis,
                         maxLines: 2,
                         theme: theme.isDarkMode,
-                        fw: 3),
+                        fw: 0),
                   ),
                 ),
                 subtitle: Row(
@@ -278,6 +278,7 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
                             : theme.isDarkMode
                                 ? colors.lossDark
                                 : colors.lossLight,
+                        fw: 0,
                       ),
                     ),
                     const SizedBox(width: 4),
@@ -290,7 +291,7 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
                             : colors.textSecondaryLight,
                         textOverflow: TextOverflow.ellipsis,
                         theme: theme.isDarkMode,
-                        fw: 3),
+                        fw: 0),
                     const SizedBox(width: 8),
 
                     TextWidget.paraText(
@@ -301,7 +302,7 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
                             : colors.textSecondaryLight,
                         textOverflow: TextOverflow.ellipsis,
                         theme: theme.isDarkMode,
-                        fw: 3),
+                        fw: 0),
                     // Text(
                     //   orderData.dateTime ?? "-",
                     //   style: textStyle(
@@ -360,7 +361,8 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
                                           inProgressStatuses
                                               .contains(orderData.status)
                                       ? colors.pending
-                                      : colors.pending),
+                                      : colors.pending,
+                                      fw: 0),
                     ),
                     // TextWidget.paraText(
                     //     // align: TextAlign.start,
@@ -382,7 +384,7 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
                             : colors.textSecondaryLight,
                         textOverflow: TextOverflow.ellipsis,
                         theme: theme.isDarkMode,
-                        fw: 3),
+                        fw: 0),
                   ],
                 )));
       },

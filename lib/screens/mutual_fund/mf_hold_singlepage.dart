@@ -418,7 +418,7 @@ class _mfholdsinlepage extends State<mfholdsinlepage>
                   : colors.textSecondaryLight,
               textOverflow: TextOverflow.ellipsis,
               theme: theme.isDarkMode,
-              fw: 3),
+              fw: 0),
           TextWidget.subText(
               align: TextAlign.right,
               text: value1,
@@ -428,7 +428,7 @@ class _mfholdsinlepage extends State<mfholdsinlepage>
                       : colors.textPrimaryLight),
               textOverflow: TextOverflow.ellipsis,
               theme: theme.isDarkMode,
-              fw: 3),
+              fw: 0),
         ],
       ),
       const SizedBox(height: 8),

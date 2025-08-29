@@ -202,6 +202,7 @@ class _MFCAGRCALState extends State<MFCAGRCAL> {
                             ? colors.textPrimaryDark
                             : colors.textPrimaryLight,
                         theme: isDarkMode,
+                        fw: 1,
                       ),
                       const SizedBox(width: 6),
                       Container(
@@ -220,6 +221,7 @@ class _MFCAGRCALState extends State<MFCAGRCAL> {
                                           ? colors.textPrimaryDark
                                           : colors.textPrimaryLight,
                                       theme: theme.isDarkMode,
+                                      fw: 0,
                                     ),
                                      hintStyle: TextWidget.textStyle(
                                         fontSize: 14,
@@ -227,6 +229,7 @@ class _MFCAGRCALState extends State<MFCAGRCAL> {
                                        color: theme.isDarkMode
                                   ? colors.textSecondaryDark
                                   : colors.textSecondaryLight,
+                                      fw: 0,
                                       ),
                           prefixIcon: SvgPicture.asset(
                             color: theme.isDarkMode
@@ -287,6 +290,7 @@ class _MFCAGRCALState extends State<MFCAGRCAL> {
                             ? colors.textPrimaryDark
                             : colors.textPrimaryLight,
                         theme: isDarkMode,
+                        fw: 1,
                       ),
                       const SizedBox(width: 6),
                       Container(
@@ -303,6 +307,7 @@ class _MFCAGRCALState extends State<MFCAGRCAL> {
                                        color: theme.isDarkMode
                                   ? colors.textSecondaryDark
                                   : colors.textSecondaryLight,
+                                      fw: 0,
                                       ),
                           hintText: '10000',
                           textCtrl: _finalAmountCtrl,
@@ -312,6 +317,7 @@ class _MFCAGRCALState extends State<MFCAGRCAL> {
                                           ? colors.textPrimaryDark
                                           : colors.textPrimaryLight,
                                       theme: theme.isDarkMode,
+                                      fw: 0,
                                     ),
                           prefixIcon: SvgPicture.asset(
                             color: theme.isDarkMode
@@ -372,6 +378,7 @@ class _MFCAGRCALState extends State<MFCAGRCAL> {
                             ? colors.textPrimaryDark
                             : colors.textPrimaryLight,
                         theme: isDarkMode,
+                        fw: 1,
                       ),
                       TextWidget.subText(
                         text: "${_tenureYears.toStringAsFixed(0)} Yr",
@@ -379,6 +386,7 @@ class _MFCAGRCALState extends State<MFCAGRCAL> {
                             ? colors.textPrimaryDark
                             : colors.textPrimaryLight,
                         theme: isDarkMode,
+                        fw: 0,
                       ),
                     ],
                   ),
@@ -466,6 +474,7 @@ class _MFCAGRCALState extends State<MFCAGRCAL> {
                     ? colors.textPrimaryDark
                     : colors.textPrimaryLight,
                 theme: theme.isDarkMode,
+                fw: 0,
               ),
             ],
           ),
@@ -475,6 +484,7 @@ class _MFCAGRCALState extends State<MFCAGRCAL> {
                 ? colors.textPrimaryDark
                 : colors.textPrimaryLight,
             theme: theme.isDarkMode,
+            fw: 0,
           ),
         ],
       ),

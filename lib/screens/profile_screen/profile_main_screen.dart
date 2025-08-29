@@ -73,6 +73,60 @@ class UserAccountScreen extends ConsumerWidget {
     return formatter.format(double.tryParse(amount) ?? 0.0);
   }
 
+  // Method to show image update options
+  void _showImageUpdateOptions(BuildContext context, WidgetRef ref) {
+    showModalBottomSheet(
+      useSafeArea: true,
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (BuildContext context) {
+        return SafeArea(
+          child: Container(
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(20),
+                topRight: Radius.circular(20),
+              ),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  margin: const EdgeInsets.only(top: 8),
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                ListTile(
+                  leading: const Icon(Icons.photo_library, color: Color(0xFF0037B7)),
+                  title: const Text('Choose from Gallery'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    ref.watch(userProfileProvider).pickImageFromGallery(context);
+                  },
+                ),
+                // ListTile(
+                //   leading: const Icon(Icons.camera_alt, color: Color(0xFF0037B7)),
+                //   title: const Text('Take Selfie'),
+                //   onTap: () {
+                //     Navigator.pop(context);
+                //     ref.watch(userProfileProvider).takeAndUploadSelfie(context);
+                //   },
+                // ),
+                const SizedBox(height: 20),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref.watch(themeProvider);
@@ -181,35 +235,87 @@ class UserAccountScreen extends ConsumerWidget {
                 children: [
                   Padding(
                     padding: const EdgeInsets.only(bottom: 8.0),
-                    child: Container(
-                      width: 100,
-                      height: 100,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: theme.isDarkMode
-                            ? colors.textSecondaryDark.withOpacity(0.1)
-                            : const Color(0xFFF1F3F8),
-                        border: Border.all(
-                          color: const Color(0xFF0037B7),
-                          width: 1.5,
-                        ),
-                      ),
-                      child: Center(
-                        child: TextWidget.custmText(
-                          text: userProfile.userDetailModel?.uname
-                                  ?.substring(0, 1)
-                                  .toUpperCase() ??
-                              "",
-                          theme: false,
-                          color: theme.isDarkMode
-                              ? colors.colorWhite
-                              : const Color(0xff0037B7),
-                          fs: 40,
-                          fw: 3,
-                        ),
-                      ),
-                    ),
-                  ),
+                                         child: GestureDetector(
+                       onTap: () => _showImageUpdateOptions(context, ref),
+                       child: Stack(
+                         children: [
+                           Container(
+                             width: 100,
+                             height: 100,
+                             decoration: BoxDecoration(
+                               shape: BoxShape.circle,
+                               color: theme.isDarkMode
+                                   ? colors.textSecondaryDark.withOpacity(0.1)
+                                   : const Color(0xFFF1F3F8),
+                               border: Border.all(
+                                 color: const Color(0xFF0037B7),
+                                 width: 1.5,
+                               ),
+                             ),
+                             child: ClipOval(
+                              child: userProfile.getProfileImage != null
+                                    ? userProfile.imageLoader 
+                                        ? Container(
+                                            width: 100,
+                                            height: 100,
+                                            decoration: BoxDecoration(
+                                              color: theme.isDarkMode
+                                                  ? colors.colorBlack.withOpacity(0.1)
+                                                  : colors.colorWhite.withOpacity(0.1),
+                                            ),
+                                            child: Center(
+                                              child: CircularProgressIndicator(
+                                                color: !theme.isDarkMode
+                                                    ? colors.primaryLight
+                                                    : colors.primaryDark,
+                                                strokeWidth: 3,
+                                              ),
+                                            ),
+                                          )
+                                        : Image.memory(
+                                            userProfile.getProfileImage!,
+                                            width: 100,
+                                            height: 100,
+                                            fit: BoxFit.cover,
+                                          )
+                                   : Center(
+                                       child: TextWidget.custmText(
+                                         text: userProfile.userDetailModel?.uname
+                                                 ?.substring(0, 1)
+                                                 .toUpperCase() ??
+                                             "",
+                                         theme: false,
+                                         color: theme.isDarkMode
+                                             ? colors.colorWhite
+                                             : const Color(0xff0037B7),
+                                         fs: 40,
+                                         fw: 3,
+                                       ),
+                                     ),
+                             ),
+                           ),
+                           // Camera icon overlay
+                           Positioned(
+                             bottom: 0,
+                             right: 0,
+                             child: Container(
+                               width: 32,
+                               height: 32,
+                               decoration: const BoxDecoration(
+                                 color: Color(0xFF0037B7),
+                                 shape: BoxShape.circle,
+                               ),
+                               child: const Icon(
+                                 Icons.camera_alt,
+                                 color: Colors.white,
+                                 size: 18,
+                               ),
+                             ),
+                           ),
+                         ],
+                       ),
+                     ),
+                   ),
                   IntrinsicWidth(
                     child: Container(
                       child: Material(

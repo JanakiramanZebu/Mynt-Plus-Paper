@@ -206,7 +206,7 @@ class _MFSIPSCREENState extends State<MFSIPSCREEN> {
               text: "Principal Amount",
               color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
               theme: theme.isDarkMode,
-              
+              fw: 1,
             ),
             Container(
               width: 150,
@@ -222,6 +222,7 @@ class _MFSIPSCREENState extends State<MFSIPSCREEN> {
                                         ? colors.textPrimaryDark
                                         : colors.textPrimaryLight,
                                     theme: theme.isDarkMode,
+                                    fw: 0,
                                   ),
                 hintText: '10000',
                  hintStyle: TextWidget.textStyle(
@@ -230,6 +231,7 @@ class _MFSIPSCREENState extends State<MFSIPSCREEN> {
                                      color: theme.isDarkMode
                                 ? colors.textSecondaryDark
                                 : colors.textSecondaryLight,
+                                fw: 0,
                                     ),
                 textCtrl: _principalCtrl,
                 onChanged: (value) {
@@ -299,13 +301,13 @@ class _MFSIPSCREENState extends State<MFSIPSCREEN> {
               text: "Interest Rate (p.a.)",
               color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
               theme: theme.isDarkMode,
-            
+              fw: 1,
             ),
             TextWidget.subText(
               text: "${_interestRate.toStringAsFixed(0)}%",
               color:  theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
               theme: theme.isDarkMode,
-             
+              fw: 0,
             ),
           ],
         ),
@@ -350,13 +352,13 @@ class _MFSIPSCREENState extends State<MFSIPSCREEN> {
               text: "Tenure Period (Years)",
              color :   theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
               theme: theme.isDarkMode,
-              
+              fw: 1,
             ),
             TextWidget.subText(
               text: "${_tenureYears.toStringAsFixed(0)} Yr",
               color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
               theme: theme.isDarkMode,
-          
+              fw: 0,
             ),
           ],
         ),
@@ -399,7 +401,7 @@ class _MFSIPSCREENState extends State<MFSIPSCREEN> {
           text: "Estimation",
           color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
           theme: theme.isDarkMode,
-          fw :0
+          fw :1
           
         ),
         const SizedBox(height: 16),
@@ -428,15 +430,15 @@ class _MFSIPSCREENState extends State<MFSIPSCREEN> {
                 text: label,
                 color:  theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
                 theme: false,
-                
+                fw: 0,
               ),
             ],
           ),
           TextWidget.subText(
             text: "₹ ${value.toStringAsFixed(0)}",
             color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-            theme: false,
-            
+            theme: false, 
+            fw: 0,
           ),
         ],
       ),

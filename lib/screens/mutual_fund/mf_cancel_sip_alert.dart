@@ -110,6 +110,7 @@ class MfSipCancelalert extends ConsumerWidget {
                 color: theme.isDarkMode
                     ? colors.textSecondaryDark
                     : colors.textPrimaryLight,
+                fw: 0,
               ),
             ),
           ),
@@ -149,7 +150,7 @@ class MfSipCancelalert extends ConsumerWidget {
                   color: theme.isDarkMode
                       ? colors.textPrimaryDark
                       : colors.textPrimaryLight,
-                  fw: 0,
+                  fw: 1,
                 ),
               ),
             ),
@@ -289,6 +290,7 @@ class MfSipCancelalert extends ConsumerWidget {
                   ? colors.textPrimaryDark
                   : colors.textPrimaryLight,
               fontSize: 16,
+              fw: 0,
             ),
             hint: TextWidget.subText(
               text: mfData.sipreason,
@@ -296,6 +298,7 @@ class MfSipCancelalert extends ConsumerWidget {
               color: theme.isDarkMode
                   ? colors.textSecondaryDark
                   : colors.textSecondaryLight,
+              fw: 0,
             ),
             items: hasReasonList
                 ? mfData.mfrejectsiplist!.map((item) {
@@ -309,7 +312,7 @@ class MfSipCancelalert extends ConsumerWidget {
                               ? colors.textPrimaryDark
                               : colors.textPrimaryLight,
                           fontSize: 12,
-                          
+                          fw: 0,
                         ),
                       ),
                     );
@@ -363,6 +366,7 @@ class MfSipCancelalert extends ConsumerWidget {
                   ? colors.textPrimaryDark
                   : colors.textPrimaryLight,
               fontSize: 16,
+              fw: 0,
             ),
 
             hintText: 'No of installments Passed',
@@ -372,6 +376,7 @@ class MfSipCancelalert extends ConsumerWidget {
               color: theme.isDarkMode
                   ? colors.textSecondaryDark
                   : colors.textSecondaryLight,
+              fw: 0,
             ),
             textCtrl: mfData.pausesip,
             keyboardType: TextInputType.number, // Show numeric keyboard

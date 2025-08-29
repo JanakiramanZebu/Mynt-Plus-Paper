@@ -136,7 +136,7 @@ class MFOverview extends ConsumerWidget {
                           : colors.textPrimaryLight,
                       textOverflow: TextOverflow.ellipsis,
                       theme: theme.isDarkMode,
-                      fw: 3),
+                      fw: 0),
                 ],
               ),
               const SizedBox(height: 10),
@@ -159,7 +159,7 @@ class MFOverview extends ConsumerWidget {
                           : colors.textPrimaryLight,
                       textOverflow: TextOverflow.ellipsis,
                       theme: theme.isDarkMode,
-                      fw: 3),
+                      fw: 0),
                   Expanded(
                     child: TextWidget.paraText(
                         align: TextAlign.start,
@@ -169,7 +169,7 @@ class MFOverview extends ConsumerWidget {
                             : colors.textSecondaryLight,
                         textOverflow: TextOverflow.ellipsis,
                         theme: theme.isDarkMode,
-                        fw: 3),
+                        fw: 0),
                   ),
                 ],
               ),
@@ -223,7 +223,7 @@ class MFOverview extends ConsumerWidget {
                                           : colors.ltpgreen,
                                       textOverflow: TextOverflow.ellipsis,
                                       theme: theme.isDarkMode,
-                                      fw: 3),
+                                      fw: 0),
                                   const SizedBox(height: 3),
                                   TextWidget.paraText(
                                       align: TextAlign.start,
@@ -233,7 +233,7 @@ class MFOverview extends ConsumerWidget {
                                           : colors.textSecondaryLight,
                                       textOverflow: TextOverflow.ellipsis,
                                       theme: theme.isDarkMode,
-                                      fw: 3),
+                                      fw: 0),
                                   const SizedBox(height: 3),
                                 ],
                               ),
@@ -275,13 +275,16 @@ class MFOverview extends ConsumerWidget {
                 Center(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 20),
-                    child: Text(
-                      "No returns data available",
-                      style: textStyle(
-                          isDarkMode ? colors.colorWhite : colors.colorBlack,
-                          14,
-                          FontWeight.w500),
-                    ),
+                    child:   
+                    TextWidget.subText(
+                      text: "No returns data available",
+                      color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                      textOverflow: TextOverflow.ellipsis,
+                      theme: theme.isDarkMode,
+                      fw: 0,
+                    ),  
+                    
+                   
                   ),
                 ),
             ],
@@ -393,7 +396,7 @@ class MFOverview extends ConsumerWidget {
                 : colors.textPrimaryLight,
             textOverflow: TextOverflow.ellipsis,
             theme: theme.isDarkMode,
-            fw: 3),
+            fw: 0),
         const SizedBox(height: 6),
         TextWidget.subText(
             text: value,
@@ -402,7 +405,7 @@ class MFOverview extends ConsumerWidget {
                 : colors.textPrimaryLight,
             textOverflow: TextOverflow.ellipsis,
             theme: theme.isDarkMode,
-            fw: 3),
+            fw: 0),
       ],
     );
   }

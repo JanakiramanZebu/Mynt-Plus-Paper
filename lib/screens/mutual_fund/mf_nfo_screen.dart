@@ -133,7 +133,7 @@ class MFNFOScreen extends ConsumerWidget {
                           textOverflow: TextOverflow.ellipsis,
                           maxLines: 2,
                           theme: theme.isDarkMode,
-                          fw: 3),
+                          fw: 0),
                     ),
                     subtitle: TextWidget.paraText(
                         align: TextAlign.start,
@@ -144,7 +144,7 @@ class MFNFOScreen extends ConsumerWidget {
                         textOverflow: TextOverflow.ellipsis,
                         maxLines: 2,
                         theme: theme.isDarkMode,
-                        fw: 3),
+                        fw: 0),
                   ),
                 );
               },

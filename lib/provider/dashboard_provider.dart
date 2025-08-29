@@ -18,6 +18,35 @@ class DashboardProvider extends DefaultChangeNotifier {
 
   DashboardProvider(this.ref);
 
+
+  final TextEditingController _brokerageController = TextEditingController(text: '0.03');
+  TextEditingController get brokerageController => _brokerageController;
+
+  // Brokerage type persistence
+  bool _isPercentageBrokerage = true;
+  bool get isPercentageBrokerage => _isPercentageBrokerage;
+
+  // Method to update brokerage type
+  void updateBrokerageType(bool isPercentage) {
+    _isPercentageBrokerage = isPercentage;
+    // Also update the controller text based on type
+    if (isPercentage) {
+      _brokerageController.text = '0.03';
+    } else {
+      _brokerageController.text = '20';
+    }
+    notifyListeners();
+  }
+
+  // Method to get current brokerage type as string
+  String get brokerageTypeText => _isPercentageBrokerage ? 'Percentage' : 'Flat';
+
+  @override
+  void dispose() {
+    _brokerageController.dispose();
+    super.dispose();
+  }
+
   // Portfolio Analysis State
 
   PortfolioResponse? _portfolioAnalysis;
@@ -152,29 +181,41 @@ class DashboardProvider extends DefaultChangeNotifier {
     }
   }
 
-  // Get sector allocation color
-  Color getSectorAllocationColor(String sector) {
-    switch (sector.toLowerCase()) {
-      case 'financial services':
-        return Color(0xFF60A5FA); // Light blue
-      case 'industrial':
-        return Color(0xFF3B82F6); // Medium blue
-      case 'consumer cyclical':
-        return Color(0xFF1D4ED8); // Darker blue
-      case 'others':
-        return Color(0xFF1E3A8A); // Darkest blue
-      default:
-        // Use a blue color palette for other sectors
-        List<Color> blueColors = [
-          Color(0xFF60A5FA), // Light blue
-          Color(0xFF3B82F6), // Medium blue
-          Color(0xFF1D4ED8), // Darker blue
-          Color(0xFF1E3A8A), // Darkest blue
-          Color(0xFF0F172A), // Very dark blue
-        ];
-        return blueColors[sector.hashCode % blueColors.length];
-    }
+ final Map<String, Color> _sectorColorMap = {};
+
+Color getSectorAllocationColor(String sector) {
+ List<Color> uniqueColors = [
+  Color(0xFF1ABC9C), // Teal
+  Color(0xFF27AE60), // Emerald Green
+  Color(0xFF2980B9), // Strong Blue
+  Color(0xFF9B59B6), // Purple
+  Color(0xFFE67E22), // Orange
+  Color(0xFFE74C3C), // Red
+  Color(0xFFF1C40F), // Yellow
+  Color(0xFF34495E), // Dark Blue Gray
+  Color(0xFF16A085), // Dark Cyan
+  // Color(0xFF8E44AD), // Deep Violet
+  Color(0xFFD35400), // Burnt Orange
+  Color(0xFF2C3E50), // Navy Blue
+  Color(0xFF7D3C98), // Violet
+  Color(0xFF229954), // Forest Green
+  Color(0xFFCA6F1E), // Amber Brown
+  Color(0xFF117A65), // Sea Green
+];
+
+
+  // If already assigned, return it
+  if (_sectorColorMap.containsKey(sector)) {
+    return _sectorColorMap[sector]!;
   }
+
+  // Assign next available color
+  final color = uniqueColors[_sectorColorMap.length % uniqueColors.length];
+  _sectorColorMap[sector] = color;
+
+  return color;
+}
+
 
   // Get market cap allocation color
   Color getMarketCapAllocationColor(String marketCapType) {
@@ -188,15 +229,7 @@ class DashboardProvider extends DefaultChangeNotifier {
       case 'others':
         return Color(0xFF1E3A8A); // Darkest blue
       default:
-        // Use a blue color palette for other market cap types
-        List<Color> blueColors = [
-          Color(0xFF60A5FA), // Light blue
-          Color(0xFF3B82F6), // Medium blue
-          Color(0xFF1D4ED8), // Darker blue
-          Color(0xFF1E3A8A), // Darkest blue
-          Color(0xFF0F172A), // Very dark blue
-        ];
-        return blueColors[marketCapType.hashCode % blueColors.length];
+        return Color(0xFF1E3A8A); // Darkest blue
     }
   }
 
@@ -216,21 +249,5 @@ class DashboardProvider extends DefaultChangeNotifier {
   }
 
   // Get sector color
-  Color getSectorColor(String sector) {
-    List<Color> colors = [
-      Color(0xFF059B3C),
-      Color(0xFF1976D2),
-      Color(0xFFFF7043),
-      Color(0xFF7B1FA2),
-      Color(0xFF388E3C),
-      Color(0xFFE64A19),
-      Color(0xFF0288D1),
-      Color(0xFF8E24AA),
-      Color(0xFF43A047),
-      Color(0xFFFFA726),
-      Color(0xFF5C6BC0),
-      Color(0xFF26A69A),
-    ];
-    return colors[sector.hashCode % colors.length];
-  }
+  
 }

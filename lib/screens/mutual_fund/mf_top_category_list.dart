@@ -238,7 +238,7 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
                                 : colors.textSecondaryLight,
                             textOverflow: TextOverflow.ellipsis,
                             theme: theme.isDarkMode,
-                            fw: 3,
+                            fw: 0,
                           ),
                           PopupMenuButton<String>(
                             color: theme.isDarkMode
@@ -258,7 +258,7 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
                                         ? colors.textSecondaryDark
                                         : colors.textSecondaryLight,
                                     theme: theme.isDarkMode,
-                                    fw: 3,
+                                    fw: 0,
                                   )),
                               PopupMenuItem(
                                   value: '3Y Returns',
@@ -268,7 +268,7 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
                                         ? colors.textSecondaryDark
                                         : colors.textSecondaryLight,
                                     theme: theme.isDarkMode,
-                                    fw: 3,
+                                    fw: 0,
                                   )),
                               PopupMenuItem(
                                   value: '5Y Returns',
@@ -278,7 +278,7 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
                                         ? colors.textSecondaryDark
                                         : colors.textSecondaryLight,
                                     theme: theme.isDarkMode,
-                                    fw: 3,
+                                    fw: 0,
                                   )),
                             ],
                             child: Material(
@@ -301,7 +301,7 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
                                         : colors.textSecondaryLight,
                                     textOverflow: TextOverflow.ellipsis,
                                     theme: theme.isDarkMode,
-                                    fw: 3,
+                                    fw: 0,
                                   ),
                                 ),
                               ),
@@ -348,7 +348,7 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
             textOverflow: TextOverflow.ellipsis,
             maxLines: 1,
             theme: theme.isDarkMode,
-            fw: isActive ? 2 : null,
+            fw: isActive ? 2 : 0,  
           ),
         ),
         AnimatedContainer(
@@ -511,7 +511,7 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
                     ? colors.textPrimaryDark
                     : colors.textPrimaryLight,
                 theme: theme.isDarkMode,
-                fw: 3,
+                fw: 0,
               ),
             ),
             subtitle: Padding(
@@ -522,7 +522,7 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
                     ? colors.textSecondaryDark
                     : colors.textSecondaryLight,
                 theme: theme.isDarkMode,
-                fw: 3,
+                fw: 0,
               ),
             ),
             trailing: TextWidget.subText(
@@ -531,7 +531,7 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
                   ? colors.textPrimaryDark
                   : colors.textPrimaryLight,
               theme: theme.isDarkMode,
-              fw: 3,
+              fw: 0,
             ),
           )),
     );

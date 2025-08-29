@@ -100,7 +100,7 @@ class _MandateSelectionScreenState extends State<MandateSelectionScreen> {
                 color: theme.isDarkMode
                     ? colors.textPrimaryDark
                     : colors.textPrimaryLight,
-                fw: 0),
+                fw: 1),
           ),
           backgroundColor:
               theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
@@ -166,7 +166,7 @@ class _MandateSelectionScreenState extends State<MandateSelectionScreen> {
                                                       : colors.textPrimaryLight,
                                                       textOverflow: TextOverflow.ellipsis,
                                                       maxLines: 1,
-                                                      
+                                                      fw: 0,
                                                   
                                                 ),
                                               ),
@@ -176,6 +176,7 @@ class _MandateSelectionScreenState extends State<MandateSelectionScreen> {
                                                  color: theme.isDarkMode
                                                     ? colors.textPrimaryDark
                                                     : colors.textPrimaryLight,
+                                                    fw: 0,
                                               ),
                                               
                                               // const SizedBox(height: 4),
@@ -192,7 +193,8 @@ class _MandateSelectionScreenState extends State<MandateSelectionScreen> {
                                                 TextWidget.paraText(
                                                   text: "${mandate.bankName}",
                                                   theme: theme.isDarkMode,
-                                                  color: colors.colorGrey,
+                                                  color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                                                  fw: 0,
                                                 ),
                                                 
                                               ],
@@ -207,7 +209,8 @@ class _MandateSelectionScreenState extends State<MandateSelectionScreen> {
                                               TextWidget.paraText(
                                                 text: "${mandate.status}",
                                                 theme: theme.isDarkMode,
-                                                color: colors.colorGrey,
+                                                color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                                                fw: 0,
                                               ),
                                                if (isSelected)
                                               Icon(
@@ -226,7 +229,8 @@ class _MandateSelectionScreenState extends State<MandateSelectionScreen> {
                                               TextWidget.paraText(
                                                 text: formatDate(mandate.regnDate ?? ''),
                                                 theme: theme.isDarkMode,
-                                                color: colors.colorGrey,
+                                                color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                                                fw: 0,
                                               ),
                                             ],
                                           )
@@ -262,6 +266,7 @@ class _MandateSelectionScreenState extends State<MandateSelectionScreen> {
                                 text: "Create a new mandate to get started",
                                 theme: theme.isDarkMode,
                                 color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                                fw: 0,
                               ),
                             ],
                           ),

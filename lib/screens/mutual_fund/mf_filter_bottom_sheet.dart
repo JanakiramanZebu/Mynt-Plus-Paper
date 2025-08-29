@@ -203,9 +203,11 @@ class _MFFilterBottomSheetState extends ConsumerState<MFFilterBottomSheet> {
                                     ? theme.isDarkMode
                                         ? colors.primaryDark
                                         : colors.primaryLight
-                                    : colors.colorGrey,
+                                    :  theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                        : colors.textSecondaryLight,
                                 theme: theme.isDarkMode,
-                                fw: currentSortType == "name" ? 2 : null),
+                                fw: currentSortType == "name" ? 2 : 0),
                           ),
                         ],
                       ),
@@ -245,9 +247,11 @@ class _MFFilterBottomSheetState extends ConsumerState<MFFilterBottomSheet> {
                                     ? theme.isDarkMode
                                         ? colors.primaryDark
                                         : colors.primaryLight
-                                    : colors.colorGrey,
+                                    :  theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                        : colors.textSecondaryLight,
                                 theme: theme.isDarkMode,
-                                fw: currentSortType == "nav" ? 2 : null),
+                                fw: currentSortType == "nav" ? 2 : 0),
                           ),
                         ],
                       ),
@@ -287,9 +291,11 @@ class _MFFilterBottomSheetState extends ConsumerState<MFFilterBottomSheet> {
                                     ? theme.isDarkMode
                                         ? colors.primaryDark
                                         : colors.primaryLight
-                                    : colors.colorGrey,
+                                    :  theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                        : colors.textSecondaryLight,
                                 theme: theme.isDarkMode,
-                                fw: currentSortType == "unit" ? 2 : null),
+                                fw: currentSortType == "unit" ? 2 : 0),
                           ),
                         ],
                       ),
@@ -329,9 +335,11 @@ class _MFFilterBottomSheetState extends ConsumerState<MFFilterBottomSheet> {
                                     ? theme.isDarkMode
                                         ? colors.primaryDark
                                         : colors.primaryLight
-                                    : colors.colorGrey,
+                                    :  theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                        : colors.textSecondaryLight,
                                 theme: theme.isDarkMode,
-                                fw: currentSortType == "returnPercChange" ? 2 : null),
+                                fw: currentSortType == "returnPercChange" ? 2 : 0),
                           ),
                         ],
                       ),
@@ -371,9 +379,11 @@ class _MFFilterBottomSheetState extends ConsumerState<MFFilterBottomSheet> {
                                     ? theme.isDarkMode
                                         ? colors.primaryDark
                                         : colors.primaryLight
-                                    : colors.colorGrey,
+                                    :  theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                        : colors.textSecondaryLight,
                                 theme: theme.isDarkMode,
-                                fw: currentSortType == "investedPrice" ? 2 : null),
+                                fw: currentSortType == "investedPrice" ? 2 : 0),
                           ),
                         ],
                       ),

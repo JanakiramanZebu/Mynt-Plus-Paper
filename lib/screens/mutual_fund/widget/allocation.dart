@@ -50,7 +50,7 @@ class MFAllocation extends ConsumerWidget {
                       : colors.textPrimaryLight,
                   textOverflow: TextOverflow.ellipsis,
                   theme: theme.isDarkMode,
-                  fw: 3),
+                  fw: 0),
               const SizedBox(height: 12),
               TextWidget.subText(
                   align: TextAlign.right,
@@ -60,7 +60,7 @@ class MFAllocation extends ConsumerWidget {
                       : colors.textPrimaryLight,
                   textOverflow: TextOverflow.ellipsis,
                   theme: theme.isDarkMode,
-                  fw: 3),
+                  fw: 1),
               const SizedBox(height: 8),
               if (hasSectors) ...[
                 ListView.separated(
@@ -102,7 +102,7 @@ class MFAllocation extends ConsumerWidget {
                   ),
               ],
               const SizedBox(height: 8),
-              TextWidget.titleText(
+              TextWidget.subText(
                   align: TextAlign.right,
                   text: "Top Stock Holdings",
                   color: theme.isDarkMode
@@ -110,7 +110,7 @@ class MFAllocation extends ConsumerWidget {
                       : colors.textPrimaryLight,
                   textOverflow: TextOverflow.ellipsis,
                   theme: theme.isDarkMode,
-                  fw: 3),
+                  fw: 1),
               const SizedBox(height: 10),
               if (hasHoldings) ...[
                 ListView.separated(
@@ -174,7 +174,7 @@ class MFAllocation extends ConsumerWidget {
                   : colors.textPrimaryLight,
               textOverflow: TextOverflow.ellipsis,
               theme: theme.isDarkMode,
-              fw: 3),
+              fw: 0),
         ),
         TextWidget.subText(
             align: TextAlign.start,
@@ -184,7 +184,7 @@ class MFAllocation extends ConsumerWidget {
                 : colors.textPrimaryLight,
             textOverflow: TextOverflow.ellipsis,
             theme: theme.isDarkMode,
-            fw: 3),
+            fw: 0),
       ]),
       const SizedBox(height: 10),
       LinearPercentIndicator(

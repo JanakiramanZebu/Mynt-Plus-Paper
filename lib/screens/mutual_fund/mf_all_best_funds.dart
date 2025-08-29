@@ -226,7 +226,7 @@ class _SaveTaxesScreenState extends ConsumerState<SaveTaxesScreen>
                               : colors.textSecondaryLight,
                           textOverflow: TextOverflow.ellipsis,
                           theme: theme.isDarkMode,
-                          fw: 3,
+                          fw: 0,
                         ),
                         PopupMenuButton<String>(
                           color: theme.isDarkMode
@@ -246,7 +246,7 @@ class _SaveTaxesScreenState extends ConsumerState<SaveTaxesScreen>
                                       ? colors.textSecondaryDark
                                       : colors.textSecondaryLight,
                                   theme: theme.isDarkMode,
-                                  fw: 3,
+                                  fw: 0,
                                 )),
                             PopupMenuItem(
                                 value: '3Y Returns',
@@ -256,7 +256,7 @@ class _SaveTaxesScreenState extends ConsumerState<SaveTaxesScreen>
                                       ? colors.textSecondaryDark
                                       : colors.textSecondaryLight,
                                   theme: theme.isDarkMode,
-                                  fw: 3,
+                                  fw: 0,
                                 )),
                             PopupMenuItem(
                                 value: '5Y Returns',
@@ -266,7 +266,7 @@ class _SaveTaxesScreenState extends ConsumerState<SaveTaxesScreen>
                                       ? colors.textSecondaryDark
                                       : colors.textSecondaryLight,
                                   theme: theme.isDarkMode,
-                                  fw: 3,
+                                  fw: 0,
                                 )),
                           ],
                           child: Material(
@@ -289,7 +289,7 @@ class _SaveTaxesScreenState extends ConsumerState<SaveTaxesScreen>
                                       : colors.textSecondaryLight,
                                   textOverflow: TextOverflow.ellipsis,
                                   theme: theme.isDarkMode,
-                                  fw: 3,
+                                  fw: 0,
                                 ),
                               ),
                             ),
@@ -340,7 +340,7 @@ class _SaveTaxesScreenState extends ConsumerState<SaveTaxesScreen>
             textOverflow: TextOverflow.ellipsis,
             maxLines: 1,
             theme: theme.isDarkMode,
-            fw: isActive ? 2 : null,
+            fw: isActive ? 2 : 0,
           ),
         ),
         AnimatedContainer(
@@ -533,13 +533,13 @@ class _SaveTaxesScreenState extends ConsumerState<SaveTaxesScreen>
                   textOverflow: TextOverflow.ellipsis,
                   maxLines: 2,
                   theme: theme.isDarkMode,
-                  fw: 3,
+                  fw: 0,
                 ),
               ),
               subtitle: Padding(
                 padding: const EdgeInsets.only(top: 8),
                 child: TextWidget.paraText(
-                  fw: 3,
+                  fw: 0,
                   text: "${item.type ?? "Unknown"}",
                   textOverflow: TextOverflow.ellipsis,
                   maxLines: 1,
@@ -557,7 +557,7 @@ class _SaveTaxesScreenState extends ConsumerState<SaveTaxesScreen>
                 text: "$returnData%",
                 textOverflow: TextOverflow.ellipsis,
                 theme: theme.isDarkMode,
-                fw: 3,
+                fw: 0,
               ),
             ),
           ),
