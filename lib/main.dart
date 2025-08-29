@@ -179,6 +179,11 @@ Future<void> initializeFirebaseAsync() async {
   }
 }
 
+void _clearBadgeOnStartup() async {
+    // await AwesomeNotifications().cancelAll();        // Clear all notifications
+    await AwesomeNotifications().resetGlobalBadge(); // Clear badge count
+  }
+
 // This method represents the project's entry level.
 void main() async {
   // Track startup time
@@ -195,7 +200,12 @@ void main() async {
 
   final Preferences pref = locator<Preferences>();
   await pref.init();
-
+  try{
+    _clearBadgeOnStartup();
+  }
+  catch(e){
+    print("Error in notification clearing $e");
+  }
   // Run the app first without waiting for Firebase
   final beforeFirebase = DateTime.now();
   final startupDuration = beforeFirebase.difference(startTime);
