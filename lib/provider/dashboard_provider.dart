@@ -18,6 +18,35 @@ class DashboardProvider extends DefaultChangeNotifier {
 
   DashboardProvider(this.ref);
 
+
+  final TextEditingController _brokerageController = TextEditingController(text: '0.03');
+  TextEditingController get brokerageController => _brokerageController;
+
+  // Brokerage type persistence
+  bool _isPercentageBrokerage = true;
+  bool get isPercentageBrokerage => _isPercentageBrokerage;
+
+  // Method to update brokerage type
+  void updateBrokerageType(bool isPercentage) {
+    _isPercentageBrokerage = isPercentage;
+    // Also update the controller text based on type
+    if (isPercentage) {
+      _brokerageController.text = '0.03';
+    } else {
+      _brokerageController.text = '20';
+    }
+    notifyListeners();
+  }
+
+  // Method to get current brokerage type as string
+  String get brokerageTypeText => _isPercentageBrokerage ? 'Percentage' : 'Flat';
+
+  @override
+  void dispose() {
+    _brokerageController.dispose();
+    super.dispose();
+  }
+
   // Portfolio Analysis State
 
   PortfolioResponse? _portfolioAnalysis;
