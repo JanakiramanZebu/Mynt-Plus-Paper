@@ -73,6 +73,8 @@ class _ModifyPlaceOrderScreenState
   bool _isStoplossOrder = false;
   bool _isBOCOOrderEnabled = false;
   bool isAdvancedOptionClicked = false;
+  
+  bool _hasValidCircuitBreakerValues = false;
   // String orderType = "Delivery";
   String mktProtErrorText = "";
   TextEditingController mktProtDialogCtrl = TextEditingController();
@@ -167,6 +169,14 @@ class _ModifyPlaceOrderScreenState
       _isStoplossOrder = prcType == "SL-LMT" || prcType == "SL-MKT";
       _isBOCOOrderEnabled = widget.modifyOrderArgs.sPrdtAli == "BO" ||
           widget.modifyOrderArgs.sPrdtAli == "CO";
+
+      // Initialize circuit breaker validation flag
+      _hasValidCircuitBreakerValues = widget.scripInfo.lc != null && 
+          widget.scripInfo.uc != null &&
+          widget.scripInfo.lc != "0.00" && 
+          widget.scripInfo.uc != "0.00" &&
+          widget.scripInfo.lc!.isNotEmpty && 
+          widget.scripInfo.uc!.isNotEmpty;
 
       marginUpdate();
     });
@@ -706,18 +716,15 @@ class _ModifyPlaceOrderScreenState
                                                                   context,
                                                                   "Limit Price can not be ${inputPrice <= 0 ? 'zero' : 'empty'}");
                                                     } else {
-                                                      if ((double.parse(value) <
-                                                              double.parse(
-                                                                  "${widget.scripInfo.lc}")) ||
+                                                      if (_hasValidCircuitBreakerValues && 
+                                                          ((double.parse(value) <
+                                                              double.parse(widget.scripInfo.lc!)) ||
                                                           (double.parse(value) >
-                                                              double.parse(
-                                                                  "${widget.scripInfo.uc}"))) {
+                                                              double.parse(widget.scripInfo.uc!)))) {
                                                         warningMessage(
                                                                 context,
-                                                                double.parse(
-                                                                            value) <
-                                                                        double.parse(
-                                                                            "${widget.scripInfo.lc}")
+                                                                double.parse(value) <
+                                                                        double.parse(widget.scripInfo.lc!)
                                                                     ? "Limit Price can not be lesser than Lower Circuit Limit ${widget.scripInfo.lc}"
                                                                     : "Limit Price can not be greater than Upper Circuit Limit ${widget.scripInfo.uc}");
                                                       }
@@ -1643,14 +1650,14 @@ class _ModifyPlaceOrderScreenState
                                                                                 "0"
                                                                             ? "Quantity can not be 0"
                                                                             : "Price can not be 0");
-                                                              } else if ((double.parse(prcType == "MKT" || prcType == "SL-MKT" ? price : priceCtrl.text) < double.parse("${widget.scripInfo.lc}")) ||
+                                                              } else if (_hasValidCircuitBreakerValues && 
+                                                                  ((double.parse(prcType == "MKT" || prcType == "SL-MKT" ? price : priceCtrl.text) < double.parse(widget.scripInfo.lc!)) ||
                                                                   (double.parse(prcType == "MKT" || prcType == "SL-MKT" ? price : priceCtrl.text) >
-                                                                      double.parse(
-                                                                          "${widget.scripInfo.uc}"))) {
+                                                                      double.parse(widget.scripInfo.uc!)))) {
                                                                 warningMessage(
                                                                         context,
                                                                         double.parse(prcType == "MKT" || prcType == "SL-MKT" ? price : priceCtrl.text) <
-                                                                                double.parse("${widget.scripInfo.lc}")
+                                                                                double.parse(widget.scripInfo.lc!)
                                                                             ? "Price can not be lesser than Lower Circuit Limit ${widget.scripInfo.lc}"
                                                                             : "Price can not be greater than Upper Circuit Limit ${widget.scripInfo.uc}");
                                                               } else if ((prcType ==
@@ -1681,13 +1688,12 @@ class _ModifyPlaceOrderScreenState
                                                                         warningMessage(
                                                                             context,
                                                                             "Trigger should be greater than LTP ${double.parse(triggerPriceCtrl.text) > double.parse(widget.orderArg.ltp ?? "0.00")}");
-                                                                      } else if (double.parse(triggerPriceCtrl
-                                                                              .text) >
-                                                                          double.parse(widget.scripInfo.uc ??
-                                                                              "0.00")) {
+                                                                      } else if (_hasValidCircuitBreakerValues && 
+                                                                          double.parse(triggerPriceCtrl.text) >
+                                                                          double.parse(widget.scripInfo.uc!)) {
                                                                         warningMessage(
                                                                             context,
-                                                                            "Trigger can not be greater than upper circuit limit of ${widget.scripInfo.uc ?? 0.00}");
+                                                                            "Trigger can not be greater than upper circuit limit of ${widget.scripInfo.uc}");
                                                                       } else {
                                                                         if ((int.parse(qtyCtrl.text.isEmpty ? "0" : qtyCtrl.text) >
                                                                                 frezQty &&
@@ -1699,13 +1705,12 @@ class _ModifyPlaceOrderScreenState
                                                                         }
                                                                       }
                                                                     } else {
-                                                                      if (double.parse(triggerPriceCtrl
+                                                                      if (_hasValidCircuitBreakerValues && double.parse(triggerPriceCtrl
                                                                               .text) <
-                                                                          double.parse(widget.scripInfo.lc ??
-                                                                              "0.00")) {
+                                                                          double.parse(widget.scripInfo.lc!)) {
                                                                         warningMessage(
                                                                             context,
-                                                                            "Trigger can not be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}");
+                                                                            "Trigger can not be lesser than lower circuit limit of ${widget.scripInfo.lc}");
                                                                       } else if (double.parse(priceCtrl
                                                                               .text) <
                                                                           double.parse(triggerPriceCtrl
@@ -1713,13 +1718,12 @@ class _ModifyPlaceOrderScreenState
                                                                         warningMessage(
                                                                             context,
                                                                             "Trigger should be less than price");
-                                                                      } else if (double.parse(triggerPriceCtrl
-                                                                              .text) >
-                                                                          double.parse(widget.scripInfo.uc ??
-                                                                              "0.00")) {
+                                                                      } else if (_hasValidCircuitBreakerValues && 
+                                                                          double.parse(triggerPriceCtrl.text) >
+                                                                          double.parse(widget.scripInfo.uc!)) {
                                                                         warningMessage(
                                                                             context,
-                                                                            "Trigger can not be greater than upper circuit limit of ${widget.scripInfo.uc ?? 0.00}");
+                                                                            "Trigger can not be greater than upper circuit limit of ${widget.scripInfo.uc}");
                                                                       } else {
                                                                         if ((int.parse(qtyCtrl.text.isEmpty ? "0" : qtyCtrl.text) >
                                                                                 frezQty &&
@@ -1741,13 +1745,12 @@ class _ModifyPlaceOrderScreenState
                                                                         warningMessage(
                                                                             context,
                                                                             "Trigger should be lesser than LTP");
-                                                                      } else if (double.parse(triggerPriceCtrl
-                                                                              .text) <
-                                                                          double.parse(widget.scripInfo.lc ??
-                                                                              "0.00")) {
+                                                                      } else if (_hasValidCircuitBreakerValues && 
+                                                                          double.parse(triggerPriceCtrl.text) <
+                                                                          double.parse(widget.scripInfo.lc!)) {
                                                                         warningMessage(
                                                                             context,
-                                                                            "Trigger can not be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}");
+                                                                            "Trigger can not be lesser than lower circuit limit of ${widget.scripInfo.lc}");
                                                                       } else {
                                                                         if ((int.parse(qtyCtrl.text.isEmpty ? "0" : qtyCtrl.text) >
                                                                                 frezQty &&
@@ -1759,13 +1762,12 @@ class _ModifyPlaceOrderScreenState
                                                                         }
                                                                       }
                                                                     } else {
-                                                                      if (double.parse(triggerPriceCtrl
+                                                                      if (_hasValidCircuitBreakerValues && double.parse(triggerPriceCtrl
                                                                               .text) >
-                                                                          double.parse(widget.scripInfo.uc ??
-                                                                              "0.00")) {
+                                                                          double.parse(widget.scripInfo.uc!)) {
                                                                         warningMessage(
                                                                             context,
-                                                                            "Trigger can not be greater than upper circuit limit of ${widget.scripInfo.uc ?? 0.00}");
+                                                                            "Trigger can not be greater than upper circuit limit of ${widget.scripInfo.uc}");
                                                                       } else if (double.parse(
                                                                               price) >
                                                                           double.parse(triggerPriceCtrl
@@ -1773,13 +1775,12 @@ class _ModifyPlaceOrderScreenState
                                                                         warningMessage(
                                                                             context,
                                                                             "Trigger should be greater than price");
-                                                                      } else if (double.parse(triggerPriceCtrl
-                                                                              .text) <
-                                                                          double.parse(widget.scripInfo.lc ??
-                                                                              "0.00")) {
+                                                                      } else if (_hasValidCircuitBreakerValues && 
+                                                                          double.parse(triggerPriceCtrl.text) <
+                                                                          double.parse(widget.scripInfo.lc!)) {
                                                                         warningMessage(
                                                                             context,
-                                                                            "Trigger can not be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}");
+                                                                            "Trigger can not be lesser than lower circuit limit of ${widget.scripInfo.lc}");
                                                                       } else {
                                                                         if ((int.parse(qtyCtrl.text.isEmpty ? "0" : qtyCtrl.text) >
                                                                                 frezQty &&
