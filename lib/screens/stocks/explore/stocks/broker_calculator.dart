@@ -879,7 +879,7 @@ double brokerageRate = (sellPrice == 0 || buyPrice == 0)
                                   : theme.isDarkMode
                                       ? colors.textSecondaryDark
                                       : colors.textSecondaryLight,
-                              fw: isSelected ? 2 : 0,
+                              fw: isSelected ? 2 : 2,
                               theme: !theme.isDarkMode,
                             ),
                           ),
@@ -916,7 +916,7 @@ double brokerageRate = (sellPrice == 0 || buyPrice == 0)
             textOverflow: TextOverflow.ellipsis,
             maxLines: 1,
             theme: theme.isDarkMode,
-            fw: isActive ? 2 : 0,
+            fw: isActive ? 2 : 2,
           ),
         ),
         AnimatedContainer(

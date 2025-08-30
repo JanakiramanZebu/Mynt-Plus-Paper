@@ -900,7 +900,7 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                                         TextWidget.paraText(
                                             text: "${title}",
                                             theme: false,
-                                            fw: isActive ? 2 : 0, // 2 for active (bold), 0 for inactive (w500)
+                                            fw: isActive ? 2 : 2, // 2 for active (bold), 0 for inactive (w500)
                                             ),
                                       ],
                                     ),

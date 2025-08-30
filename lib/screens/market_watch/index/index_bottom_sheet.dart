@@ -167,7 +167,7 @@ class _IndexBottomSheetState extends ConsumerState<IndexBottomSheet> {
                                                   TextOverflow.ellipsis,
                                               maxLines: 1,
                                               theme: theme.isDarkMode,
-                                              fw: isSelected ? 2 : 0,
+                                              fw: isSelected ? 2 : 2,
                                             ),
                                           ),
                                           // Animated underline indicator

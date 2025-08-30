@@ -465,7 +465,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
                     unselectedLabelStyle: TextWidget.textStyle(
                       fontSize: 14,
                       theme: false,
-                      fw: 0,
+                      fw: 2,
                     ),
                     labelColor: theme.isDarkMode
                         ? colors.secondaryDark

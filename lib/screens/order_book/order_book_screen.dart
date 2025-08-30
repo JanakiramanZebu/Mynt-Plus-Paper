@@ -138,7 +138,7 @@ class _OrderBookScreenState extends ConsumerState<OrderBookScreen>
                                           text: title,
                                           theme: false,
                                            color: isSelected ? theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight :  theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                                          fw: isSelected ? 2 : 0),
+                                          fw: isSelected ? 2 : 2),
                                       if (badge != null) ...[
                                         const SizedBox(width: 3),
                                         Container(

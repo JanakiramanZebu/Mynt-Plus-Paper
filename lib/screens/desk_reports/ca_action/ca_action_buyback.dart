@@ -1207,7 +1207,7 @@ class _CABuybackState extends State<CABuyback> with TickerProviderStateMixin {
                         textOverflow: TextOverflow.ellipsis,
                         maxLines: 1,
                         theme: theme.isDarkMode,
-                        fw: isCurrentSelected ? 2 : 0),
+                        fw: isCurrentSelected ? 2 : 2),
                   ),
                   AnimatedContainer(
                     duration: const Duration(milliseconds: 250),

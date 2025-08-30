@@ -79,7 +79,7 @@ class _NotificationpageState extends ConsumerState<Notificationpage>
                         fontSize: 14,
                         theme: false,
                         color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                        fw: 0,
+                        fw: 2,
                     
                       ),
                       labelColor: theme.isDarkMode

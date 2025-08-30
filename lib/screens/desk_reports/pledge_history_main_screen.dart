@@ -173,7 +173,7 @@ class _PledgeMainScreen extends State<PledgeHistoryMainScreen>
                           text: tablistitems[index]['title'].toString(),
                           theme: false,
                           color: color,
-                          fw: isSelected ? 2 : 0,
+                          fw: isSelected ? 2 : 2,
                         ),
                         const SizedBox(width: 5),
                          

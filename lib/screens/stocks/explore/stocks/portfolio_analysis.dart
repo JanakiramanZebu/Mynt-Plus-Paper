@@ -9,6 +9,8 @@ import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/sharedWidget/splash_loader.dart';
 import '../../../../provider/dashboard_provider.dart';
 import '../../../../models/explore_model/portfolioanalisys_models.dart';
+import '../../../../provider/market_watch_provider.dart';
+import '../../../../sharedWidget/list_divider.dart';
 import '../../../../sharedWidget/no_data_found.dart';
 
 class PortfolioDashboardScreen extends ConsumerStatefulWidget {
@@ -80,7 +82,7 @@ class _PortfolioDashboardScreenState
         ),
         elevation: 0.2,
         title: TextWidget.titleText(
-            text: "Portfolio Dashboard",
+            text: "Portfolio Analysis",
             textOverflow: TextOverflow.ellipsis,
             theme: theme.isDarkMode,
             color: theme.isDarkMode
@@ -156,7 +158,7 @@ class _PortfolioDashboardScreenState
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     TextWidget.titleText(
-                      text: 'Top Stocks',
+                      text: 'Holdings',
                       theme: false,
                       color: theme.isDarkMode
                           ? colors.textPrimaryDark
@@ -183,314 +185,316 @@ class _PortfolioDashboardScreenState
 
     return Container(
       color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-      child: ListView.builder(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: ListView.separated(
+        // padding: const EdgeInsets.symmetric(horizontal: 16),
+        separatorBuilder: (_, __) => ListDivider(),
         itemCount: validFundamentals.length,
         itemBuilder: (context, index) {
           final entry = validFundamentals[index];
           return _buildSectorPerformanceItem(
-            sector: entry.name ?? '',
+          sector: entry.name ?? '',
             value: entry.inverstedAmount ?? 0,
             marketCapType: entry.marketCapType ?? '',
             allocationPercent: entry.allocationPercent ?? 0,
             qty: entry.qty ?? '',
             exch: entry.exch ?? '',
+            token: entry.zebuToken ?? '',
+            tsym: entry.tsym ?? '',
           );
         },
       ),
     );
   }
 
- Widget _buildInvestmentChart(ChartData chartData, PortfolioResponse data) {
-  final theme = ref.watch(themeProvider);
-  final portfolio = ref.watch(dashboardProvider);
-  if (chartData.dates.isEmpty) return const SizedBox.shrink();
+  Widget _buildInvestmentChart(ChartData chartData, PortfolioResponse data) {
+    final theme = ref.watch(themeProvider);
+    final portfolio = ref.watch(dashboardProvider);
+    if (chartData.dates.isEmpty) return const SizedBox.shrink();
 
-  // Use all data points for better representation
-  List<FlSpot> investedSpots = [];
-  List<FlSpot> currentSpots = [];
+    // Use all data points for better representation
+    List<FlSpot> investedSpots = [];
+    List<FlSpot> currentSpots = [];
 
-  for (int i = 0; i < chartData.dates.length; i++) {
-    investedSpots.add(FlSpot(i.toDouble(),
-        chartData.totalInvestedValue[i] / 1000)); // Convert to thousands
-    currentSpots
-        .add(FlSpot(i.toDouble(), chartData.totalCurrentValue[i] / 1000));
-  }
+    for (int i = 0; i < chartData.dates.length; i++) {
+      investedSpots.add(FlSpot(i.toDouble(),
+          chartData.totalInvestedValue[i] / 1000)); // Convert to thousands
+      currentSpots
+          .add(FlSpot(i.toDouble(), chartData.totalCurrentValue[i] / 1000));
+    }
 
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  TextWidget.titleText(
-                    text: 'Portfolio Summary',
-                    theme: theme.isDarkMode,
-                    color: theme.isDarkMode
-                        ? colors.textPrimaryDark
-                        : colors.textPrimaryLight,
-                    fw: 0,
-                  ),
-                  const SizedBox(height: 12),
-                  TextWidget.titleText(
-                    text: '${data.xirrResult.toStringAsFixed(2)}%',
-                    theme: theme.isDarkMode,
-                    color: data.xirrResult.toStringAsFixed(2).startsWith("-")
-                        ? theme.isDarkMode
-                            ? colors.lossDark
-                            : colors.lossLight
-                        : data.xirrResult == 0
-                            ? colors.textSecondaryLight
-                            : theme.isDarkMode
-                                ? colors.successDark
-                                : colors.successLight,
-                    fw: 1,
-                  ),
-                  SizedBox(height: 4),
-                  TextWidget.subText(
-                    text: 'XIRR Return',
-                    theme: theme.isDarkMode,
-                    color: theme.isDarkMode
-                        ? colors.textSecondaryDark
-                        : colors.textSecondaryLight,
-                    fw: 3,
-                  ),
-                ],
-              ),
-              // Custom tooltip positioned above chart
-              if (showTooltip && touchedSpot != null)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-                  decoration: BoxDecoration(
-                    color: theme.isDarkMode
-                        ? colors.colorBlack.withOpacity(0.95)
-                        : colors.colorWhite.withOpacity(0.95),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextWidget.titleText(
+                      text: 'Portfolio Summary',
+                      theme: theme.isDarkMode,
                       color: theme.isDarkMode
-                          ? colors.textSecondaryDark.withOpacity(0.3)
-                          : colors.textSecondaryLight.withOpacity(0.3),
-                      width: 1,
+                          ? colors.textPrimaryDark
+                          : colors.textPrimaryLight,
+                      fw: 0,
                     ),
-                  ),
-                  child: Builder(
-                    builder: (context) {
-                      final index = touchedSpot!.x.toInt();
-                      if (index >= 0 &&
-                          index < investedSpots.length &&
-                          index < currentSpots.length &&
-                          index < chartData.dates.length) {
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            TextWidget.paraText(
-                              text: _formatDate(chartData.dates[index]),
-                              theme: theme.isDarkMode,
-                              color: theme.isDarkMode
-                                  ? colors.textPrimaryDark
-                                  : colors.textPrimaryLight,
-                              fw: 3,
-                            ),
-                            const SizedBox(height: 4),
-                            TextWidget.paraText(
-                              text:
-                                  'Invested: ${investedSpots[index].y.toStringAsFixed(2)}K',
-                              theme: theme.isDarkMode,
-                              color: const Color(0xFF3B82F6),
-                              fw: 0,
-                            ),
-                            const SizedBox(height: 2),
-                            TextWidget.paraText(
-                              text:
-                                  'Current: ${currentSpots[index].y.toStringAsFixed(2)}K',
-                              theme: theme.isDarkMode,
-                              color: const Color(0xFF8B5CF6),
-                              fw: 0,
-                            ),
-                          ],
-                        );
-                      }
-                      return const SizedBox.shrink();
-                    },
-                  ),
+                    const SizedBox(height: 12),
+                    TextWidget.titleText(
+                      text: '${data.xirrResult.toStringAsFixed(2)}%',
+                      theme: theme.isDarkMode,
+                      color: data.xirrResult.toStringAsFixed(2).startsWith("-")
+                          ? theme.isDarkMode
+                              ? colors.lossDark
+                              : colors.lossLight
+                          : data.xirrResult == 0
+                              ? colors.textSecondaryLight
+                              : theme.isDarkMode
+                                  ? colors.successDark
+                                  : colors.successLight,
+                      fw: 1,
+                    ),
+                    SizedBox(height: 4),
+                    TextWidget.subText(
+                      text: 'XIRR Return',
+                      theme: theme.isDarkMode,
+                      color: theme.isDarkMode
+                          ? colors.textSecondaryDark
+                          : colors.textSecondaryLight,
+                      fw: 3,
+                    ),
+                  ],
                 ),
-            ],
-          ),
-        ],
-      ),
-      const SizedBox(height: 16),
-      
-      Column(
-        children: [
-          SizedBox(
-            height: 200,
-            width: double.infinity,
-            child: LineChart(
-              LineChartData(
-                gridData: FlGridData(
-                  show: true,
-                  drawVerticalLine: false,
-                  drawHorizontalLine: false,
-                  getDrawingHorizontalLine: (value) => const FlLine(
-                    color: Color(0xFFE5E7EB),
-                    strokeWidth: 0.1,
-                    dashArray: [1, 1],
-                  ),
-                  horizontalInterval: 1,
-                ),
-                titlesData: FlTitlesData(
-                  leftTitles: AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
-                  bottomTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      reservedSize: 35,
-                      interval: 1,
-                      getTitlesWidget: (value, meta) {
-                        if (value.toInt() < investedSpots.length) {
-                          final dataIndex = value
-                              .toInt()
-                              .clamp(0, chartData.dates.length - 1);
-                          final totalPoints = investedSpots.length;
-                          final labelInterval = (totalPoints / 6)
-                              .ceil()
-                              .clamp(1, totalPoints);
-
-                          if (value.toInt() == 0 ||
-                              value.toInt() == investedSpots.length - 1 ||
-                              value.toInt() % labelInterval == 0) {
-                            final dateString = chartData.dates[dataIndex];
-
-                            try {
-                              final date = DateTime.parse(dateString);
-                              final month = portfolio
-                                  .getMonthAbbreviation(date.month);
-                              final year =
-                                  date.year.toString().substring(2);
-
-                              return Padding(
-                                padding: EdgeInsets.only(
-                                  left: value.toInt() == 0 ? 20 : 0,
-                                  right: value.toInt() ==
-                                          investedSpots.length - 1
-                                      ? 20
-                                      : 0,
-                                ),
-                                child: TextWidget.captionText(
-                                  text: '$month $year',
-                                  theme: theme.isDarkMode,
-                                  color: theme.isDarkMode
-                                      ? colors.textSecondaryDark
-                                      : colors.textSecondaryLight,
-                                  fw: 3,
-                                ),
-                              );
-                            } catch (e) {
-                              return const Text('');
-                            }
-                          }
+                // Custom tooltip positioned above chart
+                if (showTooltip && touchedSpot != null)
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: theme.isDarkMode
+                          ? colors.colorBlack.withOpacity(0.95)
+                          : colors.colorWhite.withOpacity(0.95),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: theme.isDarkMode
+                            ? colors.textSecondaryDark.withOpacity(0.3)
+                            : colors.textSecondaryLight.withOpacity(0.3),
+                        width: 1,
+                      ),
+                    ),
+                    child: Builder(
+                      builder: (context) {
+                        final index = touchedSpot!.x.toInt();
+                        if (index >= 0 &&
+                            index < investedSpots.length &&
+                            index < currentSpots.length &&
+                            index < chartData.dates.length) {
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              TextWidget.paraText(
+                                text: _formatDate(chartData.dates[index]),
+                                theme: theme.isDarkMode,
+                                color: theme.isDarkMode
+                                    ? colors.textPrimaryDark
+                                    : colors.textPrimaryLight,
+                                fw: 3,
+                              ),
+                              const SizedBox(height: 4),
+                              TextWidget.paraText(
+                                text:
+                                    'Invested: ${investedSpots[index].y.toStringAsFixed(2)}K',
+                                theme: theme.isDarkMode,
+                                color: const Color(0xFF3B82F6),
+                                fw: 0,
+                              ),
+                              const SizedBox(height: 2),
+                              TextWidget.paraText(
+                                text:
+                                    'Current: ${currentSpots[index].y.toStringAsFixed(2)}K',
+                                theme: theme.isDarkMode,
+                                color: const Color(0xFF8B5CF6),
+                                fw: 0,
+                              ),
+                            ],
+                          );
                         }
-                        return const Text('');
+                        return const SizedBox.shrink();
                       },
                     ),
                   ),
-                  topTitles:
-                      AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  rightTitles:
-                      AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                ),
-                borderData: FlBorderData(show: false),
-                minX: 0,
-                maxX: (chartData.dates.length - 1).toDouble(),
-                minY: 0,
-                lineTouchData: LineTouchData(
-                  enabled: true,
-                  touchTooltipData: LineTouchTooltipData(
-                    // CRITICAL FIX: Return null items for each touched spot
-                    getTooltipItems: (List<LineBarSpot> touchedBarSpots) {
-                      // Return null for each touched spot to hide default tooltips
-                      // but maintain the same count to avoid the error
-                      return touchedBarSpots.map((spot) => null).toList();
-                    },
+              ],
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Column(
+          children: [
+            SizedBox(
+              height: 200,
+              width: double.infinity,
+              child: LineChart(
+                LineChartData(
+                  gridData: FlGridData(
+                    show: true,
+                    drawVerticalLine: false,
+                    drawHorizontalLine: false,
+                    getDrawingHorizontalLine: (value) => const FlLine(
+                      color: Color(0xFFE5E7EB),
+                      strokeWidth: 0.1,
+                      dashArray: [1, 1],
+                    ),
+                    horizontalInterval: 1,
                   ),
-                  handleBuiltInTouches: true,
-                  touchCallback: (FlTouchEvent event, LineTouchResponse? touchResponse) {
-                    // Handle different touch events
-                    if (event is FlTapUpEvent || 
-                        event is FlPanUpdateEvent || 
-                        event is FlPanStartEvent ||
-                        event is FlTapDownEvent) {
-                      
-                      if (touchResponse != null && touchResponse.lineBarSpots != null) {
-                        final spot = touchResponse.lineBarSpots!.first;
-                        final index = spot.x.toInt();
-                        
-                        if (index >= 0 && index < chartData.dates.length) {
-                          setState(() {
-                            touchedSpot = FlSpot(index.toDouble(), 0);
-                            showTooltip = true;
-                          });
-                          
-                          // Auto-hide tooltip after 2 seconds
-                          _hideTooltipTimer?.cancel();
-                          _hideTooltipTimer = Timer(const Duration(seconds: 2), () {
-                            if (mounted) {
-                              setState(() {
-                                showTooltip = false;
-                                touchedSpot = null;
-                              });
+                  titlesData: FlTitlesData(
+                    leftTitles: AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
+                    bottomTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 35,
+                        interval: 1,
+                        getTitlesWidget: (value, meta) {
+                          if (value.toInt() < investedSpots.length) {
+                            final dataIndex = value
+                                .toInt()
+                                .clamp(0, chartData.dates.length - 1);
+                            final totalPoints = investedSpots.length;
+                            final labelInterval =
+                                (totalPoints / 6).ceil().clamp(1, totalPoints);
+
+                            if (value.toInt() == 0 ||
+                                value.toInt() == investedSpots.length - 1 ||
+                                value.toInt() % labelInterval == 0) {
+                              final dateString = chartData.dates[dataIndex];
+
+                              try {
+                                final date = DateTime.parse(dateString);
+                                final month =
+                                    portfolio.getMonthAbbreviation(date.month);
+                                final year = date.year.toString().substring(2);
+
+                                return Padding(
+                                  padding: EdgeInsets.only(
+                                    left: value.toInt() == 0 ? 20 : 0,
+                                    right: value.toInt() ==
+                                            investedSpots.length - 1
+                                        ? 20
+                                        : 0,
+                                  ),
+                                  child: TextWidget.captionText(
+                                    text: '$month $year',
+                                    theme: theme.isDarkMode,
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                        : colors.textSecondaryLight,
+                                    fw: 3,
+                                  ),
+                                );
+                              } catch (e) {
+                                return const Text('');
+                              }
                             }
-                          });
+                          }
+                          return const Text('');
+                        },
+                      ),
+                    ),
+                    topTitles:
+                        AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    rightTitles:
+                        AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  ),
+                  borderData: FlBorderData(show: false),
+                  minX: 0,
+                  maxX: (chartData.dates.length - 1).toDouble(),
+                  minY: 0,
+                  lineTouchData: LineTouchData(
+                    enabled: true,
+                    touchTooltipData: LineTouchTooltipData(
+                      // CRITICAL FIX: Return null items for each touched spot
+                      getTooltipItems: (List<LineBarSpot> touchedBarSpots) {
+                        // Return null for each touched spot to hide default tooltips
+                        // but maintain the same count to avoid the error
+                        return touchedBarSpots.map((spot) => null).toList();
+                      },
+                    ),
+                    handleBuiltInTouches: true,
+                    touchCallback:
+                        (FlTouchEvent event, LineTouchResponse? touchResponse) {
+                      // Handle different touch events
+                      if (event is FlTapUpEvent ||
+                          event is FlPanUpdateEvent ||
+                          event is FlPanStartEvent ||
+                          event is FlTapDownEvent) {
+                        if (touchResponse != null &&
+                            touchResponse.lineBarSpots != null) {
+                          final spot = touchResponse.lineBarSpots!.first;
+                          final index = spot.x.toInt();
+
+                          if (index >= 0 && index < chartData.dates.length) {
+                            setState(() {
+                              touchedSpot = FlSpot(index.toDouble(), 0);
+                              showTooltip = true;
+                            });
+
+                            // Auto-hide tooltip after 2 seconds
+                            _hideTooltipTimer?.cancel();
+                            _hideTooltipTimer =
+                                Timer(const Duration(seconds: 2), () {
+                              if (mounted) {
+                                setState(() {
+                                  showTooltip = false;
+                                  touchedSpot = null;
+                                });
+                              }
+                            });
+                          }
                         }
                       }
-                    }
-                  },
-                ),
-                lineBarsData: [
-                  LineChartBarData(
-                    spots: investedSpots,
-                    isCurved: true,
-                    color: const Color(0xFF3B82F6),
-                    barWidth: 2,
-                    dotData: FlDotData(show: false),
+                    },
                   ),
-                  LineChartBarData(
-                    spots: currentSpots,
-                    isCurved: true,
-                    color: const Color(0xFF8B5CF6),
-                    barWidth: 2,
-                    dotData: FlDotData(show: false),
-                    belowBarData: BarAreaData(
-                      show: true,
-                      color: const Color(0xFF8B5CF6).withOpacity(0.15),
+                  lineBarsData: [
+                    LineChartBarData(
+                      spots: investedSpots,
+                      isCurved: true,
+                      color: const Color(0xFF3B82F6),
+                      barWidth: 2,
+                      dotData: FlDotData(show: false),
                     ),
-                  ),
-                ],
+                    LineChartBarData(
+                      spots: currentSpots,
+                      isCurved: true,
+                      color: const Color(0xFF8B5CF6),
+                      barWidth: 2,
+                      dotData: FlDotData(show: false),
+                      belowBarData: BarAreaData(
+                        show: true,
+                        color: const Color(0xFF8B5CF6).withOpacity(0.15),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
-      ),
-      Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          _buildChartLegend('Invested', Color(0xFF3B82F6)),
-          const SizedBox(width: 20),
-          _buildChartLegend('Current', Color(0xFF8B5CF6)),
-        ],
-      ),
-    ],
-  );
-}
-
+          ],
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _buildChartLegend('Invested', Color(0xFF3B82F6)),
+            const SizedBox(width: 20),
+            _buildChartLegend('Current', Color(0xFF8B5CF6)),
+          ],
+        ),
+      ],
+    );
+  }
 
   Widget _buildChartLegend(String label, Color color) {
     final theme = ref.watch(themeProvider);
@@ -540,7 +544,7 @@ class _PortfolioDashboardScreenState
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               TextWidget.titleText(
-                text: 'Account Allocation',
+                text: 'Segmentation',
                 theme: false,
                 color: theme.isDarkMode
                     ? colors.textPrimaryDark
@@ -567,7 +571,7 @@ class _PortfolioDashboardScreenState
       String accountType, double percentage, Color color, IconData icon) {
     final theme = ref.watch(themeProvider);
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
       decoration: BoxDecoration(
         color: colors.colorWhite,
         borderRadius: BorderRadius.circular(8),
@@ -687,7 +691,7 @@ class _PortfolioDashboardScreenState
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               TextWidget.titleText(
-                text: 'Market Cap Allocation',
+                text: 'Market Cap',
                 theme: false,
                 color: theme.isDarkMode
                     ? colors.textPrimaryDark
@@ -767,7 +771,7 @@ class _PortfolioDashboardScreenState
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               TextWidget.titleText(
-                text: 'Sector Allocation',
+                text: 'Sector',
                 theme: false,
                 color: theme.isDarkMode
                     ? colors.textPrimaryDark
@@ -798,29 +802,43 @@ class _PortfolioDashboardScreenState
     required double value,
     required String qty,
     required String exch,
+    required String token,
+    required String tsym,
   }) {
     final theme = ref.watch(themeProvider);
+      final marketWatch = ref.read(marketWatchProvider);
     final performanceColor =
         ref.watch(dashboardProvider).getMarketCapColor(marketCapType);
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 16),
-      decoration: BoxDecoration(
-        color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-        border: Border(
-          bottom: BorderSide(
-            color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
-            width: 1,
-          ),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              SizedBox(
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+          splashColor: theme.isDarkMode
+                                                    ? colors.splashColorDark
+                                                    : colors.splashColorLight,
+                                                highlightColor: theme.isDarkMode
+                                                    ? colors.highlightDark
+                                                    : colors.highlightLight,
+       onTap: () async {
+           final marketWatch = ref.read(marketWatchProvider);
+            final depthArgs = <String, dynamic>{
+              'exch': (exch ?? '').toString(),
+              'token': (token ?? '').toString(),
+              'tsym': (tsym ?? '').toString().split(':').last,
+              'instname': '',
+              'symbol': (tsym ?? '').toString(),
+              'expDate': '',
+              'option': '',
+            };
+             marketWatch.calldepthApis(context, depthArgs, "");
+            marketWatch.scripdepthsize(false);
+          },
+        child: ListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+            dense: false,
+            title: Padding(
+              padding: const EdgeInsets.only(bottom: 4),
+              child: SizedBox(
                 width: MediaQuery.of(context).size.width * 0.5,
                 child: TextWidget.subText(
                   text: sector,
@@ -828,70 +846,50 @@ class _PortfolioDashboardScreenState
                   color: theme.isDarkMode
                       ? colors.textPrimaryDark
                       : colors.textPrimaryLight,
-                  fw: 3,
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                decoration: BoxDecoration(
-                  color: performanceColor.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: TextWidget.paraText(
-                  text: '${marketCapType}',
-                  theme: false,
-                  color: performanceColor,
                   fw: 0,
                 ),
               ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              TextWidget.subText(
-                text: '${exch}',
+            ),
+            subtitle: Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: TextWidget.paraText(
+                text: '${value.toStringAsFixed(2)}',
                 theme: false,
                 color: theme.isDarkMode
                     ? colors.textSecondaryDark
                     : colors.textSecondaryLight,
                 fw: 3,
               ),
-              TextWidget.subText(
-                text: '${allocationPercent.toStringAsFixed(2)}%',
-                theme: false,
-                color: theme.isDarkMode
-                    ? colors.textSecondaryDark
-                    : colors.textSecondaryLight,
-                fw: 3,
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          // Value and Allocation
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              TextWidget.subText(
-                text: '₹ ${value.toStringAsFixed(2)}',
-                theme: false,
-                color: theme.isDarkMode
-                    ? colors.textSecondaryDark
-                    : colors.textSecondaryLight,
-                fw: 3,
-              ),
-              TextWidget.subText(
-                text: '${qty}',
-                theme: false,
-                color: theme.isDarkMode
-                    ? colors.textSecondaryDark
-                    : colors.textSecondaryLight,
-                fw: 3,
-              ),
-            ],
-          ),
-        ],
+            ),
+            trailing: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 4),
+                    child: TextWidget.subText(
+                      text: '${allocationPercent.toStringAsFixed(2)}%',
+                      theme: false,
+                      color: theme.isDarkMode
+                          ? colors.textPrimaryDark
+                          : colors.textPrimaryLight,
+                      fw: 0,
+                    ),
+                  ),
+                  // const SizedBox(height: 8),
+        
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: TextWidget.paraText(
+                      text: 'QTY ${qty.split('.')[0]}',
+                      theme: false,
+                      color: theme.isDarkMode
+                          ? colors.textSecondaryDark
+                          : colors.textSecondaryLight,
+                      fw: 3,
+                    ),
+                  ),
+                ])),
       ),
     );
   }

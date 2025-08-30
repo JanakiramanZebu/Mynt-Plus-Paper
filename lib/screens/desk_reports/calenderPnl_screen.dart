@@ -279,7 +279,7 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                           color: theme.isDarkMode
                               ? colors.textSecondaryDark
                               : colors.textSecondaryLight,
-                          fw: 0,
+                          fw: 2,
                         ),
                         labelPadding:
                             const EdgeInsets.symmetric(horizontal: 16),

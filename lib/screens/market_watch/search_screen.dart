@@ -415,7 +415,7 @@ class _AddScripState extends ConsumerState<SearchScreen>
                         textOverflow: TextOverflow.ellipsis,
                         maxLines: 1,
                         theme: theme.isDarkMode,
-                        fw: isSelected ? 2 : 0),
+                        fw: isSelected ? 2 : 2),
                   ),
                   // Animated underline indicator
                   AnimatedContainer(

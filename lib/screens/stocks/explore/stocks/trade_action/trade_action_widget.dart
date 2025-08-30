@@ -226,7 +226,7 @@ class _TradeActionState extends ConsumerState<TradeAction>
                       color: isSelected
                           ? theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight
                           : theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                      fw: isSelected ? 2 : 0,
+                      fw: isSelected ? 2 : 2,
                       theme: !theme.isDarkMode,
                     ),
                   ),

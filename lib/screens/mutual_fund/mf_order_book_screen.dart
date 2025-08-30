@@ -452,7 +452,7 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
                   : colors.textSecondaryLight,
           textOverflow: TextOverflow.ellipsis,
           theme: theme.isDarkMode,
-          fw: tab == activeTab ? 2 : 3),
+          fw: tab == activeTab ? 2 : 2),
     );
   }
 }

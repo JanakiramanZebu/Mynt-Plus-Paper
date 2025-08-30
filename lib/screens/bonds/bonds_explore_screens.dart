@@ -192,7 +192,7 @@ class _ExploreScreensState extends ConsumerState<BondsExploreScreens>
             textOverflow: TextOverflow.ellipsis,
             maxLines: 1,
             theme: theme.isDarkMode,
-            fw: isActive ? 2 : 0,
+            fw: isActive ? 2 : 2,
           ),
         ),
         AnimatedContainer(
