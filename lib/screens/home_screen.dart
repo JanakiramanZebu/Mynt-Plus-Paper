@@ -67,13 +67,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     //   screenName: 'HomeScreen',
     //   screenClass: 'HomeScreen', // Customize if needed.
     // );
-    // This is a websocket heartbeat connection that reconnects every two seconds only.
-    ConstantName.timer = Timer.periodic(const Duration(seconds: 2), (timer) {
-      if (mounted) {
-        ref.read(websocketProvider).reconnect(context);
-        // ref.read(websocketProvider).startPingCheck(context);
-      }
-    });
+    // Store context for WebSocket provider and enable auto-reconnection
+    ref.read(websocketProvider).setContext(context);
+    ref.read(websocketProvider).setAutoReconnect(true);
     ref.read(networkStateProvider).networkStream();
     ref.read(marketWatchProvider).fToast.init(context);
     ref.read(versionProvider).checkVersion(context);

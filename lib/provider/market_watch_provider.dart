@@ -2197,6 +2197,9 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       if (_optionChainModel != null) {
         await requestWSOptChain(context: context, isSubscribe: false);
 
+        // Clean up option chain subscriptions from WebSocket provider for performance
+        ref.read(websocketProvider).cleanupOptionChainSubscriptions();
+
         // CRITICAL FIX: Clear old option chain socket data from WebSocket provider
         await _clearOldOptionSocketData();
       }

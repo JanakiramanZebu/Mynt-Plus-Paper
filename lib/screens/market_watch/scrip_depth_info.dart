@@ -442,6 +442,9 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                 .read(marketWatchProvider)
                 .requestWSOptChain(context: context, isSubscribe: false);
 
+            // Clean up option chain subscriptions from WebSocket provider for performance
+            ref.read(websocketProvider).cleanupOptionChainSubscriptions();
+
             await ref.read(websocketProvider).establishConnection(
                   channelInput:
                       "${widget.wlValue.exch}|${widget.wlValue.token}",

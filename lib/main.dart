@@ -19,6 +19,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'locator/locator.dart';
 import 'locator/preference.dart';
 import 'provider/thems.dart';
+import 'provider/app_lifecycle_manager.dart';
 import 'routes/app_routes.dart';
 import 'routes/route_names.dart';
 import 'themes/theme.dart';
@@ -238,6 +239,10 @@ class MyApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final themeProvide = ref.watch(themeProvider);
     themeProvide.getThemeData();
+    
+    // Initialize lifecycle manager
+    final lifecycleManager = ref.watch(appLifecycleManagerProvider);
+    
     // SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
     //     statusBarIconBrightness: themeProvide.isDarkMode
     //         ? Brightness.light

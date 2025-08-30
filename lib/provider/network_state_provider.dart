@@ -10,6 +10,7 @@ import 'index_list_provider.dart';
 import 'market_watch_provider.dart';
 import 'order_provider.dart';
 import 'portfolio_provider.dart';
+import 'stocks_provider.dart';
 import 'websocket_provider.dart';
 
 final networkStateProvider =
@@ -25,11 +26,47 @@ class NetworkStateProvider extends ChangeNotifier {
   // ConnectivityResult connectionResult = ConnectivityResult.none;
 
   ConnectivityResult _connectionStatus = ConnectivityResult.mobile;
+  ConnectivityResult _previousConnectionStatus = ConnectivityResult.mobile;
   ConnectivityResult get connectionStatus => _connectionStatus;
+  ConnectivityResult get previousConnectionStatus => _previousConnectionStatus;
   final Connectivity _connectivity = Connectivity();
   late StreamSubscription<ConnectivityResult> connectivitySubscription;
+  
+  // Network type change detection
+  bool _isNetworkTypeChange = false;
+  bool get isNetworkTypeChange => _isNetworkTypeChange;
+  DateTime? _lastNetworkChange;
+  
+  // Connection quality tracking
+  int _connectionQualityScore = 100;
+  int get connectionQualityScore => _connectionQualityScore;
+  
+  // Subscription restoration tracking
+  bool _isRestoringSubscriptions = false;
+  bool get isRestoringSubscriptions => _isRestoringSubscriptions;
+  
+  // Enhanced connection state tracking
+  DateTime? _lastConnectionAttempt;
+  DateTime? _lastSuccessfulConnection;
+  String _connectionStatusMessage = "";
+  bool _isManualRetry = false;
+  int _consecutiveFailures = 0;
+  
+  // Connection state getters
+  DateTime? get lastConnectionAttempt => _lastConnectionAttempt;
+  DateTime? get lastSuccessfulConnection => _lastSuccessfulConnection;
+  String get connectionStatusMessage => _connectionStatusMessage;
+  bool get isManualRetry => _isManualRetry;
+  int get consecutiveFailures => _consecutiveFailures;
+  
+  // Check if we're in a good connection state
+  bool get isConnectionHealthy => 
+      _connectionStatus != ConnectivityResult.none && 
+      _consecutiveFailures < 3 && 
+      !_isRestoringSubscriptions;
 
   BuildContext? _globbcontext;
+  BuildContext? get context => _globbcontext; // Public getter for lifecycle manager
   // void streamNetworkStatus() {
   //   connectStatus();
   //   connection = Connectivity().onConnectivityChanged.listen((event) {
@@ -64,17 +101,20 @@ class NetworkStateProvider extends ChangeNotifier {
   //   notifyListeners();
   // }
 
-// Asigning context
+// Assigning context - delayed to avoid build cycle modification
   getContext(BuildContext context) {
     _globbcontext = context;
-    notifyListeners();
+    // Delay notification to avoid modifying provider during build
+    Future(() {
+      notifyListeners();
+    });
   }
 
 // Listening  Network status
   networkStream() {
     initConnectivity();
     connectivitySubscription =
-        _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
+        _connectivity.onConnectivityChanged.listen(updateConnectionStatus);
   }
 
 // Initially check internet connection
@@ -96,51 +136,249 @@ class NetworkStateProvider extends ChangeNotifier {
     // message was in flight, we want to discard the reply rather than calling
     // setState to update our non-existent appearance.
 
-    return _updateConnectionStatus(result);
+    return updateConnectionStatus(result);
   }
 
-  _updateConnectionStatus(ConnectivityResult result) async {
+  Future<void> updateConnectionStatus(ConnectivityResult result) async {
+    _previousConnectionStatus = _connectionStatus;
     _connectionStatus = result;
+    
+    // Update connection tracking
+    _lastConnectionAttempt = DateTime.now();
+    
+    // Detect network type changes
+    _isNetworkTypeChange = _detectNetworkTypeChange(_previousConnectionStatus, result);
+    if (_isNetworkTypeChange) {
+      _lastNetworkChange = DateTime.now();
+      print('NetworkStateProvider: Network type changed from $_previousConnectionStatus to $result');
+    }
 
     if (_connectionStatus == ConnectivityResult.none) {
+      // Connection lost
+      _connectionQualityScore = 0;
+      _consecutiveFailures++;
+      _connectionStatusMessage = "No internet connection";
+      
       ref.read(websocketProvider).closeSocket(true);
       ref.read(websocketProvider).websockConn(false);
+      
+      print('NetworkStateProvider: Connection lost. Consecutive failures: $_consecutiveFailures');
     } else {
-      // ref.read(websocketProvider).websockConn(false);
+      // Connection available
+      final wasDisconnected = _previousConnectionStatus == ConnectivityResult.none;
+      
+      if (wasDisconnected || _consecutiveFailures > 0) {
+        _lastSuccessfulConnection = DateTime.now();
+        _consecutiveFailures = 0; // Reset failure count on successful connection
+        _connectionStatusMessage = "Connection restored";
+        
+        // Reset WebSocket connection count when network is restored
+        ref.read(websocketProvider).resetConnectionCountOnNetworkRestore();
+      } else {
+        _connectionStatusMessage = "Connected";
+      }
+      
+      _connectionQualityScore = 100; // Reset to full quality initially
+      
       if (ConstantName.sessCheck) {
-        if (ConstantName.lastSubscribe.isNotEmpty) {
-          ref.read(websocketProvider).establishConnection(
-              channelInput: ConstantName.lastSubscribe,
-              task: "t",
-              context: _globbcontext!);
-        }
-        if (ConstantName.lastSubscribeDepth.isNotEmpty) {
-          ref.read(websocketProvider).establishConnection(
-              channelInput: ConstantName.lastSubscribeDepth,
-              task: "d",
-              context: _globbcontext!);
-        }
+        _connectionStatusMessage = "Restoring data...";
+        await restoreAllSubscriptions();
+        _connectionStatusMessage = "Connected";
       }
-
-      if (ref.read(indexListProvider).selectedBtmIndx == 1) {
-        // await ref.read(marketWatchProvider)
-        //     .fetchMWScrip(ref.read(marketWatchProvider).wlName,  _globbcontext!);
-
-        await ref.read(marketWatchProvider)
-            .requestMWScrip(context: _globbcontext!, isSubscribe: true);
-      } else if (ref.read(indexListProvider).selectedBtmIndx == 2) {
-        await ref.read(portfolioProvider)
-            .requestWSHoldings(isSubscribe: true, context: _globbcontext!);
-        await ref.read(portfolioProvider)
-            .requestWSPosition(isSubscribe: true, context: _globbcontext!);
-        await ref.read(orderProvider)
-            .requestWSOrderBook(isSubscribe: true, context: _globbcontext!);
-        // await ref.read(portfolioProvider).fetchHoldings(_globbcontext, "");
-        // await ref.read(portfolioProvider).fetchPositionBook(_globbcontext!, false);
-      }
-      // Note: Orders functionality is now part of Portfolio (index 2)
     }
-    // log(" connectionStatus - $_connectionStatus");
+    
     notifyListeners();
+  }
+  
+  /// Detect if this is a network type change vs initial connection
+  bool _detectNetworkTypeChange(ConnectivityResult previous, ConnectivityResult current) {
+    // If previous was none, this is not a type change but initial connection
+    if (previous == ConnectivityResult.none) return false;
+    
+    // If current is none, this is connection loss, not type change  
+    if (current == ConnectivityResult.none) return false;
+    
+    // If both are the same, no change
+    if (previous == current) return false;
+    
+    // Different non-none types = network type change
+    return true;
+  }
+  
+  /// Manual retry method for user-initiated reconnection
+  Future<void> manualRetry() async {
+    if (_globbcontext == null) return;
+    
+    _isManualRetry = true;
+    _connectionStatusMessage = "Retrying connection...";
+    notifyListeners();
+    
+    try {
+      // Force check connectivity
+      final result = await Connectivity().checkConnectivity();
+      await updateConnectionStatus(result);
+      
+      // If we have connection, force websocket reconnection
+      if (result != ConnectivityResult.none) {
+        final wsProvider = ref.read(websocketProvider);
+        wsProvider.changeconnectioncount(); // Reset connection attempts
+        
+        if (_globbcontext != null) {
+          wsProvider.reconnect(_globbcontext!);
+        }
+      }
+    } catch (e) {
+      _connectionStatusMessage = "Retry failed. Please check your connection.";
+      _consecutiveFailures++;
+      print('NetworkStateProvider: Manual retry failed: $e');
+    } finally {
+      _isManualRetry = false;
+      notifyListeners();
+    }
+  }
+  
+  /// Reset connection failure tracking
+  void resetConnectionTracking() {
+    _consecutiveFailures = 0;
+    _lastSuccessfulConnection = DateTime.now();
+    _connectionStatusMessage = "Connected";
+    notifyListeners();
+  }
+
+  /// Restore all subscriptions using captured subscription data
+  Future<void> restoreAllSubscriptions() async {
+    if (_globbcontext == null) return;
+    
+    _isRestoringSubscriptions = true;
+    _connectionStatusMessage = "Restoring subscriptions...";
+    notifyListeners();
+    
+    try {
+      final wsProvider = ref.read(websocketProvider);
+      
+      // Force websocket reconnection on network type changes
+      if (_isNetworkTypeChange) {
+        print('NetworkStateProvider: Forcing websocket reconnection due to network type change');
+        wsProvider.closeSocket(true);
+        
+        // Small delay to ensure clean disconnection
+        await Future.delayed(const Duration(milliseconds: 500));
+      }
+      
+      // Get captured subscriptions from websocket provider (auto-captured on every subscription) 
+      final capturedSubscriptions = wsProvider.getActiveSubscriptionsForRestoration(maxCount: 100); // Increased limit
+      
+      print('NetworkStateProvider: Restoring ${capturedSubscriptions.length} captured subscriptions');
+      
+      // Print detailed restoration info
+      _printRestorationDebugInfo(capturedSubscriptions);
+      
+      // Restore captured subscriptions in priority order
+      for (final subscription in capturedSubscriptions) {
+        try {
+          print('NetworkStateProvider: Restoring ${subscription.task} subscription from ${subscription.pageContext} with priority ${subscription.priority}');
+          
+          await ref.read(websocketProvider).establishConnection(
+            channelInput: subscription.symbols,
+            task: subscription.task,
+            context: _globbcontext!,
+          );
+          
+          // Small delay between subscriptions to avoid overwhelming the connection
+          await Future.delayed(const Duration(milliseconds: 100));
+        } catch (e) {
+          print('NetworkStateProvider: Error restoring subscription ${subscription.pageContext}: $e');
+        }
+      }
+      
+      // Restore legacy subscriptions for compatibility (existing code)
+      await _restoreLegacySubscriptions();
+      
+      // Restore tab-based subscriptions (existing code)
+      await _restoreTabBasedSubscriptions();
+      
+    } catch (e) {
+      print('NetworkStateProvider: Error during subscription restoration: $e');
+      _connectionStatusMessage = "Failed to restore some data";
+      _consecutiveFailures++;
+    } finally {
+      _isRestoringSubscriptions = false;
+      _isNetworkTypeChange = false; // Reset flag
+      
+      // Update final status message
+      if (_connectionStatus != ConnectivityResult.none && _consecutiveFailures == 0) {
+        _connectionStatusMessage = "Connected";
+      }
+      
+      notifyListeners();
+    }
+  }
+  
+  /// Restore legacy subscriptions for backward compatibility
+  Future<void> _restoreLegacySubscriptions() async {
+    if (ConstantName.lastSubscribe.isNotEmpty) {
+      ref.read(websocketProvider).establishConnection(
+          channelInput: ConstantName.lastSubscribe,
+          task: "t",
+          context: _globbcontext!);
+    }
+    if (ConstantName.lastSubscribeDepth.isNotEmpty) {
+      ref.read(websocketProvider).establishConnection(
+          channelInput: ConstantName.lastSubscribeDepth,
+          task: "d",
+          context: _globbcontext!);
+    }
+  }
+  
+  /// Restore tab-based subscriptions based on current tab
+  Future<void> _restoreTabBasedSubscriptions() async {
+    final selectedTab = ref.read(indexListProvider).selectedBtmIndx;
+    
+    if (selectedTab == 0) {
+      // Dashboard tab
+      await ref.read(marketWatchProvider)
+          .requestMWScrip(context: _globbcontext!, isSubscribe: true);
+      ref.read(stocksProvide)
+          .requestWSTradeaction(isSubscribe: true, context: _globbcontext!);
+    } else if (selectedTab == 1) {
+      // Watchlist tab
+      await ref.read(marketWatchProvider)
+          .requestMWScrip(context: _globbcontext!, isSubscribe: true);
+    } else if (selectedTab == 2) {
+      // Portfolio tab
+      await ref.read(portfolioProvider)
+          .requestWSHoldings(isSubscribe: true, context: _globbcontext!);
+      await ref.read(portfolioProvider)
+          .requestWSPosition(isSubscribe: true, context: _globbcontext!);
+      await ref.read(orderProvider)
+          .requestWSOrderBook(isSubscribe: true, context: _globbcontext!);
+    }
+  }
+  
+  /// Print detailed restoration debug information
+  void _printRestorationDebugInfo(List<dynamic> capturedSubscriptions) {
+    print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    print('🔄 SUBSCRIPTION RESTORATION DEBUG INFO');
+    print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    print('🌐 Network Change Type: ${_isNetworkTypeChange ? "Network Switch" : "Reconnection"}');
+    print('📶 Previous Connection: $_previousConnectionStatus');
+    print('📶 Current Connection: $_connectionStatus');
+    print('📊 Quality Score: $_connectionQualityScore');
+    print('🔢 Subscriptions to Restore: ${capturedSubscriptions.length}');
+    
+    if (capturedSubscriptions.isNotEmpty) {
+      print('📋 Restoration Priority Order:');
+      for (int i = 0; i < capturedSubscriptions.length; i++) {
+        final sub = capturedSubscriptions[i];
+        final symbolCount = sub.symbols.split('#').length;
+        final timeAgo = DateTime.now().difference(sub.timestamp).inSeconds;
+        
+        print('   ${i + 1}. [${sub.task.toUpperCase()}] ${sub.pageContext ?? 'unknown'} '
+              '(Priority: ${sub.priority}, Symbols: $symbolCount, ${timeAgo}s ago)');
+      }
+    }
+    
+    print('⏰ Restoration Start Time: ${DateTime.now().toIso8601String()}');
+    print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
   }
 }

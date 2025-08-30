@@ -128,6 +128,8 @@ class _OptionChainSSState extends ConsumerState<OptionChainSS> {
         await ref
             .read(marketWatchProvider)
             .requestWSOptChain(context: context, isSubscribe: false);
+        // Clean up option chain subscriptions from WebSocket provider for performance
+        ref.read(websocketProvider).cleanupOptionChainSubscriptions();
         await ref.read(websocketProvider).establishConnection(
               channelInput: "${widget.wlValue.exch}|${widget.wlValue.token}",
               task: "ud",
@@ -159,6 +161,8 @@ class _OptionChainSSState extends ConsumerState<OptionChainSS> {
                       currentContext, scripInfo.getQuotes!, "");
                   await scripInfo.requestWSOptChain(
                       context: currentContext, isSubscribe: false);
+                  // Clean up option chain subscriptions from WebSocket provider for performance
+                  wsProvider.cleanupOptionChainSubscriptions();
                   await wsProvider.establishConnection(
                     channelInput:
                         "${widget.wlValue.exch}|${widget.wlValue.token}",
