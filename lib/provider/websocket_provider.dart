@@ -17,6 +17,8 @@ import '../api/core/api_link.dart';
 import '../locator/constant.dart';
 import '../locator/locator.dart';
 import '../locator/preference.dart';
+import '../routes/app_routes.dart';
+import '../routes/route_names.dart';
 import 'auth_provider.dart';
 import 'market_watch_provider.dart';
 import 'notification_provider.dart';
@@ -782,8 +784,11 @@ class WebSocketProvider extends ChangeNotifier {
 
       // Make sure we only try to refresh data once per reconnection attempt
       if (!_wsConnected) {
+        if (currentRouteName != Routes.loginScreen){
         _refreshData(context);
+        }
       }
+      
 
       // First establish a base connection if needed
       establishConnection(
