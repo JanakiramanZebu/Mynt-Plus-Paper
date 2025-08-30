@@ -267,10 +267,16 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
                         100)
                     .toStringAsFixed(2);
 
-            exchTsym.oneDayChg = ((double.parse(exchTsym.lp ?? "0.00") -
-                        double.parse(exchTsym.close ?? "0.00")) *
-                    int.parse("${holding.currentQty ?? 0}"))
-                .toStringAsFixed(2);
+            // Calculate 1D change only if close price is not 0
+            if (double.parse(exchTsym.close ?? "0.00") > 0) {
+              exchTsym.oneDayChg = ((double.parse(exchTsym.lp ?? "0.00") -
+                          double.parse(exchTsym.close ?? "0.00")) *
+                      int.parse("${holding.currentQty ?? 0}"))
+                  .toStringAsFixed(2);
+            } else {
+              // Skip calculation if close price is 0
+              exchTsym.oneDayChg = "0.00";
+              }
           }
         }
       }
@@ -417,10 +423,16 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
                       100)
                   .toStringAsFixed(2);
 
-          exchTsym.oneDayChg = ((double.parse(exchTsym.lp ?? "0.00") -
-                      double.parse(exchTsym.close ?? "0.00")) *
-                  int.parse("${holding.currentQty ?? 0}"))
-              .toStringAsFixed(2);
+          // Calculate 1D change only if close price is not 0
+          if (double.parse(exchTsym.close ?? "0.00") > 0) {
+            exchTsym.oneDayChg = ((double.parse(exchTsym.lp ?? "0.00") -
+                        double.parse(exchTsym.close ?? "0.00")) *
+                    int.parse("${holding.currentQty ?? 0}"))
+                .toStringAsFixed(2);
+          } else {
+            // Skip calculation if close price is 0
+            exchTsym.oneDayChg = "0.00";
+            }
         }
       }
 
