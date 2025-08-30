@@ -317,13 +317,13 @@ class OrderProvider extends DefaultChangeNotifier {
 
     _selectedTab = index;
 
-    if (tabCtrl != null) {
-      try {
-        tabCtrl.animateTo(index);
-      } catch (e) {
-        print("TabController not ready for animation: $e");
-      }
-    }
+    // if (tabCtrl != null) {
+    //   try {
+    //     tabCtrl.animateTo(index);
+    //   } catch (e) {
+    //     print("TabController not ready for animation: $e");
+    //   }
+    // }
     
     tabSize();
     showOrderSearch(false);

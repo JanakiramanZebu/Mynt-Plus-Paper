@@ -184,6 +184,7 @@ class UserProfileProvider extends DefaultChangeNotifier {
     _onloadshowchartof = false;
     _userloader = false;
     _webViewKey = UniqueKey();
+    _profileimage = null;
     notifyListeners();
   }
 
@@ -514,7 +515,7 @@ class UserProfileProvider extends DefaultChangeNotifier {
             Navigator.pushNamedAndRemoveUntil(
                 context, Routes.loginScreen, (route) => false);
           }
-              successMessage(context, 'The Account has been deactivated');
+          successMessage(context, 'The Account has been deactivated');
         });
       } else {
         warningMessage(context, data["emsg"].toString());
@@ -522,6 +523,12 @@ class UserProfileProvider extends DefaultChangeNotifier {
     } catch (e) {
       notifyListeners();
     } finally {}
+  }
+
+  int maxSizeInBytes = 10 * 1024 * 1024; // 4 MB
+
+  bool fileSizeCheck(PlatformFile file) {
+    return file.size <= maxSizeInBytes;
   }
 
   // Method to pick image from gallery
@@ -533,21 +540,35 @@ class UserProfileProvider extends DefaultChangeNotifier {
       );
 
       if (result != null) {
-        File file = File(result!.files.single.path!);
-        
-        // // Validate file
-        // if (!await _validateImageFile(context, file)) {
-        //   return;
-        // }
-        
-        await uploadImage(context, file);
-      }else{
+        PlatformFile platformFile = result.files.single;
+        if (!fileSizeCheck(platformFile)) {
+          warningMessage(context, 'File size exceeds the limit of 10MB');
+          return;
+        } else {
+          File file = File(platformFile.path!);
+          await uploadImage(context, file);
+        }
+      } else {
         print("No file selected ${result}");
       }
     } catch (e) {
-      if (context.mounted) {
-        warningMessage(context, 'Error selecting image: $e');
+      warningMessage(context, 'Error selecting image: $e');
+    }
+  }
+
+  // Method to remove profile image
+  Future<void> removeProfileImage(BuildContext context) async {
+    try {
+      final response = await api.removeProfileImage();
+      if(response.statusCode == 200){
+      _profileimage = null;
+      successMessage(context, 'Profile picture removed successfully');
+      notifyListeners();
+      }else{
+        warningMessage(context, 'Failed to remove profile picture');
       }
+    } catch (e) {
+      warningMessage(context, 'Error removing profile image: $e');
     }
   }
 
@@ -580,69 +601,31 @@ class UserProfileProvider extends DefaultChangeNotifier {
 //   }
 // }
 
-
-  // Method to validate image file
-  Future<bool> _validateImageFile(BuildContext context, File file) async {
-    try {
-      // Check if file exists
-      if (!await file.exists()) {
-        if (context.mounted) {
-          warningMessage(context, 'Selected file does not exist');
-        }
-        return false;
-      }
-
-      // Check file size (max 5MB)
-      final int fileSizeInBytes = await file.length();
-      final double fileSizeInMB = fileSizeInBytes / (1024 * 1024);
-      
-      if (fileSizeInMB > 5.0) {
-        if (context.mounted) {
-          warningMessage(context, 'Image size must be less than 5MB. Current size: ${fileSizeInMB.toStringAsFixed(2)}MB');
-        }
-        return false;
-      }
-
-      // Check file extension
-      final String extension = file.path.split('.').last.toLowerCase();
-      final List<String> allowedExtensions = ['jpg', 'jpeg', 'png', 'heic'];
-      
-      if (!allowedExtensions.contains(extension)) {
-        if (context.mounted) {
-          warningMessage(context, 'Only JPG, JPEG, PNG, and HEIC files are allowed');
-        }
-        return false;
-      }
-
-      return true;
-    } catch (e) {
-      if (context.mounted) {
-        warningMessage(context, 'Error validating file: $e');
-      }
-      return false;
-    }
-  }
-
   Uint8List? _profileimage;
-  Uint8List? get getProfileImage => _profileimage;
+  Uint8List? get getprofileImage => _profileimage;
 
   Future<void> getProfileimage() async {
-    final responseData = await api.getProfileImage();
-    if(responseData != null){
-      _profileimage = responseData;
-      notifyListeners();
-    }else{
-      _profileimage = null;
-      notifyListeners();
+    try {
+      toggleimageloader(true);
+      final responseData = await api.getProfileImage();
+      if (responseData != null) {
+        _profileimage = responseData;
+        notifyListeners();
+      } else {
+        _profileimage = null;
+        notifyListeners();
+      }
+    } catch (e) {
+      print("error in get profile image ${e}");
+    } finally {
+      toggleimageloader(false);
     }
-    // _profileimage = responseData;
-    notifyListeners();
   }
 
   bool _imageloader = false;
   bool get imageLoader => _imageloader;
 
-  toggleimageloader(bool value){
+  toggleimageloader(bool value) {
     _imageloader = value;
     notifyListeners();
   }
@@ -651,52 +634,23 @@ class UserProfileProvider extends DefaultChangeNotifier {
   Future<void> uploadImage(BuildContext context, File imageFile) async {
     try {
       toggleimageloader(true);
-      // Show loading indicator
-      // showDialog(
-      //   context: context,
-      //   barrierDismissible: false,
-      //   builder: (BuildContext context) {
-      //     return const Center(
-      //       child: CircularProgressIndicator(
-      //         valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF0037B7)),
-      //       ),
-      //     );
-      //   },
-      // );
-
-      // Get user profile for client_id
-      final clientId = pref.clientId;
-      
-      if (clientId == null || clientId.isEmpty) {
-        Navigator.pop(context); // Close loading dialog
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).hideCurrentSnackBar();
-          warningMessage(context, 'Client ID not available');
-        }
-        return;
-      }
-
 
       final responseData = await api.uploadImage(imageFile);
 
-      // Navigator.pop(context); // Close loading dialog
-
       if (responseData["status"] == "success") {
-            ScaffoldMessenger.of(context).hideCurrentSnackBar();
-          successMessage(context, 'Profile image updated successfully!');
-          _profileimage = await api.getProfileImage();
-          notifyListeners();
-        
+        successMessage(context, 'Profile image updated successfully!');
+        _profileimage = await api.getProfileImage();
+        notifyListeners();
       } else {
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-          warningMessage(context, 'Failed to update image: ${responseData.statusCode} - $responseData');
+        warningMessage(context,
+            'Failed to update image: ${responseData.statusCode} - $responseData');
       }
     } catch (e) {
       print("error in upload image ${e}");
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-        warningMessage(context, 'Error uploading image: $e');
-    }finally{
+      warningMessage(context, 'Error uploading image: $e');
+    } finally {
       toggleimageloader(false);
     }
   }
+
 }

@@ -1,5 +1,6 @@
 import 'package:mynt_plus/models/client_profile_all_details/details_change_current_status_model.dart';
 import 'package:mynt_plus/models/client_profile_all_details/profile_all_details_model.dart';
+import 'package:mynt_plus/screens/profile_screen/profile_main_screen.dart';
 import 'package:mynt_plus/sharedWidget/fund_function.dart';
 import '../api/core/api_core.dart';
 import 'package:mynt_plus/provider/transcation_provider.dart';
@@ -229,6 +230,25 @@ mixin ProfileAllDetailsApi on ApiCore {
       rethrow;
     }
   }
+
+  
+
+//   Future<PendingStatus> fetchPendingstatusApi() async {
+//   try {
+//     final uri = Uri.parse(apiLinks.rekycpendingstatusURL);
+
+//     final res = await apiClient.post(
+//       uri,
+//       // headers: defaultHeaders,
+//       body: jsonEncode({"client_id": prefs.clientId}),
+//     );
+//     return PendingStatus.fromJson(jsonDecode(res.body));
+//   } catch (e) {
+//     print("error fetchpendig :::: ${e}");
+//     rethrow;
+//   }
+// }
+
 
   mobileotpapifun(String newmo, clemail, oldmobilmo, fulldataprf) async {
 //  String formattedData = jsonEncode(fulldataprf.toJson()); // Convert object to JSON

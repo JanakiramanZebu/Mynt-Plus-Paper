@@ -36,8 +36,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   void initState() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+    
     ref.read(versionProvider).checkVersion(context);
     ref.read(authProvider).setChangetotp(true);
+    if(ref.read(userProfileProvider).getprofileImage == null){
+    ref.read(userProfileProvider).getProfileimage();
+    }
+  });
     super.initState();
     focusNode = FocusNode();
     focusNode.addListener(() {
@@ -312,7 +318,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                                   ),
                                                 ),
                                                 child: ClipOval(
-                                                  child: userProfile.getProfileImage != null
+                                                  child: userProfile.getprofileImage != null
                                     ? userProfile.imageLoader 
                                         ? Container(
                                             width: 100,
@@ -324,15 +330,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                             ),
                                             child: Center(
                                               child: CircularProgressIndicator(
-                                                color: theme.isDarkMode
-                                                    ? colors.colorWhite
-                                                    : colors.colorBlack,
+                                                color: !theme.isDarkMode
+                                                    ? colors.primaryLight
+                                                    : colors.primaryDark,
                                                 strokeWidth: 3,
                                               ),
                                             ),
                                           )
                                         :  Image.memory(
-                                                                                          userProfile.getProfileImage!,
+                                                                                          userProfile.getprofileImage!,
                                                                                           width: 100,
                                                                                           height: 100,
                                                                                           fit: BoxFit.cover,

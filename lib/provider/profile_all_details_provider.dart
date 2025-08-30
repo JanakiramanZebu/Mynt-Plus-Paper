@@ -9,6 +9,8 @@ import 'package:mynt_plus/provider/fund_provider.dart';
 import 'package:mynt_plus/screens/profile_screen/in_app_webview_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../screens/profile_screen/profile_main_screen.dart';
+
 
 final profileAllDetailsProvider =
     ChangeNotifierProvider((ref) => ProfileProvider(ref));
@@ -205,7 +207,7 @@ class ProfileProvider extends DefaultChangeNotifier {
     await ref.read(fundProvider).fetchHstoken(context);
     debugPrint(
         '$urlArgs  ==== ${pref.clientId} =====  ${ref.read(fundProvider).fundHstoken!.hstk}');
-    String url = 'http://192.168.5.107:8080/${urlArgs}/?uid=${pref.clientId}&token=${pref.token}&type=${type}&acno=${bankAcNo}&src=mobileapp';
+    String url = 'http://192.168.5.148:8080/${urlArgs}/?uid=${pref.clientId}&token=${pref.token}&type=${type}&acno=${bankAcNo}&src=mobileapp';
     
      Navigator.push(
       context,
@@ -228,7 +230,7 @@ class ProfileProvider extends DefaultChangeNotifier {
     await ref.read(fundProvider).fetchHstoken(context);
     debugPrint(
         '$urlArgs  ==== ${pref.clientId} =====  ${ref.read(fundProvider).fundHstoken!.hstk}');
-    String url = 'http://192.168.5.107:8080/${urlArgs}/?uid=${pref.clientId}&token=${pref.token}&type=${type}&src=mobileapp';
+    String url = 'http://192.168.5.148:8080/${urlArgs}/?uid=${pref.clientId}&token=${pref.token}&type=${type}&src=mobileapp';
     print("jdhfdfhhfdjksjhdjurl ::: $url");
      Navigator.push(
       context,
@@ -254,7 +256,7 @@ class ProfileProvider extends DefaultChangeNotifier {
     // debugPrint(
     //     '$urlArgs  ==== ${pref.clientId} =====  ${ref.read(fundProvider).fundHstoken!.hstk}');
     String url =
-        'http://192.168.5.107:8080/${urlArgs}?uid=${pref.clientId}&token=${pref.token}&type=${type}&src=mobileapp';
+        'http://192.168.5.148:8080/${urlArgs}?uid=${pref.clientId}&token=${pref.token}&type=${type}&src=mobileapp';
     debugPrint('weburl ::: $url');
     Navigator.push(
       context,
@@ -272,6 +274,23 @@ class ProfileProvider extends DefaultChangeNotifier {
       ),
     );
   }
+
+  // List<PendingStatus> _pendingStatusList = [];
+  // List<PendingStatus> get pendingStatusList => _pendingStatusList;
+  
+  
+  // Future fetchPendingstatus() async {
+  //   try {
+  //     PendingStatus response = await api.fetchPendingstatusApi();
+  //     _pendingStatusList = [response];
+  //     notifyListeners();
+  //   } 
+  //   catch (e) {
+  //     debugPrint("error ${e}");
+  //   } finally {
+  //     notifyListeners();
+  //   }
+  //   }
 
   Future getDetailsChangeCurrentStatus() async {
     try {} catch (e) {}

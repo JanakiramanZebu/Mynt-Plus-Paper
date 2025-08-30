@@ -130,6 +130,17 @@ Future uploadImage(File imageFile) async {
     }
 }
 
+Future removeProfileImage() async {
+  try {
+    final uri = Uri.parse("https://v3.mynt.in/dd/profile/remove_image?client_id=${prefs.clientId}");
+    final response = await apiClient.get(uri);
+    return response;
+  } catch (e) {
+    rethrow;
+  }
+}
+
+
 // get block client account from kambala
 
   Future<Response> getaBlockAc() async {

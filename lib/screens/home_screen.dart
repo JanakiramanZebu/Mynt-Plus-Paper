@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:mynt_plus/provider/ledger_provider.dart';
+import 'package:mynt_plus/provider/profile_all_details_provider.dart';
 import 'package:mynt_plus/screens/dashboard_screen.dart';
 import 'package:mynt_plus/screens/stocks/explore/stocks/etf_category_detail_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -936,7 +937,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     // Load minimal required profile data
     // fundProviderRef.fetchFunds(context);
     userProfile.fetchprofilemenu();
-    userProfile.getProfileimage();
+    // ref.read(profileAllDetailsProvider).fetchPendingstatus();
+    // userProfile.getProfileimage();
 
     // Unsubscribe from other real-time data
     marketWatchList.requestMWScrip(context: context, isSubscribe: false);

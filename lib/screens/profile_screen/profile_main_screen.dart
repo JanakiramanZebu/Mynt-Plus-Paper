@@ -75,10 +75,11 @@ class UserAccountScreen extends ConsumerWidget {
 
   // Method to show image update options
   void _showImageUpdateOptions(BuildContext context, WidgetRef ref) {
+    final theme = ref.watch(themeProvider);
     showModalBottomSheet(
       useSafeArea: true,
       context: context,
-      backgroundColor: Colors.transparent,
+      backgroundColor: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
       builder: (BuildContext context) {
         return SafeArea(
           child: Container(
@@ -103,11 +104,19 @@ class UserAccountScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 20),
                 ListTile(
-                  leading: const Icon(Icons.photo_library, color: Color(0xFF0037B7)),
-                  title: const Text('Choose from Gallery'),
+                  leading:  Icon(Icons.photo_library, color: theme.isDarkMode ? colors.primaryDark : colors.primaryLight),
+                  title: TextWidget.subText(text: 'Choose from Gallery',theme: false,color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight),
                   onTap: () {
                     Navigator.pop(context);
                     ref.watch(userProfileProvider).pickImageFromGallery(context);
+                  },
+                ),
+                ListTile(
+                  leading:  Icon(Icons.delete, color: theme.isDarkMode ? colors.lossDark : colors.lossLight),
+                  title: TextWidget.subText(text: 'Remove Profile Picture',theme: false,color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight),
+                  onTap: () {
+                    Navigator.pop(context);
+                    ref.watch(userProfileProvider).removeProfileImage(context);
                   },
                 ),
                 // ListTile(
@@ -253,7 +262,7 @@ class UserAccountScreen extends ConsumerWidget {
                                ),
                              ),
                              child: ClipOval(
-                              child: userProfile.getProfileImage != null
+                              child: userProfile.getprofileImage != null
                                     ? userProfile.imageLoader 
                                         ? Container(
                                             width: 100,
@@ -273,7 +282,7 @@ class UserAccountScreen extends ConsumerWidget {
                                             ),
                                           )
                                         : Image.memory(
-                                            userProfile.getProfileImage!,
+                                            userProfile.getprofileImage!,
                                             width: 100,
                                             height: 100,
                                             fit: BoxFit.cover,
@@ -2228,10 +2237,31 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                 "N/A",
             theme,
             ref),
+
+        // if (profileDetails.pendingStatusList[0].data != null) 
+        // Container(
+        //   padding: const EdgeInsets.symmetric( vertical: 8.0),
+        //   decoration: BoxDecoration(
+        //     color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+        //     borderRadius: BorderRadius.circular(5.0),
+        //   ),
+        //   child: Row(
+        //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        //     children: [
+        //       TextWidget.subText(text: "Pending Status", theme: theme.isDarkMode, color: theme.isDarkMode
+        //                 ? colors.textSecondaryDark
+        //                 : colors.textSecondaryLight,fw: 0),
+        //       TextWidget.subText(text: "${profileDetails.pendingStatusList[0].data}", theme: theme.isDarkMode, color: theme.isDarkMode
+        //                 ? colors.textSecondaryDark
+        //                 : colors.textSecondaryLight,fw: 0),
+        //     ],
+        //   ),
+        // ),
         // _buildDetailRow("DP ID", clientData?.cLIENTDPCODE ?? "N/A", theme),
       ],
     );
   }
+
 
   /// Builds the UI for the "Bank" section, replicating ProfileDetailsBank with proper functionality
   Widget _buildBankDetailsContent(WidgetRef ref, ThemesProvider theme) {
@@ -4225,6 +4255,26 @@ class UserInfoColumn extends StatelessWidget {
         )
       ],
     );
+  }
+}
+
+
+class PendingStatus {
+  List<String>? data;
+  String? msg;
+
+  PendingStatus({this.data, this.msg});
+
+  PendingStatus.fromJson(Map<String, dynamic> json) {
+    data = json['data'].cast<String>();
+    msg = json['msg'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['data'] = this.data;
+    data['msg'] = this.msg;
+    return data;
   }
 }
 //   final selectedBtmIndx = 4;

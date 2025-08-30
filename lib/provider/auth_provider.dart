@@ -1736,7 +1736,8 @@ class AuthProvider extends DefaultChangeNotifier {
           await ref.read(fundProvider).clearFunds();
           ref.read(orderProvider).clearAllorders();
           ref.read(ledgerProvider).setterfornullallSwitch = null;
-          ref.read(userProfileProvider).getProfileimage();
+          
+            ref.read(userProfileProvider).getProfileimage();
 
           // initLaod(false);
           ref.read(orderProvider).fetchOrderBook(context, false);

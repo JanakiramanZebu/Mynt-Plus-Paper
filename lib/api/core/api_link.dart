@@ -277,6 +277,7 @@ class ApiLinks {
   String get detailschangecurrentstatusURL =>
       '$profileDetailsURL/add_mob_email_stat';
   String get profileAllDetailsURL => '$profileDetailsURL/profile';
+  String get rekycpendingstatusURL => '$profileDetailsURL/rekyc_pending_details';
 
   // email change
   String get sendOTPEmailURL => '$profileDetailsURL/mail_otpsend';
