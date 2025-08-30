@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'dart:io';
 // import 'package:flutter/services.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
 import 'package:awesome_notifications/awesome_notifications.dart';
@@ -109,6 +110,14 @@ Future<void> initializeFirebaseAsync() async {
     print("Firebase core initialized in: ${coreInitDuration.inMilliseconds}ms");
 
     final Preferences pref = locator<Preferences>();
+
+     FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+      PlatformDispatcher.instance.onError = (error, stack) {
+      FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+        return true;
+      };
+      FirebaseCrashlytics.instance.setUserIdentifier("${pref.deviceName!} ${pref.imei}");
+
 
     // Configure messaging
     final messaging = FirebaseMessaging.instance;
