@@ -29,6 +29,7 @@ class SliceOrderSheet extends StatefulWidget {
   final TextEditingController discQtyCtrl;
   final TextEditingController triggerPriceCtrl;
   final TextEditingController mktProtCtrl;
+  final int lotSize;
   final bool isBracketOrderEnabled;
 
   const SliceOrderSheet({
@@ -48,6 +49,7 @@ class SliceOrderSheet extends StatefulWidget {
     required this.discQtyCtrl,
     required this.triggerPriceCtrl,
     required this.mktProtCtrl,
+    required this.lotSize,
     required this.isBracketOrderEnabled,
   });
 
@@ -227,7 +229,7 @@ class _SliceOrderSheetState extends State<SliceOrderSheet> {
               placeOrderInputs.add(_buildOrderInput(orderInput, isBracketOrderEnabled));
 
               if (widget.reminder != 0) {
-                placeOrderInputs.add(_buildOrderInput(orderInput, isBracketOrderEnabled, qtyOverride: widget.reminder.toString()));
+                placeOrderInputs.add(_buildOrderInput(orderInput, isBracketOrderEnabled, qtyOverride: widget.reminder));
               }
 
               // Use the new slice order with confirmation function
@@ -262,7 +264,7 @@ class _SliceOrderSheetState extends State<SliceOrderSheet> {
     );
   }
 
-  PlaceOrderInput _buildOrderInput(orderInput, bool isBracketOrderEnabled, {String? qtyOverride}) {
+  PlaceOrderInput _buildOrderInput(orderInput, bool isBracketOrderEnabled, {int? qtyOverride}) {
     return PlaceOrderInput(
       amo: widget.isAmo ? "Yes" : "",
       blprc: widget.orderType == "CO - BO" ? widget.stopLossCtrl.text : '',
@@ -272,7 +274,7 @@ class _SliceOrderSheetState extends State<SliceOrderSheet> {
       prc: widget.ordPrice,
       prctype: orderInput.prcType,
       prd: orderInput.orderType,
-      qty: qtyOverride ?? "${widget.frezQty}",
+      qty: widget.scripInfo.exch! == "MCX" ?   (qtyOverride !=null ? qtyOverride * widget.lotSize : null)?.toString() ?? (widget.frezQty * widget.lotSize).toString()  : qtyOverride?.toString() ?? widget.frezQty.toString(),
       ret: widget.validityType,
       trailprc: '',
       trantype: widget.isBuy ? 'B' : 'S',

@@ -295,7 +295,8 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
       isAdvancedOptionClicked = !isAdvancedOptionClicked ? _addValidityAndDisclosedQty : isAdvancedOptionClicked;
 
       lotSize = int.parse("${widget.scripInfo.ls ?? 0}");
-      frezQty = sfq > 1 ? (sfq / lotSize).floor() * lotSize : lotSize;
+
+      frezQty = sfq > 1 ? widget.orderArg.exchange == "MCX" ? (sfq / lotSize).floor() :(sfq / lotSize).floor() * lotSize : lotSize;
       // 999999 1353220
       isBuy = widget.orderArg.transType;
       sipqtyctrl = TextEditingController(text: "1");
@@ -5194,6 +5195,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
               quantity: quantity,
               frezQty: frezQty,
               reminder: reminder,
+              lotSize: lotSize,
               isAmo: _afterMarketOrder,
               orderType: orderType,
               priceType: priceType,
