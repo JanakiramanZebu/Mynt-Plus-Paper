@@ -44,6 +44,7 @@ class DashboardProvider extends DefaultChangeNotifier {
   @override
   void dispose() {
     _brokerageController.dispose();
+    _portfolioSearchController.dispose();
     super.dispose();
   }
 
@@ -250,4 +251,274 @@ Color getSectorAllocationColor(String sector) {
 
   // Get sector color
   
+  // Portfolio Search State Management
+  bool _showPortfolioSearch = false;
+  bool get showPortfolioSearch => _showPortfolioSearch;
+
+  final TextEditingController _portfolioSearchController = TextEditingController();
+  TextEditingController get portfolioSearchController => _portfolioSearchController;
+
+  List<TopStocks> _portfolioSearchItems = [];
+  List<TopStocks> get portfolioSearchItems => _portfolioSearchItems;
+
+  // Show/hide portfolio search
+   showPortfolioAnalysisSearch(bool value) {
+    _showPortfolioSearch = value;
+    if (!_showPortfolioSearch) {
+      _portfolioSearchItems = [];
+    }
+    _portfolioSearchController.clear();
+    notifyListeners();
+  }
+
+  // Clear portfolio search
+   clearPortfolioSearch() {
+    _portfolioSearchController.clear();
+    _portfolioSearchItems = [];
+    // Don't automatically hide search - let the UI handle it
+    notifyListeners();
+  }
+
+  // Search portfolio holdings
+  void searchPortfolioHoldings(String query, List<TopStocks> allHoldings) {
+    final trimmedQuery = query.trim();
+    if (trimmedQuery.isEmpty) {
+      _portfolioSearchItems = [];
+    } else {
+      _portfolioSearchItems = allHoldings.where((holding) {
+        final name = holding.name?.toLowerCase() ?? '';
+        final tsym = holding.tsym?.toLowerCase() ?? '';
+        final queryLower = trimmedQuery.toLowerCase();
+        
+        return name.contains(queryLower) || tsym.contains(queryLower);
+      }).toList();
+    }
+    notifyListeners();
+  }
+
+  // Portfolio Filter State Management
+  bool _showAll = true; // Default: show all data
+  bool get showAll => _showAll;
+
+  Set<String> _selectedAccountTypes = {};
+  Set<String> get selectedAccountTypes => _selectedAccountTypes;
+
+  Set<String> _selectedMarketCaps = {};
+  Set<String> get selectedMarketCaps => _selectedMarketCaps;
+
+  Set<String> _selectedSectors = {};
+  Set<String> get selectedSectors => _selectedSectors;
+
+  // Update filter states
+  void updateShowAll(bool value) {
+    _showAll = value;
+    if (_showAll) {
+      _selectedAccountTypes.clear();
+      _selectedMarketCaps.clear();
+      _selectedSectors.clear();
+    }
+    notifyListeners();
+  }
+
+  void updateSelectedAccountTypes(Set<String> accountTypes) {
+    _selectedAccountTypes = accountTypes;
+    if (_selectedAccountTypes.isNotEmpty || _selectedMarketCaps.isNotEmpty || _selectedSectors.isNotEmpty) {
+      _showAll = false;
+    } else {
+      _showAll = true;
+    }
+    notifyListeners();
+  }
+
+  void updateSelectedMarketCaps(Set<String> marketCaps) {
+    _selectedMarketCaps = marketCaps;
+    if (_selectedAccountTypes.isNotEmpty || _selectedMarketCaps.isNotEmpty || _selectedSectors.isNotEmpty) {
+      _showAll = false;
+    } else {
+      _showAll = true;
+    }
+    notifyListeners();
+  }
+
+  void updateSelectedSectors(Set<String> sectors) {
+    _selectedSectors = sectors;
+    if (_selectedAccountTypes.isNotEmpty || _selectedMarketCaps.isNotEmpty || _selectedSectors.isNotEmpty) {
+      _showAll = false;
+    } else {
+      _showAll = true;
+    }
+    notifyListeners();
+  }
+
+  // Clear all filters
+  void clearAllFilters() {
+    _showAll = true;
+    _selectedAccountTypes.clear();
+    _selectedMarketCaps.clear();
+    _selectedSectors.clear();
+    notifyListeners();
+  }
+
+  // Get filtered holdings based on selected filters
+  List<TopStocks> getFilteredHoldings(List<TopStocks> allHoldings) {
+    if (_showAll || (_selectedAccountTypes.isEmpty && 
+        _selectedMarketCaps.isEmpty && 
+        _selectedSectors.isEmpty)) {
+      return allHoldings; // Show all when "All" is selected or no filters applied
+    }
+
+    // Build a quick lookup from tsym -> sector from fundamentals
+    final fundamentals = _portfolioAnalysis?.fundamentals ?? [];
+    final Map<String, String> tsymToSector = {
+      for (final f in fundamentals)
+        if ((f.tsym ?? '').isNotEmpty && (f.sector ?? '').isNotEmpty)
+          f.tsym!: f.sector!
+    };
+
+    return allHoldings.where((holding) {
+      // Filter by category (account type) with normalization so
+      // 'Gold' matches categories like 'Gold_Bond', 'Gold ETF', etc.
+      final holdingCategoryNorm = _normalize(holding.category);
+      bool matchesAccountType = _selectedAccountTypes.isEmpty ||
+          _selectedAccountTypes.any(
+            (seg) => holdingCategoryNorm.contains(_normalize(seg)),
+          );
+      
+      // Filter by market cap type
+      bool matchesMarketCap = _selectedMarketCaps.isEmpty || 
+          _selectedMarketCaps.contains(holding.marketCapType);
+      
+      // Sector filtering: infer sector via fundamentals using tsym
+      final holdingSector = tsymToSector[holding.tsym ?? ''];
+      final holdingSectorNorm = _normalize(holdingSector);
+      bool matchesSector = _selectedSectors.isEmpty ||
+          _selectedSectors.any(
+            (s) => holdingSectorNorm.contains(_normalize(s)),
+          );
+      
+      return matchesAccountType && matchesMarketCap && matchesSector;
+    }).toList();
+  }
+
+  // Normalizes strings for robust comparisons (case-insensitive, ignore spaces/underscores/hyphens)
+  String _normalize(String? input) {
+    return (input ?? '')
+        .toLowerCase()
+        .replaceAll(RegExp(r'[^a-z0-9]'), '');
+  }
+
+  // Helper methods for filter state checking
+  bool isAccountTypeSelected(String accountType) {
+    return _selectedAccountTypes.contains(accountType);
+  }
+
+  bool isMarketCapSelected(String marketCap) {
+    return _selectedMarketCaps.contains(marketCap);
+  }
+
+  bool isSectorSelected(String sector) {
+    return _selectedSectors.contains(sector);
+  }
+
+  // Toggle filter methods
+  void toggleAccountType(String accountType) {
+    if (_selectedAccountTypes.contains(accountType)) {
+      _selectedAccountTypes.remove(accountType);
+    } else {
+      _selectedAccountTypes.add(accountType);
+    }
+    _updateShowAllState();
+    notifyListeners();
+  }
+
+  void toggleMarketCap(String marketCap) {
+    if (_selectedMarketCaps.contains(marketCap)) {
+      _selectedMarketCaps.remove(marketCap);
+    } else {
+      _selectedMarketCaps.add(marketCap);
+    }
+    _updateShowAllState();
+    notifyListeners();
+  }
+
+  void toggleSector(String sector) {
+    if (_selectedSectors.contains(sector)) {
+      _selectedSectors.remove(sector);
+    } else {
+      _selectedSectors.add(sector);
+    }
+    _updateShowAllState();
+    notifyListeners();
+  }
+
+  // Remove specific filter
+  void removeFilter(String label, String filterType) {
+    switch (filterType) {
+      case 'accountType':
+        _selectedAccountTypes.remove(label);
+        break;
+      case 'marketCap':
+        _selectedMarketCaps.remove(label);
+        break;
+      case 'sector':
+        _selectedSectors.remove(label);
+        break;
+    }
+    _updateShowAllState();
+    notifyListeners();
+  }
+
+  // Apply portfolio filters (placeholder method for screen compatibility)
+  void applyPortfolioFilters() {
+    // This method is called from the screen but doesn't need to do anything
+    // as the filtering is handled automatically through the getFilteredHoldings method
+    notifyListeners();
+  }
+
+  // Check if a holding passes the current filters
+  bool isHoldingFiltered(TopStocks holding) {
+    if (_showAll || (_selectedAccountTypes.isEmpty && 
+        _selectedMarketCaps.isEmpty && 
+        _selectedSectors.isEmpty)) {
+      return true; // Show all when no filters applied
+    }
+
+    // Build a quick lookup from tsym -> sector from fundamentals
+    final fundamentals = _portfolioAnalysis?.fundamentals ?? [];
+    final Map<String, String> tsymToSector = {
+      for (final f in fundamentals)
+        if ((f.tsym ?? '').isNotEmpty && (f.sector ?? '').isNotEmpty)
+          f.tsym!: f.sector!
+    };
+
+    // Filter by category (account type) with normalization
+    final holdingCategoryNorm = _normalize(holding.category);
+    bool matchesAccountType = _selectedAccountTypes.isEmpty ||
+        _selectedAccountTypes.any(
+          (seg) => holdingCategoryNorm.contains(_normalize(seg)),
+        );
+    
+    // Filter by market cap type
+    bool matchesMarketCap = _selectedMarketCaps.isEmpty || 
+        _selectedMarketCaps.contains(holding.marketCapType);
+    
+    // Sector filtering: infer sector via fundamentals using tsym
+    final holdingSector = tsymToSector[holding.tsym ?? ''];
+    final holdingSectorNorm = _normalize(holdingSector);
+    bool matchesSector = _selectedSectors.isEmpty ||
+        _selectedSectors.any(
+          (s) => holdingSectorNorm.contains(_normalize(s)),
+        );
+    
+    return matchesAccountType && matchesMarketCap && matchesSector;
+  }
+
+  // Helper method to update showAll state based on other filters
+  void _updateShowAllState() {
+    if (_selectedAccountTypes.isEmpty && _selectedMarketCaps.isEmpty && _selectedSectors.isEmpty) {
+      _showAll = true;
+    } else {
+      _showAll = false;
+    }
+  }
 }

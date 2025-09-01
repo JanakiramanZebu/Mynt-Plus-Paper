@@ -3,10 +3,12 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/res/global_state_text.dart';
 import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/sharedWidget/splash_loader.dart';
+import 'package:mynt_plus/sharedWidget/snack_bar.dart';
 import '../../../../provider/dashboard_provider.dart';
 import '../../../../models/explore_model/portfolioanalisys_models.dart';
 import '../../../../provider/market_watch_provider.dart';
@@ -26,6 +28,12 @@ class _PortfolioDashboardScreenState
   FlSpot? touchedSpot;
   bool showTooltip = false;
 
+  // Search focus management
+  final FocusNode _searchFocusNode = FocusNode();
+
+  // Scroll state management for elevation
+  bool _hasScrolled = false;
+
   @override
   void initState() {
     super.initState();
@@ -39,6 +47,7 @@ class _PortfolioDashboardScreenState
   @override
   void dispose() {
     _hideTooltipTimer?.cancel();
+    _searchFocusNode.dispose();
     super.dispose();
   }
 
@@ -46,71 +55,90 @@ class _PortfolioDashboardScreenState
   Widget build(BuildContext context) {
     final theme = ref.watch(themeProvider);
     final portfolio = ref.watch(dashboardProvider);
-    return Scaffold(
-      backgroundColor: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-      appBar: AppBar(
-        leadingWidth: 48,
-        titleSpacing: 0,
-        centerTitle: false,
-        leading: Material(
-          color: Colors.transparent,
-          shape: const CircleBorder(),
-          clipBehavior: Clip.hardEdge,
-          child: InkWell(
-            customBorder: const CircleBorder(),
-            splashColor: theme.isDarkMode
-                ? colors.splashColorDark
-                : colors.splashColorLight,
-            highlightColor:
-                theme.isDarkMode ? colors.highlightDark : colors.highlightLight,
-            onTap: () {
-              Navigator.pop(context);
-            },
-            child: Container(
-              width: 44,
-              height: 44,
-              alignment: Alignment.center,
-              child: Icon(
-                Icons.arrow_back_ios_outlined,
-                size: 18,
-                color: theme.isDarkMode
-                    ? colors.textSecondaryDark
-                    : colors.textSecondaryLight,
+    return WillPopScope(
+      onWillPop: () async {
+        // Navigate back first, then hide search
+        final dashboardState = ref.read(dashboardProvider);
+        if (dashboardState.showPortfolioSearch) {
+          dashboardState.showPortfolioAnalysisSearch(false);
+          _searchFocusNode.unfocus();
+        }
+        return true; // Always allow back navigation
+      },
+      child: Scaffold(
+        backgroundColor:
+            theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+        appBar: AppBar(
+          leadingWidth: 48,
+          titleSpacing: 0,
+          centerTitle: false,
+          leading: Material(
+            color: Colors.transparent,
+            shape: const CircleBorder(),
+            clipBehavior: Clip.hardEdge,
+            child: InkWell(
+              customBorder: const CircleBorder(),
+              splashColor: theme.isDarkMode
+                  ? colors.splashColorDark
+                  : colors.splashColorLight,
+              highlightColor: theme.isDarkMode
+                  ? colors.highlightDark
+                  : colors.highlightLight,
+              onTap: () {
+                // Navigate back first, then hide search
+                Navigator.pop(context);
+                final dashboardState = ref.read(dashboardProvider);
+                if (dashboardState.showPortfolioSearch) {
+                  dashboardState.showPortfolioAnalysisSearch(false);
+                  _searchFocusNode.unfocus();
+                }
+              },
+              child: Container(
+                width: 44,
+                height: 44,
+                alignment: Alignment.center,
+                child: Icon(
+                  Icons.arrow_back_ios_outlined,
+                  size: 18,
+                  color: theme.isDarkMode
+                      ? colors.textSecondaryDark
+                      : colors.textSecondaryLight,
+                ),
               ),
             ),
           ),
+          elevation: 0.2,
+          title: TextWidget.titleText(
+              text: "Portfolio Analysis",
+              textOverflow: TextOverflow.ellipsis,
+              theme: theme.isDarkMode,
+              color: theme.isDarkMode
+                  ? colors.textPrimaryDark
+                  : colors.textPrimaryLight,
+              fw: 1),
         ),
-        elevation: 0.2,
-        title: TextWidget.titleText(
-            text: "Portfolio Analysis",
-            textOverflow: TextOverflow.ellipsis,
-            theme: theme.isDarkMode,
-            color: theme.isDarkMode
-                ? colors.textPrimaryDark
-                : colors.textPrimaryLight,
-            fw: 1),
-      ),
-      body: SafeArea(
-        child: Consumer(
-          builder: (context, ref, child) {
-            if (portfolio.isPortfolioLoading == true) {
-              return Center(
-                child: Container(
-                  color: Colors.white,
-                  child: CircularLoaderImage(),
-                ),
-              );
-            }
-            if (portfolio.portfolioAnalysis == null &&
-                portfolio.isPortfolioLoading == false) {
-              return const Center(
-                child: NoDataFound(),
-              );
-            }
+        body: SafeArea(
+          child: Consumer(
+            builder: (context, ref, child) {
+              if (portfolio.isPortfolioLoading == true) {
+                return Center(
+                  child: Container(
+                    color: Colors.white,
+                    child: CircularLoaderImage(),
+                  ),
+                );
+              }
+              if (portfolio.portfolioAnalysis == null &&
+                  portfolio.isPortfolioLoading == false) {
+                return const Center(
+                  child: NoDataFound(),
+                );
+              }
 
-            return _buildDashboardContentWithStickyHeader(
-                ref.watch(dashboardProvider).portfolioAnalysis!);
-          },
+              return _buildDashboardContentWithStickyHeader(
+                  ref.watch(dashboardProvider).portfolioAnalysis!);
+            },
+          ),
         ),
       ),
     );
@@ -121,6 +149,16 @@ class _PortfolioDashboardScreenState
 
     return NestedScrollView(
       headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+        // Update scroll state when inner content scrolls
+        if (innerBoxIsScrolled != _hasScrolled) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              setState(() {
+                _hasScrolled = innerBoxIsScrolled;
+              });
+            }
+          });
+        }
         return <Widget>[
           SliverToBoxAdapter(
             child: Padding(
@@ -146,25 +184,46 @@ class _PortfolioDashboardScreenState
             pinned: true,
             floating: true,
             delegate: _StickyHeaderDelegate(
+              showSearch: ref.watch(dashboardProvider).showPortfolioSearch,
               child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 decoration: BoxDecoration(
                   color:
                       theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
                   // color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
+                  // borderRadius: BorderRadius.circular(12),
+                  boxShadow: _hasScrolled
+                      ? [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          )
+                        ]
+                      : [],
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    TextWidget.titleText(
-                      text: 'Holdings',
-                      theme: false,
-                      color: theme.isDarkMode
-                          ? colors.textPrimaryDark
-                          : colors.textPrimaryLight,
-                      fw: 0,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        TextWidget.subText(
+                          text: 'Holdings',
+                          theme: false,
+                          color: theme.isDarkMode
+                              ? colors.textPrimaryDark
+                              : colors.textPrimaryLight,
+                          fw: 1,
+                        ),
+                        // Filter Icon
+                      ],
                     ),
+                    SizedBox(height: 12),
+                    // Search and Filter Section
+                    _buildSearchAndFilterSection(theme),
+                    // Search Bar (shown when search is active)
+                    _buildSearchBar(theme),
                   ],
                 ),
               ),
@@ -176,12 +235,259 @@ class _PortfolioDashboardScreenState
     );
   }
 
+  Widget _buildSearchAndFilterSection(ThemesProvider theme) {
+    final portfolioState = ref.watch(dashboardProvider);
+    // Hide the search and filter section when search is active
+    if (portfolioState.showPortfolioSearch) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      children: [
+        // Search and Filter Row
+        SizedBox(
+          height: 40,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 5),
+            decoration: BoxDecoration(
+              color: theme.isDarkMode ? colors.searchBgDark : colors.searchBg,
+              borderRadius: BorderRadius.circular(5),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // Left side: Search and Filter buttons
+                Padding(
+                  padding: const EdgeInsets.only(right: 10),
+                  child: Row(
+                    children: [
+                      // Search Button
+                      Material(
+                        color: Colors.transparent,
+                        shape: const CircleBorder(),
+                        clipBehavior: Clip.hardEdge,
+                        child: InkWell(
+                          customBorder: const CircleBorder(),
+                          splashColor: theme.isDarkMode
+                              ? colors.splashColorDark
+                              : colors.splashColorLight,
+                          highlightColor: theme.isDarkMode
+                              ? colors.highlightDark
+                              : colors.highlightLight,
+                          onTap: () {
+                            Future.delayed(const Duration(milliseconds: 150),
+                                () {
+                              portfolioState.showPortfolioAnalysisSearch(true);
+                              // Focus the search field after search appears
+                              Future.delayed(const Duration(milliseconds: 100),
+                                  () {
+                                if (mounted) {
+                                  FocusScope.of(context)
+                                      .requestFocus(_searchFocusNode);
+                                }
+                              });
+                            });
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: SvgPicture.asset(
+                              assets.searchIcon,
+                              color: theme.isDarkMode
+                                  ? colors.textSecondaryDark
+                                  : colors.textSecondaryLight,
+                              width: 20,
+                              fit: BoxFit.scaleDown,
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      Material(
+                        color: Colors.transparent,
+                        shape: const CircleBorder(),
+                        clipBehavior: Clip.hardEdge,
+                        child: InkWell(
+                          customBorder: const CircleBorder(),
+                          splashColor: theme.isDarkMode
+                              ? colors.splashColorDark
+                              : colors.splashColorLight,
+                          highlightColor: theme.isDarkMode
+                              ? colors.highlightDark
+                              : colors.highlightLight,
+                          onTap: () {
+                            _showFilterBottomSheet(context, theme);
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: SvgPicture.asset(
+                              assets.filterLinesDark,
+                              color: theme.isDarkMode
+                                  ? colors.textSecondaryDark
+                                  : colors.textSecondaryLight,
+                              width: 20,
+                              fit: BoxFit.scaleDown,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // Right side: Action buttons (can be customized later)
+                Row(
+                  children: [
+                    // Placeholder for future action buttons
+                    Container(
+                      width: 20,
+                      height: 20,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSearchBar(ThemesProvider theme) {
+    final dashboardState = ref.watch(dashboardProvider);
+    if (!dashboardState.showPortfolioSearch) {
+      return const SizedBox.shrink();
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 5),
+      child: SizedBox(
+        height: 40,
+        child: TextFormField(
+          autofocus:
+              false, // Don't auto-focus to prevent focus when returning to screen
+          focusNode: _searchFocusNode,
+          controller: dashboardState.portfolioSearchController,
+          style: TextWidget.textStyle(
+            fontSize: 16,
+            theme: theme.isDarkMode,
+            color: theme.isDarkMode
+                ? colors.textPrimaryDark
+                : colors.textPrimaryLight,
+            fw: 0,
+          ),
+          keyboardType: TextInputType.text,
+          textCapitalization: TextCapitalization.characters,
+          decoration: InputDecoration(
+            hintText: "Search holdings",
+            hintStyle: TextWidget.textStyle(
+              fontSize: 14,
+              theme: theme.isDarkMode,
+              color: theme.isDarkMode
+                  ? colors.textSecondaryDark
+                  : colors.textSecondaryLight,
+              fw: 0,
+            ),
+            fillColor: theme.isDarkMode ? colors.searchBgDark : colors.searchBg,
+            filled: true,
+            prefixIcon: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: SvgPicture.asset(
+                assets.searchIcon,
+                color: theme.isDarkMode
+                    ? colors.textSecondaryDark
+                    : colors.textSecondaryLight,
+                fit: BoxFit.scaleDown,
+                width: 20,
+              ),
+            ),
+            suffixIcon: Material(
+              color: Colors.transparent,
+              shape: const CircleBorder(),
+              clipBehavior: Clip.hardEdge,
+              child: InkWell(
+                customBorder: const CircleBorder(),
+                splashColor: theme.isDarkMode
+                    ? colors.splashColorDark
+                    : colors.splashColorLight,
+                highlightColor: theme.isDarkMode
+                    ? colors.highlightDark
+                    : colors.highlightLight,
+                onTap: () {
+                  Future.delayed(const Duration(milliseconds: 150), () {
+                    dashboardState.clearPortfolioSearch();
+                    if (dashboardState.portfolioSearchController.text.isEmpty) {
+                      dashboardState.showPortfolioAnalysisSearch(false);
+                    }
+                    // Unfocus the search field when clearing
+                    _searchFocusNode.unfocus();
+                  });
+                },
+                child: SvgPicture.asset(
+                  assets.removeIcon,
+                  color: theme.isDarkMode
+                      ? colors.textSecondaryDark
+                      : colors.textSecondaryLight,
+                  fit: BoxFit.scaleDown,
+                  width: 20,
+                ),
+              ),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderSide: BorderSide.none,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            disabledBorder: InputBorder.none,
+            focusedBorder: OutlineInputBorder(
+              borderSide: BorderSide.none,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+            border: OutlineInputBorder(
+              borderSide: BorderSide.none,
+              borderRadius: BorderRadius.circular(20),
+            ),
+          ),
+          onChanged: (value) {
+            final baseList = dashboardState.getFilteredHoldings(
+                dashboardState.portfolioAnalysis?.topStocks ?? []);
+            dashboardState.searchPortfolioHoldings(value, baseList);
+            // Don't automatically close search when text is empty
+            // Search will only close when clear button is clicked
+          },
+          onFieldSubmitted: (value) {
+            print('Search submitted: $value');
+          },
+        ),
+      ),
+    );
+  }
+
   Widget _buildTopStocksScrollableList(List<TopStocks> topStocks) {
     final theme = ref.watch(themeProvider);
+    final dashboardState = ref.watch(dashboardProvider);
 
-    if (topStocks.isEmpty) return const SizedBox.shrink();
+    // Get filtered holdings based on selected filters
+    final filteredHoldings = dashboardState.getFilteredHoldings(topStocks);
 
-    final validFundamentals = topStocks.toList();
+    // When search is active and there's search text, use search results
+    // Otherwise use filtered list
+    final searchText = dashboardState.portfolioSearchController.text.trim();
+    final itemsToDisplay =
+        (dashboardState.showPortfolioSearch && searchText.isNotEmpty)
+            ? dashboardState.portfolioSearchItems
+            : filteredHoldings;
+    final validFundamentals = itemsToDisplay.toList();
+    // Show "No Data Found" when search is active with text but no results
+    if (dashboardState.showPortfolioSearch &&
+        searchText.isNotEmpty &&
+        validFundamentals.isEmpty) {
+      return Container(
+        color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+        child: const Center(
+          child: NoDataFound(),
+        ),
+      );
+    }
 
     return Container(
       color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
@@ -192,7 +498,7 @@ class _PortfolioDashboardScreenState
         itemBuilder: (context, index) {
           final entry = validFundamentals[index];
           return _buildSectorPerformanceItem(
-          sector: entry.name ?? '',
+            sector: entry.name ?? '',
             value: entry.inverstedAmount ?? 0,
             marketCapType: entry.marketCapType ?? '',
             allocationPercent: entry.allocationPercent ?? 0,
@@ -234,13 +540,13 @@ class _PortfolioDashboardScreenState
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    TextWidget.titleText(
+                    TextWidget.subText(
                       text: 'Portfolio Summary',
                       theme: theme.isDarkMode,
                       color: theme.isDarkMode
                           ? colors.textPrimaryDark
                           : colors.textPrimaryLight,
-                      fw: 0,
+                      fw: 1,
                     ),
                     const SizedBox(height: 12),
                     TextWidget.titleText(
@@ -253,9 +559,9 @@ class _PortfolioDashboardScreenState
                           : data.xirrResult == 0
                               ? colors.textSecondaryLight
                               : theme.isDarkMode
-                                  ? colors.successDark
-                                  : colors.successLight,
-                      fw: 1,
+                                  ? colors.profitDark
+                                  : colors.profitLight,
+                      fw: 0,
                     ),
                     SizedBox(height: 4),
                     TextWidget.subText(
@@ -275,14 +581,14 @@ class _PortfolioDashboardScreenState
                         const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
                     decoration: BoxDecoration(
                       color: theme.isDarkMode
-                          ? colors.colorBlack.withOpacity(0.95)
-                          : colors.colorWhite.withOpacity(0.95),
-                      borderRadius: BorderRadius.circular(8),
+                          ? colors.textSecondaryDark.withOpacity(0.03)
+                          : colors.textSecondaryLight.withOpacity(0.03),
+                      borderRadius: BorderRadius.circular(5),
                       border: Border.all(
                         color: theme.isDarkMode
-                            ? colors.textSecondaryDark.withOpacity(0.3)
-                            : colors.textSecondaryLight.withOpacity(0.3),
-                        width: 1,
+                            ? colors.textSecondaryDark.withOpacity(0.2)
+                            : colors.textSecondaryLight.withOpacity(0.2),
+                        width: 0,
                       ),
                     ),
                     child: Builder(
@@ -296,13 +602,13 @@ class _PortfolioDashboardScreenState
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              TextWidget.paraText(
+                              TextWidget.subText(
                                 text: _formatDate(chartData.dates[index]),
                                 theme: theme.isDarkMode,
                                 color: theme.isDarkMode
                                     ? colors.textPrimaryDark
                                     : colors.textPrimaryLight,
-                                fw: 3,
+                                fw: 0,
                               ),
                               const SizedBox(height: 4),
                               TextWidget.paraText(
@@ -393,7 +699,7 @@ class _PortfolioDashboardScreenState
                                     color: theme.isDarkMode
                                         ? colors.textSecondaryDark
                                         : colors.textSecondaryLight,
-                                    fw: 3,
+                                    fw: 0,
                                   ),
                                 );
                               } catch (e) {
@@ -516,7 +822,7 @@ class _PortfolioDashboardScreenState
           color: theme.isDarkMode
               ? colors.textSecondaryDark
               : colors.textSecondaryLight,
-          fw: 3,
+          fw: 0,
         ),
       ],
     );
@@ -543,13 +849,13 @@ class _PortfolioDashboardScreenState
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              TextWidget.titleText(
+              TextWidget.subText(
                 text: 'Segmentation',
                 theme: false,
                 color: theme.isDarkMode
                     ? colors.textPrimaryDark
                     : colors.textPrimaryLight,
-                fw: 0,
+                fw: 1,
               ),
             ],
           ),
@@ -602,16 +908,16 @@ class _PortfolioDashboardScreenState
                   color: theme.isDarkMode
                       ? colors.textPrimaryDark
                       : colors.textPrimaryLight,
-                  fw: 3,
+                  fw: 0,
                 ),
-                const SizedBox(height: 4),
-                TextWidget.captionText(
+                const SizedBox(height: 8),
+                TextWidget.paraText(
                   text: '${percentage.toStringAsFixed(2)}% of portfolio',
                   theme: false,
                   color: theme.isDarkMode
                       ? colors.textSecondaryDark
                       : colors.textSecondaryLight,
-                  fw: 3,
+                  fw: 0,
                 ),
               ],
             ),
@@ -690,13 +996,13 @@ class _PortfolioDashboardScreenState
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              TextWidget.titleText(
+              TextWidget.subText(
                 text: 'Market Cap',
                 theme: false,
                 color: theme.isDarkMode
                     ? colors.textPrimaryDark
                     : colors.textPrimaryLight,
-                fw: 0,
+                fw: 1,
               ),
             ],
           ),
@@ -770,13 +1076,13 @@ class _PortfolioDashboardScreenState
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              TextWidget.titleText(
+              TextWidget.subText(
                 text: 'Sector',
                 theme: false,
                 color: theme.isDarkMode
                     ? colors.textPrimaryDark
                     : colors.textPrimaryLight,
-                fw: 0,
+                fw: 1,
               ),
             ],
           ),
@@ -806,21 +1112,29 @@ class _PortfolioDashboardScreenState
     required String tsym,
   }) {
     final theme = ref.watch(themeProvider);
-      final marketWatch = ref.read(marketWatchProvider);
+    final marketWatch = ref.read(marketWatchProvider);
     final performanceColor =
         ref.watch(dashboardProvider).getMarketCapColor(marketCapType);
+
+    final isTappable = _isMarketDepthAvailable(exch, token, tsym);
 
     return Material(
       color: Colors.transparent,
       child: InkWell(
-          splashColor: theme.isDarkMode
-                                                    ? colors.splashColorDark
-                                                    : colors.splashColorLight,
-                                                highlightColor: theme.isDarkMode
-                                                    ? colors.highlightDark
-                                                    : colors.highlightLight,
-       onTap: () async {
-           final marketWatch = ref.read(marketWatchProvider);
+        splashColor:
+            theme.isDarkMode ? colors.splashColorDark : colors.splashColorLight,
+        highlightColor:
+            theme.isDarkMode ? colors.highlightDark : colors.highlightLight,
+        onTap: () async {
+          final marketWatch = ref.read(marketWatchProvider);
+
+          // Check if market depth details are available
+          if (!isTappable) {
+            warningMessage(context, 'Details not available for this holding');
+            return;
+          }
+
+          try {
             final depthArgs = <String, dynamic>{
               'exch': (exch ?? '').toString(),
               'token': (token ?? '').toString(),
@@ -830,11 +1144,27 @@ class _PortfolioDashboardScreenState
               'expDate': '',
               'option': '',
             };
-             marketWatch.calldepthApis(context, depthArgs, "");
+
+            // Additional validation of the data being passed
+            if (depthArgs['exch'] == 'null' ||
+                depthArgs['token'] == 'null' ||
+                depthArgs['tsym'] == 'null' ||
+                depthArgs['exch'].isEmpty ||
+                depthArgs['token'].isEmpty ||
+                depthArgs['tsym'].isEmpty) {
+              warningMessage(context, 'Details not available for this item');
+              return;
+            }
+
+            marketWatch.calldepthApis(context, depthArgs, "");
             marketWatch.scripdepthsize(false);
-          },
+          } catch (e) {
+            // Handle any unexpected errors
+            error(context, 'Unable to load details. Please try again.');
+          }
+        },
         child: ListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16),
             dense: false,
             title: Padding(
               padding: const EdgeInsets.only(bottom: 4),
@@ -853,12 +1183,12 @@ class _PortfolioDashboardScreenState
             subtitle: Padding(
               padding: const EdgeInsets.only(top: 4),
               child: TextWidget.paraText(
-                text: '${value.toStringAsFixed(2)}',
+                text: 'INV ${value.toStringAsFixed(2)}',
                 theme: false,
                 color: theme.isDarkMode
                     ? colors.textSecondaryDark
                     : colors.textSecondaryLight,
-                fw: 3,
+                fw: 0,
               ),
             ),
             trailing: Column(
@@ -877,7 +1207,6 @@ class _PortfolioDashboardScreenState
                     ),
                   ),
                   // const SizedBox(height: 8),
-        
                   Padding(
                     padding: const EdgeInsets.only(top: 4),
                     child: TextWidget.paraText(
@@ -886,7 +1215,7 @@ class _PortfolioDashboardScreenState
                       color: theme.isDarkMode
                           ? colors.textSecondaryDark
                           : colors.textSecondaryLight,
-                      fw: 3,
+                      fw: 0,
                     ),
                   ),
                 ])),
@@ -918,7 +1247,7 @@ class _PortfolioDashboardScreenState
               color: theme.isDarkMode
                   ? colors.textPrimaryDark
                   : colors.textPrimaryLight,
-              fw: 3,
+              fw: 0,
             ),
           ),
           TextWidget.paraText(
@@ -927,7 +1256,7 @@ class _PortfolioDashboardScreenState
             color: theme.isDarkMode
                 ? colors.textPrimaryDark
                 : colors.textPrimaryLight,
-            fw: 3,
+            fw: 0,
           ),
         ],
       ),
@@ -946,8 +1275,8 @@ class _PortfolioDashboardScreenState
             decoration: BoxDecoration(
               color: portfolio.getSectorAllocationColor(entry.key),
               borderRadius: BorderRadius.horizontal(
-                left: entry == entries.first ? Radius.circular(8) : Radius.zero,
-                right: entry == entries.last ? Radius.circular(8) : Radius.zero,
+                left: entry == entries.first ? Radius.circular(5) : Radius.zero,
+                right: entry == entries.last ? Radius.circular(5) : Radius.zero,
               ),
             ),
           ),
@@ -1011,18 +1340,18 @@ class _PortfolioDashboardScreenState
               text: sector,
               theme: false,
               color: theme.isDarkMode
-                  ? colors.textPrimaryDark
-                  : colors.textPrimaryLight,
-              fw: 3,
+                  ? colors.textSecondaryDark
+                  : colors.textSecondaryLight,
+              fw: 0,
             ),
           ),
           TextWidget.paraText(
             text: '${percentage.toStringAsFixed(2)}%',
             theme: false,
             color: theme.isDarkMode
-                ? colors.textPrimaryDark
-                : colors.textPrimaryLight,
-            fw: 3,
+                ? colors.textSecondaryDark
+                : colors.textSecondaryLight,
+            fw: 0,
           ),
         ],
       ),
@@ -1041,19 +1370,403 @@ class _PortfolioDashboardScreenState
       return dateString;
     }
   }
+
+  // Show filter bottom sheet
+  void _showFilterBottomSheet(BuildContext context, ThemesProvider theme) {
+    showModalBottomSheet(
+      useSafeArea: true,
+      isScrollControlled: true,
+      isDismissible: true,
+      enableDrag: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setModalState) =>
+            _buildFilterBottomSheet(theme, setModalState),
+      ),
+    ).then((_) {
+      // Filters are applied automatically through the provider
+    });
+  }
+
+  // Build filter bottom sheet content
+  Widget _buildFilterBottomSheet(
+      ThemesProvider theme, StateSetter setModalState) {
+    final portfolio = ref.watch(dashboardProvider);
+    final data = portfolio.portfolioAnalysis;
+
+    if (data == null) return const SizedBox.shrink();
+
+    return SafeArea(
+      child: Container(
+        // padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(16),
+            topRight: Radius.circular(16),
+          ),
+          color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+          border: Border(
+            top: BorderSide(
+              color: theme.isDarkMode
+                  ? colors.textSecondaryDark.withOpacity(0.5)
+                  : colors.colorWhite,
+            ),
+            left: BorderSide(
+              color: theme.isDarkMode
+                  ? colors.textSecondaryDark.withOpacity(0.5)
+                  : colors.colorWhite,
+            ),
+            right: BorderSide(
+              color: theme.isDarkMode
+                  ? colors.textSecondaryDark.withOpacity(0.5)
+                  : colors.colorWhite,
+            ),
+          ),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header
+            Padding(
+              padding:
+                  const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  TextWidget.titleText(
+                    text: 'Filter Holdings',
+                    theme: false,
+                    color: theme.isDarkMode
+                        ? colors.textPrimaryDark
+                        : colors.textPrimaryLight,
+                    fw: 1,
+                  ),
+                  Material(
+                    color: Colors.transparent,
+                    shape: const CircleBorder(),
+                    clipBehavior: Clip.hardEdge,
+                    child: InkWell(
+                      customBorder: const CircleBorder(),
+                      splashColor: theme.isDarkMode
+                          ? colors.splashColorDark
+                          : colors.splashColorLight,
+                      highlightColor: theme.isDarkMode
+                          ? colors.highlightDark
+                          : colors.highlightLight,
+                      onTap: () {
+                        Navigator.pop(context);
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Icon(
+                          Icons.close,
+                          color: theme.isDarkMode
+                              ? colors.textSecondaryDark
+                              : colors.textSecondaryLight,
+                          size: 20,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Divider(
+              color: theme.isDarkMode
+                  ? colors.darkColorDivider
+                  : colors.colorDivider,
+              height: 0,
+            ),
+            const SizedBox(height: 20),
+
+            // Filter Sections
+            Expanded(
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Common "All" Filter
+                      _buildFilterSection(
+                        theme,
+                        '',
+                        ['All'],
+                        'all',
+                        setModalState,
+                      ),
+                      const SizedBox(height: 20),
+
+                      // Segmentation Filters
+                      if (data.accountAllocation.isNotEmpty) ...[
+                        _buildFilterSection(
+                          theme,
+                          'Segmentation',
+                          data.accountAllocation.keys.toList(),
+                          'accountType',
+                          setModalState,
+                        ),
+                        const SizedBox(height: 20),
+                      ],
+
+                      // Market Cap Filters
+                      if (data.marketCapAllocation.isNotEmpty) ...[
+                        _buildFilterSection(
+                          theme,
+                          'Market Cap',
+                          data.marketCapAllocation.keys.toList(),
+                          'marketCap',
+                          setModalState,
+                        ),
+                        const SizedBox(height: 20),
+                      ],
+
+                      // Sector Filters
+                      if (data.sectorAllocation.isNotEmpty) ...[
+                        _buildFilterSection(
+                          theme,
+                          'Sector',
+                          data.sectorAllocation.keys.toList(),
+                          'sector',
+                          setModalState,
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            // Buttons Row
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Row(
+                children: [
+                  // Clear Filters Button
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () {
+                        ref.read(dashboardProvider).clearAllFilters();
+                        Navigator.pop(context);
+                      },
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        side: BorderSide(
+                          color: theme.isDarkMode
+                              ? colors.textSecondaryDark
+                              : colors.textSecondaryLight,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        minimumSize: const Size(0, 45),
+                      ),
+                      child: TextWidget.subText(
+                        text: 'Clear All',
+                        theme: false,
+                        color: theme.isDarkMode
+                            ? colors.textSecondaryDark
+                            : colors.textSecondaryLight,
+                        fw: 2,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  // Apply Button
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: theme.isDarkMode
+                            ? colors.colorBlue
+                            : colors.colorBlue,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        minimumSize: const Size(0, 45),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                      ),
+                      child: TextWidget.subText(
+                        text: 'Apply Filters',
+                        theme: false,
+                        color: colors.colorWhite,
+                        fw: 2,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Build individual filter section
+  Widget _buildFilterSection(
+    ThemesProvider theme,
+    String title,
+    List<String> options,
+    String filterType,
+    StateSetter setModalState,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Section Title - only show if title is provided
+        if (title.isNotEmpty) ...[
+          TextWidget.subText(
+            text: title,
+            theme: false,
+            color: theme.isDarkMode
+                ? colors.textPrimaryDark
+                : colors.textSecondaryLight,
+            fw: 1,
+          ),
+          const SizedBox(height: 12),
+        ],
+
+        // Filter Options
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: options
+              .map((option) => _buildFilterChip(
+                    theme,
+                    option,
+                    filterType,
+                    setModalState,
+                  ))
+              .toList(),
+        ),
+      ],
+    );
+  }
+
+  // Build individual filter chip styled like order preference screen
+  Widget _buildFilterChip(
+    ThemesProvider theme,
+    String label,
+    String filterType,
+    StateSetter setModalState,
+  ) {
+    final dashboardState = ref.watch(dashboardProvider);
+    bool isSelected = false;
+
+    switch (filterType) {
+      case 'all':
+        isSelected = dashboardState.showAll;
+        break;
+      case 'accountType':
+        isSelected = dashboardState.isAccountTypeSelected(label);
+        break;
+      case 'marketCap':
+        isSelected = dashboardState.isMarketCapSelected(label);
+        break;
+      case 'sector':
+        isSelected = dashboardState.isSectorSelected(label);
+        break;
+    }
+
+    return TextButton(
+      onPressed: () {
+        switch (filterType) {
+          case 'all':
+            if (isSelected) {
+              ref.read(dashboardProvider).updateShowAll(false);
+            } else {
+              ref.read(dashboardProvider).updateShowAll(true);
+            }
+            break;
+          case 'accountType':
+            ref.read(dashboardProvider).toggleAccountType(label);
+            break;
+          case 'marketCap':
+            ref.read(dashboardProvider).toggleMarketCap(label);
+            break;
+          case 'sector':
+            ref.read(dashboardProvider).toggleSector(label);
+            break;
+        }
+        setModalState(() {}); // Trigger rebuild of modal
+      },
+      style: TextButton.styleFrom(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+        backgroundColor: !theme.isDarkMode
+            ? (isSelected ? const Color(0xffF1F3F8) : Colors.transparent)
+            : (isSelected ? colors.darkGrey : Colors.transparent),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(4),
+          side: isSelected
+              ? BorderSide(
+                  color: theme.isDarkMode
+                      ? colors.primaryDark
+                      : colors.primaryLight,
+                  width: 1,
+                )
+              : BorderSide.none,
+        ),
+      ),
+      child: Text(
+        label,
+        style: TextWidget.textStyle(
+          color: theme.isDarkMode
+              ? colors.textPrimaryDark
+              : colors.textPrimaryLight,
+          fontSize: 14,
+          theme: theme.isDarkMode,
+          fw: isSelected ? 2 : 0,
+        ),
+      ),
+    );
+  }
+
+    // Helper method to check if market depth details are available
+  bool _isMarketDepthAvailable(String? exch, String? token, String? tsym) {
+    // Only check for basic null/empty values
+    if (exch == null || token == null || tsym == null) {
+      return false;
+    }
+    
+    // Check for empty strings
+    if (exch.trim().isEmpty || token.trim().isEmpty || tsym.trim().isEmpty) {
+      return false;
+    }
+    
+    // Check for "null" strings (common API issue)
+    if (exch.toLowerCase() == 'null' || 
+        token.toLowerCase() == 'null' || 
+        tsym.toLowerCase() == 'null') {
+      return false;
+    }
+    
+    // Allow everything else - let the details page handle invalid data
+    return true;
+  }
 }
 
 // Sticky Header Delegate Class
 class _StickyHeaderDelegate extends SliverPersistentHeaderDelegate {
   final Widget child;
+  final bool showSearch;
 
-  _StickyHeaderDelegate({required this.child});
-
-  @override
-  double get minExtent => 60.0;
+  _StickyHeaderDelegate({required this.child, required this.showSearch});
 
   @override
-  double get maxExtent => 60.0;
+  double get minExtent => 100.0; // Dynamic height based on search state
+
+  @override
+  double get maxExtent => 100.0; // Dynamic height based on search state
 
   @override
   Widget build(
@@ -1063,6 +1776,6 @@ class _StickyHeaderDelegate extends SliverPersistentHeaderDelegate {
 
   @override
   bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) {
-    return false;
+    return true; // Rebuild when search state changes
   }
 }

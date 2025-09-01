@@ -706,9 +706,9 @@ class _StockScreenState extends ConsumerState<StockScreen>
                       children: [
                         InkWell(
                           canRequestFocus: false,
-                          // onTap: () {
-                          //   Navigator.pushNamed(context, Routes.portfolioDashboard);
-                          // },
+                          onTap: () {
+                            Navigator.pushNamed(context, Routes.portfolioDashboard);
+                          },
                           child: Container(
                            padding: const EdgeInsets.only(
                         left: 14, right: 14, top: 6, bottom: 6),
