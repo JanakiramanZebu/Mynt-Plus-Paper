@@ -292,7 +292,9 @@ class _OrderConfirmationScreenState extends ConsumerState<OrderConfirmationScree
                               _buildOrderDetailRow("Symbol", orderHistory[0].tsym ?? "-", theme),
                               _buildOrderDetailRow("Exchange", orderHistory[0].exch ?? "-", theme),
                               _buildOrderDetailRow("Transaction Type", orderHistory[0].trantype == "B" ? "Buy" : "Sell", theme),
-                              _buildOrderDetailRow("Quantity", orderHistory[0].qty ?? "-", theme),
+                              _buildOrderDetailRow("Quantity", (orderHistory[0].exch == "MCX" ? 
+                                                                    (int.parse(orderHistory[0].qty ?? "0") ~/ int.parse(orderHistory[0].ls ?? "1")).toString() 
+                                                                    : orderHistory[0].qty) ?? "-", theme),
                               _buildOrderDetailRow("Price", "₹${orderHistory[0].prc ?? "0.00"}", theme),
                               _buildOrderDetailRow("Product", _getProductName(orderHistory[0].prd ?? ""), theme),
                               _buildOrderDetailRow("Price Type", orderHistory[0].prctyp ?? "-", theme),
