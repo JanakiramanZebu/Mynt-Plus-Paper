@@ -38,7 +38,7 @@ mixin StocksAPI on ApiCore {
   Future< PortfolioResponse> fetchPortfolioAnalysis(String clientId, String session) async {
  
     try {
-      final uri = Uri.parse('http://192.168.5.119:8002/AnalysisHoldingsdata?client_id=${clientId}&session=${session}');
+      final uri = Uri.parse('${apiLinks.portfolioAnalysisURL}?client_id=${clientId}&session=${session}');
       final res = await apiClient.get(uri);
       final json = jsonDecode(res.body);
         

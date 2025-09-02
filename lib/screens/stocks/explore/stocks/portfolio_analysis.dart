@@ -33,12 +33,28 @@ class _PortfolioDashboardScreenState
 
   // Scroll state management for elevation
   bool _hasScrolled = false;
+  final ScrollController _scrollController = ScrollController();
+  final GlobalKey _contentKey = GlobalKey();
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(dashboardProvider).getPortfolioAnalysis();
+    });
+    
+    // Listen to scroll changes for elevation effect
+    _scrollController.addListener(() {
+      // Get the height of content above sticky header
+      final RenderBox? contentBox = _contentKey.currentContext?.findRenderObject() as RenderBox?;
+      final contentHeightAboveHeader = contentBox?.size.height ?? 400.0;
+      
+      final hasScrolled = _scrollController.offset > contentHeightAboveHeader;
+      if (hasScrolled != _hasScrolled) {
+        setState(() {
+          _hasScrolled = hasScrolled;
+        });
+      }
     });
   }
 
@@ -48,6 +64,7 @@ class _PortfolioDashboardScreenState
   void dispose() {
     _hideTooltipTimer?.cancel();
     _searchFocusNode.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -146,21 +163,27 @@ class _PortfolioDashboardScreenState
 
   Widget _buildDashboardContentWithStickyHeader(PortfolioResponse data) {
     final theme = ref.watch(themeProvider);
+    final dashboardState = ref.watch(dashboardProvider);
 
-    return NestedScrollView(
-      headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
-        // Update scroll state when inner content scrolls
-        if (innerBoxIsScrolled != _hasScrolled) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted) {
-              setState(() {
-                _hasScrolled = innerBoxIsScrolled;
-              });
-            }
-          });
-        }
-        return <Widget>[
-          SliverToBoxAdapter(
+    // Get filtered holdings based on selected filters
+    final filteredHoldings = dashboardState.getFilteredHoldings(data.topStocks);
+
+    // When search is active and there's search text, use search results
+    // Otherwise use filtered list
+    final searchText = dashboardState.portfolioSearchController.text.trim();
+    final itemsToDisplay =
+        (dashboardState.showPortfolioSearch && searchText.isNotEmpty)
+            ? dashboardState.portfolioSearchItems
+            : filteredHoldings;
+    final validFundamentals = itemsToDisplay.toList();
+
+    return CustomScrollView(
+      controller: _scrollController,
+      slivers: [
+        // Main content section
+        SliverToBoxAdapter(
+          child: Container(
+            key: _contentKey,
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               child: Column(
@@ -179,59 +202,63 @@ class _PortfolioDashboardScreenState
               ),
             ),
           ),
-          // Sticky Header for Top Stocks
-          SliverPersistentHeader(
-            pinned: true,
-            floating: true,
-            delegate: _StickyHeaderDelegate(
-              showSearch: ref.watch(dashboardProvider).showPortfolioSearch,
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                decoration: BoxDecoration(
-                  color:
-                      theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-                  // color: Colors.white,
-                  // borderRadius: BorderRadius.circular(12),
-                  boxShadow: _hasScrolled
-                      ? [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 4,
-                            offset: const Offset(0, 2),
-                          )
-                        ]
-                      : [],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        TextWidget.subText(
-                          text: 'Holdings',
-                          theme: false,
-                          color: theme.isDarkMode
-                              ? colors.textPrimaryDark
-                              : colors.textPrimaryLight,
-                          fw: 1,
-                        ),
-                        // Filter Icon
-                      ],
-                    ),
-                    SizedBox(height: 12),
-                    // Search and Filter Section
-                    _buildSearchAndFilterSection(theme),
-                    // Search Bar (shown when search is active)
-                    _buildSearchBar(theme),
-                  ],
-                ),
+        ),
+        // Sticky Header for Top Stocks
+        SliverPersistentHeader(
+          pinned: true,
+          floating: true,
+          delegate: _StickyHeaderDelegate(
+            showSearch: dashboardState.showPortfolioSearch,
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              decoration: BoxDecoration(
+                color:
+                    theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                boxShadow: _hasScrolled
+                    ? [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        )
+                      ]
+                    : [],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      TextWidget.subText(
+                        text: 'Holdings',
+                        theme: false,
+                        color: theme.isDarkMode
+                            ? colors.textPrimaryDark
+                            : colors.textPrimaryLight,
+                        fw: 1,
+                      ),
+                      // Filter Icon
+                    ],
+                  ),
+                  SizedBox(height: 12),
+                  // Search and Filter Section
+                  _buildSearchAndFilterSection(theme),
+                  // Search Bar (shown when search is active)
+                  _buildSearchBar(theme),
+                ],
               ),
             ),
           ),
-        ];
-      },
-      body: _buildTopStocksScrollableList(data.topStocks),
+        ),
+        // Holdings list
+        _buildHoldingsSliverList(validFundamentals, theme, dashboardState, searchText),
+        // Add bottom padding for better spacing
+        const SliverPadding(
+          padding: EdgeInsets.only(bottom: 30),
+          sliver: SliverToBoxAdapter(child: SizedBox.shrink()),
+        ),
+      ],
     );
   }
 
@@ -462,6 +489,48 @@ class _PortfolioDashboardScreenState
     );
   }
 
+  Widget _buildHoldingsSliverList(List<TopStocks> validFundamentals, ThemesProvider theme, dynamic dashboardState, String searchText) {
+    // Show "No Data Found" when search is active with text but no results
+    if (dashboardState.showPortfolioSearch &&
+        searchText.isNotEmpty &&
+        validFundamentals.isEmpty) {
+      return SliverFillRemaining(
+        child: Container(
+          color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+          child: const Center(
+            child: NoDataFound(),
+          ),
+        ),
+      );
+    }
+
+    return SliverList(
+      delegate: SliverChildBuilderDelegate(
+        (context, index) {
+          if (index.isOdd) {
+            return ListDivider();
+          }
+          final itemIndex = index ~/ 2;
+          if (itemIndex >= validFundamentals.length) {
+            return null;
+          }
+          final entry = validFundamentals[itemIndex];
+          return _buildSectorPerformanceItem(
+            sector: entry.name ?? '',
+            value: entry.inverstedAmount ?? 0,
+            marketCapType: entry.marketCapType ?? '',
+            allocationPercent: entry.allocationPercent ?? 0,
+            qty: entry.qty ?? '',
+            exch: entry.exch ?? '',
+            token: entry.zebuToken ?? '',
+            tsym: entry.tsym ?? '',
+          );
+        },
+        childCount: validFundamentals.isEmpty ? 0 : (validFundamentals.length * 2) - 1,
+      ),
+    );
+  }
+
   Widget _buildTopStocksScrollableList(List<TopStocks> topStocks) {
     final theme = ref.watch(themeProvider);
     final dashboardState = ref.watch(dashboardProvider);
@@ -492,7 +561,7 @@ class _PortfolioDashboardScreenState
     return Container(
       color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
       child: ListView.separated(
-        // padding: const EdgeInsets.symmetric(horizontal: 16),
+        // padding: const EdgeInsets.symmetric(horizontal: 16),        
         separatorBuilder: (_, __) => ListDivider(),
         itemCount: validFundamentals.length,
         itemBuilder: (context, index) {
@@ -1112,9 +1181,6 @@ class _PortfolioDashboardScreenState
     required String tsym,
   }) {
     final theme = ref.watch(themeProvider);
-    final marketWatch = ref.read(marketWatchProvider);
-    final performanceColor =
-        ref.watch(dashboardProvider).getMarketCapColor(marketCapType);
 
     final isTappable = _isMarketDepthAvailable(exch, token, tsym);
 
@@ -1136,11 +1202,11 @@ class _PortfolioDashboardScreenState
 
           try {
             final depthArgs = <String, dynamic>{
-              'exch': (exch ?? '').toString(),
-              'token': (token ?? '').toString(),
-              'tsym': (tsym ?? '').toString().split(':').last,
+              'exch': exch.toString(),
+              'token': token.toString(),
+              'tsym': tsym.toString().split(':').last,
               'instname': '',
-              'symbol': (tsym ?? '').toString(),
+              'symbol': tsym.toString(),
               'expDate': '',
               'option': '',
             };
