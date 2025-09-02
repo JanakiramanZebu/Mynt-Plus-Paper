@@ -87,6 +87,11 @@ class DashboardProvider extends DefaultChangeNotifier {
     }
   }
 
+  clearPortfolioAnalysis() {
+    _portfolioAnalysis = null;
+    notifyListeners();
+  }
+
   // Portfolio Analysis Methods
   String getMonthAbbreviation(int month) {
     switch (month) {

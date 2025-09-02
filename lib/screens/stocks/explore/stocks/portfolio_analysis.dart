@@ -40,15 +40,18 @@ class _PortfolioDashboardScreenState
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(dashboardProvider).getPortfolioAnalysis();
+      if (ref.read(dashboardProvider).portfolioAnalysis == null) {
+        ref.read(dashboardProvider).getPortfolioAnalysis();
+      }
     });
-    
+
     // Listen to scroll changes for elevation effect
     _scrollController.addListener(() {
       // Get the height of content above sticky header
-      final RenderBox? contentBox = _contentKey.currentContext?.findRenderObject() as RenderBox?;
+      final RenderBox? contentBox =
+          _contentKey.currentContext?.findRenderObject() as RenderBox?;
       final contentHeightAboveHeader = contentBox?.size.height ?? 400.0;
-      
+
       final hasScrolled = _scrollController.offset > contentHeightAboveHeader;
       if (hasScrolled != _hasScrolled) {
         setState(() {
@@ -212,8 +215,7 @@ class _PortfolioDashboardScreenState
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               decoration: BoxDecoration(
-                color:
-                    theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
                 boxShadow: _hasScrolled
                     ? [
                         BoxShadow(
@@ -252,7 +254,8 @@ class _PortfolioDashboardScreenState
           ),
         ),
         // Holdings list
-        _buildHoldingsSliverList(validFundamentals, theme, dashboardState, searchText),
+        _buildHoldingsSliverList(
+            validFundamentals, theme, dashboardState, searchText),
         // Add bottom padding for better spacing
         const SliverPadding(
           padding: EdgeInsets.only(bottom: 30),
@@ -489,7 +492,8 @@ class _PortfolioDashboardScreenState
     );
   }
 
-  Widget _buildHoldingsSliverList(List<TopStocks> validFundamentals, ThemesProvider theme, dynamic dashboardState, String searchText) {
+  Widget _buildHoldingsSliverList(List<TopStocks> validFundamentals,
+      ThemesProvider theme, dynamic dashboardState, String searchText) {
     // Show "No Data Found" when search is active with text but no results
     if (dashboardState.showPortfolioSearch &&
         searchText.isNotEmpty &&
@@ -526,7 +530,8 @@ class _PortfolioDashboardScreenState
             tsym: entry.tsym ?? '',
           );
         },
-        childCount: validFundamentals.isEmpty ? 0 : (validFundamentals.length * 2) - 1,
+        childCount:
+            validFundamentals.isEmpty ? 0 : (validFundamentals.length * 2) - 1,
       ),
     );
   }
@@ -561,7 +566,7 @@ class _PortfolioDashboardScreenState
     return Container(
       color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
       child: ListView.separated(
-        // padding: const EdgeInsets.symmetric(horizontal: 16),        
+        // padding: const EdgeInsets.symmetric(horizontal: 16),
         separatorBuilder: (_, __) => ListDivider(),
         itemCount: validFundamentals.length,
         itemBuilder: (context, index) {
@@ -1622,12 +1627,15 @@ class _PortfolioDashboardScreenState
                         Navigator.pop(context);
                       },
                       style: OutlinedButton.styleFrom(
+                        backgroundColor: theme.isDarkMode
+                                                          ? colors
+                                                              .textSecondaryDark
+                                                              .withOpacity(0.6)
+                                                          : colors.btnBg,
                         padding: const EdgeInsets.symmetric(vertical: 12),
-                        side: BorderSide(
-                          color: theme.isDarkMode
-                              ? colors.textSecondaryDark
-                              : colors.textSecondaryLight,
-                        ),
+                        side: theme.isDarkMode
+                            ? null
+                            : BorderSide(color: colors.primaryLight, width: 1),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(5),
                         ),
@@ -1637,8 +1645,8 @@ class _PortfolioDashboardScreenState
                         text: 'Clear All',
                         theme: false,
                         color: theme.isDarkMode
-                            ? colors.textSecondaryDark
-                            : colors.textSecondaryLight,
+                            ? colors.colorWhite
+                            : colors.primaryLight,
                         fw: 2,
                       ),
                     ),
@@ -1797,25 +1805,25 @@ class _PortfolioDashboardScreenState
     );
   }
 
-    // Helper method to check if market depth details are available
+  // Helper method to check if market depth details are available
   bool _isMarketDepthAvailable(String? exch, String? token, String? tsym) {
     // Only check for basic null/empty values
     if (exch == null || token == null || tsym == null) {
       return false;
     }
-    
+
     // Check for empty strings
     if (exch.trim().isEmpty || token.trim().isEmpty || tsym.trim().isEmpty) {
       return false;
     }
-    
+
     // Check for "null" strings (common API issue)
-    if (exch.toLowerCase() == 'null' || 
-        token.toLowerCase() == 'null' || 
+    if (exch.toLowerCase() == 'null' ||
+        token.toLowerCase() == 'null' ||
         tsym.toLowerCase() == 'null') {
       return false;
     }
-    
+
     // Allow everything else - let the details page handle invalid data
     return true;
   }
