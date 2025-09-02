@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mynt_plus/screens/stocks/explore/stocks/news/news_screen.dart';
 import 'package:share_plus/share_plus.dart';
+import 'dart:math' as math;
 
 import '../../../../locator/locator.dart';
 import '../../../../locator/preference.dart';
@@ -169,7 +170,8 @@ class _StockScreenState extends ConsumerState<StockScreen>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Padding(
-                    padding: const EdgeInsets.only(left: 16, right: 12, top: 0, bottom: 0),
+                    padding: const EdgeInsets.only(
+                        left: 16, right: 12, top: 0, bottom: 0),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -179,8 +181,8 @@ class _StockScreenState extends ConsumerState<StockScreen>
                             Container(
                                 decoration: BoxDecoration(
                                   color: theme.isDarkMode
-                                  ? colors.darkGrey
-                                  : const Color(0xffF1F3F8),
+                                      ? colors.darkGrey
+                                      : const Color(0xffF1F3F8),
                                   borderRadius: BorderRadius.circular(30),
                                 ),
                                 child: Padding(
@@ -189,11 +191,13 @@ class _StockScreenState extends ConsumerState<StockScreen>
                                     "assets/icon/briefcase.svg",
                                     width: 14,
                                     height: 14,
-                                    color: theme.isDarkMode ? colors.textSecondaryDark   : colors.primaryLight,
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                        : colors.primaryLight,
                                   ),
                                 )),
-                        const SizedBox(width: 12),
-                                TextWidget.subText(
+                            const SizedBox(width: 12),
+                            TextWidget.subText(
                               text: "Stocks Portfolio",
                               theme: false,
                               color: theme.isDarkMode
@@ -205,13 +209,13 @@ class _StockScreenState extends ConsumerState<StockScreen>
                         ),
                         // const SizedBox(width: 12),
                         Row(
-                          mainAxisAlignment:
-                              MainAxisAlignment.end,
+                          mainAxisAlignment: MainAxisAlignment.end,
                           children: [
                             InkWell(
                               canRequestFocus: false,
                               onTap: () async {
-                                Future.delayed(const Duration(milliseconds: 150), () {
+                                Future.delayed(
+                                    const Duration(milliseconds: 150), () {
                                   trancation.changebool(true);
                                   Navigator.pushNamed(
                                       context, Routes.fundscreen,
@@ -237,163 +241,203 @@ class _StockScreenState extends ConsumerState<StockScreen>
                     ),
                   ),
                   const SizedBox(height: 12),
-              
+
                   // if (portfolio.holdingsModel != null &&
                   //             portfolio.holdingsModel!.isNotEmpty)
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
-                              child: Material(
-                                color: Colors.transparent,
-                                shape: const RoundedRectangleBorder(),
-                                child: InkWell(
-                                  canRequestFocus: false,
-                                  customBorder: const RoundedRectangleBorder(),
-                                  splashColor: theme.isDarkMode
-                                      ? colors.splashColorDark
-                                      : colors.splashColorLight,
-                                  highlightColor: theme.isDarkMode
-                                      ? colors.highlightDark
-                                      : colors.highlightLight,
-                                  onTap: () {
-                                    indexList.bottomMenu(2, context);
-                                    portfolio.changeTabIndex(0);
-                                  },
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 16, vertical: 14),
-                                    decoration: BoxDecoration(
-                                      color: theme.isDarkMode
-                                          ? colors.colorBlack
-                                          : colors.searchBg,
-                                      borderRadius: BorderRadius.circular(5),
-                                    ),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.end,
-                                          children: [
-                                            TextWidget.subText(
-                                              text: "P&L",
-                                              theme: false,
-                                              color: theme.isDarkMode
-                                                  ? colors.textSecondaryDark
-                                                  : colors.textSecondaryLight,
-                                              fw: 0,
-                                            ),
-                                            Row(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.end,
-                                              children: [
-                                                TextWidget.titleText(
-                                                  text:
-                                                      "${getFormatter(value: totalCurrentVal, v4d: false, noDecimal: false)} ",
-                                                  theme: false,
-                                                  color: totalCurrentVal
-                                                          .toString()
-                                                          .startsWith("-")
-                                                      ? theme.isDarkMode
-                                                          ? colors.lossDark
-                                                          : colors.lossLight
-                                                      : theme.isDarkMode
-                                                          ? colors.successDark
-                                                          : colors
-                                                              .successLight,
-                                                  fw: 0,
-                                                ),
-                                                TextWidget.captionText(
-                                                  text:
-                                                      "(${portfolio.totPnlPercHolding == "NaN" ? 0.00 : portfolio.totPnlPercHolding}%)",
-                                                  theme: false,
-                                                  color: portfolio
-                                                          .totPnlPercHolding
-                                                          .toString()
-                                                          .startsWith("-")
-                                                      ? theme.isDarkMode
-                                                          ? colors.lossDark
-                                                          : colors.lossLight
-                                                      : theme.isDarkMode
-                                                          ? colors.successDark
-                                                          : colors
-                                                              .successLight,
-                                                  fw: 0,
-                                                ),
-                                              ],
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 10),
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.end,
-                                          children: [
-                                            Row(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.end,
-                                              children: [
-                                                TextWidget.subText(
-                                                  text: "Invested ",
-                                                  theme: false,
-                                                  color: theme.isDarkMode
-                                                      ? colors
-                                                          .textSecondaryDark
-                                                      : colors
-                                                          .textSecondaryLight,
-                                                  fw: 0,
-                                                ),
-                                                TextWidget.paraText(
-                                                  text:
-                                                     formatAmountCompact(double.parse(_totalPnlHolding)),
-                                                  theme: false,
-                                                  color: theme.isDarkMode
-                                                      ? colors.colorWhite
-                                                      : colors.colorBlack,
-                                                  fw: 0,
-                                                ),
-                                              ],
-                                            ),
-                                            Row(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.end,
-                                              children: [
-                                                TextWidget.subText(
-                                                  text: "Current ",
-                                                  theme: false,
-                                                  color: theme.isDarkMode
-                                                      ? colors
-                                                          .textSecondaryDark
-                                                      : colors
-                                                          .textSecondaryLight,
-                                                  fw: 0,
-                                                ),
-                                                TextWidget.paraText(
-                                                  text:
-                                                      formatAmountCompact(double.parse(_totalCurrentVal)),
-                                                  theme: false,
-                                                  color: theme.isDarkMode
-                                                      ? colors.colorWhite
-                                                      : colors.colorBlack,
-                                                  fw: 0,
-                                                ),
-                                              ],
-                                            ),
-                                          ],
-                                        )
-                                      ],
-                                    ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Material(
+                      color: Colors.transparent,
+                      shape: const RoundedRectangleBorder(),
+                      child: InkWell(
+                        canRequestFocus: false,
+                        customBorder: const RoundedRectangleBorder(),
+                        splashColor: theme.isDarkMode
+                            ? colors.splashColorDark
+                            : colors.splashColorLight,
+                        highlightColor: theme.isDarkMode
+                            ? colors.highlightDark
+                            : colors.highlightLight,
+                        onTap: () {
+                          indexList.bottomMenu(2, context);
+                          portfolio.changeTabIndex(0);
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 14),
+                          decoration: BoxDecoration(
+                            color: theme.isDarkMode
+                                ? colors.colorBlack
+                                : colors.searchBg,
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  TextWidget.subText(
+                                    text: "P&L",
+                                    theme: false,
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                        : colors.textSecondaryLight,
+                                    fw: 0,
                                   ),
-                                ),
+                                  Row(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      TextWidget.titleText(
+                                        text:
+                                            "${getFormatter(value: totalCurrentVal, v4d: false, noDecimal: false)} ",
+                                        theme: false,
+                                        color: totalCurrentVal
+                                                .toString()
+                                                .startsWith("-")
+                                            ? theme.isDarkMode
+                                                ? colors.lossDark
+                                                : colors.lossLight
+                                            : theme.isDarkMode
+                                                ? colors.successDark
+                                                : colors.successLight,
+                                        fw: 0,
+                                      ),
+                                      TextWidget.paraText(
+                                        text:
+                                            "(${portfolio.totPnlPercHolding == "NaN" ? 0.00 : portfolio.totPnlPercHolding}%)",
+                                        theme: false,
+                                        color: portfolio.totPnlPercHolding
+                                                .toString()
+                                                .startsWith("-")
+                                            ? theme.isDarkMode
+                                                ? colors.lossDark
+                                                : colors.lossLight
+                                            : theme.isDarkMode
+                                                ? colors.successDark
+                                                : colors.successLight,
+                                        fw: 0,
+                                      ),
+                                    ],
+                                  ),
+                                ],
                               ),
-                            ),
-              
+                              const SizedBox(height: 10),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Row(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      TextWidget.subText(
+                                        text: "Invested ",
+                                        theme: false,
+                                        color: theme.isDarkMode
+                                            ? colors.textSecondaryDark
+                                            : colors.textSecondaryLight,
+                                        fw: 0,
+                                      ),
+                                      TextWidget.paraText(
+                                        text: formatAmountCompact(
+                                            double.parse(_totalPnlHolding)),
+                                        theme: false,
+                                        color: theme.isDarkMode
+                                            ? colors.colorWhite
+                                            : colors.colorBlack,
+                                        fw: 0,
+                                      ),
+                                    ],
+                                  ),
+                                  Row(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      TextWidget.subText(
+                                        text: "Current ",
+                                        theme: false,
+                                        color: theme.isDarkMode
+                                            ? colors.textSecondaryDark
+                                            : colors.textSecondaryLight,
+                                        fw: 0,
+                                      ),
+                                      TextWidget.paraText(
+                                        text: formatAmountCompact(
+                                            double.parse(_totalCurrentVal)),
+                                        theme: false,
+                                        color: theme.isDarkMode
+                                            ? colors.colorWhite
+                                            : colors.colorBlack,
+                                        fw: 0,
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              )
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  // const SizedBox(height: 0),
+
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    margin: const EdgeInsets.only(top: 4),
+                    child: Material(
+                      color: Colors.transparent,
+                      shape: const RoundedRectangleBorder(),
+                      child: InkWell(
+                        // canRequestFocus: false,
+                        customBorder: const RoundedRectangleBorder(),
+                        splashColor: theme.isDarkMode
+                            ? colors.splashColorDark
+                            : colors.splashColorLight,
+                        highlightColor: theme.isDarkMode
+                            ? colors.highlightDark
+                            : colors.highlightLight,
+                        onTap: () {
+                          Future.delayed(const Duration(milliseconds: 150), () {
+                            Navigator.pushNamed(
+                                context, Routes.portfolioDashboard);
+                          });
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Row(
+                            // mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              TextWidget.subText(
+                                text: "Dive into your portfolio insights",
+                                theme: false,
+                                color: theme.isDarkMode
+                                    ? colors.primaryDark
+                                    : colors.primaryLight,
+                                fw: 2,
+                              ),
+                              const SizedBox(width: 6),
+                              SvgPicture.asset(
+                                assets.leftArrow,
+                                // width: 12,
+                                // height: 12,
+                                color: theme.isDarkMode
+                                    ? colors.primaryDark
+                                    : colors.primaryDark,
+                                    fit: BoxFit.scaleDown,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 16),
-              
+
                   // Center(
                   //   child: ElevatedButton(
                   //     onPressed: () async {},
@@ -454,16 +498,23 @@ class _StockScreenState extends ConsumerState<StockScreen>
                         isScrollable: true,
                         indicatorSize: TabBarIndicatorSize.tab,
                         indicatorColor: colors.colorWhite,
-                       indicator: BoxDecoration(
-                color: theme.isDarkMode ? colors.searchBgDark : const Color(0xffF1F3F8),
+                        indicator: BoxDecoration(
+                          color: theme.isDarkMode
+                              ? colors.searchBgDark
+                              : const Color(0xffF1F3F8),
                           borderRadius: BorderRadius.circular(5),
-              ),
-                       unselectedLabelColor:  theme.isDarkMode
-                  ? colors.textSecondaryDark
-                  : colors.textSecondaryLight,
-               labelStyle: TextWidget.textStyle(
-                            fontSize: 14, theme: false, fw: 2, color:theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight),
-               unselectedLabelStyle: TextWidget.textStyle(
+                        ),
+                        unselectedLabelColor: theme.isDarkMode
+                            ? colors.textSecondaryDark
+                            : colors.textSecondaryLight,
+                        labelStyle: TextWidget.textStyle(
+                            fontSize: 14,
+                            theme: false,
+                            fw: 2,
+                            color: theme.isDarkMode
+                                ? colors.textPrimaryDark
+                                : colors.textPrimaryLight),
+                        unselectedLabelStyle: TextWidget.textStyle(
                             fontSize: 14,
                             theme: false,
                             fw: 3,
@@ -652,9 +703,13 @@ class _StockScreenState extends ConsumerState<StockScreen>
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(5),
-                          color: theme.isDarkMode ? colors.searchBgDark.withOpacity(0.5) : const Color(0xffF1F3F8).withOpacity(0.5),
+                          color: theme.isDarkMode
+                              ? colors.searchBgDark.withOpacity(0.5)
+                              : const Color(0xffF1F3F8).withOpacity(0.5),
                           border: Border.all(
-                            color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+                            color: theme.isDarkMode
+                                ? colors.darkColorDivider
+                                : colors.colorDivider,
                           ),
                         ),
                         child: Row(
@@ -706,20 +761,24 @@ class _StockScreenState extends ConsumerState<StockScreen>
                       children: [
                         InkWell(
                           canRequestFocus: false,
-                          // onTap: () {
-                          //   Navigator.pushNamed(context, Routes.portfolioDashboard);
-                          // },
+                          onTap: () {
+                            // Navigator.pushNamed(context, Routes.portfolioDashboard);
+                          },
                           child: Container(
-                           padding: const EdgeInsets.only(
-                        left: 14, right: 14, top: 6, bottom: 6),
+                            padding: const EdgeInsets.only(
+                                left: 14, right: 14, top: 6, bottom: 6),
                             decoration: BoxDecoration(
-                             color: theme.isDarkMode ? colors.searchBgDark : const Color(0xffF1F3F8),
+                              color: theme.isDarkMode
+                                  ? colors.searchBgDark
+                                  : const Color(0xffF1F3F8),
                               borderRadius: BorderRadius.circular(5),
                             ),
                             child: TextWidget.subText(
                               text: "Quick Access",
                               theme: false,
-                            color:theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                              color: theme.isDarkMode
+                                  ? colors.textPrimaryDark
+                                  : colors.textPrimaryLight,
                               fw: 2,
                             ),
                           ),
@@ -753,10 +812,12 @@ class _StockScreenState extends ConsumerState<StockScreen>
                                         arguments: "DDDDD");
                                     break;
                                   case 'F&O Margin Calculator':
-                                    Navigator.pushNamed(context, Routes.marginCalculator);
+                                    Navigator.pushNamed(
+                                        context, Routes.marginCalculator);
                                     break;
                                   case 'Brokerage Calculator':
-                                    Navigator.pushNamed(context, Routes.brokerCalculator);
+                                    Navigator.pushNamed(
+                                        context, Routes.brokerCalculator);
                                     break;
                                 }
                               },

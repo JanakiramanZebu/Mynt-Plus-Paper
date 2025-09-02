@@ -16,6 +16,7 @@ import '../routes/route_names.dart';
 import '../sharedWidget/snack_bar.dart';
 import 'auth_provider.dart';
 import 'core/default_change_notifier.dart';
+import 'dashboard_provider.dart';
 import 'index_list_provider.dart';
 import 'shocase_provider.dart';
 import '../models/profile_model/qr_login_res.dart';
@@ -185,6 +186,7 @@ class UserProfileProvider extends DefaultChangeNotifier {
     _userloader = false;
     _webViewKey = UniqueKey();
     _profileimage = null;
+    ref.read(dashboardProvider).clearPortfolioAnalysis();
     notifyListeners();
   }
 

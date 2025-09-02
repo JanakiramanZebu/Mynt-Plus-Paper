@@ -782,11 +782,11 @@ class AppRoutes {
           pageBuilder: (_, __, ___) =>  MarginCalculatorScreen(),
           beginOffset: const Offset(-1.0, 0.0),
         );
-      // case Routes.portfolioDashboard:
-      //   return _createRoute(
-      //     pageBuilder: (_, __, ___) => const PortfolioDashboardScreen(),
-      //     beginOffset: const Offset(-1.0, 0.0),
-      //   );
+        case Routes.portfolioDashboard:
+          return _createRoute(
+            pageBuilder: (_, __, ___) => const PortfolioDashboardScreen(),
+            beginOffset: const Offset(-1.0, 0.0),
+          );
       case Routes.mfcagrcalss:
         return _createRoute(
           pageBuilder: (_, __, ___) => const MFCAGRCAL(),

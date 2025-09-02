@@ -165,6 +165,7 @@ class ApiLinks {
   // Stock data URL
 
   String dashBoardURL = "https://v3.mynt.in";
+  String get portfolioAnalysisURL => "$dashBoardURL/dd/AnalysisHoldingsdata_mob";
 
   // String tradeAction = "https://v3.mynt.in/equity/getadindicesAdvdec";
 
