@@ -73,6 +73,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
   TextEditingController triggerPriceCtrl = TextEditingController();
   TextEditingController stopLossCtrl = TextEditingController();
   TextEditingController targetCtrl = TextEditingController();
+  TextEditingController trailingTicksCtrl = TextEditingController();
 
   TextEditingController sipLtpctrl = TextEditingController();
   TextEditingController sipname = TextEditingController();
@@ -364,6 +365,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
 
       stopLossCtrl.text = orderRawValue['blprc'] ?? "0";
       targetCtrl.text = orderRawValue['bpprc'] ?? "0";
+      trailingTicksCtrl.text = orderRawValue['trailprc'] ?? "";
       validityType = orderRawValue['ret'] ?? '';
       triggerPriceCtrl.text = orderRawValue['trgprc'] ?? "0";
       mktProtCtrl.text = (double.tryParse(orderRawValue['mkt_protection']?.toString() ?? '5')?.toInt() ?? 5).toString();
@@ -3329,6 +3331,11 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
 
                                       //    if (_isCoverOrderEnabled) ...[
                                       stopLossOption(theme, context, widget.scripInfo),
+                                      const SizedBox(height: 10),
+
+                                       if (_isBracketOrderEnabled) ...[
+                                      trailingTicksOption(theme, context, widget.scripInfo),
+                                       ],
                                       // const SizedBox(height: 30),
                                       // ],
                                       // Text( "Cover: ${_isCoverOrderEnabled} Bracket: ${_isBracketOrderEnabled}"),
@@ -4264,6 +4271,13 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                         else if (_isBracketOrderEnabled &&
                                                             orderType == "CO - BO" &&
                                                             (priceType == "Limit" || priceType == "Market")) {
+                                                            
+                                                            double tickSize = double.parse(widget.scripInfo.ti.toString());
+                                                            double enteredValue = double.tryParse(trailingTicksCtrl.text) ?? 0;
+                                                            double trailTicksQuotient = enteredValue / tickSize;
+                                                            double trailTicksRemainder = (trailTicksQuotient - trailTicksQuotient.round()).abs();
+
+
                                                           if (stopLossCtrl.text.isEmpty || targetCtrl.text.isEmpty) {
                                                             warningMessage(context,
                                                                 "${stopLossCtrl.text.isEmpty ? "Stoploss" : "Target"} can not be empty");
@@ -4279,6 +4293,8 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                               (double.parse(ordPrice) + double.parse(stopLossCtrl.text)) > double.parse(widget.scripInfo.uc!)) {
                                                             warningMessage(context,
                                                                 "Price(Order price + Stoploss = ${(double.parse(ordPrice) + double.parse(stopLossCtrl.text))}) Stoploss can not be greater than ${widget.scripInfo.uc}");
+                                                          } else if(trailingTicksCtrl.text.isNotEmpty && (trailTicksRemainder > 0.0001)){
+                                                                      warningMessage(context, "Trailing price should be in multiples of tick size: $tickSize");
                                                           } else {
                                                             if ((int.parse(convertQtyOrAmtValue(
                                                                                 qtyCtrl.text, _isQtyToAmount)
@@ -4848,6 +4864,65 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                   //   child: SvgPicture.asset(color: theme.isDarkMode ? colors.colorWhite : colors.colorGrey, assets.ruppeIcon, fit: BoxFit.scaleDown),
                   // ),
                   textCtrl: stopLossCtrl,
+                  textAlign: TextAlign.start)),
+                  const SizedBox(height: 10)
+
+        ],
+      ),
+    );
+  }
+
+  Padding trailingTicksOption(ThemesProvider theme, BuildContext context, ScripInfoModel scripInfo) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          headerTitleText("Trailing Price", theme),
+          const SizedBox(height: 8),
+          SizedBox(
+              height: 45,
+              child: CustomTextFormField(
+                  fillColor: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
+                  hintText: "0.00",
+                  onChanged: (value) {
+
+                    if (value.isNotEmpty) {
+                      double tickSize = double.parse(scripInfo.ti.toString());
+                      double enteredValue = double.tryParse(value) ?? 0;
+                      
+                      if (enteredValue <= 0) {
+                        trailingTicksCtrl.text = value.substring(0, value.length - 1);
+                        trailingTicksCtrl.selection = TextSelection.collapsed(offset: trailingTicksCtrl.text.length);
+                        return;
+                      }
+                      
+                      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                      double quotient = enteredValue / tickSize;
+                      double remainder = (quotient - quotient.round()).abs();
+
+                      if (remainder > 0.0001) {
+                        warningMessage(context, "Trailing price should be in multiples of tick size: $tickSize");
+                      }
+                    }
+                    if (value.isEmpty) {
+                      warningMessage(context, "Trailing price can not be empty");
+                    }
+                  },
+                  hintStyle: TextWidget.textStyle(
+                    fontSize: 14,
+                    theme: theme.isDarkMode,
+                    color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                    fw: 0,
+                  ),
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  style: TextWidget.textStyle(
+                    fontSize: 16,
+                    color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                    theme: theme.isDarkMode,
+                    fw: 0,
+                  ),
+                  textCtrl: trailingTicksCtrl,
                   textAlign: TextAlign.start))
         ],
       ),
@@ -5164,7 +5239,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                   ? (int.parse(convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount)) * lotSize).toString()
                   : convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount),
               ret: validityType,
-              trailprc: '',
+              trailprc: orderType == "CO - BO" && trailingTicksCtrl.text.isNotEmpty && trailingTicksCtrl.text != "0" ? trailingTicksCtrl.text : '' ,
               trantype: isBuy! ? 'B' : 'S',
               trgprc: priceType == "SL Limit" || priceType == "SL MKT" ? triggerPriceCtrl.text : "",
               tsym: widget.scripInfo.tsym!,
@@ -5506,7 +5581,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                         : "BO",
         "qty": splitQty.toString(), // Use the split quantity instead of original quantity
         "ret": validityType,
-        "trailprc": '',
+        "trailprc": orderType == "CO - BO" && trailingTicksCtrl.text.isNotEmpty && trailingTicksCtrl.text != "0" ? trailingTicksCtrl.text :'',
         "trantype": isBuy! ? 'B' : 'S',
         "trgprc": priceType == "SL Limit" || priceType == "SL MKT" ? triggerPriceCtrl.text : "",
         "tsym": widget.scripInfo.tsym!,
