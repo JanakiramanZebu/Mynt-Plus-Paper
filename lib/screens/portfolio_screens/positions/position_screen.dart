@@ -612,40 +612,41 @@ class _PositionHeaderSection extends ConsumerWidget {
               theme: theme,
             ),
           ),
-          // const SizedBox(height: 6),
-          // Padding(
-          //   padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 8),
-          //   child: Row(
-          //     children: [
-          //       Text("P&L",
-          //           style: TextWidget.textStyle(
-          //               fontSize: 13,
-          //               theme: theme.isDarkMode,
-          //               color: theme.isDarkMode
-          //                   ? colors.colorWhite
-          //                   : colors.colorGrey,
-          //               fw: 0)),
-          //       const SizedBox(width: 6),
-          //       CustomSwitch(
-          //           onChanged: (bool value) {
-          //             positionBook.chngPositionPnl(!positionBook.isNetPnl);
-          //           },
-          //           color: !theme.isDarkMode
-          //               ? colors.colorGrey.withOpacity(0.2)
-          //               : colors.colorBlack,
-          //           value: positionBook.isNetPnl),
-          //       const SizedBox(width: 6),
-          //       Text("MTM",
-          //           style: TextWidget.textStyle(
-          //               fontSize: 13,
-          //               theme: theme.isDarkMode,
-          //               color: theme.isDarkMode
-          //                   ? colors.colorWhite
-          //                   : colors.colorGrey,
-          //               fw: 0)),
-          //     ],
-          //   ),
-          // ),
+          const SizedBox(height: 6),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text("P&L",
+                    style: TextWidget.textStyle(
+                        fontSize: 13,
+                        theme: theme.isDarkMode,
+                        color: theme.isDarkMode
+                            ? colors.colorWhite
+                            : colors.colorGrey,
+                        fw: 0)),
+                const SizedBox(width: 6),
+                CustomSwitch(
+                    onChanged: (bool value) {
+                      positionBook.chngPositionPnl(!positionBook.isNetPnl);
+                    },
+                    color: !theme.isDarkMode
+                        ? colors.colorGrey.withOpacity(0.2)
+                        : colors.colorBlack,
+                    value: positionBook.isNetPnl),
+                const SizedBox(width: 6),
+                Text("MTM",
+                    style: TextWidget.textStyle(
+                        fontSize: 13,
+                        theme: theme.isDarkMode,
+                        color: theme.isDarkMode
+                            ? colors.colorWhite
+                            : colors.colorGrey,
+                        fw: 0)),
+              ],
+            ),
+          ),
         ] else ...[
           const SizedBox(),
         ]
