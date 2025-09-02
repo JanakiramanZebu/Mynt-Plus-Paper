@@ -231,23 +231,87 @@ mixin ProfileAllDetailsApi on ApiCore {
     }
   }
 
-  
+  Future<PendingStatus> fetchPendingstatusApi() async {
+  try {
+    final uri = Uri.parse(apiLinks.rekycpendingstatusURL);
 
-//   Future<PendingStatus> fetchPendingstatusApi() async {
-//   try {
-//     final uri = Uri.parse(apiLinks.rekycpendingstatusURL);
+    final res = await apiClient.post(
+      uri,
+      headers: defaultHeaders,
+      body: jsonEncode({"clientId": prefs.clientId}),
+    );
+    print("Raw response: ${res.body}");
+    return PendingStatus.fromJson(jsonDecode(res.body));
+  } catch (e) {
+    print("error fetchpendig :::: ${e}");
+    rethrow;
+  }
+}
 
-//     final res = await apiClient.post(
-//       uri,
-//       // headers: defaultHeaders,
-//       body: jsonEncode({"client_id": prefs.clientId}),
-//     );
-//     return PendingStatus.fromJson(jsonDecode(res.body));
-//   } catch (e) {
-//     print("error fetchpendig :::: ${e}");
-//     rethrow;
-//   }
-// }
+ Future<String?> fetctfileidapi(String type) async {
+  try {
+    final uri = Uri.parse(
+      type != "nominee"
+          ? apiLinks.fetctfileidURL
+          : apiLinks.fetctfileidURLnominee,
+    );
+
+    final res = await apiClient.post(
+      uri,
+      headers: defaultHeaders,
+      body: jsonEncode({"client_id": prefs.clientId}),
+    );
+
+      final json = jsonDecode(res.body);
+      print("json :::: ${json}");
+      switch (type) {
+      case "email_change":
+        return json["email_file_id"];
+      case "mobile_change":
+        return json["mobile_file_id"];
+      case "address_change":
+        return json["address_file_id"];
+      case "bank_change":
+        return json["bank_file_id"];
+      case "mtf":
+        return json["mtf_fileid"];
+      case "nominee":
+      final nomStat = json["nom_stat"];
+  if (nomStat != null && nomStat is List && nomStat.isNotEmpty) {
+    final fileId = nomStat[0]["file_id"];
+    return fileId;
+  }
+      case "DDPI":
+        return json["DDPI_fileid"];
+      case "closure":
+        return json["closure_fileid"];
+      case "segment_change":
+        return json["segment_file_id"];
+      default:
+        return null;
+    }
+  } catch (e) {
+    print("Error in fetctfileidapi: $e");
+    return null;
+  }
+}
+
+
+  cancelPendingStatusApi(String type, String fileid) async {
+  try {
+    final response;
+    final uri = Uri.parse(apiLinks.cancelPendingesignURL);
+    final res = await apiClient.post(uri, headers: defaultHeaders, body: jsonEncode({"client_id": prefs.clientId, "file_id": fileid, "type": type}));
+    if(res.statusCode == 200){
+     return response = "Cancel Success";
+    }else{
+      return response = "Cancel Failed";
+    }
+  } catch (e) {
+    print("error cancel pending status :::: ${e}");
+    rethrow;
+  }
+}
 
 
   mobileotpapifun(String newmo, clemail, oldmobilmo, fulldataprf) async {

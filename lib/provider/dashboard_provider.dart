@@ -255,7 +255,7 @@ Color getSectorAllocationColor(String sector) {
   }
 
   // Get sector color
-  
+
   // Portfolio Search State Management
   bool _showPortfolioSearch = false;
   bool get showPortfolioSearch => _showPortfolioSearch;
@@ -525,5 +525,116 @@ Color getSectorAllocationColor(String sector) {
     } else {
       _showAll = false;
     }
+  }
+  // Brokerage Calculator Methods
+  Map<String, double> calculateBrokerageCharges({
+    required int segment,
+    required int subSegment,
+    required double quantity,
+    required double buyPrice,
+    required double sellPrice,
+  }) {
+    final brokerageRate = double.tryParse(_brokerageController.text) ?? 0;
+    final turnover = (buyPrice + sellPrice) * quantity;
+    
+    return _getChargesForSegment(
+      segment,
+      subSegment,
+      quantity,
+      buyPrice,
+      sellPrice,
+      turnover,
+      brokerageRate,
+    );
+  }
+
+  Map<String, double> _getChargesForSegment(
+      int segment,
+      int subSegment,
+      double quantity,
+      double buyPrice,
+      double sellPrice,
+      double turnover,
+      double brokerageRate) {
+    double brokerage = _isPercentageBrokerage
+        ? (turnover * brokerageRate) / 100
+        : brokerageRate;
+
+    double stt = 0, ctt = 0, transactionCharges = 0, stampDuty = 0;
+
+    switch (segment) {
+      case 0: // Equity
+        if (subSegment == 0) {
+          // Intraday
+          stt = (sellPrice * quantity * 0.025) / 100;
+          transactionCharges = (turnover * 0.00297) / 100;
+          stampDuty = (buyPrice * quantity * 0.003) / 100;
+        } else {
+          // Delivery
+          stt = (turnover * 0.1) / 100;
+          transactionCharges = (turnover * 0.00297) / 100;
+          stampDuty = (buyPrice * quantity * 0.015) / 100;
+        }
+        break;
+      case 1: // F&O
+        if (subSegment == 0) {
+          // Futures
+          stt = (sellPrice * quantity * 0.02) / 100;
+          transactionCharges = (turnover * 0.00173) / 100;
+          stampDuty = (buyPrice * quantity * 0.002) / 100;
+        } else {
+          // Options
+          stt = (sellPrice * quantity * 0.1) / 100;
+          transactionCharges = (turnover * 0.035) / 100;
+          stampDuty = (buyPrice * quantity * 0.003) / 100;
+        }
+        break;
+      case 2: // Currency
+        transactionCharges = subSegment == 0
+            ? (turnover * 0.00035) / 100
+            : (turnover * 0.03110) / 100;
+        stampDuty = (buyPrice * quantity * 0.0001) / 100;
+        break;
+      case 3: // Commodity
+        if (subSegment == 0) {
+          // Non-Agri
+          ctt = (sellPrice * quantity * 0.01) / 100;
+          transactionCharges = (turnover * 0.0021) / 100;
+          stampDuty = (buyPrice * quantity * 0.002) / 100;
+        } else if (subSegment == 1) {
+          // Agri
+          transactionCharges = (turnover * 0.0021) / 100;
+          stampDuty = (buyPrice * quantity * 0.003) / 100;
+        } else {
+          // Options
+          ctt = (sellPrice * quantity * 0.041) / 100;
+          transactionCharges = (turnover * 0.04180) / 100;
+          stampDuty = (buyPrice * quantity * 0.003) / 100;
+        }
+        break;
+    }
+
+    double sebiCharges = (turnover * 0.0001) / 100;
+    double gst = ((brokerage + transactionCharges + sebiCharges) * 18) / 100;
+    double totalTaxes =
+        brokerage + stt + ctt + transactionCharges + sebiCharges + gst;
+    double totalCharges = totalTaxes + stampDuty;
+    double netProfit =
+        (sellPrice * quantity) - (buyPrice * quantity) - totalCharges;
+    double breakEven = totalCharges / quantity;
+
+    return {
+      'turnover': turnover,
+      'brokerage': brokerage,
+      'stt': stt,
+      'ctt': ctt,
+      'transactionCharges': transactionCharges,
+      'sebiCharges': sebiCharges,
+      'gst': gst,
+      'stampDuty': stampDuty,
+      'totalCharges': totalCharges,
+      'netProfit': netProfit,
+      'breakEven': breakEven,
+    };
   }
 }

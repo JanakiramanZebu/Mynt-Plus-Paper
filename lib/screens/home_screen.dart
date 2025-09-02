@@ -933,7 +933,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     // Load minimal required profile data
     // fundProviderRef.fetchFunds(context);
     userProfile.fetchprofilemenu();
-    // ref.read(profileAllDetailsProvider).fetchPendingstatus();
     // userProfile.getProfileimage();
 
     // Unsubscribe from other real-time data

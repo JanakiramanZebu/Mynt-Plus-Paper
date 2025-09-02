@@ -331,120 +331,24 @@ class _BrokerageCalculatorScreenState
     final quantity = double.tryParse(_quantityController.text) ?? 0;
     final buyPrice = double.tryParse(_buyPriceController.text) ?? 0;
     final sellPrice = double.tryParse(_sellPriceController.text) ?? 0;
-    final brokerageRa = double.tryParse(ref.read(dashboardProvider).brokerageController.text) ?? 0;
-
-double brokerageRate = (sellPrice == 0 || buyPrice == 0)
-    ? brokerageRa
-    : brokerageRa * 2;
 
     // if (quantity <= 0 || buyPrice <= 0 || sellPrice <= 0) return;
 
-    final turnover = (buyPrice + sellPrice) * quantity;
-
-    // Calculate based on segment and sub-segment
-    Map<String, double> charges = _getChargesForSegment(
-        _selectedSegment,
-        _tabController?.index ?? 0,
-        quantity,
-        buyPrice,
-        sellPrice,
-        turnover,
-        brokerageRate);
+    // Calculate based on segment and sub-segment using the provider method
+    Map<String, double> charges = ref.read(dashboardProvider).calculateBrokerageCharges(
+      segment: _selectedSegment,
+      subSegment: _tabController?.index ?? 0,
+      quantity: quantity,
+      buyPrice: buyPrice,
+      sellPrice: sellPrice,
+    );
 
     setState(() {
       _results = charges;
     });
   }
 
-  Map<String, double> _getChargesForSegment(
-      int segment,
-      int subSegment,
-      double quantity,
-      double buyPrice,
-      double sellPrice,
-      double turnover,
-      double brokerageRate) {
-    double brokerage = ref.read(dashboardProvider).isPercentageBrokerage
-        ? (turnover * brokerageRate) / 100
-        : brokerageRate;
 
-    double stt = 0, ctt = 0, transactionCharges = 0, stampDuty = 0;
-
-    switch (segment) {
-      case 0: // Equity
-        if (subSegment == 0) {
-          // Intraday
-          stt = (sellPrice * quantity * 0.025) / 100;
-          transactionCharges = (turnover * 0.00297) / 100;
-          stampDuty = (buyPrice * quantity * 0.003) / 100;
-        } else {
-          // Delivery
-          stt = (turnover * 0.1) / 100;
-          transactionCharges = (turnover * 0.00297) / 100;
-          stampDuty = (buyPrice * quantity * 0.015) / 100;
-        }
-        break;
-      case 1: // F&O
-        if (subSegment == 0) {
-          // Futures
-          stt = (sellPrice * quantity * 0.02) / 100;
-          transactionCharges = (turnover * 0.00173) / 100;
-          stampDuty = (buyPrice * quantity * 0.002) / 100;
-        } else {
-          // Options
-          stt = (sellPrice * quantity * 0.1) / 100;
-          transactionCharges = (turnover * 0.035) / 100;
-          stampDuty = (buyPrice * quantity * 0.003) / 100;
-        }
-        break;
-      case 2: // Currency
-        transactionCharges = subSegment == 0
-            ? (turnover * 0.00035) / 100
-            : (turnover * 0.03110) / 100;
-        stampDuty = (buyPrice * quantity * 0.0001) / 100;
-        break;
-      case 3: // Commodity
-        if (subSegment == 0) {
-          // Non-Agri
-          ctt = (sellPrice * quantity * 0.01) / 100;
-          transactionCharges = (turnover * 0.0021) / 100;
-          stampDuty = (buyPrice * quantity * 0.002) / 100;
-        } else if (subSegment == 1) {
-          // Agri
-          transactionCharges = (turnover * 0.0021) / 100;
-          stampDuty = (buyPrice * quantity * 0.003) / 100;
-        } else {
-          // Options
-          ctt = (sellPrice * quantity * 0.041) / 100;
-          transactionCharges = (turnover * 0.04180) / 100;
-          stampDuty = (buyPrice * quantity * 0.003) / 100;
-        }
-        break;
-    }
-
-    double sebiCharges = (turnover * 0.0001) / 100;
-    double gst = ((brokerage + transactionCharges + sebiCharges) * 18) / 100;
-    double totalTaxes =
-        brokerage + stt + ctt + transactionCharges + sebiCharges + gst;
-    double totalCharges = totalTaxes + stampDuty;
-    double netProfit =
-        (sellPrice * quantity) - (buyPrice * quantity) - totalCharges;
-    double breakEven = totalCharges / quantity;
-
-    return {
-      'turnover': turnover,
-      'brokerage': brokerage,
-      'stt': stt,
-      'ctt': ctt,
-      'transactionCharges': transactionCharges,
-      'sebiCharges': sebiCharges,
-      'gst': gst,
-      'stampDuty': stampDuty,
-      'totalCharges': totalCharges,
-      'netProfit': netProfit,
-      'breakEven': breakEven,
-    };
-  }
 
   @override
   Widget build(BuildContext context) {

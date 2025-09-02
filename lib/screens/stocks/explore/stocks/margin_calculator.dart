@@ -607,6 +607,7 @@ class _MarginCalculatorScreenState
         SizedBox(
           height: 50,
           child: CustomTextFormField(
+            isReadable: true,
             fillColor:
                 theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
             textCtrl: _bottomSheetQuantityController,
@@ -619,15 +620,15 @@ class _MarginCalculatorScreenState
                 _errorMessageqty = null;
               });
             },
-            hintText: "Enter quantity",
-            hintStyle: TextWidget.textStyle(
-              fontSize: 14,
-              theme: theme.isDarkMode,
-              color: theme.isDarkMode
-                  ? colors.textSecondaryDark
-                  : colors.textSecondaryLight,
-              fw: 0,
-            ),
+            // hintText: "Enter quantity",
+            // hintStyle: TextWidget.textStyle(
+            //   fontSize: 14,
+            //   theme: theme.isDarkMode,
+            //   color: theme.isDarkMode
+            //       ? colors.textSecondaryDark
+            //       : colors.textSecondaryLight,
+            //   fw: 0,
+            // ),
             style: TextWidget.textStyle(
               fontSize: 16,
               color: theme.isDarkMode

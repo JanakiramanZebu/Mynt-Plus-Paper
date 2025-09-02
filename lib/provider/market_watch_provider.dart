@@ -3768,10 +3768,13 @@ class MarketWatchProvider extends DefaultChangeNotifier {
          Navigator.pop(context);
         }
 
-        // Navigate to the Alert tab after closing the alert creation screens
-        ref.read(indexListProvider).bottomMenu(2, context);
-        ref.read(portfolioProvider).changeTabIndex(2);
-        ref.read(orderProvider).changeTabIndex(5, context);
+        // Add a small delay to ensure Navigator.pop operations complete before navigation
+        Future.delayed(const Duration(milliseconds: 100), () {
+          // Navigate to the Alert tab after closing the alert creation screens
+          ref.read(indexListProvider).bottomMenu(2, context);
+          ref.read(portfolioProvider).changeTabIndex(2);
+          ref.read(orderProvider).changeTabIndex(5, context);
+        });
       } else if (_setAlertModel!.stat! == "Not_Ok" &&
           _setAlertModel!.stat == "Session Expired :  Invalid Session Key") {
         ref.read(authProvider).ifSessionExpired(context);
@@ -3820,6 +3823,9 @@ class MarketWatchProvider extends DefaultChangeNotifier {
                   .toStringAsFixed(2);
             }
           }
+          
+          // Apply default sorting (Scrip Name ascending) when alerts are initially loaded
+          filterPendingAlert("ASC");
         } else {
           _alertPendingModel = [];
           ConstantName.sessCheck = false;

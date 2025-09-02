@@ -2,10 +2,14 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
-import '../../sharedWidget/custom_drag_handler.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mynt_plus/provider/profile_all_details_provider.dart';
+import 'package:mynt_plus/res/global_state_text.dart';
+import 'package:mynt_plus/res/res.dart';
+import '../../provider/thems.dart';
 import '../../sharedWidget/splash_loader.dart';
 
-class InAppWebViewScreen extends StatefulWidget {
+class InAppWebViewScreen extends ConsumerStatefulWidget {
   final String url;
 
   const InAppWebViewScreen({
@@ -14,10 +18,10 @@ class InAppWebViewScreen extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<InAppWebViewScreen> createState() => _InAppWebViewScreenState();
+  ConsumerState<InAppWebViewScreen> createState() => _InAppWebViewScreenState();
 }
 
-class _InAppWebViewScreenState extends State<InAppWebViewScreen> {
+class _InAppWebViewScreenState extends ConsumerState<InAppWebViewScreen> {
   InAppWebViewController? webViewController;
   bool isLoading = true;
   bool canGoBack = false;
@@ -25,11 +29,14 @@ class _InAppWebViewScreenState extends State<InAppWebViewScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = ref.watch(themeProvider);
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) async {
         if (!didPop) {
           await _handleBackPress();
+         await ref.read(profileAllDetailsProvider).fetchPendingstatus();
+
         }
       },
       child: Scaffold(
@@ -41,6 +48,7 @@ class _InAppWebViewScreenState extends State<InAppWebViewScreen> {
             ),
             onPressed: () async {
               await _handleBackPress();
+         await ref.read(profileAllDetailsProvider).fetchPendingstatus();
             },
           ),
           title: const Text(
@@ -91,6 +99,15 @@ class _InAppWebViewScreenState extends State<InAppWebViewScreen> {
                     },
                   );
                 },
+                onProgressChanged: (controller, progress) {
+                  // Ensure loader works reliably on initial and subsequent loads
+                  final safeProgress = progress.clamp(0, 100);
+                  if (mounted) {
+                    setState(() {
+                      isLoading = safeProgress < 100;
+                    });
+                  }
+                },
                 onLoadStart: (controller, url) {
                   final urlString = url?.toString() ?? '';
                   print('Loading started: $urlString');
@@ -120,7 +137,7 @@ class _InAppWebViewScreenState extends State<InAppWebViewScreen> {
                 },
                 onReceivedError: (controller, request, errorResponse) {
                   print('WebView error: ${errorResponse.description}');
-                  final url = request.url?.toString() ?? '';
+                  final url = request.url.toString();
                   
                   if (!url.contains('about:blank#blocked')) {
                     setState(() {
@@ -129,8 +146,7 @@ class _InAppWebViewScreenState extends State<InAppWebViewScreen> {
                   }
                 },
                 onCreateWindow: (controller, createWindowRequest) async {
-                  final requestUrl = createWindowRequest.request.url?.toString() ?? '';
-                  print('Creating popup window for: $requestUrl');
+                  // final requestUrl = createWindowRequest.request.url.toString();
           
                   showModalBottomSheet(
                     backgroundColor: Colors.white,
@@ -150,9 +166,9 @@ class _InAppWebViewScreenState extends State<InAppWebViewScreen> {
                       return Padding(
                         padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
                         child: DraggableScrollableSheet(
-                          initialChildSize: 0.8,
+                          initialChildSize: 0.98,
                           minChildSize: 0.5,
-                          maxChildSize: 0.95,
+                          maxChildSize: 0.98,
                           expand: false,
                           snap: true,
                           snapSizes: const [0.5, 0.8, 0.95],
@@ -169,8 +185,7 @@ class _InAppWebViewScreenState extends State<InAppWebViewScreen> {
                                     child: Row(
                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                       children: [
-                                        Text('eSign',
-                                            style: TextStyle(fontWeight: FontWeight.bold)),
+                                        TextWidget.subText(text: 'eSign',theme: theme.isDarkMode,color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,fw: 0),
                                         IconButton(
                                           color: Colors.black,
                                           iconSize: 20,
@@ -220,27 +235,25 @@ class _InAppWebViewScreenState extends State<InAppWebViewScreen> {
                                         },
                                       );
                                     },
+                                    onUpdateVisitedHistory: (popupController, url, androidIsReload) async {
+                                      final popupUrlString = url?.toString() ?? '';
+                                      if (_shouldCloseForUrl(popupUrlString)) {
+                                        if (mounted) {
+                                          Navigator.of(context, rootNavigator: true).pop();
+                                        }
+                                      }
+                                    },
                                     onLoadStop: (popupController, popupUrl) async {
                                       final popupUrlString = popupUrl?.toString() ?? '';
-                                      print('Popup loaded: $popupUrlString');
                                                                     
-                                      if ((popupUrlString.contains("/gateway/exit") && 
-                                           popupUrlString.contains("https://192.168.1.100:8080/"))
-                                          // popupUrlString.contains("esign=success") ||
-                                          // popupUrlString.contains("status=completed") ||
-                                          // popupUrlString.contains("digio_success")
-                                          ) {
-                                        print('✅ Success detected in popup - closing bottom sheet...');
-                                        
-                                        await Future.delayed(const Duration(milliseconds: 1000));
-                                        
+                                      if (_shouldCloseForUrl(popupUrlString)) {
+                                        await Future.delayed(const Duration(milliseconds: 500));
                                         if (mounted) {
                                           Navigator.of(context, rootNavigator: true).pop();
                                         }
                                       }
                                     },
                                     onReceivedError: (popupController, request, errorResponse) {
-                                      print('Popup error: ${errorResponse.description}');
                                       if (mounted) {
                                         Navigator.of(context, rootNavigator: true).pop();
                                       }
@@ -302,8 +315,20 @@ class _InAppWebViewScreenState extends State<InAppWebViewScreen> {
     );
   }
 
+bool _shouldCloseForUrl(String url) {
+    if (url.isEmpty) return false;
+
+    if ((url.contains("profile.mynt.in/")) ) {
+      return true;
+    }
+
+    return false;
+  }
+
+
+
+
   Future<void> _handleBackPress() async {
-    print('Back button pressed. Navigation count: $navigationCount');
 
     if (webViewController != null) {
       try {
@@ -311,13 +336,11 @@ class _InAppWebViewScreenState extends State<InAppWebViewScreen> {
           Navigator.of(context).pop();
         }
       } catch (e) {
-        print('Error in _handleBackPress: $e');
         if (mounted) {
           Navigator.of(context).pop();
         }
       }
     } else {
-      print('No web controller - closing screen');
       if (mounted) {
         Navigator.of(context).pop();
       }

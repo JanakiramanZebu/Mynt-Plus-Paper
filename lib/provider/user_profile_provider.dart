@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import '../api/core/api_export.dart';
@@ -527,36 +528,40 @@ class UserProfileProvider extends DefaultChangeNotifier {
     } finally {}
   }
 
-  int maxSizeInBytes = 10 * 1024 * 1024; // 4 MB
+ bool fileSizeCheck(File file) {
+  final int sizeInBytes = file.lengthSync();
+  final double sizeInMb = sizeInBytes / (1024 * 1024);
+  return sizeInMb <= 10; // limit 10 MB
+}
 
-  bool fileSizeCheck(PlatformFile file) {
-    return file.size <= maxSizeInBytes;
-  }
+  Future<void> pickImageFromGallery(BuildContext context, ImageSource source) async {
+  final ImagePicker picker = ImagePicker();
 
-  // Method to pick image from gallery
-  Future<void> pickImageFromGallery(BuildContext context) async {
-    try {
-      FilePickerResult? result = await FilePicker.platform.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: ['jpg', 'jpeg', 'png', 'heic'],
-      );
+  try {
+    final XFile? pickedFile = await picker.pickImage(
+      source: source,
+      maxHeight: 1800,
+      maxWidth: 1800,
+      imageQuality: 85,
+    );
 
-      if (result != null) {
-        PlatformFile platformFile = result.files.single;
-        if (!fileSizeCheck(platformFile)) {
-          warningMessage(context, 'File size exceeds the limit of 10MB');
-          return;
-        } else {
-          File file = File(platformFile.path!);
-          await uploadImage(context, file);
-        }
+    if (pickedFile != null) {
+      File file = File(pickedFile.path);
+
+      if (!fileSizeCheck(file)) {
+        warningMessage(context, 'File size exceeds the limit of 10MB');
+        return;
       } else {
-        print("No file selected ${result}");
+        await uploadImage(context, file);
       }
-    } catch (e) {
-      warningMessage(context, 'Error selecting image: $e');
+    } else {
+      print("No image selected");
     }
+  } catch (e) {
+    warningMessage(context, 'Error selecting image: $e');
   }
+}
+
 
   // Method to remove profile image
   Future<void> removeProfileImage(BuildContext context) async {

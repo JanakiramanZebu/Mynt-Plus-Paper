@@ -6,8 +6,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:mynt_plus/screens/profile_screen/topt_screen.dart';
+import 'package:mynt_plus/sharedWidget/snack_bar.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -76,6 +78,7 @@ class UserAccountScreen extends ConsumerWidget {
   // Method to show image update options
   void _showImageUpdateOptions(BuildContext context, WidgetRef ref) {
     final theme = ref.watch(themeProvider);
+    final userProfile = ref.watch(userProfileProvider);
     showModalBottomSheet(
       useSafeArea: true,
       context: context,
@@ -83,9 +86,29 @@ class UserAccountScreen extends ConsumerWidget {
       builder: (BuildContext context) {
         return SafeArea(
           child: Container(
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.only(
+            decoration: BoxDecoration(
+              color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+               border: Border(
+                                    top: BorderSide(
+                                      color: theme.isDarkMode
+                                          ? colors.textSecondaryDark
+                                              .withOpacity(0.5)
+                                          : colors.colorWhite,
+                                    ),
+                                    left: BorderSide(
+                                      color: theme.isDarkMode
+                                          ? colors.textSecondaryDark
+                                              .withOpacity(0.5)
+                                          : colors.colorWhite,
+                                    ),
+                                    right: BorderSide(
+                                      color: theme.isDarkMode
+                                          ? colors.textSecondaryDark
+                                              .withOpacity(0.5)
+                                          : colors.colorWhite,
+                                    ),
+                                  ), 
+              borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(20),
                 topRight: Radius.circular(20),
               ),
@@ -98,22 +121,41 @@ class UserAccountScreen extends ConsumerWidget {
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: Colors.grey[300],
+                    color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
                 const SizedBox(height: 20),
                 ListTile(
-                  leading:  Icon(Icons.photo_library, color: theme.isDarkMode ? colors.primaryDark : colors.primaryLight),
-                  title: TextWidget.subText(text: 'Choose from Gallery',theme: false,color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight),
+                  leading: Icon(Icons.photo_library,
+                      color: theme.isDarkMode
+                          ? colors.primaryDark
+                          : colors.primaryLight),
+                  title: TextWidget.subText(
+                      text: 'Choose from Gallery',
+                      theme: false,
+                      color: theme.isDarkMode
+                          ? colors.textPrimaryDark
+                          : colors.textPrimaryLight),
                   onTap: () {
                     Navigator.pop(context);
-                    ref.watch(userProfileProvider).pickImageFromGallery(context);
+                    ref
+                        .watch(userProfileProvider)
+                        .pickImageFromGallery(context, ImageSource.gallery);
                   },
                 ),
+                userProfile.getprofileImage == null ? SizedBox() :
                 ListTile(
-                  leading:  Icon(Icons.delete, color: theme.isDarkMode ? colors.lossDark : colors.lossLight),
-                  title: TextWidget.subText(text: 'Remove Profile Picture',theme: false,color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight),
+                  leading: Icon(Icons.delete,
+                      color: theme.isDarkMode
+                          ? colors.lossDark
+                          : colors.lossLight),
+                  title: TextWidget.subText(
+                      text: 'Remove Profile Picture',
+                      theme: false,
+                      color: theme.isDarkMode
+                          ? colors.textPrimaryDark
+                          : colors.textPrimaryLight),
                   onTap: () {
                     Navigator.pop(context);
                     ref.watch(userProfileProvider).removeProfileImage(context);
@@ -244,87 +286,110 @@ class UserAccountScreen extends ConsumerWidget {
                 children: [
                   Padding(
                     padding: const EdgeInsets.only(bottom: 8.0),
-                                         child: GestureDetector(
-                       onTap: () => _showImageUpdateOptions(context, ref),
-                       child: Stack(
-                         children: [
-                           Container(
-                             width: 100,
-                             height: 100,
-                             decoration: BoxDecoration(
-                               shape: BoxShape.circle,
-                               color: theme.isDarkMode
-                                   ? colors.textSecondaryDark.withOpacity(0.1)
-                                   : const Color(0xFFF1F3F8),
-                               border: Border.all(
-                                 color: const Color(0xFF0037B7),
-                                 width: 1.5,
-                               ),
-                             ),
-                             child: ClipOval(
+                    child: GestureDetector(
+                      onTap: () => _showImageUpdateOptions(context, ref),
+                      child: Stack(
+                        children: [
+                          Container(
+                            width: 100,
+                            height: 100,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: theme.isDarkMode
+                                  ? colors.textSecondaryDark.withOpacity(0.1)
+                                  : const Color(0xFFF1F3F8),
+                              border: Border.all(
+                                color: const Color(0xFF0037B7),
+                                width: 1.5,
+                              ),
+                            ),
+                            child: ClipOval(
                               child: userProfile.getprofileImage != null
-                                    ? userProfile.imageLoader 
-                                        ? Container(
-                                            width: 100,
-                                            height: 100,
-                                            decoration: BoxDecoration(
-                                              color: theme.isDarkMode
-                                                  ? colors.colorBlack.withOpacity(0.1)
-                                                  : colors.colorWhite.withOpacity(0.1),
+                                  ? userProfile.imageLoader
+                                      ? Container(
+                                          width: 100,
+                                          height: 100,
+                                          decoration: BoxDecoration(
+                                            color: theme.isDarkMode
+                                                ? colors.colorBlack
+                                                    .withOpacity(0.1)
+                                                : colors.colorWhite
+                                                    .withOpacity(0.1),
+                                          ),
+                                          child: Center(
+                                            child: CircularProgressIndicator(
+                                              color: !theme.isDarkMode
+                                                  ? colors.primaryLight
+                                                  : colors.primaryDark,
+                                              strokeWidth: 3,
                                             ),
-                                            child: Center(
-                                              child: CircularProgressIndicator(
-                                                color: !theme.isDarkMode
-                                                    ? colors.primaryLight
-                                                    : colors.primaryDark,
-                                                strokeWidth: 3,
-                                              ),
+                                          ),
+                                        )
+                                      : Image.memory(
+                                          userProfile.getprofileImage!,
+                                          width: 100,
+                                          height: 100,
+                                          fit: BoxFit.cover,
+                                        )
+                                  : userProfile.imageLoader
+                                      ? Container(
+                                          width: 100,
+                                          height: 100,
+                                          decoration: BoxDecoration(
+                                            color: theme.isDarkMode
+                                                ? colors.colorBlack
+                                                    .withOpacity(0.1)
+                                                : colors.colorWhite
+                                                    .withOpacity(0.1),
+                                          ),
+                                          child: Center(
+                                            child: CircularProgressIndicator(
+                                              color: !theme.isDarkMode
+                                                  ? colors.primaryLight
+                                                  : colors.primaryDark,
+                                              strokeWidth: 3,
                                             ),
-                                          )
-                                        : Image.memory(
-                                            userProfile.getprofileImage!,
-                                            width: 100,
-                                            height: 100,
-                                            fit: BoxFit.cover,
-                                          )
-                                   : Center(
-                                       child: TextWidget.custmText(
-                                         text: userProfile.userDetailModel?.uname
-                                                 ?.substring(0, 1)
-                                                 .toUpperCase() ??
-                                             "",
-                                         theme: false,
-                                         color: theme.isDarkMode
-                                             ? colors.colorWhite
-                                             : const Color(0xff0037B7),
-                                         fs: 40,
-                                         fw: 3,
-                                       ),
-                                     ),
-                             ),
-                           ),
-                           // Camera icon overlay
-                           Positioned(
-                             bottom: 0,
-                             right: 0,
-                             child: Container(
-                               width: 32,
-                               height: 32,
-                               decoration: const BoxDecoration(
-                                 color: Color(0xFF0037B7),
-                                 shape: BoxShape.circle,
-                               ),
-                               child: const Icon(
-                                 Icons.camera_alt,
-                                 color: Colors.white,
-                                 size: 18,
-                               ),
-                             ),
-                           ),
-                         ],
-                       ),
-                     ),
-                   ),
+                                          ),
+                                        )
+                                      : Center(
+                                          child: TextWidget.custmText(
+                                            text: userProfile
+                                                    .userDetailModel?.uname
+                                                    ?.substring(0, 1)
+                                                    .toUpperCase() ??
+                                                "",
+                                            theme: false,
+                                            color: theme.isDarkMode
+                                                ? colors.colorWhite
+                                                : const Color(0xff0037B7),
+                                            fs: 40,
+                                            fw: 3,
+                                          ),
+                                        ),
+                            ),
+                          ),
+                          // Camera icon overlay
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: Container(
+                              width: 32,
+                              height: 32,
+                              decoration: const BoxDecoration(
+                                color: Color(0xFF0037B7),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.camera_alt,
+                                color: Colors.white,
+                                size: 18,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                   IntrinsicWidth(
                     child: Container(
                       child: Material(
@@ -468,7 +533,7 @@ class UserAccountScreen extends ConsumerWidget {
                         break;
                       case 'Corporate Actions':
                         // ledgerdate.fetchposition(context);
-                       
+
                         if (reportsprovider.holdingsAllData == null ||
                             reportsprovider.cpactiondata == null) {
                           if (reportsprovider.cpactionloader != true) {
@@ -669,7 +734,7 @@ class UserAccountScreen extends ConsumerWidget {
                     color: !theme.isDarkMode
                         ? colors.textSecondaryLight
                         : colors.textSecondaryDark,
-                        fw: 0,
+                    fw: 0,
                   ),
                   trailing: Icon(
                     Icons.arrow_forward_ios,
@@ -1835,6 +1900,10 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
   @override
   void initState() {
     super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      ref.read(profileAllDetailsProvider).fetchPendingstatus();
+    });
     // _expandedIndex = widget.initialIndex; // ← store the target tile
   }
 
@@ -1944,16 +2013,6 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
   // }
 
   // Add this function
-  Color _getBottomNavColor(ThemesProvider theme, bool isSelected) {
-    if (theme.isDarkMode && isSelected) {
-      return colors.colorLightBlue;
-    } else if (isSelected) {
-      return colors.colorBlue;
-    } else {
-      return colors.colorGrey;
-    }
-  }
-
   String? _expandedTitle;
 
   // List of items for the account screen
@@ -1987,6 +2046,373 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
           _expandedTitle = null;
         });
       }
+    }
+  }
+
+  /// Helper method to get pending statuses for a specific section
+  List<String> _getPendingStatusesForSection(
+      String sectionTitle, WidgetRef ref) {
+    final profileDetails = ref.watch(profileAllDetailsProvider);
+    if (profileDetails.pendingStatusList.isEmpty ||
+        profileDetails.pendingStatusList[0].data == null ||
+        profileDetails.pendingStatusList[0].data!.isEmpty) {
+      return [];
+    }
+
+    final pendingStatuses = profileDetails.pendingStatusList[0].data!;
+
+    switch (sectionTitle) {
+      case 'Profile':
+        return pendingStatuses
+            .where((status) =>
+                status == 'address_change_pending' ||
+                status == 'email_change_pending' ||
+                status == 'mobile_change_pending')
+            .toList();
+      case 'Bank':
+        return pendingStatuses
+            .where((status) => status == 'bank_change_pending')
+            .toList();
+      case 'Depository':
+        return pendingStatuses
+            .where((status) => status == 'ddpicre_pending')
+            .toList();
+      case 'Margin Trading Facility (MTF)':
+        return pendingStatuses
+            .where((status) => status == 'mtf_pending')
+            .toList();
+      case 'Trading Preferences':
+        return pendingStatuses
+            .where((status) => status == 'segments_change_pending')
+            .toList();
+      case 'Nominee':
+        return pendingStatuses
+            .where((status) => status == 'nominee_pending')
+            .toList();
+      case 'Closure':
+        return pendingStatuses
+            .where((status) => status == 'closure_pending')
+            .toList();
+      case 'Form Download':
+        return []; // No specific pending statuses for form download
+      default:
+        return [];
+    }
+  }
+
+  /// Helper method to build section title with pending indicator
+  Widget _buildSectionTitleWithPendingIndicator(
+      String title, WidgetRef ref, ThemesProvider theme) {
+    final pendingStatuses = _getPendingStatusesForSection(title, ref);
+    final hasPending = pendingStatuses.isNotEmpty;
+
+    return Row(
+      children: [
+        Expanded(
+          child: TextWidget.subText(
+            text: title,
+            theme: false,
+            color: _expandedTitle == title
+                ? theme.isDarkMode
+                    ? colors.primaryDark
+                    : colors.primaryLight
+                : theme.isDarkMode
+                    ? colors.textSecondaryDark
+                    : colors.textSecondaryLight,
+            fw: _expandedTitle == title ? 1 : 0,
+          ),
+        ),
+        if (hasPending) ...[
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: Colors.orange.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: Colors.orange.withOpacity(0.6),
+                width: 1,
+              ),
+            ),
+            child: TextWidget.captionText(
+              text: '${pendingStatuses.length} Pending',
+              theme: false,
+              color: Colors.orange.shade700,
+              fw: 3,
+            ),
+          ),
+          const SizedBox(width: 8),
+        ],
+      ],
+    );
+  }
+
+  /// Helper method to build pending statuses display for a specific section
+  Widget _buildSectionPendingStatuses(String sectionTitle, WidgetRef ref,
+      ThemesProvider theme, VoidCallback onTap, VoidCallback onTapCancel) {
+    final profileDetails = ref.watch(profileAllDetailsProvider);
+    final pendingStatuses = _getPendingStatusesForSection(sectionTitle, ref);
+
+    if (pendingStatuses.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10.0),
+      ),
+      color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            /// Header Row
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                TextWidget.subText(
+                  text: "Pending Status",
+                  theme: theme.isDarkMode,
+                  color: theme.isDarkMode
+                      ? colors.textPrimaryDark
+                      : colors.textPrimaryLight,
+                  fw: 3,
+                ),
+                Row(
+                  children: [
+                    InkWell(
+                      onTap: onTap,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: theme.isDarkMode
+                              ? colors.primaryDark
+                              : colors.primaryLight,
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        child: TextWidget.captionText(
+                          text: "Click here to E-sign",
+                          theme: false,
+                          color: colors.colorWhite,
+                          fw: 2,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    InkWell(
+                      onTap: () {
+                        showDialog(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                                  backgroundColor: theme.isDarkMode
+                                      ? const Color(0xFF121212)
+                                      : const Color(0xFFF1F3F8),
+                                  titlePadding: const EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 8),
+                                  shape: const RoundedRectangleBorder(
+                                      borderRadius:
+                                          BorderRadius.all(Radius.circular(8))),
+                                  scrollable: true,
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 12,
+                                  ),
+                                  actionsPadding: const EdgeInsets.only(
+                                      bottom: 16, right: 16, left: 16, top: 8),
+                                  insetPadding: const EdgeInsets.symmetric(
+                                      horizontal: 30, vertical: 12),
+                                  title: Column(
+                                    children: [
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.end,
+                                        children: [
+                                          Material(
+                                            color: Colors.transparent,
+                                            shape: const CircleBorder(),
+                                            child: InkWell(
+                                              onTap: () async {
+                                                await Future.delayed(
+                                                    const Duration(
+                                                        milliseconds: 150));
+                                                Navigator.pop(context);
+                                              },
+                                              borderRadius:
+                                                  BorderRadius.circular(20),
+                                              splashColor: theme.isDarkMode
+                                                  ? colors.splashColorDark
+                                                  : colors.splashColorLight,
+                                              highlightColor: theme.isDarkMode
+                                                  ? colors.splashColorDark
+                                                  : colors.splashColorLight,
+                                              child: Padding(
+                                                padding:
+                                                    const EdgeInsets.all(6.0),
+                                                child: Icon(
+                                                  Icons.close_rounded,
+                                                  size: 22,
+                                                  color: theme.isDarkMode
+                                                      ? colors.textSecondaryDark
+                                                      : colors
+                                                          .textSecondaryLight,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 12),
+                                      SizedBox(
+                                        width:
+                                            MediaQuery.of(context).size.width,
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 4),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.center,
+                                            children: [
+                                              const SizedBox(height: 10),
+                                              TextWidget.subText(
+                                                text:
+                                                    "Are you sure want to cancel the Esign",
+                                                theme: theme.isDarkMode,
+                                                color: theme.isDarkMode
+                                                    ? colors.textSecondaryDark
+                                                    : colors.textPrimaryLight,
+                                                fw: 3,
+                                                align: TextAlign.center,
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  actions: [
+                                    SizedBox(
+                                      width: double.infinity,
+                                      child: OutlinedButton(
+                                        onPressed: onTapCancel,
+                                        style: OutlinedButton.styleFrom(
+                                          minimumSize: const Size(0, 40),
+                                          side: BorderSide(
+                                              color: colors.btnOutlinedBorder),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(5),
+                                          ),
+                                          backgroundColor: colors.primaryDark,
+                                        ),
+                                        child: profileDetails.cancelpendingloader ? SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: theme.isDarkMode
+                              ? colors.colorWhite
+                              : colors.colorBlack,
+                        )) : TextWidget.titleText(
+                                            text: "Yes",
+                                            theme: theme.isDarkMode,
+                                            color: colors.colorWhite,
+                                            fw: 2),
+                                      ),
+                                    ),
+                                  ],
+                                ));
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: theme.isDarkMode
+                                ? colors.lossDark
+                                : colors.lossLight,
+                            width: 1,
+                          ),
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        child: Icon(Icons.close,
+                            color: theme.isDarkMode
+                                ? colors.lossDark
+                                : colors.lossLight,
+                            size: 14),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            /// Pending Status as Chips
+            Wrap(
+              spacing: 8.0,
+              runSpacing: 8.0,
+              children: pendingStatuses.map((status) {
+                final displayName = _getPendingStatusDisplayName(status);
+                return Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: theme.isDarkMode
+                        ? colors.pending.withOpacity(0.1)
+                        : colors.pending.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: colors.pending.withOpacity(0.6),
+                      width: 1,
+                    ),
+                  ),
+                  child: TextWidget.subText(
+                    text: displayName,
+                    theme: false,
+                    color: colors.pending,
+                    fw: 3,
+                  ),
+                );
+              }).toList(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Helper method to get display name for pending status
+  String _getPendingStatusDisplayName(String status) {
+    switch (status.toLowerCase()) {
+      case 'address_change_pending':
+        return 'Address Change';
+      case 'bank_change_pending':
+        return 'Bank Change';
+      case 'closure_pending':
+        return 'Account Closure';
+      case 'ddpicre_pending':
+        return 'DPICRE';
+      case 'email_change_pending':
+        return 'Email Change';
+      case 'income_change_pending':
+        return 'Income Change';
+      case 'mobile_change_pending':
+        return 'Mobile Change';
+      case 'mtf_pending':
+        return 'MTF';
+      case 'nominee_pending':
+        return 'Nominee';
+      case 'segments_change_pending':
+        return 'Segments Change';
+      default:
+        return status
+            .replaceAll('_', ' ')
+            .split(' ')
+            .map((word) => word.isNotEmpty
+                ? '${word[0].toUpperCase()}${word.substring(1).toLowerCase()}'
+                : word)
+            .join(' ');
     }
   }
 
@@ -2136,18 +2562,8 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                               _onExpansionChanged(isExpanding, title),
                           tilePadding:
                               const EdgeInsets.symmetric(horizontal: 0),
-                          title: TextWidget.subText(
-                            text: title,
-                            theme: false,
-                            color: _expandedTitle == title
-                                ? theme.isDarkMode
-                                    ? colors.primaryDark
-                                    : colors.primaryLight
-                                : theme.isDarkMode
-                                    ? colors.textSecondaryDark
-                                    : colors.textSecondaryLight,
-                            fw: _expandedTitle == title ? 1 : 0,
-                          ),
+                          title: _buildSectionTitleWithPendingIndicator(
+                              title, ref, theme),
                           children: [
                             // Dynamically build the content based on the title
                             _buildExpansionContent(title, ref, theme),
@@ -2238,30 +2654,36 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
             theme,
             ref),
 
-        // if (profileDetails.pendingStatusList[0].data != null) 
-        // Container(
-        //   padding: const EdgeInsets.symmetric( vertical: 8.0),
-        //   decoration: BoxDecoration(
-        //     color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-        //     borderRadius: BorderRadius.circular(5.0),
-        //   ),
-        //   child: Row(
-        //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        //     children: [
-        //       TextWidget.subText(text: "Pending Status", theme: theme.isDarkMode, color: theme.isDarkMode
-        //                 ? colors.textSecondaryDark
-        //                 : colors.textSecondaryLight,fw: 0),
-        //       TextWidget.subText(text: "${profileDetails.pendingStatusList[0].data}", theme: theme.isDarkMode, color: theme.isDarkMode
-        //                 ? colors.textSecondaryDark
-        //                 : colors.textSecondaryLight,fw: 0),
-        //     ],
-        //   ),
-        // ),
+        // Show pending statuses for Profile section only
+        _buildSectionPendingStatuses('Profile', ref, theme, () {
+          if (_getPendingStatusesForSection("Profile", ref)
+              .any((status) => status == 'email_change_pending')) {
+            profileDetails.openInWebURLk(context, "profile", "email");
+          } else if (_getPendingStatusesForSection("Profile", ref)
+              .any((status) => status == 'mobile_change_pending')) {
+            profileDetails.openInWebURLk(context, "profile", "mobile");
+          } else if (_getPendingStatusesForSection("Profile", ref)
+              .any((status) => status == 'address_change_pending')) {
+            profileDetails.openInWebURLk(context, "profile", "address");
+          }
+        },
+        () {
+        if (_getPendingStatusesForSection("Profile", ref)
+              .any((status) => status == 'email_change_pending')) {
+           profileDetails.cancelPendingStatus("email_change", context);
+          } else if (_getPendingStatusesForSection("Profile", ref)
+              .any((status) => status == 'mobile_change_pending')) {
+            profileDetails.cancelPendingStatus("mobile_change", context);
+          } else if (_getPendingStatusesForSection("Profile", ref)
+              .any((status) => status == 'address_change_pending')) {
+            profileDetails.cancelPendingStatus("address_change", context);
+          }
+        },
+        ),
         // _buildDetailRow("DP ID", clientData?.cLIENTDPCODE ?? "N/A", theme),
       ],
     );
   }
-
 
   /// Builds the UI for the "Bank" section, replicating ProfileDetailsBank with proper functionality
   Widget _buildBankDetailsContent(WidgetRef ref, ThemesProvider theme) {
@@ -2301,10 +2723,25 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
               color: Colors.transparent,
               child: InkWell(
                 onTap: () async {
+                  final pendingStatuses =
+                      ref.watch(profileAllDetailsProvider).pendingStatusList;
+                  if (pendingStatuses.isNotEmpty &&
+                      pendingStatuses[0].data != null) {
+                    final hasPendingChanges = pendingStatuses[0]
+                        .data!
+                        .any((status) => status == 'bank_change_pending');
+                    if (hasPendingChanges) {
+                      warningMessage(context, 'You have pending request.click on the E-Sign to proceed.');
+                      return;
+                    }
+                  }
+
                   // Add delay for visual feedback
                   await Future.delayed(const Duration(milliseconds: 150));
 
-                  profileDetails.openInWebURL(context, "bank");
+                  // profileDetails.openInWebURL(context, "bank");
+                  profileDetails.openInWebURLWithbank(
+                      context, "bank", "addbank", "");
                 },
                 borderRadius: BorderRadius.circular(20),
                 splashColor: theme.isDarkMode
@@ -2427,60 +2864,94 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                                   borderRadius: BorderRadius.circular(5),
                                 ),
                                 child: TextWidget.captionText(
-                                    text: 'PRIMARY',
-                                    theme: theme.isDarkMode,
-                                    color: colors.colorWhite,
-                                    fw: 0,
-                                    ),
+                                  text: 'PRIMARY',
+                                  theme: theme.isDarkMode,
+                                  color: colors.colorWhite,
+                                  fw: 0,
+                                ),
                               ),
-                            // if (bank.defaultAc != "Yes")
-                            //   PopupMenuButton<String>(
-                            //     padding: EdgeInsets.zero,
-                            //     constraints:
-                            //         const BoxConstraints(minWidth: 160),
-                            //     shape: RoundedRectangleBorder(
-                            //       borderRadius: BorderRadius.circular(8),
-                            //     ),
-                            //     onSelected: (value) {
-                            //       if (value == 'set_primary') {
-                            //         profileDetails.openInWebURL(
-                            //           context,
-                            //           "bank",
+                            if (bank.defaultAc != "Yes")
+                              PopupMenuButton<String>(
+                                padding: EdgeInsets.zero,
+                                constraints:
+                                    const BoxConstraints(minWidth: 160),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                onSelected: (value) {
+                                  final pendingStatuses = ref
+                                      .watch(profileAllDetailsProvider)
+                                      .pendingStatusList;
+                                  final hasPendingChanges = pendingStatuses
+                                          .isNotEmpty &&
+                                      pendingStatuses[0].data != null &&
+                                      pendingStatuses[0].data!.any((status) =>
+                                          status == 'bank_change_pending');
 
-                            //         );
-                            //       } else if (value == 'delete') {
-                            //         profileDetails.openInWebURL(
-                            //           context,
-                            //           "bank",
-
-                            //         );
-                            //       }
-                            //     },
-                            //     itemBuilder: (ctx) => const [
-                            //       PopupMenuItem<String>(
-                            //         value: 'set_primary',
-                            //         child: Text('Set primary'),
-                            //       ),
-                            //       PopupMenuItem<String>(
-                            //         value: 'delete',
-                            //         child: Text('Delete'),
-                            //       ),
-                            //     ],
-                            //     child: Icon(
-                            //       Icons.more_vert,
-                            //       size: 18,
-                            //       color: colors.iconColor,
-                            //     ),
-                            //   ),
+                                  if (value == 'set_primary') {
+                                    if (hasPendingChanges) {
+                                      warningMessage(context, 'You have pending request.click on the E-Sign to proceed.');
+                                      return;
+                                    }
+                                    profileDetails.openInWebURLWithbank(
+                                        context,
+                                        "bank",
+                                        "setasprimarybank",
+                                        bank.bankAcNo ?? "");
+                                  } else if (value == 'delete') {
+                                    if (hasPendingChanges) {
+                                      warningMessage(context, 'You have pending request.click on the E-Sign to proceed.');
+                                      return;
+                                    }
+                                    profileDetails.openInWebURLWithbank(
+                                        context,
+                                        "bank",
+                                        "deletebank",
+                                        bank.bankAcNo ?? "");
+                                  }
+                                },
+                                itemBuilder: (ctx) => const [
+                                  PopupMenuItem<String>(
+                                    value: 'set_primary',
+                                    child: Text('Set primary'),
+                                  ),
+                                  PopupMenuItem<String>(
+                                    value: 'delete',
+                                    child: Text('Delete'),
+                                  ),
+                                ],
+                                child: Icon(
+                                  Icons.more_vert,
+                                  size: 18,
+                                  color: colors.iconColor,
+                                ),
+                              ),
                             SizedBox(height: 4),
                             Material(
                               color: Colors.transparent,
                               child: InkWell(
                                 onTap: () async {
+                                  final pendingStatuses = ref
+                                      .watch(profileAllDetailsProvider)
+                                      .pendingStatusList;
+                                  if (pendingStatuses.isNotEmpty &&
+                                      pendingStatuses[0].data != null) {
+                                    final hasPendingChanges = pendingStatuses[0]
+                                        .data!
+                                        .any((status) =>
+                                            status == 'bank_change_pending');
+                                    if (hasPendingChanges) {
+                                      warningMessage(context, 'You have pending request.click on the E-Sign to proceed.');
+                                      return;
+                                    }
+                                  }
+
                                   // Add delay for visual feedback
                                   await Future.delayed(
                                       const Duration(milliseconds: 150));
-                                  profileDetails.openInWebURL(context, "bank");
+                                  // profileDetails.openInWebURL(context, "bank");
+                                  profileDetails.openInWebURLWithbank(context,
+                                      "bank", "editbank", bank.bankAcNo ?? "");
                                 },
                                 borderRadius: BorderRadius.circular(20),
                                 splashColor: theme.isDarkMode
@@ -2511,6 +2982,14 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
             );
           }).toList(),
         SizedBox(height: 16.0),
+
+        // Show pending statuses for Bank section
+        _buildSectionPendingStatuses('Bank', ref, theme, () {
+          profileDetails.openInWebURLk(context, "bank", "bank");
+        },
+        () {
+          profileDetails.cancelPendingStatus("bank_change", context);
+        },),
       ],
     );
   }
@@ -2537,13 +3016,13 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     TextWidget.subText(
-                        text: "CDSL",
-                        theme: theme.isDarkMode,
-                        color: theme.isDarkMode
-                            ? colors.textPrimaryDark
-                            : colors.textPrimaryLight,
-                            fw: 0,
-                            ),
+                      text: "CDSL",
+                      theme: theme.isDarkMode,
+                      color: theme.isDarkMode
+                          ? colors.textPrimaryDark
+                          : colors.textPrimaryLight,
+                      fw: 0,
+                    ),
                     Row(
                       children: [
                         Container(
@@ -2655,7 +3134,20 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
               const SizedBox(height: 12),
               ElevatedButton(
                 onPressed: () async {
-                  profileprovider.openInWebURL(context, "deposltory");
+                  // profileprovider.openInWebURL(context, "deposltory");
+                  final pendingStatuses =
+                      ref.watch(profileAllDetailsProvider).pendingStatusList;
+                  if (pendingStatuses.isNotEmpty &&
+                      pendingStatuses[0].data != null) {
+                    final hasPendingChanges = pendingStatuses[0]
+                        .data!
+                        .any((status) => status == 'ddpicre_pending');
+                    if (hasPendingChanges) {
+                      warningMessage(context, 'You have pending request.click on the E-Sign to proceed.');
+                      return;
+                    }
+                  }
+                  profileprovider.openInWebURLk(context, "deposltory", "demat");
                 },
                 style: ElevatedButton.styleFrom(
                     elevation: 0,
@@ -2673,6 +3165,15 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
               SizedBox(height: 10.0),
             ],
           ),
+
+        // Show pending statuses for Depository section
+        _buildSectionPendingStatuses('Depository', ref, theme, () {
+          profileprovider.openInWebURLk(context, "deposltory", "demat");
+        },
+        () {
+          profileprovider.cancelPendingStatus("DDPI", context);
+        },
+        ),
       ],
     );
   }
@@ -2687,157 +3188,192 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
     bool mtfCl = clientData?.mTFCl == 'Y';
     bool mtfClAuto = clientData?.mTFClAuto == "Y";
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 0.0, vertical: 8.0),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        // Status badges
-        // Row(
-        //   mainAxisAlignment: MainAxisAlignment.end,
-        //   children: [
-        //     _buildStatusChip("DDPI", DDPIActive, theme),
-        //     const SizedBox(width: 8),
-        //     _buildStatusChip("POA", POAActive, theme),
-        //   ],
-        // ),
-        // const SizedBox(height: 16),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 0.0, vertical: 8.0),
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            // Status badges
+            // Row(
+            //   mainAxisAlignment: MainAxisAlignment.end,
+            //   children: [
+            //     _buildStatusChip("DDPI", DDPIActive, theme),
+            //     const SizedBox(width: 8),
+            //     _buildStatusChip("POA", POAActive, theme),
+            //   ],
+            // ),
+            // const SizedBox(height: 16),
 
-        if (!DDPIActive && !POAActive) ...[
-          TextWidget.subText(
-            text:
-                "You need to enable DDPI before you can proceed with processing MTF (Margin Trading Facility).",
-            theme: theme.isDarkMode,
-            color: theme.isDarkMode ? colors.lossDark : colors.lossLight,
-            fw: 0,
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: null,
-            style: ElevatedButton.styleFrom(
-              elevation: 0,
-              minimumSize: Size(100, 45),
-              backgroundColor: colors.colorbluegrey,
-              disabledBackgroundColor: colors.colorbluegrey,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(5),
+            if (!DDPIActive && !POAActive) ...[
+              TextWidget.subText(
+                text:
+                    "You need to enable DDPI before you can proceed with processing MTF (Margin Trading Facility).",
+                theme: theme.isDarkMode,
+                color: theme.isDarkMode ? colors.lossDark : colors.lossLight,
+                fw: 0,
               ),
-            ),
-            child: TextWidget.subText(
-              text: "Enable MTF",
-              theme: theme.isDarkMode,
-              fw: 2,
-              color: colors.colorWhite,
-            ),
-          ),
-        ] else if (mtfCl && mtfClAuto) ...[
-          TextWidget.subText(
-            text:
-                "You have activated the Margin Trading Facility (MTF) on your account",
-            theme: theme.isDarkMode,
-            color: theme.isDarkMode
-                ? colors.textPrimaryDark
-                : colors.textPrimaryLight,
-          ),
-          const SizedBox(height: 16),
-          Chip(
-            label: TextWidget.subText(
-              text: 'MTF Enabled',
-              theme: theme.isDarkMode,
-              color: colors.colorWhite,
-            ),
-            backgroundColor: colors.primaryLight,
-          ),
-        ] else if (DDPIActive || POAActive) ...[
-          TextWidget.subText(
-            text:
-                "Would you like to activate Margin Trading Facility (MTF) on your account",
-            color: theme.isDarkMode
-                ? colors.textPrimaryDark
-                : colors.textPrimaryLight,
-            theme: theme.isDarkMode,
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: () {
-              profileDetails.openInWebURL(context, "segment");
-            },
-            style: ElevatedButton.styleFrom(
-              elevation: 0,
-              minimumSize: Size(100, 45),
-              backgroundColor:
-                  theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(5),
-              ),
-            ),
-            child: TextWidget.subText(
-              text: "Enable MTF",
-              theme: theme.isDarkMode,
-              fw: 2,
-              color: colors.colorWhite,
-            ),
-          ),
-        ] else ...[
-          if ((profileDetails.clientAllDetails.clientData!.mTFCl == 'N' &&
-                  profileDetails.clientAllDetails.clientData!.mTFClAuto ==
-                      'N') &&
-              (profileDetails.clientAllDetails.clientData!.dDPI == 'Y' ||
-                  profileDetails.clientAllDetails.clientData!.pOA == "Y"))
-            Padding(
-              padding: const EdgeInsets.only(top: 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  TextWidget.subText(
-                    text:
-                        "Would you like to activate Margin Trading Facility (MTF) on your account ",
-                    theme: theme.isDarkMode,
-                    color: theme.isDarkMode
-                        ? colors.textPrimaryDark
-                        : colors.textPrimaryLight,
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: null,
+                style: ElevatedButton.styleFrom(
+                  elevation: 0,
+                  minimumSize: Size(100, 45),
+                  backgroundColor: colors.colorbluegrey,
+                  disabledBackgroundColor: colors.colorbluegrey,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 16.0),
-                    child: ElevatedButton(
-                      onPressed: () async {
-                        //  if (Platform.isAndroid) {
-                        //           await ref.read(fundProvider).fetchHstoken(context);
-                        //             Navigator.pushNamed(
-                        //                 context, Routes.profileWebViewApp,
-                        //                 arguments: "mtf");
+                ),
+                child: TextWidget.subText(
+                  text: "Enable MTF",
+                  theme: theme.isDarkMode,
+                  fw: 2,
+                  color: colors.colorWhite,
+                ),
+              ),
+            ] else if (mtfCl && mtfClAuto) ...[
+              TextWidget.subText(
+                text:
+                    "You have activated the Margin Trading Facility (MTF) on your account",
+                theme: theme.isDarkMode,
+                color: theme.isDarkMode
+                    ? colors.textPrimaryDark
+                    : colors.textPrimaryLight,
+              ),
+              const SizedBox(height: 16),
+              Chip(
+                label: TextWidget.subText(
+                  text: 'MTF Enabled',
+                  theme: theme.isDarkMode,
+                  color: colors.colorWhite,
+                ),
+                backgroundColor: colors.primaryLight,
+              ),
+            ] else if (DDPIActive || POAActive) ...[
+              TextWidget.subText(
+                text:
+                    "Would you like to activate Margin Trading Facility (MTF) on your account",
+                color: theme.isDarkMode
+                    ? colors.textPrimaryDark
+                    : colors.textPrimaryLight,
+                theme: theme.isDarkMode,
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () {
+                  final pendingStatuses =
+                      ref.watch(profileAllDetailsProvider).pendingStatusList;
+                  if (pendingStatuses.isNotEmpty &&
+                      pendingStatuses[0].data != null) {
+                    final hasPendingChanges = pendingStatuses[0]
+                        .data!
+                        .any((status) => status == 'mtf_pending');
+                    if (hasPendingChanges) {
+                      warningMessage(context, 'You have pending request.click on the E-Sign to proceed.');
+                      return;
+                    }
+                  }
+                  // profileDetails.openInWebURL(context, "segment");
+                  profileDetails.openInWebURLk(context, "segment", "mtf");
+                },
+                style: ElevatedButton.styleFrom(
+                  elevation: 0,
+                  minimumSize: Size(100, 45),
+                  backgroundColor: theme.isDarkMode
+                      ? colors.primaryDark
+                      : colors.primaryLight,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                ),
+                child: TextWidget.subText(
+                  text: "Enable MTF",
+                  theme: theme.isDarkMode,
+                  fw: 2,
+                  color: colors.colorWhite,
+                ),
+              ),
+            ] else ...[
+              if ((profileDetails.clientAllDetails.clientData!.mTFCl == 'N' &&
+                      profileDetails.clientAllDetails.clientData!.mTFClAuto ==
+                          'N') &&
+                  (profileDetails.clientAllDetails.clientData!.dDPI == 'Y' ||
+                      profileDetails.clientAllDetails.clientData!.pOA == "Y"))
+                Padding(
+                  padding: const EdgeInsets.only(top: 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TextWidget.subText(
+                        text:
+                            "Would you like to activate Margin Trading Facility (MTF) on your account ",
+                        theme: theme.isDarkMode,
+                        color: theme.isDarkMode
+                            ? colors.textPrimaryDark
+                            : colors.textPrimaryLight,
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 16.0),
+                        child: ElevatedButton(
+                          onPressed: () async {
+                            //  if (Platform.isAndroid) {
+                            //           await ref.read(fundProvider).fetchHstoken(context);
+                            //             Navigator.pushNamed(
+                            //                 context, Routes.profileWebViewApp,
+                            //                 arguments: "mtf");
 
-                        //         } else {
-                        profileDetails.openInWebURL(context, "mtf");
-                        // }
+                            //         } else {
+                            // profileDetails.openInWebURL(context, "mtf");
+                            profileDetails.openInWebURLk(
+                                context, "segment", "mtf");
 
-                        // await ref.read(fundProvider).fetchHstoken(context);
-                        // Navigator.pushNamed(context, Routes.profileWebViewApp,
-                        //     arguments: "mtf");
-                        //  profileDetails.openInWebURL(context,"mtf");
-                      },
-                      style: ElevatedButton.styleFrom(
-                        elevation: 0,
-                        backgroundColor: theme.isDarkMode
-                            ? colors.colorBlack
-                            : colors.colorWhite,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(32),
-                        ),
-                        side: BorderSide(
-                          width: 1,
-                          color: theme.isDarkMode
-                              ? colors.colorWhite
-                              : colors.colorBlack,
+                            // }
+
+                            // await ref.read(fundProvider).fetchHstoken(context);
+                            // Navigator.pushNamed(context, Routes.profileWebViewApp,
+                            //     arguments: "mtf");
+                            //  profileDetails.openInWebURL(context,"mtf");
+                          },
+                          style: ElevatedButton.styleFrom(
+                            elevation: 0,
+                            backgroundColor: theme.isDarkMode
+                                ? colors.colorBlack
+                                : colors.colorWhite,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(32),
+                            ),
+                            side: BorderSide(
+                              width: 1,
+                              color: theme.isDarkMode
+                                  ? colors.colorWhite
+                                  : colors.colorBlack,
+                            ),
+                          ),
+                          child: TextWidget.subText(
+                              text: "Enable MTF",
+                              theme: theme.isDarkMode,
+                              fw: 2),
                         ),
                       ),
-                      child: TextWidget.subText(
-                          text: "Enable MTF", theme: theme.isDarkMode, fw: 2),
-                    ),
+                    ],
                   ),
-                ],
-              ),
-            ),
-        ],
-      ]),
+                ),
+            ],
+          ]),
+        ),
+
+        // Show pending statuses for MTF section
+        _buildSectionPendingStatuses(
+            'Margin Trading Facility (MTF)', ref, theme, () {
+          profileDetails.openInWebURLk(context, "segment", "mtf");
+        },
+        () {
+          profileDetails.cancelPendingStatus("mtf", context);
+        },
+        ),
+      ],
     );
   }
 
@@ -2866,10 +3402,23 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                 color: Colors.transparent,
                 child: InkWell(
                   onTap: () async {
+                    final pendingStatuses =
+                        ref.watch(profileAllDetailsProvider).pendingStatusList;
+                    if (pendingStatuses.isNotEmpty &&
+                        pendingStatuses[0].data != null) {
+                      final hasPendingChanges = pendingStatuses[0]
+                          .data!
+                          .any((status) => status == 'segments_change_pending');
+                      if (hasPendingChanges) {
+                        warningMessage(context, 'You have pending request.click on the E-Sign to proceed.');
+                        return;
+                      }
+                    }
+
                     // Add delay for visual feedback
                     await Future.delayed(const Duration(milliseconds: 150));
-
-                    profileDetails.openInWebURL(context, "segment");
+                    // profileDetails.openInWebURL(context, "segment");
+                    profileDetails.openInWebURLk(context, "segment", "segment");
                   },
                   borderRadius: BorderRadius.circular(20),
                   splashColor: theme.isDarkMode
@@ -2919,6 +3468,16 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
               text: "No segment data available",
               theme: theme.isDarkMode,
             ),
+
+          // Show pending statuses for Trading Preferences section
+          _buildSectionPendingStatuses('Trading Preferences', ref, theme, () {
+            profileDetails.openInWebURLk(context, "segment", "segment");
+          },
+          () {
+            profileDetails.cancelPendingStatus("segment_change", context);
+          },
+          
+          ),
         ],
       ),
     );
@@ -2950,7 +3509,8 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                 ElevatedButton(
                   onPressed: () async {
                     await Future.delayed(const Duration(milliseconds: 150));
-                    profileDetails.openInWebURL(context, "nominee");
+                    // profileDetails.openInWebURL(context, "nominee");
+                    profileDetails.openInWebURLk(context, "nominee", "nominee");
                   },
                   style: ElevatedButton.styleFrom(
                       elevation: 0,
@@ -2984,10 +3544,25 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                   color: Colors.transparent,
                   child: InkWell(
                     onTap: () async {
+                      final pendingStatuses = ref
+                          .watch(profileAllDetailsProvider)
+                          .pendingStatusList;
+                      if (pendingStatuses.isNotEmpty &&
+                          pendingStatuses[0].data != null) {
+                        final hasPendingChanges = pendingStatuses[0]
+                            .data!
+                            .any((status) => status == 'nominee_pending');
+                        if (hasPendingChanges) {
+                          warningMessage(context, 'You have pending request.click on the E-Sign to proceed.');
+                          return;
+                        }
+                      }
+
                       // Add delay for visual feedback
                       await Future.delayed(const Duration(milliseconds: 150));
-
-                      profileDetails.openInWebURL(context, "nominee");
+                      // profileDetails.openInWebURL(context, "nominee");
+                      profileDetails.openInWebURLk(
+                          context, "nominee", "nominee");
                     },
                     borderRadius: BorderRadius.circular(20),
                     splashColor: theme.isDarkMode
@@ -3019,6 +3594,15 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
               _buildDetailRow("Nominee DOB",
                   formatNomineeDOB(clientData!.nomineeDOB!), theme, ref),
           ],
+
+          // Show pending statuses for Nominee section
+          _buildSectionPendingStatuses('Nominee', ref, theme, () {
+            profileDetails.openInWebURLk(context, "nominee", "nominee");
+          },
+          () {
+            profileDetails.cancelPendingStatus("nominee", context);
+          },
+          ),
         ],
       ),
     );
@@ -3039,7 +3623,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
             color: theme.isDarkMode
                 ? colors.textPrimaryDark
                 : colors.textPrimaryLight,
-                fw: 0,
+            fw: 0,
           ),
           const SizedBox(height: 10),
           Row(
@@ -3110,14 +3694,28 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
             color: theme.isDarkMode
                 ? colors.textPrimaryDark
                 : colors.textPrimaryLight,
-                fw: 0,
+            fw: 0,
           ),
           const SizedBox(height: 10),
           ElevatedButton(
             onPressed: () async {
+              final pendingStatuses =
+                  ref.watch(profileAllDetailsProvider).pendingStatusList;
+              if (pendingStatuses.isNotEmpty &&
+                  pendingStatuses[0].data != null) {
+                final hasPendingChanges = pendingStatuses[0]
+                    .data!
+                    .any((status) => status == 'closure_pending');
+                if (hasPendingChanges) {
+                  warningMessage(context, 'You have pending request.click on the E-Sign to proceed.');
+                  return;
+                }
+              }
+
               await Future.delayed(const Duration(milliseconds: 150));
 
-              profileDetails.openInWebURL(context, "closure");
+              // profileDetails.openInWebURL(context, "closure");
+              profileDetails.openInWebURLk(context, "closure", "closure");
             },
             style: ElevatedButton.styleFrom(
                 elevation: 0,
@@ -3131,7 +3729,16 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                 theme: false,
                 color: colors.colorWhite,
                 fw: 2),
-          )
+          ),
+
+          // Show pending statuses for Closure section
+          _buildSectionPendingStatuses('Closure', ref, theme, () {
+            profileDetails.openInWebURLk(context, "closure", "closure");
+          },
+          () {
+            profileDetails.cancelPendingStatus("closure", context);
+          },
+          ),
         ],
       ),
     );
@@ -3206,15 +3813,15 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                         : null,
                   ),
                   child: TextWidget.subText(
-                      text: displayName,
-                      theme: theme.isDarkMode,
-                      color: isActive
-                          ? colors.colorWhite
-                          : theme.isDarkMode
-                              ? colors.lossDark
-                              : colors.lossLight,
-                              fw: 0,
-                              ),
+                    text: displayName,
+                    theme: theme.isDarkMode,
+                    color: isActive
+                        ? colors.colorWhite
+                        : theme.isDarkMode
+                            ? colors.lossDark
+                            : colors.lossLight,
+                    fw: 0,
+                  ),
                 );
               }).toList(),
             ),
@@ -3259,32 +3866,52 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                     fw: 0,
                   ),
                 ),
-                // if (label == "Email" || label == "Mobile" || label == "Address")
-                //   Material(
-                //     color: Colors.transparent,
-                //     shape: const CircleBorder(),
-                //     child: InkWell(
-                //       customBorder: const CircleBorder(),
-                //       splashColor: theme.isDarkMode
-                //           ? colors.splashColorDark
-                //           : colors.splashColorLight,
-                //       highlightColor: theme.isDarkMode
-                //           ? colors.highlightDark
-                //           : colors.highlightLight,
-                //       onTap: () {
-                //         ref.read(profileAllDetailsProvider).openInWebURLtest(
-                //             context, "profile", label.toLowerCase());
-                //       },
-                //       child: Padding(
-                //         padding: const EdgeInsets.all(4.0),
-                //         child: Icon(
-                //           Icons.edit_outlined,
-                //           color: colors.iconColor,
-                //           size: 20,
-                //         ),
-                //       ),
-                //     ),
-                //   ),
+                if (label == "Email" || label == "Mobile" || label == "Address")
+                  Material(
+                    color: Colors.transparent,
+                    shape: const CircleBorder(),
+                    child: InkWell(
+                      customBorder: const CircleBorder(),
+                      splashColor: theme.isDarkMode
+                          ? colors.splashColorDark
+                          : colors.splashColorLight,
+                      highlightColor: theme.isDarkMode
+                          ? colors.highlightDark
+                          : colors.highlightLight,
+                      onTap: () {
+                        final pendingStatuses = ref
+                            .watch(profileAllDetailsProvider)
+                            .pendingStatusList;
+                        if (pendingStatuses.isNotEmpty &&
+                            pendingStatuses[0].data != null) {
+                          final hasPendingChanges = pendingStatuses[0]
+                              .data!
+                              .any((status) =>
+                                  status == 'address_change_pending' ||
+                                  status == 'mobile_change_pending' ||
+                                  status == 'email_change_pending');
+                          if (hasPendingChanges) {
+                            warningMessage(context, 'You have pending request.click on the E-Sign to proceed.');
+                            return;
+                          } else {
+                            ref.read(profileAllDetailsProvider).openInWebURLk(
+                                context, "profile", label.toLowerCase());
+                          }
+                        } else {
+                          ref.read(profileAllDetailsProvider).openInWebURLk(
+                              context, "profile", label.toLowerCase());
+                        }
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.all(4.0),
+                        child: Icon(
+                          Icons.edit_outlined,
+                          color: colors.iconColor,
+                          size: 20,
+                        ),
+                      ),
+                    ),
+                  ),
               ],
             ),
             SizedBox(
@@ -4258,25 +4885,27 @@ class UserInfoColumn extends StatelessWidget {
   }
 }
 
-
 class PendingStatus {
   List<String>? data;
   String? msg;
 
   PendingStatus({this.data, this.msg});
 
-  PendingStatus.fromJson(Map<String, dynamic> json) {
-    data = json['data'].cast<String>();
-    msg = json['msg'];
+  factory PendingStatus.fromJson(Map<String, dynamic> json) {
+    return PendingStatus(
+      data: json['data'] != null ? List<String>.from(json['data']) : [],
+      msg: json['msg'],
+    );
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['data'] = this.data;
-    data['msg'] = this.msg;
-    return data;
+    return {
+      'data': data,
+      'msg': msg,
+    };
   }
 }
+
 //   final selectedBtmIndx = 4;
 
 //   // Add this function

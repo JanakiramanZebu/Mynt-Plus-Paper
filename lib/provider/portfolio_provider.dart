@@ -241,6 +241,14 @@ class PortfolioProvider extends DefaultChangeNotifier {
   changeTabIndex(int index) {
     _selectedTab = index;
     print("selectedTab: $index");
+    
+    // Animate the TabController to the new index
+    try {
+      portTab.animateTo(index);
+    } catch (e) {
+      print("TabController animation error: $e");
+    }
+    
     notifyListeners();
   }
 

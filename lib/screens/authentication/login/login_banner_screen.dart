@@ -132,7 +132,7 @@ class _LoginBannerScreenState extends ConsumerState<LoginBannerScreen> {
             barrierDismissible: false,
             builder: (dialogContext) {
               return AlertDialog(
-                backgroundColor: colors.colorWhite,
+                backgroundColor: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
                 titlePadding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                 shape: const RoundedRectangleBorder(

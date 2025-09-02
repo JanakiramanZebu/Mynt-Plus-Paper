@@ -56,16 +56,22 @@ class _OrderbookPendingAlertkFilterBottomSheetState
           changeisAscending = pref.isPAChange ?? true;
         }
       } else {
-        // If no last selected type, default to no sorting
-        currentSortType = "";
+        // If no last selected type, default to Scrip Name ascending
+        currentSortType = "scrip";
+        scripisAscending = true;
+        // Store this as the default selection
+        _lastSelectedSortType = "scrip";
+        pref.setPAScrip(true);
       }
     } catch (e) {
-      // Fallback to default values
-      currentSortType = "";
-      scripisAscending = pref.isPAScripname ?? true;
+      // Fallback to default values - Scrip Name ascending
+      currentSortType = "scrip";
+      scripisAscending = true;
       pricepisAscending = pref.isPAPrice ?? true;
       alertvalueisAscending = pref.isPAPricealert ?? true;
       changeisAscending = pref.isPAChange ?? true;
+      _lastSelectedSortType = "scrip";
+      pref.setPAScrip(true);
     }
   }
 
