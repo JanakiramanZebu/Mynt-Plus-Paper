@@ -4295,6 +4295,8 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                                 "Price(Order price + Stoploss = ${(double.parse(ordPrice) + double.parse(stopLossCtrl.text))}) Stoploss can not be greater than ${widget.scripInfo.uc}");
                                                           } else if(trailingTicksCtrl.text.isNotEmpty && (trailTicksRemainder > 0.0001)){
                                                                       warningMessage(context, "Trailing price should be in multiples of tick size: $tickSize");
+                                                          } else if(trailingTicksCtrl.text.isNotEmpty && (enteredValue <= 0)){
+                                                                      warningMessage(context, "Trailing price should be positive value");
                                                           } else {
                                                             if ((int.parse(convertQtyOrAmtValue(
                                                                                 qtyCtrl.text, _isQtyToAmount)
@@ -4889,7 +4891,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
 
                     if (value.isNotEmpty) {
                       double tickSize = double.parse(scripInfo.ti.toString());
-                      double enteredValue = double.tryParse(value) ?? 0;
+                      double enteredValue = (double.tryParse(value) ?? 0).abs();
                       
                       if (enteredValue <= 0) {
                         trailingTicksCtrl.text = value.substring(0, value.length - 1);
@@ -5239,7 +5241,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                   ? (int.parse(convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount)) * lotSize).toString()
                   : convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount),
               ret: validityType,
-              trailprc: orderType == "CO - BO" && trailingTicksCtrl.text.isNotEmpty && trailingTicksCtrl.text != "0" ? trailingTicksCtrl.text : '' ,
+              trailprc: orderType == "CO - BO" && trailingTicksCtrl.text.isNotEmpty && (double.tryParse(trailingTicksCtrl.text)??0) > 0 ? trailingTicksCtrl.text : '' ,
               trantype: isBuy! ? 'B' : 'S',
               trgprc: priceType == "SL Limit" || priceType == "SL MKT" ? triggerPriceCtrl.text : "",
               tsym: widget.scripInfo.tsym!,
@@ -5581,7 +5583,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                         : "BO",
         "qty": splitQty.toString(), // Use the split quantity instead of original quantity
         "ret": validityType,
-        "trailprc": orderType == "CO - BO" && trailingTicksCtrl.text.isNotEmpty && trailingTicksCtrl.text != "0" ? trailingTicksCtrl.text :'',
+        "trailprc": orderType == "CO - BO" && trailingTicksCtrl.text.isNotEmpty && (double.tryParse(trailingTicksCtrl.text)??0) > 0 ? trailingTicksCtrl.text :'',
         "trantype": isBuy! ? 'B' : 'S',
         "trgprc": priceType == "SL Limit" || priceType == "SL MKT" ? triggerPriceCtrl.text : "",
         "tsym": widget.scripInfo.tsym!,
