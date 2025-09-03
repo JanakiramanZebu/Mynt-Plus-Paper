@@ -637,4 +637,288 @@ Color getSectorAllocationColor(String sector) {
       'breakEven': breakEven,
     };
   }
+
+final TextEditingController _investmentController = TextEditingController(text: '1,00,000');
+  final TextEditingController _searchController = TextEditingController();
+  
+  TextEditingController get investmentController => _investmentController;
+  TextEditingController get searchController => _searchController;
+
+  // Strategy State
+  List<FundModel> _selectedFunds = [];
+  List<FundModel> get selectedFunds => _selectedFunds;
+
+  String _selectedFilter = 'All';
+  String get selectedFilter => _selectedFilter;
+
+  String _selectedInvestmentType = 'One-time';
+  String get selectedInvestmentType => _selectedInvestmentType;
+
+  String _selectedDuration = '3Y';
+  String get selectedDuration => _selectedDuration;
+
+  String _selectedStrategyType = 'Buy and Hold';
+  String get selectedStrategyType => _selectedStrategyType;
+
+  bool _isStrategyLoading = false;
+  bool get isStrategyLoading => _isStrategyLoading;
+
+  String? _strategyError;
+  String? get strategyError => _strategyError;
+
+  // Static fund list based on your images
+  final List<FundModel> _staticFunds = [
+    FundModel(
+      name: 'SBI Nifty 50 ETF',
+      type: 'Equity',
+      fiveYearCAGR: 17.7,
+      threeYearCAGR: 13.19,
+      aum: 20815.73,
+      sharpe: 0.8,
+    ),
+    FundModel(
+      name: 'SBI BSE Sensex ETF',
+      type: 'Equity',
+      fiveYearCAGR: 16.82,
+      threeYearCAGR: 12.29,
+      aum: 11725.54,
+      sharpe: 0.74,
+    ),
+    FundModel(
+      name: 'Parag Parikh Flexi Cap Fund - Regular Plan',
+      type: 'Equity',
+      fiveYearCAGR: 21.77,
+      threeYearCAGR: 20.49,
+      aum: 11328.67,
+      sharpe: 1.23,
+    ),
+    FundModel(
+      name: 'HDFC Balanced Advantage Fund - Regular Plan',
+      type: 'Hybrid',
+      fiveYearCAGR: 22.34,
+      threeYearCAGR: 18.24,
+      aum: 10772.60,
+      sharpe: 1.4,
+    ),
+    FundModel(
+      name: 'Aditya Birla Sun Life Liquid Fund - Direct Plan',
+      type: 'Debt',
+      fiveYearCAGR: 5.73,
+      threeYearCAGR: 7.13,
+      aum: 51915.25,
+      sharpe: 1.59,
+    ),
+    FundModel(
+      name: 'ICICI Prudential Large Cap Fund',
+      type: 'Equity',
+      fiveYearCAGR: 25.54,
+      threeYearCAGR: 21.63,
+      aum: 5375.52,
+      sharpe: 1.41,
+    ),
+  ];
+
+  List<FundModel> get staticFunds => _staticFunds;
+
+  // Loading state management
+  strategyLoader(bool value) {
+    _isStrategyLoading = value;
+    print("Strategy Loading: $_isStrategyLoading");
+    notifyListeners();
+  }
+
+  // Fund Management Methods
+  void addFundToStrategy(FundModel fund) {
+    if (!_selectedFunds.any((f) => f.name == fund.name)) {
+      final newFund = FundModel(
+        name: fund.name,
+        type: fund.type,
+        fiveYearCAGR: fund.fiveYearCAGR,
+        threeYearCAGR: fund.threeYearCAGR,
+        aum: fund.aum,
+        sharpe: fund.sharpe,
+      );
+      _selectedFunds.add(newFund);
+      _redistributePercentages();
+      notifyListeners();
+    }
+  }
+
+  void removeFundFromStrategy(FundModel fund) {
+    _selectedFunds.removeWhere((f) => f.name == fund.name);
+    _redistributePercentages();
+    notifyListeners();
+  }
+
+  void updateFundPercentage(FundModel fund, double percentage) {
+    final index = _selectedFunds.indexWhere((f) => f.name == fund.name);
+    if (index != -1) {
+      _selectedFunds[index].percentage = percentage;
+      notifyListeners();
+    }
+  }
+
+  void _redistributePercentages() {
+    if (_selectedFunds.isEmpty) return;
+    
+    final equalPercentage = 100.0 / _selectedFunds.length;
+    for (int i = 0; i < _selectedFunds.length; i++) {
+      _selectedFunds[i].percentage = i == _selectedFunds.length - 1 
+          ? 100.0 - (equalPercentage * (_selectedFunds.length - 1))
+          : equalPercentage;
+    }
+  }
+
+  void clearStrategy() {
+    _selectedFunds.clear();
+    _searchController.clear();
+    _selectedFilter = 'All';
+    notifyListeners();
+  }
+
+  // Filter and Search Methods
+  void updateSelectedFilter(String filter) {
+    _selectedFilter = filter;
+    notifyListeners();
+  }
+
+  List<FundModel> getFilteredFunds() {
+    List<FundModel> funds = List.from(_staticFunds);
+    
+    // Apply filter
+    if (_selectedFilter != 'All') {
+      funds = funds.where((fund) => fund.type == _selectedFilter).toList();
+    }
+    
+    // Apply search
+    if (_searchController.text.isNotEmpty) {
+      funds = funds.where((fund) => 
+        fund.name.toLowerCase().contains(_searchController.text.toLowerCase())
+      ).toList();
+    }
+    
+    return funds;
+  }
+
+  bool isFundSelected(FundModel fund) {
+    return _selectedFunds.any((f) => f.name == fund.name);
+  }
+
+  // Investment Configuration Methods
+  void updateInvestmentType(String type) {
+    _selectedInvestmentType = type;
+    notifyListeners();
+  }
+
+  void updateDuration(String duration) {
+    _selectedDuration = duration;
+    notifyListeners();
+  }
+
+  void updateStrategyType(String type) {
+    _selectedStrategyType = type;
+    notifyListeners();
+  }
+
+  // Getters
+  double get totalPercentage => _selectedFunds.fold(0.0, (sum, fund) => sum + fund.percentage);
+  
+  bool get isStrategyValid => totalPercentage == 100.0 && _selectedFunds.isNotEmpty;
+
+  // Format amount for display (following your pattern)
+  // String formatAmount(double amount) {
+  //   if (amount >= 10000000) {
+  //     return '${(amount / 10000000).toStringAsFixed(2)}Cr';
+  //   } else if (amount >= 100000) {
+  //     return '${(amount / 100000).toStringAsFixed(2)}L';
+  //   } else if (amount >= 1000) {
+  //     return '${(amount / 1000).toStringAsFixed(2)}K';
+  //   } else {
+  //     return amount.toStringAsFixed(2);
+  //   }
+  // }
+
+  // Fund Type Helpers
+  Color getFundTypeColor(String type) {
+    switch (type.toLowerCase()) {
+      case 'equity':
+        return colors.colorBlue;
+      case 'debt':
+        return colors.successLight;
+      case 'hybrid':
+        return colors.KColorLightBlueBg;
+      case 'commodities':
+        return colors.colorbluegrey;
+      default:
+        return colors.textSecondaryLight;
+    }
+  }
+
+  IconData getFundTypeIcon(String type) {
+    switch (type.toLowerCase()) {
+      case 'equity':
+        return Icons.trending_up;
+      case 'debt':
+        return Icons.account_balance;
+      case 'hybrid':
+        return Icons.pie_chart;
+      case 'commodities':
+        return Icons.landscape;
+      default:
+        return Icons.monetization_on;
+    }
+  }
+
+  // Save Strategy Method
+  Future<void> saveStrategy() async {
+    try {
+      strategyLoader(true);
+      
+      // Here you would call your API to save the strategy
+      // await api.saveStrategy(strategyData);
+      
+      // For now, just simulate API call
+      await Future.delayed(const Duration(seconds: 1));
+      
+      _strategyError = null;
+      print("Strategy saved successfully");
+      
+    } catch (e) {
+      print("Strategy Save Error: $e");
+      _strategyError = e.toString();
+      rethrow;
+    } finally {
+      _strategyError = null;
+      strategyLoader(false);
+      notifyListeners();
+    }
+  }
+
+  // @override
+  // void dispose() {
+  //   _investmentController.dispose();
+  //   _searchController.dispose();
+  //   super.dispose();
+  // }
+}
+
+// Fund Model
+class FundModel {
+  final String name;
+  final String type;
+  final double fiveYearCAGR;
+  final double threeYearCAGR;
+  final double aum;
+  final double sharpe;
+  double percentage;
+
+  FundModel({
+    required this.name,
+    required this.type,
+    required this.fiveYearCAGR,
+    required this.threeYearCAGR,
+    required this.aum,
+    required this.sharpe,
+    this.percentage = 0.0,
+  });
 }

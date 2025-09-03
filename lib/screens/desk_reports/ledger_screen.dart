@@ -651,10 +651,10 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                                                                ?.crAmt ??
                                                            '0.00',
                                                        ledgerprovider.ledgerAllData
-                                                               ?.closingBalance ??
+                                                               ?.openingBalance ??
                                                            '0.00',
                                                        ledgerprovider.ledgerAllData
-                                                               ?.openingBalance ??
+                                                               ?.closingBalance ??
                                                            '0.00',
                                                        ledgerprovider.startDate,
                                                        currentDate);
