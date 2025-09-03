@@ -255,9 +255,7 @@ class _OrderBookScreenState extends ConsumerState<OrderBookScreen>
                     hintStyle: TextWidget.textStyle(
                       fontSize: 14,
                       theme: false,
-                      color: theme.isDarkMode
-                          ? colors.textSecondaryDark
-                          : colors.textSecondaryLight,
+                      color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
                       fw: 0,
                     ),
                     border: InputBorder.none,

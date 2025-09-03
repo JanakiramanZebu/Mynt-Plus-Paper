@@ -237,8 +237,12 @@ class _SipOrderDetailsState extends ConsumerState<SipOrderDetails> {
                                   : const Color(0xffF1F3F8),
                               filled: true,
                               hintText: "0",
-                              hintStyle: TextWidget.textStyle(color: const Color(0xff999999),
-                                fontSize: 14,fw: 1,theme: theme.isDarkMode),
+                             hintStyle: TextWidget.textStyle(
+                                      fontSize: 14,
+                                      theme: theme.isDarkMode,
+                                      color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                                    fw: 0,
+                                    ),
                               contentPadding: const EdgeInsets.symmetric(
                                   vertical: 8, horizontal: 16),
                               prefixIconColor: const Color(0xff586279),

@@ -1086,7 +1086,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                           fontSize: 14,
                                           theme: theme.isDarkMode,
                                           color:
-                                              theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                                             (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
                                           fw: 0,
                                         ),
                                         keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -1135,9 +1135,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                             hintStyle: TextWidget.textStyle(
                                               fontSize: 14,
                                               theme: theme.isDarkMode,
-                                              color: theme.isDarkMode
-                                                  ? colors.textSecondaryDark
-                                                  : colors.textSecondaryLight,
+                                              color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
                                               fw: 0,
                                             ),
                                             inputFormate: [FilteringTextInputFormatter.digitsOnly],
@@ -1347,9 +1345,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                             hintStyle: TextWidget.textStyle(
                                               fontSize: 14,
                                               theme: theme.isDarkMode,
-                                              color: theme.isDarkMode
-                                                  ? colors.textSecondaryDark
-                                                  : colors.textSecondaryLight,
+                                              color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
                                               fw: 0,
                                             ),
                                             keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -1633,7 +1629,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                             fontSize: 14,
                                             theme: theme.isDarkMode,
                                             color:
-                                                theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                                                (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
                                             fw: 0,
                                           ),
                                           keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -1664,9 +1660,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                               hintStyle: TextWidget.textStyle(
                                                 fontSize: 14,
                                                 theme: theme.isDarkMode,
-                                                color: theme.isDarkMode
-                                                    ? colors.textSecondaryDark
-                                                    : colors.textSecondaryLight,
+                                                color:(theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
                                                 fw: 0,
                                               ),
                                               inputFormate: [FilteringTextInputFormatter.digitsOnly],
@@ -1876,9 +1870,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                               hintStyle: TextWidget.textStyle(
                                                 fontSize: 14,
                                                 theme: theme.isDarkMode,
-                                                color: theme.isDarkMode
-                                                    ? colors.textSecondaryDark
-                                                    : colors.textSecondaryLight,
+                                                color:(theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
                                                 fw: 0,
                                               ),
                                               keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -2509,9 +2501,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                 hintStyle: TextWidget.textStyle(
                                                   fontSize: 14,
                                                   theme: theme.isDarkMode,
-                                                  color: theme.isDarkMode
-                                                      ? colors.textSecondaryDark
-                                                      : colors.textSecondaryLight,
+                                                  color:(theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
                                                   fw: 0,
                                                 ),
                                                 inputFormate: [FilteringTextInputFormatter.digitsOnly],
@@ -2768,9 +2758,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                     hintStyle: TextWidget.textStyle(
                                                       fontSize: 14,
                                                       theme: theme.isDarkMode,
-                                                      color: theme.isDarkMode
-                                                          ? colors.textSecondaryDark
-                                                          : colors.textSecondaryLight,
+                                                      color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
                                                       fw: 0,
                                                     ),
                                                     keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -4619,7 +4607,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                       hintStyle: TextWidget.textStyle(
                         fontSize: 14,
                         theme: theme.isDarkMode,
-                        color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                        color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
                         fw: 0,
                       ),
                       inputFormate: [FilteringTextInputFormatter.digitsOnly],
@@ -4725,7 +4713,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                   hintStyle: TextWidget.textStyle(
                     fontSize: 14,
                     theme: theme.isDarkMode,
-                    color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                    color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
                     fw: 0,
                   ),
                   onChanged: (value) {
@@ -4797,7 +4785,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                   hintStyle: TextWidget.textStyle(
                     fontSize: 14,
                     theme: theme.isDarkMode,
-                    color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                    color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
                     fw: 0,
                   ),
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -4850,7 +4838,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                   hintStyle: TextWidget.textStyle(
                     fontSize: 14,
                     theme: theme.isDarkMode,
-                    color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                    color:(theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
                     fw: 0,
                   ),
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -5049,7 +5037,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                   hintStyle: TextWidget.textStyle(
                                     fontSize: 14,
                                     theme: theme.isDarkMode,
-                                    color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                                    color:(theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
                                     fw: 0,
                                   ),
                                 ),

@@ -331,9 +331,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
                                   fontSize: 16,
                                   theme: theme.isDarkMode,
                                    fw: 0,
-                                  color: theme.isDarkMode
-                                      ? colors.textSecondaryDark
-                                      : colors.textSecondaryLight),
+                                  color:  (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4)),
                               fillColor: theme.isDarkMode
                                   ? colors.searchBgDark
                                   : colors.searchBg,

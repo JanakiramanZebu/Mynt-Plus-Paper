@@ -228,9 +228,8 @@ class _AddScripState extends ConsumerState<SearchScreen>
                                     fontSize: 14,
                                     theme: theme.isDarkMode,
                                      fw: 0,
-                                   color: theme.isDarkMode
-                              ? colors.textSecondaryDark
-                              : colors.textSecondaryLight,
+                                   color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                                   
                                   ),
                                   contentPadding: const EdgeInsets.symmetric(
                                       horizontal: 0, vertical: 12),

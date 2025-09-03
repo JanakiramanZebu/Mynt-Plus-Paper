@@ -40,6 +40,7 @@ class CustomTextBtn extends ConsumerWidget {
                   ? colors.secondaryDark
                   : colors.secondaryLight,
               theme: theme.isDarkMode,
+              fw:0
             ),
             const SizedBox(width: 8),
             SvgPicture.asset(icon,

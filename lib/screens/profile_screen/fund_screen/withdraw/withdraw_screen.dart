@@ -164,7 +164,7 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
                           hintText: "0",
                           hintStyle: TextWidget.textStyle(
                               theme: false,
-                              color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                              color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
                               fontSize: 25,
                               fw: 0,
                               ),

@@ -155,20 +155,24 @@ class _SearchField extends StatelessWidget {
       margin: const EdgeInsets.all(16.0),
       child: TextFormField(
         controller: ipoProvider.ipocommonsearchcontroller,
-        style: MainSmeListCard.textStyle(
-          theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-          14,
-          FontWeight.w500,
-        ),
+         style: TextWidget.textStyle(
+                                    fontSize: 16,
+                                    color: theme.isDarkMode
+                                        ? colors.textPrimaryDark
+                                        : colors.textPrimaryLight,
+                                    theme: theme.isDarkMode,
+                                    fw: 0,
+                                  ),
         decoration: InputDecoration(
           fillColor:
               theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
           filled: true,
-          hintStyle: MainSmeListCard.textStyle(
-            const Color(0xff69758F),
-            14,
-            FontWeight.w500,
-          ),
+           hintStyle: TextWidget.textStyle(
+                                      fontSize: 14,
+                                      theme: theme.isDarkMode,
+                                     color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                                    fw: 0,
+                                    ),
           prefixIconColor: const Color(0xff586279),
           prefixIcon: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20.0),

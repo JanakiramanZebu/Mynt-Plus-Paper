@@ -8,6 +8,7 @@ import '../../../res/res.dart';
 import '../../../routes/route_names.dart';
 import '../../../sharedWidget/custom_exch_badge.dart';
 import '../../../sharedWidget/functions.dart';
+import '../../res/global_state_text.dart';
 
 class MfCommonSearch extends ConsumerWidget {
   const MfCommonSearch({super.key});
@@ -53,19 +54,26 @@ class MfCommonSearch extends ConsumerWidget {
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   child: TextFormField(
                     controller: mfData.mfsearchcontroller,
-                    style: textStyle(
-                        theme.isDarkMode
-                            ? colors.colorWhite
-                            : colors.colorBlack,
-                        16,
-                        FontWeight.w600),
+                   style: TextWidget.textStyle(
+                                    fontSize: 16,
+                                    color: theme.isDarkMode
+                                        ? colors.textPrimaryDark
+                                        : colors.textPrimaryLight,
+                                    theme: theme.isDarkMode,
+                                    fw: 0,
+                                  ),
                     decoration: InputDecoration(
                         fillColor: theme.isDarkMode
                             ? colors.darkGrey
                             : const Color(0xffF1F3F8),
                         filled: true,
-                        hintStyle: textStyle(
-                            const Color(0xff69758F), 15, FontWeight.w500),
+                     hintStyle: TextWidget.textStyle(
+                                      fontSize: 14,
+                                      theme: theme.isDarkMode,
+                                     color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                               
+                                    fw: 0,
+                                    ),
                         prefixIconColor: const Color(0xff586279),
                         prefixIcon: Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 20.0),

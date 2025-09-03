@@ -278,9 +278,7 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                              hintStyle: TextWidget.textStyle(
                                         fontSize: 14,
                                         theme: theme.isDarkMode,
-                                       color: theme.isDarkMode
-                                  ? colors.textSecondaryDark
-                                  : colors.textSecondaryLight,
+                                       color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
                                       fw: 0,
                                       ),
                                               keyboardType: const TextInputType
@@ -347,9 +345,7 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                     hintStyle: TextWidget.textStyle(
                                         fontSize: 14,
                                         theme: theme.isDarkMode,
-                                       color: theme.isDarkMode
-                                  ? colors.textSecondaryDark
-                                  : colors.textSecondaryLight,
+                                       color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
                                       fw: 0,
                                       ),
                                                     inputFormate: [
@@ -508,9 +504,7 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                       hintStyle: TextWidget.textStyle(
                                         fontSize: 14,
                                         theme: theme.isDarkMode,
-                                       color: theme.isDarkMode
-                                  ? colors.textSecondaryDark
-                                  : colors.textSecondaryLight,
+                                       color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
                                       fw: 0,
                                       ),
                                                         style: TextWidget.textStyle(
@@ -893,19 +887,23 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                 },
                                                 hintText:
                                                     "${widget.gttOrderBook.ltp}",
-                                                hintStyle: textStyle(
-                                                    const Color(0xff666666),
-                                                    15,
-                                                    FontWeight.w400),
+                                               hintStyle: TextWidget.textStyle(
+                                      fontSize: 14,
+                                      theme: theme.isDarkMode,
+                                     color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                                    fw: 0,
+                                    ),
                                                 keyboardType: const TextInputType
                                                     .numberWithOptions(
                                                     decimal: true),
-                                                style: textStyle(
-                                                    theme.isDarkMode
-                                                        ? colors.colorWhite
-                                                        : colors.colorBlack,
-                                                    16,
-                                                    FontWeight.w600),
+                                                style: TextWidget.textStyle(
+                                    fontSize: 16,
+                                    color: theme.isDarkMode
+                                        ? colors.textPrimaryDark
+                                        : colors.textPrimaryLight,
+                                    theme: theme.isDarkMode,
+                                    fw: 0,
+                                  ),
                                                 textCtrl: orderInput.val2Ctrl,
                                                 textAlign: TextAlign.start)),
                                       ]),
@@ -935,20 +933,24 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                               0xffF1F3F8),
                                                       hintText: orderInput
                                                           .ocoQtyCtrl.text,
-                                                      hintStyle: textStyle(
-                                                          const Color(0xff666666),
-                                                          15,
-                                                          FontWeight.w400),
+                                                    hintStyle: TextWidget.textStyle(
+                                      fontSize: 14,
+                                      theme: theme.isDarkMode,
+                                     color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                                    fw: 0,
+                                    ),
                                                       inputFormate: [
                                                         FilteringTextInputFormatter
                                                             .digitsOnly
                                                       ],
-                                                      style: textStyle(
-                                                          theme.isDarkMode
-                                                              ? colors.colorWhite
-                                                              : colors.colorBlack,
-                                                          16,
-                                                          FontWeight.w600),
+                                                     style: TextWidget.textStyle(
+                                    fontSize: 16,
+                                    color: theme.isDarkMode
+                                        ? colors.textPrimaryDark
+                                        : colors.textPrimaryLight,
+                                    theme: theme.isDarkMode,
+                                    fw: 0,
+                                  ),
                                                       // prefixIcon: InkWell(
                                                       //   onTap: () {
                                                       //     setState(() {
@@ -1091,19 +1093,22 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                         onChanged: (value) {},
                                                         hintText:
                                                             "${widget.gttOrderBook.placeOrderParamsLeg2!.prc}",
-                                                        hintStyle: textStyle(
-                                                            const Color(
-                                                                0xff666666),
-                                                            15,
-                                                            FontWeight.w400),
-                                                        style: textStyle(
-                                                            theme.isDarkMode
-                                                                ? colors
-                                                                    .colorWhite
-                                                                : colors
-                                                                    .colorBlack,
-                                                            16,
-                                                            FontWeight.w600),
+                                                       hintStyle: TextWidget.textStyle(
+                                      fontSize: 14,
+                                      theme: theme.isDarkMode,
+                                     color: theme.isDarkMode
+                                ? colors.textSecondaryDark
+                                : colors.textSecondaryLight,
+                                    fw: 0,
+                                    ),
+                                                       style: TextWidget.textStyle(
+                                    fontSize: 16,
+                                    color: theme.isDarkMode
+                                        ? colors.textPrimaryDark
+                                        : colors.textPrimaryLight,
+                                    theme: theme.isDarkMode,
+                                    fw: 0,
+                                  ),
                                                         isReadable: orderInput
                                                                         .actOcoPrcType ==
                                                                     "Limit" ||

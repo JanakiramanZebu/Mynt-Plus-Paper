@@ -396,9 +396,8 @@ class _AlgoCreateState extends ConsumerState<AlgoCreate> {
                             hintStyle: TextWidget.textStyle(
                               fontSize: 12,
                               theme: theme.isDarkMode,
-                              color: theme.isDarkMode
-                                  ? colors.textSecondaryDark
-                                  : colors.textSecondaryLight,
+                              color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                              fw: 0,
                             ),
                             fillColor: theme.isDarkMode
                                 ? colors.searchBgDark
@@ -456,9 +455,8 @@ class _AlgoCreateState extends ConsumerState<AlgoCreate> {
                             hintStyle: TextWidget.textStyle(
                               fontSize: 12,
                               theme: theme.isDarkMode,
-                              color: theme.isDarkMode
-                                  ? colors.textSecondaryDark
-                                  : colors.textSecondaryLight,
+                              color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                              fw: 0,
                             ),
                             fillColor: theme.isDarkMode
                                 ? colors.searchBgDark
@@ -1025,9 +1023,8 @@ class _AlgoCreateState extends ConsumerState<AlgoCreate> {
               hintStyle: TextWidget.textStyle(
                 fontSize: 12,
                 theme: theme.isDarkMode,
-                color: theme.isDarkMode
-                    ? colors.textSecondaryDark
-                    : colors.textSecondaryLight,
+                color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                fw: 0,
               ),
               fillColor:
                   theme.isDarkMode ? colors.searchBgDark : colors.searchBg,
@@ -1245,9 +1242,8 @@ class _AlgoCreateState extends ConsumerState<AlgoCreate> {
                     hintStyle: TextWidget.textStyle(
                       fontSize: 14,
                       theme: theme.isDarkMode,
-                      color: theme.isDarkMode
-                          ? colors.textSecondaryDark
-                          : colors.textSecondaryLight,
+                      color:(theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                      fw: 0,
                     ),
                     fillColor: theme.isDarkMode
                         ? colors.searchBgDark

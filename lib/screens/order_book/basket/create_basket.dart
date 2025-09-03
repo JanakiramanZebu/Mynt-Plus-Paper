@@ -220,9 +220,7 @@ class _CreateBasketState extends ConsumerState<CreateBasket> {
                         hintStyle: TextWidget.textStyle(
                             fontSize: 14,
                             theme: theme.isDarkMode,
-                            color: theme.isDarkMode
-                                ? colors.textSecondaryDark
-                                : colors.textSecondaryLight,
+                            color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
                             fw: 0,
                         ),
                         keyboardType: TextInputType.text,
