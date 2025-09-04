@@ -676,7 +676,7 @@ class _StockScreenState extends ConsumerState<StockScreen>
 
               // const SizedBox(height: 16),
               const SizedBox(
-                height: 420,
+                height: 400,
                 child: TradeAction(),
               ),
               const SizedBox(height: 16),

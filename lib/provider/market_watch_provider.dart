@@ -1304,6 +1304,12 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   List _scrips = [];
   List get scrips => _scrips;
 
+  // Method to clear current scrips
+  void clearCurrentScrips() {
+    _scrips.clear();
+    notifyListeners();
+  }
+
 // Fetching data from the api and stored in a variable
 
   Future fetchMWList(BuildContext context, bool waitis,
@@ -2702,6 +2708,9 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     try {
       print("Changing watchlist to: $wName");
 
+      // Clear current scrips first to ensure clean state
+      _scrips.clear();
+
       // Special handling for predefined watchlists
       bool isPredefined =
           (wName == "Nifty50" || wName == "Niftybank" || wName == "Sensex");
@@ -2851,7 +2860,19 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       await fetchMWList(context, false);
       _wlName = wlName;
       await changeWLScrip(wlName, context);
-      setCurrentWatchlistPageIndex(0);
+      
+      // Find the index of the newly created watchlist and set it as current
+      if (_marketWatchlist != null && _marketWatchlist!.values != null) {
+        final newWatchlistIndex = _marketWatchlist!.values!.indexOf(wlName);
+        if (newWatchlistIndex != -1) {
+          setCurrentWatchlistPageIndex(newWatchlistIndex);
+        } else {
+          setCurrentWatchlistPageIndex(0);
+        }
+      } else {
+        setCurrentWatchlistPageIndex(0);
+      }
+      
       notifyListeners();
       await Future.delayed(const Duration(milliseconds: 100));
       notifyListeners();

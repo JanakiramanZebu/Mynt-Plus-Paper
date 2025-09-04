@@ -24,6 +24,7 @@ import '../../sharedWidget/custom_text_btn.dart';
 import '../../sharedWidget/functions.dart';
 import '../../sharedWidget/list_divider.dart';
 import '../../sharedWidget/snack_bar.dart';
+import '../stocks/explore/stocks/trade_action/trade_action_widget.dart';
 import 'index/index_screen.dart';
 import 'my_stocks/stocks_screen.dart';
 import 'scrip_filter_bottom_sheet.dart';
@@ -275,6 +276,9 @@ void _initializeWithStoredData() {
 
       const predefined = ['My Stocks', 'Nifty50', 'Niftybank', 'Sensex'];
       final isPredefined = predefined.contains(newWatchlistName);
+      
+      // Clear current scrips before loading new watchlist
+      marketWatch.clearCurrentScrips();
       
       await marketWatch.changeWlName(newWatchlistName, isPredefined ? 'Yes' : 'No');
       await marketWatch.changeWLScrip(newWatchlistName, context);
@@ -679,7 +683,7 @@ void _initializeWithStoredData() {
   Widget _buildEmptyState(ThemesProvider theme, MarketWatchProvider mw) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
+        padding: const EdgeInsets.symmetric(horizontal: 8),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -720,6 +724,11 @@ void _initializeWithStoredData() {
                 fw:0
               ),
             ),
+            const SizedBox(height: 16),
+             const SizedBox(
+                height: 350,
+                child: TradeAction(showBookmarkButton: true),
+              ),
           ],
         ),
       ),

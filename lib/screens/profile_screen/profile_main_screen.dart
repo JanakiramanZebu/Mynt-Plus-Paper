@@ -1,6 +1,5 @@
 // ignore_for_file: use_build_context_synchronously, deprecated_member_use
 
-import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -23,7 +22,6 @@ import '../../provider/fund_provider.dart';
 import '../../provider/index_list_provider.dart';
 import '../../provider/ledger_provider.dart';
 import '../../provider/mf_provider.dart';
-import '../../provider/notification_provider.dart';
 import '../../provider/portfolio_provider.dart';
 import '../../provider/profile_all_details_provider.dart';
 import '../../provider/thems.dart';
@@ -33,20 +31,25 @@ import '../../res/global_state_text.dart';
 import '../../res/res.dart';
 import '../../routes/route_names.dart';
 import '../../sharedWidget/custom_back_btn.dart';
-import '../../sharedWidget/functions.dart';
 import '../../sharedWidget/list_divider.dart';
 import '../../sharedWidget/loader_ui.dart';
 import '../../sharedWidget/custom_drag_handler.dart';
-import '../desk_reports/calenderPnl_screen.dart';
 import '../desk_reports/contract_calendar_screen.dart';
-import '../desk_reports/pdf_downalod_screen.dart';
 import '../desk_reports/tax_pnl_screen.dart';
 import 'Api_key_screen.dart';
 import 'logged_user_bottom_sheet.dart';
 import 'need_help_screen.dart';
 
-class UserAccountScreen extends ConsumerWidget {
+class UserAccountScreen extends ConsumerStatefulWidget {
   const UserAccountScreen({super.key});
+
+  @override
+  ConsumerState<UserAccountScreen> createState() => _UserAccountScreenState();
+}
+
+class _UserAccountScreenState extends ConsumerState<UserAccountScreen> {
+  bool _hasScrolled = false;
+  late ScrollController _scrollController;
 
   String _truncateProfileName(String text, {int maxLength = 18}) {
     return (text.length > maxLength)
@@ -65,6 +68,29 @@ class UserAccountScreen extends ConsumerWidget {
   }
 
   static DateTime _lastTapTime = DateTime.now();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    final isScrolled = _scrollController.offset > 0;
+    if (isScrolled != _hasScrolled) {
+      setState(() {
+        _hasScrolled = isScrolled;
+      });
+    }
+  }
 
   String formatIndianCurrency(String amount) {
     final formatter = NumberFormat.currency(
@@ -179,7 +205,7 @@ class UserAccountScreen extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final theme = ref.watch(themeProvider);
     final userProfile = ref.watch(userProfileProvider);
     final trancation = ref.watch(transcationProvider);
@@ -200,7 +226,7 @@ class UserAccountScreen extends ConsumerWidget {
       // {'title': 'Account'},
       {'title': 'Settings'},
       {'title': 'Notification'},
-      {'title': 'Refer & Get ₹300'},
+      {'title': 'Refer'},
       {'title': 'Rate Us'},
       {'title': 'Contact Us'},
     ];
@@ -211,7 +237,23 @@ class UserAccountScreen extends ConsumerWidget {
         children: [
           const SizedBox(height: 50),
 
-          /// 🔹 Top: QR Code
+          /// 🔹 Header Section with Elevation
+          Container(
+            decoration: BoxDecoration(
+              color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+              boxShadow: _hasScrolled
+                  ? [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      )
+                    ]
+                  : [],
+            ),
+            child: Column(
+              children: [
+                /// 🔹 Top: QR Code
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
@@ -467,6 +509,9 @@ class UserAccountScreen extends ConsumerWidget {
           //                    ),
           // ),
           const SizedBox(height: 16),
+              ],
+            ),
+          ),
           // Padding(
           //   padding: const EdgeInsets.symmetric(horizontal: 16.0),
           //   child: Divider(
@@ -481,6 +526,7 @@ class UserAccountScreen extends ConsumerWidget {
           /// 🔹 Menu List
           Expanded(
             child: ListView.separated(
+              controller: _scrollController,
               padding: const EdgeInsets.only(top: 0),
               itemCount: filteredMenu.length,
               itemBuilder: (context, index) {
@@ -654,7 +700,7 @@ class UserAccountScreen extends ConsumerWidget {
                       case "OptionZ":
                         funds.optionZ(context);
                         break;
-                      case "Refer & Get ₹300":
+                      case "Refer":
                         await Share.share(
                           "I invite you to explore Mynt by Zebu — from Stocks to Mutual funds and more.\nOpen your free demat account today\n👉 ${Uri.parse(reflink)}",
                         );
