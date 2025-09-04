@@ -488,7 +488,7 @@ class BasketScripList extends ConsumerWidget {
                                   text: basket.bsktScripList.isEmpty ||
                                           basket.bsktOrderMargin == null
                                       ? "0.00"
-                                      : "${basket.bsktOrderMargin!.marginusedtrade ?? 0.00}",
+                                      : (double.parse(basket.bsktOrderMargin!.marginused ?? '0.00') - double.parse(basket.bsktOrderMargin!.marginusedprev ?? '0.00')).toStringAsFixed(2),
                                   color: theme.isDarkMode
                                       ? colors.textPrimaryDark
                                       : colors.textPrimaryLight,
@@ -513,7 +513,7 @@ class BasketScripList extends ConsumerWidget {
                                     text: basket.bsktScripList.isEmpty ||
                                             basket.bsktOrderMargin == null
                                         ? "0.00"
-                                        : "${basket.bsktOrderMargin!.marginused ?? 0.00}",
+                                        : (double.parse(basket.bsktOrderMargin!.marginusedtrade ?? '0.00') - double.parse(basket.bsktOrderMargin!.marginusedprev ?? '0.00')).toStringAsFixed(2),
                                     theme: theme.isDarkMode,
                                     color: theme.isDarkMode
                                         ? colors.textPrimaryDark

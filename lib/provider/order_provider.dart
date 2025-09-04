@@ -2636,8 +2636,19 @@ class OrderProvider extends DefaultChangeNotifier {
       List<String> successfulOrders = [];
       List<String> failedOrders = [];
       
-      for (int index = 0; index < _bsktScripList.length; index++) {
-        var element = _bsktScripList[index];
+      // Sort basket list to place BUY orders before SELL orders
+      List<Map<String, dynamic>> sortedBsktScripList = List.from(_bsktScripList);
+      sortedBsktScripList.sort((a, b) {
+        String tranTypeA = a['trantype'] ?? '';
+        String tranTypeB = b['trantype'] ?? '';
+        // BUY (B) orders first, then SELL (S) orders
+        if (tranTypeA == 'B' && tranTypeB == 'S') return -1;
+        if (tranTypeA == 'S' && tranTypeB == 'B') return 1;
+        return 0;
+      });
+      
+      for (int index = 0; index < sortedBsktScripList.length; index++) {
+        var element = sortedBsktScripList[index];
         String itemKey = "${element['tsym']}_${element['token']}_$index";
         
         PlaceOrderInput placeOrderInput = PlaceOrderInput(
