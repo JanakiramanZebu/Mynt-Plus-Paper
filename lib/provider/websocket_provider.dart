@@ -1045,7 +1045,7 @@ class WebSocketProvider extends ChangeNotifier {
       _printSubscriptionDebugInfo();
       
       // Clean up old subscriptions periodically
-      cleanupOldSubscriptions();
+      // cleanupOldSubscriptions();
       
     } catch (e) {
       log('WebSocketProvider: Error capturing subscription data: $e');

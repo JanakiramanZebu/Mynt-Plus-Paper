@@ -101,6 +101,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   void didChangeAppLifecycleState(AppLifecycleState state) async {
     switch (state) {
       case AppLifecycleState.resumed:
+        // Ensure navbar is always visible when resuming from background
+        ref.read(userProfileProvider).profileloaderfun(false);
+        
+        // Re-enable WebSocket auto-reconnect when app becomes active
+        ref.read(websocketProvider).setAutoReconnect(true);
+        print("app resumed - enabling WebSocket auto-reconnect");
+        
         // Don't use await to avoid blocking the UI thread
         // Check session status in the background to prevent freezing
         Future.microtask(() async {
@@ -154,34 +161,43 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         break;
 
       case AppLifecycleState.inactive:
+        // Pause WebSocket auto-reconnect for transient states
+        ref.read(websocketProvider).setAutoReconnect(false);
         if (ref.read(indexListProvider).selectedBtmIndx == 2) {
           ref.read(portfolioProvider).cancelTimer();
         }
         final userProfile = ref.read(userProfileProvider);
         userProfile.setonloadChartdialog(false);
-        print("app in inactive");
+        print("app in inactive - pausing WebSocket auto-reconnect");
         break;
 
       case AppLifecycleState.paused:
+        // Pause WebSocket auto-reconnect when app is backgrounded
+        ref.read(websocketProvider).setAutoReconnect(false);
         if (ref.read(indexListProvider).selectedBtmIndx == 2) {
           ref.read(portfolioProvider).cancelTimer();
         }
-        print("app in paused");
+        print("app in paused - pausing WebSocket auto-reconnect");
         break;
 
       case AppLifecycleState.detached:
+        // Pause WebSocket auto-reconnect when app is detached
+        ref.read(websocketProvider).setAutoReconnect(false);
         if (ref.read(indexListProvider).selectedBtmIndx == 2) {
           ref.read(portfolioProvider).cancelTimer();
         }
         final userProfile = ref.read(userProfileProvider);
         userProfile.setonloadChartdialog(false);
-        print("app in detached");
+        print("app in detached - pausing WebSocket auto-reconnect");
         break;
 
       case AppLifecycleState.hidden:
+        // Pause WebSocket auto-reconnect when app is hidden
+        ref.read(websocketProvider).setAutoReconnect(false);
         if (ref.read(indexListProvider).selectedBtmIndx == 2) {
           ref.read(portfolioProvider).cancelTimer();
         }
+        print("app in hidden - pausing WebSocket auto-reconnect");
     }
   }
 
@@ -220,6 +236,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         ConnectivityResult.none) {
       // Request data based on currently selected tab
       switch (indexProvide.selectedBtmIndx) {
+        case 0:
+          ref
+              .read(marketWatchProvider)
+              .requestMWScrip(context: context, isSubscribe: true);
+          ref
+              .read(portfolioProvider)
+              .requestWSHoldings(context: context, isSubscribe: true);
         case 1:
           ref
               .read(marketWatchProvider)
