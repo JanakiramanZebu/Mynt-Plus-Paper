@@ -683,7 +683,7 @@ void _initializeWithStoredData() {
   Widget _buildEmptyState(ThemesProvider theme, MarketWatchProvider mw) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [

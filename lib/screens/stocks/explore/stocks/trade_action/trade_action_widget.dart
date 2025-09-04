@@ -335,7 +335,7 @@ class _TradeActionState extends ConsumerState<TradeAction>
           await marketWatch.calldepthApis(context, depthArgs, "");
         },
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Row(
             children: [
               // Left side - Stock info
