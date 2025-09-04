@@ -338,6 +338,13 @@ class Preferences {
       await _prefInstance!.setString(_orderTracking, data);
 
   String? get orderTracking => _prefInstance?.getString(_orderTracking) ?? "";
+  
+  // Camera permission tracking
+  Future setCameraPermissionDeniedCount(int count) async =>
+      await _prefInstance!.setInt(_cameraPermissionDeniedCount, count);
+  
+  int get cameraPermissionDeniedCount => 
+      _prefInstance?.getInt(_cameraPermissionDeniedCount) ?? 0;
 }
 
 const String _userTheme = 'userTheme';
@@ -364,6 +371,7 @@ const String _clientList = 'clientList';
 const String _basketList = 'basketList';
 const String _basketScrips = 'basketScrips';
 const String _orderTracking = 'orderTracking';
+const String _cameraPermissionDeniedCount = 'cameraPermissionDeniedCount';
 
 ////MARKET WATCH Filter
 const String _isMWScripName = "isMWScripName";

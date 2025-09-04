@@ -3633,12 +3633,12 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
             ),
             const SizedBox(height: 1),
             _buildDetailRow(
-                "Nominee Name", clientData?.nomineeName ?? "N/A", theme, ref),
+                "Nominee Name", clientData?.nomineeName ?? "", theme, ref),
             _buildDetailRow("Nominee Relation",
-                clientData?.nomineeRelation ?? "N/A", theme, ref),
+                clientData?.nomineeRelation ?? "", theme, ref),
             if (clientData?.nomineeDOB != null)
               _buildDetailRow("Nominee DOB",
-                  formatNomineeDOB(clientData!.nomineeDOB!), theme, ref),
+                  formatNomineeDOB(clientData!.nomineeDOB! ?? ""), theme, ref),
           ],
 
           // Show pending statuses for Nominee section

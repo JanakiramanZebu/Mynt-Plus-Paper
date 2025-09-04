@@ -81,94 +81,210 @@ class _InAppWebViewScreenState extends ConsumerState<InAppWebViewScreen> {
     }
   }
 
+  Future<void> _injectFallbackCameraHandler() async {
+    if (webViewController != null) {
+      try {
+        // Inject a simpler fallback camera handler
+        await webViewController!.evaluateJavascript(source: """
+          (function() {
+            console.log('Fallback camera handler loaded');
+            
+            // Add a global function that can be called directly
+            window.openCameraFromFlutter = function() {
+              console.log('openCameraFromFlutter called');
+              if (window.flutter_inappwebview) {
+                window.flutter_inappwebview.callHandler('openCamera', {
+                  accept: 'image/*',
+                  capture: 'camera',
+                  inputId: 'fallback-camera'
+                });
+              } else {
+                console.log('Flutter InAppWebView not available in fallback');
+              }
+            };
+            
+            // Add a test function
+            window.testCamera = function() {
+              console.log('testCamera called');
+              if (window.flutter_inappwebview) {
+                window.flutter_inappwebview.callHandler('testCamera');
+              } else {
+                console.log('Flutter InAppWebView not available for test');
+              }
+            };
+            
+            // Also try to intercept any file input changes
+            document.addEventListener('change', function(e) {
+              if (e.target && e.target.type === 'file' && e.target.files.length === 0) {
+                console.log('File input change detected with no files - might be camera trigger');
+                var accept = e.target.getAttribute('accept') || '';
+                var capture = e.target.getAttribute('capture') || '';
+                
+                if (accept.includes('image') && capture.includes('camera')) {
+                  console.log('Detected camera file input change');
+                  // Don't prevent default here, just log
+                }
+              }
+            });
+            
+            console.log('Fallback camera handler injected');
+          })();
+        """);
+        
+        print('Fallback camera handler injected successfully');
+      } catch (e) {
+        print('Error injecting fallback camera handler: $e');
+      }
+    }
+  }
+
   Future<void> _injectCameraHandler() async {
     if (webViewController != null) {
       try {
         // Inject JavaScript to handle file inputs with camera capture
         await webViewController!.evaluateJavascript(source: """
           (function() {
-            // Store original input element for iOS compatibility
-            var originalInput = null;
+            // Store original input element for camera capture
+            var cameraInput = null;
+            
+            console.log('Camera handler script loaded');
+            
+            // Function to check if input should trigger camera
+            function shouldTriggerCamera(input) {
+              var accept = input.getAttribute('accept') || '';
+              var capture = input.getAttribute('capture') || '';
+              
+              console.log('Checking input:', {
+                accept: accept,
+                capture: capture,
+                type: input.type
+              });
+              
+              return input.type === 'file' && 
+                     accept.includes('image') && 
+                     (capture.includes('camera') || capture.includes('user') || capture.includes('environment'));
+            }
+            
+            // Function to trigger camera
+            function triggerCamera(input) {
+              console.log('Triggering camera for input:', input);
+              
+              // Store reference to the input
+              cameraInput = input;
+              
+              // Trigger camera capture via Flutter
+              if (window.flutter_inappwebview) {
+                console.log('Calling Flutter camera handler');
+                window.flutter_inappwebview.callHandler('openCamera', {
+                  accept: input.getAttribute('accept') || '',
+                  capture: input.getAttribute('capture') || '',
+                  inputId: input.id || 'file-input-' + Date.now()
+                });
+              } else {
+                console.log('Flutter InAppWebView not available');
+              }
+            }
             
             // Override file input click behavior
             document.addEventListener('click', function(e) {
+              console.log('Click event detected:', e.target);
+              
               if (e.target && e.target.type === 'file') {
-                var input = e.target;
-                var accept = input.getAttribute('accept') || '';
-                var capture = input.getAttribute('capture') || '';
+                console.log('File input clicked');
                 
-                // Check if this is a camera capture request
-                if (accept.includes('image') && (capture.includes('camera') || capture.includes('user') || capture.includes('environment'))) {
+                if (shouldTriggerCamera(e.target)) {
+                  console.log('Should trigger camera - preventing default');
                   e.preventDefault();
                   e.stopPropagation();
-                  
-                  // Store reference to the input for iOS
-                  originalInput = input;
-                  
-                  // Trigger camera capture via Flutter
-                  window.flutter_inappwebview.callHandler('openCamera', {
-                    accept: accept,
-                    capture: capture,
-                    inputId: input.id || 'file-input-' + Date.now()
-                  });
+                  triggerCamera(e.target);
                 }
               }
-            });
+            }, true); // Use capture phase
             
             // Also handle programmatic file input triggers
             var originalClick = HTMLInputElement.prototype.click;
             HTMLInputElement.prototype.click = function() {
-              var accept = this.getAttribute('accept') || '';
-              var capture = this.getAttribute('capture') || '';
+              console.log('Programmatic click on input:', this);
               
-              if (accept.includes('image') && (capture.includes('camera') || capture.includes('user') || capture.includes('environment'))) {
-                // Store reference to the input for iOS
-                originalInput = this;
-                
-                window.flutter_inappwebview.callHandler('openCamera', {
-                  accept: accept,
-                  capture: capture,
-                  inputId: this.id || 'file-input-' + Date.now()
-                });
+              if (shouldTriggerCamera(this)) {
+                console.log('Programmatic camera trigger');
+                triggerCamera(this);
               } else {
+                console.log('Normal file input click');
                 originalClick.call(this);
               }
             };
             
-            // Expose function to set file data (for iOS compatibility)
+            // Handle label clicks that trigger file inputs
+            document.addEventListener('click', function(e) {
+              if (e.target.tagName === 'LABEL' && e.target.getAttribute('for')) {
+                var inputId = e.target.getAttribute('for');
+                var input = document.getElementById(inputId);
+                
+                if (input && input.type === 'file' && shouldTriggerCamera(input)) {
+                  console.log('Label click for camera input - preventing default');
+                  e.preventDefault();
+                  e.stopPropagation();
+                  triggerCamera(input);
+                }
+              }
+            }, true);
+            
+            // Expose function to set camera file data
             window.setCameraFileData = function(base64Data, fileName) {
-              if (originalInput) {
+              console.log('setCameraFileData called with:', fileName);
+              
+              if (cameraInput) {
                 try {
-                  // For iOS, we'll create a data URL and trigger a custom event
-                  var dataUrl = 'data:image/jpeg;base64,' + base64Data;
-                  
-                  // Create a custom event with the image data
-                  var event = new CustomEvent('cameraImageCaptured', {
-                    detail: {
-                      dataUrl: dataUrl,
-                      fileName: fileName,
-                      input: originalInput
-                    }
-                  });
-                  
-                  document.dispatchEvent(event);
-                  
-                  // Also try to set the input value directly (may not work on iOS)
-                  try {
-                    originalInput.value = dataUrl;
-                  } catch (e) {
-                    console.log('Direct value setting failed (expected on iOS):', e);
+                  // Create a blob from base64 data
+                  var byteCharacters = atob(base64Data);
+                  var byteNumbers = new Array(byteCharacters.length);
+                  for (var i = 0; i < byteCharacters.length; i++) {
+                    byteNumbers[i] = byteCharacters.charCodeAt(i);
                   }
+                  var byteArray = new Uint8Array(byteNumbers);
+                  var blob = new Blob([byteArray], {type: 'image/jpeg'});
+                  
+                  // Create a File object
+                  var file = new File([blob], fileName || 'camera_capture.jpg', {type: 'image/jpeg'});
+                  
+                  // Create a FileList-like object
+                  var fileList = {
+                    0: file,
+                    length: 1,
+                    item: function(index) { return index === 0 ? file : null; }
+                  };
+                  
+                  // Set the files property
+                  Object.defineProperty(cameraInput, 'files', {
+                    value: fileList,
+                    writable: false
+                  });
                   
                   // Trigger change event
                   var changeEvent = new Event('change', { bubbles: true });
-                  originalInput.dispatchEvent(changeEvent);
+                  cameraInput.dispatchEvent(changeEvent);
+                  
+                  // Also trigger input event for better compatibility
+                  var inputEvent = new Event('input', { bubbles: true });
+                  cameraInput.dispatchEvent(inputEvent);
+                  
+                  console.log('Camera file data set successfully');
                   
                 } catch (e) {
                   console.error('Error setting camera file data:', e);
                 }
+              } else {
+                console.error('No camera input reference available');
               }
             };
+            
+            // Listen for camera image captured events
+            document.addEventListener('cameraImageCaptured', function(event) {
+              console.log('Camera image captured event received:', event.detail);
+            });
+            
+            console.log('Camera handler JavaScript injected successfully');
           })();
         """);
         
@@ -199,65 +315,23 @@ class _InAppWebViewScreenState extends ConsumerState<InAppWebViewScreen> {
         final bytes = await image.readAsBytes();
         final base64Image = base64Encode(bytes);
         
-        // Use the iOS-compatible method to inject the image data
+        // Inject the image data using the setCameraFileData function
         await webViewController!.evaluateJavascript(source: """
           (function() {
             try {
-              // Use the iOS-compatible function to set camera file data
               if (typeof window.setCameraFileData === 'function') {
                 window.setCameraFileData('$base64Image', 'camera_capture.jpg');
+                console.log('Camera file data injected successfully');
               } else {
-                // Fallback method for Android or if the function isn't available
-                var inputs = document.querySelectorAll('input[type="file"]');
-                for (var i = 0; i < inputs.length; i++) {
-                  var input = inputs[i];
-                  var accept = input.getAttribute('accept') || '';
-                  var capture = input.getAttribute('capture') || '';
-                  
-                  if (accept.includes('image') && (capture.includes('camera') || capture.includes('user') || capture.includes('environment'))) {
-                    try {
-                      // Try to create a File object (may not work on iOS)
-                      var blob = new Blob(['$base64Image'], {type: 'image/jpeg'});
-                      var file = new File([blob], 'camera_capture.jpg', {type: 'image/jpeg'});
-                      
-                      // Create a FileList-like object
-                      var fileList = {
-                        0: file,
-                        length: 1,
-                        item: function(index) { return index === 0 ? file : null; }
-                      };
-                      
-                      // Set the files property
-                      Object.defineProperty(input, 'files', {
-                        value: fileList,
-                        writable: false
-                      });
-                      
-                      // Trigger change event
-                      var event = new Event('change', { bubbles: true });
-                      input.dispatchEvent(event);
-                      
-                      break;
-                    } catch (e) {
-                      console.log('File object creation failed (expected on iOS):', e);
-                      // For iOS, we'll trigger a custom event that the web page can listen to
-                      var customEvent = new CustomEvent('cameraImageCaptured', {
-                        detail: {
-                          base64Data: '$base64Image',
-                          fileName: 'camera_capture.jpg',
-                          input: input
-                        }
-                      });
-                      document.dispatchEvent(customEvent);
-                    }
-                  }
-                }
+                console.error('setCameraFileData function not available');
               }
             } catch (e) {
               console.error('Error injecting camera data:', e);
             }
           })();
         """);
+      } else {
+        print('No image captured from camera');
       }
     } catch (e) {
       print('Error handling camera request: $e');
@@ -361,7 +435,20 @@ class _InAppWebViewScreenState extends ConsumerState<InAppWebViewScreen> {
                        print('JavaScript openCamera called with args: $args');
                        if (args.isNotEmpty && args[0] is Map<String, dynamic>) {
                          _handleCameraRequest(args[0] as Map<String, dynamic>);
+                       } else {
+                         print('Invalid arguments received for openCamera handler');
                        }
+                     },
+                   );
+                   controller.addJavaScriptHandler(
+                     handlerName: 'testCamera',
+                     callback: (args) {
+                       print('JavaScript testCamera called');
+                       _handleCameraRequest({
+                         'accept': 'image/*',
+                         'capture': 'camera',
+                         'inputId': 'test-camera'
+                       });
                      },
                    );
                  },
@@ -403,6 +490,9 @@ class _InAppWebViewScreenState extends ConsumerState<InAppWebViewScreen> {
                    
                    // Inject camera handler JavaScript after page loads
                    await _injectCameraHandler();
+                   
+                   // Also inject a simple fallback handler
+                   await _injectFallbackCameraHandler();
                  },
                 onReceivedError: (controller, request, errorResponse) {
                   print('WebView error: ${errorResponse.description}');

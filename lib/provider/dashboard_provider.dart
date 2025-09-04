@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
+import 'package:mynt_plus/models/mf_model/mutual_fundmodel.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/res/res.dart';
 import '../locator/locator.dart';
@@ -760,10 +761,10 @@ final TextEditingController _investmentController = TextEditingController(text: 
 
   void _redistributePercentages() {
     if (_selectedFunds.isEmpty) return;
-    
+
     final equalPercentage = 100.0 / _selectedFunds.length;
     for (int i = 0; i < _selectedFunds.length; i++) {
-      _selectedFunds[i].percentage = i == _selectedFunds.length - 1 
+      _selectedFunds[i].percentage = i == _selectedFunds.length - 1
           ? 100.0 - (equalPercentage * (_selectedFunds.length - 1))
           : equalPercentage;
     }
@@ -784,19 +785,21 @@ final TextEditingController _investmentController = TextEditingController(text: 
 
   List<FundModel> getFilteredFunds() {
     List<FundModel> funds = List.from(_staticFunds);
-    
+
     // Apply filter
     if (_selectedFilter != 'All') {
       funds = funds.where((fund) => fund.type == _selectedFilter).toList();
     }
-    
+
     // Apply search
     if (_searchController.text.isNotEmpty) {
-      funds = funds.where((fund) => 
-        fund.name.toLowerCase().contains(_searchController.text.toLowerCase())
-      ).toList();
+      funds = funds
+          .where((fund) => fund.name
+              .toLowerCase()
+              .contains(_searchController.text.toLowerCase()))
+          .toList();
     }
-    
+
     return funds;
   }
 
@@ -821,9 +824,11 @@ final TextEditingController _investmentController = TextEditingController(text: 
   }
 
   // Getters
-  double get totalPercentage => _selectedFunds.fold(0.0, (sum, fund) => sum + fund.percentage);
-  
-  bool get isStrategyValid => totalPercentage == 100.0 && _selectedFunds.isNotEmpty;
+  double get totalPercentage =>
+      _selectedFunds.fold(0.0, (sum, fund) => sum + fund.percentage);
+
+  bool get isStrategyValid =>
+      totalPercentage == 100.0 && _selectedFunds.isNotEmpty;
 
   // Format amount for display (following your pattern)
   // String formatAmount(double amount) {
@@ -873,16 +878,15 @@ final TextEditingController _investmentController = TextEditingController(text: 
   Future<void> saveStrategy() async {
     try {
       strategyLoader(true);
-      
+
       // Here you would call your API to save the strategy
       // await api.saveStrategy(strategyData);
-      
+
       // For now, just simulate API call
       await Future.delayed(const Duration(seconds: 1));
-      
+
       _strategyError = null;
       print("Strategy saved successfully");
-      
     } catch (e) {
       print("Strategy Save Error: $e");
       _strategyError = e.toString();
@@ -891,6 +895,29 @@ final TextEditingController _investmentController = TextEditingController(text: 
       _strategyError = null;
       strategyLoader(false);
       notifyListeners();
+    }
+  }
+
+  List<MutualFundList>? _basketSearchItems = [];
+  List<MutualFundList>? get basketSearchItems => _basketSearchItems;
+
+  Future Basketsearch(String value) async {
+    try {
+      final basketsearch = await api.getSearchMf(value);
+
+      _basketSearchItems = basketsearch.data ?? [];
+      for (var masterMf in _basketSearchItems!) {
+        _basketSearchItems!
+            .where((m) => m.iSIN == masterMf.iSIN)
+            .forEach((m) => m.isAdd = true);
+      }
+      var search = "";
+      for (var i = 0; i < _basketSearchItems!.length; i++) {
+        search = "${_basketSearchItems![i].schemeName}";
+      }
+      notifyListeners();
+    } catch (e) {
+      print("Basket Search Error: $e");
     }
   }
 
