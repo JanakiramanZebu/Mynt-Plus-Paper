@@ -5,6 +5,7 @@ import 'package:mynt_plus/models/order_book_model/place_order_model.dart';
 import 'package:mynt_plus/screens/algo/algo_create.dart';
 import 'package:mynt_plus/screens/bonds/bonds_common_search_screen.dart';
 import 'package:mynt_plus/screens/algo/algo_strategytlist.dart';
+import 'package:mynt_plus/screens/market_watch/option_chain/collection_basket/basket_builder_screen.dart';
 // import 'package:mynt_plus/screens/ipo/ipo_common_search_screen.dart';
 import 'package:mynt_plus/screens/mutual_fund/cagr_calculator_screen.dart';
 import 'package:mynt_plus/screens/mutual_fund/mf_hold_singlepage.dart';
@@ -464,6 +465,11 @@ class AppRoutes {
           pageBuilder: (_, __, ___) => const account.MyAccountScreen(),
           beginOffset: const Offset(-1.0, 0.0),
         );
+      // case Routes.basketScreen:
+      //   return _createRoute(
+      //     pageBuilder: (_, __, ___) => const FundSelectionScreen(),
+      //     beginOffset: const Offset(-1.0, 0.0),
+      //   );
 
       // reports_dm
       case Routes.ledgerscreen:

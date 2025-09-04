@@ -329,41 +329,41 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
                   ),
                   Row(
                     children: [
-                      if (positionBook.postionBookModel!.isNotEmpty) ...[
-                        Material(
-                           color: Colors.transparent,
-                          shape: const RoundedRectangleBorder(),
-                          clipBehavior: Clip.hardEdge,
-                          child: InkWell(
-                             customBorder: const RoundedRectangleBorder(),
-                            splashColor: theme.isDarkMode
-                                ? colors.splashColorDark
-                                : colors.splashColorLight,
-                            highlightColor: theme.isDarkMode
-                                ? colors.highlightDark
-                                : colors.highlightLight,
-                            onTap: () {
-                              positionBook
-                                  .chngPositionPnl(!positionBook.isNetPnl);
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 5),
-                              child: Text(
-                                positionBook.isNetPnl ? "P&L" : "MTM",
-                                style: TextWidget.textStyle(
-                                  fontSize: 14,
-                                  theme: theme.isDarkMode,
-                                 color: theme.isDarkMode
-                                      ? colors.secondaryDark
-                                      : colors.secondaryLight,
-                                  fw: 2,
-                                ),
-                              ),
-                            ),
-                          ),
-                        )
-                      ],
+                      // if (positionBook.postionBookModel!.isNotEmpty) ...[
+                      //   Material(
+                      //     color: Colors.transparent,
+                      //     shape: const RoundedRectangleBorder(),
+                      //     clipBehavior: Clip.hardEdge,
+                      //     child: InkWell(
+                      //       customBorder: const RoundedRectangleBorder(),
+                      //       splashColor: theme.isDarkMode
+                      //           ? colors.splashColorDark
+                      //           : colors.splashColorLight,
+                      //       highlightColor: theme.isDarkMode
+                      //           ? colors.highlightDark
+                      //           : colors.highlightLight,
+                      //       onTap: () {
+                      //         positionBook
+                      //             .chngPositionPnl(!positionBook.isNetPnl);
+                      //       },
+                      //       child: Padding(
+                      //         padding: const EdgeInsets.symmetric(
+                      //             horizontal: 10, vertical: 5),
+                      //         child: Text(
+                      //           positionBook.isNetPnl ? "P&L" : "MTM",
+                      //           style: TextWidget.textStyle(
+                      //             fontSize: 14,
+                      //             theme: theme.isDarkMode,
+                      //             color: theme.isDarkMode
+                      //                 ? colors.secondaryDark
+                      //                 : colors.secondaryLight,
+                      //             fw: 2,
+                      //           ),
+                      //         ),
+                      //       ),
+                      //     ),
+                      //   )
+                      // ],
                       if (positionBook.exitPositionQty != 0)
                         Material(
                           color: Colors.transparent,
@@ -659,6 +659,7 @@ class _PositionHeaderSection extends ConsumerWidget {
               totBookedPnL: positionBook.totBookedPnL,
               totPnL: positionBook.totPnL,
               theme: theme,
+              positionBook: positionBook,
             ),
           ),
           // const SizedBox(height: 6),
@@ -713,6 +714,7 @@ class _PnLDisplay extends StatelessWidget {
   final String totBookedPnL;
   final String totPnL;
   final ThemesProvider theme;
+  final PortfolioProvider positionBook;
 
   const _PnLDisplay({
     required this.isNetPnl,
@@ -722,28 +724,66 @@ class _PnLDisplay extends StatelessWidget {
     required this.totBookedPnL,
     required this.totPnL,
     required this.theme,
+    required this.positionBook,
   });
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding:
-          const EdgeInsets.only(top: 20.0, left: 8.0, right: 8.0, bottom: 15),
+          const EdgeInsets.only(top: 10.0, left: 8.0, right: 8.0, bottom: 15),
       child: Column(
         children: [
-          TextWidget.subText(
-              text: !isNetPnl ? "Total MTM" : "Total P&L",
-              theme: theme.isDarkMode,
-              color: theme.isDarkMode
-                  ? colors.textSecondaryDark
-                  : colors.textSecondaryLight,
-              fw: 0),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            // crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextWidget.subText(
+                  text: !isNetPnl ? "Total MTM" : "Total P&L",
+                  theme: theme.isDarkMode,
+                  color: theme.isDarkMode
+                      ? colors.textSecondaryDark
+                      : colors.textSecondaryLight,
+                  fw: 0),
+                  Material(
+            color: Colors.transparent,
+            shape: const CircleBorder(),
+            child: InkWell(
+              customBorder: const CircleBorder(),
+              splashColor: theme.isDarkMode
+                  ? colors.splashColorDark
+                  : colors.splashColorLight,
+              highlightColor: theme.isDarkMode
+                  ? colors.highlightDark
+                  : colors.highlightLight,
+              onTap: () {
+                 positionBook.chngPositionPnl(!positionBook.isNetPnl);
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: SvgPicture.asset(
+                  assets.switchIcon,
+                  // fit: BoxFit.contain,
+                  width: 20,
+                  height: 20,
+                ),
+              ),
+            ),
+          ),
+            ],
+          ),
           const SizedBox(height: 4),
           !isNetPnl
-              ? _buildValueText(isDay ? totUnRealMtm : totMtM,
-                  isDay ? _getValueColor(totUnRealMtm) : _getValueColor(totMtM))
-              : _buildValueText(isDay ? totBookedPnL : totPnL,
-                  isDay ? _getValueColor(totBookedPnL) : _getValueColor(totPnL))
+              ? _buildValueText(
+                  isDay ? totUnRealMtm : totMtM,
+                  isDay
+                      ? _getValueColor(totUnRealMtm)
+                      : _getValueColor(totMtM))
+              : _buildValueText(
+                  isDay ? totBookedPnL : totPnL,
+                  isDay
+                      ? _getValueColor(totBookedPnL)
+                      : _getValueColor(totPnL))
         ],
       ),
     );

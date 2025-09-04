@@ -676,7 +676,7 @@ class _StockScreenState extends ConsumerState<StockScreen>
 
               // const SizedBox(height: 16),
               const SizedBox(
-                height: 420,
+                height: 400,
                 child: TradeAction(),
               ),
               const SizedBox(height: 16),
@@ -762,6 +762,7 @@ class _StockScreenState extends ConsumerState<StockScreen>
                         InkWell(
                           canRequestFocus: false,
                           onTap: () {
+                            // Navigator.pushNamed(context, Routes.basketScreen);
                             // Navigator.pushNamed(context, Routes.portfolioDashboard);
                           },
                           child: Container(
