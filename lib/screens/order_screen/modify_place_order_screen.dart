@@ -442,124 +442,111 @@ class _ModifyPlaceOrderScreenState
                                                   theme: theme.isDarkMode,
                                                   fw: 0,
                                                 ),
-                                                // prefixIcon: InkWell(
-                                                //   onTap: () {
-                                                //     setState(() {
+                                                prefixIcon:  widget.scripInfo.exch == "NSE" || widget.scripInfo.exch == "BSE" ? null : InkWell(
+                                                  onTap: () {
+                                                    setState(() {
 
-                                                //        String input =
-                                                //                 qtyCtrl
-                                                //                     .text;
-                                                //             int currentQty =
-                                                //                 int.tryParse(input) ??
-                                                //                     0;
-                                                //             int adjustedQty =
-                                                //                 ((currentQty / multiplayer).floor()) *
-                                                //                     multiplayer;
-                                                //             if (currentQty !=
-                                                //                 adjustedQty) {
-                                                //               qtyCtrl.text =
-                                                //                   adjustedQty
-                                                //                       .toString();
-                                                //             } else if (input
-                                                //                   .isNotEmpty && currentQty >
-                                                //                   multiplayer) {
+                                                       String input =qtyCtrl.text;
+                                                            int currentQty =
+                                                                int.tryParse(input) ?? 0;
+                                                            int adjustedQty =
+                                                                ((currentQty / multiplayer).floor()) * multiplayer;
+                                                            if (currentQty != adjustedQty) {
+                                                              qtyCtrl.text = adjustedQty.toString();
+                                                            } else if (input.isNotEmpty && currentQty >
+                                                                  multiplayer) {
+                                                                  qtyCtrl.text = (currentQty - multiplayer).toString();
+                                                              } else {
+                                                              qtyCtrl.text = "$multiplayer";
+                                                              }
+                                                              marginUpdate();
+                                                          },
+                                                          );
 
-                                                //                   qtyCtrl
-                                                //                       .text = (currentQty -
-                                                //                           multiplayer)
-                                                //                       .toString();
-                                                //               } else {
-                                                //               qtyCtrl.text =
-                                                //                   "$multiplayer";
-                                                //               }
-                                                //               marginUpdate();
-                                                //           },
-                                                //           );
+                                                      // String input = qtyCtrl.text;
+                                                      // int quantityValue = int.tryParse(input) ?? 0;
 
-                                                //       // String input = qtyCtrl.text;
-                                                //       // int quantityValue = int.tryParse(input) ?? 0;
+                                                      // if (input.isNotEmpty && quantityValue > multiplayer) {
+                                                      //     qtyCtrl.text = (quantityValue - multiplayer).toString();
+                                                      // } else {
+                                                      //   qtyCtrl.text = "$multiplayer";
+                                                      // }
+                                                      // marginUpdate();
+                                                    // });
+                                                  },
+                                                  child: SvgPicture.asset(
+                                                      theme.isDarkMode
+                                                          ? assets
+                                                              .darkCMinus
+                                                          : theme.isDarkMode
+                                                              ? assets
+                                                                  .darkCMinus
+                                                              : assets
+                                                                  .minusIcon,
+                                                      fit:
+                                                          BoxFit.scaleDown),
+                                                ),
+                                                suffixIcon: widget.scripInfo.exch == "NSE" || widget.scripInfo.exch == "BSE" ? null : 
+                                                InkWell(
+                                                  onTap: () {
+                                                    setState(() {
+                                                            String input =
+                                                                qtyCtrl
+                                                                .text;
+                                                        int currentQty =
+                                                            int.tryParse(input) ??
+                                                                0;
+                                                        int adjustedQty =
+                                                            ((currentQty / multiplayer).round()) *
+                                                                multiplayer;
 
-                                                //       // if (input.isNotEmpty && quantityValue > multiplayer) {
-                                                //       //     qtyCtrl.text = (quantityValue - multiplayer).toString();
-                                                //       // } else {
-                                                //       //   qtyCtrl.text = "$multiplayer";
-                                                //       // }
-                                                //       // marginUpdate();
-                                                //     // });
-                                                //   },
-                                                //   child: SvgPicture.asset(
-                                                //       theme.isDarkMode
-                                                //           ? assets
-                                                //               .darkCMinus
-                                                //           : theme.isDarkMode
-                                                //               ? assets
-                                                //                   .darkCMinus
-                                                //               : assets
-                                                //                   .minusIcon,
-                                                //       fit:
-                                                //           BoxFit.scaleDown),
-                                                // ),
-                                                // suffixIcon: InkWell(
-                                                //   onTap: () {
-                                                //     setState(() {
-                                                //             String input =
-                                                //                 qtyCtrl
-                                                //                 .text;
-                                                //         int currentQty =
-                                                //             int.tryParse(input) ??
-                                                //                 0;
-                                                //         int adjustedQty =
-                                                //             ((currentQty / multiplayer).round()) *
-                                                //                 multiplayer;
+                                                        if (currentQty !=
+                                                            adjustedQty) {
+                                                          qtyCtrl.text =
+                                                              adjustedQty
+                                                                  .toString();
+                                                        }
 
-                                                //         if (currentQty !=
-                                                //             adjustedQty) {
-                                                //           qtyCtrl.text =
-                                                //               adjustedQty
-                                                //                   .toString();
-                                                //         }
+                                                          else if (input
+                                                              .isNotEmpty && currentQty <
+                                                              ((frezQtyOrderSliceMaxLimit*frezQty)==frezQtyOrderSliceMaxLimit?999999:frezQtyOrderSliceMaxLimit*frezQty)) {
+                                                              qtyCtrl.text = (currentQty + multiplayer).toString();
+                                                          } else {
+                                                           warningMessage(context,"Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit*frezQty}");
+                                                          
+                                                          // qtyCtrl.text =
+                                                          //     "$multiplayer";
+                                                          }
+                                                          marginUpdate();
+                                                      });
 
-                                                //           else if (input
-                                                //               .isNotEmpty && currentQty <
-                                                //               ((frezQtyOrderSliceMaxLimit*frezQty)==frezQtyOrderSliceMaxLimit?999999:frezQtyOrderSliceMaxLimit*frezQty)) {
-                                                //               qtyCtrl.text = (currentQty + multiplayer).toString();
-                                                //           } else {
-                                                //             ScaffoldMessenger.of(context).removeCurrentSnackBar();
-                                                //             ScaffoldMessenger.of(context)
-                                                //                 .showSnackBar(warningMessage(context,"Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit*frezQty}"));
-                                                //           // qtyCtrl.text =
-                                                //           //     "$multiplayer";
-                                                //           }
-                                                //           marginUpdate();
-                                                //       });
+                                                    //   String input = qtyCtrl.text;
+                                                    //   int quantityValue =int.parse(input);
 
-                                                //     //   String input = qtyCtrl.text;
-                                                //     //   int quantityValue =int.parse(input);
-
-                                                //     //   if (input.isNotEmpty quantityValue) {
-                                                //     //     if (number <
-                                                //     //         999999) {
-                                                //     //       qtyCtrl
-                                                //     //           .text = (int.parse(discQtyCtrl.text) +
-                                                //     //                       1)
-                                                //     //                   .toString();
-                                                //     //     }
-                                                //     //   } else {
-                                                //     //     qtyCtrl.text =
-                                                //     //         "$multiplayer";
-                                                //     //   }
-                                                //     //   marginUpdate();
-                                                //     // });
-                                                //   },
-                                                //   child: SvgPicture.asset(
-                                                //       theme.isDarkMode
-                                                //           ? assets.darkAdd
-                                                //           : assets.addIcon,
-                                                //       fit:
-                                                //           BoxFit.scaleDown),
-                                                // ),
+                                                    //   if (input.isNotEmpty quantityValue) {
+                                                    //     if (number <
+                                                    //         999999) {
+                                                    //       qtyCtrl
+                                                    //           .text = (int.parse(discQtyCtrl.text) +
+                                                    //                       1)
+                                                    //                   .toString();
+                                                    //     }
+                                                    //   } else {
+                                                    //     qtyCtrl.text =
+                                                    //         "$multiplayer";
+                                                    //   }
+                                                    //   marginUpdate();
+                                                    // });
+                                                  },
+                                                  child: SvgPicture.asset(
+                                                      theme.isDarkMode
+                                                          ? assets.darkAdd
+                                                          : assets.addIcon,
+                                                      fit:
+                                                          BoxFit.scaleDown),
+                                                ),
                                                 textCtrl: qtyCtrl,
-                                                textAlign: TextAlign.start,
+                                                textAlign:  widget.scripInfo.exch == "NSE" || widget.scripInfo.exch == "BSE" ? TextAlign.start : TextAlign.center,
                                                 onChanged: (value) {
                                                   ScaffoldMessenger.of(context)
                                                       .hideCurrentSnackBar();
@@ -586,9 +573,7 @@ class _ModifyPlaceOrderScreenState
                                                       // .substring(
                                                       //     0,
                                                       //     10); // Restrict max value
-                                                      ScaffoldMessenger.of(
-                                                              context)
-                                                          .removeCurrentSnackBar();
+                                                      ScaffoldMessenger.of(context).removeCurrentSnackBar();
                                                               warningMessage(
                                                                   context,
                                                                   "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit * frezQty}");
@@ -768,20 +753,32 @@ class _ModifyPlaceOrderScreenState
                                                   //             ? const Color(0xff555555)
                                                   //             : colors.colorWhite),
                                                   //     child: SvgPicture.asset(color: theme.isDarkMode ? colors.colorWhite : colors.colorGrey, isActivePrice[1] || isActivePrice[3] ? assets.lock : assets.ruppeIcon, fit: BoxFit.scaleDown)),
-                                                  suffixIcon: InkWell(
-                                                    onTap: () {
-                                                      setState(() {
-                                                        _isMarketOrder =
-                                                            !_isMarketOrder;
-                                                        updatePriceType();
+                                                  suffixIcon: Material(
+                                                            color: Colors.transparent,
+                                                            shape: const CircleBorder(),
+                                                            child: InkWell(
+                                                              customBorder: const CircleBorder(),
+                                                              splashColor: theme.isDarkMode
+                                                                  ? colors.splashColorDark
+                                                                  : colors.splashColorLight,
+                                                              highlightColor: theme.isDarkMode
+                                                                  ? colors.highlightDark
+                                                                  : colors.highlightLight,
+                                                              onTap: () {
+                                                                setState(() {
+                                                                  _isMarketOrder =
+                                                                      !_isMarketOrder;
+                                                                  updatePriceType();
 
-                                                        marginUpdate();
-                                                      });
-                                                    },
-                                                    child: SvgPicture.asset(
-                                                        assets.switchIcon,
-                                                        fit: BoxFit.scaleDown),
-                                                  ),
+                                                                  marginUpdate();
+                                                                });
+                                                              },
+                                                              child: Padding(
+                                                                  padding: const EdgeInsets.all(12.0),
+                                                                  child: SvgPicture.asset(
+                                                                  assets.switchIcon,
+                                                                  fit: BoxFit.contain),
+                                                            ))),
                                                   textCtrl: priceCtrl,
                                                   textAlign: TextAlign.start),
                                             ),
