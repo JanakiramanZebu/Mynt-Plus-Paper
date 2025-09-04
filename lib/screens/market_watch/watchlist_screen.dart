@@ -724,11 +724,11 @@ void _initializeWithStoredData() {
                 fw:0
               ),
             ),
-            const SizedBox(height: 16),
-             const SizedBox(
-                height: 350,
-                child: TradeAction(showBookmarkButton: true),
-              ),
+            // const SizedBox(height: 16),
+            //  const SizedBox(
+            //     height: 350,
+            //     child: TradeAction(showBookmarkButton: true),
+            //   ),
           ],
         ),
       ),
