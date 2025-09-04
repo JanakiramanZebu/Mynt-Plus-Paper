@@ -42,8 +42,8 @@ class _StocksScreenState extends State<StocksScreen> {
                           color: colors.colorBlack,
                           theme: theme.isDarkMode,
                           align: TextAlign.center,
-                          fw: 00),
-                      SizedBox(
+                          fw: 0),
+                      const SizedBox(
                         height: 8,
                       ),
                       SizedBox(
@@ -51,10 +51,10 @@ class _StocksScreenState extends State<StocksScreen> {
                         child: TextWidget.paraText(
                             text:
                                 "You haven't made any investments yet. Build your portfolio today!",
-                            color: const Color(0xff666666),
+                            color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                             theme: theme.isDarkMode,
                             align: TextAlign.center,
-                            fw: 00),
+                            fw: 0),
                       ),
                     ],
                   ),

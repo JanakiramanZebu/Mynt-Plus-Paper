@@ -387,8 +387,8 @@ class _OrderBookState extends ConsumerState<OrderBook> {
                 hintStyle: TextWidget.textStyle(
                     fontSize: 14,
                     theme: theme.isDarkMode,
-                    color: const Color(0xff000000),
-                    fw: 3),
+                    color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                    fw: 0),
                 hintText: "Search",
                 enabledBorder: OutlineInputBorder(
                     borderSide: BorderSide.none,

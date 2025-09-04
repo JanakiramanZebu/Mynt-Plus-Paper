@@ -228,9 +228,7 @@ class _MFSIPSCREENState extends State<MFSIPSCREEN> {
                  hintStyle: TextWidget.textStyle(
                                       fontSize: 14,
                                       theme: theme.isDarkMode,
-                                     color: theme.isDarkMode
-                                ? colors.textSecondaryDark
-                                : colors.textSecondaryLight,
+                                     color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
                                 fw: 0,
                                     ),
                 textCtrl: _principalCtrl,

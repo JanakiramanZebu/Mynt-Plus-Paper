@@ -525,7 +525,7 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                         : const Color(0xffF1F3F8),
                                     hintText: qtyCtrl.text,
                                     hintStyle: TextWidget.textStyle(
-                                      color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                                      color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
                                       fontSize: 14,
                                       theme: theme.isDarkMode,
                                       fw: 0,

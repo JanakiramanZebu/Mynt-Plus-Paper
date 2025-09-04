@@ -314,7 +314,7 @@ class _NewAppBarTitle extends ConsumerWidget {
         Row(
           children: [
             TextWidget.titleText(
-              text: wlValue.tsym.toUpperCase(),
+              text: wlValue.symbol.toUpperCase().replaceAll("-EQ", ""),
               theme: theme.isDarkMode,
               color: theme.isDarkMode
                   ? colors.textPrimaryDark

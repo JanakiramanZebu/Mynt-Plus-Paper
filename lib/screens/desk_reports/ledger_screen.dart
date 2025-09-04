@@ -651,10 +651,10 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                                                                ?.crAmt ??
                                                            '0.00',
                                                        ledgerprovider.ledgerAllData
-                                                               ?.closingBalance ??
+                                                               ?.openingBalance ??
                                                            '0.00',
                                                        ledgerprovider.ledgerAllData
-                                                               ?.openingBalance ??
+                                                               ?.closingBalance ??
                                                            '0.00',
                                                        ledgerprovider.startDate,
                                                        currentDate);
@@ -713,9 +713,7 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                                          hintStyle: TextWidget.textStyle(
                                       fontSize: 14,
                                       theme: theme.isDarkMode,
-                                     color: theme.isDarkMode
-                                ? colors.textSecondaryDark
-                                : colors.textSecondaryLight,
+                                     color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
                                 fw: 0,
                                     ),
                                          fillColor: theme.isDarkMode ? colors.searchBgDark : colors.searchBg,

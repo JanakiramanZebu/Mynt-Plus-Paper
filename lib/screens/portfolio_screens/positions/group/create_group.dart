@@ -63,16 +63,17 @@ class _CreateGroupPosState extends ConsumerState<CreateGroupPos> {
                   theme: theme.isDarkMode,
                   color:
                       theme.isDarkMode ? colors.colorWhite : colors.colorBlue,
-                  fw: 1),
+                  fw: 0),
               decoration: InputDecoration(
                   fillColor: theme.isDarkMode?colors.darkGrey: const Color(0xffF1F3F8),
                   filled: true,
                   hintText: "Enter group name",
-                  hintStyle: TextWidget.textStyle(
-                      color: Colors.grey,
-                      fontSize: 14,
-                      fw: 00,
-                      theme: theme.isDarkMode),
+               hintStyle: TextWidget.textStyle(
+                                      fontSize: 14,
+                                      theme: theme.isDarkMode,
+                                     color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                                    fw: 0,
+                                    ),
                   contentPadding:
                       const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
                   

@@ -254,7 +254,7 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                 hintText: "Enter UPI ID",
                 
                 hintStyle: TextWidget.textStyle(
-                    fontSize: 14,  theme: false, color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight, fw: 0),
+                    fontSize: 14,  theme: false, color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4), fw: 0),
                     
 
                 contentPadding:
@@ -572,9 +572,7 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                                     hintText: "0",
                                     hintStyle: TextWidget.textStyle(
                                       theme: false,
-                                      color: theme.isDarkMode
-                                          ? colors.textSecondaryDark
-                                          : colors.textSecondaryLight,
+                                      color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
                                       fontSize: 25,
                                       fw: 0,
                                     ),

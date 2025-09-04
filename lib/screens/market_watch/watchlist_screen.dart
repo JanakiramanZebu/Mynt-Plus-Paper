@@ -704,6 +704,7 @@ void _initializeWithStoredData() {
                   ? colors.textPrimaryDark
                   : colors.textPrimaryLight,
               theme: theme.isDarkMode,
+              fw:0
             ),
             const SizedBox(height: 8),
             SizedBox(
@@ -716,6 +717,7 @@ void _initializeWithStoredData() {
                     : colors.textSecondaryLight,
                 theme: theme.isDarkMode,
                 align: TextAlign.center,
+                fw:0
               ),
             ),
           ],

@@ -425,10 +425,7 @@ class _ModifyPlaceOrderScreenState
                                                 hintStyle: TextWidget.textStyle(
                                                   fontSize: 14,
                                                   theme: theme.isDarkMode,
-                                                  color: theme.isDarkMode
-                                                      ? colors.textSecondaryDark
-                                                      : colors
-                                                          .textSecondaryLight,
+                                                  color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
                                                   fw: 0,
                                                 ),
                                                 inputFormate: [
@@ -740,11 +737,7 @@ class _ModifyPlaceOrderScreenState
                                                       TextWidget.textStyle(
                                                     fontSize: 14,
                                                     theme: theme.isDarkMode,
-                                                    color: theme.isDarkMode
-                                                        ? colors
-                                                            .textSecondaryDark
-                                                        : colors
-                                                            .textSecondaryLight,
+                                                    color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
                                                     fw: 0,
                                                   ),
                                                   keyboardType:
@@ -1922,8 +1915,12 @@ class _ModifyPlaceOrderScreenState
                       ? colors.darkGrey
                       : const Color(0xffF1F3F8),
                   hintText: "0.00",
-                  hintStyle:
-                      textStyle(const Color(0xff666666), 15, FontWeight.w400),
+                 hintStyle: TextWidget.textStyle(
+                                      fontSize: 14,
+                                      theme: theme.isDarkMode,
+                                     color:(theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                                    fw: 0,
+                                    ),
                   onChanged: (value) {
                     double inputPrice = double.tryParse(value) ?? 0;
                     if (value.isNotEmpty && inputPrice > 0) {
@@ -1945,10 +1942,14 @@ class _ModifyPlaceOrderScreenState
                   },
                   keyboardType:
                       const TextInputType.numberWithOptions(decimal: true),
-                  style: textStyle(
-                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                      16,
-                      FontWeight.w600),
+                  style: TextWidget.textStyle(
+                                    fontSize: 16,
+                                    color: theme.isDarkMode
+                                        ? colors.textPrimaryDark
+                                        : colors.textPrimaryLight,
+                                    theme: theme.isDarkMode,
+                                    fw: 0,
+                                  ),
                   // prefixIcon: Container(
                   //     margin: const EdgeInsets.all(12),
                   //     decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), color: theme.isDarkMode ? const Color(0xff555555) : colors.colorWhite),
@@ -2002,16 +2003,22 @@ class _ModifyPlaceOrderScreenState
                             "Target can not be ${inputPrice <= 0 ? 'zero' : 'empty'}");
                       }
                     },
-                    hintStyle:
-                        textStyle(const Color(0xff666666), 15, FontWeight.w400),
+                    hintStyle: TextWidget.textStyle(
+                                      fontSize: 14,
+                                      theme: theme.isDarkMode,
+                                     color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                                    fw: 0,
+                                    ),
                     keyboardType:
                         const TextInputType.numberWithOptions(decimal: true),
-                    style: textStyle(
-                        theme.isDarkMode
-                            ? colors.colorWhite
-                            : colors.colorBlack,
-                        16,
-                        FontWeight.w600),
+                    style: TextWidget.textStyle(
+                                    fontSize: 16,
+                                    color: theme.isDarkMode
+                                        ? colors.textPrimaryDark
+                                        : colors.textPrimaryLight,
+                                    theme: theme.isDarkMode,
+                                    fw: 0,
+                                  ),
                     // prefixIcon: Container(
                     //   margin: const EdgeInsets.all(12),
                     //   decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), color: theme.isDarkMode ? const Color(0xff555555) : colors.colorWhite),
@@ -2055,16 +2062,22 @@ class _ModifyPlaceOrderScreenState
                       }
                     },
                     hintText: "0.00",
-                    hintStyle:
-                        textStyle(const Color(0xff666666), 15, FontWeight.w400),
+                   hintStyle: TextWidget.textStyle(
+                                      fontSize: 14,
+                                      theme: theme.isDarkMode,  
+                                     color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                                    fw: 0,
+                                    ),
                     keyboardType:
                         const TextInputType.numberWithOptions(decimal: true),
-                    style: textStyle(
-                        theme.isDarkMode
-                            ? colors.colorWhite
-                            : colors.colorBlack,
-                        16,
-                        FontWeight.w600),
+                   style: TextWidget.textStyle(
+                                    fontSize: 16,
+                                    color: theme.isDarkMode
+                                        ? colors.textPrimaryDark
+                                        : colors.textPrimaryLight,
+                                    theme: theme.isDarkMode,
+                                    fw: 0,
+                                  ),
                     // prefixIcon: Container(
                     //   margin: const EdgeInsets.all(12),
                     //   decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), color: theme.isDarkMode ? const Color(0xff555555) : colors.colorWhite),
@@ -2171,9 +2184,7 @@ class _ModifyPlaceOrderScreenState
                                hintStyle: TextWidget.textStyle(
                                       fontSize: 14,
                                       theme: theme.isDarkMode,
-                                     color: theme.isDarkMode
-                                ? colors.textSecondaryDark
-                                : colors.textSecondaryLight,
+                                     color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
                                 fw: 0,
                                     ),
                                     

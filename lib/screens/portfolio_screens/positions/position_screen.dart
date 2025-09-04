@@ -266,7 +266,9 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
                               padding: const EdgeInsets.all(8.0),
                               child: _getCachedIcon(
                                 assets.searchIcon,
-                                color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                                color: theme.isDarkMode
+                                    ? colors.textSecondaryDark
+                                    : colors.textSecondaryLight,
                                 width: 20,
                               ),
                             ),
@@ -315,7 +317,9 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
                                 padding: const EdgeInsets.all(8.0),
                                 child: _getCachedIcon(
                                   assets.filterLinesDark,
-                                   color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                                  color: theme.isDarkMode
+                                      ? colors.textSecondaryDark
+                                      : colors.textSecondaryLight,
                                 ),
                               ),
                             ),
@@ -325,6 +329,41 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
                   ),
                   Row(
                     children: [
+                      if (positionBook.postionBookModel!.isNotEmpty) ...[
+                        Material(
+                           color: Colors.transparent,
+                          shape: const RoundedRectangleBorder(),
+                          clipBehavior: Clip.hardEdge,
+                          child: InkWell(
+                             customBorder: const RoundedRectangleBorder(),
+                            splashColor: theme.isDarkMode
+                                ? colors.splashColorDark
+                                : colors.splashColorLight,
+                            highlightColor: theme.isDarkMode
+                                ? colors.highlightDark
+                                : colors.highlightLight,
+                            onTap: () {
+                              positionBook
+                                  .chngPositionPnl(!positionBook.isNetPnl);
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 5),
+                              child: Text(
+                                positionBook.isNetPnl ? "P&L" : "MTM",
+                                style: TextWidget.textStyle(
+                                  fontSize: 14,
+                                  theme: theme.isDarkMode,
+                                 color: theme.isDarkMode
+                                      ? colors.secondaryDark
+                                      : colors.secondaryLight,
+                                  fw: 2,
+                                ),
+                              ),
+                            ),
+                          ),
+                        )
+                      ],
                       if (positionBook.exitPositionQty != 0)
                         Material(
                           color: Colors.transparent,
@@ -453,9 +492,10 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
             style: TextWidget.textStyle(
               fontSize: 16,
               theme: theme.isDarkMode,
-              color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+              color: theme.isDarkMode
+                  ? colors.textPrimaryDark
+                  : colors.textPrimaryLight,
               fw: 0,
-              
             ),
             keyboardType: TextInputType.text,
             textCapitalization: TextCapitalization.characters,
@@ -467,17 +507,23 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
             decoration: InputDecoration(
                 hintText: "Search",
                 hintStyle: TextWidget.textStyle(
-                    fontSize: 14,
-                    theme: theme.isDarkMode,
-                    color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                    fw: 0,
-                    ),
-                fillColor: theme.isDarkMode ? colors.searchBgDark : colors.searchBg,
+                  fontSize: 14,
+                  theme: theme.isDarkMode,
+                  color: (theme.isDarkMode
+                          ? colors.textSecondaryDark
+                          : colors.textSecondaryLight)
+                      .withOpacity(0.4),
+                  fw: 0,
+                ),
+                fillColor:
+                    theme.isDarkMode ? colors.searchBgDark : colors.searchBg,
                 filled: true,
                 prefixIcon: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: SvgPicture.asset(assets.searchIcon,
-                      color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                      color: theme.isDarkMode
+                          ? colors.textSecondaryDark
+                          : colors.textSecondaryLight,
                       fit: BoxFit.scaleDown,
                       width: 20),
                 ),
@@ -502,8 +548,11 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
                       });
                     },
                     child: SvgPicture.asset(assets.removeIcon,
-                     color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                        fit: BoxFit.scaleDown, width: 20),
+                        color: theme.isDarkMode
+                            ? colors.textSecondaryDark
+                            : colors.textSecondaryLight,
+                        fit: BoxFit.scaleDown,
+                        width: 20),
                   ),
                 ),
                 enabledBorder: OutlineInputBorder(
@@ -612,41 +661,41 @@ class _PositionHeaderSection extends ConsumerWidget {
               theme: theme,
             ),
           ),
-          const SizedBox(height: 6),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text("P&L",
-                    style: TextWidget.textStyle(
-                        fontSize: 13,
-                        theme: theme.isDarkMode,
-                        color: theme.isDarkMode
-                            ? colors.colorWhite
-                            : colors.colorGrey,
-                        fw: 0)),
-                const SizedBox(width: 6),
-                CustomSwitch(
-                    onChanged: (bool value) {
-                      positionBook.chngPositionPnl(!positionBook.isNetPnl);
-                    },
-                    color: !theme.isDarkMode
-                        ? colors.colorGrey.withOpacity(0.2)
-                        : colors.colorBlack,
-                    value: positionBook.isNetPnl),
-                const SizedBox(width: 6),
-                Text("MTM",
-                    style: TextWidget.textStyle(
-                        fontSize: 13,
-                        theme: theme.isDarkMode,
-                        color: theme.isDarkMode
-                            ? colors.colorWhite
-                            : colors.colorGrey,
-                        fw: 0)),
-              ],
-            ),
-          ),
+          // const SizedBox(height: 6),
+          // Padding(
+          //   padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 8),
+          //   child: Row(
+          //     mainAxisAlignment: MainAxisAlignment.center,
+          //     children: [
+          //       // Text("P&L",
+          //       //     style: TextWidget.textStyle(
+          //       //         fontSize: 13,
+          //       //         theme: theme.isDarkMode,
+          //       //         color: theme.isDarkMode
+          //       //             ? colors.colorWhite
+          //       //             : colors.colorGrey,
+          //       //         fw: 0)),
+          //       // const SizedBox(width: 6),
+          //       // CustomSwitch(
+          //       //     onChanged: (bool value) {
+          //       //       positionBook.chngPositionPnl(!positionBook.isNetPnl);
+          //       //     },
+          //       //     color: !theme.isDarkMode
+          //       //         ? colors.colorGrey.withOpacity(0.2)
+          //       //         : colors.colorBlack,
+          //       //     value: positionBook.isNetPnl),
+          //       // const SizedBox(width: 6),
+          //       // Text("MTM",
+          //       //     style: TextWidget.textStyle(
+          //       //         fontSize: 13,
+          //       //         theme: theme.isDarkMode,
+          //       //         color: theme.isDarkMode
+          //       //             ? colors.colorWhite
+          //       //             : colors.colorGrey,
+          //       //         fw: 0)),
+          //     ],
+          //   ),
+          // ),
         ] else ...[
           const SizedBox(),
         ]
@@ -1018,7 +1067,7 @@ class _PositionItemState extends ConsumerState<_PositionItem> {
             Text(
               avgPrice,
               style: _getStyle(
-                   theme.isDarkMode
+                  theme.isDarkMode
                       ? colors.textSecondaryDark
                       : colors.textSecondaryLight,
                   12,

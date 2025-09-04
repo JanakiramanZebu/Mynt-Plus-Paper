@@ -709,9 +709,7 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                                  hintStyle: TextWidget.textStyle(
                                       fontSize: 14,
                                       theme: theme.isDarkMode,
-                                     color: theme.isDarkMode
-                                ? colors.textSecondaryDark
-                                : colors.textSecondaryLight,
+                                     color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
                                 fw: 0,
                                     ),
                                   keyboardType: TextInputType.number,
@@ -1144,16 +1142,20 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                                           ? colors.darkGrey
                                           : const Color(0xffF1F3F8),
                                       hintText: 'exmaple@upi',
-                                      hintStyle: textStyle(
-                                          const Color(0xff666666),
-                                          14,
-                                          FontWeight.w400),
-                                      style: textStyle(
-                                          theme.isDarkMode
-                                              ? colors.colorWhite
-                                              : colors.colorBlack,
-                                          14,
-                                          FontWeight.w600),
+                                   hintStyle: TextWidget.textStyle(
+                                      fontSize: 14,
+                                      theme: theme.isDarkMode,
+                                     color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                                    fw: 0,
+                                    ),
+                                       style: TextWidget.textStyle(
+                                    fontSize: 16,
+                                    color: theme.isDarkMode
+                                        ? colors.textPrimaryDark
+                                        : colors.textPrimaryLight,
+                                    theme: theme.isDarkMode,
+                                    fw: 0,
+                                  ),
                                       textCtrl: mfOrder.upiId,
                                       onChanged: (value) {
                                         mfOrder.isValidUpiId(widget.mfData,'');
@@ -1723,16 +1725,20 @@ void CallUpiNetbanking(BuildContext context, MFProvider mfOrder,
                       ? colors.darkGrey
                       : const Color(0xffF1F3F8),
                   hintText: 'example@upi',
-                  hintStyle: textStyle(
-                    const Color(0xff666666),
-                    14,
-                    FontWeight.w400,
-                  ),
-                  style: textStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    14,
-                    FontWeight.w600,
-                  ),
+                 hintStyle: TextWidget.textStyle(
+                                      fontSize: 14,
+                                      theme: theme.isDarkMode,
+                                     color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                                    fw: 0,
+                                    ),
+                   style: TextWidget.textStyle(
+                                    fontSize: 16,
+                                    color: theme.isDarkMode
+                                        ? colors.textPrimaryDark
+                                        : colors.textPrimaryLight,
+                                    theme: theme.isDarkMode,
+                                    fw: 0,
+                                  ),
                   textCtrl: mfOrder.upiId,
                   onChanged: (value) {
                     mfOrder.isValidUpiId(mfData,'');

@@ -115,7 +115,8 @@ class BondsCommonSearch extends ConsumerWidget {
                   hintStyle: TextWidget.textStyle(
                     fontSize: 14,
                     theme: theme.isDarkMode,
-                    color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                    color:(theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                    fw: 0,
                   ),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 12),
                 ),

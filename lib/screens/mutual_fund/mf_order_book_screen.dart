@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:mynt_plus/routes/route_names.dart';
 import 'package:mynt_plus/screens/mutual_fund/mf_hold_new_screen.dart';
-import 'package:mynt_plus/screens/mutual_fund/mf_sip_screen.dart';
-import 'package:mynt_plus/sharedWidget/functions.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import 'package:mynt_plus/sharedWidget/snack_bar.dart';
 
@@ -12,10 +8,8 @@ import '../../provider/mf_provider.dart';
 import '../../provider/thems.dart';
 import '../../res/global_state_text.dart';
 import '../../res/res.dart';
-import '../../sharedWidget/custom_exch_badge.dart';
 import '../../sharedWidget/list_divider.dart';
 import '../../sharedWidget/loader_ui.dart';
-import '../portfolio_screens/mfHoldings/mf_holding_screen.dart';
 import 'order_single_page.dart';
 
 class MfOrderBookScreen extends ConsumerStatefulWidget {
@@ -42,7 +36,7 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
     "MODIFY REJECTED",
     "PAYMENT REJECTED"
   };
-  int activeTab = 0;
+
 
   @override
   void initState() {
@@ -72,36 +66,58 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    width: MediaQuery.of(context).size.width,
-                    padding: const EdgeInsets.only(bottom: 0, left: 0, top: 2),
-                    decoration: BoxDecoration(
-                      border: Border(
-                        top: BorderSide(
-                          color: theme.isDarkMode
-                              ? colors.darkColorDivider
-                              : colors.colorDivider,
-                          width: 0.4,
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8,),
+                      height: 35,
+                      child: TabBar(
+                        controller: _tabController,
+                        tabAlignment: TabAlignment.start,
+                        isScrollable: true,
+                        indicatorSize: TabBarIndicatorSize.label,
+                        indicator: BoxDecoration(
+                          color: theme.isDarkMode ? colors.searchBgDark : const Color(0xffF1F3F8),
+                          borderRadius: BorderRadius.circular(5),
                         ),
-                        bottom: BorderSide(
-                          color: theme.isDarkMode
-                              ? colors.darkColorDivider
-                              : colors.colorDivider,
-                          width: 0.4,
-                        ),
-                      ),
-                    ),
-                    child: TabBar(
-                      labelPadding: const EdgeInsets.only(right: 0, bottom: 0),
-                      tabAlignment: TabAlignment.start,
-                      indicatorColor: theme.isDarkMode
-                          ? colors.secondaryDark
-                          : colors.secondaryLight,
-                      controller: _tabController,
-                      isScrollable: true,
-                      tabs: List.generate(
-                        tablistitems.length,
-                        (tab) => _buildTab(tab, theme),
+                        unselectedLabelColor: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                        labelStyle: TextWidget.textStyle(
+                            fontSize: 14, theme: false, fw: 1, color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight),
+                        unselectedLabelStyle: TextWidget.textStyle(
+                            fontSize: 14,
+                            theme: false,
+                            color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                            fw: 0,
+                            letterSpacing: -0.28),
+                        labelPadding: const EdgeInsets.symmetric(horizontal: 4),
+                        tabs: tablistitems.asMap().entries.map((entry) {
+                          final index = entry.key;
+                          final tabData = entry.value;
+                          
+                          return Tab(
+                            child: Builder(
+                              builder: (context) {
+                                final isSelected = _tabController.index == index;
+                                
+                                return Padding(
+                                  padding: const EdgeInsets.only(
+                                      left: 10, right: 10, top: 0, bottom: 0),
+                                  child: Row(
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      TextWidget.paraText(
+                                          text: tabData['title'].toString(),
+                                          theme: false,
+                                          color: isSelected ? theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight : theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                                          fw: isSelected ? 2 : 2),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
+                          );
+                        }).toList(),
                       ),
                     ),
                   ),
@@ -413,48 +429,7 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
     return value.toStringAsFixed(2);
   }
 
-  Widget _buildTab(int tab, ThemesProvider theme) {
-    return ElevatedButton(
-      onPressed: () {
-        FocusScope.of(context).unfocus();
-        setState(() {
-          activeTab = tab;
-        });
-        _tabController.animateTo(tab);
-      },
-      style: ElevatedButton.styleFrom(
-        minimumSize: Size(MediaQuery.of(context).size.width * 0.5, 50),
-        overlayColor: Colors.transparent, // no splash
-        splashFactory: NoSplash.splashFactory,
-        elevation: 0,
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 0),
-        // backgroundColor: theme.isDarkMode
-        //     ? tab == activeTab
-        //         ? colors.colorBlack
-        //         : const Color.fromARGB(255, 0, 0, 0).withOpacity(.15)
-        //     : tab == activeTab
-        //         ? const Color.fromARGB(255, 255, 255, 255)
-        //         : const Color.fromARGB(255, 255, 255, 255),
 
-        backgroundColor:
-            theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-        shape: const StadiumBorder(),
-      ),
-      child: TextWidget.subText(
-          align: TextAlign.right,
-          text: tablistitems[tab]['title'].toString(),
-          color: theme.isDarkMode
-              ? tab == activeTab
-                  ? colors.secondaryDark
-                  : colors.textSecondaryDark
-              : tab == activeTab
-                  ? colors.secondaryLight
-                  : colors.textSecondaryLight,
-          textOverflow: TextOverflow.ellipsis,
-          theme: theme.isDarkMode,
-          fw: tab == activeTab ? 2 : 2),
-    );
-  }
 }
 
 

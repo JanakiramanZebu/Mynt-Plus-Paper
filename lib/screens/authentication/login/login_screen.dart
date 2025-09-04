@@ -685,10 +685,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                           hintStyle: TextWidget.textStyle(
                                               fontSize: 12,
                                               theme: theme.isDarkMode,
-                                              color: theme.isDarkMode
-                                                  ? colors.textSecondaryDark
-                                                  : colors.textSecondaryLight,
-                                              fw: 3),
+                                              color:(theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                                              fw: 0),
                                         ),
                                         inputFormatters: [
                                           NoEmojiInputFormatter(),

@@ -402,16 +402,20 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                                           : const Color(0xffF1F3F8),
                                       hintText: '0',
                                       keyboardType: TextInputType.number,
-                                      hintStyle: textStyle(
-                                          const Color(0xff666666),
-                                          15,
-                                          FontWeight.w400),
-                                      style: textStyle(
-                                          theme.isDarkMode
-                                              ? colors.colorWhite
-                                              : colors.colorBlack,
-                                          16,
-                                          FontWeight.w600),
+                                  hintStyle: TextWidget.textStyle(
+                                      fontSize: 14,
+                                      theme: theme.isDarkMode,
+                                     color:(theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                                    fw: 0,
+                                    ),
+                                       style: TextWidget.textStyle(
+                                    fontSize: 16,
+                                    color: theme.isDarkMode
+                                        ? colors.textPrimaryDark
+                                        : colors.textPrimaryLight,
+                                    theme: theme.isDarkMode,
+                                    fw: 0,
+                                  ),
                                       textCtrl: ledgerdata.selectnetpledge,
                                       onChanged: (value) {
                                         netValue = 0;

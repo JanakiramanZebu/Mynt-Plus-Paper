@@ -62,18 +62,25 @@ class _SearchBar extends StatelessWidget {
           Expanded(
             child: TextFormField(
               controller: ipo.openOrderController,
-              style: _textStyle(
-                  theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                  16,
-                  FontWeight.w600),
+             style: TextWidget.textStyle(
+                                    fontSize: 16,
+                                    color: theme.isDarkMode
+                                        ? colors.textPrimaryDark
+                                        : colors.textPrimaryLight,
+                                    theme: theme.isDarkMode,
+                                    fw: 0,
+                                  ),
               decoration: InputDecoration(
                   fillColor: theme.isDarkMode
                       ? colors.darkGrey
                       : const Color(0xffF1F3F8),
                   filled: true,
-                  hintStyle: GoogleFonts.inter(
-                      textStyle: _textStyle(
-                          const Color(0xff69758F), 15, FontWeight.w500)),
+                 hintStyle: TextWidget.textStyle(
+                                      fontSize: 14,
+                                      theme: theme.isDarkMode,
+                                     color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                                    fw: 0,
+                                    ),
                   prefixIconColor: const Color(0xff586279),
                   prefixIcon: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20.0),

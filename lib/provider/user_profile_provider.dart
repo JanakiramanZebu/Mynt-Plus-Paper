@@ -558,7 +558,7 @@ class UserProfileProvider extends DefaultChangeNotifier {
       print("No image selected");
     }
   } catch (e) {
-    warningMessage(context, 'Error selecting image: $e');
+    print("Error selecting image: $e");
   }
 }
 
@@ -575,7 +575,7 @@ class UserProfileProvider extends DefaultChangeNotifier {
         warningMessage(context, 'Failed to remove profile picture');
       }
     } catch (e) {
-      warningMessage(context, 'Error removing profile image: $e');
+      print("Error removing profile image: $e");
     }
   }
 
@@ -654,7 +654,6 @@ class UserProfileProvider extends DefaultChangeNotifier {
       }
     } catch (e) {
       print("error in upload image ${e}");
-      warningMessage(context, 'Error uploading image: $e');
     } finally {
       toggleimageloader(false);
     }

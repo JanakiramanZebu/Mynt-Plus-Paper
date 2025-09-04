@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:mynt_plus/provider/fund_provider.dart';
+import 'package:mynt_plus/provider/profile_all_details_provider.dart';
 import 'package:mynt_plus/res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../locator/locator.dart';
@@ -1086,7 +1087,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                           fontSize: 14,
                                           theme: theme.isDarkMode,
                                           color:
-                                              theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                                             (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
                                           fw: 0,
                                         ),
                                         keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -1135,9 +1136,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                             hintStyle: TextWidget.textStyle(
                                               fontSize: 14,
                                               theme: theme.isDarkMode,
-                                              color: theme.isDarkMode
-                                                  ? colors.textSecondaryDark
-                                                  : colors.textSecondaryLight,
+                                              color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
                                               fw: 0,
                                             ),
                                             inputFormate: [FilteringTextInputFormatter.digitsOnly],
@@ -1347,9 +1346,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                             hintStyle: TextWidget.textStyle(
                                               fontSize: 14,
                                               theme: theme.isDarkMode,
-                                              color: theme.isDarkMode
-                                                  ? colors.textSecondaryDark
-                                                  : colors.textSecondaryLight,
+                                              color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
                                               fw: 0,
                                             ),
                                             keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -1633,7 +1630,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                             fontSize: 14,
                                             theme: theme.isDarkMode,
                                             color:
-                                                theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                                                (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
                                             fw: 0,
                                           ),
                                           keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -1664,9 +1661,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                               hintStyle: TextWidget.textStyle(
                                                 fontSize: 14,
                                                 theme: theme.isDarkMode,
-                                                color: theme.isDarkMode
-                                                    ? colors.textSecondaryDark
-                                                    : colors.textSecondaryLight,
+                                                color:(theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
                                                 fw: 0,
                                               ),
                                               inputFormate: [FilteringTextInputFormatter.digitsOnly],
@@ -1876,9 +1871,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                               hintStyle: TextWidget.textStyle(
                                                 fontSize: 14,
                                                 theme: theme.isDarkMode,
-                                                color: theme.isDarkMode
-                                                    ? colors.textSecondaryDark
-                                                    : colors.textSecondaryLight,
+                                                color:(theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
                                                 fw: 0,
                                               ),
                                               keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -2454,14 +2447,38 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                 padding: const EdgeInsets.symmetric(vertical: 14),
                                               ),
                                               onPressed: () {
+                                                final profileDetails = ref.watch(profileAllDetailsProvider);
+    final clientData = profileDetails.clientAllDetails.clientData;
+
+    bool DDPIActive = clientData?.dDPI == 'Y';
+    bool POAActive = clientData?.pOA == 'Y';
                                                 // Navigate to the screen where the user enables MTF
                                                 // Navigator.pushNamed(context, Routes.mtfEnableScreen);
-                                                Navigator.push(
+                                                
+                                                if (!DDPIActive && !POAActive){
+                                                 final pendingStatuses =
+                      ref.watch(profileAllDetailsProvider).pendingStatusList;
+                  if (pendingStatuses.isNotEmpty &&
+                      pendingStatuses[0].data != null) {
+                    final hasPendingChanges = pendingStatuses[0]
+                        .data!
+                        .any((status) => status == 'mtf_pending');
+                    if (hasPendingChanges) {
+                      warningMessage(context, 'You have pending request.click on the E-Sign to proceed.');
+                      return;
+                    }
+                  }
+                  // profileDetails.openInWebURL(context, "segment");
+                  ref.watch(profileAllDetailsProvider).openInWebURLk(context, "segment", "mtf");
+                  } else {
+                    Navigator.push(
                                                   context,
                                                   MaterialPageRoute(
                                                     builder: (_) => const MyAccountScreen(initialIndex: 2),
                                                   ),
                                                 );
+                    warningMessage(context, 'You need to enable DDPI before you can proceed with enabling MTF.');
+                  }
                                               },
                                               child: TextWidget.subText(
                                                 text: "Enable MTF",
@@ -2509,9 +2526,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                 hintStyle: TextWidget.textStyle(
                                                   fontSize: 14,
                                                   theme: theme.isDarkMode,
-                                                  color: theme.isDarkMode
-                                                      ? colors.textSecondaryDark
-                                                      : colors.textSecondaryLight,
+                                                  color:(theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
                                                   fw: 0,
                                                 ),
                                                 inputFormate: [FilteringTextInputFormatter.digitsOnly],
@@ -2768,9 +2783,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                     hintStyle: TextWidget.textStyle(
                                                       fontSize: 14,
                                                       theme: theme.isDarkMode,
-                                                      color: theme.isDarkMode
-                                                          ? colors.textSecondaryDark
-                                                          : colors.textSecondaryLight,
+                                                      color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
                                                       fw: 0,
                                                     ),
                                                     keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -4295,6 +4308,8 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                                 "Price(Order price + Stoploss = ${(double.parse(ordPrice) + double.parse(stopLossCtrl.text))}) Stoploss can not be greater than ${widget.scripInfo.uc}");
                                                           } else if(trailingTicksCtrl.text.isNotEmpty && (trailTicksRemainder > 0.0001)){
                                                                       warningMessage(context, "Trailing price should be in multiples of tick size: $tickSize");
+                                                          } else if(trailingTicksCtrl.text.isNotEmpty && (enteredValue <= 0)){
+                                                                      warningMessage(context, "Trailing price should be positive value");
                                                           } else {
                                                             if ((int.parse(convertQtyOrAmtValue(
                                                                                 qtyCtrl.text, _isQtyToAmount)
@@ -4617,7 +4632,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                       hintStyle: TextWidget.textStyle(
                         fontSize: 14,
                         theme: theme.isDarkMode,
-                        color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                        color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
                         fw: 0,
                       ),
                       inputFormate: [FilteringTextInputFormatter.digitsOnly],
@@ -4723,7 +4738,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                   hintStyle: TextWidget.textStyle(
                     fontSize: 14,
                     theme: theme.isDarkMode,
-                    color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                    color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
                     fw: 0,
                   ),
                   onChanged: (value) {
@@ -4795,7 +4810,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                   hintStyle: TextWidget.textStyle(
                     fontSize: 14,
                     theme: theme.isDarkMode,
-                    color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                    color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
                     fw: 0,
                   ),
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -4848,7 +4863,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                   hintStyle: TextWidget.textStyle(
                     fontSize: 14,
                     theme: theme.isDarkMode,
-                    color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                    color:(theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
                     fw: 0,
                   ),
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -4889,7 +4904,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
 
                     if (value.isNotEmpty) {
                       double tickSize = double.parse(scripInfo.ti.toString());
-                      double enteredValue = double.tryParse(value) ?? 0;
+                      double enteredValue = (double.tryParse(value) ?? 0).abs();
                       
                       if (enteredValue <= 0) {
                         trailingTicksCtrl.text = value.substring(0, value.length - 1);
@@ -5047,7 +5062,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                   hintStyle: TextWidget.textStyle(
                                     fontSize: 14,
                                     theme: theme.isDarkMode,
-                                    color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                                    color:(theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
                                     fw: 0,
                                   ),
                                 ),
@@ -5239,7 +5254,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                   ? (int.parse(convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount)) * lotSize).toString()
                   : convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount),
               ret: validityType,
-              trailprc: orderType == "CO - BO" && trailingTicksCtrl.text.isNotEmpty && trailingTicksCtrl.text != "0" ? trailingTicksCtrl.text : '' ,
+              trailprc: orderType == "CO - BO" && trailingTicksCtrl.text.isNotEmpty && (double.tryParse(trailingTicksCtrl.text)??0) > 0 ? trailingTicksCtrl.text : '' ,
               trantype: isBuy! ? 'B' : 'S',
               trgprc: priceType == "SL Limit" || priceType == "SL MKT" ? triggerPriceCtrl.text : "",
               tsym: widget.scripInfo.tsym!,
@@ -5581,7 +5596,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                         : "BO",
         "qty": splitQty.toString(), // Use the split quantity instead of original quantity
         "ret": validityType,
-        "trailprc": orderType == "CO - BO" && trailingTicksCtrl.text.isNotEmpty && trailingTicksCtrl.text != "0" ? trailingTicksCtrl.text :'',
+        "trailprc": orderType == "CO - BO" && trailingTicksCtrl.text.isNotEmpty && (double.tryParse(trailingTicksCtrl.text)??0) > 0 ? trailingTicksCtrl.text :'',
         "trantype": isBuy! ? 'B' : 'S',
         "trgprc": priceType == "SL Limit" || priceType == "SL MKT" ? triggerPriceCtrl.text : "",
         "tsym": widget.scripInfo.tsym!,

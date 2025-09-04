@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/sharedWidget/snack_bar.dart';
 import '../../provider/order_input_provider.dart';
 import '../../provider/thems.dart';
+import '../../res/global_state_text.dart';
 import '../../res/res.dart'; 
 import '../../sharedWidget/cust_text_formfield.dart';
 import 'gtt_bottom_sheet.dart';
@@ -86,14 +87,20 @@ class GttCondition extends ConsumerWidget {
                                 ? colors.darkGrey
                                 : const Color(0xffF1F3F8),
                             hintText: "0",
-                            hintStyle: textStyle(
-                                const Color(0xff666666), 15, FontWeight.w400),
-                            style: textStyle(
-                                theme.isDarkMode
-                                    ? colors.colorWhite
-                                    : colors.colorBlack,
-                                16,
-                                FontWeight.w600),
+                           hintStyle: TextWidget.textStyle(
+                                      fontSize: 14,
+                                      theme: theme.isDarkMode,
+                                     color:(theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                                    fw: 0,
+                                    ),
+                            style: TextWidget.textStyle(
+                                    fontSize: 16,
+                                    color: theme.isDarkMode
+                                        ? colors.textPrimaryDark
+                                        : colors.textPrimaryLight,
+                                    theme: theme.isDarkMode,
+                                    fw: 0,
+                                  ),
                             textAlign: TextAlign.start,
                              keyboardType:
                                 const TextInputType.numberWithOptions(
@@ -127,14 +134,20 @@ class GttCondition extends ConsumerWidget {
                                 ? colors.darkGrey
                                 : const Color(0xffF1F3F8),
                             hintText: "0",
-                            hintStyle: textStyle(
-                                const Color(0xff666666), 15, FontWeight.w400),
-                            style: textStyle(
-                                theme.isDarkMode
-                                    ? colors.colorWhite
-                                    : colors.colorBlack,
-                                16,
-                                FontWeight.w600),
+                           hintStyle: TextWidget.textStyle(
+                                      fontSize: 14,
+                                      theme: theme.isDarkMode,
+                                     color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),                                 
+                                    fw: 0,
+                                    ),
+                         style: TextWidget.textStyle(
+                                    fontSize: 16,
+                                    color: theme.isDarkMode
+                                        ? colors.textPrimaryDark
+                                        : colors.textPrimaryLight,
+                                    theme: theme.isDarkMode,
+                                    fw: 0,
+                                  ),
                             textAlign: TextAlign.start,
                              keyboardType:
                                   const TextInputType.numberWithOptions(
