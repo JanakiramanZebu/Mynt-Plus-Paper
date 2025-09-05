@@ -1,4 +1,5 @@
 import '../models/camsres_model.dart';
+import '../utils/url_utils.dart';
 import '../models/portfolio_model/allholdings_model.dart';
 import '../models/portfolio_model/holdings_model.dart';
 import '../models/portfolio_model/mf_holdings_model.dart';
@@ -286,7 +287,7 @@ mixin PortfolioAPI on ApiCore {
           headers: defaultHeaders, body: '''jData={"uid":"${prefs.clientId}",
               "actid":"${prefs.clientId}",
               "exch":"${positionConvertionInput.exch}",
-              "tsym":"${positionConvertionInput.tsym.replaceAll("&", "%26")}",
+              "tsym":"${UrlUtils.encodeParameter(positionConvertionInput.tsym)}",
               "qty":"${positionConvertionInput.qty}",
               "prd":"${positionConvertionInput.prd}",
               "prevprd":"${positionConvertionInput.prevprd}",
@@ -392,7 +393,7 @@ mixin PortfolioAPI on ApiCore {
           body: jsonEncode({
             "clientid": "${prefs.clientId}",
             "posname": grpName,
-            "tsym": tsym.replaceAll("&", "%26")
+            "tsym": UrlUtils.encodeParameter(tsym)
           }));
 
       // log("Delete Position Group Symbol => ${res.body}");

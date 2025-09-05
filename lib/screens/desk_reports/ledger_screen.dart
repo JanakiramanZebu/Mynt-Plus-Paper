@@ -246,7 +246,7 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
             body: ledgerprovider.ledgerloading
                 ? Center(
                     child: Container(
-                      color: Colors.white,
+                      color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
                       child: CircularLoaderImage(),
                     ),
                   )

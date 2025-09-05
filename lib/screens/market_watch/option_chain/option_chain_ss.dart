@@ -434,7 +434,7 @@ class _NewAppBarTitle extends ConsumerWidget {
               isBasketMode
                   ? Icons.shopping_basket
                   : Icons.shopping_basket_outlined,
-              size: 18,
+              size: 22,
               color: isBasketMode
                   ?  colors.primaryLight
                   : (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight),
@@ -442,35 +442,35 @@ class _NewAppBarTitle extends ConsumerWidget {
           ),
         ),
 
-        const SizedBox(width: 4),
+        // const SizedBox(width: 4),
 
-        // Search Icon
-        InkWell(
-          borderRadius: BorderRadius.circular(20),
-          splashColor: theme.isDarkMode
-              ? colors.splashColorDark
-              : colors.splashColorLight,
-          highlightColor:
-              theme.isDarkMode ? colors.highlightDark : colors.highlightLight,
-          onTap: () async {
-            // Add delay for visual feedback
-            await Future.delayed(const Duration(milliseconds: 150));
+        // // Search Icon
+        // InkWell(
+        //   borderRadius: BorderRadius.circular(20),
+        //   splashColor: theme.isDarkMode
+        //       ? colors.splashColorDark
+        //       : colors.splashColorLight,
+        //   highlightColor:
+        //       theme.isDarkMode ? colors.highlightDark : colors.highlightLight,
+        //   onTap: () async {
+        //     // Add delay for visual feedback
+        //     await Future.delayed(const Duration(milliseconds: 150));
 
-            Navigator.pushNamed(
-              context,
-              Routes.searchScrip,
-              arguments: "Option||Replace",
-            );
-          },
-          child: Padding(
-            padding: const EdgeInsets.all(8),
-            child: SvgPicture.asset(
-              assets.searchIcon,
-              width: 18,
-              height: 18,
-            ),
-          ),
-        )
+        //     Navigator.pushNamed(
+        //       context,
+        //       Routes.searchScrip,
+        //       arguments: "Option||Replace",
+        //     );
+        //   },
+        //   child: Padding(
+        //     padding: const EdgeInsets.all(8),
+        //     child: SvgPicture.asset(
+        //       assets.searchIcon,
+        //       width: 18,
+        //       height: 18,
+        //     ),
+        //   ),
+        // )
       ],
     );
   }

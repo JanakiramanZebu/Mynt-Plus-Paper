@@ -1,3 +1,5 @@
+import '../utils/url_utils.dart';
+
 class SpanCalcResponse {
   final String requestTime;
   final String stat;
@@ -83,7 +85,7 @@ class SpanCalcPositionItem {
   Map<String, dynamic> toJson() => {
         'prd': prd,
         'exch': exch,
-        'tsym': tsym.contains('&') ? tsym.replaceAll('&', '%26') : tsym,
+        'tsym': UrlUtils.encodeParameter(tsym),
         'symname': symname,
         'instname': instname,
         'exd': exd,

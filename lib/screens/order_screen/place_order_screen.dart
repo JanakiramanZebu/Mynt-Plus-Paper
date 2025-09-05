@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
+import '../../utils/url_utils.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
@@ -5590,7 +5591,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
         "trailprc": orderType == "CO - BO" && trailingTicksCtrl.text.isNotEmpty && (double.tryParse(trailingTicksCtrl.text)??0) > 0 ? trailingTicksCtrl.text :'',
         "trantype": isBuy! ? 'B' : 'S',
         "trgprc": priceType == "SL Limit" || priceType == "SL MKT" ? triggerPriceCtrl.text : "",
-        "tsym": widget.scripInfo.tsym?.replaceAll("&", "%26") ?? '',
+        "tsym": widget.scripInfo.tsym != null ? UrlUtils.encodeParameter(widget.scripInfo.tsym!) : '',
         "mktProt": priceType == "Market" || priceType == "SL MKT" ? mktProtCtrl.text : ''
       });
     }

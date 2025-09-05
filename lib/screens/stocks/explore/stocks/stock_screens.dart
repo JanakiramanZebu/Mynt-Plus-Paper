@@ -676,7 +676,7 @@ class _StockScreenState extends ConsumerState<StockScreen>
 
               // const SizedBox(height: 16),
               const SizedBox(
-                height: 400,
+                height: 380,
                 child: TradeAction(),
               ),
               const SizedBox(height: 16),
@@ -718,26 +718,28 @@ class _StockScreenState extends ConsumerState<StockScreen>
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
+                                // TextWidget.custmText(
+                                //     text: "₹300",
+                                //     theme: false,
+                                //     color: theme.isDarkMode
+                                //         ? colors.primaryDark
+                                //         : colors.primaryLight,
+                                //     fw: 0,
+                                //     fs: 20),
+                                // const SizedBox(height: 4),
                                 TextWidget.custmText(
-                                    text: "₹300",
+                                    text: "Refer",
                                     theme: false,
-                                    color: theme.isDarkMode
+                                     color: theme.isDarkMode
                                         ? colors.primaryDark
                                         : colors.primaryLight,
-                                    fw: 0,
-                                    fs: 20),
-                                const SizedBox(height: 4),
-                                TextWidget.subText(
-                                    text: "Refer and Earn",
-                                    theme: false,
-                                    color: theme.isDarkMode
-                                        ? colors.colorWhite
-                                        : colors.colorBlack,
+                                        fs: 20,
                                     fw: 0),
                                 const SizedBox(height: 4),
                                 TextWidget.paraText(
                                     text:
-                                        "Rewarding you for spreading the word",
+                                        // "Rewarding you for spreading the word",
+                                        "Invite your friends to Mynt by Zebu",
                                     theme: false,
                                     color: theme.isDarkMode
                                         ? colors.textSecondaryDark
