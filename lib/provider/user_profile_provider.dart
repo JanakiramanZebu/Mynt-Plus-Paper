@@ -187,7 +187,6 @@ class UserProfileProvider extends DefaultChangeNotifier {
     _userloader = false;
     _webViewKey = UniqueKey();
     _profileimage = null;
-    ref.read(dashboardProvider).clearPortfolioAnalysis();
     notifyListeners();
   }
 

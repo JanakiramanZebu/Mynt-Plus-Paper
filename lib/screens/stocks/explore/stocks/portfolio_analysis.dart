@@ -39,10 +39,8 @@ class _PortfolioDashboardScreenState
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (ref.read(dashboardProvider).portfolioAnalysis == null) {
-        ref.read(dashboardProvider).getPortfolioAnalysis();
-      }
+    WidgetsBinding.instance.addPostFrameCallback((_) {      
+        ref.read(dashboardProvider).getPortfolioAnalysis();      
     });
 
     // Listen to scroll changes for elevation effect
@@ -143,7 +141,7 @@ class _PortfolioDashboardScreenState
               if (portfolio.isPortfolioLoading == true) {
                 return Center(
                   child: Container(
-                    color: Colors.white,
+                    color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
                     child: CircularLoaderImage(),
                   ),
                 );
@@ -195,7 +193,7 @@ class _PortfolioDashboardScreenState
                   if (data.chartData != null)
                     _buildInvestmentChart(data.chartData!, data),
                   SizedBox(height: 16),
-                  _buildAccountAllocation(data.accountAllocation),
+                  _buildAccountAllocation(data.accountAllocation , theme.isDarkMode),
                   SizedBox(height: 16),
                   _buildChartsSection(data),
                   SizedBox(height: 16),
@@ -653,12 +651,12 @@ class _PortfolioDashboardScreenState
                         const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
                     decoration: BoxDecoration(
                       color: theme.isDarkMode
-                          ? colors.textSecondaryDark.withOpacity(0.03)
+                          ? colors.textSecondaryDark.withOpacity(0.2)
                           : colors.textSecondaryLight.withOpacity(0.03),
                       borderRadius: BorderRadius.circular(5),
                       border: Border.all(
                         color: theme.isDarkMode
-                            ? colors.textSecondaryDark.withOpacity(0.2)
+                            ? colors.textSecondaryDark.withOpacity(0.4)
                             : colors.textSecondaryLight.withOpacity(0.2),
                         width: 0,
                       ),
@@ -851,10 +849,6 @@ class _PortfolioDashboardScreenState
                       color: const Color(0xFF8B5CF6),
                       barWidth: 2,
                       dotData: FlDotData(show: false),
-                      belowBarData: BarAreaData(
-                        show: true,
-                        color: const Color(0xFF8B5CF6).withOpacity(0.15),
-                      ),
                     ),
                   ],
                 ),
@@ -900,7 +894,7 @@ class _PortfolioDashboardScreenState
     );
   }
 
-  Widget _buildAccountAllocation(Map<String, double> allocation) {
+  Widget _buildAccountAllocation(Map<String, double> allocation , bool isDarkMode) {
     final theme = ref.watch(themeProvider);
     final portfolio = ref.watch(dashboardProvider);
     if (allocation.isEmpty) return const SizedBox.shrink();
@@ -912,8 +906,8 @@ class _PortfolioDashboardScreenState
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 10),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        color:  theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+        // borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -922,7 +916,7 @@ class _PortfolioDashboardScreenState
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               TextWidget.subText(
-                text: 'Segmentation',
+                text: 'Asset Allocation',
                 theme: false,
                 color: theme.isDarkMode
                     ? colors.textPrimaryDark
@@ -951,8 +945,8 @@ class _PortfolioDashboardScreenState
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
       decoration: BoxDecoration(
-        color: colors.colorWhite,
-        borderRadius: BorderRadius.circular(8),
+         color:  theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+        // borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
         children: [
@@ -982,31 +976,24 @@ class _PortfolioDashboardScreenState
                       : colors.textPrimaryLight,
                   fw: 0,
                 ),
-                const SizedBox(height: 8),
-                TextWidget.paraText(
-                  text: '${percentage.toStringAsFixed(2)}% of portfolio',
-                  theme: false,
-                  color: theme.isDarkMode
-                      ? colors.textSecondaryDark
-                      : colors.textSecondaryLight,
-                  fw: 0,
-                ),
+                // const SizedBox(height: 8),
+                // TextWidget.paraText(
+                //   text: '${percentage.toStringAsFixed(2)}% of portfolio',
+                //   theme: false,
+                //   color: theme.isDarkMode
+                //       ? colors.textSecondaryDark
+                //       : colors.textSecondaryLight,
+                //   fw: 0,
+                // ),
               ],
             ),
           ),
           // Percentage Display
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(5),
-            ),
-            child: TextWidget.subText(
-              text: '${percentage.toStringAsFixed(1)}%',
-              theme: false,
-              color: color,
-              fw: 0,
-            ),
+          TextWidget.subText(
+            text: '${percentage.toStringAsFixed(1)}%',
+            theme: false,
+            color:   theme.isDarkMode ? colors.textSecondaryDark : colors.textPrimaryLight,
+            fw: 0,
           ),
         ],
       ),
@@ -1059,8 +1046,8 @@ class _PortfolioDashboardScreenState
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        color:  theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+        // borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1134,13 +1121,14 @@ class _PortfolioDashboardScreenState
     final theme = ref.watch(themeProvider);
     if (allocation.isEmpty) return const SizedBox.shrink();
 
-    final sortedEntries = allocation.entries.take(10).toList();
+    final top10Entries = allocation.entries.take(10).toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
 
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        color:  theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+        // borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1163,11 +1151,11 @@ class _PortfolioDashboardScreenState
           SizedBox(
             height: 30,
             width: double.infinity,
-            child: _buildHorizontalStackedBar(sortedEntries),
+            child: _buildHorizontalStackedBar(top10Entries),
           ),
           const SizedBox(height: 12),
           // Two-column Legend
-          _buildTwoColumnLegend(sortedEntries),
+          _buildTwoColumnLegend(top10Entries),
         ],
       ),
     );
@@ -1314,17 +1302,17 @@ class _PortfolioDashboardScreenState
               text: marketCapType,
               theme: false,
               color: theme.isDarkMode
-                  ? colors.textPrimaryDark
-                  : colors.textPrimaryLight,
+                  ? colors.textSecondaryDark
+                  : colors.textSecondaryLight,
               fw: 0,
             ),
           ),
           TextWidget.paraText(
             text: '${percentage.toStringAsFixed(2)}%',
             theme: false,
-            color: theme.isDarkMode
-                ? colors.textPrimaryDark
-                : colors.textPrimaryLight,
+            color:  theme.isDarkMode
+                  ? colors.textSecondaryDark
+                  : colors.textSecondaryLight,
             fw: 0,
           ),
         ],

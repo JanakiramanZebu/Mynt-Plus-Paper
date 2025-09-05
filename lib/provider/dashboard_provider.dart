@@ -192,22 +192,22 @@ class DashboardProvider extends DefaultChangeNotifier {
 
 Color getSectorAllocationColor(String sector) {
  List<Color> uniqueColors = [
-  Color(0xFF1ABC9C), // Teal
-  Color(0xFF27AE60), // Emerald Green
-  Color(0xFF2980B9), // Strong Blue
-  Color(0xFF9B59B6), // Purple
-  Color(0xFFE67E22), // Orange
-  Color(0xFFE74C3C), // Red
-  Color(0xFFF1C40F), // Yellow
-  Color(0xFF34495E), // Dark Blue Gray
-  Color(0xFF16A085), // Dark Cyan
-  // Color(0xFF8E44AD), // Deep Violet
-  Color(0xFFD35400), // Burnt Orange
-  Color(0xFF2C3E50), // Navy Blue
-  Color(0xFF7D3C98), // Violet
-  Color(0xFF229954), // Forest Green
-  Color(0xFFCA6F1E), // Amber Brown
-  Color(0xFF117A65), // Sea Green
+  Color(0xFF4F46E5), // Indigo - professional
+  Color(0xFF059669), // Emerald - growth
+  Color(0xFFDC2626), // Red - energy
+  Color(0xFF7C3AED), // Purple - unique
+  Color(0xFFEA580C), // Orange - warm
+  Color(0xFF0891B2), // Cyan - tech
+  Color(0xFFCA8A04), // Amber - stable
+  Color(0xFFBE185D), // Pink - creative
+  Color(0xFF0D9488), // Teal - balance
+  Color(0xFF9333EA), // Violet - premium
+  Color(0xFF16A34A), // Green - nature
+  Color(0xFFDC2626), // Red - finance
+  Color(0xFF2563EB), // Blue - trust
+  Color(0xFF7C2D12), // Brown - industrial
+  Color(0xFF1F2937), // Gray - neutral
+  Color(0xFF059669), // Green - healthcare
 ];
 
 
@@ -228,15 +228,15 @@ Color getSectorAllocationColor(String sector) {
   Color getMarketCapAllocationColor(String marketCapType) {
     switch (marketCapType.toLowerCase()) {
       case 'large cap':
-        return Color(0xFF60A5FA); // Light blue
+        return Color(0xFF4F46E5); // Indigo - professional and trustworthy
       case 'mid cap':
-        return Color(0xFF3B82F6); // Medium blue
+        return Color(0xFF059669); // Emerald - growth and stability
       case 'small cap':
-        return Color(0xFF1D4ED8); // Darker blue
+        return Color(0xFFDC2626); // Red - energy and potential
       case 'others':
-        return Color(0xFF1E3A8A); // Darkest blue
+        return Color(0xFF7C3AED); // Purple - unique and diverse
       default:
-        return Color(0xFF1E3A8A); // Darkest blue
+        return Color(0xFF6B7280); // Gray - neutral fallback
     }
   }
 
