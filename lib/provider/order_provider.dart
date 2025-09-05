@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:developer';
+import '../utils/url_utils.dart';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -2390,9 +2391,7 @@ class OrderProvider extends DefaultChangeNotifier {
         for (var i = 1; i < _bsktScripList.length; i++) {
           basket.add({
             "exch": '${_bsktScripList[i]["exch"]}',
-            "tsym": '${_bsktScripList[i]["tsym"]}'.contains("&")
-                ? '${_bsktScripList[i]["tsym"]}'.replaceAll("&", "%26")
-                : '${_bsktScripList[i]["tsym"]}',
+            "tsym": UrlUtils.encodeParameter('${_bsktScripList[i]["tsym"]}'),
             "qty": '${_bsktScripList[i]["qty"]}',
             "prc": '${_bsktScripList[i]["prc"]}',
             "prd": '${_bsktScripList[i]["prd"]}',

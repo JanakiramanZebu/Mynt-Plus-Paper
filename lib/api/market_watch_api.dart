@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import '../utils/url_utils.dart';
 import '../models/marketwatch_model/add_delete_scrip_model.dart';
 import '../models/marketwatch_model/alert_model/alert_pending_model.dart';
 import '../models/marketwatch_model/alert_model/cancel_alert_model.dart';
@@ -199,7 +200,7 @@ print("res.body: ${res.body}");
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
           body:
-              '''jData={"uid":"${prefs.clientId}","stext":"${searchText.replaceAll("&", "%26")}"}&jKey=${prefs.clientSession}''');
+              '''jData={"uid":"${prefs.clientId}","stext":"${UrlUtils.encodeParameter(searchText)}"}&jKey=${prefs.clientSession}''');
 
       //  log("Search Scrip => ${res.body}");
       final json = jsonDecode(res.body);
@@ -216,9 +217,9 @@ print("res.body: ${res.body}");
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
           body:
-              '''jData={"uid":"${prefs.clientId}","stext":"${searchText.replaceAll("&", "%26")}","cat":"$categ","fil":${exchs.toList()},"opt":"${opt.toString()}"}&jKey=${prefs.clientSession}''');
+              '''jData={"uid":"${prefs.clientId}","stext":"${UrlUtils.encodeParameter(searchText)}","cat":"$categ","fil":${exchs.toList()},"opt":"${opt.toString()}"}&jKey=${prefs.clientSession}''');
 
-       print('''jData={"uid":"${prefs.clientId}","stext":"${searchText.replaceAll("&", "%26")}","cat":"$categ","fil":${exchs.toList()},"opt":"$opt"}&jKey=${prefs.clientSession}''');
+       print('''jData={"uid":"${prefs.clientId}","stext":"${UrlUtils.encodeParameter(searchText)}","cat":"$categ","fil":${exchs.toList()},"opt":"$opt"}&jKey=${prefs.clientSession}''');
        print("Search Scrip => ${res.body}");
       final json = jsonDecode(res.body);
        print("Search Scrip => ${json['values'].length}");
@@ -261,7 +262,7 @@ print("res.body: ${res.body}");
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
           body:
-              '''jData={"uid":"${prefs.clientId}","exch":"$exchange" ,"tsym":"${tradeSym.replaceAll("&", "%26")}","cnt":"$numofStrike ","strprc":"$strPrc"}&jKey=${prefs.clientSession}''');
+              '''jData={"uid":"${prefs.clientId}","exch":"$exchange" ,"tsym":"${UrlUtils.encodeParameter(tradeSym)}","cnt":"$numofStrike ","strprc":"$strPrc"}&jKey=${prefs.clientSession}''');
 
       //  log(" Option Chain   => ${res.body}");
 
@@ -298,7 +299,7 @@ print("res.body: ${res.body}");
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
           body:
-              '''jData={"uid":"${prefs.clientId}","exch":"$exch","tsym":"${tsym.replaceAll("&", "%26")}"}&jKey=${prefs.clientSession}''');
+              '''jData={"uid":"${prefs.clientId}","exch":"$exch","tsym":"${UrlUtils.encodeParameter(tsym)}"}&jKey=${prefs.clientSession}''');
 
       final json = jsonDecode(res.body);
 
@@ -336,7 +337,7 @@ print("res.body: ${res.body}");
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
           body:
-              '''jData={"uid":"${prefs.clientId}","exch":"$exch","tsym":"${tysm.replaceAll("&", "%26")}","ai_t":"$alertTypeVal","validity":"GTT","d":"$value","remarks":"$remark"}&jKey=${prefs.clientSession}''');
+              '''jData={"uid":"${prefs.clientId}","exch":"$exch","tsym":"${UrlUtils.encodeParameter(tysm)}","ai_t":"$alertTypeVal","validity":"GTT","d":"$value","remarks":"$remark"}&jKey=${prefs.clientSession}''');
 
       // log("SetAlert => ${res.body}");
       final json = jsonDecode(res.body);
@@ -408,7 +409,7 @@ print("res.body: ${res.body}");
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
           body:
-              '''jData={"uid":"${prefs.clientId}","exch":"$exch","tsym":"${tysm.replaceAll("&", "%26")}","ai_t":"$alertTypeVal","validity":"GTT","al_id":"$alid","d":"$value"}&jKey=${prefs.clientSession}''');
+              '''jData={"uid":"${prefs.clientId}","exch":"$exch","tsym":"${UrlUtils.encodeParameter(tysm)}","ai_t":"$alertTypeVal","validity":"GTT","al_id":"$alid","d":"$value"}&jKey=${prefs.clientSession}''');
 
       // log("Modify Alert => ${res.body}");
       final json = jsonDecode(res.body);
