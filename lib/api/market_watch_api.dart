@@ -261,7 +261,7 @@ print("res.body: ${res.body}");
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
           body:
-              '''jData={"uid":"${prefs.clientId}","exch":"$exchange" ,"tsym":"$tradeSym","cnt":"$numofStrike ","strprc":"$strPrc"}&jKey=${prefs.clientSession}''');
+              '''jData={"uid":"${prefs.clientId}","exch":"$exchange" ,"tsym":"${tradeSym.replaceAll("&", "%26")}","cnt":"$numofStrike ","strprc":"$strPrc"}&jKey=${prefs.clientSession}''');
 
       //  log(" Option Chain   => ${res.body}");
 
@@ -298,7 +298,7 @@ print("res.body: ${res.body}");
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
           body:
-              '''jData={"uid":"${prefs.clientId}","exch":"$exch","tsym":"$tsym"}&jKey=${prefs.clientSession}''');
+              '''jData={"uid":"${prefs.clientId}","exch":"$exch","tsym":"${tsym.replaceAll("&", "%26")}"}&jKey=${prefs.clientSession}''');
 
       final json = jsonDecode(res.body);
 
@@ -336,7 +336,7 @@ print("res.body: ${res.body}");
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
           body:
-              '''jData={"uid":"${prefs.clientId}","exch":"$exch","tsym":"$tysm","ai_t":"$alertTypeVal","validity":"GTT","d":"$value","remarks":"$remark"}&jKey=${prefs.clientSession}''');
+              '''jData={"uid":"${prefs.clientId}","exch":"$exch","tsym":"${tysm.replaceAll("&", "%26")}","ai_t":"$alertTypeVal","validity":"GTT","d":"$value","remarks":"$remark"}&jKey=${prefs.clientSession}''');
 
       // log("SetAlert => ${res.body}");
       final json = jsonDecode(res.body);
@@ -408,7 +408,7 @@ print("res.body: ${res.body}");
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
           body:
-              '''jData={"uid":"${prefs.clientId}","exch":"$exch","tsym":"$tysm","ai_t":"$alertTypeVal","validity":"GTT","al_id":"$alid","d":"$value"}&jKey=${prefs.clientSession}''');
+              '''jData={"uid":"${prefs.clientId}","exch":"$exch","tsym":"${tysm.replaceAll("&", "%26")}","ai_t":"$alertTypeVal","validity":"GTT","al_id":"$alid","d":"$value"}&jKey=${prefs.clientSession}''');
 
       // log("Modify Alert => ${res.body}");
       final json = jsonDecode(res.body);

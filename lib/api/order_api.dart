@@ -291,9 +291,9 @@ mixin OrderAPI on ApiCore {
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
           body:
-              '''jData={"uid":"${prefs.clientId}","actid":"${prefs.clientId}","exch":"${input.exch}","tsym":"${input.tsym}","qty":"${input.qty}","prc":"${input.prc}","prd":"${input.prd}","trantype":"${input.trantype}" }&jKey=${prefs.clientSession}''');
+              '''jData={"uid":"${prefs.clientId}","actid":"${prefs.clientId}","exch":"${input.exch}","tsym":"${input.tsym.replaceAll("&", "%26")}","qty":"${input.qty}","prc":"${input.prc}","prd":"${input.prd}","trantype":"${input.trantype}" }&jKey=${prefs.clientSession}''');
 
-      log("Order Brokerage => ${res.body} ${'''jData={"uid":"${prefs.clientId}","actid":"${prefs.clientId}","exch":"${input.exch}","tsym":"${input.tsym}","qty":"${input.qty}","prc":"${input.prc}","prd":"${input.prd}","trantype":"${input.trantype}" }&jKey=${prefs.clientSession}'''}");
+      log("Order Brokerage => ${res.body} ${'''jData={"uid":"${prefs.clientId}","actid":"${prefs.clientId}","exch":"${input.exch}","tsym":"${input.tsym.replaceAll("&", "%26")}","qty":"${input.qty}","prc":"${input.prc}","prd":"${input.prd}","trantype":"${input.trantype}" }&jKey=${prefs.clientSession}'''}");
       final json = jsonDecode(res.body);
 
       return GetBrokerageModel.fromJson(json as Map<String, dynamic>);
@@ -388,7 +388,7 @@ mixin OrderAPI on ApiCore {
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
           body:
-              '''jData={"uid":"${prefs.clientId}","reg_date":"${sipInputField.regdate}","start_date":"${sipInputField.startdate}","actid":"${prefs.clientId}","frequency":"${sipInputField.frequency}","end_period":"${sipInputField.endperiod}","sip_name":"${sipInputField.sipname}","Scrips":[{"exch":"${sipInputField.exch}","tsym":"${sipInputField.tysm}","prd":"${sipInputField.prd}","token":"${sipInputField.token}","qty":"${sipInputField.qty}"}]}&jKey=${prefs.clientSession}''');
+              '''jData={"uid":"${prefs.clientId}","reg_date":"${sipInputField.regdate}","start_date":"${sipInputField.startdate}","actid":"${prefs.clientId}","frequency":"${sipInputField.frequency}","end_period":"${sipInputField.endperiod}","sip_name":"${sipInputField.sipname}","Scrips":[{"exch":"${sipInputField.exch}","tsym":"${sipInputField.tysm?.replaceAll("&", "%26")}","prd":"${sipInputField.prd}","token":"${sipInputField.token}","qty":"${sipInputField.qty}"}]}&jKey=${prefs.clientSession}''');
 
       // log("PlaceOrdersip => ${res.body}");
       final json = jsonDecode(res.body);
@@ -409,7 +409,7 @@ mixin OrderAPI on ApiCore {
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
           body:
-              '''jData={"reg_date":"${modifysipinput.regdate}","start_date":"${modifysipinput.startdate}","frequency":"${modifysipinput.frequency}","end_period":"${modifysipinput.endperiod}","sip_name":"${modifysipinput.sipname}","internal":{"PrevExecDate":"${modifysipinput.prevExecutedate}","DueDate":"${modifysipinput.duedate}","ExecDate":"${modifysipinput.exedate}","period":"${modifysipinput.period}","active":"${modifysipinput.active}","SipId":"${modifysipinput.sipId}"},"Scrips":[{"exch":"${modifysipinput.exch}","tsym":"${modifysipinput.tysm}","prd":"${modifysipinput.prd}","token":"${modifysipinput.token}","qty":"${modifysipinput.qty}"}]}&jKey=${prefs.clientSession}''');
+              '''jData={"reg_date":"${modifysipinput.regdate}","start_date":"${modifysipinput.startdate}","frequency":"${modifysipinput.frequency}","end_period":"${modifysipinput.endperiod}","sip_name":"${modifysipinput.sipname}","internal":{"PrevExecDate":"${modifysipinput.prevExecutedate}","DueDate":"${modifysipinput.duedate}","ExecDate":"${modifysipinput.exedate}","period":"${modifysipinput.period}","active":"${modifysipinput.active}","SipId":"${modifysipinput.sipId}"},"Scrips":[{"exch":"${modifysipinput.exch}","tsym":"${modifysipinput.tysm?.replaceAll("&", "%26")}","prd":"${modifysipinput.prd}","token":"${modifysipinput.token}","qty":"${modifysipinput.qty}"}]}&jKey=${prefs.clientSession}''');
 
       // log("ModifysipOrder => ${res.body}");
       final json = jsonDecode(res.body);
@@ -506,7 +506,7 @@ mixin OrderAPI on ApiCore {
       final uri = Uri.parse(apiLinks.modifyGTTOrderURL);
       Map payload = {
         "uid": prefs.clientId,
-        "tsym": input.tsym,
+        "tsym": input.tsym.replaceAll("&", "%26"),
         "exch": input.exch,
         "ai_t": input.ait,
         "validity": input.validity,
@@ -549,14 +549,14 @@ mixin OrderAPI on ApiCore {
         "uid": prefs.clientId,
         "ai_t": "LMT_BOS_O",
         "validity": "GTT",
-        "tsym": input.tsym,
+        "tsym": input.tsym.replaceAll("&", "%26"),
         "exch": input.exch,
         "oivariable": [
           {"d": input.d1, "var_name": "x"},
           {"d": input.d2, "var_name": "y"}
         ],
         "place_order_params": {
-          "tsym": input.tsym,
+          "tsym": input.tsym.replaceAll("&", "%26"),
           "exch": input.exch,
           "trantype": input.trantype,
           "prctyp": input.prctyp1,
@@ -570,7 +570,7 @@ mixin OrderAPI on ApiCore {
           "trgprc": input.trgprc1
         },
         "place_order_params_leg2": {
-          "tsym": input.tsym,
+          "tsym": input.tsym.replaceAll("&", "%26"),
           "exch": input.exch,
           "trantype": input.trantype,
           "prctyp": input.prctyp2,
@@ -610,7 +610,7 @@ mixin OrderAPI on ApiCore {
         "uid": prefs.clientId,
         "ai_t": "LMT_BOS_O",
         "validity": input.validity,
-        "tsym": input.tsym,
+        "tsym": input.tsym.replaceAll("&", "%26"),
         "exch": input.exch,
         "al_id": input.alid,
         "oivariable": [
@@ -618,7 +618,7 @@ mixin OrderAPI on ApiCore {
           {"d": input.d2, "var_name": "y"}
         ],
         "place_order_params": {
-          "tsym": input.tsym,
+          "tsym": input.tsym.replaceAll("&", "%26"),
           "exch": input.exch,
           "trantype": input.trantype,
           "prctyp": input.prctyp1,
@@ -632,7 +632,7 @@ mixin OrderAPI on ApiCore {
           "trgprc": input.trgprc1
         },
         "place_order_params_leg2": {
-          "tsym": input.tsym,
+          "tsym": input.tsym.replaceAll("&", "%26"),
           "exch": input.exch,
           "trantype": input.trantype,
           "prctyp": input.prctyp2,

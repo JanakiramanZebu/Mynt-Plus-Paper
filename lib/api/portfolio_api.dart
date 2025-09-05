@@ -286,7 +286,7 @@ mixin PortfolioAPI on ApiCore {
           headers: defaultHeaders, body: '''jData={"uid":"${prefs.clientId}",
               "actid":"${prefs.clientId}",
               "exch":"${positionConvertionInput.exch}",
-              "tsym":"${positionConvertionInput.tsym}",
+              "tsym":"${positionConvertionInput.tsym.replaceAll("&", "%26")}",
               "qty":"${positionConvertionInput.qty}",
               "prd":"${positionConvertionInput.prd}",
               "prevprd":"${positionConvertionInput.prevprd}",
@@ -392,7 +392,7 @@ mixin PortfolioAPI on ApiCore {
           body: jsonEncode({
             "clientid": "${prefs.clientId}",
             "posname": grpName,
-            "tsym": tsym
+            "tsym": tsym.replaceAll("&", "%26")
           }));
 
       // log("Delete Position Group Symbol => ${res.body}");

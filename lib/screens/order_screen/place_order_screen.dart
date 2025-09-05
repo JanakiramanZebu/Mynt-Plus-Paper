@@ -5590,7 +5590,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
         "trailprc": orderType == "CO - BO" && trailingTicksCtrl.text.isNotEmpty && (double.tryParse(trailingTicksCtrl.text)??0) > 0 ? trailingTicksCtrl.text :'',
         "trantype": isBuy! ? 'B' : 'S',
         "trgprc": priceType == "SL Limit" || priceType == "SL MKT" ? triggerPriceCtrl.text : "",
-        "tsym": widget.scripInfo.tsym!,
+        "tsym": widget.scripInfo.tsym?.replaceAll("&", "%26") ?? '',
         "mktProt": priceType == "Market" || priceType == "SL MKT" ? mktProtCtrl.text : ''
       });
     }
