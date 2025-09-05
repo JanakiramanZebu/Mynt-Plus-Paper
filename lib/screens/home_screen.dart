@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:mynt_plus/provider/chart_provider.dart';
 import 'package:mynt_plus/provider/ledger_provider.dart';
 import 'package:mynt_plus/provider/profile_all_details_provider.dart';
 import 'package:mynt_plus/screens/dashboard_screen.dart';
@@ -31,6 +32,7 @@ import '../provider/user_profile_provider.dart';
 import '../provider/version_provider.dart';
 import '../provider/websocket_provider.dart';
 import '../provider/webview_chart_provider.dart';
+import '../res/assets.dart';
 import '../res/global_state_text.dart';
 import '../res/res.dart';
 import '../routes/route_names.dart';
@@ -158,9 +160,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         if (ref.read(indexListProvider).selectedBtmIndx == 2) {
           ref.read(portfolioProvider).cancelTimer();
         }
-        final userProfile = ref.read(userProfileProvider);
-        userProfile.setonloadChartdialog(false);
-        print("app in inactive - pausing WebSocket auto-reconnect");
+        ref.read(chartProvider.notifier).hideChart();
+        print("app in inactive");
         break;
 
       case AppLifecycleState.paused:
@@ -174,9 +175,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         if (ref.read(indexListProvider).selectedBtmIndx == 2) {
           ref.read(portfolioProvider).cancelTimer();
         }
-        final userProfile = ref.read(userProfileProvider);
-        userProfile.setonloadChartdialog(false);
-        print("app in detached - pausing WebSocket auto-reconnect");
+        ref.read(chartProvider.notifier).hideChart();
+        print("app in detached");
         break;
 
       case AppLifecycleState.hidden:
@@ -262,14 +262,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   void _handleChartData() {
     if (!mounted) return;
 
-    final userProfile = ref.read(userProfileProvider);
     final scriptInfo = ref.read(marketWatchProvider).getQuotes;
 
-    if (userProfile.showchartof && scriptInfo?.exch != null) {
+    if (ref.read(chartProvider).isVisible && scriptInfo?.exch != null) {
       ref.read(marketWatchProvider).setChartScript(scriptInfo!.exch.toString(),
           scriptInfo.token.toString(), scriptInfo.tsym.toString());
-    } else if (userProfile.showchartof) {
-      userProfile.setChartdialog(false);
+    } else if (ref.read(chartProvider).isVisible) {
+      ref.read(chartProvider.notifier).hideChart();
     }
   }
 
@@ -291,12 +290,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         },
         child: Scaffold(
           resizeToAvoidBottomInset: false,
-          body: Stack(
-            children: [
-              _buildMainScaffold(),
-              _buildChartOverlay(),
-            ],
-          ),
+          body: _buildMainScaffold(),
         ));
   }
 
@@ -395,43 +389,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     }
   }
 
-  // Chart overlay component
-  Widget _buildChartOverlay() {
-    return Consumer(
-      builder: (context, ref, _) {
-        // Use select to listen only to the showchartof property
-        final showChart = ref.watch(userProfileProvider
-            .select((userProfile) => userProfile.showchartof));
-        final webViewKey = ref.watch(userProfileProvider
-            .select((userProfile) => userProfile.webViewKey));
-        final theme = ref.watch(themeProvider); // Theme is used here
-
-        return Positioned(
-          key: webViewKey,
-          bottom: showChart ? 0 : (MediaQuery.of(context).size.height + 100),
-          child: AnimatedContainer(
-            alignment: Alignment.center,
-            duration: const Duration(milliseconds: 100),
-            curve: Curves.fastLinearToSlowEaseIn,
-            decoration: BoxDecoration(
-              color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-            ),
-            height: MediaQuery.of(context).size.height,
-            width: MediaQuery.of(context).size.width,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                ChartScreenWebView(
-                    chartArgs:
-                        ChartArgs(exch: 'ABC', tsym: 'ABCD', token: '0123')),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
   // App bar based on selected tab
   // Accept selectedTab and isDarkMode as parameters to avoid watching providers here
   PreferredSizeWidget? _buildAppBar(int selectedTab, bool isDarkMode) {
@@ -515,12 +472,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                                   ? wlName
                                   : wlName
                               : "${wlName[0].toUpperCase()}${wlName.substring(1)}'s Watchlist",
-                      style: textStyle(
-                          theme.isDarkMode
+                      style: TextWidget.textStyle(
+                          fontSize: 14,
+                          theme: theme.isDarkMode,
+                          color: theme.isDarkMode
                               ? colors.colorWhite
                               : colors.colorBlack,
-                          14,
-                          FontWeight.w600),
+                          fw: 1),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
@@ -528,12 +486,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                       wlName == "My Stocks"
                           ? "(${holdingsLength})"
                           : "(${scripsLength})",
-                      style: textStyle(
-                          theme.isDarkMode
+                      style: TextWidget.textStyle(
+                          fontSize: 15,
+                          theme: theme.isDarkMode,
+                          color: theme.isDarkMode
                               ? colors.colorLightBlue
                               : colors.colorBlue,
-                          15,
-                          FontWeight.w600)),
+                          fw: 1)),
                   const SizedBox(width: 3),
                   SvgPicture.asset(assets.downArrow,
                       color: theme.isDarkMode
@@ -551,17 +510,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              TextWidget.heroText(
-                  text: selectedTab == 3
-                      ? "Orders"
-                      : selectedTab == 2
-                          ? "Portfolio"
-                          : "Dashboard",
-                  color: theme.isDarkMode
-                      ? colors.textPrimaryDark
-                      : colors.textPrimaryLight,
-                  fw: 1,
-                  theme: false)
+              Text(
+                selectedTab == 3
+                    ? "Orders"
+                    : selectedTab == 2
+                        ? "Portfolio"
+                        : "Dashboard",
+                style: TextWidget.textStyle(
+                    fontSize: 20,
+                    theme: theme.isDarkMode,
+                    color: theme.isDarkMode
+                        ? colors.textPrimaryDark
+                        : colors.textPrimaryLight,
+                    fw: 1),
+              )
             ],
           ),
         );
@@ -638,13 +600,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       // Use select to listen only to the connectionStatus
       final internetStatus = ref.watch(
           networkStateProvider.select((internet) => internet.connectionStatus));
-      // Use select to listen only to the showchartof property
-      final showChart = ref.watch(
-          userProfileProvider.select((userProfile) => userProfile.showchartof));
 
       if ((internetStatus == ConnectivityResult.wifi ||
-              internetStatus == ConnectivityResult.mobile) &&
-          !showChart) {
+              internetStatus == ConnectivityResult.mobile)) {
         // Use the selected tab directly to return the corresponding screen
         return _onItemTapped(selectedTab, theme);
       }
@@ -1082,9 +1040,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
 // If an application asks for user confirmation before you can exit it, do so.
   Future<bool> showExitPopup() async {
-    if (ref.read(userProfileProvider).showchartof) {
+    if (ref.read(chartProvider).isVisible) {
       // Use ref.read for calls that don't need a rebuild
-      ref.read(userProfileProvider).setChartdialog(false);
+      ref.read(chartProvider.notifier).hideChart();
       ref.read(chartUpdateProvider).changeOrientation('portrait');
 
       final mktwth = ref.read(marketWatchProvider);
@@ -1194,13 +1152,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                         SizedBox(
                           width: MediaQuery.of(context).size.width,
                           child: Center(
-                            child: TextWidget.subText(
-                              text: "Do you want to Exit the App?",
-                              theme: false,
-                              color: theme.isDarkMode
-                                                                                ? colors.textSecondaryDark
-                                                                                : colors.textPrimaryLight,
-                              fw: 3,
+                            child: Text(
+                              "Do you want to Exit the App?",
+                              style: TextWidget.textStyle(
+                                fontSize: 14,
+                                theme: false,
+                                color: theme.isDarkMode
+                                    ? colors.textSecondaryDark
+                                    : colors.textPrimaryLight,
+                                fw: 3,
+                              ),
                             ),
                           ),
                         ),
@@ -1222,11 +1183,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                             backgroundColor:
                                 colors.primaryDark, // Transparent background
                           ),
-                          child: TextWidget.titleText(
-                            text: "Exit",
-                            color: colors.colorWhite,
-                            theme: theme.isDarkMode,
-                            fw: 2,
+                          child: Text(
+                            "Exit",
+                            style: TextWidget.textStyle(
+                              fontSize: 16,
+                              color: colors.colorWhite,
+                              theme: theme.isDarkMode,
+                              fw: 2,
+                            ),
                           ),
                         ),
                       ),
@@ -1297,6 +1261,7 @@ class _WatchlistActions extends ConsumerWidget {
                     width: 19, color: colors.colorGrey)),
           );
         }),
+        
       ],
     );
   }
@@ -1373,13 +1338,16 @@ class _PortfolioActions extends ConsumerWidget {
 //                 child: Padding(
 //                   padding:
 //                       const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-//                   child: TextWidget.subText(
-//                       text: "Create Basket",
-//                       theme: theme.isDarkMode,
-//                       color: theme.isDarkMode
-//                           ? colors.primaryDark
-//                           : colors.primaryLight,
-//                       fw: 2),
+//                   child: Text(
+//                       "Create Basket",
+//                       style: TextWidget.textStyle(
+//                         fontSize: 14,
+//                         theme: theme.isDarkMode,
+//                         color: theme.isDarkMode
+//                             ? colors.primaryDark
+//                             : colors.primaryLight,
+//                         fw: 2,
+//                       ),
 //                 )),
 //           ),
 //         ),
@@ -1420,7 +1388,7 @@ class PositionGroupActions extends ConsumerWidget {
         //         useSafeArea: true,
         //         isScrollControlled: true,
         //         shape: const RoundedRectangleBorder(
-        //           borderRadius: BorderRadius.vertical(top: Radius.circular(16))
+        //           borderRadius: BorderRadius.vertical(top: Radius.circular(16)))
         //         ),
         //                                                                   context: context,
         //                                                                   builder: (context) {
@@ -1469,12 +1437,13 @@ class PositionGroupActions extends ConsumerWidget {
                               : colors.colorBlack,
                         ))
                     : Text("Exit All",
-                        style: textStyle(
-                            theme.isDarkMode
+                        style: TextWidget.textStyle(
+                            fontSize: 12,
+                            theme: theme.isDarkMode,
+                            color: theme.isDarkMode
                                 ? colors.colorWhite
                                 : colors.colorBlack,
-                            12,
-                            FontWeight.w600))),
+                            fw: 1))),
           ),
       ]),
     );
@@ -1567,12 +1536,13 @@ class PositionGroupActions extends ConsumerWidget {
                           ),
                         )
                       : Text("Yes",
-                          style: textStyle(
-                              !theme.isDarkMode
+                          style: TextWidget.textStyle(
+                              fontSize: 14,
+                              theme: !theme.isDarkMode,
+                              color: !theme.isDarkMode
                                   ? colors.colorWhite
                                   : colors.colorBlack,
-                              14,
-                              FontWeight.w500)),
+                              fw: 0)),
                 );
               }),
             ],
@@ -1604,7 +1574,8 @@ class _FundsWebActions extends ConsumerWidget {
         },
         child: Text(
           "Web",
-          style: textStyle(colors.colorBlue, 14, FontWeight.w600),
+          style: TextWidget.textStyle(
+              fontSize: 14, theme: false, color: colors.colorBlue, fw: 1),
         ),
       ),
     );
@@ -1647,12 +1618,13 @@ class _OrderbookActions extends ConsumerWidget {
                     shape: const RoundedRectangleBorder(
                         borderRadius: BorderRadius.all(Radius.circular(32)))),
                 child: Text("Create Basket",
-                    style: textStyle(
-                        theme.isDarkMode
+                    style: TextWidget.textStyle(
+                        fontSize: 12,
+                        theme: theme.isDarkMode,
+                        color: theme.isDarkMode
                             ? colors.colorWhite
                             : colors.colorBlack,
-                        12,
-                        FontWeight.w600))))
+                        fw: 1))))
       ]);
     }
 
@@ -1732,10 +1704,11 @@ class _UserProfileTile extends ConsumerWidget {
                     uname), // Use the local _truncateProfileName
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: textStyle(
-                    Color(theme.isDarkMode ? 0xffffffff : 0xff000000),
-                    16,
-                    FontWeight.w600)),
+                style: TextWidget.textStyle(
+                    fontSize: 16,
+                    theme: theme.isDarkMode,
+                    color: Color(theme.isDarkMode ? 0xffffffff : 0xff000000),
+                    fw: 1)),
             Icon(
               Icons.expand_more,
               color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
@@ -1744,7 +1717,11 @@ class _UserProfileTile extends ConsumerWidget {
           ],
         ),
         subtitle: Text("Client ID: $uid",
-            style: textStyle(const Color(0xff666666), 12, FontWeight.w500)),
+            style: TextWidget.textStyle(
+                fontSize: 12,
+                theme: theme.isDarkMode,
+                color: const Color(0xff666666),
+                fw: 0)),
         trailing: SizedBox(
             width: 100,
             child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
