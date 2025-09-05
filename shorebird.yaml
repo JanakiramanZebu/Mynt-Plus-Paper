@@ -14,7 +14,7 @@ app_id: f6d2235a-da09-4e64-9564-0abec2c3dcc4
 # auto_update: false
 
 
-# shorebird patch --platforms=ios --release-version=1.0.91+1
+# shorebird patch --platforms=ios --release-version=1.0.93+5
 # shorebird patch --platforms=android --release-version=1.0.48+112
 
 
