@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mynt_plus/models/marketwatch_model/market_watch_scrip_model.dart';
+import 'package:mynt_plus/provider/chart_provider.dart';
 import '../../../models/marketwatch_model/get_quotes.dart';
 import '../../../models/order_book_model/order_book_model.dart';
 import '../../../models/portfolio_model/holdings_model.dart';
@@ -965,7 +967,12 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
                                     scripInfo.setHoldingDetailContext(_exchTsym, _holdingData);
                                     
                                     Navigator.pop(context);
-                                    userProfile.setChartdialog(true);
+                                    final chartArgs = ChartArgs(
+                                        exch: _exchTsym.exch ?? "",
+                                        tsym: _exchTsym.tsym ?? "",
+                                        token: _exchTsym.token ?? "",
+                                      );
+                                      ref.read(chartProvider.notifier).showChart(chartArgs);
                                   },
                                   splashColor: theme.isDarkMode
                                       ? Colors.white.withOpacity(0.15)

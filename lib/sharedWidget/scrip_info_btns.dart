@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mynt_plus/provider/chart_provider.dart';
+import 'package:mynt_plus/screens/market_watch/tv_chart/webview_chart.dart';
 import '../../provider/thems.dart';
 import '../../provider/websocket_provider.dart';
 import '../../res/res.dart';
@@ -149,7 +151,16 @@ class ScripInfoBtns extends ConsumerWidget {
         Navigator.pop(context);
         
         // Then activate the chart overlay
-        ref.read(userProfileProvider).setChartdialog(true);
+        final chartArgs = ChartArgs(exch: exch, tsym: tsym, token: token);
+        
+        // Check if we're coming from option chain by looking at the current route
+        final currentRoute = ModalRoute.of(context)?.settings.name;
+        String? previousRoute;
+        if (currentRoute == Routes.optionChain) {
+          previousRoute = Routes.optionChain;
+        }
+        
+        ref.read(chartProvider.notifier).showChart(chartArgs, previousRoute: previousRoute);
         
       } else if (buttonName == "Option") {
         // Option chain logic

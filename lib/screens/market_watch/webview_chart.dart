@@ -4,6 +4,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mynt_plus/provider/chart_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../locator/constant.dart';
 import '../../../locator/locator.dart';
@@ -118,7 +119,7 @@ class _ChartScreenWebViewState extends ConsumerState<ChartScreenWebView> {
                         child: InkWell(
                       onTap: () async {
                         if (transbtn) {
-                          userProfile.setChartdialog(false);
+                          ref.read(chartProvider.notifier).hideChart();
                           await placeOrderInput(
                               tvChart, context, tvChart.getQuotes!, true);
                         }
@@ -143,7 +144,7 @@ class _ChartScreenWebViewState extends ConsumerState<ChartScreenWebView> {
                         child: InkWell(
                             onTap: () async {
                               if (transbtn) {
-                                userProfile.setChartdialog(false);
+                                ref.read(chartProvider.notifier).hideChart();
                                 await placeOrderInput(tvChart, context,
                                     tvChart.getQuotes!, false);
                               }
@@ -192,17 +193,18 @@ class _ChartScreenWebViewState extends ConsumerState<ChartScreenWebView> {
                   size: 38,
                 ),
                 onPressed: () async {
-                  userProfile.setChartdialog(false);
-                  if (tvChart.scripsize) {
-                    tvChart.chngDephBtn("Overview");
-                  } else {
-                    tvChart.chngDephBtn("Overview");
-                    tvChart.singlePageloader(true);
-                    await tvChart.calldepthApis(context, tvChart.getQuotes, "");
-                    tvChart.singlePageloader(false);
-                  }
-                  tvChart.setChartScript('ABC', '0123', 'ABCD');
-                  chartUpdate.changeOrientation('portrait');
+                  // userProfile.setChartdialog(false);
+                  // if (tvChart.scripsize) {
+                  //   tvChart.chngDephBtn("Overview");
+                  // } else {
+                  //   tvChart.chngDephBtn("Overview");
+                  //   tvChart.singlePageloader(true);
+                  //   await tvChart.calldepthApis(context, tvChart.getQuotes, "");
+                  //   tvChart.singlePageloader(false);
+                  // }
+                  // tvChart.setChartScript('ABC', '0123', 'ABCD');
+                  // chartUpdate.changeOrientation('portrait');
+                  ref.read(chartProvider.notifier).hideChart();
                 },
               ),
             ),

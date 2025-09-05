@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:mynt_plus/models/marketwatch_model/market_watch_scrip_model.dart';
+import 'package:mynt_plus/provider/chart_provider.dart';
 import 'package:mynt_plus/res/global_state_text.dart';
 import 'package:mynt_plus/screens/market_watch/futures/future_screen.dart';
 import '../../../models/marketwatch_model/get_quotes.dart';
@@ -913,8 +915,12 @@ class _PositionDetailScreenState extends ConsumerState<PositionDetailScreen> {
                                                                 .tsym ??
                                                             "");
                                                     Navigator.pop(context);
-                                                    userProfile
-                                                        .setChartdialog(true);
+                                                    final chartArgs = ChartArgs(
+                                                      exch: widget.positionList.exch ?? "",
+                                                      tsym: widget.positionList.tsym ?? "",
+                                                      token: widget.positionList.token ?? "",
+                                                    );
+                                                    ref.read(chartProvider.notifier).showChart(chartArgs);
                                                   },
                                                   child: TextWidget.subText(
                                                     text: "Chart",

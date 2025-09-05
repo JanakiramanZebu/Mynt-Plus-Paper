@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:mynt_plus/provider/chart_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../locator/constant.dart';
 import '../../../locator/locator.dart';
@@ -286,10 +287,12 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
 
         bool transbtn = tvChart.getQuotes?.instname != "UNDIND" &&
             tvChart.getQuotes?.instname != "COM";
-        return SafeArea(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
+        return Material(
+          type: MaterialType.transparency,
+          child: SafeArea(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
               _buildTopBar(tvChart, theme, userProfile, chartUpdate),
               _buildWebView(
                   tvChart, theme, userProfile.showchartof, chartUpdate, context),
@@ -329,7 +332,7 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
                         child: InkWell(
                           onTap: () async {
                             if (transbtn) {
-                              userProfile.setChartdialog(false);
+                              ref.read(chartProvider.notifier).hideChart();
                               await placeOrderInput(
                                   tvChart, context, tvChart.getQuotes!, true);
                             }
@@ -359,7 +362,7 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
                         child: InkWell(
                           onTap: () async {
                             if (transbtn) {
-                              userProfile.setChartdialog(false);
+                              ref.read(chartProvider.notifier).hideChart();
                               await placeOrderInput(
                                   tvChart, context, tvChart.getQuotes!, false);
                             }
@@ -388,6 +391,7 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
               ) ,
                ]
             ],
+            ),
           ),
         );
       },
@@ -416,48 +420,23 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
                   customBorder: const CircleBorder(),
                   splashColor: Colors.grey.withOpacity(0.4),
                   highlightColor: Colors.grey.withOpacity(0.2),
-                  onTap: () async {
-                    // Add delay for visual feedback
-                    await Future.delayed(const Duration(milliseconds: 150));
-
-                    userProfile.setChartdialog(false);
-                    if (tvChart.scripsize) {
-                      // tvChart.chngDephBtn("Overview");
-                      tvChart.scripdepthsize(false);
-                    } else {
-                      tvChart.chngDephBtn("Overview");
-                      tvChart.singlePageloader(true);
-                      await tvChart.calldepthApis(
-                          context, tvChart.getQuotes, "");
-                      tvChart.singlePageloader(false);
-                    }
-                    tvChart.setChartScript('ABC', '0123', 'ABCD');
-                    chartUpdate.changeOrientation('portrait');
-                    if(tvChart.isETF){
-                      Navigator.push(
-                              context,
-                              PageRouteBuilder(
-                                pageBuilder: (_, __, ___) =>
-                                    ETFCategoryDetailScreen(
-                                  categoryTitle:
-                                      tvChart.etfCategoryTitle,
-                                  categoryIcon:
-                                      tvChart.etfCategoryIcon,
-                                  categoryDescription:
-                                      tvChart.etfCategoryDescription,
-                                ),
-                                transitionsBuilder: (_, animation, __, child) {
-                                  return SlideTransition(
-                                    position: Tween<Offset>(
-                                      begin: const Offset(-1.0, 0.0),
-                                      end: Offset.zero,
-                                    ).animate(animation),
-                                    child: child,
-                                  );
-                                },
-                              ),
-                            );
-                            tvChart.setETF(false);
+                  onTap: () {
+                    final chartState = ref.read(chartProvider);
+                    final prevRoute = chartState.previousRoute;
+                    ref.read(chartProvider.notifier).hideChart();
+                    
+                    // Handle navigation after hiding chart
+                    if (prevRoute != null && prevRoute.isNotEmpty) {
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        if (prevRoute == Routes.optionChain) {
+                          Navigator.of(context).pushNamedAndRemoveUntil(
+                            Routes.optionChain, 
+                            (route) => route.settings.name == Routes.homeScreen || route.isFirst
+                          );
+                        } else {
+                          Navigator.of(context).pushReplacementNamed(prevRoute);
+                        }
+                      });
                     }
                   },
                   child: Container(
