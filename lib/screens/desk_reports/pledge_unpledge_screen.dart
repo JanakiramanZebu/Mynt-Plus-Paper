@@ -249,7 +249,7 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
         body: ledgerprovider.pledgeloader
             ? Center(
                 child: Container(
-                  color: Colors.white,
+                  color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
                   child: CircularLoaderImage(),
                 ),
               )
@@ -896,6 +896,7 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                                         TextWidget.paraText(
                                             text: "${title}",
                                             theme: false,
+                                            color :  isActive ? theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight : theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                                             fw: isActive ? 2 : 2, // 2 for active (bold), 0 for inactive (w500)
                                             ),
                                       ],

@@ -320,7 +320,7 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                        !ledgerprovider.hasDataForSegment(ledgerprovider.selectedSegment)))
                   ? Center(
                       child: Container(
-                        color: Colors.white,
+                        color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
                         child: CircularLoaderImage(),
                       ),
                     )

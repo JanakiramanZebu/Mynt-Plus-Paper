@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import '../provider/thems.dart';
 import '../provider/user_profile_provider.dart';
 import '../res/res.dart';
 
@@ -16,7 +17,8 @@ class TransparentLoaderScreen extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref ) {
+    final theme = ref.watch(themeProvider);
     return Stack(
       children: [
         child,
@@ -24,7 +26,7 @@ class TransparentLoaderScreen extends ConsumerWidget {
           Positioned.fill(
             child: Container(
               color: ref.watch(userProfileProvider).profileloader
-                  ? colors.colorWhite
+                  ? theme.isDarkMode ? Colors.black : Colors.white
                   : Colors.black.withOpacity(0.5),
               child: Center(
                 child: Stack(
