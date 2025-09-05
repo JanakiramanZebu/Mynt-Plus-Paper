@@ -27,7 +27,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     super.initState();
 
     SchedulerBinding.instance.addPostFrameCallback((_) {
-      initializeResources(context: context);
+      // initializeResources(context: context);
       initialRoute();
       ref.read(networkStateProvider).networkStream();
       ref.read(networkStateProvider).getContext(context);

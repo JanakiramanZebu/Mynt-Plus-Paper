@@ -8,6 +8,7 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:mynt_plus/provider/chart_provider.dart';
 import 'package:mynt_plus/routes/app_routes.dart';
 import 'package:mynt_plus/sharedWidget/list_divider.dart';
 import 'package:percent_indicator/percent_indicator.dart';
@@ -1470,8 +1471,19 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                               'homeScreen';
                                                                         }
                             
-                                                                        userProfile
-                                                                            .setChartdialog(true);
+                                                                        final chartArgs = ChartArgs(
+                                                                          exch: widget.wlValue.exch,
+                                                                          tsym: widget.wlValue.tsym,
+                                                                          token: widget.wlValue.token,
+                                                                        );
+                                                                        
+                                                                        // Check if we should return to option chain based on currentRouteName
+                                                                        String? previousRoute;
+                                                                        if (currentRouteName == Routes.optionChain) {
+                                                                          previousRoute = Routes.optionChain;
+                                                                        }
+                                                                        
+                                                                        ref.read(chartProvider.notifier).showChart(chartArgs, previousRoute: previousRoute);
                             
                                                                         scripInfo.setChartScript(
                                                                             widget.wlValue.exch,

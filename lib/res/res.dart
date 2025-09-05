@@ -11,7 +11,7 @@ late AppTextStyles textStyles;
 
 // Exporting App colors,Asstes and text styles to acces the class
 
-void initializeResources({required BuildContext context}) {
+void initializeResources() {
   colors = AppColors();
   assets = Assets();
   textStyles = AppTextStyles();

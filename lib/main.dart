@@ -9,6 +9,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:mynt_plus/firebase_options.dart';
 import 'package:mynt_plus/locator/constant.dart';
+import 'package:mynt_plus/res/res.dart';
+import 'package:mynt_plus/sharedWidget/chart_overlay_widget.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:flutter/foundation.dart';
 // import 'package:flutter_phoenix/flutter_phoenix.dart';
@@ -201,6 +203,7 @@ void main() async {
   print("App startup began at: $startTime");
 
   WidgetsFlutterBinding.ensureInitialized();
+  initializeResources();
   if (TargetPlatform.android == defaultTargetPlatform) {
     await FlutterDisplayMode.setHighRefreshRate();
   }
@@ -259,7 +262,16 @@ class MyApp extends ConsumerWidget {
         debugShowCheckedModeBanner: false,
         initialRoute: Routes.splash,
         onGenerateRoute: AppRoutes.router,
-        navigatorObservers: [routeObserver]);
+        navigatorObservers: [routeObserver],
+      builder: (context, child) {
+        return Stack(
+          children: [
+            child!,
+            const ChartOverlayWidget(),
+          ],
+        );
+      },
+    );
   }
 }
 
