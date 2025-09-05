@@ -22,37 +22,17 @@ import '../routes/route_names.dart';
 import 'auth_provider.dart';
 import 'market_watch_provider.dart';
 import 'notification_provider.dart';
+import 'subscription_manager.dart';
 
 final websocketProvider =
     ChangeNotifierProvider((ref) => WebSocketProvider(ref));
-
-/// Data class to store subscription information
-class SubscriptionData {
-  final String task;
-  final String symbols;
-  final DateTime timestamp;
-  final String? pageContext; // Inferred from call stack or context
-  final int priority; // Higher number = higher priority
-  
-  SubscriptionData({
-    required this.task,
-    required this.symbols,
-    required this.timestamp,
-    this.pageContext,
-    this.priority = 50,
-  });
-  
-  String get key => '${task}_${symbols.hashCode}';
-  
-  @override
-  String toString() => 'SubscriptionData(task: $task, symbols: ${symbols.length} chars, context: $pageContext, priority: $priority)';
-}
 
 class WebSocketProvider extends ChangeNotifier {
   final Ref ref;
   WebSocketProvider(this.ref);
 
   // Constants
+  static const int _maxReconnectAttempts = 8; // Increased for poor networks
   static const int _subscriptionTimeout =
       10; // Increased timeout for slow networks
   static const Duration _reconnectDelay = Duration(seconds: 2);
@@ -76,11 +56,6 @@ class WebSocketProvider extends ChangeNotifier {
   bool _reconnecting =
       false; // Track if we're already in the reconnection process
   bool _reconnectionSuccess = false; // Track if we've successfully reconnected
-  
-  // Automatic reconnection management
-  Timer? _autoReconnectTimer;
-  static const Duration _autoReconnectInterval = Duration(seconds: 5);
-  bool _autoReconnectEnabled = true;
 
   // WebSocket and subscription management
   WebSocketChannel? _channel;
@@ -94,10 +69,6 @@ class WebSocketProvider extends ChangeNotifier {
   // Add StreamController
   final _socketDataController = StreamController<Map>.broadcast();
   Stream<Map> get socketDataStream => _socketDataController.stream;
-  
-  // Auto-capture subscription data for restoration
-  final Map<String, SubscriptionData> _activeSubscriptions = {};
-  final Map<String, DateTime> _subscriptionTimestamps = {};
 
   // Getters
   bool get wsConnected => _wsConnected;
@@ -107,28 +78,6 @@ class WebSocketProvider extends ChangeNotifier {
   
   // Get cached LTP for a token
   String? getCachedLTP(String token) => _ltpCache[token];
-  
-  // Auto reconnect management
-  bool get autoReconnectEnabled => _autoReconnectEnabled;
-  void setAutoReconnect(bool enabled) {
-    _autoReconnectEnabled = enabled;
-    if (!enabled) {
-      _stopAutoReconnectTimer();
-    }
-  }
-  
-  // Set context for auto-reconnection
-  void setContext(BuildContext context) {
-    _context = context;
-  }
-  
-  // Reset connection count when network connectivity is restored (doesn't affect UI state)
-  void resetConnectionCountOnNetworkRestore() {
-    if (_connectionCount > 0) {
-      log('WebSocketProvider: Resetting connection count from $_connectionCount to 0 (network restored)');
-      _connectionCount = 0;
-    }
-  }
   
   // Get best available LTP (socket > cache > fallback)
   String getBestLTP(String token, String fallbackLTP) {
@@ -205,13 +154,6 @@ class WebSocketProvider extends ChangeNotifier {
     // Stop ping timer
     _stopPingTimer();
 
-    // Start auto-reconnect timer if widget is still mounted (meaning we should try to reconnect)
-    if (mounted) {
-      _startAutoReconnectTimer();
-    } else {
-      _stopAutoReconnectTimer();
-    }
-
     // Cancel any outstanding connection completion
     if (_connectionCompleter != null && !_connectionCompleter!.isCompleted) {
       _connectionCompleter!
@@ -276,12 +218,8 @@ class WebSocketProvider extends ChangeNotifier {
     }
     _subscriptionTimers.remove(key);
 
-    // Always try to reconnect on subscription timeout - network might be available
-    final networkStatus = ref.read(networkStateProvider).connectionStatus;
-    if (networkStatus != ConnectivityResult.none) {
+    if (_connectionCount < _maxReconnectAttempts) {
       reconnect(context);
-    } else {
-      log('WebSocketProvider: Subscription timeout but no network - auto-reconnect timer will handle retry');
     }
   }
 
@@ -332,43 +270,6 @@ class WebSocketProvider extends ChangeNotifier {
     _pingTimer = null;
     _failedPingCount = 0;
   }
-  
-  /// Start automatic reconnection timer - keeps trying indefinitely when network is available
-  void _startAutoReconnectTimer() {
-    if (!_autoReconnectEnabled) return;
-    
-    _stopAutoReconnectTimer(); // Stop any existing timer
-    
-    _autoReconnectTimer = Timer.periodic(_autoReconnectInterval, (timer) {
-      // Only attempt reconnection if:
-      // 1. We should be connected but aren't
-      // 2. We have network connectivity  
-      // 3. We're not already reconnecting
-      // 4. App context is available
-      final networkStatus = ref.read(networkStateProvider).connectionStatus;
-      
-      if (!_wsConnected && 
-          !_reconnecting && 
-          networkStatus != ConnectivityResult.none &&
-          _context != null) {
-        
-        log('WebSocketProvider: Auto-reconnect attempt ${_connectionCount + 1} (infinite retries while network available)');
-        reconnect(_context!);
-      } else if (networkStatus == ConnectivityResult.none) {
-        // Don't waste resources trying to reconnect when there's no network
-        log('WebSocketProvider: Network unavailable, pausing auto-reconnect');
-        // Timer continues running but won't attempt reconnection until network returns
-      }
-    });
-    
-    log('WebSocketProvider: Auto-reconnect timer started (${_autoReconnectInterval.inSeconds}s interval, infinite retries)');
-  }
-  
-  /// Stop automatic reconnection timer
-  void _stopAutoReconnectTimer() {
-    _autoReconnectTimer?.cancel();
-    _autoReconnectTimer = null;
-  }
 
   Future<void> establishConnection({
     required String channelInput,
@@ -377,12 +278,7 @@ class WebSocketProvider extends ChangeNotifier {
   }) async {
     _context = context;
 
-    // Auto-capture subscription data for restoration
-    if (channelInput.isNotEmpty && !task.startsWith('u')) {
-      _captureSubscriptionData(channelInput, task, context);
-    }
-
-    // Save channel input for reconnection (only if it's a subscription request) - backward compatibility
+    // Save channel input for reconnection (only if it's a subscription request)
     if (task == "t" && channelInput.isNotEmpty) {
       ConstantName.lastSubscribe = channelInput;
     } else if (task == "d" && channelInput.isNotEmpty) {
@@ -414,8 +310,7 @@ class WebSocketProvider extends ChangeNotifier {
           _handleSubscription(channelInput, task, context);
         }
       } catch (e) {
-        // Always try to reconnect unless we're already reconnecting
-        if (!_reconnecting) {
+        if (_connectionCount < _maxReconnectAttempts && !_reconnecting) {
           reconnect(context);
         }
       }
@@ -520,45 +415,9 @@ class WebSocketProvider extends ChangeNotifier {
     // Start ping timer for connection monitoring
     _startPingTimer();
 
-    // Stop auto-reconnect timer as we're now connected
-    _stopAutoReconnectTimer();
-
-    // Reset connection count on successful connection
-    _connectionCount = 0;
-
     // Cancel any backoff timer
     _reconnectBackoff?.cancel();
     _reconnectBackoff = null;
-
-    // Automatically restore ALL active subscriptions when WebSocket connects
-    Future.microtask(() async {
-      try {
-        final allSubscriptions = getActiveSubscriptionsForRestoration();
-        log('WebSocketProvider: WebSocket connected - auto-restoring ${allSubscriptions.length} subscriptions');
-        
-        for (final subscription in allSubscriptions) {
-          try {
-            // Re-establish each subscription (only if we have context)
-            if (_context != null) {
-              await establishConnection(
-                channelInput: subscription.symbols,
-                task: subscription.task,
-                context: _context!,
-              );
-            }
-            
-            // Small delay to avoid overwhelming
-            await Future.delayed(const Duration(milliseconds: 50));
-          } catch (e) {
-            log('WebSocketProvider: Error auto-restoring ${subscription.pageContext}: $e');
-          }
-        }
-        
-        log('WebSocketProvider: Auto-restoration of ${allSubscriptions.length} subscriptions completed');
-      } catch (e) {
-        log('WebSocketProvider: Error during auto-restoration: $e');
-      }
-    });
 
     if (!_connectionCompleter!.isCompleted) {
       _connectionCompleter?.complete();
@@ -803,23 +662,45 @@ class WebSocketProvider extends ChangeNotifier {
     required BuildContext context,
   }) {
     if (input.isEmpty) {
-      log("WebSocket: Empty input provided to connectTouchLine");
+      print("WebSocket: Empty input provided to connectTouchLine");
       return;
     }
 
+    // Update SubscriptionManager based on task type
+    final subscriptionManager = ref.read(subscriptionManagerProvider);
+    
+    log("🔌 WebSocket: connectTouchLine called - task: '$task', input: '$input'");
+    
+    // Update context in subscription manager when actively used
+    subscriptionManager.updateContext(context);
+    
+    if (task.toLowerCase() == "t" || task.toLowerCase() == "d") {
+      // Subscribe tasks - add to subscription manager
+      subscriptionManager.addSubscription(input);
+      final symbols = input.split('#').where((s) => s.isNotEmpty).toList();
+      log("WebSocket: ➕ Added ${symbols.length} subscriptions for task '$task'");
+      log("  Symbols: ${symbols.join(', ')}");
+    } else if (task.toLowerCase() == "u" || task.toLowerCase() == "ud") {
+      // Unsubscribe tasks - remove from subscription manager
+      subscriptionManager.removeSubscription(input);
+      final symbols = input.split('#').where((s) => s.isNotEmpty).toList();
+      log("WebSocket: ➖ Removed ${symbols.length} subscriptions for task '$task'");
+      log("  Symbols: ${symbols.join(', ')}");
+    }
+
     if (_wsConnected && _channel != null) {
-      log(
+      print(
           "WebSocket: Sending ${task} request for ${input.split('#').length} symbols");
       _channel?.sink.add(jsonEncode({"t": task, "k": input}));
     } else {
       // If socket isn't ready yet, schedule a retry
-      log("WebSocket: Connection not ready, scheduling retry in 500ms");
+      print("WebSocket: Connection not ready, scheduling retry in 500ms");
       Future.delayed(Duration(milliseconds: 500), () {
         if (_wsConnected && _channel != null) {
-          log("WebSocket: Retrying subscription after delay");
+          print("WebSocket: Retrying subscription after delay");
           _channel?.sink.add(jsonEncode({"t": task, "k": input}));
         } else {
-          log(
+          print(
               "WebSocket: Still not connected after delay, attempting full reconnection");
           if (_context != null) {
             establishConnection(
@@ -849,17 +730,12 @@ class WebSocketProvider extends ChangeNotifier {
       _connectionCompleter?.completeError("WebSocket connection closed.");
     }
 
-    // Always try to reconnect when connection is closed (unless app is shutting down)
-    // Store context for auto-reconnect
-    _context = context;
-    
-    // Start auto-reconnect timer for continuous attempts
-    _startAutoReconnectTimer();
-    
-    // Use post-frame callback to avoid provider modification during build
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      reconnect(context);
-    });
+    if (_connectionCount < _maxReconnectAttempts) {
+      // Use post-frame callback to avoid provider modification during build
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        reconnect(context);
+      });
+    }
   }
 
   void _handleConnectionError(dynamic error, BuildContext context) {
@@ -877,15 +753,11 @@ class WebSocketProvider extends ChangeNotifier {
       _connectionCompleter?.completeError(error);
     }
 
-    // Always try to reconnect on connection error if network is available
-    final networkStatus = ref.read(networkStateProvider).connectionStatus;
-    if (networkStatus != ConnectivityResult.none) {
+    if (_connectionCount < _maxReconnectAttempts) {
       // Use post-frame callback to avoid provider modification during build
       WidgetsBinding.instance.addPostFrameCallback((_) {
         reconnect(context);
       });
-    } else {
-      log('WebSocketProvider: Connection error but no network - auto-reconnect timer will handle retry');
     }
   }
 
@@ -988,390 +860,10 @@ class WebSocketProvider extends ChangeNotifier {
       }
   }
 
-  /// Capture subscription data automatically with enhanced validation
-  void _captureSubscriptionData(String channelInput, String task, BuildContext context) {
-    if (channelInput.isEmpty) return;
-    
-    log('=== CAPTURING SUBSCRIPTION: $task with ${channelInput.length} chars ===');
-    
-    try {
-      // Determine page context from the current route or widget context
-      final pageContext = _inferPageContext(context);
-      
-      // Determine priority based on task and context
-      final priority = _determinePriority(task, pageContext);
-      
-      final subscriptionData = SubscriptionData(
-        task: task,
-        symbols: channelInput,
-        timestamp: DateTime.now(),
-        pageContext: pageContext,
-        priority: priority,
-      );
-      
-      // Enhanced deduplication - replace any existing subscription from same context and task
-      final contextKey = pageContext ?? 'unknown';
-      
-      // Remove ALL existing subscriptions for same context and task (not just matching symbols)
-      final redundantSubs = _activeSubscriptions.entries
-          .where((entry) => 
-              entry.value.pageContext == contextKey && 
-              entry.value.task == task)
-          .toList();
-      
-      log('WebSocketProvider: Found ${redundantSubs.length} existing subscriptions for $contextKey to replace');
-      
-      if (redundantSubs.isNotEmpty) {
-        for (final redundant in redundantSubs) {
-          _activeSubscriptions.remove(redundant.key);
-          _subscriptionTimestamps.remove(redundant.key);
-        }
-        log('WebSocketProvider: Removed ${redundantSubs.length} redundant subscription(s)');
-      }
-      
-      // Generate unique key based on task and symbols hash
-      final symbolsHash = channelInput.hashCode;
-      final key = '${task}_${symbolsHash}_${DateTime.now().millisecondsSinceEpoch}';
-      _activeSubscriptions[key] = subscriptionData;
-      _subscriptionTimestamps[key] = DateTime.now();
-      
-      log('WebSocketProvider: Captured subscription - $subscriptionData');
-      log('📱 Context: $pageContext → Priority: $priority → Symbols: ${channelInput.split('#').length}');
-      
-      // Validate subscription immediately after capture
-      _validateSubscription(key, subscriptionData);
-      
-      // Print debug info whenever a subscription is captured
-      _printSubscriptionDebugInfo();
-      
-      // Clean up old subscriptions periodically
-      // cleanupOldSubscriptions();
-      
-    } catch (e) {
-      log('WebSocketProvider: Error capturing subscription data: $e');
-    }
-  }
-  
-  /// Validate subscription data integrity
-  void _validateSubscription(String key, SubscriptionData subscriptionData) {
-    try {
-      // Check if symbols string is not empty
-      if (subscriptionData.symbols.trim().isEmpty) {
-        log('WebSocketProvider: WARNING - Empty symbols in subscription');
-        _activeSubscriptions.remove(key);
-        _subscriptionTimestamps.remove(key);
-        return;
-      }
-      
-      // Split symbols and validate format
-      final symbols = subscriptionData.symbols.split('#');
-      if (symbols.isEmpty) {
-        log('WebSocketProvider: WARNING - No symbols found after splitting');
-        _activeSubscriptions.remove(key);
-        _subscriptionTimestamps.remove(key);
-        return;
-      }
-      
-      // Check for valid trading symbol format (NSE|26000, BSE|1, NFO|48954, MCX|440939)
-      bool hasValidSymbols = false;
-      int validSymbolCount = 0;
-      
-      for (final symbol in symbols) {
-        final trimmedSymbol = symbol.trim();
-        if (trimmedSymbol.isNotEmpty) {
-          // Valid trading symbols contain exchange|token format or are simple tokens
-          if (trimmedSymbol.contains('|') || RegExp(r'^\d+$').hasMatch(trimmedSymbol)) {
-            validSymbolCount++;
-            hasValidSymbols = true;
-          }
-        }
-      }
-      
-      if (!hasValidSymbols || validSymbolCount == 0) {
-        log('WebSocketProvider: WARNING - No valid trading symbols found in: ${subscriptionData.symbols}');
-        _activeSubscriptions.remove(key);
-        _subscriptionTimestamps.remove(key);
-        return;
-      }
-      
-      // Validate task type
-      if (!['t', 'd', 'ut', 'ud'].contains(subscriptionData.task.toLowerCase())) {
-        log('WebSocketProvider: WARNING - Invalid task type: ${subscriptionData.task}');
-        _activeSubscriptions.remove(key);
-        _subscriptionTimestamps.remove(key);
-        return;
-      }
-      
-      log('WebSocketProvider: Subscription validation passed - $validSymbolCount valid symbols for task: ${subscriptionData.task}');
-    } catch (e) {
-      log('WebSocketProvider: Error validating subscription: $e');
-      _activeSubscriptions.remove(key);
-      _subscriptionTimestamps.remove(key);
-    }
-  }
-  
-  /// Infer page context from BuildContext
-  String? _inferPageContext(BuildContext context) {
-    try {
-      final route = ModalRoute.of(context);
-      if (route != null && route.settings.name != null) {
-        return route.settings.name;
-      }
-      
-      // Just return the widget type as is - no mapping
-      final widget = context.widget;
-      return widget.runtimeType.toString();
-    } catch (e) {
-      return null;
-    }
-  }
-  
-  /// Determine subscription priority with enhanced context awareness
-  int _determinePriority(String task, String? pageContext) {
-    // Higher numbers = higher priority
-    int basePriority = 50;
-    
-    // Task-based priority
-    switch (task.toLowerCase()) {
-      case 't': basePriority += 30; break; // Tick data highest priority
-      case 'd': basePriority += 25; break; // Depth data high priority  
-      case 'ut': basePriority += 5; break;  // Unsubscribe tick
-      case 'ud': basePriority += 5; break;  // Unsubscribe depth
-    }
-    
-    // Enhanced context-based priority - prioritize trading screens
-    if (pageContext != null) {
-      final context = pageContext.toLowerCase();
-      
-      // Critical trading screens get highest priority
-      if (context.contains('option') || context.contains('chain')) {
-        basePriority += 40; // Option chains are critical for trading
-      } else if (context.contains('position') || context.contains('portfolio')) {
-        basePriority += 35; // Position updates are very important
-      } else if (context.contains('order') || context.contains('trade')) {
-        basePriority += 30; // Order book updates are important
-      } else if (context.contains('watchlist') || context.contains('market')) {
-        basePriority += 25; // Market watch data is important
-      } else if (context.contains('home') || context.contains('dashboard') || context.contains('homescreen')) {
-        basePriority += 22; // Dashboard data (watchlist + indices) - higher than before
-      } else if (context.contains('chart') || context.contains('depth')) {
-        basePriority += 20; // Chart and depth data
-      } else {
-        basePriority += 10; // Default context priority
-      }
-    }
-    
-    return basePriority;
-  }
-  
-  /// Get all active subscriptions for restoration with validation
-  List<SubscriptionData> getActiveSubscriptionsForRestoration({int maxCount = 20}) {
-    final subscriptions = _activeSubscriptions.values.toList();
-    
-    // Return ALL subscriptions - minimal filtering for restoration
-    final validSubscriptions = subscriptions.where((sub) {
-      // Only filter out completely empty subscriptions
-      return sub.symbols.trim().isNotEmpty;
-    }).toList();
-    
-    // Log what we're including vs filtering
-    if (validSubscriptions.length < subscriptions.length) {
-      log('WebSocketProvider: Filtered out ${subscriptions.length - validSubscriptions.length} empty subscriptions');
-    }
-    
-    // Sort by timestamp (most recent first), then by priority (highest first)  
-    validSubscriptions.sort((a, b) {
-      // Primary sort: Most recent timestamp first
-      final timestampComparison = b.timestamp.compareTo(a.timestamp);
-      if (timestampComparison != 0) {
-        return timestampComparison;
-      }
-      // Secondary sort: Higher priority first (if timestamps are equal)
-      return b.priority.compareTo(a.priority);
-    });
-    
-    // Return ALL subscriptions, ignore maxCount limit for complete restoration  
-    final result = validSubscriptions.toList();
-    
-    log('WebSocketProvider: Filtered from ${subscriptions.length} stored to ${validSubscriptions.length} valid, returning top ${result.length}');
-    for (int i = 0; i < result.length; i++) { // Log ALL subscriptions being restored
-      final sub = result[i];
-      final symbolCount = sub.symbols.split('#').length;
-      log('  ${i + 1}. [${sub.task}] ${sub.pageContext} → ${symbolCount} symbols (Priority: ${sub.priority})');
-    }
-    
-    // Log what was filtered out
-    if (validSubscriptions.length < subscriptions.length) {
-      log('WebSocketProvider: Filtered out ${subscriptions.length - validSubscriptions.length} invalid/expired subscriptions');
-    }
-    
-    return result;
-  }
-  
-  /// Validate that subscription restoration was successful by checking data flow
-  Future<bool> validateSubscriptionRestoration(SubscriptionData subscription) async {
-    try {
-      final symbols = subscription.symbols.split('#');
-      if (symbols.isEmpty) return false;
-      
-      // Wait a bit for data to start flowing
-      await Future.delayed(const Duration(seconds: 2));
-      
-      // Check if we're receiving data for these symbols
-      int receivingData = 0;
-      for (final symbol in symbols.take(5)) { // Check first 5 symbols
-        if (_socketDatas.containsKey(symbol.trim()) && 
-            _socketDatas[symbol.trim()]['lp'] != null &&
-            _socketDatas[symbol.trim()]['lp'] != '0.00') {
-          receivingData++;
-        }
-      }
-      
-      final successRate = receivingData / symbols.take(5).length;
-      final isSuccessful = successRate > 0.5; // At least 50% of symbols should have data
-      
-      log('WebSocketProvider: Subscription validation - ${subscription.pageContext}: '
-          '$receivingData/${symbols.take(5).length} symbols receiving data (${(successRate * 100).toInt()}%)');
-      
-      return isSuccessful;
-    } catch (e) {
-      log('WebSocketProvider: Error validating subscription restoration: $e');
-      return false;
-    }
-  }
-  
-  /// Remove subscription data
-  void _removeSubscription(String task, String symbols) {
-    final key = '${task}_${symbols.hashCode}';
-    _activeSubscriptions.remove(key);
-    _subscriptionTimestamps.remove(key);
-  }
-  
-  /// Clean up option chain subscriptions from active subscriptions list
-  /// This should be called when option chain is closed to prevent memory buildup
-  void cleanupOptionChainSubscriptions() {
-    final keysToRemove = <String>[];
-    
-    // Remove all subscriptions related to option chains
-    for (final entry in _activeSubscriptions.entries) {
-      final subscription = entry.value;
-      
-      // Identify option chain subscriptions by context
-      if (subscription.pageContext != null && 
-          (subscription.pageContext!.toLowerCase().contains('option') ||
-           subscription.pageContext!.toLowerCase().contains('chain'))) {
-        keysToRemove.add(entry.key);
-      }
-    }
-    
-    // Remove the subscriptions
-    for (final key in keysToRemove) {
-      _activeSubscriptions.remove(key);
-      _subscriptionTimestamps.remove(key);
-    }
-    
-    if (keysToRemove.isNotEmpty) {
-      log('WebSocketProvider: Cleaned up ${keysToRemove.length} option chain subscriptions for performance optimization');
-    }
-  }
-  
-  /// Clean up old subscription data
-  void cleanupOldSubscriptions() {
-    final cutoffTime = DateTime.now().subtract(const Duration(minutes: 30));
-    final keysToRemove = <String>[];
-    
-    for (final entry in _subscriptionTimestamps.entries) {
-      if (entry.value.isBefore(cutoffTime)) {
-        keysToRemove.add(entry.key);
-      }
-    }
-    
-    for (final key in keysToRemove) {
-      _activeSubscriptions.remove(key);
-      _subscriptionTimestamps.remove(key);
-    }
-    
-    if (keysToRemove.isNotEmpty) {
-      log('WebSocketProvider: Cleaned up ${keysToRemove.length} old subscriptions');
-    }
-  }
-  
-  /// Get debug info about active subscriptions
-  Map<String, dynamic> getSubscriptionDebugInfo() {
-    return {
-      'activeSubscriptions': _activeSubscriptions.length,
-      'subscriptionsByTask': {
-        for (final task in ['t', 'd', 'ut', 'ud'])
-          task: _activeSubscriptions.values.where((s) => s.task == task).length,
-      },
-      'subscriptionsByContext': {
-        for (final sub in _activeSubscriptions.values)
-          sub.pageContext ?? 'unknown': 
-            _activeSubscriptions.values.where((s) => s.pageContext == sub.pageContext).length,
-      },
-      'oldestSubscription': _activeSubscriptions.values.isNotEmpty 
-          ? _activeSubscriptions.values.map((s) => s.timestamp).reduce((a, b) => a.isBefore(b) ? a : b).toIso8601String()
-          : null,
-    };
-  }
-  
-  /// Print detailed debug information about current subscriptions
-  void _printSubscriptionDebugInfo() {
-    final debugInfo = getSubscriptionDebugInfo();
-    
-    log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    log('📊 WEBSOCKET SUBSCRIPTION DEBUG INFO');
-    log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    log('🔢 Total Active Subscriptions: ${debugInfo['activeSubscriptions']}');
-    
-    // Print subscriptions by task type
-    final subscriptionsByTask = debugInfo['subscriptionsByTask'] as Map<String, int>;
-    log('📋 By Task Type:');
-    for (final entry in subscriptionsByTask.entries) {
-      final taskName = entry.key == 't' ? 'Tick' : 
-                      entry.key == 'd' ? 'Depth' : 
-                      entry.key == 'ut' ? 'Unsubscribe Tick' :
-                      entry.key == 'ud' ? 'Unsubscribe Depth' : entry.key;
-      log('   ${entry.key.toUpperCase()}: ${entry.value} (${taskName})');
-    }
-    
-    // Print subscriptions by page context  
-    final subscriptionsByContext = debugInfo['subscriptionsByContext'] as Map<String, int>;
-    log('📱 By Page Context:');
-    for (final entry in subscriptionsByContext.entries) {
-      log('   ${entry.key}: ${entry.value} subscriptions');
-    }
-    
-    // Print detailed subscription list
-    if (_activeSubscriptions.isNotEmpty) {
-      log('📝 Active Subscriptions Details:');
-      final sortedSubs = _activeSubscriptions.values.toList()
-        ..sort((a, b) => b.priority.compareTo(a.priority));
-      
-      for (int i = 0; i < sortedSubs.length && i < 10; i++) { // Show max 10
-        final sub = sortedSubs[i];
-        final symbolCount = sub.symbols.split('#').length;
-        final timeAgo = DateTime.now().difference(sub.timestamp).inSeconds;
-        
-        log('   ${i + 1}. [${sub.task.toUpperCase()}] ${sub.pageContext ?? 'unknown'} '
-              '(Priority: ${sub.priority}, Symbols: $symbolCount, ${timeAgo}s ago)');
-      }
-      
-      if (sortedSubs.length > 10) {
-        log('   ... and ${sortedSubs.length - 10} more subscriptions');
-      }
-    }
-    
-    log('⏰ Oldest Subscription: ${debugInfo['oldestSubscription'] ?? 'N/A'}');
-    log('🔗 WebSocket Connected: $_wsConnected');
-    log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
-  }
-
   @override
   void dispose() {
     // Ensure all timers are canceled
     _stopPingTimer();
-    _stopAutoReconnectTimer();
     _holdStartTime?.cancel();
     _reconnectBackoff?.cancel();
     _debounceTimer?.cancel(); // Cancel debounce timer
@@ -1405,7 +897,7 @@ class WebSocketProvider extends ChangeNotifier {
 
         // Check if the provider is already disposed
         if (marketWatchProv.disposed) {
-          log("Market watch provider is disposed, skipping update");
+          print("Market watch provider is disposed, skipping update");
           return;
         }
 
@@ -1415,11 +907,11 @@ class WebSocketProvider extends ChangeNotifier {
       } catch (e) {
         // Silent catch - this can happen during app shutdown or page transitions
         // We don't want to crash the app if the provider is being disposed
-        log(
+        print(
             "Market watch provider access error (likely during transition): $e");
       }
     } catch (e) {
-      log("Error setting up notification to market watch provider: $e");
+      print("Error setting up notification to market watch provider: $e");
     }
   }
 }

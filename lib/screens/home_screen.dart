@@ -67,9 +67,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     //   screenName: 'HomeScreen',
     //   screenClass: 'HomeScreen', // Customize if needed.
     // );
-    // Store context for WebSocket provider and enable auto-reconnection
-    ref.read(websocketProvider).setContext(context);
-    ref.read(websocketProvider).setAutoReconnect(true);
     ref.read(networkStateProvider).networkStream();
     ref.read(marketWatchProvider).fToast.init(context);
     ref.read(versionProvider).checkVersion(context);
@@ -103,9 +100,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       case AppLifecycleState.resumed:
         // Ensure navbar is always visible when resuming from background
         ref.read(userProfileProvider).profileloaderfun(false);
-        
-        // Re-enable WebSocket auto-reconnect when app becomes active
-        ref.read(websocketProvider).setAutoReconnect(true);
         print("app resumed - enabling WebSocket auto-reconnect");
         
         // Don't use await to avoid blocking the UI thread
@@ -161,8 +155,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         break;
 
       case AppLifecycleState.inactive:
-        // Pause WebSocket auto-reconnect for transient states
-        ref.read(websocketProvider).setAutoReconnect(false);
         if (ref.read(indexListProvider).selectedBtmIndx == 2) {
           ref.read(portfolioProvider).cancelTimer();
         }
@@ -172,8 +164,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         break;
 
       case AppLifecycleState.paused:
-        // Pause WebSocket auto-reconnect when app is backgrounded
-        ref.read(websocketProvider).setAutoReconnect(false);
         if (ref.read(indexListProvider).selectedBtmIndx == 2) {
           ref.read(portfolioProvider).cancelTimer();
         }
@@ -181,8 +171,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         break;
 
       case AppLifecycleState.detached:
-        // Pause WebSocket auto-reconnect when app is detached
-        ref.read(websocketProvider).setAutoReconnect(false);
         if (ref.read(indexListProvider).selectedBtmIndx == 2) {
           ref.read(portfolioProvider).cancelTimer();
         }
@@ -192,8 +180,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         break;
 
       case AppLifecycleState.hidden:
-        // Pause WebSocket auto-reconnect when app is hidden
-        ref.read(websocketProvider).setAutoReconnect(false);
         if (ref.read(indexListProvider).selectedBtmIndx == 2) {
           ref.read(portfolioProvider).cancelTimer();
         }

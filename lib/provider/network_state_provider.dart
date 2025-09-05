@@ -12,6 +12,7 @@ import 'order_provider.dart';
 import 'portfolio_provider.dart';
 import 'stocks_provider.dart';
 import 'websocket_provider.dart';
+import 'subscription_manager.dart';
 
 final networkStateProvider =
     ChangeNotifierProvider((ref) => NetworkStateProvider(ref));
@@ -172,8 +173,6 @@ class NetworkStateProvider extends ChangeNotifier {
         _consecutiveFailures = 0; // Reset failure count on successful connection
         _connectionStatusMessage = "Connection restored";
         
-        // Reset WebSocket connection count when network is restored
-        ref.read(websocketProvider).resetConnectionCountOnNetworkRestore();
       } else {
         _connectionStatusMessage = "Connected";
       }
@@ -265,30 +264,20 @@ class NetworkStateProvider extends ChangeNotifier {
         await Future.delayed(const Duration(milliseconds: 500));
       }
       
-      // Get captured subscriptions from websocket provider (auto-captured on every subscription) 
-      final capturedSubscriptions = wsProvider.getActiveSubscriptionsForRestoration(maxCount: 100); // Increased limit
+      // Use SubscriptionManager for efficient batch restoration
+      final subscriptionManager = ref.read(subscriptionManagerProvider);
       
-      print('NetworkStateProvider: Restoring ${capturedSubscriptions.length} captured subscriptions');
-      
-      // Print detailed restoration info
-      _printRestorationDebugInfo(capturedSubscriptions);
-      
-      // Restore captured subscriptions in priority order
-      for (final subscription in capturedSubscriptions) {
-        try {
-          print('NetworkStateProvider: Restoring ${subscription.task} subscription from ${subscription.pageContext} with priority ${subscription.priority}');
-          
-          await ref.read(websocketProvider).establishConnection(
-            channelInput: subscription.symbols,
-            task: subscription.task,
-            context: _globbcontext!,
-          );
-          
-          // Small delay between subscriptions to avoid overwhelming the connection
-          await Future.delayed(const Duration(milliseconds: 100));
-        } catch (e) {
-          print('NetworkStateProvider: Error restoring subscription ${subscription.pageContext}: $e');
-        }
+      if (!subscriptionManager.hasActiveSubscriptions) {
+        print('🌐 NetworkStateProvider: No active subscriptions to restore');
+        subscriptionManager.printCurrentState();
+      } else {
+        print('🌐 NetworkStateProvider: Found ${subscriptionManager.subscriptionCount} active subscriptions');
+        print('🌐 NetworkStateProvider: Calling SubscriptionManager.forceReconnection()...');
+        
+        // Use SubscriptionManager's efficient batch reconnection
+        await subscriptionManager.forceReconnection();
+        
+        print('🌐 NetworkStateProvider: SubscriptionManager restoration call completed');
       }
       
       // Restore legacy subscriptions for compatibility (existing code)
@@ -355,27 +344,25 @@ class NetworkStateProvider extends ChangeNotifier {
     }
   }
   
-  /// Print detailed restoration debug information
-  void _printRestorationDebugInfo(List<dynamic> capturedSubscriptions) {
+  /// Print network restoration debug information
+  void _printRestorationDebugInfo() {
+    final subscriptionManager = ref.read(subscriptionManagerProvider);
+    
     print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    print('🔄 SUBSCRIPTION RESTORATION DEBUG INFO');
+    print('🔄 NETWORK RESTORATION DEBUG INFO');
     print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     print('🌐 Network Change Type: ${_isNetworkTypeChange ? "Network Switch" : "Reconnection"}');
     print('📶 Previous Connection: $_previousConnectionStatus');
     print('📶 Current Connection: $_connectionStatus');
     print('📊 Quality Score: $_connectionQualityScore');
-    print('🔢 Subscriptions to Restore: ${capturedSubscriptions.length}');
+    print('🔢 Active Subscriptions: ${subscriptionManager.subscriptionCount}');
     
-    if (capturedSubscriptions.isNotEmpty) {
-      print('📋 Restoration Priority Order:');
-      for (int i = 0; i < capturedSubscriptions.length; i++) {
-        final sub = capturedSubscriptions[i];
-        final symbolCount = sub.symbols.split('#').length;
-        final timeAgo = DateTime.now().difference(sub.timestamp).inSeconds;
-        
-        print('   ${i + 1}. [${sub.task.toUpperCase()}] ${sub.pageContext ?? 'unknown'} '
-              '(Priority: ${sub.priority}, Symbols: $symbolCount, ${timeAgo}s ago)');
-      }
+    if (subscriptionManager.hasActiveSubscriptions) {
+      final debugInfo = subscriptionManager.getDebugInfo();
+      print('📋 Subscription Details:');
+      print('   - Total Active: ${debugInfo['activeSubscriptions']}');
+      print('   - App State: ${debugInfo['currentState']}');
+      print('   - Network Status: ${debugInfo['lastNetworkStatus']}');
     }
     
     print('⏰ Restoration Start Time: ${DateTime.now().toIso8601String()}');

@@ -19,7 +19,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'locator/locator.dart';
 import 'locator/preference.dart';
 import 'provider/thems.dart';
-import 'provider/app_lifecycle_manager.dart';
+import 'provider/subscription_manager.dart';
 import 'routes/app_routes.dart';
 import 'routes/route_names.dart';
 import 'themes/theme.dart';
@@ -240,8 +240,8 @@ class MyApp extends ConsumerWidget {
     final themeProvide = ref.watch(themeProvider);
     themeProvide.getThemeData();
     
-    // Initialize lifecycle manager
-    final lifecycleManager = ref.watch(appLifecycleManagerProvider);
+    // Initialize lightweight subscription manager
+    final subscriptionManager = ref.watch(subscriptionManagerProvider);
     
     // SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
     //     statusBarIconBrightness: themeProvide.isDarkMode
