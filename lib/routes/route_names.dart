@@ -29,6 +29,9 @@ class Routes {
   static const String gttOrderDetail = 'gttOrderDetail';
   static const String myaccountScreen = 'myaccountScreen';
   static const String basketScreen = 'basketScreen';
+  static const String createBasketStrategy = 'createBasketStrategy';
+  static const String basketBacktestAnalysis = 'basketBacktestAnalysis';
+  static const String basketSelectionScreen = 'basketSelectionScreen';
 
   static const String allIndex = 'allIndex';
   static const String topIndiciesIndex = 'topIndiciesIndex';

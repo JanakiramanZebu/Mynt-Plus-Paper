@@ -1,471 +1,702 @@
-// import 'package:flutter/material.dart';
-// import 'package:flutter_riverpod/flutter_riverpod.dart';
-// import 'package:flutter_svg/flutter_svg.dart';
-// import 'package:mynt_plus/provider/dashboard_provider.dart';
-// import 'package:mynt_plus/provider/thems.dart';
-// import 'package:mynt_plus/res/global_state_text.dart';
-// import 'package:mynt_plus/res/res.dart';
-// import 'package:mynt_plus/screens/market_watch/option_chain/collection_basket/create_baskerscreen.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:mynt_plus/models/explore_model/basketcollection_model.dart';
+import 'package:mynt_plus/provider/dashboard_provider.dart';
+import 'package:mynt_plus/provider/thems.dart';
+import 'package:mynt_plus/res/global_state_text.dart';
+import 'package:mynt_plus/res/res.dart';
+import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 
-// class FundSelectionScreen extends ConsumerStatefulWidget {
-//   const FundSelectionScreen({super.key});
+class FundSelectionScreen extends ConsumerStatefulWidget {
+  const FundSelectionScreen({super.key});
 
-//   @override
-//   ConsumerState<FundSelectionScreen> createState() => _FundSelectionScreenState();
-// }
+  @override
+  ConsumerState<FundSelectionScreen> createState() => _FundSelectionScreenState();
+}
 
-// class _FundSelectionScreenState extends ConsumerState<FundSelectionScreen> {
-//   final TextEditingController _searchController = TextEditingController();
-//   String selectedFilter = 'All';
+class _FundSelectionScreenState extends ConsumerState<FundSelectionScreen> {
+  // final TextEditingController _searchController = TextEditingController();
+  String selectedFilter = 'All';
 
-//   // Static fund list based on your images
-//   final List<FundModel> staticFunds = [
-//     FundModel(
-//       name: 'SBI Nifty 50 ETF',
-//       type: 'Equity',
-//       fiveYearCAGR: 17.7,
-//       threeYearCAGR: 13.19,
-//       aum: 20815.73,
-//       sharpe: 0.8,
-//     ),
-//     FundModel(
-//       name: 'SBI BSE Sensex ETF',
-//       type: 'Equity',
-//       fiveYearCAGR: 16.82,
-//       threeYearCAGR: 12.29,
-//       aum: 11725.54,
-//       sharpe: 0.74,
-//     ),
-//     FundModel(
-//       name: 'Parag Parikh Flexi Cap Fund - Regular Plan',
-//       type: 'Equity',
-//       fiveYearCAGR: 21.77,
-//       threeYearCAGR: 20.49,
-//       aum: 11328.67,
-//       sharpe: 1.23,
-//     ),
-//     FundModel(
-//       name: 'HDFC Balanced Advantage Fund - Regular Plan',
-//       type: 'Hybrid',
-//       fiveYearCAGR: 22.34,
-//       threeYearCAGR: 18.24,
-//       aum: 10772.60,
-//       sharpe: 1.4,
-//     ),
-//     FundModel(
-//       name: 'Aditya Birla Sun Life Liquid Fund - Direct Plan',
-//       type: 'Debt',
-//       fiveYearCAGR: 5.73,
-//       threeYearCAGR: 7.13,
-//       aum: 51915.25,
-//       sharpe: 1.59,
-//     ),
-//     FundModel(
-//       name: 'ICICI Prudential Large Cap Fund',
-//       type: 'Equity',
-//       fiveYearCAGR: 25.54,
-//       threeYearCAGR: 21.63,
-//       aum: 5375.52,
-//       sharpe: 1.41,
-//     ),
-//   ];
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(dashboardProvider).Basketsearch("");
+    });
+  }
 
-//   List<FundModel> get filteredFunds {
-//     List<FundModel> funds = staticFunds;
+
+  List<FundListModel> getFilteredFunds(DashboardProvider strategy) {
+    // Convert API data to FundModel
+    List<FundListModel> funds = (strategy.basketSearchItems ?? []).map((item) => FundListModel(
+      name: item.schemeName ?? "Unknown Scheme",
+      type: _getFundTypeFromScheme(item.schemeType),
+      fiveYearCAGR: 0.0,
+      threeYearCAGR: 0.0,
+      aum: double.tryParse(item.aUM ?? "0") ?? 0.0,
+      sharpe: 0.0,
+      aMCCode: item.aMCCode,
+      isin: item.iSIN,
+    )).toList();
     
-//     // Apply filter
-//     if (selectedFilter != 'All') {
-//       funds = funds.where((fund) => fund.type == selectedFilter).toList();
-//     }
+    // Apply filter
+    if (selectedFilter != 'All') {
+      funds = funds.where((fund) => fund.type == selectedFilter).toList();
+    }
     
-//     // Apply search
-//     if (_searchController.text.isNotEmpty) {
-//       funds = funds.where((fund) => 
-//         fund.name.toLowerCase().contains(_searchController.text.toLowerCase())
-//       ).toList();
-//     }
+    // Apply search
+    if (strategy.searchController.text.isNotEmpty) {
+      funds = funds.where((fund) => 
+        fund.name.toLowerCase().contains(strategy.searchController.text.toLowerCase())
+      ).toList();
+    }
     
-//     return funds;
-//   }
+    return funds.toList();
+  }
 
-//   @override
-//   Widget build(BuildContext context) {
-//     final theme = ref.watch(themeProvider);
-//     final strategy = ref.watch(dashboardProvider);
+  @override
+  Widget build(BuildContext context) {
+    final theme = ref.watch(themeProvider);
+    final strategy = ref.watch(dashboardProvider);
     
-//     return Scaffold(
-//       backgroundColor: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-//       appBar: AppBar(
-//         leadingWidth: 48,
-//         titleSpacing: 0,
-//         centerTitle: false,
-//         leading: Material(
-//           color: Colors.transparent,
-//           shape: const CircleBorder(),
-//           clipBehavior: Clip.hardEdge,
-//           child: InkWell(
-//             customBorder: const CircleBorder(),
-//             onTap: () => Navigator.pop(context),
-//             child: Container(
-//               width: 44,
-//               height: 44,
-//               alignment: Alignment.center,
-//               child: Icon(
-//                 Icons.arrow_back_ios_outlined,
-//                 size: 18,
-//                 color: theme.isDarkMode
-//                     ? colors.textSecondaryDark
-//                     : colors.textSecondaryLight,
-//               ),
-//             ),
-//           ),
-//         ),
-//         elevation: 0.2,
-//         title: TextWidget.titleText(
-//           text: "Add Funds to Strategy",
-//           textOverflow: TextOverflow.ellipsis,
-//           theme: theme.isDarkMode,
-//           color: theme.isDarkMode
-//               ? colors.textPrimaryDark
-//               : colors.textPrimaryLight,
-//           fw: 1,
-//         ),
-//         actions: [
-//           if (strategy.selectedFunds.isNotEmpty)
-//             TextButton(
-//               onPressed: () {
-//                 Navigator.push(
-//                   context,
-//                   MaterialPageRoute(
-//                     builder: (context) => const StrategyBuilderScreen(),
-//                   ),
-//                 );
-//               },
-//               child: TextWidget.subText(
-//                 text: 'Next',
-//                 theme: theme.isDarkMode,
-//                 color: colors.colorBlue,
-//                 fw: 1,
-//               ),
-//             ),
-//         ],
-//       ),
-//       body: SafeArea(
-//         child: Column(
-//           children: [
-//             // Search and Filter Section
-//             Container(
-//               padding: const EdgeInsets.all(16),
-//               child: Column(
-//                 children: [
-//                   // Search Bar
-//                   Container(
-//                     height: 40,
-//                     decoration: BoxDecoration(
-//                       color: theme.isDarkMode ? colors.searchBgDark : colors.searchBg,
-//                       borderRadius: BorderRadius.circular(20),
-//                     ),
-//                     child: TextFormField(
-//                       controller: _searchController,
-//                       style: TextWidget.textStyle(
-//                         fontSize: 16,
-//                         theme: theme.isDarkMode,
-//                         color: theme.isDarkMode
-//                             ? colors.textPrimaryDark
-//                             : colors.textPrimaryLight,
-//                         fw: 0,
-//                       ),
-//                       decoration: InputDecoration(
-//                         hintText: "Search funds",
-//                         hintStyle: TextWidget.textStyle(
-//                           fontSize: 14,
-//                           theme: theme.isDarkMode,
-//                           color: theme.isDarkMode
-//                               ? colors.textSecondaryDark
-//                               : colors.textSecondaryLight,
-//                           fw: 0,
-//                         ),
-//                         prefixIcon: Icon(
-//                           Icons.search,
-//                           color: theme.isDarkMode
-//                               ? colors.textSecondaryDark
-//                               : colors.textSecondaryLight,
-//                         ),
-//                         border: InputBorder.none,
-//                         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-//                       ),
-//                       onChanged: (value) => setState(() {}),
-//                     ),
-//                   ),
-//                   const SizedBox(height: 12),
-                  
-//                   // Filter Chips
-//                   SizedBox(
-//                     height: 40,
-//                     child: ListView(
-//                       scrollDirection: Axis.horizontal,
-//                       children: ['All', 'Equity', 'Debt', 'Hybrid', 'Commodities']
-//                           .map((filter) => _buildFilterChip(filter, theme))
-//                           .toList(),
-//                     ),
-//                   ),
-//                 ],
-//               ),
-//             ),
-            
-//             // Selected Funds Count
-//             if (strategy.selectedFunds.isNotEmpty)
-//               Container(
-//                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-//                 child: Row(
-//                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//                   children: [
-//                     TextWidget.subText(
-//                       text: '${strategy.selectedFunds.length} funds selected',
-//                       theme: theme.isDarkMode,
-//                       color: theme.isDarkMode
-//                           ? colors.textSecondaryDark
-//                           : colors.textSecondaryLight,
-//                       fw: 0,
-//                     ),
-//                     TextButton(
-//                       onPressed: () => ref.read(dashboardProvider).clearStrategy(),
-//                       child: TextWidget.subText(
-//                         text: 'Clear All',
-//                         theme: theme.isDarkMode,
-//                         color: colors.colorBlue,
-//                         fw: 0,
-//                       ),
-//                     ),
-//                   ],
-//                 ),
-//               ),
-            
-//             // Fund List
-//             Expanded(
-//               child: ListView.separated(
-//                 padding: const EdgeInsets.symmetric(horizontal: 16),
-//                 separatorBuilder: (_, __) => const Divider(height: 1),
-//                 itemCount: filteredFunds.length,
-//                 itemBuilder: (context, index) {
-//                   final fund = filteredFunds[index];
-//                   final isSelected = strategy.selectedFunds.any((f) => f.name == fund.name);
-                  
-//                   return _buildFundItem(fund, isSelected, theme);
-//                 },
-//               ),
-//             ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-
-//   Widget _buildFilterChip(String filter, ThemesProvider theme) {
-//     final isSelected = selectedFilter == filter;
-    
-//     return Container(
-//       margin: const EdgeInsets.only(right: 8),
-//       child: FilterChip(
-//         label: TextWidget.subText(
-//           text: filter,
-//           theme: theme.isDarkMode,
-//           color: isSelected
-//               ? colors.colorWhite
-//               : (theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight),
-//           fw: isSelected ? 1 : 0,
-//         ),
-//         selected: isSelected,
-//         onSelected: (selected) {
-//           setState(() {
-//             selectedFilter = filter;
-//           });
-//         },
-//         backgroundColor: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-//         selectedColor: colors.colorBlue,
-//         side: BorderSide(
-//           color: isSelected
-//               ? colors.colorBlue
-//               : (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight),
-//         ),
-//       ),
-//     );
-//   }
-
-//   Widget _buildFundItem(FundModel fund, bool isSelected, ThemesProvider theme) {
-//     return Material(
-//       color: Colors.transparent,
-//       child: InkWell(
-//         onTap: () {
-//           if (isSelected) {
-//             ref.read(dashboardProvider).removeFundFromStrategy(fund);
-//           } else {
-//             ref.read(dashboardProvider).addFundToStrategy(fund);
-//           }
-//         },
-//         child: Container(
-//           padding: const EdgeInsets.symmetric(vertical: 12),
-//           child: Row(
-//             children: [
-//               // Fund Type Icon
-//               Container(
-//                 width: 40,
-//                 height: 40,
-//                 decoration: BoxDecoration(
-//                   color: _getFundTypeColor(fund.type).withOpacity(0.1),
-//                   borderRadius: BorderRadius.circular(8),
-//                 ),
-//                 child: Icon(
-//                   _getFundTypeIcon(fund.type),
-//                   color: _getFundTypeColor(fund.type),
-//                   size: 20,
-//                 ),
-//               ),
-//               const SizedBox(width: 12),
-              
-//               // Fund Details
-//               Expanded(
-//                 child: Column(
-//                   crossAxisAlignment: CrossAxisAlignment.start,
-//                   children: [
-//                     TextWidget.subText(
-//                       text: fund.name,
-//                       theme: theme.isDarkMode,
-//                       color: theme.isDarkMode
-//                           ? colors.textPrimaryDark
-//                           : colors.textPrimaryLight,
-//                       fw: 0,
-//                     ),
-//                     const SizedBox(height: 4),
-//                     TextWidget.paraText(
-//                       text: fund.type.toUpperCase(),
-//                       theme: theme.isDarkMode,
-//                       color: theme.isDarkMode
-//                           ? colors.textSecondaryDark
-//                           : colors.textSecondaryLight,
-//                       fw: 0,
-//                     ),
-//                   ],
-//                 ),
-//               ),
-              
-//               // Performance Metrics
-//               Column(
-//                 crossAxisAlignment: CrossAxisAlignment.end,
-//                 children: [
-//                   Row(
-//                     children: [
-//                       Column(
-//                         crossAxisAlignment: CrossAxisAlignment.center,
-//                         children: [
-//                           TextWidget.subText(
-//                             text: '${fund.fiveYearCAGR.toStringAsFixed(1)}%',
-//                             theme: theme.isDarkMode,
-//                             color: theme.isDarkMode
-//                                 ? colors.textPrimaryDark
-//                                 : colors.textPrimaryLight,
-//                             fw: 0,
-//                           ),
-//                           TextWidget.captionText(
-//                             text: '5 yr CAGR',
-//                             theme: theme.isDarkMode,
-//                             color: theme.isDarkMode
-//                                 ? colors.textSecondaryDark
-//                                 : colors.textSecondaryLight,
-//                             fw: 0,
-//                           ),
-//                         ],
-//                       ),
-//                       const SizedBox(width: 12),
-//                       Column(
-//                         crossAxisAlignment: CrossAxisAlignment.center,
-//                         children: [
-//                           TextWidget.subText(
-//                             text: '${fund.sharpe.toStringAsFixed(2)}',
-//                             theme: theme.isDarkMode,
-//                             color: theme.isDarkMode
-//                                 ? colors.textPrimaryDark
-//                                 : colors.textPrimaryLight,
-//                             fw: 0,
-//                           ),
-//                           TextWidget.captionText(
-//                             text: 'Sharpe',
-//                             theme: theme.isDarkMode,
-//                             color: theme.isDarkMode
-//                                 ? colors.textSecondaryDark
-//                                 : colors.textSecondaryLight,
-//                             fw: 0,
-//                           ),
-//                         ],
-//                       ),
-//                       const SizedBox(width: 12),
+    return Scaffold(
+      backgroundColor: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+      appBar: AppBar(
+        leadingWidth: 48,
+        titleSpacing: 0,
+        centerTitle: false,
+        leading: Material(
+          color: Colors.transparent,
+          shape: const CircleBorder(),
+          clipBehavior: Clip.hardEdge,
+          child: InkWell(
+            customBorder: const CircleBorder(),
+            onTap: () => Navigator.pop(context),
+            child: Container(
+              width: 44,
+              height: 44,
+              alignment: Alignment.center,
+              child: Icon(
+                Icons.arrow_back_ios_outlined,
+                size: 18,
+                color: theme.isDarkMode
+                    ? colors.textSecondaryDark
+                    : colors.textSecondaryLight,
+              ),
+            ),
+          ),
+        ),
+        elevation: 0.2,
+        title: TextWidget.titleText(
+          text: "Add Funds to Strategy",
+          textOverflow: TextOverflow.ellipsis,
+          theme: theme.isDarkMode,
+          color: theme.isDarkMode
+              ? colors.textPrimaryDark
+              : colors.textPrimaryLight,
+          fw: 1,
+        ),
+        // actions: [
+        //   if (strategy.selectedFunds.isNotEmpty)
+        //     TextButton(
+        //       onPressed: () {
+        //        Navigator.pop(context);
+        //       },
+        //       child: TextWidget.subText(
+        //         text: 'Next',
+        //         theme: theme.isDarkMode,
+        //         color: colors.colorBlue,
+        //         fw: 1,
+        //       ),
+        //     ),
+        // ],
+      ),
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Search and Filter Section
+            Container(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  // Search Bar
+                  Container(
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: theme.isDarkMode ? colors.searchBgDark : colors.searchBg,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: TextFormField(
+                      controller: strategy.searchController,
+                      style: TextWidget.textStyle(
+                        fontSize: 16,
+                        theme: theme.isDarkMode,
+                        color: theme.isDarkMode
+                            ? colors.textPrimaryDark
+                            : colors.textPrimaryLight,
+                        fw: 0,
+                      ),
+                      decoration: InputDecoration(
+                        hintText: "Search funds",
+                        hintStyle: TextWidget.textStyle(
+                          fontSize: 14,
+                          theme: theme.isDarkMode,
+                          color: theme.isDarkMode
+                              ? colors.textSecondaryDark
+                              : colors.textSecondaryLight,
+                          fw: 0,
+                        ),
+                        prefixIcon: Icon(
+                          Icons.search,
+                          color: theme.isDarkMode
+                              ? colors.textSecondaryDark
+                              : colors.textSecondaryLight,
+                        ),
+                        suffixIcon: strategy.searchController.text.isNotEmpty ? Material(
+                          color: Colors.transparent,
+                          shape: const CircleBorder(),
+                          clipBehavior: Clip.hardEdge,
+                          child: InkWell(
+                            customBorder: const CircleBorder(),
+                            onTap: () {
+                             strategy.clearsearchcontroller();
+                            },
+                            child: SvgPicture.asset(
+                              assets.removeIcon,
+                              width: 18,
+                              height: 18,
+                              color: theme.isDarkMode
+                                  ? colors.textSecondaryDark
+                                  : colors.textSecondaryLight,
+                              fit: BoxFit.scaleDown,
+                            ),
+                          ),
+                        ) : null,
+                        border: InputBorder.none,
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
+                      ),
                       
-//                       // Selection Indicator
-//                       Container(
-//                         width: 24,
-//                         height: 24,
-//                         decoration: BoxDecoration(
-//                           shape: BoxShape.circle,
-//                           color: isSelected ? colors.colorBlue : Colors.transparent,
-//                           border: Border.all(
-//                             color: isSelected 
-//                                 ? colors.colorBlue 
-//                                 : (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight),
-//                           ),
-//                         ),
-//                         child: isSelected
-//                             ? const Icon(
-//                                 Icons.check,
-//                                 size: 16,
-//                                 color: Colors.white,
-//                               )
-//                             : null,
-//                       ),
-//                     ],
-//                   ),
-//                 ],
-//               ),
-//             ],
-//           ),
-//         ),
-//       ),
-//     );
-//   }
+                      onChanged: (value) {
+                        strategy.searchController.text = value;
+                        strategy.Basketsearch(value);
+                      }
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  
+                  // Filter Chips
+                  if(strategy.searchController.text.isEmpty)
+                  SizedBox(
+                    height: 40,
+                    child: ListView(
+                      scrollDirection: Axis.horizontal,
+                      children: ['All', 'Equity', 'Debt', 'Hybrid', 'Commodities']
+                          .map((filter) => _buildFilterChip(filter, theme))
+                          .toList(),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            
+            // Search Results Section
+            if (strategy.searchController.text.isNotEmpty)
+              if (strategy.basketSearchItems?.isNotEmpty ?? false)
+                Expanded(child: _buildSearchResultsList(context, strategy, theme))
+              else
+                const Padding(
+                  padding: EdgeInsets.only(top: 250),
+                  child: NoDataFound(),
+                ),
+            // Selected Funds Count
+            if (strategy.selectedFunds.isNotEmpty && strategy.searchController.text.isEmpty)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        TextWidget.subText(
+                          text: '${strategy.selectedFunds.length} funds selected',
+                          theme: theme.isDarkMode,
+                          color: theme.isDarkMode
+                              ? colors.textSecondaryDark
+                              : colors.textSecondaryLight,
+                          fw: 0,
+                        ),
+                        TextButton(
+                          onPressed: () => ref.read(dashboardProvider).clearStrategy(),
+                          child: TextWidget.subText(
+                            text: 'Clear All',
+                            theme: theme.isDarkMode,
+                            color: colors.colorBlue,
+                            fw: 0,
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (strategy.selectedFunds.isNotEmpty)
+                      SizedBox(
+                        width: double.infinity,
+                        height: 45,
+                        child: OutlinedButton(
+                          style: OutlinedButton.styleFrom(
+                            backgroundColor: theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
+                            side: BorderSide.none,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          child: TextWidget.subText(
+                            text: 'Add Funds to Strategy',
+                            theme: theme.isDarkMode,
+                            color: colors.colorWhite,
+                            fw: 1,
+                          ),
+                        ),
+                      ),
+                      
+                  ],
+                ),
+              ),
+            
+            // Fund List
+            if (strategy.searchController.text.isEmpty)
+              Expanded(
+                child: ListView.separated(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  separatorBuilder: (_, __) => const Divider(height: 1),
+                  itemCount: getFilteredFunds(strategy).length,
+                  itemBuilder: (context, index) {
+                    final fund = getFilteredFunds(strategy)[index];
+                    final isSelected = strategy.selectedFunds.any((f) => f.name == fund.name);
+                    
+                    return _buildFundItem(fund, isSelected, theme);
+                  },
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
 
-//   Color _getFundTypeColor(String type) {
-//     switch (type.toLowerCase()) {
-//       case 'equity':
-//         return colors.colorBlue;
-//       case 'debt':
-//         return colors.successLight;
-//       case 'hybrid':
-//         return colors.KColorLightBlueBg;
-//       case 'commodities':
-//         return colors.colorbluegrey;
-//       default:
-//         return colors.textSecondaryLight;
-//     }
-//   }
+  Widget _buildFilterChip(String filter, ThemesProvider theme) {
+    final isSelected = selectedFilter == filter;
+    
+    return Container(
+      margin: const EdgeInsets.only(right: 4),
+      child: FilterChip(
+        label: TextWidget.subText(
+          text: filter,
+          theme: theme.isDarkMode,
+          color: isSelected
+              ? colors.colorWhite
+              : (theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight),
+          fw: isSelected ? 0 : 3,
+        ),
+        selected: isSelected,
+        onSelected: (selected) {
+          setState(() {
+            selectedFilter = filter;
+          });
+        },
+        backgroundColor: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+        selectedColor: colors.colorBlue,
+        side: BorderSide(
+          color: isSelected
+              ? colors.colorBlue
+              : (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight),
+        ),
+      ),
+    );
+  }
 
-//   IconData _getFundTypeIcon(String type) {
-//     switch (type.toLowerCase()) {
-//       case 'equity':
-//         return Icons.trending_up;
-//       case 'debt':
-//         return Icons.account_balance;
-//       case 'hybrid':
-//         return Icons.pie_chart;
-//       case 'commodities':
-//         return Icons.landscape;
-//       default:
-//         return Icons.monetization_on;
-//     }
-//   }
+  Widget _buildFundItem(FundListModel fund, bool isSelected, ThemesProvider theme) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          if (isSelected) {
+            ref.read(dashboardProvider).removeFundFromStrategy(fund);
+          } else {
+            ref.read(dashboardProvider).addFundToStrategy(fund);
+          }
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(
+                color: theme.isDarkMode 
+                    ? colors.darkColorDivider 
+                    : colors.colorDivider,
+                width: 0.5,
+              ),
+            ),
+          ),
+          child: Row(
+            children: [
+              // Fund Image
+              CircleAvatar(
+                radius: 24,
+                backgroundColor: theme.isDarkMode ? colors.darkGrey : colors.colorGrey,
+                child: CircleAvatar(
+                  radius: 22,
+                  backgroundColor: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                  child: ClipOval(
+                    child: Image.network(
+                      "https://v3.mynt.in/mfapi/static/images/mf/${fund.aMCCode ?? ""}.png",
+                      width: 44,
+                      height: 44,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Icon(
+                          _getFundTypeIcon(fund.type),
+                          color: _getFundTypeColor(fund.type),
+                          size: 24,
+                        );
+                      },
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            value: loadingProgress.expectedTotalBytes != null
+                                ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                                : null,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              
+              // Fund Details
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextWidget.subText(
+                      text: _capitalizeEachWord(fund.name),
+                      theme: theme.isDarkMode,
+                      color: theme.isDarkMode
+                          ? colors.textPrimaryDark
+                          : colors.textPrimaryLight,
+                      fw: 0,
+                      maxLines: 2,
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: _getFundTypeColor(fund.type).withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: _getFundTypeColor(fund.type).withOpacity(0.3),
+                              width: 0.5,
+                            ),
+                          ),
+                          child: TextWidget.captionText(
+                            text: fund.type.toUpperCase(),
+                            theme: theme.isDarkMode,
+                            color: _getFundTypeColor(fund.type),
+                            fw: 0,
+                          ),
+                        ),
+                        if (fund.aum > 0) ...[
+                          const SizedBox(width: 8),
+                          TextWidget.captionText(
+                            text: 'AUM: ₹${_formatAumValue(fund.aum)}',
+                            theme: theme.isDarkMode,
+                            color: theme.isDarkMode
+                                ? colors.textSecondaryDark
+                                : colors.textSecondaryLight,
+                            fw: 0,
+                          ),
+                        ],
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              
+              // Selection Indicator
+              Container(
+                width: 24,
+                height: 24,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: isSelected ? colors.colorBlue : Colors.transparent,
+                  border: Border.all(
+                    color: isSelected 
+                        ? colors.colorBlue 
+                        : (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight),
+                    width: 2,
+                  ),
+                ),
+                child: isSelected
+                    ? const Icon(
+                        Icons.check,
+                        size: 16,
+                        color: Colors.white,
+                      )
+                    : null,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
-//   @override
-//   void dispose() {
-//     _searchController.dispose();
-//     super.dispose();
-//   }
-// }
+  Color _getFundTypeColor(String type) {
+    final theme = ref.watch(themeProvider);
+    switch (type.toLowerCase()) {
+      case 'equity':
+        return theme.isDarkMode ? colors.successDark : colors.successLight;
+      case 'debt':
+        return theme.isDarkMode ? colors.kColorRedDarkTheme : colors.kColorRedDarkTheme;
+      case 'hybrid':
+        return theme.isDarkMode ? colors.lossDark : colors.lossLight;
+      case 'commodities':
+        return theme.isDarkMode ? colors.pending : colors.pending;
+      default:
+        return theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight;
+    }
+  }
+
+  IconData _getFundTypeIcon(String type) {
+    switch (type.toLowerCase()) {
+      case 'equity':
+        return Icons.trending_up;
+      case 'debt':
+        return Icons.account_balance;
+      case 'hybrid':
+        return Icons.pie_chart;
+      case 'commodities':
+        return Icons.landscape;
+      default:
+        return Icons.monetization_on;
+    }
+  }
+
+  String _formatAumValue(double aum) {
+    if (aum >= 10000000) { // 1 crore
+      return '${(aum / 10000000).toStringAsFixed(1)}Cr';
+    } else if (aum >= 100000) { // 1 lakh
+      return '${(aum / 100000).toStringAsFixed(1)}L';
+    } else if (aum >= 1000) { // 1 thousand
+      return '${(aum / 1000).toStringAsFixed(1)}K';
+    } else {
+      return aum.toStringAsFixed(0);
+    }
+  }
+
+  String _capitalizeEachWord(String text) {
+    if (text.isEmpty) return text;
+    
+    return text.split(' ').map((word) {
+      if (word.isEmpty) return word;
+      return word[0].toUpperCase() + word.substring(1).toLowerCase();
+    }).join(' ');
+  }
+
+  Widget _buildSearchResultsList(
+      BuildContext context, DashboardProvider strategy, ThemesProvider theme) {
+    return ListView.builder(
+        shrinkWrap: true,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        physics: const AlwaysScrollableScrollPhysics(),
+        itemCount: strategy.basketSearchItems?.length ?? 0,
+        itemBuilder: (BuildContext context, int index) {
+          final item = strategy.basketSearchItems?[index];
+          if (item == null) return const SizedBox.shrink();
+
+          final fund = FundListModel(
+            name: item.schemeName ?? "Unknown Scheme",
+            type: _getFundTypeFromScheme(item.schemeType),
+            fiveYearCAGR: 0.0,
+            threeYearCAGR: 0.0,
+            aum: double.tryParse(item.aUM ?? "0") ?? 0.0,
+            sharpe: 0.0,
+            aMCCode: item.aMCCode,
+            isin: item.iSIN,
+          );
+          
+          final isSelected = strategy.isFundSelected(fund);
+
+          return Container(
+            margin: const EdgeInsets.only(bottom: 8),
+            decoration: BoxDecoration(
+              color: theme.isDarkMode ? colors.darkGrey : colors.colorWhite,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: theme.isDarkMode 
+                    ? colors.darkColorDivider 
+                    : colors.colorDivider,
+                width: 0.5,
+              ),
+            ),
+            child: InkWell(
+              onTap: () {
+                if (isSelected) {
+                  strategy.removeFundFromStrategy(fund);
+                } else {
+                  strategy.addFundToStrategy(fund);
+                }
+              },
+              borderRadius: BorderRadius.circular(12),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    // Fund Image
+                    CircleAvatar(
+                      radius: 24,
+                      backgroundColor: theme.isDarkMode ? colors.colorBlack : colors.colorGrey,
+                      child: CircleAvatar(
+                        radius: 22,
+                        backgroundColor: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                        child: ClipOval(
+                          child: Image.network(
+                            "https://v3.mynt.in/mfapi/static/images/mf/${item.aMCCode ?? ""}.png",
+                            width: 44,
+                            height: 44,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Icon(
+                                _getFundTypeIcon(fund.type),
+                                color: _getFundTypeColor(fund.type),
+                                size: 24,
+                              );
+                            },
+                            loadingBuilder: (context, child, loadingProgress) {
+                              if (loadingProgress == null) return child;
+                              return SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  value: loadingProgress.expectedTotalBytes != null
+                                      ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                                      : null,
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    
+                    // Fund Details
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          TextWidget.subText(
+                            text: _capitalizeEachWord(item.schemeName ?? "Unknown Scheme"),
+                            theme: theme.isDarkMode,
+                            color: theme.isDarkMode
+                                ? colors.textPrimaryDark
+                                : colors.textPrimaryLight,
+                            fw: 0,
+                            maxLines: 2,
+                          ),
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: _getFundTypeColor(fund.type).withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: _getFundTypeColor(fund.type).withOpacity(0.3),
+                                    width: 0.5,
+                                  ),
+                                ),
+                                child: TextWidget.captionText(
+                                  text: fund.type.toUpperCase(),
+                                  theme: theme.isDarkMode,
+                                  color: _getFundTypeColor(fund.type),
+                                  fw: 0,
+                                ),
+                              ),
+                              if (fund.aum > 0) ...[
+                                const SizedBox(width: 8),
+                                TextWidget.captionText(
+                                  text: 'AUM: ₹${_formatAumValue(fund.aum)}',
+                                  theme: theme.isDarkMode,
+                                  color: theme.isDarkMode
+                                      ? colors.textSecondaryDark
+                                      : colors.textSecondaryLight,
+                                  fw: 0,
+                                ),
+                              ],
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    
+                    // Selection Indicator
+                    Container(
+                      width: 24,
+                      height: 24,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: isSelected ? colors.colorBlue : Colors.transparent,
+                        border: Border.all(
+                          color: isSelected 
+                              ? colors.colorBlue 
+                              : (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight),
+                          width: 2,
+                        ),
+                      ),
+                      child: isSelected
+                          ? const Icon(
+                              Icons.check,
+                              size: 16,
+                              color: Colors.white,
+                            )
+                          : null,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        });
+  }
+
+  String _getFundTypeFromScheme(String? schemeType) {
+    if (schemeType == null) return "Equity";
+    final type = schemeType.toLowerCase();
+    if (type.contains("debt")) return "Debt";
+    if (type.contains("hybrid")) return "Hybrid";
+    if (type.contains("commodity")) return "Commodities";
+    return "Equity";
+  }
+
+
+  // @override
+  // void dispose() {
+  //   _searchController.dispose();
+  //   super.dispose();
+  // }
+}
 
