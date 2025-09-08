@@ -739,6 +739,47 @@
                 "exch_tm": "01-08-2025 17:16:17",
                 "exchordid": "521310325628401",
                 "rqty": "1"
-                }
+            },
+            {
+                "stat": "Ok",
+                "norenordno": "25090800021657",
+                "kidid": "1",
+                "uid": "ZP00231",
+                "actid": "ZP00231",
+                "exch": "NSE",
+                "tsym": "IDEA-EQ",
+                "rejby": "",
+                "src_uid": "",
+                "qty": "1",
+                "ipaddr": "HandshakeException: Connection terminated during handshake",
+                "ordenttm": "1757313708",
+                "trantype": "S",
+                "prctyp": "SL-LMT",
+                "ret": "DAY",
+                "rejreason": " ",
+                "token": "14366",
+                "mult": "1",
+                "prcftr": "1.000000",
+                "instname": "EQ",
+                "ordersource": "MOB",
+                "pp": "2",
+                "ls": "1",
+                "ti": "0.01",
+                "prc": "6.50",
+                "trgprc": "6.55",
+                "rprc": "6.50",
+                "dscqty": "0",
+                "brnchid": "BR01",
+                "C": "C",
+                "s_prdt_ali": "CNC",
+                "prd": "C",
+                "status": "TRIGGER_PENDING",
+                "st_intrn": "TRIGGER_PENDING",
+                "norentm": "12:11:48 08-09-2025",
+                "exch_tm": "08-09-2025 12:11:48",
+                "exchordid": "1100000035192450",
+                "rqty": "1"
+            }
+
     
 ]
