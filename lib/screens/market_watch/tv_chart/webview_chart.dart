@@ -428,13 +428,15 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
                     // Handle navigation after hiding chart
                     if (prevRoute != null && prevRoute.isNotEmpty) {
                       WidgetsBinding.instance.addPostFrameCallback((_) {
-                        if (prevRoute == Routes.optionChain) {
-                          Navigator.of(context).pushNamedAndRemoveUntil(
-                            Routes.optionChain, 
-                            (route) => route.settings.name == Routes.homeScreen || route.isFirst
-                          );
-                        } else {
-                          Navigator.of(context).pushReplacementNamed(prevRoute);
+                        if (mounted) {
+                          if (prevRoute == Routes.optionChain) {
+                            Navigator.of(context).pushNamedAndRemoveUntil(
+                              Routes.optionChain, 
+                              (route) => route.settings.name == Routes.homeScreen || route.isFirst
+                            );
+                          } else {
+                            Navigator.of(context).pushReplacementNamed(prevRoute);
+                          }
                         }
                       });
                     }
