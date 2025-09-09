@@ -583,37 +583,49 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                       //             : colors.colorWhite),
                                                       //     child: SvgPicture.asset(color: theme.isDarkMode ? colors.colorWhite : colors.colorGrey, orderInput.actPrcType == "Limit" || orderInput.actPrcType == "SL Limit" ? assets.ruppeIcon : assets.lock, fit: BoxFit.scaleDown)),
 
-                                                      suffixIcon: InkWell(
-                                                        onTap: () {
-                                                          setState(() {
-                                                            _GTTPriceTypeIsMarket =
-                                                                !_GTTPriceTypeIsMarket;
-                                                            orderInput.chngGTTPriceType(
-                                                                _GTTPriceTypeIsMarket
-                                                                    ? "Market"
-                                                                    : "Limit");
-                                                            if (orderInput
-                                                                        .actPrcType ==
-                                                                    "Market" ||
+                                                      suffixIcon: Material(
+                                                        color: Colors.transparent,
+                                                         shape: const CircleBorder(),
+                                                        child: InkWell(
+                                                               customBorder: const CircleBorder(),
+                                                                splashColor:
+                                                    theme.isDarkMode ? colors.splashColorDark : colors.splashColorLight,
+                                                highlightColor:
+                                                    theme.isDarkMode ? colors.highlightDark : colors.highlightLight,
+                                                          onTap: () {
+                                                            setState(() {
+                                                              _GTTPriceTypeIsMarket =
+                                                                  !_GTTPriceTypeIsMarket;
+                                                              orderInput.chngGTTPriceType(
+                                                                  _GTTPriceTypeIsMarket
+                                                                      ? "Market"
+                                                                      : "Limit");
+                                                              if (orderInput
+                                                                          .actPrcType ==
+                                                                      "Market" ||
+                                                                  orderInput
+                                                                          .actPrcType ==
+                                                                      "SL MKT") {
                                                                 orderInput
-                                                                        .actPrcType ==
-                                                                    "SL MKT") {
-                                                              orderInput
-                                                                      .priceCtrl
-                                                                      .text =
-                                                                  "Market";
-                                                            } else {
-                                                              orderInput
-                                                                      .priceCtrl
-                                                                      .text =
-                                                                  "${widget.gttOrderBook.ltp}";
-                                                            }
-                                                          });
-                                                        },
-                                                        child: SvgPicture.asset(
-                                                            assets.switchIcon,
-                                                            fit: BoxFit
-                                                                .scaleDown),
+                                                                        .priceCtrl
+                                                                        .text =
+                                                                    "Market";
+                                                              } else {
+                                                                orderInput
+                                                                        .priceCtrl
+                                                                        .text =
+                                                                    "${widget.gttOrderBook.ltp}";
+                                                              }
+                                                            });
+                                                          },
+                                                          child: Padding(
+                                                            padding: const EdgeInsets.all(12.0),
+                                                            child: SvgPicture.asset(
+                                                                assets.switchIcon,
+                                                                fit: BoxFit
+                                                                    .contain),
+                                                          ),
+                                                        ),
                                                       ),
                                                       textCtrl:
                                                           orderInput.priceCtrl,

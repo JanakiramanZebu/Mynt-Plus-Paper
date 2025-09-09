@@ -2057,9 +2057,9 @@ class _ModifyPlaceOrderScreenState
         children: [
           const SizedBox(height: 2),
           headerTitleText("Trigger", theme),
-          const SizedBox(height: 7),
+          const SizedBox(height: 8),
           SizedBox(
-              height: 44,
+              height: 45,
               child: CustomTextFormField(
                   fillColor: theme.isDarkMode
                       ? colors.darkGrey
@@ -2445,22 +2445,20 @@ Padding addValidityAndDisclosedQtyOption(ThemesProvider theme, BuildContext cont
                             ? const Color(0xFF121212)
                             : const Color(0xFFF1F3F8),
                         titlePadding: const EdgeInsets.symmetric(
-                            horizontal: 20, vertical: 8),
+                            horizontal: 8, vertical: 8),
                         shape: const RoundedRectangleBorder(
                             borderRadius: BorderRadius.all(Radius.circular(8))),
                         scrollable: true,
                         contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 12,
+                          horizontal: 16,
+                          vertical: 0,
                         ),
                         actionsPadding: const EdgeInsets.only(
                             bottom: 16, right: 16, left: 16, top: 8),
                         insetPadding: const EdgeInsets.symmetric(
                             horizontal: 30, vertical: 12),
-                        // title: Text('Enter Market Protection', style: textStyle(theme.isDarkMode ? colors.colorWhite : colors.colorBlack, 16, FontWeight.w600)),
 
-                        title: Column(children: [
-                          Row(
+                            title:   Row(
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
                               Material(
@@ -2480,7 +2478,7 @@ Padding addValidityAndDisclosedQtyOption(ThemesProvider theme, BuildContext cont
                                       ? colors.splashColorDark
                                       : colors.splashColorLight,
                                   child: Padding(
-                                    padding: const EdgeInsets.all(6.0),
+                                    padding: const EdgeInsets.all(4.0),
                                     child: Icon(
                                       Icons.close_rounded,
                                       size: 22,
@@ -2493,7 +2491,21 @@ Padding addValidityAndDisclosedQtyOption(ThemesProvider theme, BuildContext cont
                               ),
                             ],
                           ),
-                          const SizedBox(height: 12),
+                        
+
+                        content: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                          
+                        
+                          // const SizedBox(height: 12),                          
+                           TextWidget.subText(
+                            text: "Enter Market Protection",
+                            color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                            theme: theme.isDarkMode,
+                            fw: 1,
+                          ),
+                          const SizedBox(height: 8),
                           SizedBox(
                             height: 45,
                             child: CustomTextFormField(
@@ -2557,13 +2569,21 @@ Padding addValidityAndDisclosedQtyOption(ThemesProvider theme, BuildContext cont
                           if (mktProtErrorText.isNotEmpty)
                             Padding(
                               padding: const EdgeInsets.only(top: 8.0),
-                              child: Text(
-                                mktProtErrorText,
-                                style: const TextStyle(
-                                  color: Colors.red,
-                                  fontSize: 12,
-                                ),
-                              ),
+                              child:
+                              TextWidget.paraText(
+                                text: mktProtErrorText,
+                                color: theme.isDarkMode ? colors.lossDark : colors.lossLight,
+                                theme: theme.isDarkMode,
+                                fw: 0,
+                              ),                    
+                              
+                              //  Text(
+                              //   mktProtErrorText,
+                              //   style: const TextStyle(
+                              //     color: Colors.red,
+                              //     fontSize: 12,
+                              //   ),
+                              // ),
                             ),
                         ]),
 

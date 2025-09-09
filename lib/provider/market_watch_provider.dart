@@ -2868,15 +2868,26 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         }
       } else {
         setCurrentWatchlistPageIndex(0);
-      }
+      }      
       
       notifyListeners();
       await Future.delayed(const Duration(milliseconds: 100));
       notifyListeners();
       toggleLoadingOn(false);
-    } else {
-      ref.read(authProvider).ifSessionExpired(context);
-    }
+    }  else if (_addDeleteScripModel!.emsg ==
+          "Invalid Input : The scrips you're trying to add are already in the Market Watch or it's Invalid Scrip.") {
+        error(context, "Unable to create your watchlist. Please try again.");
+      }  else if (_addDeleteScripModel!.emsg ==
+          "Session Expired :  Invalid Session Key") {
+        try {
+          ref.read(authProvider).ifSessionExpired(context);
+        } catch (e) {
+          print("Error handling session expiration: $e");
+        }
+       } else {
+        error(context, "Failed to create watchlist: ${_addDeleteScripModel!.emsg}");
+       }
+
   }
 
   Future<bool> addDelMarketScrip(
