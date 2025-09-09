@@ -19,10 +19,8 @@ import '../../../provider/user_profile_provider.dart';
 import '../../../provider/webview_chart_provider.dart';
 import '../../../res/res.dart';
 import '../../../routes/route_names.dart';
-import '../../../sharedWidget/functions.dart';
 import '../../../res/global_state_text.dart';
-import '../../portfolio_screens/holdings/holding_detail_screen.dart';
-import '../../stocks/explore/stocks/etf_category_detail_screen.dart';
+import '../../../main.dart';
 // import '../scrip_depth_info.dart';
 
 /// Responsive utility class for chart screen
@@ -208,10 +206,12 @@ class ChartResponsiveHelper {
 
 class ChartScreenWebView extends StatefulWidget {
   final ChartArgs chartArgs;
+  final VoidCallback? onSearchTap;
 
   const ChartScreenWebView({
     super.key,
     required this.chartArgs,
+    this.onSearchTap,
   });
 
   @override
@@ -332,7 +332,6 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
                         child: InkWell(
                           onTap: () async {
                             if (transbtn) {
-                              ref.read(chartProvider.notifier).hideChart();
                               await placeOrderInput(
                                   tvChart, context, tvChart.getQuotes!, true);
                             }
@@ -362,7 +361,6 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
                         child: InkWell(
                           onTap: () async {
                             if (transbtn) {
-                              ref.read(chartProvider.notifier).hideChart();
                               await placeOrderInput(
                                   tvChart, context, tvChart.getQuotes!, false);
                             }
@@ -430,12 +428,12 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
                       WidgetsBinding.instance.addPostFrameCallback((_) {
                         if (mounted) {
                           if (prevRoute == Routes.optionChain) {
-                            Navigator.of(context).pushNamedAndRemoveUntil(
+                            rootNavigatorKey.currentState?.pushNamedAndRemoveUntil(
                               Routes.optionChain, 
                               (route) => route.settings.name == Routes.homeScreen || route.isFirst
                             );
                           } else {
-                            Navigator.of(context).pushReplacementNamed(prevRoute);
+                            rootNavigatorKey.currentState?.pushReplacementNamed(prevRoute);
                           }
                         }
                       });
@@ -583,11 +581,15 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
                   ref
                       .read(marketWatchProvider)
                       .requestMWScrip(context: context, isSubscribe: false);
-                  Navigator.pushNamed(
-                    context,
-                    Routes.searchScrip,
-                    arguments: "Chart||Is",
-                  );
+                  
+                  if (widget.onSearchTap != null) {
+                    widget.onSearchTap!();
+                  } else {
+                    Navigator.of(context).pushNamed(
+                      Routes.searchScrip,
+                      arguments: "Chart||Is",
+                    );
+                  }
                   // userProfile.setChartdialog(false);
                 },
                 child: Padding(
@@ -733,6 +735,9 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
 
   Future<void> placeOrderInput(MarketWatchProvider scripInfo, BuildContext ctx,
       GetQuotes depthData, bool transType) async {
+    // Hide chart before opening order screen
+    ref.read(chartProvider.notifier).hideChart();
+    
     final raw = ref.read(marketWatchProvider).getQuotes;
     await ref
         .read(marketWatchProvider)
@@ -752,10 +757,11 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
         raw: {});
 
     // Navigator.pop(context);
-    Navigator.pushNamed(ctx, Routes.placeOrderScreen, arguments: {
+    rootNavigatorKey.currentState?.pushNamed(Routes.placeOrderScreen, arguments: {
       "orderArg": orderArgs,
       "scripInfo": ref.read(marketWatchProvider).scripInfoModel!,
-      "isBskt": ''
+      "isBskt": '',
+      "fromChart": true, // Add flag to indicate coming from chart
     });
   }
 }

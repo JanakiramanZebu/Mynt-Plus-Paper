@@ -306,6 +306,7 @@ class AppRoutes {
             orderArg: args['orderArg'],
             scripInfo: args['scripInfo'],
             isBasket: args["isBskt"],
+            fromChart: args["fromChart"] ?? false,
           ),
           beginOffset: const Offset(0.0, 1.0),
         );

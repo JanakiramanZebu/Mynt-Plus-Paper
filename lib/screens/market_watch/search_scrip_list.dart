@@ -12,6 +12,8 @@ import '../../sharedWidget/custom_exch_badge.dart';
 import '../../sharedWidget/list_divider.dart';
 import '../../sharedWidget/no_data_found.dart';
 import '../../sharedWidget/snack_bar.dart';
+import '../../provider/chart_provider.dart';
+import '../../models/marketwatch_model/market_watch_scrip_model.dart';
 
 class SearchScripList extends StatefulWidget {
   final List<ScripNewValue> searchValue;
@@ -88,6 +90,21 @@ print(!searchScrip.exarr.contains('"${scrip.exch}"'));
                       scrip.token.toString(),
                       scrip.tsym.toString(),
                     );
+                    
+                    // Show chart overlay with the selected script
+                    final chartArgs = ChartArgs(
+                      tsym: scrip.tsym.toString(),
+                      token: scrip.token.toString(),
+                      exch: scrip.exch.toString(),
+                    );
+                    
+                    // Preserve the previous route from the existing chart state
+                    final currentChartState = ref.read(chartProvider);
+                    ref.read(chartProvider.notifier).showChart(
+                      chartArgs, 
+                      previousRoute: currentChartState.previousRoute
+                    );
+                    
                     currentRouteName = 'Chart';
                     await searchScrip.searchClear();
                     Navigator.of(context).pop();
