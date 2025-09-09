@@ -1,7 +1,10 @@
 // ignore_for_file: unused_import
 // removed unused import
 
+import 'package:mynt_plus/models/explore_model/basket_backtest_analysis_model.dart';
+import 'package:mynt_plus/models/explore_model/basketcollection_model.dart';
 import 'package:mynt_plus/models/strategy_model.dart';
+import 'package:mynt_plus/provider/dashboard_provider.dart';
 
 import '../models/explore_model/ca_events_model.dart';
 import '../models/explore_model/portfolioanalisys_models.dart';
@@ -360,4 +363,153 @@ mixin StocksAPI on ApiCore {
       rethrow;
     }
   }
+
+  Future<SavedStrategyModel> fetchbasketlist() async {
+    try {
+      final uri = Uri.parse("http://192.168.5.207:8005/collections/portfolio_store");
+      final res = await apiClient.post(uri, headers: defaultHeaders, body: jsonEncode({"client_id": prefs.clientId}));
+      final json = jsonDecode(res.body);
+      print("fetchbasketlist response: ${res.body}");
+      return SavedStrategyModel.fromJson(json as Map<String, dynamic>);
+    } catch (e) {
+      print("fetchbasketlist Error: $e");
+      rethrow;
+    }
+  }
+
+  Future<Map<String, dynamic>> createbasketsStrategy({
+    required int yearIn,
+    required List<Map<String, dynamic>> schemeValues,
+    required String basketName,
+    String compareSymbol = "NSE:NIFTYBEES-EQ",
+    required double investmentAmount,
+    required String invesmentdetail,
+  }) async {
+    try {
+      final uri = Uri.parse("http://192.168.5.207:8005/collections/portfolio_store");
+      
+      final payload = {
+        "client_id": prefs.clientId,
+        "type_in": "add",
+        "name": basketName,
+        "years_in": yearIn,
+        "schema_values": schemeValues,
+        "compare_symbol": compareSymbol,
+        "invest_amount":investmentAmount,
+        "investment_details":invesmentdetail,
+      };
+      
+      final res = await apiClient.post(
+        uri, 
+        headers: defaultHeaders,
+        body: jsonEncode(payload),
+      );
+      
+      
+      final json = jsonDecode(res.body);
+      print("createbasketsStrategy response: ${res.body}");
+      return json;
+
+    } catch (e) {
+      print("createbasketsStrategy Error: $e");
+      rethrow;
+    }
+  }
+
+  Future<Map<String, dynamic>> updatebasketsStrategy({
+    required String uuid,
+    required int yearIn,
+    required List<Map<String, dynamic>> schemeValues,
+    required String basketName,
+    String compareSymbol = "NSE:NIFTYBEES-EQ",
+    required double investmentAmount,
+    required String invesmentdetail,
+  }) async {
+    try {
+      final uri = Uri.parse("http://192.168.5.207:8005/collections/portfolio_store");
+      
+      final payload = {
+        "client_id": prefs.clientId,
+        "type_in": "update",
+        "id": uuid,
+        "name": basketName,
+        "years_in": yearIn,
+        "schema_values": schemeValues,
+        "compare_symbol": compareSymbol,
+        "invest_amount": investmentAmount,
+        "investment_details": invesmentdetail,
+      };
+      
+      final res = await apiClient.post(
+        uri, 
+        headers: defaultHeaders,
+        body: jsonEncode(payload),
+      );
+      
+      final json = jsonDecode(res.body);
+      print("updatebasketsStrategy response: ${res.body}");
+      return json;
+
+    } catch (e) {
+      print("updatebasketsStrategy Error: $e");
+      rethrow;
+    }
+  }
+
+  Future<Response> deletebasketsStrategy(String uuid) async {
+    try {
+      final uri = Uri.parse("http://192.168.5.207:8005/collections/portfolio_store");
+      final res = await apiClient.post(uri, headers: defaultHeaders, body: jsonEncode({"client_id": prefs.clientId, "type_in": "remove", "id": uuid}));
+      return res;
+    } catch (e) {
+      print("deletebasketsStrategy Error: $e");
+      rethrow;
+    }
+    }
+
+    // Perform backtest analysis
+  Future<PortfolioAnalysisModel?> performBacktest(BacktestRequest request, String uuid) async {
+  try {
+    final payload = {
+      "client_id": prefs.clientId,
+      "type_in": "backtest",
+      "id": uuid,
+      "year_in": request.yearIn,
+      "investment_amount": request.investmentAmount,
+      "scheme_values": request.schemeValues.map((s) => {
+            "schema_name": s.schemaName,
+            "percentage": s.percentage,
+            "scheme_type": s.schemeType,
+          }).toList(),
+      "compare_symbol": request.compareSymbol,
+    };
+
+    print("Backtest API Payload: ${jsonEncode(payload)}");
+
+    final response = await apiClient.post(
+      Uri.parse("http://192.168.5.207:8005/collections/portfolio_analysis"),
+      headers: defaultHeaders,
+      body: jsonEncode(payload),
+    );
+
+    print("Backtest API Response Status: ${response.statusCode}");
+    print("Backtest API Response Body: ${response.body}");
+
+    if (response.statusCode == 200) {
+      try {
+        final jsonData = json.decode(response.body);
+        return PortfolioAnalysisModel.fromJson(jsonData as Map<String, dynamic>);
+      } catch (e) {
+        return null;
+      }
+    } else {
+      print("Backtest API Error: ${response.statusCode} ${response.body}");
+      return null;
+    }
+  } catch (e) {
+    print("performBacktest Exception: $e");
+    rethrow;
+  }
+}
+
 }

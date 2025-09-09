@@ -69,7 +69,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
   bool isSecu = false;
 
   late AnimationController anibuildctrl;
-  late Animation<double> _shakeAnimation;
+  // late Animation<double> _shakeAnimation;
   TextEditingController priceCtrl = TextEditingController();
   TextEditingController mktProtCtrl = TextEditingController();
   TextEditingController qtyCtrl = TextEditingController();
@@ -443,9 +443,9 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
         }
       });
 
-    _shakeAnimation = Tween<double>(begin: 0, end: 8).animate(
-      CurvedAnimation(parent: anibuildctrl, curve: Curves.elasticIn),
-    );
+    // _shakeAnimation = Tween<double>(begin: 0, end: 8).animate(
+    //   CurvedAnimation(parent: anibuildctrl, curve: Curves.elasticIn),
+    // );
   }
 
   @override
@@ -4631,7 +4631,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                       return const SizedBox(width: 8);
                     },
                     itemCount: widget.orderArg.exchange == "BSE" || widget.orderArg.exchange == "BFO"
-                        ? validityType.length
+                        ? validityTypes.length
                         : 2))
           ])),
           const SizedBox(width: 16),

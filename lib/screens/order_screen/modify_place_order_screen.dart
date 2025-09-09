@@ -19,8 +19,6 @@ import '../../provider/order_provider.dart';
 import '../../provider/thems.dart';
 import '../../sharedWidget/cust_text_formfield.dart';
 import '../../sharedWidget/custom_back_btn.dart';
-import '../../sharedWidget/custom_exch_badge.dart';
-import '../../sharedWidget/custom_switch_btn.dart';
 import '../../sharedWidget/custom_widget_button.dart';
 import '../../sharedWidget/no_internet_widget.dart';
 import '../../sharedWidget/snack_bar.dart';
@@ -57,22 +55,23 @@ class _ModifyPlaceOrderScreenState
   TextEditingController stopLossCtrl = TextEditingController();
   TextEditingController targetCtrl = TextEditingController();
   TextEditingController trailingTickCtrl = TextEditingController();
-  List<String> priceType = ["Limit", "Market", "SL Limit", "SL MKT"];
+  List<String> priceTypes = ["Limit", "Market", "SL Limit", "SL MKT"];
   // List<bool> isActivePrice = [];
-  List<String> validityType = ["Day", "IOC"];
+  List<String> validityTypes = ["DAY", "IOC", "EOS"];
   // List<bool> isActiveValidity = [true, false];
 
-  String prcType = "";
+  String priceType = "";
 
   int frezQty = 0;
   int lotSize = 0;
   int multiplayer = 0;
   String price = "0.00";
-  String validity = "DAY";
+  String validityType = "DAY";
   bool _isMarketOrder = false;
   bool _isStoplossOrder = false;
   bool _isBOCOOrderEnabled = false;
   bool isAdvancedOptionClicked = false;
+  bool _addValidityAndDisclosedQty = false;
   
   bool _hasValidCircuitBreakerValues = false;
   // String orderType = "Delivery";
@@ -90,12 +89,12 @@ class _ModifyPlaceOrderScreenState
 
     tik = double.parse(widget.scripInfo.ti.toString());
 
-    prcType = widget.modifyOrderArgs.prctyp!;
+    priceType = widget.modifyOrderArgs.prctyp!;
     // isActivePrice = [
-    //   prcType == 'LMT' ? true : false,
-    //   prcType == 'MKT' ? true : false,
-    //   prcType == 'SL-LMT' ? true : false,
-    //   prcType == 'SL-MKT' ? true : false
+    //   priceType == 'LMT' ? true : false,
+    //   priceType == 'MKT' ? true : false,
+    //   priceType == 'SL-LMT' ? true : false,
+    //   priceType == 'SL-MKT' ? true : false
     // ];
     int sfq = int.tryParse(widget.scripInfo.frzqty?.toString() ?? '1') ?? 1;
     lotSize = int.parse("${widget.scripInfo.ls ?? 0}");
@@ -103,6 +102,12 @@ class _ModifyPlaceOrderScreenState
     frezQty = sfq > 1 ? (sfq / lotSize).floor() * lotSize : lotSize;
 
     setState(() {
+
+      _isMarketOrder = [ "MKT", "SL-MKT"].contains(priceType);
+      isAdvancedOptionClicked = _isStoplossOrder = ["SL-LMT", "SL-MKT"].contains(priceType);
+
+      _isBOCOOrderEnabled = widget.modifyOrderArgs.sPrdtAli == "BO" || widget.modifyOrderArgs.sPrdtAli == "CO";
+
       multiplayer = int.parse((widget.orderArg.exchange == "MCX"
               ? widget.scripInfo.prcqqty
               : widget.orderArg.lotSize)
@@ -135,19 +140,18 @@ class _ModifyPlaceOrderScreenState
       triggerPriceCtrl =
           TextEditingController(text: "${widget.modifyOrderArgs.trgprc ?? 0}");
       discQtyCtrl = TextEditingController(text: widget.modifyOrderArgs.dscqty);
-      validity = widget.modifyOrderArgs.ret!.toUpperCase();
+      validityType = widget.modifyOrderArgs.ret!.toUpperCase();
 
-      // isActiveValidity = [
-      //   validity == 'DAY' ? true : false,
-      //   validity == 'IOC' ? true : false,
-      // ];
-      addValidity = validity.toUpperCase() == 'IOC' ||
+      _addValidityAndDisclosedQty =  widget.modifyOrderArgs.ret!.toUpperCase() == 'IOC' ||
               (widget.modifyOrderArgs.dscqty != null &&
                   int.parse(widget.modifyOrderArgs.dscqty.toString()) > 0)
-          ? true
-          : false;
+                ? true
+                : false;
 
-      if (prcType == "MKT" || prcType == "SL-MKT") {
+      isAdvancedOptionClicked = !isAdvancedOptionClicked ? _addValidityAndDisclosedQty : isAdvancedOptionClicked;
+
+
+      if (priceType == "MKT" || priceType == "SL-MKT") {
         double ltp = (double.parse("${widget.orderArg.ltp}") *
                 double.parse(
                     mktProtCtrl.text.isEmpty ? "0" : mktProtCtrl.text)) /
@@ -165,10 +169,7 @@ class _ModifyPlaceOrderScreenState
         price = priceCtrl.text;
       }
 
-      _isMarketOrder = prcType == "MKT";
-      _isStoplossOrder = prcType == "SL-LMT" || prcType == "SL-MKT";
-      _isBOCOOrderEnabled = widget.modifyOrderArgs.sPrdtAli == "BO" ||
-          widget.modifyOrderArgs.sPrdtAli == "CO";
+
 
       // Initialize circuit breaker validation flag
       _hasValidCircuitBreakerValues = widget.scripInfo.lc != null && 
@@ -263,9 +264,8 @@ class _ModifyPlaceOrderScreenState
                                           textOverflow: TextOverflow.ellipsis,
                                           maxLines: 1,
                                         color: theme.isDarkMode
-                                                                              ? colors.textPrimaryDark
-                                                                              : colors.textPrimaryLight,
-                                                                          
+                                            ? colors.textPrimaryDark
+                                            : colors.textPrimaryLight,        
                                           theme: false,
                                         ),
                                 ]),
@@ -333,7 +333,7 @@ class _ModifyPlaceOrderScreenState
                                 //                         priceCtrl.text =
                                 //                             "${widget.modifyOrderArgs.prc}";
                                 //                       }
-                                //                       prcType = isActivePrice[0] ? 'LMT' : isActivePrice[1] ? 'MKT' : isActivePrice[2] ? 'SL-LMT' : "SL-MKT";
+                                //                       priceType = isActivePrice[0] ? 'LMT' : isActivePrice[1] ? 'MKT' : isActivePrice[2] ? 'SL-LMT' : "SL-MKT";
                                 //                     });
                                 //                     FocusScope.of(context)
                                 //                         .unfocus();
@@ -355,7 +355,7 @@ class _ModifyPlaceOrderScreenState
                                 //                               : colors.colorWhite,
                                 //                       shape:
                                 //                           const StadiumBorder()),
-                                //                   child: Text(priceType[index],
+                                //                   child: Text(priceTypes[index],
                                 //                       style: textStyle(
                                 //                           !theme.isDarkMode
                                 //                               ? !isActivePrice[
@@ -381,7 +381,7 @@ class _ModifyPlaceOrderScreenState
                                 //             },
                                 //             itemCount:
                                 //                 widget.modifyOrderArgs.sPrdtAli == "BO" ||
-                                //                 widget.modifyOrderArgs.sPrdtAli == "CO" ? 3 : priceType.length))),
+                                //                 widget.modifyOrderArgs.sPrdtAli == "CO" ? 3 : priceTypes.length))),
                                 // const SizedBox(height: 3),
                                 // const Divider(color: Color(0xffDDDDDD)),
                                 Padding(
@@ -643,11 +643,11 @@ class _ModifyPlaceOrderScreenState
                                                       "Price", theme),
                                                   const SizedBox(width: 8),
                                                   TextWidget.subText(
-                                                      text: prcType == "MKT"
+                                                      text: priceType == "MKT"
                                                           ? "Market"
-                                                          : prcType == "SL-MKT"
+                                                          : priceType == "SL-MKT"
                                                               ? "SL MKT"
-                                                              : prcType ==
+                                                              : priceType ==
                                                                       "SL-LMT"
                                                                   ? "SL Limit"
                                                                   : "Limit",
@@ -738,9 +738,9 @@ class _ModifyPlaceOrderScreenState
                                                     theme: theme.isDarkMode,
                                                     fw: 0,
                                                   ),
-                                                  isReadable: prcType ==
+                                                  isReadable: priceType ==
                                                               "MKT" ||
-                                                          prcType == "SL-MKT"
+                                                          priceType == "SL-MKT"
                                                       ? true
                                                       : false,
                                                   // prefixIcon: Container(
@@ -788,195 +788,346 @@ class _ModifyPlaceOrderScreenState
                                     ],
                                   ),
                                 ),
-                                // const SizedBox(height: 16),
+                                const SizedBox(height: 16),
+                                
+                                 if (_isBOCOOrderEnabled) ...[
+                                  const SizedBox(height: 16),
+                                  stopLossOption(
+                                      theme, context, widget.scripInfo)
+                                ]
+                                else ...[
                                 // Advance Option section
-                                // Column(
-                                //   children: [
-                                //     GestureDetector(
-                                //       onTap: () {
-                                //         setState(() {
-                                //           isAdvancedOptionClicked =
-                                //               !isAdvancedOptionClicked;
-                                //           updatePriceType();
-                                //         });
-                                //       },
-                                //       child: Container(
-                                //         color: Colors
-                                //             .transparent, // To make the full width tappable
-                                //         height: 48,
-                                //         child: Center(
-                                //           child: Row(
-                                //             mainAxisSize: MainAxisSize.min,
-                                //             children: [
-                                //               Text('Advance',
-                                //                   style: textStyle(
-                                //                     colors.colorBlue,
-                                //                     14,
-                                //                     FontWeight.w600,
-                                //                   )),
-                                //               Padding(
-                                //                 padding: const EdgeInsets.only(
-                                //                     left: 4),
-                                //                 child: Icon(
-                                //                   isAdvancedOptionClicked
-                                //                       ? Icons.keyboard_arrow_up
-                                //                       : Icons.keyboard_arrow_down,
-                                //                   color: colors.colorBlue,
-                                //                 ),
-                                //               ),
-                                //             ],
-                                //           ),
-                                //         ),
-                                //       ),
-                                //     ),
-                                //     Visibility(
-                                //       visible: isAdvancedOptionClicked,
-                                //       child: Column(
-                                //         children: [
-                                //           CheckboxListTile(
-                                //               title: Text(
-                                //                 'Stoploss order',
-                                //                 style: textStyle(
-                                //                   theme.isDarkMode
-                                //                       ? colors.colorWhite
-                                //                       : colors.colorBlack,
-                                //                   14,
-                                //                   FontWeight.w400,
-                                //                 ),
-                                //               ),
-                                //               value: _isStoplossOrder,
-                                //               onChanged: (bool? value) {
-                                //                 setState(() {
-                                //                   _isStoplossOrder = value!;
-                                //                   updatePriceType();
-                                //                   // orderInput.chngPriceType(
-                                //                   //     priceType,
-                                //                   //     widget.orderArg.exchange);
-                                //                   marginUpdate();
-                                //                 });
-                                //               },
-                                //               controlAffinity:
-                                //                   ListTileControlAffinity
-                                //                       .trailing,
-                                //               activeColor: colors.colorBlue,
-                                //               checkboxShape:
-                                //                   const RoundedRectangleBorder(
-                                //                 borderRadius: BorderRadius.all(
-                                //                     Radius.circular(5)),
-                                //               )),
-                                //           if (prcType == "SL-LMT" ||
-                                //               prcType == "SL-MKT") ...[
-                                //             triggerOption(
-                                //                 theme, context, widget.scripInfo),
-                                //             Divider(
-                                //               color: theme.isDarkMode
-                                //                   ? colors.darkColorDivider
-                                //                   : colors.colorDivider,
-                                //             ),
-                                //           ],
+                                  const SizedBox(height: 16),
 
-                                //           // Divider(
-                                //           //     color: theme.isDarkMode
-                                //           //         ? colors.darkColorDivider
-                                //           //         : colors.colorDivider),
-                                //           // CheckboxListTile(
-                                //           //     title: Text(
-                                //           //       'After market order (AMO)',
-                                //           //       style: textStyle(
-                                //           //         theme.isDarkMode
-                                //           //             ? colors.colorWhite
-                                //           //             : colors.colorBlack,
-                                //           //         14,
-                                //           //         FontWeight.w400,
-                                //           //       ),
-                                //           //     ),
-                                //           //     value: _afterMarketOrder,
-                                //           //     onChanged: (bool? value) {
-                                //           //       setState(() {
-                                //           //         _afterMarketOrder = value!;
-                                //           //         //   isAmo = !isAmo;
-                                //           //       });
-                                //           //     },
-                                //           //     controlAffinity:
-                                //           //         ListTileControlAffinity
-                                //           //             .trailing,
-                                //           //     activeColor: colors.colorBlue,
-                                //           //     checkboxShape:
-                                //           //         const RoundedRectangleBorder(
-                                //           //       borderRadius: BorderRadius.all(
-                                //           //           Radius.circular(5)),
-                                //           //     )),
-                                //           // Divider(
-                                //           //     color: theme.isDarkMode
-                                //           //         ? colors.darkColorDivider
-                                //           //         : colors.colorDivider),
-                                //           // CheckboxListTile(
-                                //           //   title: Text(
-                                //           //     'Add validity & Disclosed quantity',
-                                //           //     style: textStyle(
-                                //           //       theme.isDarkMode
-                                //           //           ? colors.colorWhite
-                                //           //           : colors.colorBlack,
-                                //           //       14,
-                                //           //       FontWeight.w400,
-                                //           //     ),
-                                //           //   ),
-                                //           //   value: _addValidityAndDisclosedQty,
-                                //           //   onChanged: (bool? value) {
-                                //           //     setState(() {
-                                //           //       _addValidityAndDisclosedQty =
-                                //           //           value!;
-                                //           //     });
-                                //           //   },
-                                //           //   controlAffinity:
-                                //           //       ListTileControlAffinity
-                                //           //           .trailing,
-                                //           //   activeColor: colors.colorBlue,
-                                //           //   checkboxShape:
-                                //           //       const RoundedRectangleBorder(
-                                //           //     borderRadius: BorderRadius.all(
-                                //           //         Radius.circular(5)),
-                                //           //   ),
-                                //           // ),
-                                //           // if (_addValidityAndDisclosedQty) ...[
-                                //           //   addValidityAndDisclosedQtyOption(
-                                //           //       theme,
-                                //           //       context,
-                                //           //       widget.scripInfo),
-                                //           //   const SizedBox(height: 10)
-                                //           // ],
-                                //           // Divider(
-                                //           //     color: theme.isDarkMode
-                                //           //         ? colors.darkColorDivider
-                                //           //         : colors.colorDivider),
-                                //           // SizedBox(
-                                //           //     height: priceType == "Market"
-                                //           //         ? 180
-                                //           //         : 100)
-                                //         ],
-                                //       ),
-                                //     ),
-                                //   ],
-                                // ),
+                                  Column(
+                                    children: [
+                                      GestureDetector(
+                                        onTap: () {
+                                          setState(() {
+                                            if (!_isStoplossOrder &&
+                                                // !_afterMarketOrder &&
+                                                !_addValidityAndDisclosedQty) {
+                                              isAdvancedOptionClicked = !isAdvancedOptionClicked;
+                                            }
+                                            updatePriceType();
+                                          });
+                                        },
+                                        child: Container(
+                                          color: Colors.transparent, // To make the full width tappable
+                                          height: 48,
+                                          child: Center(
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                TextWidget.subText(
+                                                    text: 'Advance',
+                                                    color:
+                                                        theme.isDarkMode ? colors.secondaryDark : colors.secondaryLight,
+                                                    theme: theme.isDarkMode,
+                                                    fw: 2),
+                                                Padding(
+                                                  padding: const EdgeInsets.only(left: 4),
+                                                  child: Icon(
+                                                    isAdvancedOptionClicked
+                                                        ? Icons.keyboard_arrow_up
+                                                        : Icons.keyboard_arrow_down,
+                                                    color:
+                                                        theme.isDarkMode ? colors.secondaryDark : colors.secondaryLight,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      Visibility(
+                                        visible: isAdvancedOptionClicked,
+                                        child: Column(
+                                          children: [
+                                            Theme(
+                                              data: ThemeData(
+                                                unselectedWidgetColor:
+                                                    theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                                              ),
+                                              child: GestureDetector(
+                                                behavior: HitTestBehavior.translucent, // Improves touch detection
+                                                onTap: () {
+                                                  setState(() {
+                                                    _isStoplossOrder = !_isStoplossOrder;
+                                                    updatePriceType();
+                                                    // orderInput.chngPriceType(priceType, widget.orderArg.exchange);
+                                                    marginUpdate();
+                                                  });
+                                                },
+                                                child: Container(
+                                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                                  child: Row(
+                                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                    children: [
+                                                      TextWidget.subText(
+                                                        text: 'Stoploss order',
+                                                        theme: theme.isDarkMode,
+                                                        color: theme.isDarkMode
+                                                            ? colors.textPrimaryDark
+                                                            : colors.textPrimaryLight,
+                                                        fw: 0,
+                                                      ),
+                                                      // Text(
+                                                      //   'Stoploss order',
+                                                      //   style: textStyle(
+                                                      //     theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                                                      //     14,
+                                                      //     FontWeight.w400,
+                                                      //   ),
+                                                      // ),
+                                                      AnimatedContainer(
+                                                        duration: const Duration(milliseconds: 250),
+                                                        curve: Curves.easeOut,
+                                                        width: 40,
+                                                        height: 22,
+                                                        padding: const EdgeInsets.symmetric(horizontal: 3),
+                                                        decoration: BoxDecoration(
+                                                          color: _isStoplossOrder
+                                                              ? colors.colorBlue.withOpacity(0.25)
+                                                              : (theme.isDarkMode
+                                                                  ? Colors.grey[700]
+                                                                  : Colors.grey[300]),
+                                                          borderRadius: BorderRadius.circular(20),
+                                                        ),
+                                                        child: AnimatedAlign(
+                                                          duration: const Duration(milliseconds: 250),
+                                                          curve: Curves.easeOut,
+                                                          alignment: _isStoplossOrder
+                                                              ? Alignment.centerRight
+                                                              : Alignment.centerLeft,
+                                                          child: Container(
+                                                            width: 16,
+                                                            height: 16,
+                                                            decoration: BoxDecoration(
+                                                              color: _isStoplossOrder
+                                                                  ? colors.colorBlue
+                                                                  : Colors.grey[500],
+                                                              shape: BoxShape.circle,
+                                                              boxShadow: [
+                                                                BoxShadow(
+                                                                  color: Colors.black.withOpacity(0.25),
+                                                                  blurRadius: 3,
+                                                                  offset: const Offset(0, 1),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                            if ((priceType == "SL-LMT" || priceType == "SL-MKT")) ...[
+                                              triggerOption(theme, context, widget.scripInfo),
+                                              Divider(
+                                                color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+                                              ),
+                                            ],
+
+                                            // Divider(
+                                            //     color:
+                                            //         theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider),
+                                            // Theme(
+                                            //   data: ThemeData(
+                                            //     unselectedWidgetColor:
+                                            //         theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                                            //   ),
+                                            //   child: GestureDetector(
+                                            //     behavior: HitTestBehavior.translucent, // Improves touch detection
+                                            //     onTap: () {
+                                            //       setState(() {
+                                            //         _afterMarketOrder = !_afterMarketOrder;
+                                            //         // isAmo = !isAmo; // if needed
+                                            //       });
+                                            //     },
+                                            //     child: Container(
+                                            //       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                            //       child: Row(
+                                            //         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                            //         children: [
+                                            //           TextWidget.subText(
+                                            //             text: 'After market order (AMO)',
+                                            //             theme: theme.isDarkMode,
+                                            //             color: theme.isDarkMode
+                                            //                 ? colors.textPrimaryDark
+                                            //                 : colors.textPrimaryLight,
+                                            //             fw: 0,
+                                            //           ),
+                                            //           // Text(
+                                            //           //   'After market order (AMO)',
+                                            //           //   style: textStyle(
+                                            //           //     theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                                            //           //     14,
+                                            //           //     FontWeight.w400,
+                                            //           //   ),
+                                            //           // ),
+                                            //           AnimatedContainer(
+                                            //             duration: const Duration(milliseconds: 250),
+                                            //             curve: Curves.easeOut,
+                                            //             width: 40,
+                                            //             height: 22,
+                                            //             padding: const EdgeInsets.symmetric(horizontal: 3),
+                                            //             decoration: BoxDecoration(
+                                            //               color: _afterMarketOrder
+                                            //                   ? colors.colorBlue.withOpacity(0.25)
+                                            //                   : (theme.isDarkMode
+                                            //                       ? Colors.grey[700]
+                                            //                       : Colors.grey[300]),
+                                            //               borderRadius: BorderRadius.circular(20),
+                                            //             ),
+                                            //             child: AnimatedAlign(
+                                            //               duration: const Duration(milliseconds: 250),
+                                            //               curve: Curves.easeOut,
+                                            //               alignment: _afterMarketOrder
+                                            //                   ? Alignment.centerRight
+                                            //                   : Alignment.centerLeft,
+                                            //               child: Container(
+                                            //                 width: 16,
+                                            //                 height: 16,
+                                            //                 decoration: BoxDecoration(
+                                            //                   color: _afterMarketOrder
+                                            //                       ? colors.colorBlue
+                                            //                       : Colors.grey[500],
+                                            //                   shape: BoxShape.circle,
+                                            //                   boxShadow: [
+                                            //                     BoxShadow(
+                                            //                       color: Colors.black.withOpacity(0.25),
+                                            //                       blurRadius: 3,
+                                            //                       offset: const Offset(0, 1),
+                                            //                     ),
+                                            //                   ],
+                                            //                 ),
+                                            //               ),
+                                            //             ),
+                                            //           ),
+                                            //         ],
+                                            //       ),
+                                            //     ),
+                                            //   ),
+                                            // ),
+                                            Divider(
+                                                color:
+                                                    theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider),
+                                            Theme(
+                                              data: ThemeData(
+                                                unselectedWidgetColor:
+                                                    theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                                              ),
+                                              child: GestureDetector(
+                                                behavior: HitTestBehavior.translucent, // Improves touch detection
+                                                onTap: () {
+                                                  setState(() {
+                                                    _addValidityAndDisclosedQty = !_addValidityAndDisclosedQty;
+                                                  });
+                                                },
+                                                child: Container(
+                                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                                  child: Row(
+                                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                    children: [
+                                                      TextWidget.subText(
+                                                        text: 'Add validity & Disclosed quantity',
+                                                        theme: theme.isDarkMode,
+                                                        color: theme.isDarkMode
+                                                            ? colors.textPrimaryDark
+                                                            : colors.textPrimaryLight,
+                                                        fw: 0,
+                                                      ),
+                                                      // Text(
+                                                      //   'Add validity & Disclosed quantity',
+                                                      //   style: textStyle(
+                                                      //     theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                                                      //     14,
+                                                      //     FontWeight.w400,
+                                                      //   ),
+                                                      // ),
+                                                      AnimatedContainer(
+                                                        duration: const Duration(milliseconds: 250),
+                                                        curve: Curves.easeOut,
+                                                        width: 40,
+                                                        height: 22,
+                                                        padding: const EdgeInsets.symmetric(horizontal: 3),
+                                                        decoration: BoxDecoration(
+                                                          color: _addValidityAndDisclosedQty
+                                                              ? colors.colorBlue.withOpacity(0.25)
+                                                              : (theme.isDarkMode
+                                                                  ? Colors.grey[700]
+                                                                  : Colors.grey[300]),
+                                                          borderRadius: BorderRadius.circular(20),
+                                                        ),
+                                                        child: AnimatedAlign(
+                                                          duration: const Duration(milliseconds: 250),
+                                                          curve: Curves.easeOut,
+                                                          alignment: _addValidityAndDisclosedQty
+                                                              ? Alignment.centerRight
+                                                              : Alignment.centerLeft,
+                                                          child: Container(
+                                                            width: 16,
+                                                            height: 16,
+                                                            decoration: BoxDecoration(
+                                                              color: _addValidityAndDisclosedQty
+                                                                  ? colors.colorBlue
+                                                                  : Colors.grey[500],
+                                                              shape: BoxShape.circle,
+                                                              boxShadow: [
+                                                                BoxShadow(
+                                                                  color: Colors.black.withOpacity(0.25),
+                                                                  blurRadius: 3,
+                                                                  offset: const Offset(0, 1),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                            if (_addValidityAndDisclosedQty) ...[
+                                              addValidityAndDisclosedQtyOption(theme, context, widget.scripInfo),
+                                              const SizedBox(height: 10)
+                                            ],
+                                            Divider(
+                                                color:
+                                                    theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider),
+                                            // SizedBox(
+                                            //     height: priceType == "Market"
+                                            //         ? 180
+                                            //         : 100)
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                              ],
 
                                 // const SizedBox(height: 16),
                                 // const Divider(color: Color(0xffDDDDDD)),
                                 // (widget.modifyOrderArgs.sPrdtAli != "BO" && widget.modifyOrderArgs.sPrdtAli != "CO") &&
-                                if ((prcType == "SL-LMT" ||
-                                    prcType == "SL-MKT")) ...[
-                                  const SizedBox(height: 16),
-                                  triggerOption(
-                                      theme, context, widget.scripInfo),
-                                  Divider(
-                                      color: theme.isDarkMode
-                                          ? colors.darkColorDivider
-                                          : colors.colorDivider),
-                                ],
-                                if (_isBOCOOrderEnabled) ...[
-                                  const SizedBox(height: 16),
-                                  stopLossOption(
-                                      theme, context, widget.scripInfo)
-                                ],
+                                // if ((priceType == "SL-LMT" ||
+                                //     priceType == "SL-MKT")) ...[
+                                //   const SizedBox(height: 16),
+                                //   triggerOption(
+                                //       theme, context, widget.scripInfo),
+                                //   Divider(
+                                //       color: theme.isDarkMode
+                                //           ? colors.darkColorDivider
+                                //           : colors.colorDivider),
+                                // ],
+                               
+
+
+
+
                                 // Padding(
                                 //     padding:
                                 //         const EdgeInsets.only(left: 16, right: 4),
@@ -1032,7 +1183,7 @@ class _ModifyPlaceOrderScreenState
                                 //                               setState(() {
                                 //                                 for (var i = 0;
                                 //                                     i <
-                                //                                         validityType
+                                //                                         validityTypes
                                 //                                             .length;
                                 //                                     i++) {
                                 //                                   isActiveValidity[
@@ -1041,8 +1192,8 @@ class _ModifyPlaceOrderScreenState
                                 //                                 isActiveValidity[
                                 //                                     index] = true;
 
-                                //                                 validity =
-                                //                                     validityType[
+                                //                                 validityType =
+                                //                                     validityTypes[
                                 //                                         index];
                                 //                               });
                                 //                             },
@@ -1072,7 +1223,7 @@ class _ModifyPlaceOrderScreenState
                                 //                                     shape:
                                 //                                         const StadiumBorder()),
                                 //                             child: Text(
-                                //                               validityType[index],
+                                //                               validityTypes[index],
                                 //                               style: textStyle(
                                 //                                   !theme
                                 //                                           .isDarkMode
@@ -1104,7 +1255,7 @@ class _ModifyPlaceOrderScreenState
                                 //                               width: 8);
                                 //                         },
                                 //                         itemCount:
-                                //                             validityType.length),
+                                //                             validityTypes.length),
                                 //                   )
                                 //                 ])),
                                 //             const SizedBox(width: 16),
@@ -1250,15 +1401,17 @@ class _ModifyPlaceOrderScreenState
                                 //                       ? assets.checkedbox
                                 //                       : assets.checkbox))
                                 //         ])),
-                                if (prcType == "MKT" ||
-                                    prcType == "SL-MKT") ...[
+                                if (priceType == "MKT" ||
+                                    priceType == "SL-MKT") ...[
                                   const SizedBox(height: 16),
                                   marketProtectionDisclaimer(theme, context,
                                       widget.scripInfo, mktProtCtrl.text),
                                   const SizedBox(height: 16),
                                 ],
                                 const SizedBox(height: 100)
-                              ])),
+                              ],
+                              ),
+                              ),
                       if (internet.connectionStatus ==
                           ConnectivityResult.none) ...[const NoInternetWidget()]
                     ],
@@ -1281,7 +1434,7 @@ class _ModifyPlaceOrderScreenState
                                           CrossAxisAlignment.start,
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        // if (prcType == "MKT" || prcType == "SL-MKT") ...[
+                                        // if (priceType == "MKT" || priceType == "SL-MKT") ...[
                                         //   Padding(
                                         //     padding: const EdgeInsets.only(
                                         //         left: 16.0, bottom: 6),
@@ -1641,18 +1794,18 @@ class _ModifyPlaceOrderScreenState
                                                                             ? "Quantity can not be 0"
                                                                             : "Price can not be 0");
                                                               } else if (_hasValidCircuitBreakerValues && 
-                                                                  ((double.parse(prcType == "MKT" || prcType == "SL-MKT" ? price : priceCtrl.text) < double.parse(widget.scripInfo.lc!)) ||
-                                                                  (double.parse(prcType == "MKT" || prcType == "SL-MKT" ? price : priceCtrl.text) >
+                                                                  ((double.parse(priceType == "MKT" || priceType == "SL-MKT" ? price : priceCtrl.text) < double.parse(widget.scripInfo.lc!)) ||
+                                                                  (double.parse(priceType == "MKT" || priceType == "SL-MKT" ? price : priceCtrl.text) >
                                                                       double.parse(widget.scripInfo.uc!)))) {
                                                                 warningMessage(
                                                                         context,
-                                                                        double.parse(prcType == "MKT" || prcType == "SL-MKT" ? price : priceCtrl.text) <
+                                                                        double.parse(priceType == "MKT" || priceType == "SL-MKT" ? price : priceCtrl.text) <
                                                                                 double.parse(widget.scripInfo.lc!)
                                                                             ? "Price can not be lesser than Lower Circuit Limit ${widget.scripInfo.lc}"
                                                                             : "Price can not be greater than Upper Circuit Limit ${widget.scripInfo.uc}");
-                                                              } else if ((prcType ==
+                                                              } else if ((priceType ==
                                                                       "SL-LMT" ||
-                                                                  prcType ==
+                                                                  priceType ==
                                                                       "SL-MKT")) {
                                                                 if (triggerPriceCtrl
                                                                         .text
@@ -1669,7 +1822,7 @@ class _ModifyPlaceOrderScreenState
                                                                           : "Trigger can not be 0");
                                                                 } else {
                                                                   if (isBuy) {
-                                                                    if (prcType ==
+                                                                    if (priceType ==
                                                                         "SL-LMT") {
                                                                       if (double.parse(triggerPriceCtrl
                                                                               .text) <
@@ -1726,7 +1879,7 @@ class _ModifyPlaceOrderScreenState
                                                                       }
                                                                     }
                                                                   } else {
-                                                                    if (prcType ==
+                                                                    if (priceType ==
                                                                         "SL-LMT") {
                                                                       if (double.parse(triggerPriceCtrl
                                                                               .text) >
@@ -1965,7 +2118,7 @@ class _ModifyPlaceOrderScreenState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          prcType == "SL-LMT" ? const SizedBox(height: 10) : Container(),
+          priceType == "SL-LMT" ? const SizedBox(height: 10) : Container(),
           if (widget.modifyOrderArgs.sPrdtAli == "BO" &&
               widget.modifyOrderArgs.bpprc != null) ...[
             headerTitleText("Target", theme),
@@ -2087,6 +2240,178 @@ class _ModifyPlaceOrderScreenState
       ),
     );
   }
+
+Padding addValidityAndDisclosedQtyOption(ThemesProvider theme, BuildContext context, ScripInfoModel scripInfo) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            headerTitleText("Validity", theme),
+            const SizedBox(height: 4),
+            SizedBox(
+                height: 38,
+                child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemBuilder: (context, index) {
+                      return ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            validityType = validityTypes[index];
+                          });
+                        },
+                        style: ElevatedButton.styleFrom(
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                            backgroundColor: !theme.isDarkMode
+                                ? validityType != validityTypes[index]
+                                    ? const Color(0xffF1F3F8)
+                                    : theme.isDarkMode
+                                        ? colors.secondaryDark
+                                        : colors.secondaryLight
+                                : validityType != validityTypes[index]
+                                    ? colors.darkGrey
+                                    : theme.isDarkMode
+                                        ? colors.secondaryDark
+                                        : colors.secondaryLight,
+                            shape: const RoundedRectangleBorder(
+                              borderRadius: BorderRadius.all(Radius.circular(5)),
+                            )
+                            //   const StadiumBorder()
+                            ),
+                        child: TextWidget.subText(
+                            text: validityTypes[index],
+                            color: !theme.isDarkMode
+                                ? validityType != validityTypes[index]
+                                    ? theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                        : colors.textSecondaryLight
+                                    : colors.colorWhite
+                                : validityType != validityTypes[index]
+                                    ? theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                        : colors.textSecondaryLight
+                                    : colors.colorWhite,
+                            textOverflow: TextOverflow.ellipsis,
+                            theme: theme.isDarkMode,
+                            fw: validityType == validityTypes[index] ? 1 : 0),
+                      );
+                    },
+                    separatorBuilder: (context, index) {
+                      return const SizedBox(width: 8);
+                    },
+                    itemCount: widget.orderArg.exchange == "BSE" || widget.orderArg.exchange == "BFO"
+                        ? validityTypes.length
+                        : 2))
+          ])),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                headerTitleText("Disclosed Qty", theme),
+                const SizedBox(height: 8),
+                SizedBox(
+                  height: 45,
+                  child: CustomTextFormField(
+                      fillColor: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
+                      hintText: "0",
+                      hintStyle: TextWidget.textStyle(
+                        fontSize: 14,
+                        theme: theme.isDarkMode,
+                        color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                        fw: 0,
+                      ),
+                      inputFormate: [FilteringTextInputFormatter.digitsOnly],
+                      keyboardType: TextInputType.number,
+                      style: TextWidget.textStyle(
+                        fontSize: 16,
+                        color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                        theme: theme.isDarkMode,
+                        fw: 0,
+                      ),
+                      // prefixIcon: InkWell(
+                      //   onTap: () {
+                      //     setState(() {
+                      //       if (discQtyCtrl
+                      //           .text
+                      //           .isNotEmpty) {
+                      //         if (int.parse(
+                      //                 discQtyCtrl
+                      //                     .text) >
+                      //             0) {
+                      //           discQtyCtrl
+                      //                   .text =
+                      //               (int.parse(discQtyCtrl.text) -
+                      //                       1)
+                      //                   .toString();
+                      //         } else {
+                      //           discQtyCtrl
+                      //                   .text =
+                      //               "0";
+                      //         }
+                      //       } else {
+                      //         discQtyCtrl
+                      //             .text = "0";
+                      //       }
+                      //     });
+                      //   },
+                      //   child: SvgPicture.asset(
+                      //       theme.isDarkMode
+                      //           ? assets
+                      //               .darkCMinus
+                      //           : assets
+                      //               .minusIcon,
+                      //       fit: BoxFit
+                      //           .scaleDown),
+                      // ),
+                      // suffixIcon: InkWell(
+                      //   onTap: () {
+                      //     setState(() {
+                      //       int number =
+                      //           int.parse(
+                      //               discQtyCtrl
+                      //                   .text);
+                      //       if (discQtyCtrl
+                      //           .text
+                      //           .isNotEmpty) {
+                      //         if (number <
+                      //             9999999999) {
+                      //           discQtyCtrl
+                      //                   .text =
+                      //               (int.parse(discQtyCtrl.text) +
+                      //                       1)
+                      //                   .toString();
+                      //         }
+                      //       } else {
+                      //         discQtyCtrl
+                      //             .text = "0";
+                      //       }
+                      //     });
+                      //   },
+                      //   child: SvgPicture.asset(
+                      //       theme.isDarkMode
+                      //           ? assets
+                      //               .darkAdd
+                      //           : assets
+                      //               .addIcon,
+                      //       fit: BoxFit
+                      //           .scaleDown),
+                      // ),
+                      textCtrl: discQtyCtrl,
+                      textAlign: TextAlign.start),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+
 
   Padding marketProtectionDisclaimer(ThemesProvider theme, BuildContext context,
       ScripInfoModel scripInfo, String marketProtection) {
@@ -2348,7 +2673,7 @@ class _ModifyPlaceOrderScreenState
     OrderMarginInput input = OrderMarginInput(
         exch: "${widget.scripInfo.exch}",
         prc: priceCtrl.text,
-        prctyp: prcType,
+        prctyp: priceType,
         prd: widget.modifyOrderArgs.prd!,
         qty: widget.scripInfo.exch == 'MCX'
             ? (double.parse(qtyCtrl.text).toInt() * lotSize).toString()
@@ -2359,7 +2684,7 @@ class _ModifyPlaceOrderScreenState
         tsym: "${widget.scripInfo.tsym}",
         blprc: '',
         bpprc: '',
-        trgprc: prcType == "SL-LMT" || prcType == "SL-MKT"
+        trgprc: priceType == "SL-LMT" || priceType == "SL-MKT"
             ? triggerPriceCtrl.text
             : "");
     ref.read(orderProvider).fetchOrderMargin(input, context);
@@ -2377,7 +2702,7 @@ class _ModifyPlaceOrderScreenState
 
   modifyOrder() async {
     bool placeorder = true;
-    if (prcType == "LMT" || prcType == "SL-LMT") {
+    if (priceType == "LMT" || priceType == "SL-LMT") {
       String r = roundOffWithInterval(double.parse(priceCtrl.text), tik)
           .toStringAsFixed(2);
       if (double.parse(priceCtrl.text) != double.parse(r)) {
@@ -2386,7 +2711,7 @@ class _ModifyPlaceOrderScreenState
             context, "Price should be multiple of tick size $tik => $r");
       }
     }
-    if (placeorder && (prcType == "SL-LMT" || prcType == "SL-MKT")) {
+    if (placeorder && (priceType == "SL-LMT" || priceType == "SL-MKT")) {
       String r = roundOffWithInterval(double.parse(triggerPriceCtrl.text), tik)
           .toStringAsFixed(2);
       if (double.parse(triggerPriceCtrl.text) != double.parse(r)) {
@@ -2404,22 +2729,29 @@ class _ModifyPlaceOrderScreenState
     if (placeorder) {
       ref.read(orderProvider).setOrderloader(true);
       ModifyOrderInput input = ModifyOrderInput(
-          dscqty: widget.modifyOrderArgs.dscqty ?? "0",
+          dscqty: discQtyCtrl.text.isNotEmpty ? discQtyCtrl.text : widget.modifyOrderArgs.dscqty ?? "0",
           token: widget.modifyOrderArgs.token!,
           exch: widget.modifyOrderArgs.exch!,
-          mktProt: mktProtCtrl.text.isEmpty
-              ? widget.modifyOrderArgs.mktProtection ?? ""
-              : mktProtCtrl.text,
+          mktProt: (priceType == "MKT" || priceType == "SL-MKT" )?
+               mktProtCtrl.text : "",
+              // : widget.modifyOrderArgs.mktProtection ?? "",
           orderNum: widget.modifyOrderArgs.norenordno!,
           prc: price,//prcType == "LMT" || prcType == "SL-LMT" ? priceCtrl.text : "0",
           prd: widget.modifyOrderArgs.prd!,
           trantype: widget.modifyOrderArgs.trantype!,
-          prctyp: prcType,
-          blprc: stopLossCtrl.text,
-          bpprc: targetCtrl.text,
-          qty: int.parse(widget.modifyOrderArgs.qty ?? "0") == (int.parse(qtyCtrl.text) + int.parse((widget.modifyOrderArgs.fillshares ?? "0"))) ? widget.modifyOrderArgs.exch == 'MCX' ? (int.parse(widget.modifyOrderArgs.qty.toString()) * lotSize).toString() : (widget.modifyOrderArgs.qty.toString()) : widget.modifyOrderArgs.exch == 'MCX' ? ((int.parse(qtyCtrl.text) + int.parse((widget.modifyOrderArgs.fillshares ?? "0"))) * lotSize).toString() : (int.parse(qtyCtrl.text) + int.parse(widget.modifyOrderArgs.fillshares ?? "0")).toString(),
-          ret: validity,
-          trgprc: triggerPriceCtrl.text,
+          prctyp: priceType,
+          blprc: _isBOCOOrderEnabled ? stopLossCtrl.text : "",
+          bpprc: _isBOCOOrderEnabled ? targetCtrl.text : "",
+          qty: int.parse(widget.modifyOrderArgs.qty ?? "0") == (int.parse(qtyCtrl.text) + int.parse((widget.modifyOrderArgs.fillshares ?? "0"))) 
+                ? widget.modifyOrderArgs.exch == 'MCX' 
+                  ? (int.parse(widget.modifyOrderArgs.qty.toString()) * lotSize).toString() 
+                  : (widget.modifyOrderArgs.qty.toString()) 
+                : widget.modifyOrderArgs.exch == 'MCX' 
+                  ? ((int.parse(qtyCtrl.text) + int.parse((widget.modifyOrderArgs.fillshares ?? "0"))) * lotSize).toString() 
+                  : (int.parse(qtyCtrl.text) + int.parse(widget.modifyOrderArgs.fillshares ?? "0")).toString(),
+
+          ret: validityType,
+          trgprc: priceType == "SL-LMT" || priceType == "SL-MKT" ? triggerPriceCtrl.text : "",
           tsym: widget.modifyOrderArgs.tsym!);
       await ref.read(orderProvider).fetchModifyOrder(input, context);
       ref.read(orderProvider).setOrderloader(false);
@@ -2428,17 +2760,17 @@ class _ModifyPlaceOrderScreenState
 
   void updatePriceType() {
     if (_isStoplossOrder && _isMarketOrder) {
-      prcType = "SL-MKT";
+      priceType = "SL-MKT";
     } else if (_isStoplossOrder && !_isMarketOrder) {
-      prcType = "SL-LMT";
+      priceType = "SL-LMT";
     } else if (_isMarketOrder) {
-      prcType = "MKT";
+      priceType = "MKT";
     } else {
-      prcType = "LMT";
+      priceType = "LMT";
     }
 
     // Update price controller based on type
-    if (prcType == "MKT" || prcType == "SL-MKT") {
+    if (priceType == "MKT" || priceType == "SL-MKT") {
       double ltp = (double.parse("${widget.orderArg.ltp}") *
               double.parse(mktProtCtrl.text.isEmpty ? "0" : mktProtCtrl.text)) /
           100;
