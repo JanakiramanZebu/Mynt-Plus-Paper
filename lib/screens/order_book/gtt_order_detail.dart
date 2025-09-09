@@ -382,28 +382,7 @@ class _GttOrderDetailState extends ConsumerState<GttOrderDetail> {
                                                                     const SizedBox(
                                                                         height:
                                                                             12),
-                                                                    Row(
-                                                                      crossAxisAlignment:
-                                                                          CrossAxisAlignment
-                                                                              .end,
-                                                                      mainAxisAlignment:
-                                                                          MainAxisAlignment
-                                                                              .center,
-                                                                      children: [
-                                                                        TextWidget.subText(
-                                                                            text:
-                                                                                "${displayData.tsym?.replaceAll("-EQ", "")} ${displayData.expDate} ${displayData.option}",
-                                                                            theme: theme
-                                                                                .isDarkMode,
-                                                                             color: theme.isDarkMode
-                                                                                ? colors.textSecondaryDark
-                                                                                : colors.textPrimaryLight,
-                                                                            fw: 3),
-                                                                      ],
-                                                                    ),
-                                                                    const SizedBox(
-                                                                        height:
-                                                                            5),
+                                                                  
                                                                     SizedBox(
                                                                       width: MediaQuery.of(
                                                                               context)
@@ -419,9 +398,30 @@ class _GttOrderDetailState extends ConsumerState<GttOrderDetail> {
                                                                            color: theme.isDarkMode
                                                                                 ? colors.textSecondaryDark
                                                                                 : colors.textPrimaryLight,
-                                                                            fw: 3),
+                                                                            fw: 0),
                                                                       ),
                                                                     ),
+                                                                    const SizedBox(height: 10),
+                                                                      Row(
+                                                                      crossAxisAlignment:
+                                                                          CrossAxisAlignment
+                                                                              .end,
+                                                                      mainAxisAlignment:
+                                                                          MainAxisAlignment
+                                                                              .center,
+                                                                      children: [
+                                                                        TextWidget.subText(
+                                                                            text:
+                                                                                "${displayData.tsym?.replaceAll("-EQ", "")} ${displayData.expDate} ${displayData.option}",
+                                                                            theme: theme
+                                                                                .isDarkMode,
+                                                                             color: theme.isDarkMode
+                                                                                ? colors.textSecondaryDark
+                                                                                : colors.textPrimaryLight,
+                                                                            fw: 1),
+                                                                      ],
+                                                                    ),
+                                                                   
                                                                   ],
                                                                 ),
                                                                 actions: [

@@ -1000,22 +1000,7 @@ void _showCancelOrderDialog(
               ],
             ),
             const SizedBox(height: 12),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                TextWidget.subText(
-                    text:
-                        "${orderBookData.symbol?.replaceAll("-EQ", "")} ${orderBookData.expDate} ${orderBookData.option} ${orderBookData.exch}",
-                    theme: theme.isDarkMode,
-                    fw: 3,
-                    color: theme.isDarkMode
-                                                                                ? colors.textSecondaryDark
-                                                                                : colors.textPrimaryLight,
-                    ),
-              ],
-            ),
-            const SizedBox(height: 5),
+           
             SizedBox(
               width: MediaQuery.of(context).size.width,
               child: Center(
@@ -1025,9 +1010,26 @@ void _showCancelOrderDialog(
                   color: theme.isDarkMode
                                                                                 ? colors.textSecondaryDark
                                                                                 : colors.textPrimaryLight,
-                    fw: 3),
+                    fw: 0),
               ),
-            )
+            ),
+            const SizedBox(height: 10),
+             Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                TextWidget.subText(
+                    text:
+                        "${orderBookData.symbol?.replaceAll("-EQ", "")} ${orderBookData.expDate} ${orderBookData.option} ${orderBookData.exch}",
+                    theme: theme.isDarkMode,
+                    fw: 1,
+                    color: theme.isDarkMode
+                                                                                ? colors.textSecondaryDark
+                                                                                : colors.textPrimaryLight,
+                    ),
+              ],
+            ),
+            // const SizedBox(height: 5),
           ],
         ),
         // content: SizedBox(

@@ -184,7 +184,7 @@ class _OrderConfirmationScreenState extends ConsumerState<OrderConfirmationScree
                 // Orders List
                 TextWidget.subText(
                   text: widget.orderData.length == 1 ? "Order Details" : "Order List",
-                  fw: 0,
+                  fw: 1,
                   color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
                   theme: false,
                 ),

@@ -4968,15 +4968,13 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                             shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(8))),
                             scrollable: true,
                             contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 12,
+                              horizontal: 16,
+                              vertical: 10,
                             ),
                             actionsPadding: const EdgeInsets.only(bottom: 16, right: 16, left: 16, top: 8),
                             insetPadding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
-                            title: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
+
+                            title:  Row(
                                   mainAxisAlignment: MainAxisAlignment.end,
                                   children: [
                                     Material(
@@ -5004,8 +5002,12 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                       ),
                                     ),
                                   ],
-                                ),
-                                const SizedBox(height: 12),
+                                  ),
+                        
+                            content: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                               
                                 TextWidget.subText(
                                     text: 'Enter Market Protection',
                                     color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
@@ -5061,13 +5063,20 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                 if (mktProtErrorText.isNotEmpty)
                                   Padding(
                                     padding: const EdgeInsets.only(top: 8.0),
-                                    child: Text(
-                                      mktProtErrorText,
-                                      style: TextStyle(
-                                        color: Colors.red,
-                                        fontSize: 12,
-                                      ),
-                                    ),
+                                    child:
+                                    TextWidget.paraText(
+                                      text: mktProtErrorText,
+                                      color: theme.isDarkMode ? colors.lossDark : colors.lossLight,
+                                      theme: theme.isDarkMode,
+                                      fw: 0,
+                                    ),     
+                                    //  Text(
+                                    //   mktProtErrorText,
+                                    //   style: TextStyle(
+                                    //     color: Colors.red,
+                                    //     fontSize: 12,
+                                    //   ),
+                                    // ),
                                   ),
                               ],
                             ),
