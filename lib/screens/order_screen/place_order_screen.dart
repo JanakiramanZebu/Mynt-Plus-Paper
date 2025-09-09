@@ -45,12 +45,14 @@ import 'invest_type_widget.dart';
 import 'margin_charges_bottom_sheet.dart';
 import 'order_screen_header.dart';
 import 'package:intl/intl.dart';
+import '../../provider/chart_provider.dart';
 
 class PlaceOrderScreen extends ConsumerStatefulWidget {
   final OrderScreenArgs orderArg;
   final ScripInfoModel scripInfo;
   final String isBasket;
-  const PlaceOrderScreen({super.key, required this.scripInfo, required this.orderArg, required this.isBasket});
+  final bool fromChart;
+  const PlaceOrderScreen({super.key, required this.scripInfo, required this.orderArg, required this.isBasket, this.fromChart = false});
 
   @override
   ConsumerState<PlaceOrderScreen> createState() => _PlaceOrderScreenState();
@@ -461,6 +463,17 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
 
         ref.read(ordInputProvider).clearTextField();
         await ref.read(marketWatchProvider).requestMWScrip(context: context, isSubscribe: true);
+        
+        // If coming from chart, restore the chart overlay
+        if (widget.fromChart) {
+          final chartState = ref.read(chartProvider);
+          if (chartState.chartArgs != null) {
+            ref.read(chartProvider.notifier).showChart(
+              chartState.chartArgs!,
+              previousRoute: chartState.previousRoute
+            );
+          }
+        }
       },
       child: Consumer(
         builder: (context, WidgetRef ref, _) {
@@ -492,6 +505,18 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                           highlightColor: theme.isDarkMode ? colors.highlightDark : colors.highlightLight,
                           onTap: () {
                             ref.read(ordInputProvider).clearTextField();
+                            
+                            // If coming from chart, restore the chart overlay
+                            if (widget.fromChart) {
+                              final chartState = ref.read(chartProvider);
+                              if (chartState.chartArgs != null) {
+                                ref.read(chartProvider.notifier).showChart(
+                                  chartState.chartArgs!,
+                                  previousRoute: chartState.previousRoute
+                                );
+                              }
+                            }
+                            
                             Navigator.pop(context);
                           },
                           child: Container(

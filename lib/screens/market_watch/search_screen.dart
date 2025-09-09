@@ -16,6 +16,7 @@ import '../../sharedWidget/functions.dart';
 import '../../sharedWidget/no_internet_widget.dart';
 import '../../utils/no_emoji_inputformatter.dart';
 import 'search_scrip_list.dart';
+import '../../provider/chart_provider.dart';
 
 class SearchScreen extends ConsumerStatefulWidget {
   final String wlName;
@@ -119,6 +120,18 @@ class _AddScripState extends ConsumerState<SearchScreen>
                   .read(marketWatchProvider)
                   .requestMWScrip(context: context, isSubscribe: true);
             }
+            
+            // If coming from chart, restore the chart overlay
+            if (widget.isBasket == "Chart||Is") {
+              final chartState = ref.read(chartProvider);
+              if (chartState.chartArgs != null) {
+                ref.read(chartProvider.notifier).showChart(
+                  chartState.chartArgs!,
+                  previousRoute: chartState.previousRoute
+                );
+              }
+            }
+            
             await searchScrip.searchClear();
             currentRouteName = 'homeScreen';
             FocusScope.of(context).unfocus();
@@ -146,6 +159,18 @@ class _AddScripState extends ConsumerState<SearchScreen>
                             ref.read(marketWatchProvider).requestMWScrip(
                                 context: context, isSubscribe: true);
                           }
+                          
+                          // If coming from chart, restore the chart overlay
+                          if (widget.isBasket == "Chart||Is") {
+                            final chartState = ref.read(chartProvider);
+                            if (chartState.chartArgs != null) {
+                              ref.read(chartProvider.notifier).showChart(
+                                chartState.chartArgs!,
+                                previousRoute: chartState.previousRoute
+                              );
+                            }
+                          }
+                          
                           searchScrip.searchClear();
                           searchScrip.setpageName("");
                           currentRouteName = 'homeScreen';

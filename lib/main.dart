@@ -32,6 +32,9 @@ final RouteObserver<ModalRoute<void>> routeObserver = RouteObserver<ModalRoute<v
 final GlobalKey<ScaffoldMessengerState> rootScaffoldMessengerKey =
     GlobalKey<ScaffoldMessengerState>();
 
+final GlobalKey<NavigatorState> rootNavigatorKey = 
+    GlobalKey<NavigatorState>();
+
 // Global provider to track Firebase initialization status
 final firebaseInitializedProvider = StateProvider<bool>((ref) => false);
 
@@ -254,6 +257,7 @@ class MyApp extends ConsumerWidget {
     //         themeProvide.isDarkMode ? Brightness.light : Brightness.dark,
     //     statusBarColor: themeProvide.isDarkMode ? Colors.black :Colors.white));
     return MaterialApp(
+        navigatorKey: rootNavigatorKey,
         scaffoldMessengerKey: rootScaffoldMessengerKey,
         themeMode: themeProvide.themeMode,
         theme: themeProvide.currentTheme,

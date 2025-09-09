@@ -5,6 +5,7 @@ import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/routes/route_names.dart';
 import 'package:mynt_plus/screens/market_watch/tv_chart/webview_chart.dart';
+import 'package:mynt_plus/main.dart';
 
 class ChartOverlayWidget extends ConsumerWidget {
   const ChartOverlayWidget({super.key});
@@ -25,12 +26,12 @@ class ChartOverlayWidget extends ConsumerWidget {
           if (prevRoute != null && prevRoute.isNotEmpty) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (prevRoute == Routes.optionChain) {
-                Navigator.of(context).pushNamedAndRemoveUntil(
+                rootNavigatorKey.currentState?.pushNamedAndRemoveUntil(
                   Routes.optionChain, 
                   (route) => route.settings.name == Routes.homeScreen || route.isFirst
                 );
               } else {
-                Navigator.of(context).pushReplacementNamed(prevRoute);
+                rootNavigatorKey.currentState?.pushReplacementNamed(prevRoute);
               }
             });
           }
@@ -55,7 +56,17 @@ class ChartOverlayWidget extends ConsumerWidget {
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   if (chartState.chartArgs != null)
-                    ChartScreenWebView(chartArgs: chartState.chartArgs!),
+                    ChartScreenWebView(
+                      chartArgs: chartState.chartArgs!,
+                      onSearchTap: () {
+                        // Hide chart overlay before opening search
+                        ref.read(chartProvider.notifier).hideChart();
+                        rootNavigatorKey.currentState?.pushNamed(
+                          Routes.searchScrip,
+                          arguments: "Chart||Is",
+                        );
+                      },
+                    ),
                 ],
               ),
             ),
