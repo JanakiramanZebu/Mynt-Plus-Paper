@@ -412,39 +412,7 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
                             ),
                           ),
                         ),
-                      Material(
-                        color: Colors.transparent,
-                        shape: const RoundedRectangleBorder(),
-                        clipBehavior: Clip.hardEdge,
-                        child: InkWell(
-                          customBorder: const RoundedRectangleBorder(),
-                          splashColor: theme.isDarkMode
-                              ? colors.splashColorDark
-                              : colors.splashColorLight,
-                          highlightColor: theme.isDarkMode
-                              ? colors.highlightDark
-                              : colors.highlightLight,
-                          onTap: () async {
-                            Future.delayed(const Duration(milliseconds: 150),
-                                () async {
-                              await funds.fetchHstoken(context);
-                              funds.optionZ(context);
-                            });
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 5),
-                            child: TextWidget.subText(
-                              text: "OptionZ",
-                              theme: false,
-                              color: theme.isDarkMode
-                                  ? colors.secondaryDark
-                                  : colors.secondaryLight,
-                              fw: 2,
-                            ),
-                          ),
-                        ),
-                      ),
+                     
                     ],
                   )
                 ],

@@ -208,11 +208,17 @@ print(!searchScrip.exarr.contains('"${scrip.exch}"'));
                           child: Material(
                             color: Colors.transparent,
                             shape: const CircleBorder(),
-                            child: InkWell(
-                              customBorder: const CircleBorder(),
-                              splashColor: Colors.grey.withOpacity(0.3),
-                              highlightColor: Colors.grey.withOpacity(0.2),
-                              onTap: () async {
+                            child: TextButton(
+                              style: TextButton.styleFrom(
+                                shape: const CircleBorder(),
+                                padding: const EdgeInsets.all(0),
+                                backgroundColor: Colors.transparent,
+                                foregroundColor: Colors.transparent,
+                                elevation: 0.0,
+                                minimumSize: const Size(0, 40),
+                                side: BorderSide.none,
+                              ),
+                              onPressed: () async {
                                 if(!searchScrip.exarr.contains('"${scrip.exch}"')){
           error(context, "Segment is not active.");
                                 }
