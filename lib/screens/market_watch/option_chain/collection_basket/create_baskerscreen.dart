@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mynt_plus/models/explore_model/basketcollection_model.dart';
 import 'package:mynt_plus/provider/dashboard_provider.dart';
 import 'package:mynt_plus/provider/thems.dart';
@@ -10,6 +11,9 @@ import 'package:mynt_plus/screens/market_watch/option_chain/collection_basket/ba
 import 'package:mynt_plus/screens/market_watch/option_chain/collection_basket/collection_basket_list.dart';
 import 'package:mynt_plus/sharedWidget/splash_loader.dart';
 import 'package:mynt_plus/sharedWidget/snack_bar.dart';
+import 'package:mynt_plus/sharedWidget/no_data_found.dart';
+
+import '../../../../sharedWidget/list_divider.dart';
 
 class StrategyBuilderScreen extends ConsumerStatefulWidget {
   const StrategyBuilderScreen({super.key});
@@ -21,6 +25,13 @@ class StrategyBuilderScreen extends ConsumerStatefulWidget {
 
 class _StrategyBuilderScreenState extends ConsumerState<StrategyBuilderScreen> {
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(dashboardProvider).Basketsearch("");
+    });
+  }
+
   Widget build(BuildContext context) {
     final theme = ref.watch(themeProvider);
     final strategy = ref.watch(dashboardProvider);
@@ -86,7 +97,7 @@ class _StrategyBuilderScreenState extends ConsumerState<StrategyBuilderScreen> {
           ),
           // actions: [
           //   TextButton(
-          //     onPressed: 
+          //     onPressed:
           //     child: TextWidget.subText(
           //       text: strategy.isEditingMode ? 'Update' : 'Save',
           //       theme: theme.isDarkMode,
@@ -107,35 +118,141 @@ class _StrategyBuilderScreenState extends ConsumerState<StrategyBuilderScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Strategy Type Selection
-                      Row(
-                        children:
-                            ['Buy and Hold', 'Rebalance', 'Risk Targeting']
-                                .map((type) => Padding(
-                                      padding: const EdgeInsets.only(right: 4),
-                                      child: _buildStrategyTypeChip(
-                                          type,
-                                          strategy.selectedStrategyType == type,
-                                          theme),
-                                    ))
-                                .toList(),
+                      SizedBox(
+                        height: 35,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          physics: const BouncingScrollPhysics(),
+                          itemCount: [
+                            'Buy and Hold',
+                            'Rebalance',
+                            'Risk Targeting'
+                          ].length,
+                          itemBuilder: (context, index) {
+                            final type = [
+                              'Buy and Hold',
+                              'Rebalance',
+                              'Risk Targeting'
+                            ][index];
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 4),
+                              child: _buildStrategyTypeChip(
+                                type,
+                                strategy.selectedStrategyType == type,
+                                theme,
+                              ),
+                            );
+                          },
+                        ),
                       ),
                       const SizedBox(height: 20),
 
                       // Strategy Builder Section
-                      Container(
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Show NoDataFound when no funds selected
+                          if (strategy.selectedFunds.isEmpty) ...[
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.symmetric(vertical: 40),
+                              child: Column(
+                                children: [
+                                  SvgPicture.asset(assets.noDatafound,
+                                      color: Color(0xff777777)),
+                                  const SizedBox(height: 2),
+                                  TextWidget.subText(
+                                      text: "No Funds",
+                                      color: theme.isDarkMode
+                                          ? colors.textSecondaryDark
+                                          : colors.textSecondaryLight,
+                                      fw: 0,
+                                      theme: theme.isDarkMode),
+                                  const SizedBox(height: 16),
+                                  TextWidget.subText(
+                                    text:
+                                        'Start building your investment strategy',
+                                    theme: theme.isDarkMode,
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                        : colors.textSecondaryLight,
+                                    fw: 0,
+                                  ),
+                                  const SizedBox(height: 8),
+                                  TextWidget.captionText(
+                                    text:
+                                        'Add funds to create a diversified portfolio',
+                                    theme: theme.isDarkMode,
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                            .withOpacity(0.7)
+                                        : colors.textSecondaryLight
+                                            .withOpacity(0.7),
+                                    fw: 0,
+                                  ),
+                                  const SizedBox(height: 24),
+                                  // Attractive CTA Button
+                                  Container(
+                                    // width: double.infinity,
+                                    width: 150,
+                                    height: 45,
+                                    child: ElevatedButton(
+                                      onPressed: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                const FundSelectionScreen(),
+                                          ),
+                                        );
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: theme.isDarkMode
+                                            ? colors.primaryDark
+                                            : colors.primaryLight,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(5),
+                                        ),
+                                        elevation: 0,
+                                      ),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          SvgPicture.asset(
+                                            assets.addCircleIcon,
+                                            width: 20,
+                                            height: 20,
+                                            color: colors.colorWhite,
+                                          ),
+                                          const SizedBox(width: 8),
+                                          TextWidget.subText(
+                                            text: 'Add Funds',
+                                            theme: theme.isDarkMode,
+                                            color: colors.colorWhite,
+                                            fw: 2,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ] else ...[
                             // Selected Funds List
-                            ...strategy.selectedFunds.map(
-                                (fund) => _buildStrategyFundItem(fund, theme)),
-
-                            const Divider(height: 1),
+                            ListView.separated(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: strategy.selectedFunds.length,
+                              separatorBuilder: (context, index) =>
+                                  const ListDivider(),
+                              itemBuilder: (context, index) {
+                                final fund = strategy.selectedFunds[index];
+                                return _buildStrategyFundItem(fund, theme);
+                              },
+                            ),
 
                             // Add More Funds Button
                             Material(
@@ -157,8 +274,9 @@ class _StrategyBuilderScreenState extends ConsumerState<StrategyBuilderScreen> {
                                   );
                                 },
                                 child: Container(
-                                  padding: const EdgeInsets.all(16),
+                                  padding: const EdgeInsets.all(8),
                                   child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       Icon(
                                         Icons.add_circle_outline,
@@ -177,16 +295,15 @@ class _StrategyBuilderScreenState extends ConsumerState<StrategyBuilderScreen> {
                                 ),
                               ),
                             ),
+                          ],
 
-                            // Total Percentage
+                          // Total Percentage
+                          if (strategy.selectedFunds.isNotEmpty) ...[
                             Container(
-                              padding: const EdgeInsets.all(16),
+                              padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
                                 color: colors.colorBlue.withOpacity(0.05),
-                                borderRadius: const BorderRadius.only(
-                                  bottomLeft: Radius.circular(12),
-                                  bottomRight: Radius.circular(12),
-                                ),
+                               
                               ),
                               child: Column(
                                 children: [
@@ -194,7 +311,7 @@ class _StrategyBuilderScreenState extends ConsumerState<StrategyBuilderScreen> {
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
                                     children: [
-                                      TextWidget.subText(
+                                      TextWidget.titleText(
                                         text: 'Total',
                                         theme: theme.isDarkMode,
                                         color: theme.isDarkMode
@@ -204,7 +321,7 @@ class _StrategyBuilderScreenState extends ConsumerState<StrategyBuilderScreen> {
                                       ),
                                       Row(
                                         children: [
-                                          TextWidget.subText(
+                                          TextWidget.titleText(
                                             text:
                                                 '${strategy.totalPercentage.round()}%',
                                             theme: theme.isDarkMode,
@@ -214,17 +331,17 @@ class _StrategyBuilderScreenState extends ConsumerState<StrategyBuilderScreen> {
                                                     : colors.lossLight,
                                             fw: 1,
                                           ),
-                                          const SizedBox(width: 8),
-                                          Icon(
-                                            strategy.totalPercentage == 100
-                                                ? Icons.check_circle
-                                                : Icons.warning,
-                                            size: 16,
-                                            color:
-                                                strategy.totalPercentage == 100
-                                                    ? colors.successLight
-                                                    : colors.lossLight,
-                                          ),
+                                          // const SizedBox(width: 8),
+                                          // Icon(
+                                          //   strategy.totalPercentage == 100
+                                          //       ? Icons.check_circle
+                                          //       : Icons.warning,
+                                          //   size: 16,
+                                          //   color:
+                                          //       strategy.totalPercentage == 100
+                                          //           ? colors.successLight
+                                          //           : colors.lossLight,
+                                          // ),
                                         ],
                                       ),
                                     ],
@@ -243,64 +360,70 @@ class _StrategyBuilderScreenState extends ConsumerState<StrategyBuilderScreen> {
                               ),
                             ),
                           ],
-                        ),
+                        ],
                       ),
                       const SizedBox(height: 20),
 
                       // Investment Details
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            TextWidget.subText(
-                              text: 'Investment Details',
-                              theme: theme.isDarkMode,
-                              color: theme.isDarkMode
-                                  ? colors.textPrimaryDark
-                                  : colors.textPrimaryLight,
-                              fw: 1,
-                            ),
-                            const SizedBox(height: 16),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          TextWidget.subText(
+                            text: 'Investment Details',
+                            theme: theme.isDarkMode,
+                            color: theme.isDarkMode
+                                ? colors.textPrimaryDark
+                                : colors.textPrimaryLight,
+                            fw: 1,
+                          ),
+                          const SizedBox(height: 16),
 
-                            // Investment Type
-                            Row(
-                              children: [
-                                'One-time',
-                              ]
-                                  .map((type) => Padding(
-                                        padding:
-                                            const EdgeInsets.only(right: 8),
-                                        child: _buildInvestmentTypeChip(
-                                            type,
-                                            strategy.selectedInvestmentType ==
-                                                type,
-                                            theme),
-                                      ))
-                                  .toList(),
-                            ),
-                            const SizedBox(height: 16),
+                          // Investment Type
+                          Row(
+                            children: [
+                              'One-time',
+                            ]
+                                .map((type) => Padding(
+                                      padding: const EdgeInsets.only(right: 8),
+                                      child: _buildInvestmentTypeChip(
+                                          type,
+                                          strategy.selectedInvestmentType ==
+                                              type,
+                                          theme),
+                                    ))
+                                .toList(),
+                          ),
+                          const SizedBox(height: 16),
 
-                            // Initial Amount
-                            TextWidget.subText(
-                              text: 'Initial amount',
-                              theme: theme.isDarkMode,
-                              color: theme.isDarkMode
-                                  ? colors.textPrimaryDark
-                                  : colors.textPrimaryLight,
-                              fw: 0,
-                            ),
-                            const SizedBox(height: 8),
-                            SizedBox(
-                              height: 40,
-                              child: TextFormField(
-                                controller: strategy.investmentController,
-                                style: TextWidget.textStyle(
+                          // Initial Amount
+                          TextWidget.subText(
+                            text: 'Initial amount',
+                            theme: theme.isDarkMode,
+                            color: theme.isDarkMode
+                                ? colors.textPrimaryDark
+                                : colors.textPrimaryLight,
+                            fw: 0,
+                          ),
+                          const SizedBox(height: 8),
+                          SizedBox(
+                            height: 40,
+                            child: TextFormField(
+                              controller: strategy.investmentController,
+                              style: TextWidget.textStyle(
+                                fontSize: 18,
+                                theme: theme.isDarkMode,
+                                color: theme.isDarkMode
+                                    ? colors.textPrimaryDark
+                                    : colors.textPrimaryLight,
+                                fw: 1,
+                              ),
+                              inputFormatters: [
+                                FilteringTextInputFormatter.allow(
+                                    RegExp(r'^\d*\.?\d{0,2}$'))
+                              ],
+                              decoration: InputDecoration(
+                                prefixText: '₹ ',
+                                prefixStyle: TextWidget.textStyle(
                                   fontSize: 18,
                                   theme: theme.isDarkMode,
                                   color: theme.isDarkMode
@@ -308,65 +431,50 @@ class _StrategyBuilderScreenState extends ConsumerState<StrategyBuilderScreen> {
                                       : colors.textPrimaryLight,
                                   fw: 1,
                                 ),
-                                inputFormatters: [
-                                  FilteringTextInputFormatter.allow(
-                                      RegExp(r'^\d*\.?\d{0,2}$'))
-                                ],
-                                decoration: InputDecoration(
-                                  prefixText: '₹ ',
-                                  prefixStyle: TextWidget.textStyle(
-                                    fontSize: 18,
-                                    theme: theme.isDarkMode,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide(
                                     color: theme.isDarkMode
-                                        ? colors.textPrimaryDark
-                                        : colors.textPrimaryLight,
-                                    fw: 1,
+                                        ? colors.textSecondaryDark
+                                        : colors.textSecondaryLight,
                                   ),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: BorderSide(
-                                      color: theme.isDarkMode
-                                          ? colors.textSecondaryDark
-                                          : colors.textSecondaryLight,
-                                    ),
-                                  ),
-                                  contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 16, vertical: 8),
                                 ),
-                                onChanged: (value) {
-                               strategy.validateInvestmentAmount(value);
-                                },
-                                keyboardType: TextInputType.number,
+                                contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 8),
                               ),
+                              onChanged: (value) {
+                                strategy.validateInvestmentAmount(value);
+                              },
+                              keyboardType: TextInputType.number,
                             ),
-                            const SizedBox(height: 16),
+                          ),
+                          const SizedBox(height: 16),
 
-                            // Duration
-                            TextWidget.subText(
-                              text: 'Over a duration of',
-                              theme: theme.isDarkMode,
-                              color: theme.isDarkMode
-                                  ? colors.textPrimaryDark
-                                  : colors.textPrimaryLight,
-                              fw: 0,
-                            ),
-                            const SizedBox(height: 8),
-                            Wrap(
-                              spacing: 8,
-                              children: [
-                                '1Y',
-                                '3Y',
-                                '5Y',
-                                '10Y',
-                              ]
-                                  .map((duration) => _buildDurationChip(
-                                      duration,
-                                      strategy.selectedDuration == duration,
-                                      theme))
-                                  .toList(),
-                            ),
-                          ],
-                        ),
+                          // Duration
+                          TextWidget.subText(
+                            text: 'Over a duration of',
+                            theme: theme.isDarkMode,
+                            color: theme.isDarkMode
+                                ? colors.textPrimaryDark
+                                : colors.textPrimaryLight,
+                            fw: 0,
+                          ),
+                          const SizedBox(height: 8),
+                          Wrap(
+                            spacing: 8,
+                            children: [
+                              '1Y',
+                              '3Y',
+                              '5Y',
+                              '10Y',
+                            ]
+                                .map((duration) => _buildDurationChip(
+                                    duration,
+                                    strategy.selectedDuration == duration,
+                                    theme))
+                                .toList(),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 20),
 
@@ -404,28 +512,45 @@ class _StrategyBuilderScreenState extends ConsumerState<StrategyBuilderScreen> {
 
   Widget _buildStrategyTypeChip(
       String text, bool isSelected, ThemesProvider theme) {
-    return GestureDetector(
-      onTap: () {
-        ref.read(dashboardProvider).updateStrategyType(text);
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 5),
-        decoration: BoxDecoration(
-          color: isSelected ? colors.colorBlue : Colors.transparent,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: isSelected ? colors.colorBlue : colors.textSecondaryLight,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(5),
+        splashColor: theme.isDarkMode
+            ? Colors.white.withOpacity(0.15)
+            : Colors.black.withOpacity(0.15),
+        highlightColor: theme.isDarkMode
+            ? Colors.white.withOpacity(0.08)
+            : Colors.black.withOpacity(0.08),
+        onTap: () {
+          ref.read(dashboardProvider).updateStrategyType(text);
+        },
+        child: Container(
+          height: 35,
+          decoration: BoxDecoration(
+            color: isSelected
+                ? theme.isDarkMode
+                    ? colors.searchBgDark
+                    : const Color(0xffF1F3F8)
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(5),
           ),
-        ),
-        child: TextWidget.subText(
-          text: text,
-          theme: theme.isDarkMode,
-          color: isSelected
-              ? Colors.white
-              : (theme.isDarkMode
-                  ? colors.textPrimaryDark
-                  : colors.textPrimaryLight),
-          fw: isSelected ? 0 : 3,
+          padding:
+              const EdgeInsets.only(left: 10, right: 10, top: 0, bottom: 0),
+          child: Center(
+            child: TextWidget.subText(
+              text: text,
+              color: isSelected
+                  ? theme.isDarkMode
+                      ? colors.textPrimaryDark
+                      : colors.textPrimaryLight
+                  : theme.isDarkMode
+                      ? colors.textSecondaryDark
+                      : colors.textSecondaryLight,
+              fw: isSelected ? 2 : 2,
+              theme: !theme.isDarkMode,
+            ),
+          ),
         ),
       ),
     );
@@ -435,61 +560,46 @@ class _StrategyBuilderScreenState extends ConsumerState<StrategyBuilderScreen> {
     final strategy = ref.read(dashboardProvider);
 
     return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(
-            color: theme.isDarkMode
-                ? colors.darkColorDivider
-                : colors.colorDivider,
-            width: 0.5,
-          ),
-        ),
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
       child: Row(
         children: [
           // Fund Image
-          CircleAvatar(
-            radius: 20,
-            backgroundColor:
-                theme.isDarkMode ? colors.darkGrey : colors.colorGrey,
-            child: CircleAvatar(
-              radius: 18,
-              backgroundColor:
-                  theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-              child: ClipOval(
-                child: Image.network(
-                  "https://v3.mynt.in/mfapi/static/images/mf/${fund.aMCCode ?? ""}.png",
-                  width: 36,
-                  height: 36,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Icon(
-                      strategy.getFundTypeIcon(fund.type),
-                      color: strategy.getFundTypeColor(fund.type,
-                          isDarkMode: theme.isDarkMode),
-                      size: 18,
-                    );
-                  },
-                  loadingBuilder: (context, child, loadingProgress) {
-                    if (loadingProgress == null) return child;
-                    return SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        value: loadingProgress.expectedTotalBytes != null
-                            ? loadingProgress.cumulativeBytesLoaded /
-                                loadingProgress.expectedTotalBytes!
-                            : null,
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 16),
+          // CircleAvatar(
+          //   radius: 18,
+          //   backgroundColor:
+          //       theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+          //   child: ClipOval(
+          //     child: Image.network(
+          //       "https://v3.mynt.in/mfapi/static/images/mf/${fund.aMCCode ?? ""}.png",
+          //       width: 36,
+          //       height: 36,
+          //       fit: BoxFit.cover,
+          //       errorBuilder: (context, error, stackTrace) {
+          //         return Icon(
+          //           strategy.getFundTypeIcon(fund.type),
+          //           color: strategy.getFundTypeColor(fund.type,
+          //               isDarkMode: theme.isDarkMode),
+          //           size: 18,
+          //         );
+          //       },
+          //       loadingBuilder: (context, child, loadingProgress) {
+          //         if (loadingProgress == null) return child;
+          //         return SizedBox(
+          //           width: 18,
+          //           height: 18,
+          //           child: CircularProgressIndicator(
+          //             strokeWidth: 2,
+          //             value: loadingProgress.expectedTotalBytes != null
+          //                 ? loadingProgress.cumulativeBytesLoaded /
+          //                     loadingProgress.expectedTotalBytes!
+          //                 : null,
+          //           ),
+          //         );
+          //       },
+          //     ),
+          //   ),
+          // ),
+          // const SizedBox(width: 16),
 
           // Fund Details
           Expanded(
@@ -505,38 +615,21 @@ class _StrategyBuilderScreenState extends ConsumerState<StrategyBuilderScreen> {
                   fw: 0,
                   maxLines: 2,
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 8),
                 Row(
                   children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: strategy
-                            .getFundTypeColor(fund.type,
-                                isDarkMode: theme.isDarkMode)
-                            .withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: strategy
-                              .getFundTypeColor(fund.type,
-                                  isDarkMode: theme.isDarkMode)
-                              .withOpacity(0.3),
-                          width: 0.5,
-                        ),
-                      ),
-                      child: TextWidget.captionText(
-                        text: fund.type.toUpperCase(),
-                        theme: theme.isDarkMode,
-                        color: strategy.getFundTypeColor(fund.type,
-                            isDarkMode: theme.isDarkMode),
-                        fw: 0,
-                      ),
+                    TextWidget.paraText(
+                      text: fund.type.toUpperCase(),
+                      theme: theme.isDarkMode,
+                      color: theme.isDarkMode
+                          ? colors.textSecondaryDark
+                          : colors.textSecondaryLight,
+                      fw: 0,
                     ),
                     if (fund.aum > 0) ...[
                       const SizedBox(width: 8),
-                      TextWidget.captionText(
-                        text: 'AUM: ₹${_formatAumValue(fund.aum)}',
+                      TextWidget.paraText(
+                        text: 'AUM ${_formatAumValue(fund.aum)}',
                         theme: theme.isDarkMode,
                         color: theme.isDarkMode
                             ? colors.textSecondaryDark
@@ -549,55 +642,50 @@ class _StrategyBuilderScreenState extends ConsumerState<StrategyBuilderScreen> {
               ],
             ),
           ),
+          const SizedBox(width: 8),
 
           // Percentage - Editable
           SizedBox(
-            width: 80,
+            width: 70,
             child: TextFormField(
               controller: strategy.percentageControllers[fund.name],
               style: TextWidget.textStyle(
-                fontSize: 14,
+                fontSize: 16,
                 theme: theme.isDarkMode,
                 color: theme.isDarkMode
                     ? colors.textPrimaryDark
                     : colors.textPrimaryLight,
-                fw: 1,
+                fw: 0,
               ),
               textAlign: TextAlign.center,
               keyboardType: TextInputType.number,
               decoration: InputDecoration(
+                filled: true,
+                fillColor: theme.isDarkMode
+                    ? colors.darkGrey
+                    : const Color(0xffF1F3F8),
                 suffixText: '%',
                 suffixStyle: TextWidget.textStyle(
-                  fontSize: 12,
+                  fontSize: 14,
                   theme: theme.isDarkMode,
                   color: theme.isDarkMode
                       ? colors.textSecondaryDark
                       : colors.textSecondaryLight,
-                  fw: 0,
+                  fw: 2,
                 ),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(6),
-                  borderSide: BorderSide(
-                    color: theme.isDarkMode
-                        ? colors.textSecondaryDark
-                        : colors.textSecondaryLight,
-                    width: 0.5,
-                  ),
-                ),
+                    borderSide: BorderSide.none,
+                    borderRadius: BorderRadius.circular(5)),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(6),
+                  borderRadius: BorderRadius.circular(5),
                   borderSide: BorderSide(
-                    color: theme.isDarkMode
-                        ? colors.textSecondaryDark
-                        : colors.textSecondaryLight,
-                    width: 0.5,
+                    color: colors.colorBlue,
                   ),
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(6),
+                  borderRadius: BorderRadius.circular(5),
                   borderSide: BorderSide(
                     color: colors.colorBlue,
-                    width: 1.0,
                   ),
                 ),
                 contentPadding:
@@ -652,9 +740,9 @@ class _StrategyBuilderScreenState extends ConsumerState<StrategyBuilderScreen> {
                 height: 32,
                 alignment: Alignment.center,
                 child: Icon(
-                  Icons.remove_circle_outline,
-                  size: 18,
-                  color: colors.lossLight,
+                  Icons.delete_outlined,
+                  color: theme.isDarkMode ? colors.lossDark : colors.lossLight,
+                  size: 20,
                 ),
               ),
             ),
@@ -729,7 +817,7 @@ class _StrategyBuilderScreenState extends ConsumerState<StrategyBuilderScreen> {
 
   void _handleBacktestAction(BuildContext context) async {
     final strategy = ref.read(dashboardProvider);
-    
+
     try {
       // If it's a new strategy or values have changed, save/update first
       if (!strategy.isEditingMode || strategy.hasStrategyChanged) {
@@ -742,10 +830,9 @@ class _StrategyBuilderScreenState extends ConsumerState<StrategyBuilderScreen> {
           return; // Exit early as dialog will handle the rest
         }
       }
-      
+
       // Proceed with backtest
       await _performBacktest(context);
-      
     } catch (e) {
       error(context, 'Failed to process strategy. Please try again.');
     }
@@ -753,21 +840,20 @@ class _StrategyBuilderScreenState extends ConsumerState<StrategyBuilderScreen> {
 
   Future<void> _performBacktest(BuildContext context) async {
     final strategy = ref.read(dashboardProvider);
-    
+
     try {
       // Handle backtest
       strategy.backtestAnalysis(
           uuid: strategy.editingStrategy?.data?.first.uuid ?? '');
-      
+
       Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => const BasketBacktestAnalysisScreen(),
         ),
       );
-      
+
       successMessage(context, 'Backtest functionality will be implemented');
-      
     } catch (e) {
       error(context, 'Failed to start backtest. Please try again.');
     }
