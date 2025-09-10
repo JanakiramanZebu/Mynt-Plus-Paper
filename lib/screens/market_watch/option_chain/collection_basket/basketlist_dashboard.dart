@@ -143,7 +143,7 @@ class _StrategyDashboardScreenState extends ConsumerState<StrategyDashboardScree
         ),
         const SizedBox(height: 16),
         
-        if (strategy.savedStrategies?.data?.isEmpty ?? false)
+        if (strategy.savedStrategies?.data?.isEmpty ?? true)
           // Empty state with create button
           _buildEmptyState(theme)
         else

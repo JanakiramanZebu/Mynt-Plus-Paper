@@ -2837,12 +2837,17 @@ class MarketWatchProvider extends DefaultChangeNotifier {
           // Load data for the new active watchlist
           await changeWLScrip(newActiveWatchlist, context);
         // }
-
+        successMessage(context, "Watchlist deleted successfully");
         // Update UI to reflect changes
         notifyListeners();
+      }else{
+        error(context, "Failed to delete watchlist");
       }
+    } catch (e) {
+      print("Error in deleteWatchList: $e");
     } finally {
       toggleLoadingOn(false);
+        notifyListeners();
     }
   }
 
@@ -2866,6 +2871,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         } else {
           setCurrentWatchlistPageIndex(0);
         }
+        successMessage(context, "Watchlist created successfully");
       } else {
         setCurrentWatchlistPageIndex(0);
       }      
@@ -3965,6 +3971,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
             "The name of the watchlist has been successfully changed.");
         notifyListeners();
       } else if (_watchlistRenameModel!.stat == "Not_Ok") {
+        Navigator.pop(context);
         Navigator.pop(context);
             warningMessage(context, "${_watchlistRenameModel!.emsg}");
       } else if (_watchlistRenameModel!.emsg ==

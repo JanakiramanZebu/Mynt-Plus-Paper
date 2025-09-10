@@ -116,7 +116,6 @@ class _StockScreenState extends ConsumerState<StockScreen>
       },
       {
         'label': 'Brokerage Calculator',
-        'label': 'Brokerage Calculator',
         'icon': assets.brokercal,
         'subtitle': 'Transparent costs'
       },
@@ -383,7 +382,7 @@ class _StockScreenState extends ConsumerState<StockScreen>
                     ),
                   ),
 
-                  // const SizedBox(height: 0),
+                  const SizedBox(height: 12),
 
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -413,7 +412,7 @@ class _StockScreenState extends ConsumerState<StockScreen>
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               TextWidget.subText(
-                                text: "Dive into your portfolio insights",
+                                text: "Portfolio insights",
                                 theme: false,
                                 color: theme.isDarkMode
                                     ? colors.primaryDark
@@ -480,7 +479,8 @@ class _StockScreenState extends ConsumerState<StockScreen>
                   // ),
                 ],
               ),
-
+              optionZTile(context, theme, funds),
+              const SizedBox(height: 16),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Column(
@@ -755,6 +755,7 @@ class _StockScreenState extends ConsumerState<StockScreen>
                   ),
                 ),
               ),
+             
               const SizedBox(height: 16),
               Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -1413,4 +1414,81 @@ class _StockScreenState extends ConsumerState<StockScreen>
       child: Text("Stock Scanner Content"),
     );
   }
+  Widget optionZTile(BuildContext context, ThemesProvider theme, funds) {
+  return Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 16),
+    child: Material(
+      color: Colors.transparent,
+      shape: const RoundedRectangleBorder(),
+      child: InkWell(
+       canRequestFocus: false,
+       borderRadius: BorderRadius.circular(5),
+                    customBorder: const RoundedRectangleBorder(),
+                    splashColor: theme.isDarkMode
+                        ? colors.splashColorDark
+                        : colors.splashColorLight,
+                    highlightColor: theme.isDarkMode
+                        ? colors.highlightDark
+                        : colors.highlightLight,
+        onTap: () async {
+          Future.delayed(const Duration(milliseconds: 150), () async {
+            await funds.fetchHstoken(context);
+            funds.optionZ(context);
+          });
+        },
+        child: Container(
+          padding: const EdgeInsets.all(16),
+         decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(5),
+                          color: theme.isDarkMode
+                              ? colors.searchBgDark.withOpacity(0.5)
+                              : const Color(0xffF1F3F8).withOpacity(0.5),
+                          border: Border.all(
+                            color: theme.isDarkMode
+                                ? colors.darkColorDivider
+                                : colors.colorDivider,
+                          ),
+                        ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              // Texts
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextWidget.custmText(
+                                    text: "OptionZ",
+                                    theme: false,
+                                     color: theme.isDarkMode
+                                        ? colors.primaryDark
+                                        : colors.primaryLight,
+                                        fs: 20,
+                                    fw: 0),
+                                const SizedBox(height: 4),
+                                TextWidget.paraText(
+                                    text:
+                                        // "Rewarding you for spreading the word",
+                                        "Trade smart in options",
+                                    theme: false,
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                        : colors.textSecondaryLight,
+                                    fw: 0),
+                ],
+              ),
+               Icon(
+                 Icons.bar_chart_rounded,
+                 size: 35,
+                 color: theme.isDarkMode
+                     ? colors.secondaryDark
+                     : colors.secondaryLight,
+               ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
 }

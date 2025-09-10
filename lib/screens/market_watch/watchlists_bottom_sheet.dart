@@ -365,20 +365,21 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                                                         shape:
                                                                             const CircleBorder(),
                                                                         child:
-                                                                            InkWell(
-                                                                          onTap:
+                                                                            TextButton(
+                                                                          onPressed:
                                                                               () async {
                                                                             await Future.delayed(const Duration(milliseconds: 150));
                                                                             Navigator.pop(context);
                                                                           },
-                                                                          borderRadius:
-                                                                              BorderRadius.circular(20),
-                                                                          splashColor: theme.isDarkMode
-                                                                              ? colors.splashColorDark
-                                                                              : colors.splashColorLight,
-                                                                          highlightColor: theme.isDarkMode
-                                                                              ? colors.splashColorDark
-                                                                              : colors.splashColorLight,
+                                                                          style: TextButton.styleFrom(
+                                                                            shape: const CircleBorder(),
+                                                                            padding: const EdgeInsets.all(0),
+                                                                            backgroundColor: Colors.transparent,
+                                                                            foregroundColor: Colors.transparent,
+                                                                            elevation: 0.0,
+                                                                            minimumSize: const Size(0, 40),
+                                                                            side: BorderSide.none,
+                                                                          ),
                                                                           child:
                                                                               Padding(
                                                                             padding:

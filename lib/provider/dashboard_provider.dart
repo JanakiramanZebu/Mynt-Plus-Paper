@@ -1099,11 +1099,12 @@ Color getSectorAllocationColor(String sector) {
   
   bool get isStrategyValid {
     final investmentAmount = double.tryParse(_investmentController.text);
-    final isValidInvestment = investmentAmount != null && investmentAmount > 0 && investmentAmount <= 1000000000000;
+    final isValidInvestment = investmentAmount != null && investmentAmount >= 10000 && investmentAmount <= 1000000000000;
     final isValidPercentage = totalPercentage.round() == 100;
     final hasSelectedFunds = _selectedFunds.isNotEmpty;
+    final hasNoZeroPercentages = _selectedFunds.every((fund) => fund.percentage > 0);
     
-    _isStrategyValid = isValidInvestment && isValidPercentage && hasSelectedFunds;
+    _isStrategyValid = isValidInvestment && isValidPercentage && hasSelectedFunds && hasNoZeroPercentages;
     return _isStrategyValid;
   }
 
@@ -1129,10 +1130,16 @@ Color getSectorAllocationColor(String sector) {
       return "Investment amount must be greater than 0";
     } 
     
+    if (parsedValue < 10000) {
+      _isStrategyValid = false;
+      notifyListeners();
+      return "Minimum investment amount is ₹10,000";
+    }
+    
     if (parsedValue > 1000000000000) {
       _isStrategyValid = false;
       notifyListeners();
-      return "Investment amount cannot exceed ₹1,00,000 Cr";
+      return "Investment amount cannot exceed ₹1,00,00,00,000";
     } 
     
     _isStrategyValid = true;

@@ -11,7 +11,6 @@ import 'package:mynt_plus/screens/market_watch/option_chain/collection_basket/ba
 import 'package:mynt_plus/screens/market_watch/option_chain/collection_basket/collection_basket_list.dart';
 import 'package:mynt_plus/sharedWidget/splash_loader.dart';
 import 'package:mynt_plus/sharedWidget/snack_bar.dart';
-import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 
 import '../../../../sharedWidget/list_divider.dart';
 
@@ -36,9 +35,21 @@ class _StrategyBuilderScreenState extends ConsumerState<StrategyBuilderScreen> {
     final theme = ref.watch(themeProvider);
     final strategy = ref.watch(dashboardProvider);
 
-    return GestureDetector(
-      onTap: () => FocusScope.of(context).unfocus(),
-      child: Scaffold(
+    return PopScope(
+      canPop: false, // Prevent automatic back navigation
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return; // If system handled back, do nothing
+        
+        // Check if there are unsaved changes
+        if (strategy.hasStrategyChanged) {
+          await _showUnsavedChangesDialog();
+        } else {
+          Navigator.of(context).pop();
+        }
+      },
+      child: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        child: Scaffold(
         backgroundColor:
             theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
         appBar: AppBar(
@@ -57,7 +68,7 @@ class _StrategyBuilderScreenState extends ConsumerState<StrategyBuilderScreen> {
               highlightColor: theme.isDarkMode
                   ? colors.highlightDark
                   : colors.highlightLight,
-              onTap: () => Navigator.pop(context),
+              onTap: () => _handleBackNavigation(),
               child: Container(
                 width: 44,
                 height: 44,
@@ -125,14 +136,12 @@ class _StrategyBuilderScreenState extends ConsumerState<StrategyBuilderScreen> {
                           physics: const BouncingScrollPhysics(),
                           itemCount: [
                             'Buy and Hold',
-                            'Rebalance',
-                            'Risk Targeting'
+                            
                           ].length,
                           itemBuilder: (context, index) {
                             final type = [
                               'Buy and Hold',
-                              'Rebalance',
-                              'Risk Targeting'
+                              
                             ][index];
                             return Padding(
                               padding: const EdgeInsets.only(right: 4),
@@ -349,8 +358,20 @@ class _StrategyBuilderScreenState extends ConsumerState<StrategyBuilderScreen> {
                                   if (strategy.totalPercentage != 100) ...[
                                     const SizedBox(height: 8),
                                     TextWidget.captionText(
+                                      text: strategy.selectedFunds.any((fund) => fund.percentage == 0)
+                                          ? 'All funds must have valid percentage values and total must equal 100%'
+                                          : 'Total must equal 100% to save strategy',
+                                      theme: theme.isDarkMode,
+                                      color: colors.lossLight,
+                                      fw: 0,
+                                    ),
+                                  ],
+                                  if (strategy.totalPercentage == 100 && 
+                                      strategy.selectedFunds.any((fund) => fund.percentage == 0)) ...[
+                                    const SizedBox(height: 8),
+                                    TextWidget.captionText(
                                       text:
-                                          'Total must equal 100% to save strategy',
+                                          'All funds must have valid percentage values (greater than 0%)',
                                       theme: theme.isDarkMode,
                                       color: colors.lossLight,
                                       fw: 0,
@@ -448,6 +469,26 @@ class _StrategyBuilderScreenState extends ConsumerState<StrategyBuilderScreen> {
                               keyboardType: TextInputType.number,
                             ),
                           ),
+                          // Investment amount validation error message
+                          Builder(
+                            builder: (context) {
+                              final error = strategy.validateInvestmentAmount(strategy.investmentController.text);
+                              if (error != null) {
+                                return Column(
+                                  children: [
+                                    const SizedBox(height: 4),
+                                    TextWidget.captionText(
+                                      text: error,
+                                      theme: theme.isDarkMode,
+                                      color: colors.lossLight,
+                                      fw: 0,
+                                    ),
+                                  ],
+                                );
+                              }
+                              return const SizedBox.shrink();
+                            },
+                          ),
                           const SizedBox(height: 16),
 
                           // Duration
@@ -507,6 +548,7 @@ class _StrategyBuilderScreenState extends ConsumerState<StrategyBuilderScreen> {
                 ),
         ),
       ),
+    )
     );
   }
 
@@ -694,15 +736,16 @@ class _StrategyBuilderScreenState extends ConsumerState<StrategyBuilderScreen> {
               ),
               onChanged: (value) {
                 final intValue = int.tryParse(value);
-                if (intValue != 0 &&
-                    intValue != null &&
-                    intValue >= 0 &&
+                if (intValue != null &&
+                    intValue > 0 &&
                     intValue <= 100) {
                   strategy.updateFundPercentage(fund, intValue.toDouble());
                 } else if (value.isEmpty) {
-                  // strategy.updateFundPercentage(fund, fund.percentage);
+                  // Allow empty values but set percentage to 0 for validation
                   strategy.updateFundPercentage(fund, 0);
-                  return;
+                } else if (intValue == 0) {
+                  // Allow 0 percentage for validation
+                  strategy.updateFundPercentage(fund, 0);
                 } else {
                   // Reset to current value if invalid input
                   strategy.updateFundPercentage(fund, fund.percentage);
@@ -710,8 +753,14 @@ class _StrategyBuilderScreenState extends ConsumerState<StrategyBuilderScreen> {
               },
               onFieldSubmitted: (value) {
                 final intValue = int.tryParse(value);
-                if (intValue != null && intValue >= 0 && intValue <= 100) {
+                if (intValue != null && intValue > 0 && intValue <= 100) {
                   strategy.updateFundPercentage(fund, intValue.toDouble());
+                } else if (value.isEmpty) {
+                  // Allow empty values but set percentage to 0 for validation
+                  strategy.updateFundPercentage(fund, 0);
+                } else if (intValue == 0) {
+                  // Allow 0 percentage for validation
+                  strategy.updateFundPercentage(fund, 0);
                 } else {
                   // Reset to current value if invalid input
                   strategy.updateFundPercentage(fund, fund.percentage);
@@ -815,6 +864,88 @@ class _StrategyBuilderScreenState extends ConsumerState<StrategyBuilderScreen> {
     // _showUpdateSuccessDialog();
   }
 
+  void _handleBackNavigation() async {
+    final strategy = ref.read(dashboardProvider);
+    
+    // Check if there are unsaved changes
+    if (strategy.hasStrategyChanged) {
+      await _showUnsavedChangesDialog();
+    } else {
+      Navigator.of(context).pop();
+    }
+  }
+
+  Future<void> _showUnsavedChangesDialog() async {
+    final theme = ref.read(themeProvider);
+    
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+          title: TextWidget.titleText(
+            text: 'Unsaved Changes',
+            theme: theme.isDarkMode,
+            color: theme.isDarkMode
+                ? colors.textPrimaryDark
+                : colors.textPrimaryLight,
+            fw: 1,
+          ),
+          content: TextWidget.subText(
+            text: 'You have unsaved changes. Do you want to save them before leaving?',
+            theme: theme.isDarkMode,
+            color: theme.isDarkMode
+                ? colors.textSecondaryDark
+                : colors.textSecondaryLight,
+            fw: 0,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close dialog
+                Navigator.of(context).pop(); // Go back without saving
+              },
+              child: TextWidget.subText(
+                text: 'Discard',
+                theme: theme.isDarkMode,
+                color: colors.lossLight,
+                fw: 1,
+              ),
+            ),
+            TextButton(
+              onPressed: () async {
+                final strategy = ref.read(dashboardProvider);
+                try {
+                  if (strategy.isEditingMode) {
+                    // Update existing strategy
+                    await strategy.updateStrategy(context);
+                    Navigator.of(context).pop(); // Close dialog
+                    // Navigator.of(context).pop(); // Go back after saving
+                  } else {
+                    // Close the unsaved changes dialog first
+                    Navigator.of(context).pop();
+                    // Save new strategy - show name dialog first
+                    _showSaveStrategyDialog(onSaved: () {
+                      Navigator.of(context).pop(); // Go back after saving
+                    });
+                  }
+                } catch (e) {
+                }
+              },
+              child: TextWidget.subText(
+                text: 'Save',
+                theme: theme.isDarkMode,
+                color: colors.colorBlue,
+                fw: 1,
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void _handleBacktestAction(BuildContext context) async {
     final strategy = ref.read(dashboardProvider);
 
@@ -834,7 +965,7 @@ class _StrategyBuilderScreenState extends ConsumerState<StrategyBuilderScreen> {
       // Proceed with backtest
       await _performBacktest(context);
     } catch (e) {
-      error(context, 'Failed to process strategy. Please try again.');
+      // error(context, 'Failed to process strategy. Please try again.');
     }
   }
 
@@ -859,12 +990,12 @@ class _StrategyBuilderScreenState extends ConsumerState<StrategyBuilderScreen> {
     }
   }
 
-  void _showSaveStrategyDialog() {
+  void _showSaveStrategyDialog({VoidCallback? onSaved}) {
     final theme = ref.read(themeProvider);
     final strategy = ref.read(dashboardProvider);
-    setState(() {
-      strategy.strategyNameController.text = "";
-    });
+    // setState(() {
+    //   strategy.strategyNameController.text = "";
+    // });
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -964,10 +1095,15 @@ class _StrategyBuilderScreenState extends ConsumerState<StrategyBuilderScreen> {
                   } else {
                     await ref.read(dashboardProvider).saveStrategy(
                         strategy.strategyNameController.text.trim());
-                    Navigator.of(context).pop();
-                    // After saving, proceed with backtest
-                    await _performBacktest(context);
-                    Navigator.of(context).pop();
+                    Navigator.of(context).pop(); // Close the save dialog
+                    
+                    if (onSaved != null) {
+                      onSaved(); // Call the callback if provided
+                    } else {
+                      // After saving, proceed with backtest
+                      Navigator.of(context).pop(); // Go back to previous screen
+                      await _performBacktest(context);
+                    }
                   }
 
                   // _showSuccessDialog();

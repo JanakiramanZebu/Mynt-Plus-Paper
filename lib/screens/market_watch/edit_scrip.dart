@@ -7,7 +7,6 @@ import '../../../res/res.dart';
 import '../../provider/network_state_provider.dart';
 import '../../provider/thems.dart';
 import '../../res/global_state_text.dart';
-import '../../sharedWidget/functions.dart';
 import '../../sharedWidget/no_internet_widget.dart';
 
 class EditScrip extends ConsumerStatefulWidget {
@@ -152,6 +151,7 @@ class _EditScripState extends ConsumerState<EditScrip> {
                             physics: const BouncingScrollPhysics(),
                             // shrinkWrap: true,
                             buildDefaultDragHandles: false, // Disable default drag behavior - only drag icon will work
+                            // dragStartBehavior: DragStartBehavior.start, // Start drag immediately on touch
                             proxyDecorator: (child, index, animation) {
                               return Material(
                                 color: theme.isDarkMode
@@ -159,9 +159,9 @@ class _EditScripState extends ConsumerState<EditScrip> {
                                         .colorBlack // your custom dark drag color
                                     : colors
                                         .colorWhite, // your custom light drag color
-                                elevation: 6,
+                                elevation: 8, // Increased elevation for better visual feedback
                                 shadowColor: Colors.black26,
-                                borderRadius: BorderRadius.circular(4),
+                                borderRadius: BorderRadius.circular(8), // Increased border radius
                                 child: child,
                               );
                             },
@@ -202,14 +202,22 @@ class _EditScripState extends ConsumerState<EditScrip> {
                                 ),
                                 trailing: ReorderableDragStartListener(
                                     index: i,
-                                    child: Container(
-                                      padding: const EdgeInsets.all(8),
-                                      child: Icon(
-                                        Icons.drag_handle_outlined,
-                                        color: theme.isDarkMode
-                                            ? colors.colorWhite.withOpacity(0.6)
-                                            : colors.colorBlack.withOpacity(0.6),
-                                        size: 20,
+                                    child: Material(
+                                      color: Colors.transparent,
+                                      child: InkWell(
+                                        onTap: () {}, // Prevent tap from interfering with drag
+                                        borderRadius: BorderRadius.circular(8),
+                                        child: Container(
+                                          padding: const EdgeInsets.all(12), // Increased padding for larger touch area
+                                          margin: const EdgeInsets.symmetric(vertical: 4), // Add vertical margin
+                                          child: Icon(
+                                            Icons.drag_handle_outlined,
+                                            color: theme.isDarkMode
+                                                ? colors.colorWhite.withOpacity(0.7)
+                                                : colors.colorBlack.withOpacity(0.7),
+                                            size: 24, // Slightly larger icon
+                                          ),
+                                        ),
                                       ),
                                     )),
                                 title: Padding(
