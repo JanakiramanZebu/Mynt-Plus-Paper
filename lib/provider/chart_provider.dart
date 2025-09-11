@@ -33,6 +33,11 @@ class ChartNotifier extends StateNotifier<ChartState> {
     log("hideChart called");
     state = state.copyWith(isVisible: false);
   }
+
+  void clearChart() {
+    log("clearChart called - resetting chart state");
+    state = const ChartState();
+  }
 }
 
 final chartProvider = StateNotifierProvider<ChartNotifier, ChartState>((ref) {

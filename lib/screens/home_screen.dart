@@ -79,6 +79,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   void didChangeDependencies() {
     super.didChangeDependencies();
     socketProvider = ref.read(websocketProvider); // Store reference safely
+    
+    // Clear chart state on app initialization to ensure fresh state for new user sessions
+    // This is done here instead of initState to ensure providers are fully initialized
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        ref.read(chartProvider.notifier).clearChart();
+      }
+    });
   }
 
   @override
