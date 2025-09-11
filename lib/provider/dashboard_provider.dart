@@ -659,10 +659,11 @@ Color getSectorAllocationColor(String sector) {
     };
   }
 
-  final TextEditingController _investmentController = TextEditingController();
+// MF Basket Collection
+
+  final TextEditingController _investmentController = TextEditingController(text: '100000');
   final TextEditingController _searchController = TextEditingController();
   final TextEditingController _strategyNameController = TextEditingController();
-
   TextEditingController get investmentController => _investmentController;
   TextEditingController get searchController => _searchController;
   TextEditingController get strategyNameController => _strategyNameController;
@@ -722,9 +723,7 @@ Color getSectorAllocationColor(String sector) {
     notifyListeners();
   }
 
-  // Strategy Management Methods
   Future<void> saveStrategy(String strategyName) async {
-    // Use the new createStrategy method for consistency
     await createStrategy(strategyName);
   }
 
@@ -749,25 +748,21 @@ Color getSectorAllocationColor(String sector) {
     try {
       strategyLoader(true);
 
-      // Get the UUID from the editing strategy
       final uuid = _editingStrategy!.data?.first.uuid ?? '';
       final schemaValues = _convertFundsToSchemaValues(_selectedFunds);
 
-      // Get investment details from the current strategy or use default
       final investmentDetails =
           _editingStrategy!.data?.first.investmentDetails ?? '';
 
-      // Call the update API
       await api.updatebasketsStrategy(
         uuid: uuid,
         yearIn: _getYearInFromDuration(_selectedDuration),
         schemeValues: schemaValues,
-        basketName: _editingStrategy!.data?.first.basketName ?? '',
+        basketName: strategyNameController.text ?? '',
         investmentAmount: double.tryParse(_investmentController.text) ?? 0.0,
         invesmentdetail: investmentDetails,
       );
 
-      // Refresh the saved strategies list
       await fetchbasketlist();
       Navigator.pop(context);
 
@@ -775,7 +770,7 @@ Color getSectorAllocationColor(String sector) {
       _strategyError = null;
     } catch (e) {
       print("Update Strategy Error: $e");
-      _strategyError = e.toString();
+      // _strategyError = e.toString();
       rethrow;
     } finally {
       strategyLoader(false);
@@ -789,10 +784,8 @@ Color getSectorAllocationColor(String sector) {
     try {
       strategyLoader(true);
 
-      // Convert selected funds to schema values
       final schemaValues = _convertFundsToSchemaValues(_selectedFunds);
 
-      // Call the create API
       await api.createbasketsStrategy(
         yearIn: _getYearInFromDuration(_selectedDuration),
         schemeValues: schemaValues,
@@ -801,14 +794,12 @@ Color getSectorAllocationColor(String sector) {
         invesmentdetail: 'Created Strategy',
       );
 
-      // Refresh the saved strategies list
       await fetchbasketlist();
 
       _editingStrategy = null;
       _strategyError = null;
     } catch (e) {
       print("Create Strategy Error: $e");
-      _strategyError = e.toString();
       rethrow;
     } finally {
       strategyLoader(false);
@@ -867,7 +858,6 @@ Color getSectorAllocationColor(String sector) {
   void loadStrategy(Data strategyData) {
     clearStrategy();
 
-    // Set the editing strategy data
     _editingStrategy = SavedStrategyModel(
       msg: "Loading strategy",
       data: [strategyData],
@@ -892,10 +882,8 @@ Color getSectorAllocationColor(String sector) {
       }
     }
     _strategyNameController.text = strategyData.basketName ?? '';
-    // Set investment amount
     _investmentController.text = strategyData.investAmount?.toString() ?? '0';
 
-    // Set duration based on years
     if (strategyData.years != null) {
       if (strategyData.years! <= 1) {
         _selectedDuration = '1Y';
@@ -908,12 +896,10 @@ Color getSectorAllocationColor(String sector) {
       }
     }
 
-    // Initialize controllers for loaded funds
     _initializeControllers();
     notifyListeners();
   }
 
-  // Fund Management Methods
   void addFundToStrategy(FundListModel fund) {
     if (!_selectedFunds.any((f) => f.name == fund.name)) {
       final newFund = FundListModel(
@@ -928,7 +914,6 @@ Color getSectorAllocationColor(String sector) {
       );
       _selectedFunds.add(newFund);
 
-      // Create controller for the new fund
       _percentageControllers[newFund.name] = TextEditingController(
         text: newFund.percentage.round().toString(),
       );
@@ -942,7 +927,6 @@ Color getSectorAllocationColor(String sector) {
   void removeFundFromStrategy(FundListModel fund) {
     _selectedFunds.removeWhere((f) => f.name == fund.name);
 
-    // Dispose of the controller for the removed fund
     _percentageControllers[fund.name]?.dispose();
     _percentageControllers.remove(fund.name);
 
@@ -954,15 +938,12 @@ Color getSectorAllocationColor(String sector) {
   void updateFundPercentage(FundListModel fund, double percentage) {
     final index = _selectedFunds.indexWhere((f) => f.name == fund.name);
     if (index != -1) {
-      // Ensure percentage is a whole number and within valid range
       final roundedPercentage = percentage.round().clamp(0, 100).toDouble();
       _selectedFunds[index].percentage = roundedPercentage;
 
-      // Update the controller value
       _percentageControllers[fund.name]?.text =
           roundedPercentage.round().toString();
 
-      // Auto-redistribute remaining percentage among other funds
       _autoRedistributePercentages(index);
       notifyListeners();
     }
@@ -975,7 +956,6 @@ Color getSectorAllocationColor(String sector) {
     final remainingPercentage = 100.0 - changedFund.percentage;
 
     if (remainingPercentage <= 0) {
-      // If the changed fund takes 100%, set all others to 0
       for (int i = 0; i < _selectedFunds.length; i++) {
         if (i != changedIndex) {
           _selectedFunds[i].percentage = 0.0;
@@ -985,7 +965,6 @@ Color getSectorAllocationColor(String sector) {
       return;
     }
 
-    // Distribute remaining percentage equally among other funds
     final otherFundsCount = _selectedFunds.length - 1;
     final equalPercentage = remainingPercentage / otherFundsCount;
 
@@ -995,13 +974,11 @@ Color getSectorAllocationColor(String sector) {
       }
     }
 
-    // Adjust for rounding errors to ensure total is exactly 100
     final currentTotal =
         _selectedFunds.fold(0.0, (sum, fund) => sum + fund.percentage);
     final difference = 100.0 - currentTotal;
 
     if (difference != 0 && otherFundsCount > 0) {
-      // Find the fund with the highest percentage to adjust
       int maxIndex = -1;
       double maxPercentage = -1;
       for (int i = 0; i < _selectedFunds.length; i++) {
@@ -1017,7 +994,6 @@ Color getSectorAllocationColor(String sector) {
             _selectedFunds[maxIndex].percentage.clamp(0, 100);
       }
     }
-
     _updateAllControllerValues();
   }
 
@@ -1036,7 +1012,6 @@ Color getSectorAllocationColor(String sector) {
     final equalPercentage = 100.0 / _selectedFunds.length;
     for (int i = 0; i < _selectedFunds.length; i++) {
       if (i == _selectedFunds.length - 1) {
-        // Last fund gets the remaining percentage to ensure total is exactly 100
         final usedPercentage = _selectedFunds
             .take(i)
             .fold(0.0, (sum, fund) => sum + fund.percentage);
@@ -1046,22 +1021,32 @@ Color getSectorAllocationColor(String sector) {
         _selectedFunds[i].percentage = equalPercentage.round().toDouble();
       }
     }
+
+
     _updateAllControllerValues();
   }
 
+  validatepercentage(BuildContext context) {
+    if (totalPercentage != 100) {
+     error(context, "Total percentage must be 100%");
+    } else if(_selectedFunds.any((fund) => fund.percentage == 0) && totalPercentage == 100) {
+      error(context, "All funds must have valid percentage values (greater than 0%)");
+  }
+  }
+
   void clearStrategy() {
-    // Dispose of all percentage controllers
     for (final controller in _percentageControllers.values) {
       controller.dispose();
     }
     _percentageControllers.clear();
     _strategyNameController.clear();
-    _investmentController.clear();
+    _investmentController.text = '100000';
 
     _selectedFunds.clear();
     _searchController.clear();
     _selectedFilter = 'All';
     _editingStrategy = null;
+    _investmentError = null;
     notifyListeners();
   }
 
@@ -1108,216 +1093,90 @@ Color getSectorAllocationColor(String sector) {
     return _isStrategyValid;
   }
 
+  String? _investmentError;
+  String? get investmentError => _investmentError;
+
   String? validateInvestmentAmount(String value) {
     _investmentController.text = value;
     
     if (value.isEmpty) {
       _isStrategyValid = false;
+      _investmentError = "Please enter Investment amount";
       notifyListeners();
-      return "Please enter Investment amount";
-    } 
+      return _investmentError;
+    }
     
     final parsedValue = double.tryParse(value);
     if (parsedValue == null) {
       _isStrategyValid = false;
+      _investmentError = "Please enter valid Investment amount";
       notifyListeners();
-      return "Please enter valid Investment amount";
+      return _investmentError;
     } 
     
     if (parsedValue <= 0) {
       _isStrategyValid = false;
+      _investmentError = "Investment amount must be greater than 0";
       notifyListeners();
-      return "Investment amount must be greater than 0";
+      return _investmentError;
     } 
     
     if (parsedValue < 10000) {
       _isStrategyValid = false;
+      _investmentError = "Minimum investment amount is ₹10,000";
       notifyListeners();
-      return "Minimum investment amount is ₹10,000";
+      return _investmentError;
     }
     
     if (parsedValue > 1000000000000) {
       _isStrategyValid = false;
+      _investmentError = "Investment amount cannot exceed ₹1,00,00,00,000";
       notifyListeners();
-      return "Investment amount cannot exceed ₹1,00,00,00,000";
+      return _investmentError;
     } 
     
     _isStrategyValid = true;
+    _investmentError = null;
     notifyListeners();
     return null;
   }
 
-  // Sector Validation Functions
-  String? validateSectorSelection(String sector) {
-    if (sector.isEmpty) {
-      return "Please select a sector";
-    }
-    
-    // Check if sector exists in available sectors
-    final availableSectors = _getAvailableSectors();
-    if (!availableSectors.contains(sector)) {
-      return "Invalid sector selected";
-    }
-    
-    return null;
-  }
 
-  String? validateSectorAllocation(String sector, double percentage) {
-    if (sector.isEmpty) {
-      return "Please select a sector";
-    }
+  // Check if there are meaningful changes in a new strategy
+  bool _hasNewStrategyChanges() {
+    if (_selectedFunds.isNotEmpty) return true;
+    final investmentAmount = double.tryParse(_investmentController.text);
+    if (investmentAmount != null && investmentAmount > 0 && investmentAmount != 100000) return true;
+    if (_strategyNameController.text.trim().isNotEmpty) return true;
+    if (_selectedInvestmentType != 'One-time') return true;
     
-    if (percentage < 0) {
-      return "Sector allocation cannot be negative";
-    }
-    
-    if (percentage > 100) {
-      return "Sector allocation cannot exceed 100%";
-    }
-    
-    // Check if total sector allocation exceeds 100%
-    final currentTotal = _getTotalSectorAllocation();
-    if (currentTotal + percentage > 100) {
-      return "Total sector allocation cannot exceed 100%";
-    }
-    
-    return null;
-  }
-
-  bool validateSectorFilters() {
-    // Validate that selected sectors are valid
-    for (final sector in _selectedSectors) {
-      if (validateSectorSelection(sector) != null) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  // Helper method to get available sectors
-  List<String> _getAvailableSectors() {
-    final fundamentals = _portfolioAnalysis?.fundamentals ?? [];
-    final sectors = <String>{};
-    
-    for (final f in fundamentals) {
-      if (f.sector != null && f.sector!.isNotEmpty) {
-        sectors.add(f.sector!);
-      }
-    }
-    
-    return sectors.toList()..sort();
-  }
-
-  // Helper method to get total sector allocation
-  double _getTotalSectorAllocation() {
-    // This would need to be implemented based on your sector allocation logic
-    // For now, returning 0 as placeholder
-    return 0.0;
-  }
-
-  // Enhanced sector filtering with validation
-  List<TopStocks> getValidatedFilteredHoldings(List<TopStocks> allHoldings) {
-    if (!validateSectorFilters()) {
-      return []; // Return empty list if sector filters are invalid
-    }
-    
-    return getFilteredHoldings(allHoldings);
-  }
-
-  // Sector allocation validation for strategy
-  String? validateSectorAllocationForStrategy() {
-    if (_selectedSectors.isEmpty) {
-      return "Please select at least one sector for the strategy";
-    }
-    
-    // Check if all selected sectors are valid
-    for (final sector in _selectedSectors) {
-      final validation = validateSectorSelection(sector);
-      if (validation != null) {
-        return validation;
-      }
-    }
-    
-    return null;
-  }
-
-  // Enhanced sector management functions
-  void addSectorWithValidation(String sector) {
-    final validation = validateSectorSelection(sector);
-    if (validation == null) {
-      if (!_selectedSectors.contains(sector)) {
-        _selectedSectors.add(sector);
-        _updateShowAllState();
-        notifyListeners();
-      }
-    }
-  }
-
-  void removeSectorWithValidation(String sector) {
-    if (_selectedSectors.contains(sector)) {
-      _selectedSectors.remove(sector);
-      _updateShowAllState();
-      notifyListeners();
-    }
-  }
-
-  // Get sector allocation percentage for a specific sector
-  double getSectorAllocationPercentage(String sector) {
-    // This would need to be implemented based on your sector allocation logic
-    // For now, returning 0 as placeholder
-    return 0.0;
-  }
-
-  // Validate all sector filters at once
-  Map<String, String?> validateAllSectorFilters() {
-    final errors = <String, String?>{};
-    
-    for (final sector in _selectedSectors) {
-      errors[sector] = validateSectorSelection(sector);
-    }
-    
-    return errors;
-  }
-
-  // Clear invalid sector selections
-  void clearInvalidSectorSelections() {
-    final validSectors = <String>{};
-    
-    for (final sector in _selectedSectors) {
-      if (validateSectorSelection(sector) == null) {
-        validSectors.add(sector);
-      }
-    }
-    
-    _selectedSectors = validSectors;
-    _updateShowAllState();
-    notifyListeners();
+    return false;
   }
 
   // Change detection methods
   bool get hasStrategyChanged {
     if (!isEditingMode || _editingStrategy == null) {
-      return true; // New strategy, so it's considered "changed"
+      return _hasNewStrategyChanges();
     }
 
     final originalStrategy = _editingStrategy!.data?.first;
     if (originalStrategy == null) return true;
 
-    // Check if investment amount changed
     final currentAmount = double.tryParse(_investmentController.text) ?? 0.0;
     final originalAmount = originalStrategy.investAmount ?? 0.0;
     if (currentAmount != originalAmount) return true;
 
-    // Check if strategy name changed
     final currentName = _strategyNameController.text.trim();
     final originalName = originalStrategy.basketName ?? '';
     if (currentName != originalName) return true;
 
-    // Check if selected funds changed
     final originalFunds = originalStrategy.schemaValues ?? [];
     if (_selectedFunds.length != originalFunds.length) return true;
 
-    // Check if fund percentages changed
+    final originalDuration = originalStrategy.years ?? 0;
+    final currentDuration = _getYearInFromDuration(_selectedDuration);
+    if (currentDuration != originalDuration) return true;
+
     for (final currentFund in _selectedFunds) {
       final originalFund = originalFunds.firstWhere(
         (f) => f.schemaName == currentFund.name,
@@ -1422,7 +1281,7 @@ Color getSectorAllocationColor(String sector) {
   
   // Getters
   PortfolioAnalysisModel? get analysisData => _analysisData;
-  String? get error => _error;
+  // String? get error => _error;
   bool get showBenchmarkComparison => _showBenchmarkComparison;
   bool get showInflationAdjustment => _showInflationAdjustment;
   String get selectedTimeFrame => _selectedTimeFrame;
