@@ -49,7 +49,7 @@ class LedgerScreen extends StatelessWidget {
         print("refresh ");
         await ledgerprovider.getCurrentDate('else');
         ledgerprovider.fetchLegerData(
-            context, ledgerprovider.startDate, ledgerprovider.endDate);
+            context, ledgerprovider.startDate, ledgerprovider.endDate, ledgerprovider.includeBillMargin);
       }
 
       String opbalance = ledgerprovider.ledgerAllData?.openingBalance ?? '0.0';
@@ -363,7 +363,8 @@ Padding(
                                   ledgerprovider.fetchLegerData(
                                       context,
                                       ledgerprovider.startDate,
-                                      ledgerprovider.endDate);
+                                      ledgerprovider.endDate,
+                                      ledgerprovider.includeBillMargin);
                                 },
                                 child: Text("Get",
                                     style: textStyle(

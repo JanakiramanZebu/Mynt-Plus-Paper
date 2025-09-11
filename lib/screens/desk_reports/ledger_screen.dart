@@ -185,7 +185,7 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
         onRefresh: () async {
           await ledgerprovider.getCurrentDate('else');
           await ledgerprovider.fetchLegerData(
-              context, ledgerprovider.startDate, ledgerprovider.endDate);
+              context, ledgerprovider.startDate, ledgerprovider.endDate, ledgerprovider.includeBillMargin);
         },
         child: PopScope(
           canPop: true,
@@ -334,6 +334,7 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                                                             .formattedStartDate,
                                                         ledgerprovider
                                                             .formattedendDate,
+                                                        ledgerprovider.includeBillMargin
                                                       );
                                                     }
                                                   },
@@ -439,6 +440,7 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                                                             .formattedStartDate,
                                                         ledgerprovider
                                                             .formattedendDate,
+                                                        ledgerprovider.includeBillMargin
                                                       );
                                                     }
                                                   },

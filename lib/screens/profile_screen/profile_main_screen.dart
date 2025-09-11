@@ -617,7 +617,8 @@ class _UserAccountScreenState extends ConsumerState<UserAccountScreen> {
                           reportsprovider.fetchLegerData(
                               context,
                               reportsprovider.startDate,
-                              reportsprovider.endDate);
+                              reportsprovider.endDate,
+                              reportsprovider.includeBillMargin);
                         }
                         if (reportsprovider.holdingsAllData == null) {
                           await reportsprovider.getCurrentDate('else');

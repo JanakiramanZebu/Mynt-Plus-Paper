@@ -120,6 +120,7 @@ import '../screens/stocks/explore/stocks/indices/all_index_screen.dart';
 import '../screens/stocks/explore/stocks/margin_calculator.dart';
 import '../screens/stocks/explore/stocks/news/news_listdata.dart';
 import '../screens/stocks/explore/stocks/portfolio_analysis.dart';
+import '../screens/stocks/explore/stocks/refer_earn.dart';
 import '../screens/stocks/explore/stocks/stock_screens.dart';
 import '../screens/stocks/explore/stocks/trade_action/all_trade.dart';
 import '../screens/stocks/explore/stocks/trade_action/sector_themeatic_details.dart';
@@ -809,6 +810,11 @@ class AppRoutes {
         case Routes.portfolioDashboard:
           return _createRoute(
             pageBuilder: (_, __, ___) => const PortfolioDashboardScreen(),
+            beginOffset: const Offset(-1.0, 0.0),
+          );
+        case Routes.referAndEarn:
+          return _createRoute(
+            pageBuilder: (_, __, ___) =>  ReferAndEarnScreen(),
             beginOffset: const Offset(-1.0, 0.0),
           );
       case Routes.mfcagrcalss:

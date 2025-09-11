@@ -695,6 +695,7 @@ class _StockScreenState extends ConsumerState<StockScreen>
                         ? colors.highlightDark
                         : colors.highlightLight,
                     onTap: () async {
+                      // Navigator.pushNamed(context, Routes.referAndEarn);
                       await Share.share(
                         "I invite you to explore Mynt by Zebu — from Stocks to Mutual funds and more.\nOpen your free demat account today\n👉 ${Uri.parse(reflink)}",
                       );

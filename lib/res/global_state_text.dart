@@ -111,6 +111,7 @@ class TextWidget {
     double? lineHeight,
     bool? softWrap,
     TextDecoration? decoration,
+    Key? key,
   }) {
     return Text(
       text,

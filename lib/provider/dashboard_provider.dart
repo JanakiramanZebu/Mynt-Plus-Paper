@@ -9,6 +9,7 @@ import 'package:mynt_plus/sharedWidget/snack_bar.dart';
 import '../locator/locator.dart';
 import '../locator/preference.dart';
 import '../api/core/api_export.dart';
+import '../models/explore_model/referral_rewards_model.dart';
 import '../provider/core/default_change_notifier.dart';
 import '../models/explore_model/portfolioanalisys_models.dart';
 
@@ -101,6 +102,33 @@ class DashboardProvider extends DefaultChangeNotifier {
   clearPortfolioAnalysis() {
     _portfolioAnalysis = null;
     notifyListeners();
+  }
+
+  ReferralRewards? _referralRewards;
+  ReferralRewards? get referralRewards => _referralRewards;
+
+  bool _isReferralRewardsLoading = false;
+  bool get isReferralRewardsLoading => _isReferralRewardsLoading;
+
+  referralRewardsloder(bool value) {
+    _isReferralRewardsLoading = value;
+    notifyListeners();
+  } 
+
+  Future getReferralRewards() async {
+    try {
+      referralRewardsloder(true);
+      final referralRewards = await api.fetchReferralBonus('ZC91');
+      _referralRewards = referralRewards;
+      notifyListeners();
+    } catch (e) {
+      print("Referral Rewards Error: $e");
+      _referralRewards = null;
+      rethrow;
+    } finally {
+      referralRewardsloder(false);
+      notifyListeners();
+    }
   }
 
   // Portfolio Analysis Methods
@@ -1268,6 +1296,11 @@ Color getSectorAllocationColor(String sector) {
     } catch (e) {
       print("Basket Search Error: $e");
     }
+  }
+
+  void clearBasketSearchResults() {
+    _basketSearchItems = [];
+    notifyListeners();
   }
 
 
