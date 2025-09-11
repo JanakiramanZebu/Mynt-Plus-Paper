@@ -166,6 +166,7 @@ class ApiLinks {
 
   String dashBoardURL = "https://v3.mynt.in";
   String get portfolioAnalysisURL => "$dashBoardURL/dd/AnalysisHoldingsdata_mob";
+  String get referralBonusURL => "http://192.168.5.207:8002/bonus_details/referal_bonus";
 
   // String tradeAction = "https://v3.mynt.in/equity/getadindicesAdvdec";
 

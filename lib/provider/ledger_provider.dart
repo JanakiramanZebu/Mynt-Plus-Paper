@@ -951,24 +951,28 @@ class LDProvider extends DefaultChangeNotifier {
   //   }
   // }
 
-  Future fetchLegerData(BuildContext context, String from, String to) async {
+  Future fetchLegerData(BuildContext context, String from, String to, bool includeBillMargin) async {
     try {
       _ledgerloading = true;
       notifyListeners();
 
-      _ledgerAllDataDummy = await api.getLedgerdata(from, to);
+      _ledgerAllDataDummy = await api.getLedgerdata(from, to, includeBillMargin);
       _ledgerAllData = LedgerModelData.fromJson(_ledgerAllDataDummy!.toJson());
       _ledgerAllData!.fullStat?.sort((a, b) {
         return int.parse(b.sortNo!).compareTo(int.parse(a.sortNo!));
       });
-      // Reset filters to all selected (including Bill Margin) on screen entry
+      // Reset filters based on includeBillMargin parameter
       _selectedFilters = {
         SingingCharacter.receipt,
         SingingCharacter.payment,
         SingingCharacter.journal,
         SingingCharacter.systemjournal,
-        SingingCharacter.billmargin
       };
+      
+      // Only add billmargin if includeBillMargin is true
+      if (includeBillMargin) {
+        _selectedFilters.add(SingingCharacter.billmargin);
+      }
       _ledgerloading = false;
       notifyListeners();
     } catch (e) {
@@ -3409,6 +3413,13 @@ class LDProvider extends DefaultChangeNotifier {
   Set<SingingCharacter> _selectedFilters = {};
   Set<SingingCharacter> get selectedFilters => _selectedFilters;
 
+  bool _includeBillMargin = true ;
+  bool get includeBillMargin => _includeBillMargin;
+  void setIncludeBillMargin(bool value) {
+    _includeBillMargin = value;
+    notifyListeners();
+  }
+
   void applyLedgerMultiFilter(
       BuildContext context, List<SingingCharacter> filters) {
     _selectedFilters = Set.from(filters);
@@ -3435,6 +3446,17 @@ class LDProvider extends DefaultChangeNotifier {
     // }
 
     bool billMarginSelected = filters.contains(SingingCharacter.billmargin);
+    _includeBillMargin = billMarginSelected;
+    
+    // Update _selectedFilters to match the actual data being shown
+    if (!billMarginSelected) {
+      // Remove billmargin from selected filters if it's not selected
+      _selectedFilters.remove(SingingCharacter.billmargin);
+    } else {
+      // Add billmargin to selected filters if it's selected
+      _selectedFilters.add(SingingCharacter.billmargin);
+    }
+    
     // Count only the type filters (not billmargin)
     int typeFilterCount =
         filters.where((f) => f != SingingCharacter.billmargin).length;
@@ -3473,10 +3495,13 @@ class LDProvider extends DefaultChangeNotifier {
     if (allTypesSelected && billMarginSelected) {
       // All types + Bill Margin: show all entries
       filteredList = originalList;
+       fetchLegerData(context, startDate, endDate, includeBillMargin);
     } else if (allTypesSelected) {
       filteredList = originalList
           .where((o) => o.tYPE != 'Bill-Margin' && matchesType(o))
           .toList();
+          fetchLegerData(context, startDate, endDate, includeBillMargin);
+          
     } else if (typeFilterCount == 0 && !billMarginSelected) {
       filteredList =
           originalList.where((o) => o.tYPE == 'Opening Balance').toList();

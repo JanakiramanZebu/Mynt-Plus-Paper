@@ -104,9 +104,9 @@ mixin LedgerApi on ApiCore {
     }
   }
 
-  Future<LedgerModelData> getLedgerdata(String from, String to) async {
+  Future<LedgerModelData> getLedgerdata(String from, String to, bool includeBillMargin) async {
     try {
-      final uri = Uri.parse('${apiLinks.reportsapi}/getLedger');
+      final uri = Uri.parse('${apiLinks.reportsapi}/${includeBillMargin ? 'getLedger' : 'getLedgerNoMargin'}');
       final res = await apiClient.post(uri,
           headers: funddefaultHeaders,
           // headers: testingrameshheader,

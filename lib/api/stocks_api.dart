@@ -8,6 +8,7 @@ import 'package:mynt_plus/provider/dashboard_provider.dart';
 
 import '../models/explore_model/ca_events_model.dart';
 import '../models/explore_model/portfolioanalisys_models.dart';
+import '../models/explore_model/referral_rewards_model.dart';
 import '../models/explore_model/stocks_model/corporate_action_model.dart';
 import '../models/explore_model/stocks_model/get_ad_indices.dart';
 import '../models/explore_model/stocks_model/sector_thematric_detail_model.dart';
@@ -52,6 +53,16 @@ mixin StocksAPI on ApiCore {
     }
 
    
+  }
+  Future<ReferralRewards> fetchReferralBonus(String clientId) async {
+    try {
+      final uri = Uri.parse(apiLinks.referralBonusURL);
+      final res = await apiClient.post(uri, headers: defaultHeaders, body: jsonEncode({"client_id": clientId}));
+      final json = jsonDecode(res.body);
+      return ReferralRewards.fromJson(json as Map<String, dynamic>);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   Future<List<GlobalIndicesModel>> fetchGlobalIndices() async {

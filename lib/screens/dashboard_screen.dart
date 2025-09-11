@@ -189,7 +189,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
         // Check mounted after async operation before using context
         if (!mounted) return;
         reportsprovider.fetchLegerData(
-            context, reportsprovider.startDate, reportsprovider.endDate);
+            context, reportsprovider.startDate, reportsprovider.endDate, reportsprovider.includeBillMargin);
       }
       // Initialize mutual fund data
       // await ref.read(mfProvider).fetchBestMF();
