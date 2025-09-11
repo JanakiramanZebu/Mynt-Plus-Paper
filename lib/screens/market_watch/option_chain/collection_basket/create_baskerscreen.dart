@@ -307,80 +307,80 @@ class _StrategyBuilderScreenState extends ConsumerState<StrategyBuilderScreen> {
                           ],
 
                           // Total Percentage
-                          if (strategy.selectedFunds.isNotEmpty) ...[
-                            Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: colors.colorBlue.withOpacity(0.05),
+                          // if (strategy.selectedFunds.isNotEmpty) ...[
+                          //   Container(
+                          //     padding: const EdgeInsets.all(8),
+                          //     decoration: BoxDecoration(
+                          //       color: colors.colorBlue.withOpacity(0.05),
                                
-                              ),
-                              child: Column(
-                                children: [
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      TextWidget.titleText(
-                                        text: 'Total',
-                                        theme: theme.isDarkMode,
-                                        color: theme.isDarkMode
-                                            ? colors.textPrimaryDark
-                                            : colors.textPrimaryLight,
-                                        fw: 1,
-                                      ),
-                                      Row(
-                                        children: [
-                                          TextWidget.titleText(
-                                            text:
-                                                '${strategy.totalPercentage.round()}%',
-                                            theme: theme.isDarkMode,
-                                            color:
-                                                strategy.totalPercentage == 100
-                                                    ? colors.successLight
-                                                    : colors.lossLight,
-                                            fw: 1,
-                                          ),
-                                          // const SizedBox(width: 8),
-                                          // Icon(
-                                          //   strategy.totalPercentage == 100
-                                          //       ? Icons.check_circle
-                                          //       : Icons.warning,
-                                          //   size: 16,
-                                          //   color:
-                                          //       strategy.totalPercentage == 100
-                                          //           ? colors.successLight
-                                          //           : colors.lossLight,
-                                          // ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                  if (strategy.totalPercentage != 100) ...[
-                                    const SizedBox(height: 8),
-                                    TextWidget.captionText(
-                                      text: strategy.selectedFunds.any((fund) => fund.percentage == 0)
-                                          ? 'All funds must have valid percentage values and total must equal 100%'
-                                          : 'Total must equal 100% to save strategy',
-                                      theme: theme.isDarkMode,
-                                      color: colors.lossLight,
-                                      fw: 0,
-                                    ),
-                                  ],
-                                  if (strategy.totalPercentage == 100 && 
-                                      strategy.selectedFunds.any((fund) => fund.percentage == 0)) ...[
-                                    const SizedBox(height: 8),
-                                    TextWidget.captionText(
-                                      text:
-                                          'All funds must have valid percentage values (greater than 0%)',
-                                      theme: theme.isDarkMode,
-                                      color: colors.lossLight,
-                                      fw: 0,
-                                    ),
-                                  ],
-                                ],
-                              ),
-                            ),
-                          ],
+                          //     ),
+                          //     child: Column(
+                          //       children: [
+                          //         Row(
+                          //           mainAxisAlignment:
+                          //               MainAxisAlignment.spaceBetween,
+                          //           children: [
+                          //             TextWidget.titleText(
+                          //               text: 'Total',
+                          //               theme: theme.isDarkMode,
+                          //               color: theme.isDarkMode
+                          //                   ? colors.textPrimaryDark
+                          //                   : colors.textPrimaryLight,
+                          //               fw: 1,
+                          //             ),
+                          //             Row(
+                          //               children: [
+                          //                 TextWidget.titleText(
+                          //                   text:
+                          //                       '${strategy.totalPercentage.round()}%',
+                          //                   theme: theme.isDarkMode,
+                          //                   color:
+                          //                       strategy.totalPercentage == 100
+                          //                           ? colors.successLight
+                          //                           : colors.lossLight,
+                          //                   fw: 1,
+                          //                 ),
+                          //                 // const SizedBox(width: 8),
+                          //                 // Icon(
+                          //                 //   strategy.totalPercentage == 100
+                          //                 //       ? Icons.check_circle
+                          //                 //       : Icons.warning,
+                          //                 //   size: 16,
+                          //                 //   color:
+                          //                 //       strategy.totalPercentage == 100
+                          //                 //           ? colors.successLight
+                          //                 //           : colors.lossLight,
+                          //                 // ),
+                          //               ],
+                          //             ),
+                          //           ],
+                          //         ),
+                          //         // if (strategy.totalPercentage != 100) ...[
+                          //         //   const SizedBox(height: 8),
+                          //         //   TextWidget.captionText(
+                          //         //     text: strategy.selectedFunds.any((fund) => fund.percentage == 0)
+                          //         //         ? 'All funds must have valid percentage values and total must equal 100%'
+                          //         //         : 'Total must equal 100% to save strategy',
+                          //         //     theme: theme.isDarkMode,
+                          //         //     color: colors.lossLight,
+                          //         //     fw: 0,
+                          //         //   ),
+                          //         // ],
+                          //         // if (strategy.totalPercentage == 100 && 
+                          //         //     strategy.selectedFunds.any((fund) => fund.percentage == 0)) ...[
+                          //         //   const SizedBox(height: 8),
+                          //         //   TextWidget.captionText(
+                          //         //     text:
+                          //         //         'All funds must have valid percentage values (greater than 0%)',
+                          //         //     theme: theme.isDarkMode,
+                          //         //     color: colors.lossLight,
+                          //         //     fw: 0,
+                          //         //   ),
+                          //         // ],
+                          //       ],
+                          //     ),
+                          //   ),
+                          // ],
                         ],
                       ),
                       const SizedBox(height: 20),
@@ -470,25 +470,15 @@ class _StrategyBuilderScreenState extends ConsumerState<StrategyBuilderScreen> {
                             ),
                           ),
                           // Investment amount validation error message
-                          Builder(
-                            builder: (context) {
-                              final error = strategy.validateInvestmentAmount(strategy.investmentController.text);
-                              if (error != null) {
-                                return Column(
-                                  children: [
-                                    const SizedBox(height: 4),
-                                    TextWidget.captionText(
-                                      text: error,
-                                      theme: theme.isDarkMode,
-                                      color: colors.lossLight,
-                                      fw: 0,
-                                    ),
-                                  ],
-                                );
-                              }
-                              return const SizedBox.shrink();
-                            },
-                          ),
+                          if (strategy.investmentError != null) ...[
+                            const SizedBox(height: 4),
+                            TextWidget.captionText(
+                              text: strategy.investmentError!,
+                              theme: theme.isDarkMode,
+                              color: colors.lossLight,
+                              fw: 0,
+                            ),
+                          ],
                           const SizedBox(height: 16),
 
                           // Duration
@@ -750,6 +740,7 @@ class _StrategyBuilderScreenState extends ConsumerState<StrategyBuilderScreen> {
                   // Reset to current value if invalid input
                   strategy.updateFundPercentage(fund, fund.percentage);
                 }
+                strategy.validatepercentage(context);
               },
               onFieldSubmitted: (value) {
                 final intValue = int.tryParse(value);
@@ -1085,27 +1076,27 @@ class _StrategyBuilderScreenState extends ConsumerState<StrategyBuilderScreen> {
               if (strategy.strategyNameController.text.trim().isNotEmpty) {
                 try {
                   if (strategy.isEditingMode) {
-                    setState(() {
-                      strategy.editingStrategy?.data?.first.basketName =
-                          strategy.strategyNameController.text.trim();
-                    });
+                   
                     Navigator.of(context).pop();
+                    setState(() {
+                      strategy.strategyNameController.text.trim();
+                    });
+                    
                     // After updating, proceed with backtest
-                    await _performBacktest(context);
+                    // await _performBacktest(context);
                   } else {
                     await ref.read(dashboardProvider).saveStrategy(
                         strategy.strategyNameController.text.trim());
                     Navigator.of(context).pop(); // Close the save dialog
                     
-                    if (onSaved != null) {
-                      onSaved(); // Call the callback if provided
+                    if (strategy.isStrategyValid) {
+                      Navigator.of(context).pop(); 
+                      Navigator.of(context).pop(); 
                     } else {
-                      // After saving, proceed with backtest
-                      Navigator.of(context).pop(); // Go back to previous screen
-                      await _performBacktest(context);
+                      Navigator.of(context).pop();
                     }
+                      // await _performBacktest(context);
                   }
-
                   // _showSuccessDialog();
                 } catch (e) {
                   Navigator.of(context).pop();

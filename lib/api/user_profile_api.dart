@@ -97,6 +97,7 @@ mixin UserProfileAPI on ApiCore {
         return null;
       }
     } catch (e) {
+      print("error in get profile image ${e}");
       rethrow;
     }
   }

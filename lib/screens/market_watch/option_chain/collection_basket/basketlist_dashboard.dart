@@ -512,7 +512,6 @@ class _StrategyDashboardScreenState extends ConsumerState<StrategyDashboardScree
   }
 
   void _navigateToStrategyCreation() {
-    // Clear any existing strategy data before creating new one
     ref.read(dashboardProvider).clearStrategy();
     Navigator.pushNamed(context, Routes.createBasketStrategy);
   }

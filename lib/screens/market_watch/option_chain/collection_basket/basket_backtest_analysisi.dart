@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mynt_plus/models/explore_model/basket_backtest_analysis_model.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/res/global_state_text.dart';
@@ -81,17 +80,39 @@ class _BasketBacktestAnalysisScreenState extends ConsumerState<BasketBacktestAna
           color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
           fw: 1,
         ),
+        actions: [
+          // Action buttons similar to portfolio analysis
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildActionButton(
+                  icon: Icons.share_outlined,
+                  onTap: () => _shareAnalysis(),
+                  theme: theme,
+                ),
+                const SizedBox(width: 8),
+                _buildActionButton(
+                  icon: Icons.more_vert,
+                  onTap: () => _showMoreOptions(),
+                  theme: theme,
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
       body: SafeArea(
         child: Consumer(
           builder: (context, ref, child) {
             if (strategy.isStrategyLoading) {
               return Center(
-                  child: Container(
-                    color: Colors.white,
-                    child: const CircularLoaderImage(),
-                  ),
-                );
+                child: Container(
+                  color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                  child: const CircularLoaderImage(),
+                ),
+              );
             }
 
             if (strategy.analysisData == null) {
@@ -101,30 +122,318 @@ class _BasketBacktestAnalysisScreenState extends ConsumerState<BasketBacktestAna
             }
 
             final data = strategy.analysisData!;
-            return SingleChildScrollView(
-              controller: _scrollController,
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildPortfolioSummary(data.total),
-                  const SizedBox(height: 24),
-                  _buildPerformanceChart(data),
-                  const SizedBox(height: 24),
-                  _buildBenchmarkAnalysis(data),
-                  const SizedBox(height: 24),
-                  _buildInflationAdjustment(data),
-                  const SizedBox(height: 24),
-                  _buildTaxImplications(data),
-                  const SizedBox(height: 24),
-                  _buildAssetAllocation(data),
-                  const SizedBox(height: 24),
-                  _buildTransactionsTable(data),
-                ],
-              ),
-            );
+            return _buildModernLayout(data, theme);
           },
         ),
+      ),
+    );
+  }
+
+  Widget _buildModernLayout(PortfolioAnalysisModel data, ThemesProvider theme) {
+    return CustomScrollView(
+      controller: _scrollController,
+      slivers: [
+        // Main content section
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildModernPortfolioSummary(data.total, theme),
+                const SizedBox(height: 16),
+                _buildPerformanceChart(data),
+                const SizedBox(height: 16),
+                _buildQuickStatsCards(data, theme),
+                const SizedBox(height: 16),
+                _buildBenchmarkAnalysis(data),
+                const SizedBox(height: 16),
+                
+                _buildInflationAdjustment(data),
+                const SizedBox(height: 16),
+                _buildTaxImplications(data),
+                const SizedBox(height: 16),
+                _buildTransactionsTable(data),
+                const SizedBox(height: 30),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActionButton({
+    required IconData icon,
+    required VoidCallback onTap,
+    required ThemesProvider theme,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      shape: const CircleBorder(),
+      clipBehavior: Clip.hardEdge,
+      child: InkWell(
+        customBorder: const CircleBorder(),
+        splashColor: theme.isDarkMode ? colors.splashColorDark : colors.splashColorLight,
+        highlightColor: theme.isDarkMode ? colors.highlightDark : colors.highlightLight,
+        onTap: onTap,
+        child: Container(
+          width: 40,
+          height: 40,
+          alignment: Alignment.center,
+          child: Icon(
+            icon,
+            size: 20,
+            color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _shareAnalysis() {
+    // TODO: Implement share functionality
+  }
+
+  void _showMoreOptions() {
+    // TODO: Implement more options menu
+  }
+
+  Widget _buildModernPortfolioSummary(PortfolioTotal data, ThemesProvider theme) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            theme.isDarkMode ? const Color(0xFF1A1A1A) : const Color(0xFFF8F9FA),
+            theme.isDarkMode ? const Color(0xFF2D2D2D) : const Color(0xFFFFFFFF),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: theme.isDarkMode 
+            ? colors.textSecondaryDark.withOpacity(0.1)
+            : colors.textSecondaryLight.withOpacity(0.1),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: theme.isDarkMode 
+              ? Colors.black.withOpacity(0.3)
+              : Colors.grey.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextWidget.subText(
+                    text: 'Portfolio Value',
+                    theme: theme.isDarkMode,
+                    color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                    fw: 0,
+                  ),
+                  const SizedBox(height: 8),
+                  TextWidget.titleText(
+                    text: '₹${data.currentValue}',
+                    theme: theme.isDarkMode,
+                    color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                    fw: 1,
+                  ),
+                ],
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: data.gain >= 0 
+                        ? (theme.isDarkMode ? colors.profitDark.withOpacity(0.2) : colors.profitLight.withOpacity(0.2))
+                        : (theme.isDarkMode ? colors.lossDark.withOpacity(0.2) : colors.lossLight.withOpacity(0.2)),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: TextWidget.paraText(
+                      text: '${data.gainPerc}%',
+                      theme: theme.isDarkMode,
+                      color: data.gain >= 0 
+                        ? (theme.isDarkMode ? colors.profitDark : colors.profitLight)
+                        : (theme.isDarkMode ? colors.lossDark : colors.lossLight),
+                      fw: 1,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  TextWidget.captionText(
+                    text: 'Total Return',
+                    theme: theme.isDarkMode,
+                    color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                    fw: 0,
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          Row(
+            children: [
+              Expanded(
+                child: _buildMetricCard(
+                  'Invested',
+                  '₹${data.investmentAmount}',
+                  theme,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildMetricCard(
+                  'Gain',
+                  '₹${data.gain}',
+                  theme,
+                  valueColor: data.gain >= 0 
+                    ? (theme.isDarkMode ? colors.profitDark : colors.profitLight)
+                    : (theme.isDarkMode ? colors.lossDark : colors.lossLight),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildMetricCard(
+                  'XIRR',
+                  '${data.xirr.toStringAsFixed(2)}%',
+                  theme,
+                  valueColor: data.xirr >= 0 
+                    ? (theme.isDarkMode ? colors.profitDark : colors.profitLight)
+                    : (theme.isDarkMode ? colors.lossDark : colors.lossLight),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMetricCard(String label, String value, ThemesProvider theme, {Color? valueColor}) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: theme.isDarkMode 
+          ? colors.textSecondaryDark.withOpacity(0.05)
+          : colors.textSecondaryLight.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: theme.isDarkMode 
+            ? colors.textSecondaryDark.withOpacity(0.1)
+            : colors.textSecondaryLight.withOpacity(0.1),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          TextWidget.captionText(
+            text: label,
+            theme: theme.isDarkMode,
+            color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+            fw: 0,
+          ),
+          const SizedBox(height: 4),
+          TextWidget.subText(
+            text: value,
+            theme: theme.isDarkMode,
+            color: valueColor ?? (theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight),
+            fw: 1,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuickStatsCards(PortfolioAnalysisModel data, ThemesProvider theme) {
+    return Row(
+      children: [
+        Expanded(
+          child: _buildStatsCard(
+            'Sharpe Ratio',
+            data.total.sharpeRatio.toStringAsFixed(2),
+            Icons.trending_up,
+            theme,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _buildStatsCard(
+            'Volatility',
+            '${data.total.volatility.toStringAsFixed(2)}%',
+            Icons.speed,
+            theme,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _buildStatsCard(
+            'Max Drawdown',
+            '${data.total.maxDrawdown.toStringAsFixed(2)}%',
+            Icons.trending_down,
+            theme,
+            valueColor: data.total.maxDrawdown < 0 
+              ? (theme.isDarkMode ? colors.lossDark : colors.lossLight)
+              : null,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatsCard(String label, String value, IconData icon, ThemesProvider theme, {Color? valueColor}) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: theme.isDarkMode 
+            ? colors.textSecondaryDark.withOpacity(0.1)
+            : colors.textSecondaryLight.withOpacity(0.1),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                icon,
+                size: 16,
+                color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: TextWidget.captionText(
+                  text: label,
+                  theme: theme.isDarkMode,
+                  color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                  fw: 0,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          TextWidget.subText(
+            text: value,
+            theme: theme.isDarkMode,
+            color: valueColor ?? (theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight),
+            fw: 1,
+          ),
+        ],
       ),
     );
   }
@@ -153,17 +462,17 @@ class _BasketBacktestAnalysisScreenState extends ConsumerState<BasketBacktestAna
             children: [
               _buildMetricColumn(
                 'Final Value', 
-                '₹${(data.currentValue / 100000).toStringAsFixed(2)}L',
+                '₹${data.currentValue}',
                 theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
               ),
               _buildMetricColumn(
                 'Invested Amount', 
-                '₹${(data.investmentAmount / 100000).toStringAsFixed(2)}L',
+                '₹${data.investmentAmount}',
                 theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
               ),
               _buildMetricColumn(
                 'Gain', 
-                '₹${(data.gain / 1000).toStringAsFixed(0)}K (${data.gainPerc.toStringAsFixed(2)}%)',
+                '₹${data.gain} (${data.gainPerc}%)',
                 data.gain >= 0 
                   ? (theme.isDarkMode ? colors.profitDark : colors.profitLight)
                   : (theme.isDarkMode ? colors.lossDark : colors.lossLight),
@@ -184,7 +493,7 @@ class _BasketBacktestAnalysisScreenState extends ConsumerState<BasketBacktestAna
                     fw: 3,
                   ),
                   const SizedBox(height: 8),
-                  _buildReturnMetric('XIRR', '${data.xirr.toStringAsFixed(2)}%', Colors.green),
+                  _buildReturnMetric('XIRR', '${data.xirr.toStringAsFixed(2)}%', data.xirr >= 0 ? theme.isDarkMode ? colors.profitDark : colors.profitLight : theme.isDarkMode ? colors.lossDark : colors.lossLight),
                 ],
               ),
               const Spacer(),
@@ -305,16 +614,28 @@ class _BasketBacktestAnalysisScreenState extends ConsumerState<BasketBacktestAna
       }
     }
 
+    // Generate dynamic month labels based on chart data length
+    final months = _generateMonthLabels(data.total.chartData.length);
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: theme.isDarkMode 
             ? colors.textSecondaryDark.withOpacity(0.1)
             : colors.textSecondaryLight.withOpacity(0.1),
         ),
+        boxShadow: [
+          BoxShadow(
+            color: theme.isDarkMode 
+              ? Colors.black.withOpacity(0.2)
+              : Colors.grey.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -322,18 +643,19 @@ class _BasketBacktestAnalysisScreenState extends ConsumerState<BasketBacktestAna
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              TextWidget.subText(
-                text: 'Portfolio Performance',
-                theme: theme.isDarkMode,
-                color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                fw: 1,
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextWidget.subText(
+                    text: 'Portfolio Performance',
+                    theme: theme.isDarkMode,
+                    color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                    fw: 1,
+                  ),
+                 
+                ],
               ),
-              TextWidget.paraText(
-                text: '175 L',
-                theme: theme.isDarkMode,
-                color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                fw: 0,
-              ),
+              
             ],
           ),
           const SizedBox(height: 20),
@@ -341,7 +663,18 @@ class _BasketBacktestAnalysisScreenState extends ConsumerState<BasketBacktestAna
             height: 250,
             child: LineChart(
               LineChartData(
-                gridData: FlGridData(show: false),
+                gridData: FlGridData(
+                  show: true,
+                  drawVerticalLine: false,
+                  drawHorizontalLine: true,
+                  getDrawingHorizontalLine: (value) => FlLine(
+                    color: theme.isDarkMode 
+                      ? colors.textSecondaryDark.withOpacity(0.1)
+                      : colors.textSecondaryLight.withOpacity(0.1),
+                    strokeWidth: 1,
+                    dashArray: [5, 5],
+                  ),
+                ),
                 titlesData: FlTitlesData(
                   leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
                   rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
@@ -349,15 +682,18 @@ class _BasketBacktestAnalysisScreenState extends ConsumerState<BasketBacktestAna
                   bottomTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
+                      reservedSize: 30,
                       getTitlesWidget: (value, meta) {
-                        const months = ['Sep 22', 'Dec 22', 'Feb 23', 'May 23', 'Jul 23', 'Sep 23', 'Dec 23'];
                         int index = (value / (totalSpots.length / months.length)).round();
                         if (index >= 0 && index < months.length) {
-                          return TextWidget.captionText(
-                            text: months[index],
-                            theme: theme.isDarkMode,
-                            color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                            fw: 0,
+                          return Padding(
+                            padding: const EdgeInsets.only(top: 8),
+                            child: TextWidget.captionText(
+                              text: months[index],
+                              theme: theme.isDarkMode,
+                              color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                              fw: 0,
+                            ),
                           );
                         }
                         return const Text('');
@@ -367,39 +703,44 @@ class _BasketBacktestAnalysisScreenState extends ConsumerState<BasketBacktestAna
                 ),
                 borderData: FlBorderData(show: false),
                 lineBarsData: [
-                  // Equity line (green area)
+                  // Equity line (modern blue)
                   if (equitySpots.isNotEmpty)
                     LineChartBarData(
                       spots: equitySpots,
                       isCurved: true,
-                      color: Colors.green,
+                      color: const Color(0xFF3B82F6),
                       barWidth: 0,
                       dotData: FlDotData(show: false),
                       belowBarData: BarAreaData(
                         show: true,
-                        color: Colors.green.withOpacity(0.3),
+                        color: const Color(0xFF3B82F6).withOpacity(0.2),
                       ),
                     ),
-                  // Debt line (pink area)
+                  // Debt line (modern purple)
                   if (debtSpots.isNotEmpty)
                     LineChartBarData(
                       spots: debtSpots,
                       isCurved: true,
-                      color: Colors.pink,
+                      color: const Color(0xFF8B5CF6),
                       barWidth: 0,
                       dotData: FlDotData(show: false),
                       belowBarData: BarAreaData(
                         show: true,
-                        color: Colors.pink.withOpacity(0.3),
+                        color: const Color(0xFF8B5CF6).withOpacity(0.2),
                       ),
                     ),
-                  // Total portfolio line (dark outline)
+                  // Total portfolio line (modern green)
                   LineChartBarData(
                     spots: totalSpots,
                     isCurved: true,
-                    color: Colors.black,
-                    barWidth: 2,
+                    color: const Color(0xFF10B981),
+                    barWidth: 3,
                     dotData: FlDotData(show: false),
+                    shadow: Shadow(
+                      color: const Color(0xFF10B981).withOpacity(0.3),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
                   ),
                 ],
               ),
@@ -413,15 +754,10 @@ class _BasketBacktestAnalysisScreenState extends ConsumerState<BasketBacktestAna
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  TextWidget.paraText(
-                    text: '29th Oct 2024',
-                    theme: theme.isDarkMode,
-                    color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                    fw: 0,
-                  ),
+                 
                   const SizedBox(height: 4),
                   TextWidget.subText(
-                    text: 'Total: ₹${(data.total.currentValue / 100000).toStringAsFixed(2)}L',
+                    text: 'Total: ₹${data.total.currentValue }',
                     theme: theme.isDarkMode,
                     color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
                     fw: 1,
@@ -434,10 +770,10 @@ class _BasketBacktestAnalysisScreenState extends ConsumerState<BasketBacktestAna
                   Row(
                     children: [
                       if (data.equity.isNotEmpty)
-                        _buildLegendItem('Equity', '₹${(data.equity[0].currentValue / 100000).toStringAsFixed(2)}L', Colors.green),
+                        _buildLegendItem('Equity', '₹${data.equity[0].currentValue }', const Color(0xFF3B82F6)),
                       const SizedBox(width: 16),
                       if (data.debt.isNotEmpty)
-                        _buildLegendItem('Hybrid', '₹${(data.debt[0].currentValue / 100000).toStringAsFixed(2)}L', Colors.pink),
+                        _buildLegendItem('Hybrid', '₹${data.debt[0].currentValue }', const Color(0xFF8B5CF6)),
                     ],
                   ),
                 ],
@@ -446,7 +782,6 @@ class _BasketBacktestAnalysisScreenState extends ConsumerState<BasketBacktestAna
           ),
           const SizedBox(height: 16),
           // Asset class performance table
-          _buildAssetClassTable(data),
         ],
       ),
     );
@@ -487,89 +822,7 @@ class _BasketBacktestAnalysisScreenState extends ConsumerState<BasketBacktestAna
     );
   }
 
-  Widget _buildAssetClassTable(PortfolioAnalysisModel data) {
-    final theme = ref.watch(themeProvider);
-    
-    return Column(
-      children: [
-        // Header
-        Container(
-          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-          decoration: BoxDecoration(
-            color: theme.isDarkMode 
-              ? colors.textSecondaryDark.withOpacity(0.05)
-              : colors.textSecondaryLight.withOpacity(0.05),
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                flex: 2,
-                child: TextWidget.subText(
-                  text: 'Asset Class',
-                  theme: theme.isDarkMode,
-                  color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                  fw: 1,
-                ),
-              ),
-              Expanded(
-                child: TextWidget.subText(
-                  text: 'Return',
-                  theme: theme.isDarkMode,
-                  color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                  fw: 1,
-                ),
-              ),
-              Expanded(
-                child: TextWidget.subText(
-                  text: 'Sharpe Ratio',
-                  theme: theme.isDarkMode,
-                  color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                  fw: 1,
-                ),
-              ),
-              Expanded(
-                child: TextWidget.subText(
-                  text: 'Max Drawdown',
-                  theme: theme.isDarkMode,
-                  color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                  fw: 1,
-                ),
-              ),
-              Expanded(
-                child: TextWidget.subText(
-                  text: 'XIRR',
-                  theme: theme.isDarkMode,
-                  color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                  fw: 1,
-                ),
-              ),
-            ],
-          ),
-        ),
-        // Equity row
-        if (data.equity.isNotEmpty)
-          _buildAssetClassRow(
-            'Equity', 
-            '₹${(data.equity[0].gain / 1000).toStringAsFixed(0)}K', 
-            data.equity[0].sharpeRatio.toStringAsFixed(2), 
-            '${data.equity[0].maxDrawdown.toStringAsFixed(2)}%', 
-            '${data.equity[0].xirr.toStringAsFixed(2)}%',
-            Colors.green,
-          ),
-        // Debt row
-        if (data.debt.isNotEmpty)
-          _buildAssetClassRow(
-            'Hybrid', 
-            '₹${(data.debt[0].gain / 1000).toStringAsFixed(0)}K', 
-            data.debt[0].sharpeRatio.toStringAsFixed(2), 
-            '${data.debt[0].maxDrawdown.toStringAsFixed(2)}%', 
-            '${data.debt[0].xirr.toStringAsFixed(2)}%',
-            Colors.pink,
-          ),
-      ],
-    );
-  }
+ 
 
   Widget _buildAssetClassRow(String assetClass, String returns, String sharpe, String drawdown, String xirr, Color color) {
     final theme = ref.watch(themeProvider);
@@ -652,6 +905,9 @@ class _BasketBacktestAnalysisScreenState extends ConsumerState<BasketBacktestAna
     // Calculate the difference in XIRR for comparison
     final xirrDifference = data.total.xirr - data.benchmark.xirr;
     
+    // Generate dynamic month labels for benchmark chart
+    final months = _generateMonthLabels(data.total.chartData.length);
+    
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -705,7 +961,6 @@ class _BasketBacktestAnalysisScreenState extends ConsumerState<BasketBacktestAna
                     sideTitles: SideTitles(
                       showTitles: true,
                       getTitlesWidget: (value, meta) {
-                        const months = ['Sep 22', 'Dec 22', 'Feb 23', 'Apr 23', 'Jun 23', 'Aug 23', 'Oct 23', 'Dec 23', 'Feb 24'];
                         int index = (value / (data.total.chartData.length / months.length)).round();
                         if (index >= 0 && index < months.length) {
                           return TextWidget.captionText(
@@ -830,8 +1085,8 @@ class _BasketBacktestAnalysisScreenState extends ConsumerState<BasketBacktestAna
           // Your Strategy row
           _buildComparisonRow(
             'Your Strategy', 
-            '₹${(data.total.currentValue / 100000).toStringAsFixed(2)}L',
-            '₹${(data.total.gain / 1000).toStringAsFixed(0)}K',
+            '₹${data.total.currentValue }',
+            '₹${data.total.gain }',
             data.total.sharpeRatio.toStringAsFixed(1),
             '${data.total.maxDrawdown.toStringAsFixed(2)}%',
             '${data.total.xirr.toStringAsFixed(2)}%',
@@ -840,8 +1095,8 @@ class _BasketBacktestAnalysisScreenState extends ConsumerState<BasketBacktestAna
           // Benchmark row
           _buildComparisonRow(
             data.benchmark.schemeName, 
-            '₹${(data.benchmark.currentValue / 100000).toStringAsFixed(2)}L',
-            '₹${(data.benchmark.gain / 1000).toStringAsFixed(0)}K',
+            '₹${data.benchmark.currentValue }',
+            '₹${data.benchmark.gain }',
             data.benchmark.sharpeRatio.toStringAsFixed(1),
             '${data.benchmark.maxDrawdown.toStringAsFixed(2)}%',
             '${data.benchmark.xirr.toStringAsFixed(2)}%',
@@ -940,6 +1195,9 @@ class _BasketBacktestAnalysisScreenState extends ConsumerState<BasketBacktestAna
   Widget _buildInflationAdjustment(PortfolioAnalysisModel data) {
     final theme = ref.watch(themeProvider);
     
+    // Generate dynamic month labels for inflation chart
+    final months = _generateMonthLabels(data.total.chartData.length);
+    
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -975,7 +1233,6 @@ class _BasketBacktestAnalysisScreenState extends ConsumerState<BasketBacktestAna
                     sideTitles: SideTitles(
                       showTitles: true,
                       getTitlesWidget: (value, meta) {
-                        const months = ['Sep 22', 'Dec 22', 'Apr 23', 'Jun 23', 'Aug 23', 'Oct 23', 'Dec 23', 'Feb 24', 'May 24', 'Jul 24', 'Sep 25'];
                         int index = (value / (data.total.chartData.length / months.length)).round();
                         if (index >= 0 && index < months.length) {
                           return TextWidget.captionText(
@@ -1218,11 +1475,11 @@ class _BasketBacktestAnalysisScreenState extends ConsumerState<BasketBacktestAna
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _buildTaxComponent('Total Gains', '₹${(totalGains / 1000).toStringAsFixed(0)}K', Colors.green),
+              _buildTaxComponent('Total Gains', '₹${totalGains }', Colors.green),
               Icon(Icons.remove, color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight),
-              _buildTaxComponent('Total Tax', '₹${(totalTax / 1000).toStringAsFixed(0)}K', Colors.red),
+              _buildTaxComponent('Total Tax', '₹${totalTax }', Colors.red),
               Icon(Icons.drag_handle, color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight),
-              _buildTaxComponent('Post Tax Gains', '₹${(postTaxGains / 1000).toStringAsFixed(0)}K', Colors.blue),
+              _buildTaxComponent('Post Tax Gains', '₹${postTaxGains }', Colors.blue),
             ],
           ),
           const SizedBox(height: 20),
@@ -1230,8 +1487,8 @@ class _BasketBacktestAnalysisScreenState extends ConsumerState<BasketBacktestAna
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _buildTaxBreakdown('Short Term Capital Gains Tax', '₹${(equityTax / 1000).toStringAsFixed(0)}K'),
-              _buildTaxBreakdown('Long Term Capital Gains Tax', '₹${(debtTax / 1000).toStringAsFixed(0)}K'),
+              _buildTaxBreakdown('Short Term Capital Gains Tax', '₹${equityTax }'),
+              _buildTaxBreakdown('Long Term Capital Gains Tax', '₹${debtTax }'),
             ],
           ),
           const SizedBox(height: 8),
@@ -1290,99 +1547,108 @@ class _BasketBacktestAnalysisScreenState extends ConsumerState<BasketBacktestAna
     );
   }
 
-  Widget _buildAssetAllocation(PortfolioAnalysisModel data) {
-    final theme = ref.watch(themeProvider);
+  // Widget _buildAssetAllocation(PortfolioAnalysisModel data) {
+  //   final theme = ref.watch(themeProvider);
     
-    // Calculate percentages based on actual data
-    final equityPercentage = data.equity.isNotEmpty 
-      ? (data.equity[0].currentValue / data.total.currentValue) * 100
-      : 0.0;
-    final debtPercentage = data.debt.isNotEmpty 
-      ? (data.debt[0].currentValue / data.total.currentValue) * 100
-      : 0.0;
+  //   // Calculate percentages based on actual data
+  //   final equityPercentage = data.equity.isNotEmpty 
+  //     ? (data.equity[0].currentValue / data.total.currentValue) * 100
+  //     : 0.0;
+  //   final debtPercentage = data.debt.isNotEmpty 
+  //     ? (data.debt[0].currentValue / data.total.currentValue) * 100
+  //     : 0.0;
     
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: theme.isDarkMode 
-            ? colors.textSecondaryDark.withOpacity(0.1)
-            : colors.textSecondaryLight.withOpacity(0.1),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          TextWidget.subText(
-            text: 'Asset Allocation',
-            theme: theme.isDarkMode,
-            color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-            fw: 1,
-          ),
-          const SizedBox(height: 20),
-          // Pie chart showing allocation
-          SizedBox(
-            height: 200,
-            child: Row(
-              children: [
-                Expanded(
-                  child: PieChart(
-                    PieChartData(
-                      sections: [
-                        if (equityPercentage > 0)
-                          PieChartSectionData(
-                            value: equityPercentage,
-                            title: '${equityPercentage.toStringAsFixed(0)}%',
-                            color: Colors.green,
-                            radius: 80,
-                            titleStyle: TextWidget.textStyle(
-                              theme: false,
-                              color: Colors.white,
-                              fontSize: 14,
-                              fw: 2,
-                            ),
-                          ),
-                        if (debtPercentage > 0)
-                          PieChartSectionData(
-                            value: debtPercentage,
-                            title: '${debtPercentage.toStringAsFixed(0)}%',
-                            color: Colors.pink,
-                            radius: 80,
-                            titleStyle: TextWidget.textStyle(
-                              theme: false,
-                              color: Colors.white,
-                              fontSize: 14,
-                              fw: 2,
-                            ),
-                          ),
-                      ],
-                      centerSpaceRadius: 40,
-                      sectionsSpace: 2,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 20),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    if (equityPercentage > 0)
-                      _buildAllocationLegend('Equity', '${equityPercentage.toStringAsFixed(0)}%', Colors.green),
-                    if (equityPercentage > 0 && debtPercentage > 0)
-                      const SizedBox(height: 12),
-                    if (debtPercentage > 0)
-                      _buildAllocationLegend('Debt', '${debtPercentage.toStringAsFixed(0)}%', Colors.pink),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  //   return Container(
+  //     padding: const EdgeInsets.all(20),
+  //     decoration: BoxDecoration(
+  //       color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+  //       borderRadius: BorderRadius.circular(16),
+  //       border: Border.all(
+  //         color: theme.isDarkMode 
+  //           ? colors.textSecondaryDark.withOpacity(0.1)
+  //           : colors.textSecondaryLight.withOpacity(0.1),
+  //       ),
+  //       boxShadow: [
+  //         BoxShadow(
+  //           color: theme.isDarkMode 
+  //             ? Colors.black.withOpacity(0.2)
+  //             : Colors.grey.withOpacity(0.1),
+  //           blurRadius: 8,
+  //           offset: const Offset(0, 2),
+  //         ),
+  //       ],
+  //     ),
+  //     child: Column(
+  //       crossAxisAlignment: CrossAxisAlignment.start,
+  //       children: [
+  //         TextWidget.subText(
+  //           text: 'Asset Allocation',
+  //           theme: theme.isDarkMode,
+  //           color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+  //           fw: 1,
+  //         ),
+  //         const SizedBox(height: 20),
+  //         // Pie chart showing allocation
+  //         SizedBox(
+  //           height: 200,
+  //           child: Row(
+  //             children: [
+  //               Expanded(
+  //                 child: PieChart(
+  //                   PieChartData(
+  //                     sections: [
+  //                       if (equityPercentage > 0)
+  //                         PieChartSectionData(
+  //                           value: equityPercentage,
+  //                           title: '${equityPercentage.toStringAsFixed(0)}%',
+  //                           color: const Color(0xFF3B82F6),
+  //                           radius: 80,
+  //                           titleStyle: TextWidget.textStyle(
+  //                             theme: false,
+  //                             color: Colors.white,
+  //                             fontSize: 14,
+  //                             fw: 2,
+  //                           ),
+  //                         ),
+  //                       if (debtPercentage > 0)
+  //                         PieChartSectionData(
+  //                           value: debtPercentage,
+  //                           title: '${debtPercentage.toStringAsFixed(0)}%',
+  //                           color: const Color(0xFF8B5CF6),
+  //                           radius: 80,
+  //                           titleStyle: TextWidget.textStyle(
+  //                             theme: false,
+  //                             color: Colors.white,
+  //                             fontSize: 14,
+  //                             fw: 2,
+  //                           ),
+  //                         ),
+  //                     ],
+  //                     centerSpaceRadius: 40,
+  //                     sectionsSpace: 2,
+  //                   ),
+  //                 ),
+  //               ),
+  //               const SizedBox(width: 20),
+  //               Column(
+  //                 crossAxisAlignment: CrossAxisAlignment.start,
+  //                 mainAxisAlignment: MainAxisAlignment.center,
+  //                 children: [
+  //                   if (equityPercentage > 0)
+  //                     _buildAllocationLegend('Equity', '${equityPercentage.toStringAsFixed(0)}%', const Color(0xFF3B82F6)),
+  //                   if (equityPercentage > 0 && debtPercentage > 0)
+  //                     const SizedBox(height: 12),
+  //                   if (debtPercentage > 0)
+  //                     _buildAllocationLegend('Debt', '${debtPercentage.toStringAsFixed(0)}%', const Color(0xFF8B5CF6)),
+  //                 ],
+  //               ),
+  //             ],
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   Widget _buildAllocationLegend(String label, String percentage, Color color) {
     final theme = ref.watch(themeProvider);
@@ -1411,26 +1677,34 @@ class _BasketBacktestAnalysisScreenState extends ConsumerState<BasketBacktestAna
   Widget _buildTransactionsTable(PortfolioAnalysisModel data) {
     final theme = ref.watch(themeProvider);
     
-    // Create sample transactions based on actual funds
+    // Create transactions based on actual funds from API data
     List<Map<String, String>> transactions = [];
     
     if (data.equity.isNotEmpty) {
+      final equityFund = data.equity[0];
+      final units = (equityFund.investmentAmount / (equityFund.chartData.isNotEmpty ? equityFund.chartData[0] : 1)).toStringAsFixed(3);
+      final nav = equityFund.chartData.isNotEmpty ? equityFund.chartData[0].toStringAsFixed(4) : '0.0000';
+      
       transactions.add({
-        'fund': data.equity[0].schemaName,
-        'date': '06 Sep 2022',
+        'fund': equityFund.schemaName,
+        'date': _getInvestmentStartDate(data.total.chartData.length),
         'type': 'Buy',
-        'units': '171.889',
-        'nav': '191.8638'
+        'units': units,
+        'nav': nav
       });
     }
     
     if (data.debt.isNotEmpty) {
+      final debtFund = data.debt[0];
+      final units = (debtFund.investmentAmount / (debtFund.chartData.isNotEmpty ? debtFund.chartData[0] : 1)).toStringAsFixed(3);
+      final nav = debtFund.chartData.isNotEmpty ? debtFund.chartData[0].toStringAsFixed(4) : '0.0000';
+      
       transactions.add({
-        'fund': data.debt[0].schemaName,
-        'date': '06 Sep 2022',
+        'fund': debtFund.schemaName,
+        'date': _getInvestmentStartDate(data.total.chartData.length),
         'type': 'Buy',
-        'units': '683.92',
-        'nav': '48.2512'
+        'units': units,
+        'nav': nav
       });
     }
     
@@ -1438,12 +1712,21 @@ class _BasketBacktestAnalysisScreenState extends ConsumerState<BasketBacktestAna
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: theme.isDarkMode 
             ? colors.textSecondaryDark.withOpacity(0.1)
             : colors.textSecondaryLight.withOpacity(0.1),
         ),
+        boxShadow: [
+          BoxShadow(
+            color: theme.isDarkMode 
+              ? Colors.black.withOpacity(0.2)
+              : Colors.grey.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1558,15 +1841,19 @@ class _BasketBacktestAnalysisScreenState extends ConsumerState<BasketBacktestAna
           ),
           Expanded(
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: Colors.green.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(4),
+                color: const Color(0xFF10B981).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: const Color(0xFF10B981).withOpacity(0.3),
+                  width: 1,
+                ),
               ),
               child: TextWidget.captionText(
                 text: type,
                 theme: false,
-                color: Colors.green,
+                color: const Color(0xFF10B981),
                 fw: 1,
               ),
             ),
@@ -1590,5 +1877,76 @@ class _BasketBacktestAnalysisScreenState extends ConsumerState<BasketBacktestAna
         ],
       ),
     );
+  }
+
+  // Helper method to generate dynamic month labels based on chart data length
+  List<String> _generateMonthLabels(int chartDataLength) {
+    if (chartDataLength == 0) return [];
+    
+    // Calculate the number of months based on data points
+    // Assuming daily data, we'll show monthly intervals
+    final monthsToShow = (chartDataLength / 30).ceil().clamp(3, 12); // Show 3-12 months
+    final months = <String>[];
+    
+    // Start from a base date (assuming investment started 2+ years ago)
+    final startDate = DateTime.now().subtract(Duration(days: chartDataLength));
+    
+    // Generate month labels
+    for (int i = 0; i < monthsToShow; i++) {
+      final monthDate = startDate.add(Duration(days: (chartDataLength / monthsToShow * i).round()));
+      final monthAbbr = _getMonthAbbreviation(monthDate.month);
+      final year = monthDate.year.toString().substring(2);
+      months.add('$monthAbbr $year');
+    }
+    
+    return months;
+  }
+
+  // Helper method to get month abbreviation
+  String _getMonthAbbreviation(int month) {
+    switch (month) {
+      case 1: return 'Jan';
+      case 2: return 'Feb';
+      case 3: return 'Mar';
+      case 4: return 'Apr';
+      case 5: return 'May';
+      case 6: return 'Jun';
+      case 7: return 'Jul';
+      case 8: return 'Aug';
+      case 9: return 'Sep';
+      case 10: return 'Oct';
+      case 11: return 'Nov';
+      case 12: return 'Dec';
+      default: return '';
+    }
+  }
+
+  // Helper method to get current date
+  String _getCurrentDate() {
+    final now = DateTime.now();
+    final day = now.day;
+    final monthAbbr = _getMonthAbbreviation(now.month);
+    final year = now.year;
+    return '${day}${_getOrdinalSuffix(day)} $monthAbbr $year';
+  }
+
+  // Helper method to get ordinal suffix for day
+  String _getOrdinalSuffix(int day) {
+    if (day >= 11 && day <= 13) return 'th';
+    switch (day % 10) {
+      case 1: return 'st';
+      case 2: return 'nd';
+      case 3: return 'rd';
+      default: return 'th';
+    }
+  }
+
+  // Helper method to get investment start date
+  String _getInvestmentStartDate(int chartDataLength) {
+    final startDate = DateTime.now().subtract(Duration(days: chartDataLength));
+    final day = startDate.day;
+    final monthAbbr = _getMonthAbbreviation(startDate.month);
+    final year = startDate.year;
+    return '${day.toString().padLeft(2, '0')} $monthAbbr $year';
   }
 }
