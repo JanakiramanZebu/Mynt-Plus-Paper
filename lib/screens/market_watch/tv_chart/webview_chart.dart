@@ -698,6 +698,10 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
         ),
         onWebViewCreated: (controller) {
           ConstantName.chartwebViewController = controller;
+          
+          // Load the chart with current user credentials
+          final chartUrl = "https://mynt.zebuetrade.com/tv?src=app&symbol=${widget.chartArgs.tsym}&user=${prefs.clientId}&usession=${prefs.clientSession}&token=${widget.chartArgs.token}&exch=${widget.chartArgs.exch}&dark=${theme.isDarkMode}";
+          controller.loadUrl(urlRequest: URLRequest(url: WebUri(chartUrl)));
         },
         onReceivedError: (controller, request, error) {
           ConstantName.chartwebViewController = controller;
