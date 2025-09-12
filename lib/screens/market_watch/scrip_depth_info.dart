@@ -504,7 +504,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                           Navigator.of(context).pop();
                         }
                       },
-                                             child: DraggableScrollableSheet(
+                        child: DraggableScrollableSheet(
                            // initialChildSize is calculated dynamically for Overview state
                            // to show only the header section (up to Chart/Options buttons)
                            // For other states, it uses predefined sizes
@@ -1437,12 +1437,9 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                         scripInfo
                                                                             .singlePageloader(true);
                             
-                                                                                                                                                 setState(
-                                                                             () {
-                                                                           initSize =
-                                                                               _getSafeInitialSize(0.30);
-                                                                           scripInfo
-                                                                               .chngDephBtn("Chart");
+                                                                          setState(() {
+                                                                           initSize = _getSafeInitialSize(0.30);
+                                                                           scripInfo.chngDephBtn("Chart");
                                                                          });
                             
                                                                         if (scripInfo
@@ -1479,11 +1476,15 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                         
                                                                         // Check if we should return to option chain based on currentRouteName
                                                                         String? previousRoute;
+                                                                        dynamic originalArgs;
+                                                                        
                                                                         if (currentRouteName == Routes.optionChain) {
-                                                                          previousRoute = Routes.optionChain;
+                                                                          // previousRoute = Routes.optionChain;
+                                                                          // Store the original DepthInputArgs to return to the same option chain state
+                                                                          originalArgs = widget.wlValue;
                                                                         }
                                                                         
-                                                                        ref.read(chartProvider.notifier).showChart(chartArgs, previousRoute: previousRoute);
+                                                                        ref.read(chartProvider.notifier).showChart(chartArgs, previousRoute: previousRoute, originalArgs: originalArgs);
                             
                                                                         scripInfo.setChartScript(
                                                                             widget.wlValue.exch,

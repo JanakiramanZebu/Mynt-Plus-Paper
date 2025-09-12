@@ -8,6 +8,7 @@ import '../../models/marketwatch_model/search_scrip_new_model.dart';
 import '../../provider/thems.dart';
 import '../../res/global_state_text.dart';
 import '../../routes/app_routes.dart';
+import '../../routes/route_names.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
 import '../../sharedWidget/list_divider.dart';
 import '../../sharedWidget/no_data_found.dart';
@@ -98,11 +99,10 @@ print(!searchScrip.exarr.contains('"${scrip.exch}"'));
                       exch: scrip.exch.toString(),
                     );
                     
-                    // Preserve the previous route from the existing chart state
-                    final currentChartState = ref.read(chartProvider);
+                    // Set search as the previous route for chart navigation
                     ref.read(chartProvider.notifier).showChart(
                       chartArgs, 
-                      previousRoute: currentChartState.previousRoute
+                      previousRoute: Routes.searchScrip
                     );
                     
                     currentRouteName = 'Chart';

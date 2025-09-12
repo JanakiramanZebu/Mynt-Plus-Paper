@@ -11,6 +11,7 @@ import '../../provider/thems.dart';
 import '../../res/global_state_text.dart';
 import '../../res/res.dart';
 import '../../routes/app_routes.dart';
+import '../../routes/route_names.dart';
 import '../../sharedWidget/custom_text_form_field.dart';
 import '../../sharedWidget/functions.dart';
 import '../../sharedWidget/no_internet_widget.dart';
@@ -127,7 +128,7 @@ class _AddScripState extends ConsumerState<SearchScreen>
               if (chartState.chartArgs != null) {
                 ref.read(chartProvider.notifier).showChart(
                   chartState.chartArgs!,
-                  previousRoute: chartState.previousRoute
+                  previousRoute: Routes.searchScrip
                 );
               }
             }
@@ -166,7 +167,7 @@ class _AddScripState extends ConsumerState<SearchScreen>
                             if (chartState.chartArgs != null) {
                               ref.read(chartProvider.notifier).showChart(
                                 chartState.chartArgs!,
-                                previousRoute: chartState.previousRoute
+                                previousRoute: Routes.searchScrip
                               );
                             }
                           }

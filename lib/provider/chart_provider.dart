@@ -9,14 +9,16 @@ class ChartState {
   final bool isVisible;
   final ChartArgs? chartArgs;
   final String? previousRoute;
+  final dynamic originalArgs; // Store original arguments when needed (e.g., DepthInputArgs for option chain)
 
-  const ChartState({this.isVisible = false, this.chartArgs, this.previousRoute});
+  const ChartState({this.isVisible = false, this.chartArgs, this.previousRoute, this.originalArgs});
 
-  ChartState copyWith({bool? isVisible, ChartArgs? chartArgs, String? previousRoute}) {
+  ChartState copyWith({bool? isVisible, ChartArgs? chartArgs, String? previousRoute, dynamic originalArgs}) {
     return ChartState(
       isVisible: isVisible ?? this.isVisible,
       chartArgs: chartArgs ?? this.chartArgs,
       previousRoute: previousRoute ?? this.previousRoute,
+      originalArgs: originalArgs ?? this.originalArgs,
     );
   }
 }
@@ -24,9 +26,16 @@ class ChartState {
 class ChartNotifier extends StateNotifier<ChartState> {
   ChartNotifier() : super(const ChartState());
 
-  void showChart(ChartArgs chartArgs, {String? previousRoute}) {
-    log("showChart called with: ${chartArgs.tsym}");
-    state = state.copyWith(isVisible: true, chartArgs: chartArgs, previousRoute: previousRoute);
+  void showChart(ChartArgs chartArgs, {String? previousRoute, dynamic originalArgs}) {
+    log("showChart called with: ${chartArgs.tsym}, previousRoute: $previousRoute");
+    
+    // Always create fresh state with new navigation context - don't inherit old values
+    state = ChartState(
+      isVisible: true,
+      chartArgs: chartArgs,
+      previousRoute: previousRoute,      // Use exactly what's passed (can be null)
+      originalArgs: originalArgs,        // Use exactly what's passed (can be null)
+    );
   }
 
   void hideChart() {

@@ -153,14 +153,33 @@ class ScripInfoBtns extends ConsumerWidget {
         // Then activate the chart overlay
         final chartArgs = ChartArgs(exch: exch, tsym: tsym, token: token);
         
-        // Check if we're coming from option chain by looking at the current route
+        // Check the current route to determine where to return after chart
         final currentRoute = ModalRoute.of(context)?.settings.name;
         String? previousRoute;
+        dynamic originalArgs;
+        
         if (currentRoute == Routes.optionChain) {
           previousRoute = Routes.optionChain;
+          // Store the original DepthInputArgs for option chain navigation
+          originalArgs = DepthInputArgs(
+            exch: exch,
+            token: token,
+            tsym: marketwatch.getQuotes!.tsym ?? '',
+            instname: marketwatch.getQuotes!.instname ?? "",
+            symbol: marketwatch.getQuotes!.symbol ?? '',
+            expDate: marketwatch.getQuotes!.expDate ?? '',
+            option: marketwatch.getQuotes!.option ?? ''
+          );
+        } else if (currentRoute == Routes.positionGroupDetail ||
+                   currentRoute == Routes.positionDetail ||
+                   currentRoute == Routes.holdingDetail) {
+          // For portfolio screens, we want to return to the same screen
+          // but we don't need special args since they don't expect DepthInputArgs
+          previousRoute = currentRoute;
+          originalArgs = null; // Portfolio screens don't use DepthInputArgs
         }
         
-        ref.read(chartProvider.notifier).showChart(chartArgs, previousRoute: previousRoute);
+        ref.read(chartProvider.notifier).showChart(chartArgs, previousRoute: previousRoute, originalArgs: originalArgs);
         
       } else if (buttonName == "Option") {
         // Option chain logic

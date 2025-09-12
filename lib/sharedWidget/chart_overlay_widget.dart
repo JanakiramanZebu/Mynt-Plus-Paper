@@ -20,14 +20,25 @@ class ChartOverlayWidget extends ConsumerWidget {
       onPopInvokedWithResult: (didPop, result) {
         if (chartState.isVisible) {
           final prevRoute = chartState.previousRoute;
+          final originalArgs = chartState.originalArgs;
           ref.read(chartProvider.notifier).hideChart();
           
           // Handle navigation after hiding chart
           if (prevRoute != null && prevRoute.isNotEmpty) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (prevRoute == Routes.optionChain) {
+              if (prevRoute == Routes.optionChain && originalArgs != null) {
+                // Use the stored original DepthInputArgs to navigate back to option chain
                 rootNavigatorKey.currentState?.pushNamedAndRemoveUntil(
                   Routes.optionChain, 
+                  (route) => route.settings.name == Routes.homeScreen || route.isFirst,
+                  arguments: originalArgs
+                );
+              } else if (prevRoute == Routes.positionGroupDetail ||
+                         prevRoute == Routes.positionDetail ||
+                         prevRoute == Routes.holdingDetail) {
+                // For portfolio screens, navigate back without special arguments
+                rootNavigatorKey.currentState?.pushNamedAndRemoveUntil(
+                  prevRoute, 
                   (route) => route.settings.name == Routes.homeScreen || route.isFirst
                 );
               } else {

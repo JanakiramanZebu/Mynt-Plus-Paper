@@ -1106,9 +1106,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   }
 
   void setChartScript(String exch, String token, String tsym) async {
-    await ConstantName.chartwebViewController!.evaluateJavascript(
-        source:
-            "window.changeScript([{exch: '$exch', token: '$token', tsym: '$tsym'}], '${ref.read(themeProvider).isDarkMode}')");
+    await ConstantName.chartwebViewController?.evaluateJavascript(source:"window.changeScript([{exch: '$exch', token: '$token', tsym: '$tsym'}], '${ref.read(themeProvider).isDarkMode}')");
     if (_chartTabs.length == 5 &&
         (_chartTabs.any((t) => t.token == token)) != true) {
       removeChartTab(_chartTabs.last, false);
