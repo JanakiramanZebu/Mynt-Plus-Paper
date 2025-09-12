@@ -8,6 +8,8 @@ import 'package:mynt_plus/res/global_state_text.dart';
 import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/routes/route_names.dart';
 
+import '../../../../sharedWidget/custom_back_btn.dart';
+
 class StrategyDashboardScreen extends ConsumerStatefulWidget {
   const StrategyDashboardScreen({super.key});
 
@@ -76,32 +78,7 @@ class _StrategyDashboardScreenState
         leadingWidth: 48,
         titleSpacing: 0,
         centerTitle: false,
-        leading: Material(
-          color: Colors.transparent,
-          shape: const CircleBorder(),
-          clipBehavior: Clip.hardEdge,
-          child: InkWell(
-            customBorder: const CircleBorder(),
-            splashColor: theme.isDarkMode
-                ? colors.splashColorDark
-                : colors.splashColorLight,
-            highlightColor:
-                theme.isDarkMode ? colors.highlightDark : colors.highlightLight,
-            onTap: () => Navigator.pop(context),
-            child: Container(
-              width: 44,
-              height: 44,
-              alignment: Alignment.center,
-              child: Icon(
-                Icons.arrow_back_ios_outlined,
-                size: 18,
-                color: theme.isDarkMode
-                    ? colors.textSecondaryDark
-                    : colors.textSecondaryLight,
-              ),
-            ),
-          ),
-        ),
+         leading: const CustomBackBtn(),
         elevation: 0.2,
         title: TextWidget.titleText(
           text: "Investment Strategies",
@@ -122,7 +99,6 @@ class _StrategyDashboardScreenState
               // My Saved Strategies Section
               _buildSavedStrategiesSection(theme),
               const SizedBox(height: 24),
-
               // Investment Strategies Section
               _buildInvestmentStrategiesSection(theme),
             ],

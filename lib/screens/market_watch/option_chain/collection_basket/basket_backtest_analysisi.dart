@@ -10,6 +10,7 @@ import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import 'package:mynt_plus/sharedWidget/splash_loader.dart';
 
 import '../../../../provider/dashboard_provider.dart';
+import '../../../../sharedWidget/custom_back_btn.dart';
 
 class BasketBacktestAnalysisScreen extends ConsumerStatefulWidget {
   const BasketBacktestAnalysisScreen({super.key});
@@ -52,27 +53,7 @@ class _BasketBacktestAnalysisScreenState extends ConsumerState<BasketBacktestAna
         centerTitle: false,
         elevation: 0.2,
         backgroundColor: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-        leading: Material(
-          color: Colors.transparent,
-          shape: const CircleBorder(),
-          clipBehavior: Clip.hardEdge,
-          child: InkWell(
-            customBorder: const CircleBorder(),
-            splashColor: theme.isDarkMode ? colors.splashColorDark : colors.splashColorLight,
-            highlightColor: theme.isDarkMode ? colors.highlightDark : colors.highlightLight,
-            onTap: () => Navigator.pop(context),
-            child: Container(
-              width: 44,
-              height: 44,
-              alignment: Alignment.center,
-              child: Icon(
-                Icons.arrow_back_ios_outlined,
-                size: 18,
-                color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-              ),
-            ),
-          ),
-        ),
+        leading: const CustomBackBtn(),
         title: TextWidget.titleText(
           text: "Basket Backtest Analysis",
           textOverflow: TextOverflow.ellipsis,
@@ -80,28 +61,28 @@ class _BasketBacktestAnalysisScreenState extends ConsumerState<BasketBacktestAna
           color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
           fw: 1,
         ),
-        actions: [
-          // Action buttons similar to portfolio analysis
-          Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _buildActionButton(
-                  icon: Icons.share_outlined,
-                  onTap: () => _shareAnalysis(),
-                  theme: theme,
-                ),
-                const SizedBox(width: 8),
-                _buildActionButton(
-                  icon: Icons.more_vert,
-                  onTap: () => _showMoreOptions(),
-                  theme: theme,
-                ),
-              ],
-            ),
-          ),
-        ],
+        // actions: [
+        //   // Action buttons similar to portfolio analysis
+        //   Padding(
+        //     padding: const EdgeInsets.only(right: 16),
+        //     child: Row(
+        //       mainAxisSize: MainAxisSize.min,
+        //       children: [
+        //         _buildActionButton(
+        //           icon: Icons.share_outlined,
+        //           onTap: () => _shareAnalysis(),
+        //           theme: theme,
+        //         ),
+        //         const SizedBox(width: 8),
+        //         _buildActionButton(
+        //           icon: Icons.more_vert,
+        //           onTap: () => _showMoreOptions(),
+        //           theme: theme,
+        //         ),
+        //       ],
+        //     ),
+        //   ),
+        // ],
       ),
       body: SafeArea(
         child: Consumer(
@@ -202,17 +183,10 @@ class _BasketBacktestAnalysisScreenState extends ConsumerState<BasketBacktestAna
   Widget _buildModernPortfolioSummary(PortfolioTotal data, ThemesProvider theme) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            theme.isDarkMode ? const Color(0xFF1A1A1A) : const Color(0xFFF8F9FA),
-            theme.isDarkMode ? const Color(0xFF2D2D2D) : const Color(0xFFFFFFFF),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(16),
+       
+        borderRadius: BorderRadius.circular(5),
         border: Border.all(
           color: theme.isDarkMode 
             ? colors.textSecondaryDark.withOpacity(0.1)
@@ -238,17 +212,17 @@ class _BasketBacktestAnalysisScreenState extends ConsumerState<BasketBacktestAna
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   TextWidget.subText(
-                    text: 'Portfolio Value',
+                    text: 'Final Value',
                     theme: theme.isDarkMode,
                     color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                     fw: 0,
                   ),
                   const SizedBox(height: 8),
                   TextWidget.titleText(
-                    text: '₹${data.currentValue}',
+                    text: '${data.currentValue}',
                     theme: theme.isDarkMode,
                     color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                    fw: 1,
+                    fw: 0,
                   ),
                 ],
               ),
@@ -317,6 +291,7 @@ class _BasketBacktestAnalysisScreenState extends ConsumerState<BasketBacktestAna
               ),
             ],
           ),
+          
         ],
       ),
     );
@@ -621,21 +596,21 @@ class _BasketBacktestAnalysisScreenState extends ConsumerState<BasketBacktestAna
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: theme.isDarkMode 
-            ? colors.textSecondaryDark.withOpacity(0.1)
-            : colors.textSecondaryLight.withOpacity(0.1),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: theme.isDarkMode 
-              ? Colors.black.withOpacity(0.2)
-              : Colors.grey.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        // borderRadius: BorderRadius.circular(16),
+        // border: Border.all(
+        //   color: theme.isDarkMode 
+        //     ? colors.textSecondaryDark.withOpacity(0.1)
+        //     : colors.textSecondaryLight.withOpacity(0.1),
+        // ),
+        // boxShadow: [
+        //   BoxShadow(
+        //     color: theme.isDarkMode 
+        //       ? Colors.black.withOpacity(0.2)
+        //       : Colors.grey.withOpacity(0.1),
+        //     blurRadius: 8,
+        //     offset: const Offset(0, 2),
+        //   ),
+        // ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -647,7 +622,7 @@ class _BasketBacktestAnalysisScreenState extends ConsumerState<BasketBacktestAna
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   TextWidget.subText(
-                    text: 'Portfolio Performance',
+                    text: 'Overall Returns',
                     theme: theme.isDarkMode,
                     color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
                     fw: 1,
