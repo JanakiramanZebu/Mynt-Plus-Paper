@@ -1073,6 +1073,7 @@ Color getSectorAllocationColor(String sector) {
     _selectedFunds.clear();
     _searchController.clear();
     _selectedFilter = 'All';
+    _selectedDuration = '3Y';
     _editingStrategy = null;
     _investmentError = null;
     notifyListeners();

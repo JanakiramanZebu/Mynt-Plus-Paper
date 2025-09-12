@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
-import 'package:mynt_plus/provider/thems.dart';
 import '../api/core/api_export.dart';
 import '../locator/constant.dart';
 import '../locator/locator.dart';
@@ -15,15 +14,13 @@ import '../models/profile_model/user_detail_model.dart';
 import '../res/res.dart';
 import '../routes/route_names.dart';
 import '../sharedWidget/snack_bar.dart';
+import '../utils/image_utils.dart';
 import 'auth_provider.dart';
 import 'core/default_change_notifier.dart';
-import 'dashboard_provider.dart';
 import 'index_list_provider.dart';
 import 'shocase_provider.dart';
 import '../models/profile_model/qr_login_res.dart';
 import 'dart:io';
-import 'package:file_picker/file_picker.dart';
-import 'package:http/http.dart' as http;
 
 final userProfileProvider =
     ChangeNotifierProvider((ref) => UserProfileProvider(ref));
@@ -641,7 +638,15 @@ class UserProfileProvider extends DefaultChangeNotifier {
     try {
       toggleimageloader(true);
 
-      final responseData = await api.uploadImage(imageFile);
+      // Fix image orientation before uploading (important for iOS photos)
+      final processedImageFile = await ImageUtils.processImageForUpload(
+        imageFile,
+        maxWidth: 1024, // Limit width to 1024px for better performance
+        maxHeight: 1024, // Limit height to 1024px for better performance
+        quality: 85, // Good quality with reasonable file size
+      );
+
+      final responseData = await api.uploadImage(processedImageFile);
 
       if (responseData["status"] == "success") {
         successMessage(context, 'Profile image updated successfully!');
