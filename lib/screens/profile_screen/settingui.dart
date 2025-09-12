@@ -411,9 +411,8 @@ class SettingsScreen extends ConsumerWidget {
                                   await ref
                                       .read(apikeyprovider)
                                       .fetchapikey(context);
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                      successMessage(context,
-                                          'API Key as been ${apikeys.generateApikey?.status}'));
+                                  showResponsiveSuccess(context,
+                                          'API Key as been ${apikeys.generateApikey?.status}');
                                 },
                                 child: TextWidget.subText(
                                   text: "API Key",
@@ -541,15 +540,7 @@ class SettingsScreen extends ConsumerWidget {
   copyToClipboard(String text, String? status, BuildContext context) {
     Clipboard.setData(ClipboardData(text: text));
     if (status == "VALID") {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content: TextWidget.titleText(
-          text: 'Text copied to clipboard',
-          theme: false,
-          color: colors.colorBlue,
-          fw: 0,
-        )),
-      );
+      showResponsiveSuccess(context, 'Text copied to clipboard');
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

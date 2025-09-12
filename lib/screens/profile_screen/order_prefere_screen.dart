@@ -14,6 +14,7 @@ import '../../res/global_state_text.dart';
 import '../../res/res.dart';
 import '../../routes/route_names.dart';
 import '../../sharedWidget/cust_text_formfield.dart';
+import '../../utils/responsive_navigation.dart';
 import '../../sharedWidget/custom_back_btn.dart';
 import '../../sharedWidget/enums.dart';
 import '../../sharedWidget/snack_bar.dart';
@@ -132,7 +133,8 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
             ? InkWell(
                 onTap: () {
                   Navigator.pop(context);
-                  Navigator.pushNamed(context, Routes.placeOrderScreen,
+                  ResponsiveNavigation.toPlaceOrderScreen(
+                      context: context,
                       arguments: {
                         "orderArg": widget.orderArg,
                         "scripInfo": widget.scripInfo,
@@ -393,18 +395,12 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                             int parsed = int.tryParse(value) ?? 1;
                                             if (parsed > 20) {
                                               mktProtCtrl.text = "20";
-                                              ScaffoldMessenger.of(context)
-                                                  .showSnackBar(
-                                                warningMessage(context,
-                                                    "Can't enter greater than 20% of Market Protection"),
-                                              );
+                                              showResponsiveWarningMessage(context,
+                                                  "Can't enter greater than 20% of Market Protection");
                                             } else if (parsed < 1) {
                                               mktProtCtrl.text = "1";
-                                              ScaffoldMessenger.of(context)
-                                                  .showSnackBar(
-                                                warningMessage(context,
-                                                    "can't enter less than 1% of Market Protection"),
-                                              );
+                                              showResponsiveWarningMessage(context,
+                                                  "can't enter less than 1% of Market Protection");
                                             }
                                           }
                                         });
@@ -547,9 +543,8 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                           .hideCurrentSnackBar();
             
                                       if (value.isEmpty) {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(warningMessage(context,
-                                                "Quantity cannot be empty"));
+                                        showResponsiveWarningMessage(context,
+                                            "Quantity cannot be empty");
                                       } else {
                                         String newValue = value.replaceAll(
                                             RegExp(r'[^0-9]'), '');
@@ -652,14 +647,12 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                           if (mktProtCtrl.text.isEmpty ||
                               int.parse(mktProtCtrl.text) > 20 ||
                               int.parse(mktProtCtrl.text) < 1) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                                warningMessage(context,
-                                    "Market Protection between 1% to 20%"));
+                            showResponsiveWarningMessage(context,
+                                "Market Protection between 1% to 20%");
                           } else if ((QtyPrefer == OrdQtyPref.mktlot) &&
                               qtyCtrl.text == "") {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                                warningMessage(
-                                    context, "Quantity can not be 0 or empty"));
+                            showResponsiveWarningMessage(
+                                context, "Quantity can not be 0 or empty");
                           } else {
                             await setPrefOrderPrefer(context);
                           }
@@ -707,12 +700,11 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
     final authProv = ref.read(authProvider);
     await authProv.getPrefOrderPrefer(local, true, context);
 
-    ScaffoldMessenger.of(context).showSnackBar(
-        successMessage(context, "Order Preference hav been saved"));
+    showResponsiveSuccess(context, "Order Preference hav been saved");
     await authProv.setPrefOrderPrefer(context);
     Navigator.pop(context);
     if (gobackOP) {
-      Navigator.pushNamed(context, Routes.placeOrderScreen, arguments: {
+      ResponsiveNavigation.toPlaceOrderScreen(context: context, arguments: {
         "orderArg": widget.orderArg,
         "scripInfo": widget.scripInfo,
         "isBskt": ""

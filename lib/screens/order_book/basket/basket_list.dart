@@ -16,6 +16,7 @@ import '../../../sharedWidget/custom_exch_badge.dart';
 import '../../../sharedWidget/functions.dart';
 import '../../../sharedWidget/list_divider.dart';
 import '../../../sharedWidget/no_data_found.dart';
+import '../../../sharedWidget/snack_bar.dart';
 import 'create_basket.dart';
 
 class BasketList extends ConsumerWidget {
@@ -427,13 +428,8 @@ class BasketScripList extends ConsumerWidget {
                                 onTap: () async {
                                   // Check if basket already has frezQtyOrderSliceMaxLimit items
                                   if (basket.bsktScripList.length >= basket.frezQtyOrderSliceMaxLimit) {
-                                    ScaffoldMessenger.of(context)
-                                        .showSnackBar(SnackBar(
-                                      content: Text(
-                                          "Basket limit reached. Please create a new basket as you are exceeding the ${basket.frezQtyOrderSliceMaxLimit} item limit."),
-                                      backgroundColor: colors.darkred,
-                                      duration: const Duration(seconds: 3),
-                                    ));
+                                    showResponsiveErrorMessage(context,
+                                          "Basket limit reached. Please create a new basket as you are exceeding the ${basket.frezQtyOrderSliceMaxLimit} item limit.");
                                     return;
                                   }
     
@@ -1112,14 +1108,8 @@ class BasketScripList extends ConsumerWidget {
                               ? OutlinedButton.icon(
                                   onPressed: () {
                                     basket.resetBasketOrderTracking(bsktName);
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: const Text(
-                                            "Basket reset. You can place orders again."),
-                                        backgroundColor: colors.ltpgreen,
-                                        duration: const Duration(seconds: 2),
-                                      ),
-                                    );
+                                    showResponsiveSuccess(context,
+                                            "Basket reset. You can place orders again.");
                                   },
                                   label: TextWidget.subText(
                                     text: "Reset Orders",

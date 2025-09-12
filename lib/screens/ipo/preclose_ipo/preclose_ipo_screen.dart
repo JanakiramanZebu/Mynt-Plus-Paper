@@ -22,7 +22,7 @@ class ClosedIPOScreen extends ConsumerStatefulWidget {
 
 class _ClosedIPOScreenState extends ConsumerState<ClosedIPOScreen> {
   static const int _maxDisplayItems = 5;
-  
+
   late List<Msg> ipoList;
   List<int> years = [];
   int? selectedYear;
@@ -33,7 +33,7 @@ class _ClosedIPOScreenState extends ConsumerState<ClosedIPOScreen> {
     super.initState();
     ipoList = ref.read(ipoProvide).ipoPreClose!.msg;
     ref.read(ipoProvide).sortpreCloseIPOListByDate(ipoList);
-    
+
     var currentYear = DateTime.now().year;
     for (var year = 2000; year <= currentYear; year++) {
       years.add(year);
@@ -226,7 +226,9 @@ class _IPOListSection extends StatelessWidget {
         separatorBuilder: (context, index) {
           return Divider(
             height: 0,
-            color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+            color: theme.isDarkMode
+                ? colors.darkColorDivider
+                : colors.colorDivider,
           );
         },
       ),
@@ -405,41 +407,120 @@ class _IPOListItem extends StatelessWidget {
     );
 
     if (context.mounted) {
-      showModalBottomSheet(
-        isScrollControlled: true,
-        useSafeArea: true,
-        isDismissible: true,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-        ),
-        context: context,
-        builder: (context) => Container(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-          ),
-          child: MainSmeSinglePage(
-            pricerange: "₹${preClose.ipoPreClose!.msg[index].priceRange!}",
-            mininv: "₹${convertCurrencyINRStandard(
-              mininv(
-                preClose.ipoPreClose!.msg[index].minPrice!.toDouble(),
-                preClose.ipoPreClose!.msg[index].minBidQu!.toInt(),
-              ).toInt(),
-            )}",
-            enddate: convertClosedIpoDates(
-              preClose.ipoPreClose!.msg[index].iPOEndDate!,
-              "MMM dd, yyyy",
-              "EEE, dd MMM yyyy HH:mm:ss",
-            ),
-            startdate: convertClosedIpoDates(
-              preClose.ipoPreClose!.msg[index].iPOStartDate!,
-              "MMM dd, yyyy",
-              "dd-MM-yyyy",
-            ),
-            ipotype: "${preClose.ipoPreClose!.msg[index].ipoType}",
-            ipodetails: "",
-          ),
-        ),
-      );
+      getResponsiveWidth(context) == 600
+          ? showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return Dialog(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: SizedBox(
+                    width: MediaQuery.of(context).size.width *
+                        0.3, // set your desired width here
+                    child: MainSmeSinglePage(
+                      pricerange:
+                          "₹${preClose.ipoPreClose!.msg[index].priceRange!}",
+                      mininv: "₹${convertCurrencyINRStandard(
+                        mininv(
+                          preClose.ipoPreClose!.msg[index].minPrice!.toDouble(),
+                          preClose.ipoPreClose!.msg[index].minBidQu!.toInt(),
+                        ).toInt(),
+                      )}",
+                      enddate: convertClosedIpoDates(
+                        preClose.ipoPreClose!.msg[index].iPOEndDate!,
+                        "MMM dd, yyyy",
+                        "EEE, dd MMM yyyy HH:mm:ss",
+                      ),
+                      startdate: convertClosedIpoDates(
+                        preClose.ipoPreClose!.msg[index].iPOStartDate!,
+                        "MMM dd, yyyy",
+                        "dd-MM-yyyy",
+                      ),
+                      ipotype: "${preClose.ipoPreClose!.msg[index].ipoType}",
+                      ipodetails: "",
+                    ),
+                  ),
+                );
+              },
+            )
+          : showModalBottomSheet(
+              shape: const RoundedRectangleBorder(
+                  borderRadius:
+                      BorderRadius.vertical(top: Radius.circular(16))),
+              backgroundColor: const Color(0xffffffff),
+              isDismissible: false,
+              enableDrag: false,
+              showDragHandle: false,
+              useSafeArea: false,
+              isScrollControlled: true,
+              context: context,
+              builder: (BuildContext context) {
+                return PopScope(
+                  canPop: false,
+                  onPopInvokedWithResult: (didPop, result) async {
+                    if (didPop) return;
+                  },
+                  child: MainSmeSinglePage(
+                    pricerange:
+                        "₹${preClose.ipoPreClose!.msg[index].priceRange!}",
+                    mininv: "₹${convertCurrencyINRStandard(
+                      mininv(
+                        preClose.ipoPreClose!.msg[index].minPrice!.toDouble(),
+                        preClose.ipoPreClose!.msg[index].minBidQu!.toInt(),
+                      ).toInt(),
+                    )}",
+                    enddate: convertClosedIpoDates(
+                      preClose.ipoPreClose!.msg[index].iPOEndDate!,
+                      "MMM dd, yyyy",
+                      "EEE, dd MMM yyyy HH:mm:ss",
+                    ),
+                    startdate: convertClosedIpoDates(
+                      preClose.ipoPreClose!.msg[index].iPOStartDate!,
+                      "MMM dd, yyyy",
+                      "dd-MM-yyyy",
+                    ),
+                    ipotype: "${preClose.ipoPreClose!.msg[index].ipoType}",
+                    ipodetails: "",
+                  ),
+                );
+              });
+
+      // showModalBottomSheet(
+      //   isScrollControlled: true,
+      //   useSafeArea: true,
+      //   isDismissible: true,
+      //   shape: const RoundedRectangleBorder(
+      //     borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      //   ),
+      //   context: context,
+      //   builder: (context) => Container(
+      //     padding: EdgeInsets.only(
+      //       bottom: MediaQuery.of(context).viewInsets.bottom,
+      //     ),
+      //     child: MainSmeSinglePage(
+      //       pricerange: "₹${preClose.ipoPreClose!.msg[index].priceRange!}",
+      //       mininv: "₹${convertCurrencyINRStandard(
+      //         mininv(
+      //           preClose.ipoPreClose!.msg[index].minPrice!.toDouble(),
+      //           preClose.ipoPreClose!.msg[index].minBidQu!.toInt(),
+      //         ).toInt(),
+      //       )}",
+      //       enddate: convertClosedIpoDates(
+      //         preClose.ipoPreClose!.msg[index].iPOEndDate!,
+      //         "MMM dd, yyyy",
+      //         "EEE, dd MMM yyyy HH:mm:ss",
+      //       ),
+      //       startdate: convertClosedIpoDates(
+      //         preClose.ipoPreClose!.msg[index].iPOStartDate!,
+      //         "MMM dd, yyyy",
+      //         "dd-MM-yyyy",
+      //       ),
+      //       ipotype: "${preClose.ipoPreClose!.msg[index].ipoType}",
+      //       ipodetails: "",
+      //     ),
+      //   ),
+      // );
     }
   }
 }

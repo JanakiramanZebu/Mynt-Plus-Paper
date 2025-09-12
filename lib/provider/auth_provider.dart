@@ -3,6 +3,8 @@ import 'dart:async';
 import 'dart:io' show SocketException, HttpException; // Used in non-web builds
 import 'package:flutter/foundation.dart'
     show kIsWeb, defaultTargetPlatform, TargetPlatform;
+import 'package:flutter/foundation.dart'
+    show kIsWeb, defaultTargetPlatform, TargetPlatform;
 import 'package:device_info_plus/device_info_plus.dart';
 // import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/foundation.dart';
@@ -38,6 +40,9 @@ import '../routes/app_routes.dart';
 import '../routes/route_names.dart';
 import '../screens/authentication/login/bottom_otp_screen.dart';
 // import '../sharedWidget/functions.dart';
+import '../screens/main_screen_control_web.dart';
+import '../screens/main_screen_control_web.dart';
+import '../sharedWidget/functions.dart';
 import '../sharedWidget/risk_disclosure_bottom_sheet.dart';
 import '../sharedWidget/snack_bar.dart';
 import 'change_password_provider.dart';
@@ -588,8 +593,7 @@ class AuthProvider extends DefaultChangeNotifier {
         mobile_client = mobileRclint;
         if (!totp) {
           if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-                successMessage(context, 'The OTP is sent via email and SMS'));
+            showResponsiveSuccess(context, 'The OTP is sent via email and SMS');
           }
         }
         _isDisableBtn = true;
@@ -664,14 +668,14 @@ class AuthProvider extends DefaultChangeNotifier {
           "Your mobile registered in multiple accounts, Please login with client ID") {
         loginMethod();
         pref.setHideLoginOptBtn(false);
-        ScaffoldMessenger.of(context).showSnackBar(warningMessage(context,
-            "Multiple accounts linked to your mobile no. Login with Client ID"));
+        showResponsiveWarningMessage(context,
+            "Multiple accounts linked to your mobile no. Login with Client ID");
       } else if (_mobileLogin!.emsg == "mobile_unique not valid") {
         if (s.isNotEmpty) {
           Navigator.pop(context);
         }
-        ScaffoldMessenger.of(context).showSnackBar(warningMessage(context,
-            "This user id logged in another device, Please login again"));
+        showResponsiveWarningMessage(context,
+            "This user id logged in another device, Please login again");
         _isDisableBtn = true;
         pref.setHideLoginOptBtn(false);
         clearError();
@@ -775,12 +779,10 @@ class AuthProvider extends DefaultChangeNotifier {
               _mobileLogin!.msg ==
                   "otp sended, already logged in another device")) {
         mobile_client = mobileRclint;
-        ScaffoldMessenger.of(context).showSnackBar(
-            successMessage(context, 'The OTP is re-sent via SMS and email.'));
+        showResponsiveSuccess(context, 'The OTP is re-sent via SMS and email.');
         // _isDisableBtn = true;
       } else {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(warningMessage(context, _mobileLogin!.emsg!));
+        showResponsiveWarningMessage(context, _mobileLogin!.emsg!);
       }
       notifyListeners();
     } catch (e) {
@@ -1787,29 +1789,48 @@ class AuthProvider extends DefaultChangeNotifier {
           ref.read(orderProvider).setOrderIp();
           // End Explore
           if (s.isEmpty) {
-            Navigator.pushNamedAndRemoveUntil(
-                context, Routes.homeScreen, (route) => false);
+            getResponsiveWidth(context) == 600
+                ? Navigator.pushNamedAndRemoveUntil(
+                    context, Routes.mainControlerScreenForWeb, (route) => false)
+                : Navigator.pushNamedAndRemoveUntil(
+                    context, Routes.homeScreen, (route) => false);
             // if (pref.islogIn!) {
             if (pref.showRiskDis != 'true') {
-              showModalBottomSheet(
-                  shape: const RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.vertical(top: Radius.circular(16))),
-                  backgroundColor: const Color(0xffffffff),
-                  isDismissible: false,
-                  enableDrag: false,
-                  showDragHandle: false,
-                  useSafeArea: false,
-                  isScrollControlled: true,
-                  context: context,
-                  builder: (BuildContext context) {
-                    return PopScope(
-                        canPop: false,
-                        onPopInvokedWithResult: (didPop, result) async {
-                          if (didPop) return;
-                        },
-                        child: const RiskDisclousreBottomSheet());
-                  });
+              getResponsiveWidth(context) == 600
+                  ? showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return Dialog(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: SizedBox(
+                            width: MediaQuery.of(context).size.width *
+                                0.3, // set your desired width here
+                            child: const RiskDisclousreBottomSheet(),
+                          ),
+                        );
+                      },
+                    )
+                  : showModalBottomSheet(
+                      shape: const RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.vertical(top: Radius.circular(16))),
+                      backgroundColor: const Color(0xffffffff),
+                      isDismissible: false,
+                      enableDrag: false,
+                      showDragHandle: false,
+                      useSafeArea: false,
+                      isScrollControlled: true,
+                      context: context,
+                      builder: (BuildContext context) {
+                        return PopScope(
+                            canPop: false,
+                            onPopInvokedWithResult: (didPop, result) async {
+                              if (didPop) return;
+                            },
+                            child: const RiskDisclousreBottomSheet());
+                      });
             }
           }
           // {
@@ -1878,8 +1899,8 @@ class AuthProvider extends DefaultChangeNotifier {
           context, Routes.loginScreen, (route) => false);
 
       // Show error message
-      ScaffoldMessenger.of(context).showSnackBar(warningMessage(context,
-          "Connection issue. Please check your internet and try again."));
+      showResponsiveWarningMessage(context,
+          "Connection issue. Please check your internet and try again.");
     }
   }
 
@@ -1989,8 +2010,8 @@ class AuthProvider extends DefaultChangeNotifier {
                 context, Routes.loginScreen, (route) => false);
 
             // Show the message only after navigation for better UX
-            ScaffoldMessenger.of(context).showSnackBar(warningMessage(
-                context, "Session Expired, Please log in again"));
+            showResponsiveWarningMessage(
+                context, "Session Expired, Please log in again");
           }
 
           // Reset the flag after navigation is complete

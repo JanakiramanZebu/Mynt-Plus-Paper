@@ -269,11 +269,8 @@ class _MfCommonSearchState extends ConsumerState<MfCommonSearch> {
                                           //   arguments: fund,
                                           // );
                                         } else {
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(
-                                            successMessage(
-                                                context, "No Single Page Data"),
-                                          );
+                                          showResponsiveSuccess(
+                                                context, "No Single Page Data");
                                           final jsondata =
                                               MutualFundList.fromJson(
                                                   fund.toJson());
@@ -286,18 +283,12 @@ class _MfCommonSearchState extends ConsumerState<MfCommonSearch> {
                                           mfData.chngOrderType("One-time");
                                         }
                                       } else {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          successMessage(
-                                              context, "Invalid fund data"),
-                                        );
+                                        showResponsiveSuccess(
+                                              context, "Invalid fund data");
                                       }
                                     } catch (e) {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        successMessage(context,
-                                            "Error loading fund details"),
-                                      );
+                                      showResponsiveSuccess(context,
+                                            "Error loading fund details");
                                     }
                                   },
                                   child: ListTile(

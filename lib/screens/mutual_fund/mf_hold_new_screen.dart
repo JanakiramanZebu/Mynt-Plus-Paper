@@ -26,371 +26,420 @@ class MfHoldNewScreen extends ConsumerWidget {
     final mfData = ref.watch(mfProvider);
     final showSearch = mfData.showMfHoldingSearch;
     final searchText = mfData.mfHoldingSearchController.text;
-    
+
     // Get the appropriate list based on search state
     final items = showSearch && searchText.isNotEmpty
         ? (mfData.mfHoldingSearchItems ?? [])
         : (mfData.mfholdingnew?.data ?? []);
 
     // Check if user has any holdings data at all
-    final hasHoldingsData = mfData.mfholdingnew?.data != null && 
-                           mfData.mfholdingnew!.data!.isNotEmpty;
+    final hasHoldingsData = mfData.mfholdingnew?.data != null &&
+        mfData.mfholdingnew!.data!.isNotEmpty;
 
     return Scaffold(
-              body: TransparentLoaderScreen(
-          isLoading: mfData.holdstatload ?? false,
-          child: RefreshIndicator(
-            onRefresh: () async {
-              // Refresh logic here if needed
-            },
-            child: SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              child: GestureDetector(
-                onTap: () => FocusScope.of(context).unfocus(),
-                behavior: HitTestBehavior.opaque,
-                child: hasHoldingsData 
-                    ? Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Summary container
-                          Container(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      body: TransparentLoaderScreen(
+        isLoading: mfData.holdstatload ?? false,
+        child: RefreshIndicator(
+          onRefresh: () async {
+            // Refresh logic here if needed
+          },
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: GestureDetector(
+              onTap: () => FocusScope.of(context).unfocus(),
+              behavior: HitTestBehavior.opaque,
+              child: hasHoldingsData
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Summary container
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // Invested amount column
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
-                                  TextWidget.subText(
-                                    text: "Invested",
-                                    color: theme.isDarkMode
-                                        ? colors.textSecondaryDark
-                                        : colors.textSecondaryLight,
-                                    theme: theme.isDarkMode,
-                                  ),
-                                  const SizedBox(height: 4),
-                                  TextWidget.subText(
-                                    text:
-                                        "${_formatValue(mfData.mfholdingnew?.summary?.invested)}",
-                                    color: theme.isDarkMode
-                                        ? colors.textPrimaryDark
-                                        : colors.textPrimaryLight,
-                                    theme: theme.isDarkMode,
-                                  ),
-                                ],
-                              ),
-
-                              // Returns column
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  TextWidget.subText(
-                                    text: "Returns",
-                                    color: theme.isDarkMode
-                                        ? colors.textSecondaryDark
-                                        : colors.textSecondaryLight,
-                                    theme: theme.isDarkMode,
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Row(
-                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                  // Invested amount column
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       TextWidget.subText(
-                                          text: _formatValue(mfData
-                                              .mfholdingnew?.summary?.absReturnValue),
-                                          color: _getColorBasedOnValue(
-                                            mfData
-                                                .mfholdingnew?.summary?.absReturnValue,
-                                            theme,
-                                          ),
-                                          theme: theme.isDarkMode,
-                                          fw: 0),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 16),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  TextWidget.subText(
-                                    text: "Current Value",
-                                    color: theme.isDarkMode
-                                        ? colors.textSecondaryDark
-                                        : colors.textSecondaryLight,
-                                    theme: theme.isDarkMode,
-                                  ),
-                                  const SizedBox(height: 4),
-                                  TextWidget.subText(
-                                    text:
-                                        "${mfData.mfholdingnew?.summary?.currentValue ?? "0.00"}",
-                                    color: theme.isDarkMode
-                                        ? colors.textPrimaryDark
-                                        : colors.textPrimaryLight,
-                                    theme: theme.isDarkMode,
-                                  ),
-                                ],
-                              ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  TextWidget.subText(
-                                    text: "Percentage",
-                                    color: theme.isDarkMode
-                                        ? colors.textSecondaryDark
-                                        : colors.textSecondaryLight,
-                                    theme: theme.isDarkMode,
-                                  ),
-                                  const SizedBox(height: 4),
-                                  TextWidget.subText(
-                                    text:
-                                        " ${_formatValue(mfData.mfholdingnew?.summary?.absReturnPercent?.toString())}%",
-                                    color: _getColorBasedOnValue(
-                                      mfData.mfholdingnew?.summary?.absReturnPercent
-                                          ?.toString(),
-                                          theme,
-                                    ),
-                                    theme: theme.isDarkMode,
-                                  ),
-                                ],
-                              )
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    // Search and sort container (hidden when search is active)
-                    if (!showSearch)
-                      Padding(
-                          padding: const EdgeInsets.only(
-                              left: 16, right: 16, top: 5, bottom: 8),
-                          child: Column(
-                            children: [
-                              SizedBox(
-                                height: 40,
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 5),
-                                  decoration: BoxDecoration(
-                                   color: theme.isDarkMode
-                  ? colors.searchBgDark
-                  : colors.searchBg,
-                                    borderRadius: BorderRadius.circular(5),
-                                  ),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Padding(
-                                        padding: const EdgeInsets.only(right: 10),
-                                        child: Row(
-                                          children: [
-                                            // Search icon that shows search container when clicked
-                                            Material(
-                                              color: Colors.transparent,
-                                              shape: const CircleBorder(),
-                                              clipBehavior: Clip.hardEdge,
-                                              child: InkWell(
-                                                customBorder: const CircleBorder(),
-                                                splashColor: theme.isDarkMode
-                                                    ? colors.splashColorDark
-                                                    : colors.splashColorLight,
-                                                highlightColor: theme.isDarkMode
-                                                    ? colors.highlightDark
-                                                    : colors.highlightLight,
-                                                onTap: () {
-                                                  Future.delayed(
-                                                      const Duration(milliseconds: 150),
-                                                      () async {
-                                                    mfData.setMfHoldingSearch(true);
-                                                  });
-                                                },
-                                                child: Padding(
-                                                  padding: const EdgeInsets.all(8.0),
-                                                  child: SvgPicture.asset(
-                                                    assets.searchIcon,
-                                                   color: theme.isDarkMode
-                                ? colors.textSecondaryDark
-                                : colors.textSecondaryLight,
-                                                    width: 20,
-                                                    fit: BoxFit.scaleDown,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                            Material(
-                                              color: Colors.transparent,
-                                              shape: const CircleBorder(),
-                                              clipBehavior: Clip.hardEdge,
-                                              child: InkWell(
-                                                customBorder: const CircleBorder(),
-                                                splashColor: theme.isDarkMode
-                                                    ? colors.splashColorDark
-                                                    : colors.splashColorLight,
-                                                highlightColor: theme.isDarkMode
-                                                    ? colors.highlightDark
-                                                    : colors.highlightLight,
-                                                onTap: () async {
-                                                  Future.delayed(
-                                                      const Duration(milliseconds: 150),
-                                                      () async {
-                                                    await showModalBottomSheet(
-                                                      useSafeArea: true,
-                                                      isScrollControlled: true,
-                                                      shape: const RoundedRectangleBorder(
-                                                        borderRadius:
-                                                            BorderRadius.vertical(
-                                                                top: Radius.circular(16)),
-                                                      ),
-                                                      context: context,
-                                                      builder: (context) =>
-                                                          const MFFilterBottomSheet(),
-                                                    );
-                                                  });
-                                                },
-                                                child: Padding(
-                                                  padding: const EdgeInsets.all(8.0),
-                                                  child: SvgPicture.asset(
-                                                    assets.filterLinesDark,
-                                                    width: 18,
-                                                color: theme.isDarkMode
-                                ? colors.textSecondaryDark
-                                : colors.textSecondaryLight,
-                                                    fit: BoxFit.scaleDown,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
+                                        text: "Invested",
+                                        color: theme.isDarkMode
+                                            ? colors.textSecondaryDark
+                                            : colors.textSecondaryLight,
+                                        theme: theme.isDarkMode,
+                                      ),
+                                      const SizedBox(height: 4),
+                                      TextWidget.subText(
+                                        text:
+                                            "${_formatValue(mfData.mfholdingnew?.summary?.invested)}",
+                                        color: theme.isDarkMode
+                                            ? colors.textPrimaryDark
+                                            : colors.textPrimaryLight,
+                                        theme: theme.isDarkMode,
                                       ),
                                     ],
                                   ),
-                                ),
+
+                                  // Returns column
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      TextWidget.subText(
+                                        text: "Returns",
+                                        color: theme.isDarkMode
+                                            ? colors.textSecondaryDark
+                                            : colors.textSecondaryLight,
+                                        theme: theme.isDarkMode,
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.end,
+                                        children: [
+                                          TextWidget.subText(
+                                              text: _formatValue(mfData
+                                                  .mfholdingnew
+                                                  ?.summary
+                                                  ?.absReturnValue),
+                                              color: _getColorBasedOnValue(
+                                                mfData.mfholdingnew?.summary
+                                                    ?.absReturnValue,
+                                                theme,
+                                              ),
+                                              theme: theme.isDarkMode,
+                                              fw: 0),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      TextWidget.subText(
+                                        text: "Current Value",
+                                        color: theme.isDarkMode
+                                            ? colors.textSecondaryDark
+                                            : colors.textSecondaryLight,
+                                        theme: theme.isDarkMode,
+                                      ),
+                                      const SizedBox(height: 4),
+                                      TextWidget.subText(
+                                        text:
+                                            "${mfData.mfholdingnew?.summary?.currentValue ?? "0.00"}",
+                                        color: theme.isDarkMode
+                                            ? colors.textPrimaryDark
+                                            : colors.textPrimaryLight,
+                                        theme: theme.isDarkMode,
+                                      ),
+                                    ],
+                                  ),
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      TextWidget.subText(
+                                        text: "Percentage",
+                                        color: theme.isDarkMode
+                                            ? colors.textSecondaryDark
+                                            : colors.textSecondaryLight,
+                                        theme: theme.isDarkMode,
+                                      ),
+                                      const SizedBox(height: 4),
+                                      TextWidget.subText(
+                                        text:
+                                            " ${_formatValue(mfData.mfholdingnew?.summary?.absReturnPercent?.toString())}%",
+                                        color: _getColorBasedOnValue(
+                                          mfData.mfholdingnew?.summary
+                                              ?.absReturnPercent
+                                              ?.toString(),
+                                          theme,
+                                        ),
+                                        theme: theme.isDarkMode,
+                                      ),
+                                    ],
+                                  )
+                                ],
                               ),
                             ],
-                          )),
-
-                    // Search container (shown conditionally when search icon is clicked)
-                    if (showSearch)
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
-                        child: SizedBox(
-                          height: 40,
-                          child: TextFormField(
-                            autofocus: true,
-                            controller: mfData.mfHoldingSearchController,
-                           style: TextWidget.textStyle(
-                                    fontSize: 16,
-                                    color: theme.isDarkMode
-                                        ? colors.textPrimaryDark
-                                        : colors.textPrimaryLight,
-                                    theme: theme.isDarkMode,
-                                  ),
-                            keyboardType: TextInputType.text,
-                            decoration: InputDecoration(
-                              hintText: "Search",
-                             hintStyle: TextWidget.textStyle(
-                                      fontSize: 14,
-                                      theme: theme.isDarkMode,
-                                     color: theme.isDarkMode
-                                ? colors.textSecondaryDark
-                                : colors.textSecondaryLight,
-                                    ),
-                              fillColor: theme.isDarkMode ? colors.searchBgDark : colors.searchBg,
-                              filled: true,
-                              prefixIcon: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: SvgPicture.asset(
-                                  assets.searchIcon,
-                            color: theme.isDarkMode
-                                ? colors.textSecondaryDark
-                                : colors.textSecondaryLight,
-                                  width: 20,
-                                  fit: BoxFit.scaleDown,
-                                ),
-                              ),
-                              suffixIcon: Material(
-                                color: Colors.transparent,
-                                shape: const CircleBorder(),
-                                clipBehavior: Clip.hardEdge,
-                                child: InkWell(
-                                  customBorder: const CircleBorder(),
-                                  splashColor: theme.isDarkMode
-                                      ? colors.splashColorDark
-                                      : colors.splashColorLight,
-                                  highlightColor: theme.isDarkMode
-                                      ? colors.highlightDark
-                                      : colors.highlightLight,
-                                  onTap: () {
-                                    mfData.clearMfHoldingSearch();
-                                  },
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: SvgPicture.asset(
-                                      assets.removeIcon,
-                                      fit: BoxFit.scaleDown,
-                                      color: theme.isDarkMode
-                                ? colors.textSecondaryDark
-                                : colors.textSecondaryLight,
-                                      width: 20,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderSide: BorderSide.none,
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              disabledBorder: InputBorder.none,
-                              focusedBorder: OutlineInputBorder(
-                                borderSide: BorderSide.none,
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
-                              border: OutlineInputBorder(
-                                borderSide: BorderSide.none,
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                            ),
-                            onChanged: (value) {
-                              // Keep search active even when text is empty
-                              // Only perform search when there's text
-                              if (value.isNotEmpty) {
-                                mfData.mfHoldingSearch(value, context);
-                              } else {
-                                // Clear search results but keep search container open
-                                mfData.mfHoldingSearch("", context);
-                              }
-                            },
                           ),
                         ),
-                      ),
 
-                          // Show appropriate UI based on data state
-                          _buildListContent(context, theme.isDarkMode, mfData, showSearch, searchText, items, theme),
-                        ],
-                      )
-                    : const SizedBox(
-                        height: 400,
-                        child: Center(child: NoDataFound()),
-                      ),
-              ),
+                        // Search and sort container (hidden when search is active)
+                        if (!showSearch)
+                          Padding(
+                              padding: const EdgeInsets.only(
+                                  left: 16, right: 16, top: 5, bottom: 8),
+                              child: Column(
+                                children: [
+                                  SizedBox(
+                                    height: 40,
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 5),
+                                      decoration: BoxDecoration(
+                                        color: theme.isDarkMode
+                                            ? colors.searchBgDark
+                                            : colors.searchBg,
+                                        borderRadius: BorderRadius.circular(5),
+                                      ),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                                right: 10),
+                                            child: Row(
+                                              children: [
+                                                // Search icon that shows search container when clicked
+                                                Material(
+                                                  color: Colors.transparent,
+                                                  shape: const CircleBorder(),
+                                                  clipBehavior: Clip.hardEdge,
+                                                  child: InkWell(
+                                                    customBorder:
+                                                        const CircleBorder(),
+                                                    splashColor: theme
+                                                            .isDarkMode
+                                                        ? colors.splashColorDark
+                                                        : colors
+                                                            .splashColorLight,
+                                                    highlightColor: theme
+                                                            .isDarkMode
+                                                        ? colors.highlightDark
+                                                        : colors.highlightLight,
+                                                    onTap: () {
+                                                      Future.delayed(
+                                                          const Duration(
+                                                              milliseconds:
+                                                                  150),
+                                                          () async {
+                                                        mfData
+                                                            .setMfHoldingSearch(
+                                                                true);
+                                                      });
+                                                    },
+                                                    child: Padding(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              8.0),
+                                                      child: SvgPicture.asset(
+                                                        assets.searchIcon,
+                                                        color: theme.isDarkMode
+                                                            ? colors
+                                                                .textSecondaryDark
+                                                            : colors
+                                                                .textSecondaryLight,
+                                                        width: 20,
+                                                        fit: BoxFit.scaleDown,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                                Material(
+                                                  color: Colors.transparent,
+                                                  shape: const CircleBorder(),
+                                                  clipBehavior: Clip.hardEdge,
+                                                  child: InkWell(
+                                                    customBorder:
+                                                        const CircleBorder(),
+                                                    splashColor: theme
+                                                            .isDarkMode
+                                                        ? colors.splashColorDark
+                                                        : colors
+                                                            .splashColorLight,
+                                                    highlightColor: theme
+                                                            .isDarkMode
+                                                        ? colors.highlightDark
+                                                        : colors.highlightLight,
+                                                    onTap: () async {
+                                                      Future.delayed(
+                                                          const Duration(
+                                                              milliseconds:
+                                                                  150),
+                                                          () async {
+                                                        await showModalBottomSheet(
+                                                          useSafeArea: true,
+                                                          isScrollControlled:
+                                                              true,
+                                                          shape:
+                                                              const RoundedRectangleBorder(
+                                                            borderRadius:
+                                                                BorderRadius.vertical(
+                                                                    top: Radius
+                                                                        .circular(
+                                                                            16)),
+                                                          ),
+                                                          context: context,
+                                                          builder: (context) =>
+                                                              const MFFilterBottomSheet(),
+                                                        );
+                                                      });
+                                                    },
+                                                    child: Padding(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              8.0),
+                                                      child: SvgPicture.asset(
+                                                        assets.filterLinesDark,
+                                                        width: 18,
+                                                        color: theme.isDarkMode
+                                                            ? colors
+                                                                .textSecondaryDark
+                                                            : colors
+                                                                .textSecondaryLight,
+                                                        fit: BoxFit.scaleDown,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              )),
+
+                        // Search container (shown conditionally when search icon is clicked)
+                        if (showSearch)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 5),
+                            child: SizedBox(
+                              height: 40,
+                              child: TextFormField(
+                                autofocus: true,
+                                controller: mfData.mfHoldingSearchController,
+                                style: TextWidget.textStyle(
+                                  fontSize: 16,
+                                  color: theme.isDarkMode
+                                      ? colors.textPrimaryDark
+                                      : colors.textPrimaryLight,
+                                  theme: theme.isDarkMode,
+                                ),
+                                keyboardType: TextInputType.text,
+                                decoration: InputDecoration(
+                                  hintText: "Search",
+                                  hintStyle: TextWidget.textStyle(
+                                    fontSize: 14,
+                                    theme: theme.isDarkMode,
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                        : colors.textSecondaryLight,
+                                  ),
+                                  fillColor: theme.isDarkMode
+                                      ? colors.searchBgDark
+                                      : colors.searchBg,
+                                  filled: true,
+                                  prefixIcon: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: SvgPicture.asset(
+                                      assets.searchIcon,
+                                      color: theme.isDarkMode
+                                          ? colors.textSecondaryDark
+                                          : colors.textSecondaryLight,
+                                      width: 20,
+                                      fit: BoxFit.scaleDown,
+                                    ),
+                                  ),
+                                  suffixIcon: Material(
+                                    color: Colors.transparent,
+                                    shape: const CircleBorder(),
+                                    clipBehavior: Clip.hardEdge,
+                                    child: InkWell(
+                                      customBorder: const CircleBorder(),
+                                      splashColor: theme.isDarkMode
+                                          ? colors.splashColorDark
+                                          : colors.splashColorLight,
+                                      highlightColor: theme.isDarkMode
+                                          ? colors.highlightDark
+                                          : colors.highlightLight,
+                                      onTap: () {
+                                        mfData.clearMfHoldingSearch();
+                                      },
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: SvgPicture.asset(
+                                          assets.removeIcon,
+                                          fit: BoxFit.scaleDown,
+                                          color: theme.isDarkMode
+                                              ? colors.textSecondaryDark
+                                              : colors.textSecondaryLight,
+                                          width: 20,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderSide: BorderSide.none,
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  disabledBorder: InputBorder.none,
+                                  focusedBorder: OutlineInputBorder(
+                                    borderSide: BorderSide.none,
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 5, vertical: 5),
+                                  border: OutlineInputBorder(
+                                    borderSide: BorderSide.none,
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                ),
+                                onChanged: (value) {
+                                  // Keep search active even when text is empty
+                                  // Only perform search when there's text
+                                  if (value.isNotEmpty) {
+                                    mfData.mfHoldingSearch(value, context);
+                                  } else {
+                                    // Clear search results but keep search container open
+                                    mfData.mfHoldingSearch("", context);
+                                  }
+                                },
+                              ),
+                            ),
+                          ),
+
+                        // Show appropriate UI based on data state
+                        _buildListContent(context, theme.isDarkMode, mfData,
+                            showSearch, searchText, items, theme),
+                      ],
+                    )
+                  : const SizedBox(
+                      height: 400,
+                      child: Center(child: NoDataFound()),
+                    ),
             ),
           ),
         ),
+      ),
     );
   }
 
-  Widget _buildListContent(BuildContext context, bool isDarkMode, MFProvider mfData, bool showSearch, String searchText, List items, ThemesProvider theme) {
+  Widget _buildListContent(
+      BuildContext context,
+      bool isDarkMode,
+      MFProvider mfData,
+      bool showSearch,
+      String searchText,
+      List items,
+      ThemesProvider theme) {
     // Show "No Data Found" when search is active with text and no results
     if (showSearch && searchText.isNotEmpty && items.isEmpty) {
       return const SizedBox(
@@ -425,25 +474,60 @@ class MfHoldNewScreen extends ConsumerWidget {
               mfData.fetchmfholdsingpage("${item.iSIN}");
 
               // Show modal with data
-              showModalBottomSheet(
-                isScrollControlled: true,
-                shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(16),
-                    topRight: Radius.circular(16),
-                  ),
-                ),
-                isDismissible: true,
-                enableDrag: false,
-                useSafeArea: true,
-                context: context,
-                builder: (context) => Container(
-                    padding: EdgeInsets.only(
-                      bottom:
-                          MediaQuery.of(context).viewInsets.bottom,
-                    ),
-                    child: const mfholdsinlepage()),
-              );
+              getResponsiveWidth(context) == 600
+                  ? showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return Dialog(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: SizedBox(
+                            width: MediaQuery.of(context).size.width *
+                                0.3, // set your desired width here
+                            child: const mfholdsinlepage(),
+                          ),
+                        );
+                      },
+                    )
+                  : showModalBottomSheet(
+                      shape: const RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.vertical(top: Radius.circular(16))),
+                      backgroundColor: const Color(0xffffffff),
+                      isDismissible: false,
+                      enableDrag: false,
+                      showDragHandle: false,
+                      useSafeArea: false,
+                      isScrollControlled: true,
+                      context: context,
+                      builder: (BuildContext context) {
+                        return PopScope(
+                            canPop: false,
+                            onPopInvokedWithResult: (didPop, result) async {
+                              if (didPop) return;
+                            },
+                            child: const mfholdsinlepage());
+                      });
+              // showModalBottomSheet(
+              //   isScrollControlled: true,
+              //   shape: const RoundedRectangleBorder(
+              //     borderRadius: BorderRadius.only(
+              //       topLeft: Radius.circular(16),
+              //       topRight: Radius.circular(16),
+              //     ),
+              //   ),
+              //   isDismissible: true,
+              //   enableDrag: false,
+              //   useSafeArea: true,
+              //   context: context,
+              //   builder: (context) => Container(
+              //       padding: EdgeInsets.only(
+              //         bottom:
+              //             MediaQuery.of(context).viewInsets.bottom,
+              //       ),
+              //       child: const mfholdsinlepage()),
+              // );
             }
           },
           child: Padding(
@@ -661,6 +745,12 @@ class MfHoldNewScreen extends ConsumerWidget {
   // Helper method to determine color based on value
   Color _getColorBasedOnValue(String? valueStr, ThemesProvider theme) {
     final value = double.tryParse(valueStr ?? "0") ?? 0;
-    return value >= 0 ? theme.isDarkMode ? colors.profitDark : colors.profitLight : theme.isDarkMode ? colors.lossDark : colors.lossLight;
+    return value >= 0
+        ? theme.isDarkMode
+            ? colors.profitDark
+            : colors.profitLight
+        : theme.isDarkMode
+            ? colors.lossDark
+            : colors.lossLight;
   }
 }

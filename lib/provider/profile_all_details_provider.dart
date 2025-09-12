@@ -8,6 +8,7 @@ import 'package:mynt_plus/provider/core/default_change_notifier.dart';
 import 'package:mynt_plus/provider/fund_provider.dart';
 import 'package:mynt_plus/screens/profile_screen/in_app_webview_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../sharedWidget/snack_bar.dart';
 
 
 final profileAllDetailsProvider =
@@ -138,9 +139,7 @@ class ProfileProvider extends DefaultChangeNotifier {
   clearProfilePop(BuildContext context, String type) {
     if (type == "email") {
       _responseval = "";
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Some error occurred")),
-      );
+      showResponsiveErrorMessage(context, "Some error occurred");
     }
     if (type == "emailotp") {
       _emilotpres = "";

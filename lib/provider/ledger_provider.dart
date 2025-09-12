@@ -1064,9 +1064,7 @@ class LDProvider extends DefaultChangeNotifier {
       _positionloading = false;
       notifyListeners();
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        warningMessage(context, 'Error occurred in positions try again later'),
-      );
+      showResponsiveWarningMessage(context, 'Error occurred in positions try again later');
       debugPrint("$e");
     }
   }
@@ -1272,11 +1270,9 @@ class LDProvider extends DefaultChangeNotifier {
 
         // Safely show snackbar
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            successMessage(
-              context,
-              ordertype == 'ER' ? 'Order placed' : 'Order cancelled',
-            ),
+          showResponsiveSuccess(
+            context,
+            ordertype == 'ER' ? 'Order placed' : 'Order cancelled',
           );
         }
       } else if (res.msg == 'error occured on data fetch') {
@@ -1285,19 +1281,15 @@ class LDProvider extends DefaultChangeNotifier {
 
         // Safely show snackbar
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            warningMessage(
-              context,
-              "${res.msg}", // 'Order cancelled',
-            ),
+          showResponsiveWarningMessage(
+            context,
+            "${res.msg}", // 'Order cancelled',
           );
         }
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          warningMessage(context, '$e'),
-        );
+        showResponsiveWarningMessage(context, '$e');
       }
       Navigator.pop(context); // Pop after snackbar
       debugPrint("$e");
@@ -1351,23 +1343,17 @@ class LDProvider extends DefaultChangeNotifier {
         _calendarpnlloading = false;
 
         _ucode = "${_sharingturonandoff!.data!.uqCode}";
-        ScaffoldMessenger.of(context).showSnackBar(
-          successMessage(context, "Sharing Turned on"),
-        );
+        showResponsiveSuccess(context, "Sharing Turned on");
       } else {
         if (_sharingturonandoff!.msg != null) {
           if (_sharingturonandoff!.msg == 'Sharing Turned Off') {
             notsharing = true;
             _calendarpnlloading = false;
-            ScaffoldMessenger.of(context).showSnackBar(
-              successMessage(context, "Sharing Turned off"),
-            );
+            showResponsiveSuccess(context, "Sharing Turned off");
           } else {
             notsharing = false;
             _calendarpnlloading = false;
-            ScaffoldMessenger.of(context).showSnackBar(
-              successMessage(context, "Sharing Turned on"),
-            );
+            showResponsiveSuccess(context, "Sharing Turned on");
           }
         }
       }
@@ -1382,9 +1368,7 @@ class LDProvider extends DefaultChangeNotifier {
       }
       notifyListeners();
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        warningMessage(context, 'Sharing error'),
-      );
+      showResponsiveWarningMessage(context, 'Sharing error');
       debugPrint("$e");
       print("${e}eeeeee");
     } finally {
@@ -1554,9 +1538,7 @@ class LDProvider extends DefaultChangeNotifier {
       // Download the file
       _pdfresponse = await api.getpdffileapi(recno, filename);
       if (_pdfresponse == 'File downloaded successfully') {
-        ScaffoldMessenger.of(context).showSnackBar(
-          successMessage(context, 'PDF Downloaded, Check Your Download'),
-        );
+        showResponsiveSuccess(context, 'PDF Downloaded, Check Your Download');
 
         // Open the Downloads folder
         // String downloadsDir = "/storage/emulated/0/Download";

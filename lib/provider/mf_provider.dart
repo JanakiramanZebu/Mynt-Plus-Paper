@@ -1753,11 +1753,9 @@ class MFProvider extends DefaultChangeNotifier {
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
         //log("SSSSSSSSSSSSS ${_mfWatchlistModel!.msg.toString()}");
         if (isAdd == "add") {
-          ScaffoldMessenger.of(context).showSnackBar(successMessage(
-              context, "Stock was Added to Mutual fund watchlist"));
+          showResponsiveSuccess(context, "Stock was Added to Mutual fund watchlist");
         } else if (isAdd == "delete") {
-          ScaffoldMessenger.of(context).showSnackBar(successMessage(
-              context, "Stock was Removed from Mutual fund watchlist"));
+          showResponsiveSuccess(context, "Stock was Removed from Mutual fund watchlist");
         }
 
         // if (bool) {
@@ -1775,8 +1773,7 @@ class MFProvider extends DefaultChangeNotifier {
       } else {
         _mfWatchlist = [];
         if (_mfWatchlistModel!.msg == "script exists") {
-          ScaffoldMessenger.of(context).showSnackBar(
-              successMessage(context, "${_mfWatchlistModel!.msg}"));
+          showResponsiveSuccess(context, "${_mfWatchlistModel!.msg}");
         }
       }
       notifyListeners();
@@ -1799,11 +1796,9 @@ class MFProvider extends DefaultChangeNotifier {
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
         //log("SSSSSSSSSSSSS ${_mfWatchlistModel!.msg.toString()}");
         if (isAdd == "add") {
-          ScaffoldMessenger.of(context).showSnackBar(
-              successMessage(context, "MF was Added to Mutual fund watchlist"));
+          showResponsiveSuccess(context, "MF was Added to Mutual fund watchlist");
         } else if (isAdd == "delete") {
-          ScaffoldMessenger.of(context).showSnackBar(successMessage(
-              context, "MF was Removed from Mutual fund watchlist"));
+          showResponsiveSuccess(context, "MF was Removed from Mutual fund watchlist");
         }
 
         // if (bool) {
@@ -1867,8 +1862,7 @@ class MFProvider extends DefaultChangeNotifier {
       } else {
         // _mfWatchlist = [];
         if (_mfWatchlistModel!.msg == "script exists") {
-          ScaffoldMessenger.of(context).showSnackBar(
-              successMessage(context, "${_mfWatchlistModel!.msg}"));
+          showResponsiveSuccess(context, "${_mfWatchlistModel!.msg}");
         }
       }
       notifyListeners();
@@ -2011,8 +2005,7 @@ class MFProvider extends DefaultChangeNotifier {
 
         Navigator.pop(context);
 
-        ScaffoldMessenger.of(context).showSnackBar(warningMessage(
-            context, "Your Request to Cancel Order  is confirmed"));
+        showResponsiveWarningMessage(context, "Your Request to Cancel Order  is confirmed");
         // if (_createMandateModel?.mandate == null) {
         //   ScaffoldMessenger.of(context).showSnackBar(
         //       warningMessage(context, "${_createMandateModel!.error}"));
@@ -2025,16 +2018,14 @@ class MFProvider extends DefaultChangeNotifier {
       } catch (e) {
         toggleLoadingOn(false);
         Navigator.pop(context);
-        ScaffoldMessenger.of(context)
-            .showSnackBar(warningMessage(context, "Something Went Wrong"));
+        showResponsiveWarningMessage(context, "Something Went Wrong");
         log("Failed to Create Mandate :: ${e.toString()}");
         notifyListeners();
       }
     } catch (e) {
       toggleLoadingOn(false);
       Navigator.pop(context);
-      ScaffoldMessenger.of(context)
-          .showSnackBar(warningMessage(context, "Something Went Wrong"));
+      showResponsiveWarningMessage(context, "Something Went Wrong");
       log("Failed to fetchMfOrderbook :: ${e.toString()}");
       notifyListeners();
     } finally {
@@ -2060,8 +2051,7 @@ class MFProvider extends DefaultChangeNotifier {
           if (_mfsipcancelmess?.stat == "Not_Ok") {
             toggleLoadingOn(false);
             Navigator.pop(context);
-            ScaffoldMessenger.of(context).showSnackBar(
-                warningMessage(context, "${_mfsipcancelmess?.bSERemarks}"));
+            showResponsiveWarningMessage(context, "${_mfsipcancelmess?.bSERemarks}");
             Navigator.pop(context);
           }
           if (_mfsipcancelmess?.stat == "Ok") {
@@ -2070,8 +2060,7 @@ class MFProvider extends DefaultChangeNotifier {
             toggleLoadingOn(false);
             Navigator.pop(context);
 
-            ScaffoldMessenger.of(context).showSnackBar(successMessage(
-                context, "Sip successfully ${_mfsipcancelmess?.status}"));
+            showResponsiveSuccess(context, "Sip successfully ${_mfsipcancelmess?.status}");
             Navigator.pop(context);
           }
           fetchmfsiplist();
@@ -2087,8 +2076,7 @@ class MFProvider extends DefaultChangeNotifier {
       } catch (e) {
         toggleLoadingOn(false);
         Navigator.pop(context);
-        ScaffoldMessenger.of(context)
-            .showSnackBar(warningMessage(context, "Something Went Wrong"));
+        showResponsiveWarningMessage(context, "Something Went Wrong");
         log("Failed to fetchMfOrderbook :: ${e.toString()}");
         notifyListeners();
       } finally {
@@ -2098,8 +2086,7 @@ class MFProvider extends DefaultChangeNotifier {
         // Navigator.pop(context);
       }
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-          warningMessage(context, "SIP Reject Reason Is Required*"));
+      showResponsiveWarningMessage(context, "SIP Reject Reason Is Required*");
     }
     rejectsip.text = "";
     pausesip.text = "";
@@ -2126,13 +2113,11 @@ class MFProvider extends DefaultChangeNotifier {
           // Navigator.pop(context);
           fetchmfsiplist();
           if (_mfsippause?.stat == "Not_Ok") {
-            ScaffoldMessenger.of(context).showSnackBar(
-                warningMessage(context, "${_mfsipcancelmess?.bSERemarks}"));
+            showResponsiveWarningMessage(context, "${_mfsipcancelmess?.bSERemarks}");
             Navigator.pop(context);
           }
           if (_mfsippause?.stat == "Ok") {
-            ScaffoldMessenger.of(context).showSnackBar(
-                warningMessage(context, " ${_mfsippause?.status}"));
+            showResponsiveWarningMessage(context, " ${_mfsippause?.status}");
             Navigator.pop(context);
           }
         } catch (e) {
@@ -2147,8 +2132,7 @@ class MFProvider extends DefaultChangeNotifier {
       } catch (e) {
         toggleLoadingOn(false);
         Navigator.pop(context);
-        ScaffoldMessenger.of(context)
-            .showSnackBar(warningMessage(context, "Something Went Wrong"));
+        showResponsiveWarningMessage(context, "Something Went Wrong");
         log("Failed to fetchMfOrderbook :: ${e.toString()}");
         notifyListeners();
         // Navigator.pop(context);
@@ -2159,8 +2143,7 @@ class MFProvider extends DefaultChangeNotifier {
         Navigator.pop(context);
       }
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-          warningMessage(context, "No of installments is Required*"));
+      showResponsiveWarningMessage(context, "No of installments is Required*");
     }
     rejectsip.text = "";
     pausesip.text = "";
@@ -2484,8 +2467,7 @@ class MFProvider extends DefaultChangeNotifier {
       debugPrint("$e");
       Navigator.pop(context);
 
-      ScaffoldMessenger.of(context)
-          .showSnackBar(warningMessage(context, "Something Went Wrong"));
+      showResponsiveWarningMessage(context, "Something Went Wrong");
       notifyListeners();
     } finally {
       _investloader = false;
@@ -2521,8 +2503,7 @@ class MFProvider extends DefaultChangeNotifier {
         _loadingMessage = null;
         notifyListeners();
 
-        ScaffoldMessenger.of(context).showSnackBar(
-            warningMessage(context, "${_mfPlaceOrderResponces?.remarks}"));
+        showResponsiveWarningMessage(context, "${_mfPlaceOrderResponces?.remarks}");
       }
       //     // showModalBottomSheet(
       //     //     context: context,
@@ -2638,12 +2619,10 @@ class MFProvider extends DefaultChangeNotifier {
           await api.getCreateMandate(amount, startDate, endDate);
 
       if (_createMandateModel?.mandate == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            warningMessage(context, "${_createMandateModel!.error}"));
+        showResponsiveWarningMessage(context, "${_createMandateModel!.error}");
       } else {
         fetchMFMandateDetail();
-        ScaffoldMessenger.of(context).showSnackBar(
-            successMessage(context, "${_createMandateModel!.resp}"));
+        showResponsiveSuccess(context, "${_createMandateModel!.resp}");
       }
       // print(
       //     "object ${_createMandateModel!.error} ${_createMandateModel!.url1} ::${_createMandateModel!.mandate}");
@@ -2683,8 +2662,7 @@ class MFProvider extends DefaultChangeNotifier {
         // toggleLoadingOn(false);
 
         // toggleLoad(false);
-        ScaffoldMessenger.of(context).showSnackBar(
-            successMessage(context, "${_xsipOrderResponces!.remarks}"));
+        showResponsiveSuccess(context, "${_xsipOrderResponces!.remarks}");
         _investloader = false;
 
         // fetchAllPayment(
@@ -2704,8 +2682,7 @@ class MFProvider extends DefaultChangeNotifier {
       } else {
         // toggleLoadingOn(false);
         _loadingMessage = null;
-        ScaffoldMessenger.of(context).showSnackBar(
-            warningMessage(context, "${_xsipOrderResponces!.remarks}"));
+        showResponsiveWarningMessage(context, "${_xsipOrderResponces!.remarks}");
         _investloader = false;
 
         Navigator.pop(context);
@@ -2794,8 +2771,7 @@ class MFProvider extends DefaultChangeNotifier {
 
       if (_xsipOrderCancleResponces?.stat == "Not Ok") {
         Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-            warningMessage(context, "${_xsipOrderCancleResponces!.emsg}"));
+        showResponsiveWarningMessage(context, "${_xsipOrderCancleResponces!.emsg}");
       } else {}
       notifyListeners();
     } catch (e) {
@@ -2862,8 +2838,7 @@ class MFProvider extends DefaultChangeNotifier {
         upi,
         schemeCode);
     if (_allPaymentMfModel?.stat == "Not Ok") {
-      ScaffoldMessenger.of(context).showSnackBar(
-          warningMessage(context, "${_allPaymentMfModel!.response_message}"));
+      showResponsiveWarningMessage(context, "${_allPaymentMfModel!.response_message}");
       Navigator.pop(context);
     } else if (_allPaymentMfModel?.stat == "Ok" &&
         _allPaymentMfModel?.type == "NET BANKING") {
@@ -2871,13 +2846,11 @@ class MFProvider extends DefaultChangeNotifier {
       launch("https://v3.mynt.in/mf${_allPaymentMfModel!.file}");
     } else if (_allPaymentMfModel?.stat == "Ok") {
       if (_allPaymentMfModel?.type == "UPI") {
-        ScaffoldMessenger.of(context).showSnackBar(
-            successMessage(context, "${_allPaymentMfModel!.msg}"));
+        showResponsiveSuccess(context, "${_allPaymentMfModel!.msg}");
         // print("${_allPaymentMfModel!.payment_msg} Payment message");
         Navigator.pop(context);
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-            successMessage(context, "${_allPaymentMfModel!.msg}"));
+        showResponsiveSuccess(context, "${_allPaymentMfModel!.msg}");
         // print("${_allPaymentMfModel!.payment_msg} Payment message 2");
         // print("+++++${_allPaymentMfModel?.toJson()}");
         Navigator.pop(context);
@@ -3402,8 +3375,7 @@ class MFProvider extends DefaultChangeNotifier {
       _redemptionData = await api.getMFRedemption(scheme, qty);
       if (_redemptionData!.stat == "Ok") {
         fetchMfOrderbook(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-            successMessage(context, "${_redemptionData!.remarks}"));
+        showResponsiveSuccess(context, "${_redemptionData!.remarks}");
         Navigator.pop(context);
       } else {
         redemptionOrderError = _redemptionData!.emsg;

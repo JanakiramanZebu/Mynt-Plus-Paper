@@ -11,6 +11,7 @@ import '../../res/global_state_text.dart';
 import '../../res/res.dart';
 import '../../routes/route_names.dart';
 import '../../sharedWidget/custom_back_btn.dart';
+import '../../utils/responsive_navigation.dart';
 import '../../sharedWidget/custom_drag_handler.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
 import '../../sharedWidget/functions.dart';
@@ -1106,7 +1107,7 @@ Future<void> _navigateToPlaceOrder(
       isModify: false,
       raw: orderBookData.toJson());
 
-  Navigator.pushNamed(context, Routes.placeOrderScreen, arguments: {
+  ResponsiveNavigation.toPlaceOrderScreen(context: context, arguments: {
     "orderArg": orderArgs,
     "scripInfo": ref.read(marketWatchProvider).scripInfoModel!,
     "isBskt": ''

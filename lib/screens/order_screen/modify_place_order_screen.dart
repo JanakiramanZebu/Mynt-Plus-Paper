@@ -1653,13 +1653,13 @@ class _ModifyPlaceOrderScreenState
                                                                     triggerPriceCtrl
                                                                             .text ==
                                                                         "0") {
-                                                                  ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+                                                                  showResponsiveWarningMessage(
                                                                       context,
                                                                       triggerPriceCtrl
                                                                               .text
                                                                               .isEmpty
                                                                           ? "Trigger can not be empty"
-                                                                          : "Trigger can not be 0"));
+                                                                          : "Trigger can not be 0");
                                                                 } else {
                                                                   if (isBuy) {
                                                                     if (prcType ==
@@ -1668,9 +1668,9 @@ class _ModifyPlaceOrderScreenState
                                                                               .text) <
                                                                           double.parse(widget.orderArg.ltp ??
                                                                               "0.00")) {
-                                                                        ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+                                                                        showResponsiveWarningMessage(
                                                                             context,
-                                                                            "Trigger should be greater than LTP ${double.parse(triggerPriceCtrl.text) > double.parse(widget.orderArg.ltp ?? "0.00")}"));
+                                                                            "Trigger should be greater than LTP ${double.parse(triggerPriceCtrl.text) > double.parse(widget.orderArg.ltp ?? "0.00")}");
                                                                       } else if (double.parse(triggerPriceCtrl
                                                                               .text) >
                                                                           double.parse(widget.scripInfo.uc ??

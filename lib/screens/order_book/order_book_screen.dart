@@ -10,6 +10,7 @@ import '../../provider/thems.dart';
 import '../../res/global_state_text.dart';
 import '../../res/res.dart';
 import '../../sharedWidget/custom_text_form_field.dart';
+import '../../utils/responsive_modal.dart';
 import 'basket/basket_list.dart';
 import 'filter_scrip_bottom_sheet.dart';
 import 'gtt_order_book.dart';
@@ -317,17 +318,15 @@ class _OrderBookScreenState extends ConsumerState<OrderBookScreen>
                   onTap: () async {
                     Future.delayed(const Duration(milliseconds: 100), () {
                       FocusScope.of(context).unfocus();
-                      showModalBottomSheet(
+                      ResponsiveModal.show(
+                        context: context,
+                        child: const OrderbookFilterBottomSheet(),
                         useSafeArea: true,
                         isScrollControlled: true,
                         shape: const RoundedRectangleBorder(
                           borderRadius:
                               BorderRadius.vertical(top: Radius.circular(16)),
                         ),
-                        context: context,
-                        builder: (context) {
-                          return const OrderbookFilterBottomSheet();
-                        },
                       );
                     });
                   },

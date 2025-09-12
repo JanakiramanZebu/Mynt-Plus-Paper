@@ -10,6 +10,7 @@ import 'package:intl/intl.dart';
 import 'package:mynt_plus/screens/profile_screen/topt_screen.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../utils/responsive_modal.dart';
 
 import '../../locator/locator.dart';
 import '../../locator/preference.dart';
@@ -125,17 +126,9 @@ class UserAccountScreen extends ConsumerWidget {
                         ? colors.highlightDark
                         : colors.highlightLight,
                     onTap: () {
-                      showModalBottomSheet(
+                      ResponsiveModal.show(
                           context: context,
-                          isScrollControlled: true,
-                          isDismissible: true,
-                          shape: const RoundedRectangleBorder(
-                            borderRadius: BorderRadius.only(
-                              topLeft: Radius.circular(10),
-                              topRight: Radius.circular(10),
-                            ),
-                          ),
-                          builder: (_) => const LoggedUserBottomSheet(
+                          child: const LoggedUserBottomSheet(
                               initRoute: 'switchAcc'));
                     },
                     child: Padding(
@@ -532,16 +525,14 @@ class UserAccountScreen extends ConsumerWidget {
                         }
                         break;
                       case "Contact Us":
-                        showModalBottomSheet(
+                        ResponsiveModal.show(
+                          context: context,
+                          child: const NeedHelpScreen(),
                           useSafeArea: true,
                           isScrollControlled: true,
                           shape: const RoundedRectangleBorder(
                               borderRadius: BorderRadius.vertical(
                                   top: Radius.circular(16))),
-                          context: context,
-                          builder: (context) {
-                            return const NeedHelpScreen();
-                          },
                         );
                         break;
                       case "Notification":

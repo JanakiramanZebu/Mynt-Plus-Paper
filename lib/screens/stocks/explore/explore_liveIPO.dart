@@ -63,36 +63,94 @@ class LiveIPOList extends ConsumerWidget {
           return Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(5),
-              border: Border.all(color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight),
+              border: Border.all(
+                  color: theme.isDarkMode
+                      ? colors.dividerDark
+                      : colors.dividerLight),
             ),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               child: InkWell(
                 onTap: () async {
                   await ipos.getIpoSinglePage(ipoName: "${ipo[index].name}");
-                  showModalBottomSheet(
-                      isScrollControlled: true,
-                      useSafeArea: true,
-                      isDismissible: true,
-                      shape: const RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.vertical(top: Radius.circular(16))),
-                      context: context,
-                      builder: (context) => Container(
-                            padding: EdgeInsets.only(
-                              bottom: MediaQuery.of(context).viewInsets.bottom,
-                            ),
-                            child: MainSmeSinglePage(
-                              pricerange:
-                                  "₹${double.parse(ipo[index].minPrice!).toInt()} - ₹${double.parse(ipo[index].maxPrice!).toInt()}",
-                              mininv:
-                                  "₹${convertCurrencyINRStandard(mininv(double.parse(ipo[index].minPrice!).toDouble(), int.parse(ipo[index].minBidQuantity!).toInt()).toInt())}",
-                              enddate: "${ipo[index].biddingEndDate}",
-                              startdate: "${ipo[index].biddingStartDate}",
-                              ipotype: "${ipo[index].mS}",
-                              ipodetails: jsonEncode(ipo[index]),
-                            ),
-                          ));
+                  getResponsiveWidth(context) == 600
+                      ? showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return Dialog(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: SizedBox(
+                                width: MediaQuery.of(context).size.width *
+                                    0.3, // set your desired width here
+                                child: MainSmeSinglePage(
+                                  pricerange:
+                                      "₹${double.parse(ipo[index].minPrice!).toInt()} - ₹${double.parse(ipo[index].maxPrice!).toInt()}",
+                                  mininv:
+                                      "₹${convertCurrencyINRStandard(mininv(double.parse(ipo[index].minPrice!).toDouble(), int.parse(ipo[index].minBidQuantity!).toInt()).toInt())}",
+                                  enddate: "${ipo[index].biddingEndDate}",
+                                  startdate: "${ipo[index].biddingStartDate}",
+                                  ipotype: "${ipo[index].mS}",
+                                  ipodetails: jsonEncode(ipo[index]),
+                                ),
+                              ),
+                            );
+                          },
+                        )
+                      : showModalBottomSheet(
+                          shape: const RoundedRectangleBorder(
+                              borderRadius: BorderRadius.vertical(
+                                  top: Radius.circular(16))),
+                          backgroundColor: const Color(0xffffffff),
+                          isDismissible: false,
+                          enableDrag: false,
+                          showDragHandle: false,
+                          useSafeArea: false,
+                          isScrollControlled: true,
+                          context: context,
+                          builder: (BuildContext context) {
+                            return PopScope(
+                              canPop: false,
+                              onPopInvokedWithResult: (didPop, result) async {
+                                if (didPop) return;
+                              },
+                              child: MainSmeSinglePage(
+                                pricerange:
+                                    "₹${double.parse(ipo[index].minPrice!).toInt()} - ₹${double.parse(ipo[index].maxPrice!).toInt()}",
+                                mininv:
+                                    "₹${convertCurrencyINRStandard(mininv(double.parse(ipo[index].minPrice!).toDouble(), int.parse(ipo[index].minBidQuantity!).toInt()).toInt())}",
+                                enddate: "${ipo[index].biddingEndDate}",
+                                startdate: "${ipo[index].biddingStartDate}",
+                                ipotype: "${ipo[index].mS}",
+                                ipodetails: jsonEncode(ipo[index]),
+                              ),
+                            );
+                          });
+
+                  // showModalBottomSheet(
+                  //     isScrollControlled: true,
+                  //     useSafeArea: true,
+                  //     isDismissible: true,
+                  //     shape: const RoundedRectangleBorder(
+                  //         borderRadius:
+                  //             BorderRadius.vertical(top: Radius.circular(16))),
+                  //     context: context,
+                  //     builder: (context) => Container(
+                  //           padding: EdgeInsets.only(
+                  //             bottom: MediaQuery.of(context).viewInsets.bottom,
+                  //           ),
+                  //           child: MainSmeSinglePage(
+                  //             pricerange:
+                  //                 "₹${double.parse(ipo[index].minPrice!).toInt()} - ₹${double.parse(ipo[index].maxPrice!).toInt()}",
+                  //             mininv:
+                  //                 "₹${convertCurrencyINRStandard(mininv(double.parse(ipo[index].minPrice!).toDouble(), int.parse(ipo[index].minBidQuantity!).toInt()).toInt())}",
+                  //             enddate: "${ipo[index].biddingEndDate}",
+                  //             startdate: "${ipo[index].biddingStartDate}",
+                  //             ipotype: "${ipo[index].mS}",
+                  //             ipodetails: jsonEncode(ipo[index]),
+                  //           ),
+                  //         ));
                 },
                 child: SizedBox(
                   width: MediaQuery.of(context).size.width * 0.8,
@@ -153,23 +211,29 @@ class LiveIPOList extends ConsumerWidget {
                                 : colors.primaryLight,
                             fw: 0,
                           ),
-                                                TextWidget.paraText(
+                          TextWidget.paraText(
                             text:
-                                "${getIPOStatus(ipo[index].biddingStartDate ?? '', ipo[index].biddingEndDate ?? '')}".toUpperCase(),
+                                "${getIPOStatus(ipo[index].biddingStartDate ?? '', ipo[index].biddingEndDate ?? '')}"
+                                    .toUpperCase(),
                             theme: theme.isDarkMode,
                             maxLines: 1,
                             fw: 0,
                             textOverflow: TextOverflow.ellipsis,
-                            color: getIPOStatus(ipo[index].biddingStartDate ?? '',
+                            color: getIPOStatus(
+                                        ipo[index].biddingStartDate ?? '',
                                         ipo[index].biddingEndDate ?? '') ==
                                     "Upcoming"
                                 ? colors.pending
-                                : getIPOStatus(ipo[index].biddingStartDate ?? '',
+                                : getIPOStatus(
+                                            ipo[index].biddingStartDate ?? '',
                                             ipo[index].biddingEndDate ?? '') ==
                                         "Closed"
                                     ? colors.loss
-                                    : getIPOStatus(ipo[index].biddingStartDate ?? '',
-                                                ipo[index].biddingEndDate ?? '') ==
+                                    : getIPOStatus(
+                                                ipo[index].biddingStartDate ??
+                                                    '',
+                                                ipo[index].biddingEndDate ??
+                                                    '') ==
                                             "Open"
                                         ? colors.profit
                                         : colors.textPrimaryLight,
@@ -187,7 +251,6 @@ class LiveIPOList extends ConsumerWidget {
                             : colors.textPrimaryLight,
                         fw: 3,
                       ),
-
                     ],
                   ),
                 ),

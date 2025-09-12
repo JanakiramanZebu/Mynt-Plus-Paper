@@ -157,10 +157,8 @@ class _TotpScreenState extends ConsumerState<ApiKeyScreen> {
                                         Clipboard.setData(ClipboardData(
                                             text:
                                                 "${apikeys.apikeyres!.apikey}"));
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(successMessage(
-                                                context,
-                                                'API Key has been ${apikeys.generateApikey?.status} and copied'));
+                                        showResponsiveSuccess(context,
+                                            'API Key has been ${apikeys.generateApikey?.status} and copied');
                                       },
                                       style: ElevatedButton.styleFrom(
                                         elevation: 0,
@@ -349,10 +347,8 @@ class _TotpScreenState extends ConsumerState<ApiKeyScreen> {
                                           Clipboard.setData(ClipboardData(
                                               text:
                                                   "${apikeys.apikeyres!.apikey}"));
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(successMessage(
-                                                  context,
-                                                  "Auth key copied to clipboard"));
+                                          showResponsiveSuccess(context,
+                                              "Auth key copied to clipboard");
               
                                           Navigator.pop(context);
                                         },
@@ -390,9 +386,8 @@ class _TotpScreenState extends ConsumerState<ApiKeyScreen> {
                                 Navigator.pop(context);
                                 Clipboard.setData(ClipboardData(
                                     text: "${apikeys.apikeyres!.apikey}"));
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                    successMessage(context,
-                                        'API Key has been ${apikeys.generateApikey?.status} and copied'));
+                                showResponsiveSuccess(context,
+                                    'API Key has been ${apikeys.generateApikey?.status} and copied');
                               },
                               style: ElevatedButton.styleFrom(
                                 elevation: 0,

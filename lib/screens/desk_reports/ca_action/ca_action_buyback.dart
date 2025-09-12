@@ -1016,9 +1016,7 @@ class _CABuybackState extends State<CABuyback> with TickerProviderStateMixin {
                                           'OFS') ...[
                                         Padding(
                                           padding: const EdgeInsets.only(
-                                              
-                                              top: 5.0,
-                                              bottom: 4.0),
+                                              top: 5.0, bottom: 4.0),
                                           child: Row(
                                             mainAxisAlignment:
                                                 MainAxisAlignment.spaceBetween,
@@ -1027,7 +1025,11 @@ class _CABuybackState extends State<CABuyback> with TickerProviderStateMixin {
                                                 children: [
                                                   TextWidget.subText(
                                                       text: "Size ",
-                                                      color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                                                      color: theme.isDarkMode
+                                                          ? colors
+                                                              .textSecondaryDark
+                                                          : colors
+                                                              .textSecondaryLight,
                                                       textOverflow:
                                                           TextOverflow.ellipsis,
                                                       theme: theme.isDarkMode,
@@ -1037,8 +1039,10 @@ class _CABuybackState extends State<CABuyback> with TickerProviderStateMixin {
                                                       text:
                                                           " ${dataval?.issueSize}",
                                                       color: theme.isDarkMode
-                                                          ? colors.textSecondaryDark
-                                                          : colors.textSecondaryLight,
+                                                          ? colors
+                                                              .textSecondaryDark
+                                                          : colors
+                                                              .textSecondaryLight,
                                                       textOverflow:
                                                           TextOverflow.ellipsis,
                                                       theme: theme.isDarkMode,
@@ -1049,7 +1053,11 @@ class _CABuybackState extends State<CABuyback> with TickerProviderStateMixin {
                                                 children: [
                                                   TextWidget.subText(
                                                       text: "Base Price ",
-                                                      color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                                                      color: theme.isDarkMode
+                                                          ? colors
+                                                              .textSecondaryDark
+                                                          : colors
+                                                              .textSecondaryLight,
                                                       textOverflow:
                                                           TextOverflow.ellipsis,
                                                       theme: theme.isDarkMode,
@@ -1058,8 +1066,10 @@ class _CABuybackState extends State<CABuyback> with TickerProviderStateMixin {
                                                       text:
                                                           " ${dataval?.baseprice}",
                                                       color: theme.isDarkMode
-                                                          ? colors.textSecondaryDark
-                                                          : colors.textSecondaryLight,
+                                                          ? colors
+                                                              .textSecondaryDark
+                                                          : colors
+                                                              .textSecondaryLight,
                                                       textOverflow:
                                                           TextOverflow.ellipsis,
                                                       theme: theme.isDarkMode,
@@ -1071,8 +1081,7 @@ class _CABuybackState extends State<CABuyback> with TickerProviderStateMixin {
                                         ),
                                         Padding(
                                           padding: const EdgeInsets.only(
-                                             top: 5.0,
-                                              bottom: 4.0),
+                                              top: 5.0, bottom: 4.0),
                                           child: Row(
                                             mainAxisAlignment:
                                                 MainAxisAlignment.spaceBetween,
@@ -1081,7 +1090,11 @@ class _CABuybackState extends State<CABuyback> with TickerProviderStateMixin {
                                                 children: [
                                                   TextWidget.subText(
                                                       text: "Open Date ",
-                                                      color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                                                      color: theme.isDarkMode
+                                                          ? colors
+                                                              .textSecondaryDark
+                                                          : colors
+                                                              .textSecondaryLight,
                                                       textOverflow:
                                                           TextOverflow.ellipsis,
                                                       theme: theme.isDarkMode,
@@ -1090,8 +1103,10 @@ class _CABuybackState extends State<CABuyback> with TickerProviderStateMixin {
                                                       text:
                                                           " ${dataval?.openondate}",
                                                       color: theme.isDarkMode
-                                                          ? colors.textSecondaryDark
-                                                          : colors.textSecondaryLight,
+                                                          ? colors
+                                                              .textSecondaryDark
+                                                          : colors
+                                                              .textSecondaryLight,
                                                       textOverflow:
                                                           TextOverflow.ellipsis,
                                                       theme: theme.isDarkMode,
@@ -1102,7 +1117,11 @@ class _CABuybackState extends State<CABuyback> with TickerProviderStateMixin {
                                                 children: [
                                                   TextWidget.subText(
                                                       text: "Status ",
-                                                      color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                                                      color: theme.isDarkMode
+                                                          ? colors
+                                                              .textSecondaryDark
+                                                          : colors
+                                                              .textSecondaryLight,
                                                       textOverflow:
                                                           TextOverflow.ellipsis,
                                                       theme: theme.isDarkMode,
@@ -1111,8 +1130,10 @@ class _CABuybackState extends State<CABuyback> with TickerProviderStateMixin {
                                                       text:
                                                           " ${dataval?.orderstatus == 'null' ? '-' : dataval?.orderstatus}",
                                                       color: theme.isDarkMode
-                                                          ? colors.textSecondaryDark
-                                                          : colors.textSecondaryLight,
+                                                          ? colors
+                                                              .textSecondaryDark
+                                                          : colors
+                                                              .textSecondaryLight,
                                                       textOverflow:
                                                           TextOverflow.ellipsis,
                                                       theme: theme.isDarkMode,

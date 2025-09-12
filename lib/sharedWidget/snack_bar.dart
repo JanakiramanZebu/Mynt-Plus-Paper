@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../res/res.dart';
+import '../utils/responsive_snackbar.dart';
 
 //It serves to display information to the user.
 
@@ -201,4 +202,43 @@ void warningToaster(BuildContext context, String warningtoaster) {
       ),
       elevation: 4);
   ScaffoldMessenger.of(context).showSnackBar(snackBar);
+}
+
+// === RESPONSIVE SNACKBAR FUNCTIONS ===
+// These functions use ResponsiveSnackBar for better desktop experience
+
+/// Shows responsive error message
+/// Desktop: Toast in bottom-right corner | Mobile: Standard SnackBar
+void showResponsiveError(BuildContext context, String message) {
+  ResponsiveSnackBar.showError(context, message);
+}
+
+/// Shows responsive warning message  
+/// Desktop: Toast in bottom-right corner | Mobile: Standard SnackBar
+void showResponsiveWarning(BuildContext context, String message) {
+  ResponsiveSnackBar.showWarning(context, message);
+}
+
+/// Shows responsive success message
+/// Desktop: Toast in bottom-right corner | Mobile: Standard SnackBar
+void showResponsiveSuccess(BuildContext context, String message) {
+  ResponsiveSnackBar.showSuccess(context, message);
+}
+
+/// Shows responsive info message
+/// Desktop: Toast in bottom-right corner | Mobile: Standard SnackBar
+void showResponsiveInfo(BuildContext context, String message) {
+  ResponsiveSnackBar.showInfo(context, message);
+}
+
+/// Replaces ScaffoldMessenger.of(context).showSnackBar(warningMessage(context, message))
+/// with responsive version for better desktop experience
+void showResponsiveWarningMessage(BuildContext context, String message) {
+  ResponsiveSnackBar.showWarning(context, message);
+}
+
+/// Replaces ScaffoldMessenger.of(context).showSnackBar(error(context, message))
+/// with responsive version for better desktop experience  
+void showResponsiveErrorMessage(BuildContext context, String message) {
+  ResponsiveSnackBar.showError(context, message);
 }

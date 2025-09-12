@@ -83,8 +83,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
             context, "", pref.clientId!, "", pref.imei!, true);
       }
     } catch (e) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(error(context, "Something Wrong !!!"));
+      showResponsiveErrorMessage(context, "Something Wrong !!!");
       log("faild to build --- $e");
     }
   }

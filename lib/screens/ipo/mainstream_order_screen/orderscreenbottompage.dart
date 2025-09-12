@@ -179,9 +179,8 @@ class _OrderScreenbottomPage extends ConsumerState<OrderScreenbottomPage> {
                                   ipo.setisMainIPOPlaceOrderBtnActiveValue =
                                       true;
                                 } else {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                      warningMessage(context,
-                                          "Can't able place Order with current selected combination of Bids"));
+                                  showResponsiveWarningMessage(context,
+                                          "Can't able place Order with current selected combination of Bids");
                                   // ischecked = false;
                                   ipo.setisMainIPOPlaceOrderBtnActiveValue =
                                       false;
@@ -236,14 +235,12 @@ class _OrderScreenbottomPage extends ConsumerState<OrderScreenbottomPage> {
                             ? null
                             : () {
                                 if (upiid.upiid.text.isEmpty) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                      warningMessage(
-                                          context, '* UPI ID cannot be empty'));
+                                  showResponsiveWarningMessage(
+                                          context, '* UPI ID cannot be empty');
                                 } else if (!RegExp(r'^[\w.-]+@[\w]+$')
                                     .hasMatch(upiid.upiid.text)) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                      warningMessage(
-                                          context, 'Invalid UPI ID format'));
+                                  showResponsiveWarningMessage(
+                                          context, 'Invalid UPI ID format');
                                 } else {
                                   ipoplaceorder(upiid, ipo);
                                 }

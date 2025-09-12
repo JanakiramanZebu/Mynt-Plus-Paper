@@ -111,13 +111,14 @@ class MainSmeListCard extends StatelessWidget {
     });
   }
 
-  List<dynamic> _getFilteredIPOs(IPOProvider ipos, IPOProvider mainstreamipo, WidgetRef ref) {
+  List<dynamic> _getFilteredIPOs(
+      IPOProvider ipos, IPOProvider mainstreamipo, WidgetRef ref) {
     // If there's a search query, use the common search results
     if (ref.watch(stocksProvide).searchController.text.isNotEmpty &&
         ipos.ipoCommonSearchList.isNotEmpty) {
       return ipos.ipoCommonSearchList;
-    }else if(ref.watch(stocksProvide).searchController.text.isNotEmpty &&
-       ipos.ipoCommonSearchList.isEmpty){
+    } else if (ref.watch(stocksProvide).searchController.text.isNotEmpty &&
+        ipos.ipoCommonSearchList.isEmpty) {
       return [const NoDataFound()];
     }
     // Otherwise, use the original mainsme list
@@ -397,7 +398,9 @@ class _IPOListItem extends StatelessWidget {
         ),
         const SizedBox(height: 6),
         TextWidget.paraText(
-          text: ipo.totalsub != null && ipo.totalsub.toString().isNotEmpty ? "${ipo.totalsub?.toString() ?? ""}x Sub " : "",
+          text: ipo.totalsub != null && ipo.totalsub.toString().isNotEmpty
+              ? "${ipo.totalsub?.toString() ?? ""}x Sub "
+              : "",
           theme: false,
           fw: 3,
           color: theme.isDarkMode
@@ -495,30 +498,84 @@ class _IPOListItem extends StatelessWidget {
     // }
 
     if (context.mounted) {
-      showModalBottomSheet(
-        isScrollControlled: true,
-        useSafeArea: true,
-        isDismissible: true,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-        ),
-        context: context,
-        builder: (context) => Container(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-          ),
-          child: MainSmeSinglePage(
-            pricerange:
-                "${double.parse(ipo.minPrice ?? "0").toInt()} - ${double.parse(ipo.maxPrice ?? "0").toInt()}",
-            mininv:
-                "${convertCurrencyINRStandard(mininv(double.parse(ipo.minPrice ?? "0").toDouble(), int.parse(ipo.minBidQuantity ?? "0").toInt()).toInt())}",
-            enddate: "${ipo.biddingEndDate ?? ""}",
-            startdate: "${ipo.biddingStartDate ?? ""}",
-            ipotype: "${ipo.key ?? ""}",
-            ipodetails: jsonEncode(ipo),
-          ),
-        ),
-      );
+      getResponsiveWidth(context) == 600
+          ? showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return Dialog(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: SizedBox(
+                    width: MediaQuery.of(context).size.width *
+                        0.3, // set your desired width here
+                    child: MainSmeSinglePage(
+                      pricerange:
+                          "${double.parse(ipo.minPrice ?? "0").toInt()} - ${double.parse(ipo.maxPrice ?? "0").toInt()}",
+                      mininv:
+                          "${convertCurrencyINRStandard(mininv(double.parse(ipo.minPrice ?? "0").toDouble(), int.parse(ipo.minBidQuantity ?? "0").toInt()).toInt())}",
+                      enddate: "${ipo.biddingEndDate ?? ""}",
+                      startdate: "${ipo.biddingStartDate ?? ""}",
+                      ipotype: "${ipo.key ?? ""}",
+                      ipodetails: jsonEncode(ipo),
+                    ),
+                  ),
+                );
+              },
+            )
+          : showModalBottomSheet(
+              shape: const RoundedRectangleBorder(
+                  borderRadius:
+                      BorderRadius.vertical(top: Radius.circular(16))),
+              backgroundColor: const Color(0xffffffff),
+              isDismissible: false,
+              enableDrag: false,
+              showDragHandle: false,
+              useSafeArea: false,
+              isScrollControlled: true,
+              context: context,
+              builder: (BuildContext context) {
+                return PopScope(
+                  canPop: false,
+                  onPopInvokedWithResult: (didPop, result) async {
+                    if (didPop) return;
+                  },
+                  child: MainSmeSinglePage(
+                    pricerange:
+                        "${double.parse(ipo.minPrice ?? "0").toInt()} - ${double.parse(ipo.maxPrice ?? "0").toInt()}",
+                    mininv:
+                        "${convertCurrencyINRStandard(mininv(double.parse(ipo.minPrice ?? "0").toDouble(), int.parse(ipo.minBidQuantity ?? "0").toInt()).toInt())}",
+                    enddate: "${ipo.biddingEndDate ?? ""}",
+                    startdate: "${ipo.biddingStartDate ?? ""}",
+                    ipotype: "${ipo.key ?? ""}",
+                    ipodetails: jsonEncode(ipo),
+                  ),
+                );
+              });
+      // showModalBottomSheet(
+      //   isScrollControlled: true,
+      //   useSafeArea: true,
+      //   isDismissible: true,
+      //   shape: const RoundedRectangleBorder(
+      //     borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      //   ),
+      //   context: context,
+      //   builder: (context) => Container(
+      //     padding: EdgeInsets.only(
+      //       bottom: MediaQuery.of(context).viewInsets.bottom,
+      //     ),
+      //     child: MainSmeSinglePage(
+      //       pricerange:
+      //           "${double.parse(ipo.minPrice ?? "0").toInt()} - ${double.parse(ipo.maxPrice ?? "0").toInt()}",
+      //       mininv:
+      //           "${convertCurrencyINRStandard(mininv(double.parse(ipo.minPrice ?? "0").toDouble(), int.parse(ipo.minBidQuantity ?? "0").toInt()).toInt())}",
+      //       enddate: "${ipo.biddingEndDate ?? ""}",
+      //       startdate: "${ipo.biddingStartDate ?? ""}",
+      //       ipotype: "${ipo.key ?? ""}",
+      //       ipodetails: jsonEncode(ipo),
+      //     ),
+      //   ),
+      // );
     }
   }
 

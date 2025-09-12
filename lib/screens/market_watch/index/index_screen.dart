@@ -107,8 +107,7 @@ class _DefaultIndexListState extends ConsumerState<DefaultIndexList>
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: List.generate(3, (i) {
-                if (i >= indexValues.length)
-                  return const SizedBox.shrink();
+                if (i >= indexValues.length) return const SizedBox.shrink();
                 final item = indexValues[i];
                 return Expanded(
                   child: Container(
@@ -152,13 +151,14 @@ class _DefaultIndexListState extends ConsumerState<DefaultIndexList>
                               _LivePriceWidget(
                                 key: ValueKey('price_${item.token ?? ""}'),
                                 token: item.token?.toString() ?? "",
-                                initialLtp: (item.ltp == null || item.ltp == "null")
-                                    ? "0.00"
-                                    : item.ltp?.toString() ?? "0.00",
-                                initialChange:
-                                    (item.change == null || item.change == "null")
+                                initialLtp:
+                                    (item.ltp == null || item.ltp == "null")
                                         ? "0.00"
-                                        : item.change?.toString() ?? "0.00",
+                                        : item.ltp?.toString() ?? "0.00",
+                                initialChange: (item.change == null ||
+                                        item.change == "null")
+                                    ? "0.00"
+                                    : item.change?.toString() ?? "0.00",
                                 initialPerChange: (item.perChange == null ||
                                         item.perChange == "null")
                                     ? "0.00"
@@ -593,30 +593,24 @@ class _LivePriceWidgetState extends State<_LivePriceWidget> {
               children: [
                 Text(
                   "$_ltp ",
-                  style: _getTextStyle(
-                    changeColor,
-                    16,
-                    0
-                  ),
+                  style: _getTextStyle(changeColor, 16, 0),
                 ),
                 Row(
                   children: [
                     Text("${_change.toString().split('.').first} ",
                         style: _getTextStyle(
-                          widget.isDarkMode
-                              ? colors.textSecondaryDark
-                              : colors.textSecondaryLight,
-                          12,
-                          0
-                        )),
+                            widget.isDarkMode
+                                ? colors.textSecondaryDark
+                                : colors.textSecondaryLight,
+                            12,
+                            0)),
                     Text("($_perChange%)",
                         style: _getTextStyle(
-                          widget.isDarkMode
-                              ? colors.textSecondaryDark
-                              : colors.textSecondaryLight,
-                          12,
-                          0
-                        )),
+                            widget.isDarkMode
+                                ? colors.textSecondaryDark
+                                : colors.textSecondaryLight,
+                            12,
+                            0)),
                   ],
                 )
               ],

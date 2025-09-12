@@ -284,10 +284,8 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
                             // Check if already loading using provider state
                             if (ledgerprovider.taxpnlloading) {
                               Navigator.pop(context);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                warningMessage(context,
-                                    'Previous request is still processing'),
-                              );
+                              showResponsiveWarningMessage(context,
+                                    'Previous request is still processing');
                               return;
                             }
                             try {
@@ -309,15 +307,13 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
                                 errorMessage = null;
                               });
                               Navigator.pop(context);
-                              ScaffoldMessenger.of(context).showSnackBar(successMessage(context, 'The file will be sent to your email shortly.'),);
+                              showResponsiveSuccess(context, 'The file will be sent to your email shortly.');
 
                             } catch (e) {
                               // Show error in ScaffoldMessenger
                               // Navigator.pop(context);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                warningMessage(
-                                    context, 'Error: ${e.toString()}'),
-                              );
+                              showResponsiveWarningMessage(
+                                    context, 'Error: ${e.toString()}');
                               setState(() {
                                 errorMessage = e.toString();
                               });

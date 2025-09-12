@@ -313,14 +313,9 @@ class _PendingAlertDetailsState extends ConsumerState<PendingAlertDetails> {
                                                                         context);
                                                                 } catch (e) {
                                                                   if (mounted) {
-                                                                    ScaffoldMessenger.of(
-                                                                            context)
-                                                                        .showSnackBar(
-                                                                      SnackBar(
-                                                                        content:
-                                                                            Text("Failed to cancel alert: ${e.toString()}"),
-                                                                      ),
-                                                                    );
+                                                                    showResponsiveErrorMessage(
+                                                                            context,
+                                                                            "Failed to cancel alert: ${e.toString()}");
                                                                   }
                                                                 } finally {
                                                                   if (mounted) {
@@ -437,16 +432,9 @@ class _PendingAlertDetailsState extends ConsumerState<PendingAlertDetails> {
                                                                         context);
                                                                 } catch (e) {
                                                                   if (mounted) {
-                                                                    ScaffoldMessenger.of(
-                                                                            context)
-                                                                        .showSnackBar(
-                                                                      SnackBar(
-                                                                        content:
-                                                                            Text(
-                                                                          "Failed to modify alert: ${e.toString()}",
-                                                                        ),
-                                                                      ),
-                                                                    );
+                                                                    showResponsiveErrorMessage(
+                                                                            context,
+                                                                            "Failed to modify alert: ${e.toString()}");
                                                                   }
                                                                 } finally {
                                                                   if (mounted) {

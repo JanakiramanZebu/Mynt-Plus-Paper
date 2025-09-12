@@ -20,6 +20,7 @@ import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../routes/route_names.dart';
 import '../../../sharedWidget/custom_drag_handler.dart';
+import '../../../utils/responsive_navigation.dart';
 import '../../../sharedWidget/list_divider.dart';
 import '../../../sharedWidget/custom_exch_badge.dart';
 import '../../../sharedWidget/functions.dart';
@@ -29,6 +30,7 @@ import 'opt_chain_call_list.dart';
 import 'opt_chain_put_list.dart';
 import 'strike_price_list_card.dart';
 import '../../order_book/basket/create_basket.dart';
+import '../../../sharedWidget/snack_bar.dart';
 
 class OptionChainSS extends ConsumerStatefulWidget {
   final DepthInputArgs wlValue;
@@ -1070,7 +1072,7 @@ Future<void> _placeOrderInput(BuildContext context, WidgetRef ref,
       raw: {"correctLotSize": scripInfoModel.ls ?? depthData.ls});
 
   Navigator.pop(context);
-  Navigator.pushNamed(context, Routes.placeOrderScreen, arguments: {
+  ResponsiveNavigation.toPlaceOrderScreen(context: context, arguments: {
     "orderArg": orderArgs,
     "scripInfo": scripInfoModel,
     "isBskt": "Basket"
@@ -1905,14 +1907,8 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                   onPressed: () {
                     orderProv
                         .resetBasketOrderTracking(orderProv.selectedBsktName);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: const Text(
-                            "Basket reset. You can place orders again."),
-                        backgroundColor: colors.profit,
-                        duration: const Duration(seconds: 2),
-                      ),
-                    );
+                    showResponsiveSuccess(context,
+                        "Basket reset. You can place orders again.");
                   },
                   label: TextWidget.subText(
                     text: "Reset Orders",
@@ -2220,7 +2216,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
       raw: script,
     );
 
-    Navigator.pushNamed(context, Routes.placeOrderScreen, arguments: {
+    ResponsiveNavigation.toPlaceOrderScreen(context: context, arguments: {
       "orderArg": orderArgs,
       "scripInfo": ref.read(marketWatchProvider).scripInfoModel!,
       "isBskt": 'BasketEdit'

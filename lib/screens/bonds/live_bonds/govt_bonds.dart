@@ -52,8 +52,8 @@ class GovtBondsScreen extends StatelessWidget {
     });
   }
 
-  Widget _buildBondsList(
-      BuildContext context, BondsProvider bonds, ThemesProvider theme, WidgetRef ref) {
+  Widget _buildBondsList(BuildContext context, BondsProvider bonds,
+      ThemesProvider theme, WidgetRef ref) {
     // Safe null checks for bonds data
     final govtBonds = bonds.govtBonds?.ncbGSec;
     if (govtBonds == null || govtBonds.isEmpty) {
@@ -88,7 +88,8 @@ class GovtBondsScreen extends StatelessWidget {
     final bond = filteredBonds[index];
 
     return InkWell(
-      onTap: () => _showOrderBottomSheet(context, bonds, bond),
+      onTap: () => _showOrderBottomSheet(
+          getResponsiveWidth(context), context, bonds, bond),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Column(
@@ -207,7 +208,8 @@ class GovtBondsScreen extends StatelessWidget {
             theme.isDarkMode ? colors.splashColorDark : colors.splashColorLight,
         highlightColor:
             theme.isDarkMode ? colors.highlightDark : colors.highlightLight,
-        onTap: () => _showOrderBottomSheet(context, bonds, bond),
+        onTap: () => _showOrderBottomSheet(
+            getResponsiveWidth(context), context, bonds, bond),
         child: Padding(
           padding: const EdgeInsets.all(5),
           child: Center(
@@ -241,24 +243,58 @@ class GovtBondsScreen extends StatelessWidget {
     );
   }
 
-  Future<void> _showOrderBottomSheet(
+  Future<void> _showOrderBottomSheet(double responsiveWidth,
       BuildContext context, BondsProvider bonds, dynamic bond) async {
     await bonds.fetchLedgerBal();
-    showModalBottomSheet(
-      isScrollControlled: true,
-      useSafeArea: true,
-      isDismissible: true,
-      shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
-      context: context,
-      builder: (context) => Container(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-        ),
-        child: BondOrderScreenbottomPage(
-          bondInfo: bond,
-        ),
-      ),
-    );
+    responsiveWidth == 600
+        ? showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return Dialog(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: SizedBox(
+                  width: MediaQuery.of(context).size.width *
+                      0.3, // set your desired width here
+                  child: BondOrderScreenbottomPage(
+                    bondInfo: bond,
+                  ),
+                ),
+              );
+            },
+          )
+        : showModalBottomSheet(
+            isScrollControlled: true,
+            useSafeArea: true,
+            isDismissible: true,
+            shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+            context: context,
+            builder: (context) => Container(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              child: BondOrderScreenbottomPage(
+                bondInfo: bond,
+              ),
+            ),
+          );
+    // showModalBottomSheet(
+    //   isScrollControlled: true,
+    //   useSafeArea: true,
+    //   isDismissible: true,
+    //   shape: const RoundedRectangleBorder(
+    //       borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+    //   context: context,
+    //   builder: (context) => Container(
+    //     padding: EdgeInsets.only(
+    //       bottom: MediaQuery.of(context).viewInsets.bottom,
+    //     ),
+    //     child: BondOrderScreenbottomPage(
+    //       bondInfo: bond,
+    //     ),
+    //   ),
+    // );
   }
 }

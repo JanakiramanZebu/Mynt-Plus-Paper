@@ -15,6 +15,7 @@ import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../routes/route_names.dart';
 import '../../../sharedWidget/alert_dialogue.dart';
+import '../../../utils/responsive_navigation.dart';
 import '../../../sharedWidget/custom_back_btn.dart';
 import '../../../sharedWidget/custom_drag_handler.dart';
 import '../../../sharedWidget/custom_exch_badge.dart';
@@ -349,7 +350,7 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
           raw: {});
 
       if (mwProvider.scripInfoModel != null) {
-        Navigator.pushNamed(context, Routes.placeOrderScreen, arguments: {
+        ResponsiveNavigation.toPlaceOrderScreen(context: context, arguments: {
           "orderArg": orderArgs,
           "scripInfo": mwProvider.scripInfoModel!,
           "isBskt": ""
@@ -429,7 +430,7 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
           raw: {});
 
       if (mwProvider.scripInfoModel != null) {
-        Navigator.pushNamed(context, Routes.placeOrderScreen, arguments: {
+        ResponsiveNavigation.toPlaceOrderScreen(context: context, arguments: {
           "orderArg": orderArgs,
           "scripInfo": mwProvider.scripInfoModel!,
           "isBskt": ""

@@ -18,6 +18,7 @@ import '../../../provider/webview_chart_provider.dart';
 import '../../../res/res.dart';
 import '../../../routes/route_names.dart';
 import '../../../sharedWidget/functions.dart';
+import '../../../utils/responsive_navigation.dart';
 import '../../res/global_state_text.dart';
 import '../portfolio_screens/holdings/holding_detail_screen.dart';
 // import '../scrip_depth_info.dart';
@@ -421,10 +422,13 @@ class _ChartScreenWebViewState extends ConsumerState<ChartScreenWebView> {
         raw: {});
 
     // Navigator.pop(context);
-    Navigator.pushNamed(ctx, Routes.placeOrderScreen, arguments: {
-      "orderArg": orderArgs,
-      "scripInfo": ref.read(marketWatchProvider).scripInfoModel!,
-      "isBskt": ''
-    });
+    ResponsiveNavigation.toPlaceOrderScreen(
+      context: ctx,
+      arguments: {
+        "orderArg": orderArgs,
+        "scripInfo": ref.read(marketWatchProvider).scripInfoModel!,
+        "isBskt": ''
+      },
+    );
   }
 }

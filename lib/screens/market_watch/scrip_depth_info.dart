@@ -22,10 +22,12 @@ import '../../provider/user_profile_provider.dart';
 import '../../res/global_state_text.dart';
 import '../../res/res.dart';
 import '../../routes/route_names.dart';
+import '../../utils/responsive_navigation.dart';
 import '../../sharedWidget/custom_drag_handler.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
 import '../../sharedWidget/functions.dart';
 import '../../sharedWidget/no_data_found.dart';
+import '../../sharedWidget/snack_bar.dart';
 import 'futures/future_screen.dart';
 import 'over_view/funtamental_data_widget.dart';
 import 'scrip_detail_dialogue.dart';
@@ -691,12 +693,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                             }
                                                                           } catch (e) {
                                                                             if (mounted) {
-                                                                              ScaffoldMessenger.of(context).showSnackBar(
-                                                                                const SnackBar(
-                                                                                  content: Text('Failed to open Set Alert screen'),
-                                                                                  duration: Duration(seconds: 2),
-                                                                                ),
-                                                                              );
+                                                                              showResponsiveError(context, 'Failed to open Set Alert screen');
                                                                             }
                                                                           }
                                                                         },
@@ -2203,11 +2200,14 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
         isModify: false,
         raw: {});
     Navigator.pop(ctx);
-    Navigator.pushNamed(ctx, Routes.placeOrderScreen, arguments: {
-      "orderArg": orderArgs,
-      "scripInfo": ref.read(marketWatchProvider).scripInfoModel!,
-      "isBskt": widget.isBasket
-    });
+    ResponsiveNavigation.toPlaceOrderScreen(
+      context: ctx,
+      arguments: {
+        "orderArg": orderArgs,
+        "scripInfo": ref.read(marketWatchProvider).scripInfoModel!,
+        "isBskt": widget.isBasket
+      },
+    );
   }
 
   Row lowHighBar(String low, String high, String value, ThemesProvider theme) {

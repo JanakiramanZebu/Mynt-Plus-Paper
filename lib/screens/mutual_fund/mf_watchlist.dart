@@ -200,12 +200,12 @@ class _MFWatchlistScreenState extends ConsumerState<MFWatchlistScreen> {
                     "watch",
                   );
                 } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                      successMessage(context, "Missing fund information"));
+                  showResponsiveErrorMessage(
+                      context, "Missing fund information");
                 }
               } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(successMessage(
-                    context, "Error updating watchlist: ${e.toString()}"));
+                showResponsiveErrorMessage(
+                    context, "Error updating watchlist: ${e.toString()}");
               }
             },
             onTap: () async {
@@ -239,12 +239,12 @@ class _MFWatchlistScreenState extends ConsumerState<MFWatchlistScreen> {
                         child: MFStockDetailScreen(mfStockData: item)),
                   );
                 } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                      successMessage(context, "Missing fund information"));
+                  showResponsiveErrorMessage(
+                      context, "Missing fund information");
                 }
               } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(successMessage(
-                    context, "Error loading fund details: ${e.toString()}"));
+                showResponsiveErrorMessage(
+                    context, "Error loading fund details: ${e.toString()}");
               }
             },
             child: ListTile(

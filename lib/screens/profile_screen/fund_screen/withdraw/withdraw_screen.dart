@@ -217,26 +217,20 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
                           ? () {
                               if (widget.withdarw.payoutdetails!.withdrawAmount ==
                                   "0.00") {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                    warningMessage(context, "Insufficient fund"));
+                                showResponsiveWarningMessage(context, "Insufficient fund");
                               } else if (widget
                                   .withdarw.withdrawamount.text.isEmpty) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                    warningMessage(
-                                        context, "Please enter the amount"));
+                                showResponsiveWarningMessage(context, "Please enter the amount");
                               } else if (double.tryParse(
                                           widget.withdarw.withdrawamount.text) !=
                                       null &&
                                   double.parse(
                                           widget.withdarw.withdrawamount.text) <=
                                       0) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                    warningMessage(context,
-                                        "Amount must be greater than 0"));
+                                showResponsiveWarningMessage(context,
+                                    "Amount must be greater than 0");
                               } else {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                    warningMessage(
-                                        context, "Please enter a valid amount"));
+                                showResponsiveWarningMessage(context, "Please enter a valid amount");
                               }
                             }
                           : () async {

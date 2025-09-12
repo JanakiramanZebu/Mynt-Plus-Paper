@@ -163,9 +163,8 @@ class _RedemptionBottomScreenNewState extends State<RedemptionBottomScreenNew> {
                                     mf.checkRedemption(value, minRedemptionQty,
                                         netUnits, navStr);
                                   } catch (e) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                        successMessage(context,
-                                            "Error validating redemption: ${e.toString()}"));
+                                    showResponsiveErrorMessage(context,
+                                            "Error validating redemption: ${e.toString()}");
                                   }
                                 } else {
                                   // Trigger validation for empty field
@@ -270,14 +269,12 @@ class _RedemptionBottomScreenNewState extends State<RedemptionBottomScreenNew> {
                               mf.mfRedemption(
                                   context, schemeCode, mf.redemptionQty.text);
                             } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                  successMessage(context,
-                                      "Please check the data you have provided"));
+                              showResponsiveErrorMessage(context,
+                                      "Please check the data you have provided");
                             }
                           } catch (e) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                                successMessage(context,
-                                    "Error processing redemption: ${e.toString()}"));
+                            showResponsiveErrorMessage(context,
+                                    "Error processing redemption: ${e.toString()}");
                           }
                         },
                         style: ElevatedButton.styleFrom(

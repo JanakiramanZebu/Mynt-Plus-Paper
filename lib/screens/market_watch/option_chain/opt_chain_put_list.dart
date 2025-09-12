@@ -15,6 +15,7 @@ import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../routes/route_names.dart';
 import '../../../sharedWidget/list_divider.dart';
+import '../../../utils/responsive_navigation.dart';
 import '../../../sharedWidget/snack_bar.dart';
 import 'basket_selection_bottom_sheet.dart';
 
@@ -406,8 +407,7 @@ Widget _buildOIData(ThemesProvider theme) {
 }
 
   void _symbolenotFound(BuildContext context) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(warningMessage(context, "Scrip Not founded"));
+    showResponsiveWarningMessage(context, "Scrip Not founded");
   }
 
   void _handleLongPress(BuildContext context, OptionValues option) {
@@ -470,8 +470,7 @@ Widget _buildOIData(ThemesProvider theme) {
 
     // Check if a basket is selected
     if (orderProv.selectedBsktName.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-            error(context, "Please select a basket"));
+      showResponsiveErrorMessage(context, "Please select a basket");
       return;
     }
 
@@ -577,9 +576,12 @@ Future<void> placeOrderInput(
     isModify: false,
     raw: {},
   );
-  Navigator.pushNamed(context, Routes.placeOrderScreen, arguments: {
-    "orderArg": orderArgs,
-    "scripInfo": container.read(marketWatchProvider).scripInfoModel!,
-    "isBskt": "",
-  });
+  ResponsiveNavigation.toPlaceOrderScreen(
+    context: context,
+    arguments: {
+      "orderArg": orderArgs,
+      "scripInfo": container.read(marketWatchProvider).scripInfoModel!,
+      "isBskt": "",
+    },
+  );
 }

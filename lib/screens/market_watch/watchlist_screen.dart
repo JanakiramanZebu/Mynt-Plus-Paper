@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter_swipe_action_cell/flutter_swipe_action_cell.dart';
 import 'package:mynt_plus/res/colors.dart';
+import '../../utils/responsive_modal.dart';
 import '../../models/marketwatch_model/get_quotes.dart';
 import '../../models/order_book_model/order_book_model.dart';
 import '../../provider/market_watch_provider.dart';
@@ -113,8 +114,8 @@ class _WatchListScreenState extends State<WatchListScreen>
     );
 
     _swipeController = SwipeActionController(
-      selectedIndexPathsChangeCallback:
-          (changed, selected, currentCount) => _safeSetState(() {}),
+      selectedIndexPathsChangeCallback: (changed, selected, currentCount) =>
+          _safeSetState(() {}),
     );
 
     _tabScrollController.addListener(_handleTabScroll);
@@ -125,13 +126,15 @@ class _WatchListScreenState extends State<WatchListScreen>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    
+
     if (!_isInitialized) {
       // Initialize PageController with stored page index from provider
-      final marketWatch = ProviderScope.containerOf(context).read(marketWatchProvider);
-      _pageController = PageController(initialPage: marketWatch.currentWatchlistPageIndex);
+      final marketWatch =
+          ProviderScope.containerOf(context).read(marketWatchProvider);
+      _pageController =
+          PageController(initialPage: marketWatch.currentWatchlistPageIndex);
       _currentPageIndex = marketWatch.currentWatchlistPageIndex;
-      
+
       _isInitialized = true;
 
       // Initialize immediately with stored data
@@ -140,7 +143,7 @@ class _WatchListScreenState extends State<WatchListScreen>
           _initializeWithStoredData();
         }
       });
-      
+
       // Load additional data in background
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _ensurePredefinedWatchlistsLoaded();
@@ -160,19 +163,20 @@ class _WatchListScreenState extends State<WatchListScreen>
   }
 
   /// Initialize immediately with existing data - no loader needed
-void _initializeWithStoredData() {
-  if (_isDisposed || !mounted) return;
+  void _initializeWithStoredData() {
+    if (_isDisposed || !mounted) return;
 
-  final marketWatch = ProviderScope.containerOf(context).read(marketWatchProvider);
-  
-  // Set tab scroll position to the stored page index
-  _scrollToSelectedTab(_currentPageIndex, force: true);
-  
-  // Load additional data in background
-  _ensurePredefinedWatchlistsLoaded();
-  
-  _safeSetState(() {});
-}
+    final marketWatch =
+        ProviderScope.containerOf(context).read(marketWatchProvider);
+
+    // Set tab scroll position to the stored page index
+    _scrollToSelectedTab(_currentPageIndex, force: true);
+
+    // Load additional data in background
+    _ensurePredefinedWatchlistsLoaded();
+
+    _safeSetState(() {});
+  }
 
   void _handleTabScroll() {
     if (_isDisposed) return;
@@ -210,7 +214,8 @@ void _initializeWithStoredData() {
   }
 
   void _scrollToWatchlistTab(WidgetRef ref, String wlName) {
-    final list = ref.read(marketWatchProvider.select((p) => p.marketWatchlist))?.values;
+    final list =
+        ref.read(marketWatchProvider.select((p) => p.marketWatchlist))?.values;
     if (list == null) return;
 
     final idx = list.indexOf(wlName);
@@ -227,7 +232,8 @@ void _initializeWithStoredData() {
     if (_isDisposed) return;
 
     try {
-      final marketWatch = ProviderScope.containerOf(context).read(marketWatchProvider);
+      final marketWatch =
+          ProviderScope.containerOf(context).read(marketWatchProvider);
       final current = marketWatch.wlName;
 
       await marketWatch.fetchPreDefMWScrip(context);
@@ -258,16 +264,17 @@ void _initializeWithStoredData() {
 
     final marketWatch = ref.read(marketWatchProvider);
     final watchList = marketWatch.marketWatchlist;
-    
-    if (watchList?.values == null || pageIndex >= watchList!.values!.length) return;
+
+    if (watchList?.values == null || pageIndex >= watchList!.values!.length)
+      return;
 
     final newWatchlistName = watchList.values![pageIndex];
-    
+
     _currentPageIndex = pageIndex;
-    
+
     // Save the current page index to provider for persistence
     marketWatch.setCurrentWatchlistPageIndex(pageIndex);
-    
+
     _scrollToSelectedTab(pageIndex, force: true);
 
     try {
@@ -275,10 +282,11 @@ void _initializeWithStoredData() {
 
       const predefined = ['My Stocks', 'Nifty50', 'Niftybank', 'Sensex'];
       final isPredefined = predefined.contains(newWatchlistName);
-      
-      await marketWatch.changeWlName(newWatchlistName, isPredefined ? 'Yes' : 'No');
+
+      await marketWatch.changeWlName(
+          newWatchlistName, isPredefined ? 'Yes' : 'No');
       await marketWatch.changeWLScrip(newWatchlistName, context);
-      
+
       await marketWatch.requestMWScrip(context: context, isSubscribe: true);
     } catch (e) {
       debugPrint('Error changing watchlist: $e');
@@ -289,10 +297,10 @@ void _initializeWithStoredData() {
     if (_currentPageIndex == index) return;
 
     _currentPageIndex = index;
-    
+
     // Save the current page index to provider for persistence
     ref.read(marketWatchProvider).setCurrentWatchlistPageIndex(index);
-    
+
     if (_pageController.hasClients) {
       _pageController.jumpToPage(index);
     }
@@ -306,14 +314,18 @@ void _initializeWithStoredData() {
 
     return Consumer(builder: (ctx, ref, _) {
       final wlName = ref.watch(marketWatchProvider.select((p) => p.wlName));
-      final watchList = ref.watch(marketWatchProvider.select((p) => p.marketWatchlist));
-      final isPreDef = ref.watch(marketWatchProvider.select((p) => p.isPreDefWLs));
+      final watchList =
+          ref.watch(marketWatchProvider.select((p) => p.marketWatchlist));
+      final isPreDef =
+          ref.watch(marketWatchProvider.select((p) => p.isPreDefWLs));
       final sortBy = ref.watch(marketWatchProvider.select((p) => p.sortByWL));
-      final providerPageIndex = ref.watch(marketWatchProvider.select((p) => p.currentWatchlistPageIndex));
+      final providerPageIndex = ref.watch(
+          marketWatchProvider.select((p) => p.currentWatchlistPageIndex));
       final theme = ref.watch(themeProvider);
 
       // Listen for page index changes from provider (e.g., from bottom sheet)
-      if (providerPageIndex != _currentPageIndex && _pageController.hasClients) {
+      if (providerPageIndex != _currentPageIndex &&
+          _pageController.hasClients) {
         _currentPageIndex = providerPageIndex;
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (_pageController.hasClients && !_isDisposed) {
@@ -334,7 +346,7 @@ void _initializeWithStoredData() {
 
       if (_lastWatchlistName != wlName) {
         _lastWatchlistName = wlName;
-        
+
         WidgetsBinding.instance.addPostFrameCallback(
           (_) => _scrollToWatchlistTab(ref, wlName),
         );
@@ -344,7 +356,8 @@ void _initializeWithStoredData() {
         child: NestedScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           headerSliverBuilder: (_, inner) => [
-            _buildSearchBar(ref, theme, wlName, isPreDef, watchList?.values?.length ?? 0),
+            _buildSearchBar(
+                ref, theme, wlName, isPreDef, watchList?.values?.length ?? 0),
             _buildPinnedTabs(ref, theme, watchList, wlName),
           ],
           body: _buildPageView(ref, theme, watchList, sortBy),
@@ -353,7 +366,8 @@ void _initializeWithStoredData() {
     });
   }
 
-  Widget _buildPageView(WidgetRef ref, ThemesProvider theme, dynamic watchList, String sortBy) {
+  Widget _buildPageView(
+      WidgetRef ref, ThemesProvider theme, dynamic watchList, String sortBy) {
     // Show immediately even if watchList is null initially
     if (watchList?.values == null) {
       return const SizedBox.shrink(); // No loader, just empty space
@@ -369,16 +383,17 @@ void _initializeWithStoredData() {
       },
       itemBuilder: (context, index) {
         final pageName = watchList.values[index];
-        
+
         return KeyedSubtree(
           key: ValueKey('${pageName}_$index'),
           child: Consumer(
             builder: (context, ref, _) {
               final marketWatch = ref.watch(marketWatchProvider);
-              
+
               // Get data immediately - no async waiting
               List pageScrips = [];
-              if (index == _currentPageIndex && pageName == marketWatch.wlName) {
+              if (index == _currentPageIndex &&
+                  pageName == marketWatch.wlName) {
                 pageScrips = marketWatch.scrips;
               } else {
                 final cachedData = marketWatch.marketWatchScripData[pageName];
@@ -396,7 +411,8 @@ void _initializeWithStoredData() {
                 onRefresh: () async {
                   await marketWatch.fetchMWScrip(pageName, context);
                 },
-                child: _buildPageContent(ref, theme, pageName, pageScrips, sortBy),
+                child:
+                    _buildPageContent(ref, theme, pageName, pageScrips, sortBy),
               );
             },
           ),
@@ -405,7 +421,8 @@ void _initializeWithStoredData() {
     );
   }
 
-  Widget _buildPageContent(WidgetRef ref, ThemesProvider theme, String pageName, List scrips, String sortBy) {
+  Widget _buildPageContent(WidgetRef ref, ThemesProvider theme, String pageName,
+      List scrips, String sortBy) {
     if (pageName == 'My Stocks') {
       return const StocksScreen();
     }
@@ -430,9 +447,7 @@ void _initializeWithStoredData() {
         child: Container(
           height: 40,
           decoration: BoxDecoration(
-            color: theme.isDarkMode
-                ? colors.searchBgDark
-                : colors.searchBg,
+            color: theme.isDarkMode ? colors.searchBgDark : colors.searchBg,
             borderRadius: BorderRadius.circular(5),
           ),
           child: Row(
@@ -443,7 +458,8 @@ void _initializeWithStoredData() {
                   onTap: () {
                     final mw = ref.read(marketWatchProvider);
                     WidgetsBinding.instance.addPostFrameCallback((_) async {
-                      await mw.requestMWScrip(context: context, isSubscribe: false);
+                      await mw.requestMWScrip(
+                          context: context, isSubscribe: false);
                     });
                     Navigator.pushNamed(
                       context,
@@ -454,9 +470,14 @@ void _initializeWithStoredData() {
                   child: Row(
                     children: [
                       const SizedBox(width: 12),
-                      SvgPicture.asset(assets.searchIcon, width: 18, height: 18, color: theme.isDarkMode
-                              ? colors.textSecondaryDark
-                              : colors.textSecondaryLight,),
+                      SvgPicture.asset(
+                        assets.searchIcon,
+                        width: 18,
+                        height: 18,
+                        color: theme.isDarkMode
+                            ? colors.textSecondaryDark
+                            : colors.textSecondaryLight,
+                      ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: TextWidget.subText(
@@ -487,15 +508,15 @@ void _initializeWithStoredData() {
                           : Colors.black.withOpacity(.08),
                       onTap: () async {
                         await Future.delayed(const Duration(milliseconds: 150));
-                        showModalBottomSheet(
+                        ResponsiveModal.show(
+                          context: context,
+                          child: const ScripFilterBottomSheet(),
                           useSafeArea: true,
                           isScrollControlled: true,
                           shape: const RoundedRectangleBorder(
                             borderRadius:
                                 BorderRadius.vertical(top: Radius.circular(16)),
                           ),
-                          context: context,
-                          builder: (_) => const ScripFilterBottomSheet(),
                         );
                       },
                       child: Padding(
@@ -537,7 +558,8 @@ void _initializeWithStoredData() {
             color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
             border: Border(
               bottom: BorderSide(
-                color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
+                color:
+                    theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
               ),
             ),
           ),
@@ -559,16 +581,16 @@ void _initializeWithStoredData() {
                         : Colors.black.withOpacity(.08),
                     onTap: () async {
                       await Future.delayed(const Duration(milliseconds: 150));
-                      showModalBottomSheet(
+                      ResponsiveModal.show(
+                        context: context,
+                        child: WatchlistsBottomSheet(
+                          currentWLName: wlName,
+                        ),
                         useSafeArea: true,
                         isScrollControlled: true,
                         shape: const RoundedRectangleBorder(
                           borderRadius:
                               BorderRadius.vertical(top: Radius.circular(16)),
-                        ),
-                        context: context,
-                        builder: (_) => WatchlistsBottomSheet(
-                          currentWLName: wlName,
                         ),
                       );
                     },

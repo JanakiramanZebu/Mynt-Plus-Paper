@@ -58,9 +58,7 @@ class _MFSIPSCREENState extends State<MFSIPSCREEN> {
       }
       
       if (principal >= 100000) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          error(context, "Please enter an amount below ₹1,00,000.")
-        );
+        showResponsiveErrorMessage(context, "Please enter an amount below ₹1,00,000.");
         // Reset to a valid value
         _principalCtrl.text = "99999";
         principal = 99999;
@@ -101,9 +99,7 @@ class _MFSIPSCREENState extends State<MFSIPSCREEN> {
         _investedAmount = 0;
         _returns = 0;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        error(context, "Calculation error: ${e.toString()}")
-      );
+      showResponsiveErrorMessage(context, "Calculation error: ${e.toString()}");
     }
   }
 

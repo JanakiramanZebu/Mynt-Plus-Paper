@@ -259,7 +259,7 @@ class _ModifyIpoOrderScreenState extends ConsumerState<ModifyIpoOrderScreen> {
   }
 
   void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(warningMessage(context, message));
+    showResponsiveWarningMessage(context, message);
   }
 
   Future<void> ipoplaceorder(TranctionProvider upiid, IPOProvider ipo) async {
@@ -1137,7 +1137,7 @@ class _AgreementSection extends StatelessWidget {
   }
 
   void _showError(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(warningMessage(context, message));
+    showResponsiveWarningMessage(context, message);
   }
 
   static TextStyle _textStyle(Color color, double fontSize, FontWeight fWeight) {

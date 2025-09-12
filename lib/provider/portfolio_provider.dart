@@ -2095,8 +2095,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
             _placeOrderModel!.stat == "Not_Ok") {
           ref.read(authProvider).ifSessionExpired(context);
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-              successMessage(context, "${_placeOrderModel!.emsg}"));
+          showResponsiveSuccess(context, "${_placeOrderModel!.emsg}");
         }
       }
 
@@ -2209,20 +2208,17 @@ class PortfolioProvider extends DefaultChangeNotifier {
         // Refresh position book after conversion
         await fetchPositionBook(context, _isDay);
         Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-            successMessage(context, "Position converted successfully"));
+        showResponsiveSuccess(context, "Position converted successfully");
       } else {
         Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-            warningMessage(context, "${_positionConvertionModel!.emsg}"));
+        showResponsiveWarningMessage(context, "${_positionConvertionModel!.emsg}");
       }
     } catch (e) {
       ref
           .read(indexListProvider)
           .logError
           .add({"type": "Position Conversion", "Error": "$e"});
-      ScaffoldMessenger.of(context).showSnackBar(
-          warningMessage(context, "Failed to convert position: $e"));
+      showResponsiveWarningMessage(context, "Failed to convert position: $e");
     } finally {
       toggleLoadingOn(false);
     }

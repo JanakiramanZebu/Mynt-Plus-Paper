@@ -7,6 +7,7 @@ import '../../../provider/thems.dart';
 import '../../../provider/websocket_provider.dart';
 import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
+import '../../../sharedWidget/snack_bar.dart';
 
 class ExitPositionScreen extends ConsumerWidget {
   const ExitPositionScreen({super.key});
@@ -432,10 +433,7 @@ class ExitPositionScreen extends ConsumerWidget {
                               }
                             } catch (e) {
                               // Handle any errors during the exit process
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                    content: Text('Error: ${e.toString()}')),
-                              );
+                              showResponsiveError(context, 'Error: ${e.toString()}');
                             }
                           },
                     child: Center(

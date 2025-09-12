@@ -223,10 +223,9 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
                 );
                 // Navigator.pushNamed(context, Routes.mforderdetscreen);
               } else {
-                ScaffoldMessenger.of(context).showSnackBar(warningMessage(
-                    context,
+                showResponsiveWarningMessage(context,
                     mforderbook.mforderdet?.emsg ??
-                        'Error loading order details'));
+                        'Error loading order details');
               }
             },
             child: ListTile(

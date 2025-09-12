@@ -822,10 +822,9 @@ class _ApplyIpoScreenState extends ConsumerState<ApplyIpoScreen> {
                                       for(final bid in addIpo){
                                           if (bid.requriedprice >
                                           ipo.maxUPIAmt) {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(warningMessage(
+                                        showResponsiveWarningMessage(
                                                 context,
-                                                "Maximum investment upto ₹${double.parse(ipo.maxUPIAmt.toString()).toInt()} only "));
+                                                "Maximum investment upto ₹${double.parse(ipo.maxUPIAmt.toString()).toInt()} only ");
 
                                         ischecked = false;
                                       } else if (bid
@@ -836,15 +835,14 @@ class _ApplyIpoScreenState extends ConsumerState<ApplyIpoScreen> {
                                                   .bidpricecontroller
                                                   .text ==
                                               "0") {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(warningMessage(
+                                        showResponsiveWarningMessage(
                                                 context,
                                                 bid
                                                             .bidpricecontroller
                                                             .text ==
                                                         "0"
                                                     ? "*Bid Price Value cannot be 0"
-                                                    : "*Bid Price Value is required"));
+                                                    : "*Bid Price Value is required");
 
                                         ischecked = false;
                                       } else if ((int.parse(bid.bidpricecontroller.text.toString())) >
@@ -853,10 +851,9 @@ class _ApplyIpoScreenState extends ConsumerState<ApplyIpoScreen> {
                                           (int.parse(bid.bidpricecontroller.text)) <
                                               double.parse(widget.mainstream.minPrice.toString())
                                                   .toInt()) {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(warningMessage(
+                                        showResponsiveWarningMessage(
                                                 context,
-                                                "Your bid price ranges between ₹${double.parse(widget.mainstream.minPrice!).toInt()}-₹${double.parse(widget.mainstream.maxPrice!).toInt()}"));
+                                                "Your bid price ranges between ₹${double.parse(widget.mainstream.minPrice!).toInt()}-₹${double.parse(widget.mainstream.maxPrice!).toInt()}");
                                         ischecked = false;
                                       } else if (bid
                                               .qualityController
@@ -864,29 +861,26 @@ class _ApplyIpoScreenState extends ConsumerState<ApplyIpoScreen> {
                                               .isEmpty ||
                                           bid.qualityController.text ==
                                               "0") {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(warningMessage(
+                                        showResponsiveWarningMessage(
                                                 context,
                                                 bid
                                                             .qualityController
                                                             .text ==
                                                         "0"
                                                     ? '* Quantity cannot be 0'
-                                                    : '* Quantity cannot be empty'));
+                                                    : '* Quantity cannot be empty');
                                         ischecked = false;
                                       } else if ((int.parse(bid.qualityController.text)) <
                                           int.parse(widget.mainstream.minBidQuantity.toString())
                                               .toInt()) {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(warningMessage(
+                                        showResponsiveWarningMessage(
                                                 context,
-                                                "Minimum Bid quantity is ${widget.mainstream.minBidQuantity.toString()} only "));
+                                                "Minimum Bid quantity is ${widget.mainstream.minBidQuantity.toString()} only ");
                                         ischecked = false;
                                       } else if (upiid.upiid.text.isEmpty) {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(warningMessage(
+                                        showResponsiveWarningMessage(
                                                 context,
-                                                "UPI ID cannot be empty"));
+                                                "UPI ID cannot be empty");
                                         ischecked = false;
                                       } else if (!RegExp(r'^[\w.-]+@[\w]+$')
                                           .hasMatch(upiid.upiid.text)) {
@@ -948,9 +942,8 @@ class _ApplyIpoScreenState extends ConsumerState<ApplyIpoScreen> {
                               ? () {
                                   if (addIpo[addIpo.length - 1].requriedprice >
                                       ipo.maxUPIAmt) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                        warningMessage(context,
-                                            "Maximum investment upto ₹${double.parse(ipo.maxUPIAmt.toString()).toInt()} only "));
+                                    showResponsiveWarningMessage(context,
+                                            "Maximum investment upto ₹${double.parse(ipo.maxUPIAmt.toString()).toInt()} only ");
 
                                     ischecked = false;
                                   } else if (addIpo[addIpo.length - 1]
@@ -961,15 +954,14 @@ class _ApplyIpoScreenState extends ConsumerState<ApplyIpoScreen> {
                                               .bidpricecontroller
                                               .text ==
                                           "0") {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                        warningMessage(
+                                    showResponsiveWarningMessage(
                                             context,
                                             addIpo[addIpo.length - 1]
                                                         .bidpricecontroller
                                                         .text ==
                                                     "0"
                                                 ? "Bid Price Value cannot be 0"
-                                                : "*Bid Price Value is required"));
+                                                : "*Bid Price Value is required");
                                   } else if (addIpo[addIpo.length - 1]
                                           .qualityController
                                           .text
@@ -978,24 +970,21 @@ class _ApplyIpoScreenState extends ConsumerState<ApplyIpoScreen> {
                                               .qualityController
                                               .text ==
                                           "0") {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                        warningMessage(
+                                    showResponsiveWarningMessage(
                                             context,
                                             addIpo[addIpo.length - 1]
                                                         .qualityController
                                                         .text ==
                                                     "0"
                                                 ? '* Quantity cannot be 0'
-                                                : '* Quantity cannot be empty'));
+                                                : '* Quantity cannot be empty');
                                   } else if (upiid.upiid.text.isEmpty) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                        warningMessage(context,
-                                            '* UPI ID cannot be empty'));
+                                    showResponsiveWarningMessage(context,
+                                            '* UPI ID cannot be empty');
                                   } else if (!RegExp(r'^[\w.-]+@[\w]+$')
                                       .hasMatch(upiid.upiid.text)) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                        warningMessage(
-                                            context, 'Invalid UPI ID format'));
+                                    showResponsiveWarningMessage(
+                                            context, 'Invalid UPI ID format');
                                   } else {
                                     ipoplaceorder(upiid, ipo);
                                   }

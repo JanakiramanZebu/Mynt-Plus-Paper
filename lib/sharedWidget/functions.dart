@@ -462,3 +462,15 @@ String dateFormatChangeForLedger(String value) {
   }
   return formatedDate;
 }
+
+double getResponsiveWidth(BuildContext context) {
+  final screenWidth = MediaQuery.of(context).size.width;
+
+  if (screenWidth < 600) {
+    return screenWidth * 0.95; // Mobile
+  } else if (screenWidth < 1024) {
+    return 600; // Tablet
+  } else {
+    return 600; // Desktop
+  }
+}

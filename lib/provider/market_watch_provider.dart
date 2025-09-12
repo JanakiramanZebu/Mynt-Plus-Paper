@@ -710,23 +710,58 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         symbol: '${flow ? raw['symbol'] : raw.symbol}',
         expDate: '${flow ? raw['expDate'] : raw.expDate}',
         option: '${flow ? raw['option'] : raw.option}');
-    showModalBottomSheet(
-        isScrollControlled: true,
-        useSafeArea: true,
-        isDismissible: true,
-        enableDrag: true,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(16),
-            topRight: Radius.circular(16),
-          ),
-        ),
-        context: context,
-        builder: (context) => Container(
-            padding: EdgeInsets.only(
-              bottom: MediaQuery.of(context).viewInsets.bottom,
-            ),
-            child: ScripDepthInfo(wlValue: depthArgs, isBasket: basket)));
+    getResponsiveWidth(context) == 600
+        ? showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return Dialog(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: SizedBox(
+                  width: MediaQuery.of(context).size.width *
+                      0.4, // set your desired width here
+                  child: ScripDepthInfo(wlValue: depthArgs, isBasket: basket),
+                ),
+              );
+            },
+          )
+        : showModalBottomSheet(
+            shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+            backgroundColor: const Color(0xffffffff),
+            isDismissible: false,
+            enableDrag: false,
+            showDragHandle: false,
+            useSafeArea: false,
+            isScrollControlled: true,
+            context: context,
+            builder: (BuildContext context) {
+              return PopScope(
+                  canPop: false,
+                  onPopInvokedWithResult: (didPop, result) async {
+                    if (didPop) return;
+                  },
+                  child: ScripDepthInfo(wlValue: depthArgs, isBasket: basket));
+            });
+
+    // showModalBottomSheet(
+    //     isScrollControlled: true,
+    //     useSafeArea: true,
+    //     isDismissible: true,
+    //     enableDrag: true,
+    //     shape: const RoundedRectangleBorder(
+    //       borderRadius: BorderRadius.only(
+    //         topLeft: Radius.circular(16),
+    //         topRight: Radius.circular(16),
+    //       ),
+    //     ),
+    //     context: context,
+    //     builder: (context) => Container(
+    //         padding: EdgeInsets.only(
+    //           bottom: MediaQuery.of(context).viewInsets.bottom,
+    //         ),
+    //         child: ScripDepthInfo(wlValue: depthArgs, isBasket: basket)));
 
     await ref.read(websocketProvider).establishConnection(
         channelInput:
@@ -1209,8 +1244,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
               element.tsym!.toLowerCase().contains(value.toLowerCase()))
           .toList();
       if (_alertPendingSearch!.isEmpty) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(warningMessage(context, 'No Data Found'));
+        showResponsiveWarningMessage(context, 'No Data Found');
       } else {
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
       }
@@ -2795,12 +2829,12 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         // if (wasActiveWatchlist &&
         //     _marketWatchlist != null &&
         //     _marketWatchlist!.values!.isNotEmpty) {
-          String newActiveWatchlist = _marketWatchlist!.values!.first;
-          _wlName = newActiveWatchlist;
-          _isPreDefWLs = _preDefWL.contains(newActiveWatchlist) ? "Yes" : "No";
-          setCurrentWatchlistPageIndex(0);
-          // Load data for the new active watchlist
-          await changeWLScrip(newActiveWatchlist, context);
+        String newActiveWatchlist = _marketWatchlist!.values!.first;
+        _wlName = newActiveWatchlist;
+        _isPreDefWLs = _preDefWL.contains(newActiveWatchlist) ? "Yes" : "No";
+        setCurrentWatchlistPageIndex(0);
+        // Load data for the new active watchlist
+        await changeWLScrip(newActiveWatchlist, context);
         // }
 
         // Update UI to reflect changes
@@ -2857,8 +2891,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
           // Wrap ScaffoldMessenger calls in try-catch to handle disposed widgets
           try {
             ScaffoldMessenger.of(context).hideCurrentSnackBar();
-            ScaffoldMessenger.of(context).showSnackBar(
-                successMessage(context, "Scrip order was changed"));
+            showResponsiveSuccess(context, "Scrip order was changed");
           } catch (e) {
             if (e.toString().contains("widget was disposed") ||
                 e.toString().contains("after the widget was disposed")) {
@@ -2872,11 +2905,10 @@ class MarketWatchProvider extends DefaultChangeNotifier {
           // Wrap ScaffoldMessenger calls in try-catch to handle disposed widgets
           try {
             ScaffoldMessenger.of(context).hideCurrentSnackBar();
-            ScaffoldMessenger.of(context).showSnackBar(successMessage(
-                context,
+            showResponsiveSuccess(context,
                 isAdd
                     ? "Scrip was added to watchlist $wlName"
-                    : "Scrip was removed from watchlist $wlName"));
+                    : "Scrip was removed from watchlist $wlName");
           } catch (e) {
             if (e.toString().contains("widget was disposed") ||
                 e.toString().contains("after the widget was disposed")) {
@@ -3719,8 +3751,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         ref.read(orderProvider).tabSize();
 
         // Display success message
-        ScaffoldMessenger.of(context).showSnackBar(
-            successMessage(context, "Alert created successfully"));
+        showResponsiveSuccess(context, "Alert created successfully");
 
         // Close the alert creation screens
         Navigator.pop(context);
@@ -3803,8 +3834,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         // This should be safe since we're using the context from the caller
         // which should be the order book screen that remains active
         try {
-          ScaffoldMessenger.of(context).showSnackBar(
-              successMessage(context, "Alert deleted successfully"));
+          showResponsiveSuccess(context, "Alert deleted successfully");
         } catch (e) {
           print("Could not show SnackBar: $e");
         }
@@ -3840,8 +3870,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         // Update the tab count immediately
         ref.read(orderProvider).tabSize();
 
-        ScaffoldMessenger.of(context).showSnackBar(
-            successMessage(context, "Alert modified successfully"));
+        showResponsiveSuccess(context, "Alert modified successfully");
       } else if (_modifyalertmodel!.stat == "Not_Ok") {
         ref.read(authProvider).ifSessionExpired(context);
       }
@@ -3882,13 +3911,12 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
         Navigator.pop(context);
         Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(successMessage(context,
-            "The name of the watchlist has been successfully changed."));
+        showResponsiveSuccess(context,
+            "The name of the watchlist has been successfully changed.");
         notifyListeners();
       } else if (_watchlistRenameModel!.stat == "Not_Ok") {
         Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-            warningMessage(context, "${_watchlistRenameModel!.emsg}"));
+        showResponsiveWarningMessage(context, "${_watchlistRenameModel!.emsg}");
       } else if (_watchlistRenameModel!.emsg ==
           "Session Expired :  Invalid Session Key") {
         ref.read(authProvider).ifSessionExpired(context);

@@ -11,6 +11,7 @@ class Routes {
   static const String homeScreen = 'homeScreen';
   static const String fontSize = 'fontSize';
   static const String nointernet = 'nointernet';
+  static const String mainControlerScreenForWeb = 'MainControlerScreenForWeb';
 
   static const String optionChain = 'OptionChain';
 
@@ -216,5 +217,4 @@ class Routes {
   // rough
   static const String heatmapcalendarscreen = 'HeatmapCalendarScreen ';
   static const String withdrawscreen = 'withdrawscreen';
-
 }

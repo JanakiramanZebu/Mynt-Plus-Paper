@@ -193,15 +193,12 @@ class _mfholdsinlepage extends State<mfholdsinlepage>
                                                           data))),
                                         );
                                       } else {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(successMessage(
-                                                context,
-                                                "Missing fund information"));
+                                        showResponsiveSuccess(context,
+                                                "Missing fund information");
                                       }
                                     } catch (e) {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(successMessage(context,
-                                              "Error loading fund details: ${e.toString()}"));
+                                      showResponsiveSuccess(context,
+                                              "Error loading fund details: ${e.toString()}");
                                     }
                                   },
                                   child: Padding(

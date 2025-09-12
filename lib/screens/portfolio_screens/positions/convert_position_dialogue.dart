@@ -266,18 +266,18 @@ class _ConvertPositionDialogueState
                     : colors.highlightLight,
                 onTap: () async {
                   if (qty.text.isEmpty || qty.text == "0") {
-                    ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+                    showResponsiveWarningMessage(
                         context,
                         qty.text.isEmpty
                             ? 'Quantity can not be empty'
-                            : "Quantity can not be 0"));
+                            : "Quantity can not be 0");
                   } else if (int.parse(qty.text) > int.parse(maxQty.text)) {
                     setState(() {
                       qty.text = maxQty.text;
                     });
-                    ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+                    showResponsiveWarningMessage(
                         context,
-                        'Quantity can not be greater than Max Quantity'));
+                        'Quantity can not be greater than Max Quantity');
                   } else {
                     PositionConvertionInput positionConvertionInput =
                         PositionConvertionInput(

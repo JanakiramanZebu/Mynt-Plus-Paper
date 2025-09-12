@@ -105,11 +105,9 @@ class GttCondition extends ConsumerWidget {
                                             context)
                                         .removeCurrentSnackBar();
                     
-                                      ScaffoldMessenger.of(
-                                              context)
-                                          .showSnackBar(warningMessage(
+                                      showResponsiveWarningMessage(
                                               context,
-                                              "value can not be ${value == "0"?'zero':'empty'}")); 
+                                              "value can not be ${value == "0"?'zero':'empty'}"); 
                               } else {
                                 // Validate if it's a valid number
                                 final numericRegex = RegExp(r'^\d+\.?\d{0,2}$');
@@ -149,11 +147,9 @@ class GttCondition extends ConsumerWidget {
                                           context)
                                       .removeCurrentSnackBar();
                       
-                                    ScaffoldMessenger.of(
-                                            context)
-                                        .showSnackBar(warningMessage(
+                                    showResponsiveWarningMessage(
                                             context,
-                                            "Value can not be ${value == "0"?'zero':'empty'}"));
+                                            "Value can not be ${value == "0"?'zero':'empty'}");
                               } else {
                                 // Validate if it's a valid number
                                 final numericRegex = RegExp(r'^\d+\.?\d{0,2}$');

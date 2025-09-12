@@ -7,6 +7,7 @@ import 'package:mynt_plus/provider/bonds_provider.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/screens/bonds/bonds_order_screen/orderscreenbottompage.dart';
+import 'package:mynt_plus/sharedWidget/functions.dart';
 
 import '../../../provider/stocks_provider.dart';
 import '../../../res/global_state_text.dart';
@@ -44,8 +45,8 @@ class StateBondsScreen extends StatelessWidget {
     });
   }
 
-  Widget _buildBondsList(
-      BuildContext context, BondsProvider bonds, ThemesProvider theme, WidgetRef ref) {
+  Widget _buildBondsList(BuildContext context, BondsProvider bonds,
+      ThemesProvider theme, WidgetRef ref) {
     // Safe null checks for bonds data
     final stateBonds = bonds.stateBonds?.ncbSDL;
     if (stateBonds == null || stateBonds.isEmpty) {
@@ -68,19 +69,29 @@ class StateBondsScreen extends StatelessWidget {
       padding: EdgeInsets.zero,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      itemBuilder: (context, index) =>
-          _buildBondItem(context, bonds, theme, index, filteredBonds),
+      itemBuilder: (context, index) => _buildBondItem(
+          getResponsiveWidth(context),
+          context,
+          bonds,
+          theme,
+          index,
+          filteredBonds),
       itemCount: filteredBonds.length,
       separatorBuilder: (context, index) => _buildDivider(theme),
     );
   }
 
-  Widget _buildBondItem(BuildContext context, BondsProvider bonds,
-      ThemesProvider theme, int index, List<dynamic> filteredBonds) {
+  Widget _buildBondItem(
+      double responsiveWidth,
+      BuildContext context,
+      BondsProvider bonds,
+      ThemesProvider theme,
+      int index,
+      List<dynamic> filteredBonds) {
     final bond = filteredBonds[index];
 
     return InkWell(
-      onTap: () => _showOrderBottomSheet(context, bonds, bond),
+      onTap: () => _showOrderBottomSheet(responsiveWidth, context, bonds, bond),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Column(
@@ -92,7 +103,8 @@ class StateBondsScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Expanded(child: _buildBondHeader(bond, theme)),
-                _buildApplyButton(context, bonds, bond, theme),
+                _buildApplyButton(
+                    getResponsiveWidth(context), context, bonds, bond, theme),
               ],
             ),
             const SizedBox(height: 8),
@@ -189,8 +201,8 @@ class StateBondsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildApplyButton(BuildContext context, BondsProvider bonds,
-      dynamic bond, ThemesProvider theme) {
+  Widget _buildApplyButton(double responsiveWidth, BuildContext context,
+      BondsProvider bonds, dynamic bond, ThemesProvider theme) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -199,7 +211,8 @@ class StateBondsScreen extends StatelessWidget {
             theme.isDarkMode ? colors.splashColorDark : colors.splashColorLight,
         highlightColor:
             theme.isDarkMode ? colors.highlightDark : colors.highlightLight,
-        onTap: () => _showOrderBottomSheet(context, bonds, bond),
+        onTap: () =>
+            _showOrderBottomSheet(responsiveWidth, context, bonds, bond),
         child: Padding(
           padding: const EdgeInsets.all(5),
           child: Center(
@@ -233,24 +246,58 @@ class StateBondsScreen extends StatelessWidget {
     );
   }
 
-  Future<void> _showOrderBottomSheet(
+  Future<void> _showOrderBottomSheet(double responsiveWidth,
       BuildContext context, BondsProvider bonds, dynamic bond) async {
     await bonds.fetchLedgerBal();
-    showModalBottomSheet(
-      isScrollControlled: true,
-      useSafeArea: true,
-      isDismissible: true,
-      shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
-      context: context,
-      builder: (context) => Container(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-        ),
-        child: BondOrderScreenbottomPage(
-          bondInfo: bond,
-        ),
-      ),
-    );
+    responsiveWidth == 600
+        ? showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return Dialog(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: SizedBox(
+                  width: MediaQuery.of(context).size.width *
+                      0.3, // set your desired width here
+                  child: BondOrderScreenbottomPage(
+                    bondInfo: bond,
+                  ),
+                ),
+              );
+            },
+          )
+        : showModalBottomSheet(
+            isScrollControlled: true,
+            useSafeArea: true,
+            isDismissible: true,
+            shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+            context: context,
+            builder: (context) => Container(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              child: BondOrderScreenbottomPage(
+                bondInfo: bond,
+              ),
+            ),
+          );
+    // showModalBottomSheet(
+    //   isScrollControlled: true,
+    //   useSafeArea: true,
+    //   isDismissible: true,
+    //   shape: const RoundedRectangleBorder(
+    //       borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+    //   context: context,
+    //   builder: (context) => Container(
+    //     padding: EdgeInsets.only(
+    //       bottom: MediaQuery.of(context).viewInsets.bottom,
+    //     ),
+    //     child: BondOrderScreenbottomPage(
+    //       bondInfo: bond,
+    //     ),
+    //   ),
+    // );
   }
 }

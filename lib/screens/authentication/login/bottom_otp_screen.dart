@@ -123,10 +123,21 @@ class _BottomSheetContentState extends State<BottomSheetContent>
         width: 50,
         height: 56,
         decoration: BoxDecoration(
-          color: theme.isDarkMode ? colors.textSecondaryDark.withOpacity(0.2) : const Color(0xffFFFFFF),
-          border: Border.all(color:  theme.isDarkMode ?  colors.textSecondaryDark.withOpacity(0.4) :  const Color(0xFFDBDBDB), width: 1),
+          color: theme.isDarkMode
+              ? colors.textSecondaryDark.withOpacity(0.2)
+              : const Color(0xffFFFFFF),
+          border: Border.all(
+              color: theme.isDarkMode
+                  ? colors.textSecondaryDark.withOpacity(0.4)
+                  : const Color(0xFFDBDBDB),
+              width: 1),
         ),
-        textStyle: TextWidget.textStyle(fontSize: 16 , color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight, theme: false),
+        textStyle: TextWidget.textStyle(
+            fontSize: 16,
+            color: theme.isDarkMode
+                ? colors.textPrimaryDark
+                : colors.textPrimaryLight,
+            theme: false),
       );
       final focusedPinTheme = defaultPinThemes.copyBorderWith(
         border: Border.all(color: const Color(0xff0037B7), width: 1),
@@ -153,397 +164,450 @@ class _BottomSheetContentState extends State<BottomSheetContent>
                         : colors.colorWhite,
                   ),
                   child: CircularLoaderImage()))
-          : Scaffold(
-              appBar: AppBar(
-                forceMaterialTransparency: true,
-                backgroundColor: theme.isDarkMode
-                    ? const Color(0xff000000)
-                    : const Color(0xffFFFFFF),
-                elevation: 0,
-                centerTitle: false,
-                leadingWidth: 48,
-                titleSpacing: 6,
-                leading: Material(
-                  color: Colors.transparent,
-                  shape: const CircleBorder(),
-                  clipBehavior: Clip.hardEdge,
-                  child: InkWell(
-                    customBorder: const CircleBorder(),
-                    splashColor: Colors.black.withOpacity(0.15),
-                    highlightColor: Colors.black.withOpacity(0.08),
-                    child: InkWell(
-                        onTap: () {
-                          Navigator.pop(context);
-                        },
-                        child: Container(
-                          alignment: Alignment.center,
-                          child: SvgPicture.asset(
-                            "assets/icon/appbarIcon/arrow-back.svg",
-                            color: theme.isDarkMode
-                                ? colors.colorWhite
-                                : const Color(0xFF141414),
-                            height: 24,
-                            width: 24,
-                          ),
-                        )),
-                  ),
-                ),
-                actions: [
-                  Padding(
-                    padding: const EdgeInsets.only(right: 16, top: 5),
-                    child: SvgPicture.asset(
-                      assets.appLogoIcon,
-                      width: 80,
+          : Center(
+              child: Padding(
+                padding: getResponsiveWidth(context) == 600
+                    ? const EdgeInsets.symmetric(vertical: 30.0)
+                    : const EdgeInsets.only(),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(14), // rounded corners
+                    border: Border.all(
+                      color: Colors.grey.shade300, // border color
+                      width: 0.3, // border width
                     ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1), // shadow color
+                        blurRadius: 4, // how soft the shadow is
+                        offset: Offset(0, 4), // shadow position
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              body: PopScope(
-                canPop: true,
-                onPopInvokedWithResult: (didPop, result) {
-                  if (didPop) return;
-                },
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    SingleChildScrollView(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16.0, vertical: 15),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // const CustomDragHandler(),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const SizedBox(height: 34),
-                                TextWidget.custmText(
-                                    text:
-                                        "Enter the ${auth.totp ? '6-digit TOTP' : '4-digit OTP'}",
-                                    theme: false,
-                                    color: theme.isDarkMode
-                                        ? colors.colorWhite
-                                        : const Color(0xFF141414),
-                                    fw: 1,
-                                    fs: 20),
-                                const SizedBox(height: 10),
-                                // if (!auth.loading || auth.totp) ...[
-                                //   // Text("",
-                                //   //     style: textStyles.resendOtpstyle
-                                //   //         .copyWith(
-                                //   //             color: colors.colorGrey)),
-                                //   InkWell(
-                                //     onTap: () {
-                                //       showModalBottomSheet(
-                                //         barrierColor: Colors.transparent,
-                                //         context: context,
-                                //         shape: const RoundedRectangleBorder(
-                                //           borderRadius: BorderRadius.vertical(
-                                //               top: Radius.circular(16)),
-                                //         ),
-                                //         isScrollControlled: true,
-                                //         builder: (context) => Padding(
-                                //           padding: const EdgeInsets.symmetric(
-                                //               horizontal: 16),
-                                //           child: SingleChildScrollView(
-                                //             child: Column(
-                                //               mainAxisSize: MainAxisSize.min,
-                                //               crossAxisAlignment:
-                                //                   CrossAxisAlignment.start,
-                                //               children: [
-                                //                 const CustomDragHandler(),
-                                //                 const SizedBox(height: 12),
-                                //                 TextWidget.headText(
-                                //                     text:
-                                //                         'Enable TOTP Authentication',
-                                //                     theme: theme.isDarkMode,
-                                //                     fw: 2),
-                                //                 const SizedBox(height: 16),
-                                //                 _buildStep(
-                                //                     "Login to mynt.zebuetrade.com",
-                                //                     theme),
-                                //                 _buildStep(
-                                //                     "Click on the User menu (top-right).",
-                                //                     theme),
-                                //                 _buildStep("Select Settings.",
-                                //                     theme),
-                                //                 _buildStep(
-                                //                     "Navigate to the TOTP section.",
-                                //                     theme),
-                                //                 _buildStep(
-                                //                     "Enter the 6-digit code to verify.",
-                                //                     theme),
-                                //                 const SizedBox(height: 120),
-                                //               ],
-                                //             ),
-                                //           ),
-                                //         ),
-                                //       );
-                                //     },
-                                //     child: TextWidget.subText(
-                                //         text: auth.totp
-                                //             ? "Need help generating your TOTP?"
-                                //             : "",
-                                //         theme: false,
-                                //         color: const Color(0xff737373),
-                                //         fw: 3),
-                                //     // const Icon(
-                                //     //   Icons.info_outline,
-                                //     //   size: 16,
-                                //     // ),
-                                //   )
-                                // ]
+                  width: getResponsiveWidth(context), // de
 
-                                // const SizedBox(height: 15),
-                                // TextWidget.paraText(
-                                //     text: auth.totp
-                                //         ? "Enter the TOTP code from the authenticator app"
-                                //         : "OTP sent to registered Mobile no and Email",
-                                //     theme: false,
-                                //     color: const Color(0xff666666),
-                                //     fw: 0),
-                                // const SizedBox(height: 15),
-                                // TextWidget.titleText(
-                                //     text:
-                                //         "${auth.totp ? '6' : '4'} digit ${auth.totp ? 'TOTP' : 'OTP'}",
-                                //     theme: false,
-                                //     color: theme.isDarkMode
-                                //         ? colors.colorWhite
-                                //         : colors.colorBlack,
-                                //     fw: 1),
-                              ],
+                  child: Scaffold(
+                    appBar: AppBar(
+                      forceMaterialTransparency: true,
+                      backgroundColor: theme.isDarkMode
+                          ? const Color(0xff000000)
+                          : const Color(0xffFFFFFF),
+                      elevation: 0,
+                      centerTitle: false,
+                      leadingWidth: 48,
+                      titleSpacing: 6,
+                      leading: Material(
+                        color: Colors.transparent,
+                        shape: const CircleBorder(),
+                        clipBehavior: Clip.hardEdge,
+                        child: InkWell(
+                          customBorder: const CircleBorder(),
+                          splashColor: Colors.black.withOpacity(0.15),
+                          highlightColor: Colors.black.withOpacity(0.08),
+                          child: InkWell(
+                              onTap: () {
+                                Navigator.pop(context);
+                              },
+                              child: Container(
+                                alignment: Alignment.center,
+                                child: SvgPicture.asset(
+                                  "assets/icon/appbarIcon/arrow-back.svg",
+                                  color: theme.isDarkMode
+                                      ? colors.colorWhite
+                                      : const Color(0xFF141414),
+                                  height: 24,
+                                  width: 24,
+                                ),
+                              )),
+                        ),
+                      ),
+                      actions: [
+                        Padding(
+                          padding: const EdgeInsets.only(right: 16, top: 5),
+                          child: SvgPicture.asset(
+                            assets.appLogoIcon,
+                            width: 80,
+                          ),
+                        ),
+                      ],
+                    ),
+                    body: PopScope(
+                      canPop: true,
+                      onPopInvokedWithResult: (didPop, result) {
+                        if (didPop) return;
+                      },
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          SingleChildScrollView(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16.0, vertical: 15),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // const CustomDragHandler(),
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const SizedBox(height: 34),
+                                      TextWidget.custmText(
+                                          text:
+                                              "Enter the ${auth.totp ? '6-digit TOTP' : '4-digit OTP'}",
+                                          theme: false,
+                                          color: theme.isDarkMode
+                                              ? colors.colorWhite
+                                              : const Color(0xFF141414),
+                                          fw: 1,
+                                          fs: 20),
+                                      const SizedBox(height: 10),
+                                      // if (!auth.loading || auth.totp) ...[
+                                      //   // Text("",
+                                      //   //     style: textStyles.resendOtpstyle
+                                      //   //         .copyWith(
+                                      //   //             color: colors.colorGrey)),
+                                      //   InkWell(
+                                      //     onTap: () {
+                                      //       showModalBottomSheet(
+                                      //         barrierColor: Colors.transparent,
+                                      //         context: context,
+                                      //         shape: const RoundedRectangleBorder(
+                                      //           borderRadius: BorderRadius.vertical(
+                                      //               top: Radius.circular(16)),
+                                      //         ),
+                                      //         isScrollControlled: true,
+                                      //         builder: (context) => Padding(
+                                      //           padding: const EdgeInsets.symmetric(
+                                      //               horizontal: 16),
+                                      //           child: SingleChildScrollView(
+                                      //             child: Column(
+                                      //               mainAxisSize: MainAxisSize.min,
+                                      //               crossAxisAlignment:
+                                      //                   CrossAxisAlignment.start,
+                                      //               children: [
+                                      //                 const CustomDragHandler(),
+                                      //                 const SizedBox(height: 12),
+                                      //                 TextWidget.headText(
+                                      //                     text:
+                                      //                         'Enable TOTP Authentication',
+                                      //                     theme: theme.isDarkMode,
+                                      //                     fw: 2),
+                                      //                 const SizedBox(height: 16),
+                                      //                 _buildStep(
+                                      //                     "Login to mynt.zebuetrade.com",
+                                      //                     theme),
+                                      //                 _buildStep(
+                                      //                     "Click on the User menu (top-right).",
+                                      //                     theme),
+                                      //                 _buildStep("Select Settings.",
+                                      //                     theme),
+                                      //                 _buildStep(
+                                      //                     "Navigate to the TOTP section.",
+                                      //                     theme),
+                                      //                 _buildStep(
+                                      //                     "Enter the 6-digit code to verify.",
+                                      //                     theme),
+                                      //                 const SizedBox(height: 120),
+                                      //               ],
+                                      //             ),
+                                      //           ),
+                                      //         ),
+                                      //       );
+                                      //     },
+                                      //     child: TextWidget.subText(
+                                      //         text: auth.totp
+                                      //             ? "Need help generating your TOTP?"
+                                      //             : "",
+                                      //         theme: false,
+                                      //         color: const Color(0xff737373),
+                                      //         fw: 3),
+                                      //     // const Icon(
+                                      //     //   Icons.info_outline,
+                                      //     //   size: 16,
+                                      //     // ),
+                                      //   )
+                                      // ]
+
+                                      // const SizedBox(height: 15),
+                                      // TextWidget.paraText(
+                                      //     text: auth.totp
+                                      //         ? "Enter the TOTP code from the authenticator app"
+                                      //         : "OTP sent to registered Mobile no and Email",
+                                      //     theme: false,
+                                      //     color: const Color(0xff666666),
+                                      //     fw: 0),
+                                      // const SizedBox(height: 15),
+                                      // TextWidget.titleText(
+                                      //     text:
+                                      //         "${auth.totp ? '6' : '4'} digit ${auth.totp ? 'TOTP' : 'OTP'}",
+                                      //     theme: false,
+                                      //     color: theme.isDarkMode
+                                      //         ? colors.colorWhite
+                                      //         : colors.colorBlack,
+                                      //     fw: 1),
+                                    ],
+                                  ),
+                                  const SizedBox(
+                                    height: 15,
+                                  ),
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Center(
+                                        child: Directionality(
+                                          textDirection: TextDirection.ltr,
+                                          child: Pinput(
+                                            enabled: !auth.loading,
+                                            autofocus: false,
+                                            focusNode: _focusNode,
+                                            separatorBuilder: (index) =>
+                                                SizedBox(
+                                                    width: auth.totp ? 24 : 32),
+                                            controller: otpController,
+                                            length: auth.totp ? 6 : 4,
+                                            defaultPinTheme: defaultPinThemes,
+                                            focusedPinTheme: focusedPinTheme,
+                                            inputFormatters: [
+                                              FilteringTextInputFormatter
+                                                  .digitsOnly,
+                                            ],
+                                            errorPinTheme: auth.optError ==
+                                                    "Invalid / wrong ${auth.totp ? 'TOTP' : 'OTP'}"
+                                                ? errorPinTheme
+                                                : null,
+                                            submittedPinTheme: auth.optError ==
+                                                    "Invalid / wrong ${auth.totp ? 'TOTP' : 'OTP'}"
+                                                ? errorPinTheme
+                                                : submittedPinTheme,
+                                            pinputAutovalidateMode:
+                                                PinputAutovalidateMode.onSubmit,
+                                            onChanged: (value) {
+                                              if (!auth.loading) {
+                                                auth.validateOtp(
+                                                    otpController.text);
+                                                auth.activeBtnOtp(
+                                                    otpController.text);
+                                                if (value.isNotEmpty &&
+                                                    value.length ==
+                                                        (auth.totp ? 6 : 4)) {
+                                                  auth.submitOtp(context,
+                                                      otpController.text);
+                                                }
+                                              }
+                                            },
+                                            toolbarEnabled: false,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  if (auth.optError != null) ...[
+                                    Center(
+                                      child: Padding(
+                                        padding: const EdgeInsets.only(top: 10),
+                                        child: TextWidget.captionText(
+                                            text: otpController.length <=
+                                                        (auth.totp ? 5 : 3) ||
+                                                    auth.optError ==
+                                                        "Invalid / wrong ${auth.totp ? 'TOTP' : 'OTP'}" ||
+                                                    auth.optError ==
+                                                        "${auth.totp ? 'TOTP' : 'OTP'} Verified"
+                                                ? "${auth.optError}"
+                                                : "",
+                                            theme: false,
+                                            color: auth.optError ==
+                                                    "${auth.totp ? 'TOTP' : 'OTP'} Verified"
+                                                ? theme.isDarkMode
+                                                    ? colors.profitDark
+                                                    : colors.profitLight
+                                                : theme.isDarkMode
+                                                    ? colors.lossDark
+                                                    : colors.lossLight,
+                                            fw: 0),
+                                      ),
+                                    )
+                                  ] else ...[
+                                    const SizedBox(
+                                      height: 24,
+                                    )
+                                  ],
+                                  // const SizedBox(
+                                  //   height: 15,
+                                  // ),
+                                ],
+                              ),
                             ),
-                            const SizedBox(
-                              height: 15,
+                          ),
+                          Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 16),
+                            width: screenWidth,
+                            height: 50,
+                            child: OutlinedButton(
+                              style: OutlinedButton.styleFrom(
+                                  elevation: 0,
+                                  backgroundColor: !theme.isDarkMode
+                                      ? otpController.length <=
+                                                  (auth.totp ? 5 : 3) ||
+                                              otpController.text.isEmpty
+                                          ? colors.primaryDark.withOpacity(0.5)
+                                          : colors.primaryLight
+                                      : otpController.length <=
+                                                  (auth.totp ? 5 : 3) ||
+                                              otpController.text.isEmpty
+                                          ? colors.primaryDark.withOpacity(0.5)
+                                          : colors.primaryLight,
+                                  side: BorderSide.none,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(5),
+                                  )),
+                              onPressed: otpController.length <=
+                                          (auth.totp ? 5 : 3) ||
+                                      otpController.text.isEmpty
+                                  ? () {}
+                                  : () {
+                                      HapticFeedback.heavyImpact();
+                                      SystemSound.play(SystemSoundType.click);
+
+                                      auth.submitOtp(
+                                          context, otpController.text);
+                                    },
+                              child: auth.loading
+                                  ? SizedBox(
+                                      width: 18,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: colors.colorWhite),
+                                    )
+                                  : TextWidget.titleText(
+                                      text: "Verify",
+                                      theme: false,
+                                      color: !theme.isDarkMode
+                                          ? otpController.length <=
+                                                      (auth.totp ? 5 : 3) ||
+                                                  otpController.text.isEmpty
+                                              ? colors.colorWhite
+                                                  .withOpacity(0.5)
+                                              : colors.colorWhite
+                                          : otpController.length <=
+                                                      (auth.totp ? 5 : 3) ||
+                                                  otpController.text.isEmpty
+                                              ? colors.colorWhite
+                                                  .withOpacity(0.5)
+                                              : colors.colorWhite,
+                                      fw: 2),
                             ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16.0, vertical: 20),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Center(
-                                  child: Directionality(
-                                    textDirection: TextDirection.ltr,
-                                    child: Pinput(
-                                      enabled: !auth.loading,
-                                      autofocus: false,
-                                      focusNode: _focusNode,
-                                      separatorBuilder: (index) =>
-                                          SizedBox(width: auth.totp ? 24 : 32),
-                                      controller: otpController,
-                                      length: auth.totp ? 6 : 4,
-                                      defaultPinTheme: defaultPinThemes,
-                                      focusedPinTheme: focusedPinTheme,
-                                      inputFormatters: [
-                                        FilteringTextInputFormatter.digitsOnly,
-                                      ],
-                                      errorPinTheme: auth.optError ==
-                                              "Invalid / wrong ${auth.totp ? 'TOTP' : 'OTP'}"
-                                          ? errorPinTheme
-                                          : null,
-                                      submittedPinTheme: auth.optError ==
-                                              "Invalid / wrong ${auth.totp ? 'TOTP' : 'OTP'}"
-                                          ? errorPinTheme
-                                          : submittedPinTheme,
-                                      pinputAutovalidateMode:
-                                          PinputAutovalidateMode.onSubmit,
-                                      onChanged: (value) {
+                                (!auth.totp && !auth.loading)
+                                    ? (!auth.totp &&
+                                            _start == 0 &&
+                                            !auth.loading)
+                                        ? Material(
+                                            color: Colors.transparent,
+                                            child: InkWell(
+                                                splashColor: theme.isDarkMode
+                                                    ? Colors.white
+                                                        .withOpacity(0.15)
+                                                    : Colors.black
+                                                        .withOpacity(0.15),
+                                                highlightColor: theme.isDarkMode
+                                                    ? Colors.white
+                                                        .withOpacity(0.08)
+                                                    : Colors.black
+                                                        .withOpacity(0.08),
+                                                onTap: () async {
+                                                  await Future.delayed(Duration(
+                                                      milliseconds: 100));
+                                                  SmsAutoFill()
+                                                      .unregisterListener();
+                                                  otpController.text = '';
+                                                  _startListeningForOtp();
+                                                  auth.submitResendOtp(context);
+                                                  _start = 89;
+                                                  startTimer();
+                                                },
+                                                child: Padding(
+                                                  padding: const EdgeInsets
+                                                      .symmetric(
+                                                      horizontal: 10,
+                                                      vertical: 6),
+                                                  child: TextWidget.subText(
+                                                      text: "Resend OTP",
+                                                      theme: false,
+                                                      color: theme.isDarkMode
+                                                          ? colors
+                                                              .textSecondaryDark
+                                                          : colors
+                                                              .textSecondaryLight,
+                                                      fw: 3),
+                                                )),
+                                          )
+                                        : TextWidget.subText(
+                                            text: " $resendTime",
+                                            theme: false,
+                                            color: resendTime == "00 : 00"
+                                                ? Colors.transparent
+                                                : theme.isDarkMode
+                                                    ? colors.textSecondaryDark
+                                                    : colors.textSecondaryLight,
+                                            fw: 3)
+                                    : const SizedBox(),
+                                Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                      splashColor: theme.isDarkMode
+                                          ? Colors.white.withOpacity(0.15)
+                                          : Colors.black.withOpacity(0.15),
+                                      highlightColor: theme.isDarkMode
+                                          ? Colors.white.withOpacity(0.08)
+                                          : Colors.black.withOpacity(0.08),
+                                      onTap: () async {
                                         if (!auth.loading) {
-                                          auth.validateOtp(otpController.text);
-                                          auth.activeBtnOtp(otpController.text);
-                                          if (value.isNotEmpty &&
-                                              value.length ==
-                                                  (auth.totp ? 6 : 4)) {
-                                            auth.submitOtp(
-                                                context, otpController.text);
+                                          // Clear the OTP field first
+                                          setState(() {
+                                            otpController.text = "";
+                                          });
+
+                                          // Update TOTP state
+                                          await auth.setChangetotp(!auth.totp);
+
+                                          // Trigger login with new state
+                                          if (mounted) {
+                                            auth.submitLogin(context, true);
                                           }
                                         }
                                       },
-                                      toolbarEnabled: false,
-                                    ),
-                                  ),
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 10, vertical: 6),
+                                        child: TextWidget.subText(
+                                            text: auth.totp
+                                                ? 'Switch OTP'
+                                                : 'Switch TOTP',
+                                            theme: false,
+                                            color: theme.isDarkMode
+                                                ? colors.textSecondaryDark
+                                                : colors.textSecondaryLight,
+                                            fw: 3),
+                                      )),
                                 ),
                               ],
                             ),
-                            if (auth.optError != null) ...[
-                              Center(
-                                child: Padding(
-                                  padding: const EdgeInsets.only(top: 10),
-                                  child: TextWidget.captionText(
-                                      text: otpController.length <=
-                                                  (auth.totp ? 5 : 3) ||
-                                              auth.optError ==
-                                                  "Invalid / wrong ${auth.totp ? 'TOTP' : 'OTP'}" ||
-                                              auth.optError ==
-                                                  "${auth.totp ? 'TOTP' : 'OTP'} Verified"
-                                          ? "${auth.optError}"
-                                          : "",
-                                      theme: false,
-                                      color: auth.optError ==
-                                              "${auth.totp ? 'TOTP' : 'OTP'} Verified"
-                                          ? theme.isDarkMode ? colors.profitDark : colors.profitLight
-                                          : theme.isDarkMode ? colors.lossDark : colors.lossLight,
-                                      fw: 0),
-                                ),
-                              )
-                            ] else ...[
-                              const SizedBox(
-                                height: 24,
-                              )
-                            ],
-                            // const SizedBox(
-                            //   height: 15,
-                            // ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 16),
-                      width: screenWidth,
-                      height: 50,
-                      child: OutlinedButton(
-                        style: OutlinedButton.styleFrom(
-                            elevation: 0,
-                            backgroundColor: !theme.isDarkMode
-                                ? otpController.length <= (auth.totp ? 5 : 3) ||
-                                        otpController.text.isEmpty
-                                    ? colors.primaryDark.withOpacity(0.5)
-                                    : colors.primaryLight
-                                : otpController.length <= (auth.totp ? 5 : 3) ||
-                                        otpController.text.isEmpty
-                                    ? colors.primaryDark.withOpacity(0.5)
-                                    : colors.primaryLight,
-                            side: BorderSide.none,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(5),
-                            )),
-                        onPressed:
-                            otpController.length <= (auth.totp ? 5 : 3) ||
-                                    otpController.text.isEmpty
-                                ? () {}
-                                : () {
-                                    HapticFeedback.heavyImpact();
-                                    SystemSound.play(SystemSoundType.click);
-
-                                    auth.submitOtp(context, otpController.text);
-                                  },
-                        child: auth.loading
-                            ? SizedBox(
-                                width: 18,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                    strokeWidth: 2, color: colors.colorWhite),
-                              )
-                            : TextWidget.titleText(
-                                text: "Verify",
-                                theme: false,
-                                color: !theme.isDarkMode
-                                    ? otpController.length <=
-                                                (auth.totp ? 5 : 3) ||
-                                            otpController.text.isEmpty
-                                        ? colors.colorWhite.withOpacity(0.5)
-                                        : colors.colorWhite
-                                    : otpController.length <=
-                                                (auth.totp ? 5 : 3) ||
-                                            otpController.text.isEmpty
-                                        ? colors.colorWhite.withOpacity(0.5)
-                                        : colors.colorWhite,
-                                fw: 2),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16.0, vertical: 20),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          (!auth.totp && !auth.loading)
-                              ? (!auth.totp && _start == 0 && !auth.loading)
-                                  ? Material(
-                                      color: Colors.transparent,
-                                      child: InkWell(
-                                          splashColor: theme.isDarkMode
-                                              ? Colors.white.withOpacity(0.15)
-                                              : Colors.black.withOpacity(0.15),
-                                          highlightColor: theme.isDarkMode
-                                              ? Colors.white.withOpacity(0.08)
-                                              : Colors.black.withOpacity(0.08),
-                                          onTap: () async {
-                                            await Future.delayed(
-                                                Duration(milliseconds: 100));
-                                            SmsAutoFill().unregisterListener();
-                                            otpController.text = '';
-                                            _startListeningForOtp();
-                                            auth.submitResendOtp(context);
-                                            _start = 89;
-                                            startTimer();
-                                          },
-                                          child: Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 10, vertical: 6),
-                                            child: TextWidget.subText(
-                                                text: "Resend OTP",
-                                                theme: false,
-                                                color: theme.isDarkMode
-                                                    ? colors.textSecondaryDark
-                                                    : colors.textSecondaryLight,
-                                                fw: 3),
-                                          )),
-                                    )
-                                  : TextWidget.subText(
-                                      text: " $resendTime",
-                                      theme: false,
-                                      color: resendTime == "00 : 00"
-                                          ? Colors.transparent
-                                          : theme.isDarkMode
-                                              ? colors.textSecondaryDark
-                                              : colors.textSecondaryLight,
-                                      fw: 3)
-                              : const SizedBox(),
-                          Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                                splashColor: theme.isDarkMode
-                                    ? Colors.white.withOpacity(0.15)
-                                    : Colors.black.withOpacity(0.15),
-                                highlightColor: theme.isDarkMode
-                                    ? Colors.white.withOpacity(0.08)
-                                    : Colors.black.withOpacity(0.08),
-                                onTap: () async {
-                                  if (!auth.loading) {
-                                    // Clear the OTP field first
-                                    setState(() {
-                                      otpController.text = "";
-                                    });
-
-                                    // Update TOTP state
-                                    await auth.setChangetotp(!auth.totp);
-
-                                    // Trigger login with new state
-                                    if (mounted) {
-                                      auth.submitLogin(context, true);
-                                    }
-                                  }
-                                },
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 10, vertical: 6),
-                                  child: TextWidget.subText(
-                                      text: auth.totp
-                                          ? 'Switch OTP'
-                                          : 'Switch TOTP',
-                                      theme: false,
-                                      color: theme.isDarkMode
-                                          ? colors.textSecondaryDark
-                                          : colors.textSecondaryLight,
-                                      fw: 3),
-                                )),
-                          ),
+                          )
                         ],
                       ),
-                    )
-                  ],
+                    ),
+                  ),
                 ),
               ),
             );

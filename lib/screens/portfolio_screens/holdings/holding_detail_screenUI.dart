@@ -14,6 +14,7 @@ import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../routes/route_names.dart';
 import '../../../sharedWidget/alert_dialogue.dart';
+import '../../../utils/responsive_navigation.dart';
 import '../../../sharedWidget/custom_back_btn.dart';
 import '../../../sharedWidget/custom_drag_handler.dart';
 import '../../../sharedWidget/custom_exch_badge.dart';
@@ -323,11 +324,14 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
           isModify: false,
           raw: {});
 
-      Navigator.pushNamed(context, Routes.placeOrderScreen, arguments: {
-        "orderArg": orderArgs,
-        "scripInfo": mwProvider.scripInfoModel!,
-        "isBskt": ""
-      }).then((_) {
+      ResponsiveNavigation.toPlaceOrderScreen(
+        context: context,
+        arguments: {
+          "orderArg": orderArgs,
+          "scripInfo": mwProvider.scripInfoModel!,
+          "isBskt": ""
+        },
+      ).then((_) {
         if (mounted) {
           setState(() {
             _isProcessingBuy = false;
@@ -401,11 +405,14 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
           isModify: false,
           raw: {});
 
-      Navigator.pushNamed(context, Routes.placeOrderScreen, arguments: {
-        "orderArg": orderArgs,
-        "scripInfo": mwProvider.scripInfoModel!,
-        "isBskt": ""
-      }).then((_) {
+      ResponsiveNavigation.toPlaceOrderScreen(
+        context: context,
+        arguments: {
+          "orderArg": orderArgs,
+          "scripInfo": mwProvider.scripInfoModel!,
+          "isBskt": ""
+        },
+      ).then((_) {
         if (mounted) {
           setState(() {
             _isProcessingSell = false;

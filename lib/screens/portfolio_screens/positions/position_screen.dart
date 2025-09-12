@@ -18,6 +18,7 @@ import '../../../res/res.dart';
 import '../../../routes/route_names.dart';
 import '../../../sharedWidget/custom_switch_btn.dart';
 import '../../../sharedWidget/custom_text_btn.dart';
+import '../../../sharedWidget/snack_bar.dart';
 import '../../../sharedWidget/custom_text_form_field.dart';
 import '../../../sharedWidget/functions.dart';
 import '../../../sharedWidget/no_data_found.dart';
@@ -266,7 +267,9 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
                               padding: const EdgeInsets.all(8.0),
                               child: _getCachedIcon(
                                 assets.searchIcon,
-                                color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                                color: theme.isDarkMode
+                                    ? colors.textSecondaryDark
+                                    : colors.textSecondaryLight,
                                 width: 20,
                               ),
                             ),
@@ -315,7 +318,9 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
                                 padding: const EdgeInsets.all(8.0),
                                 child: _getCachedIcon(
                                   assets.filterLinesDark,
-                                   color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                                  color: theme.isDarkMode
+                                      ? colors.textSecondaryDark
+                                      : colors.textSecondaryLight,
                                 ),
                               ),
                             ),
@@ -348,13 +353,7 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
                                         Navigator.of(context).maybePop();
                                       }
                                     } catch (e) {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        SnackBar(
-                                          content:
-                                              Text('Error: ${e.toString()}'),
-                                        ),
-                                      );
+                                      showResponsiveError(context, 'Error: ${e.toString()}');
                                     }
                                   },
                             child: Padding(
@@ -453,8 +452,9 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
             style: TextWidget.textStyle(
               fontSize: 16,
               theme: theme.isDarkMode,
-              color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-              
+              color: theme.isDarkMode
+                  ? colors.textPrimaryDark
+                  : colors.textPrimaryLight,
             ),
             keyboardType: TextInputType.text,
             textCapitalization: TextCapitalization.characters,
@@ -468,13 +468,18 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
                 hintStyle: TextWidget.textStyle(
                     fontSize: 14,
                     theme: theme.isDarkMode,
-                    color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight),
-                fillColor: theme.isDarkMode ? colors.searchBgDark : colors.searchBg,
+                    color: theme.isDarkMode
+                        ? colors.textSecondaryDark
+                        : colors.textSecondaryLight),
+                fillColor:
+                    theme.isDarkMode ? colors.searchBgDark : colors.searchBg,
                 filled: true,
                 prefixIcon: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: SvgPicture.asset(assets.searchIcon,
-                      color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                      color: theme.isDarkMode
+                          ? colors.textSecondaryDark
+                          : colors.textSecondaryLight,
                       fit: BoxFit.scaleDown,
                       width: 20),
                 ),
@@ -499,8 +504,11 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
                       });
                     },
                     child: SvgPicture.asset(assets.removeIcon,
-                     color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                        fit: BoxFit.scaleDown, width: 20),
+                        color: theme.isDarkMode
+                            ? colors.textSecondaryDark
+                            : colors.textSecondaryLight,
+                        fit: BoxFit.scaleDown,
+                        width: 20),
                   ),
                 ),
                 enabledBorder: OutlineInputBorder(
@@ -1014,7 +1022,7 @@ class _PositionItemState extends ConsumerState<_PositionItem> {
             Text(
               avgPrice,
               style: _getStyle(
-                   theme.isDarkMode
+                  theme.isDarkMode
                       ? colors.textSecondaryDark
                       : colors.textSecondaryLight,
                   12,

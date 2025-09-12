@@ -42,6 +42,7 @@ import '../screens/desk_reports/profitnloss_screen.dart';
 import '../screens/desk_reports/tax_pnl_screen.dart';
 import '../screens/desk_reports/tradebook_screen.dart';
 import '../screens/home_screen.dart';
+import '../screens/main_screen_control_web.dart';
 import '../screens/ipo/ipo_main_screen.dart';
 import '../screens/ipo/ipo_orderbook_screen/ipo_modify_order/modify_order_screen.dart';
 import '../screens/ipo/ipo_orderbook_screen/ipo_order_book_main_screen.dart';
@@ -198,6 +199,9 @@ class AppRoutes {
         return MaterialPageRoute(builder: (_) => const HomeScreen());
       // case Routes.homeScreen:
       //   return MaterialPageRoute(builder: (_) => const HomeScreenDashBoard());
+      case Routes.mainControlerScreenForWeb:
+        return MaterialPageRoute(
+            builder: (_) => const MainControlerScreenForWeb());
       case Routes.loginScreen:
         return _createRoute(
           pageBuilder: (_, __, ___) => const LoginScreen(),
@@ -683,7 +687,8 @@ class AppRoutes {
 
       case Routes.ipo:
         return _createRoute(
-          pageBuilder: (_, __, ___) => IPOScreen(initialTabIndex: args as int?, isIpo: true),
+          pageBuilder: (_, __, ___) =>
+              IPOScreen(initialTabIndex: args as int?, isIpo: true),
           beginOffset: const Offset(-1.0, 0.0),
         );
 
@@ -774,12 +779,12 @@ class AppRoutes {
         );
       case Routes.brokerCalculator:
         return _createRoute(
-          pageBuilder: (_, __, ___) =>  BrokerageCalculatorScreen(),
+          pageBuilder: (_, __, ___) => BrokerageCalculatorScreen(),
           beginOffset: const Offset(-1.0, 0.0),
         );
       case Routes.marginCalculator:
         return _createRoute(
-          pageBuilder: (_, __, ___) =>  MarginCalculatorScreen(),
+          pageBuilder: (_, __, ___) => MarginCalculatorScreen(),
           beginOffset: const Offset(-1.0, 0.0),
         );
       case Routes.portfolioDashboard:

@@ -72,8 +72,7 @@ class _MfUPIProcessingScreen extends ConsumerState<MfUPIProcessingScreen> {
             ),
           );
         }
-        ScaffoldMessenger.of(context)
-            .showSnackBar(warningMessage(context, '$status'));
+        showResponsiveWarningMessage(context, '$status');
             mfProv.fetchmfsiplist();
         mfProv.fetchMfOrderbook(context);
       }
@@ -100,8 +99,7 @@ class _MfUPIProcessingScreen extends ConsumerState<MfUPIProcessingScreen> {
               conditionval : 'timeout'
             ),
           );
-        ScaffoldMessenger.of(context)
-            .showSnackBar(warningMessage(context, 'Timeout try again'));
+        showResponsiveWarningMessage(context, 'Timeout try again');
             mfProv.fetchmfsiplist();
       mfProv.fetchMfOrderbook(context);
       }
