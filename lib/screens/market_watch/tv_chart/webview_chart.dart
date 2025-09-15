@@ -444,8 +444,7 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
                               (route) => route.settings.name == Routes.homeScreen || route.isFirst,
                               arguments: originalArgs
                             );
-                          } else if (prevRoute == Routes.positionGroupDetail ||
-                                     prevRoute == Routes.positionDetail ||
+                          } else if (prevRoute == Routes.positionDetail ||
                                      prevRoute == Routes.holdingDetail) {
                             // For portfolio screens, navigate back without special arguments
                             rootNavigatorKey.currentState?.pushNamedAndRemoveUntil(
