@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -262,6 +263,14 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
 
   @override
   void dispose() {
+    // Restore system orientation to default (allow all orientations)
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
+
     ConstantName.chartwebViewController?.dispose();
     ConstantName.chartwebViewController = null;
     super.dispose();
@@ -636,7 +645,7 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
         tvChart.getQuotes?.instname != "COM";
     
     final actionButtonsHeight = transbtn ? 40.0 : 0.0;
-    final actionButtonsPadding = transbtn ? 16.0 : 0.0;
+    final actionButtonsPadding = transbtn ? 60.0 : 0.0;
     
     // Get responsive chart height
     final chartHeight = ChartResponsiveHelper.getChartHeight(

@@ -61,6 +61,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen>
     with WidgetsBindingObserver {
   late WebSocketProvider socketProvider; // Store the reference
+  Timer? _inactiveTimer; // Timer to handle delayed chart hiding
 
   @override
   void initState() {
@@ -91,6 +92,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
   @override
   void dispose() {
+    _inactiveTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     // Cancel the timer before disposing
     if (ConstantName.timer != null) {
@@ -108,6 +110,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   void didChangeAppLifecycleState(AppLifecycleState state) async {
     switch (state) {
       case AppLifecycleState.resumed:
+        // Cancel the inactive timer since app is resumed
+        _inactiveTimer?.cancel();
         // Ensure navbar is always visible when resuming from background
         ref.read(userProfileProvider).profileloaderfun(false);
         print("app resumed - enabling WebSocket auto-reconnect");
@@ -168,7 +172,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         if (ref.read(indexListProvider).selectedBtmIndx == 2) {
           ref.read(portfolioProvider).cancelTimer();
         }
-        ref.read(chartProvider.notifier).hideChart();
+        // Use a timer to avoid hiding chart during brief orientation changes
+        _inactiveTimer?.cancel();
+        _inactiveTimer = Timer(const Duration(milliseconds: 500), () {
+          if (mounted) {
+            ref.read(chartProvider.notifier).hideChart();
+            print("app in inactive - chart hidden after delay");
+          }
+        });
         print("app in inactive");
         break;
 
