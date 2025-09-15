@@ -759,7 +759,6 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
   Future<void> placeOrderInput(MarketWatchProvider scripInfo, BuildContext ctx,
       GetQuotes depthData, bool transType) async {
     // Hide chart before opening order screen
-    ref.read(chartProvider.notifier).hideChart();
     
     final raw = ref.read(marketWatchProvider).getQuotes;
     await ref
@@ -779,6 +778,7 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
         isModify: false,
         raw: {});
 
+    ref.read(chartProvider.notifier).hideChart();
     // Navigator.pop(context);
     rootNavigatorKey.currentState?.pushNamed(Routes.placeOrderScreen, arguments: {
       "orderArg": orderArgs,
