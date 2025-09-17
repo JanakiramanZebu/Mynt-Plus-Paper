@@ -4908,7 +4908,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          headerTitleText("Trailing Price", theme),
+          headerTitleText("Trailing SL", theme),
           const SizedBox(height: 8),
           SizedBox(
               height: 45,
