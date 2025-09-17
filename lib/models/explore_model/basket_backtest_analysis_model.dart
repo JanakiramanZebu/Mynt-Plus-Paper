@@ -373,11 +373,15 @@ class SchemeValue {
   final String schemaName;
   final int percentage;
   final String schemeType;
+  final String isin;
+  final String aMCCode;
 
   SchemeValue({
     required this.schemaName,
     required this.percentage,
     required this.schemeType,
+    required this.isin,
+    required this.aMCCode,
   });
 
   Map<String, dynamic> toJson() {
@@ -385,6 +389,8 @@ class SchemeValue {
       'schema_name': schemaName,
       'percentage': percentage,
       'scheme_type': schemeType,
+      'isin': isin,
+      'aMCCode': aMCCode,
     };
   }
 }

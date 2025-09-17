@@ -7,6 +7,7 @@ import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/res/global_state_text.dart';
 import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/routes/route_names.dart';
+import 'package:mynt_plus/sharedWidget/splash_loader.dart';
 
 import '../../../../sharedWidget/custom_back_btn.dart';
 
@@ -78,7 +79,7 @@ class _StrategyDashboardScreenState
         leadingWidth: 48,
         titleSpacing: 0,
         centerTitle: false,
-         leading: const CustomBackBtn(),
+        leading: const CustomBackBtn(),
         elevation: 0.2,
         title: TextWidget.titleText(
           text: "Investment Strategies",
@@ -91,19 +92,30 @@ class _StrategyDashboardScreenState
         ),
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 16,vertical: 8),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // My Saved Strategies Section
-              _buildSavedStrategiesSection(theme),
-              const SizedBox(height: 24),
-              // Investment Strategies Section
-              _buildInvestmentStrategiesSection(theme),
-            ],
-          ),
-        ),
+        child: Consumer(builder: (context, ref, child) {
+          final strategy = ref.watch(dashboardProvider);
+          if (strategy.isStrategyLoading) {
+            return Center(
+              child: Container(
+                color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                child: const CircularLoaderImage(),
+              ),
+            );
+          }
+          return SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // My Saved Strategies Section
+                _buildSavedStrategiesSection(theme),
+                const SizedBox(height: 24),
+                // Investment Strategies Section
+                _buildInvestmentStrategiesSection(theme),
+              ],
+            ),
+          );
+        }),
       ),
     );
   }
@@ -125,8 +137,8 @@ class _StrategyDashboardScreenState
                   : colors.textPrimaryLight,
               fw: 1,
             ),
-              _buildCreateNewButton(theme),
-
+        if (strategy.savedStrategies?.data?.isNotEmpty ?? false)
+            _buildCreateNewButton(theme),
           ],
         ),
         const SizedBox(height: 16),
@@ -336,12 +348,10 @@ class _StrategyDashboardScreenState
       child: InkWell(
         onTap: () => _navigateToStrategyCreation(),
         borderRadius: BorderRadius.circular(5),
-        splashColor: theme.isDarkMode
-            ? colors.splashColorDark
-            : colors.splashColorLight,
-        highlightColor: theme.isDarkMode
-            ? colors.splashColorDark
-            : colors.splashColorLight,
+        splashColor:
+            theme.isDarkMode ? colors.splashColorDark : colors.splashColorLight,
+        highlightColor:
+            theme.isDarkMode ? colors.splashColorDark : colors.splashColorLight,
         child: Padding(
           padding: const EdgeInsets.all(8.0),
           child: Row(
@@ -393,136 +403,139 @@ class _StrategyDashboardScreenState
         color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
         borderRadius: BorderRadius.circular(12),
         child: InkWell(
-          onTap: () => _navigateToBacktestWithAllocation(
-              strategy.name, strategy.funds),
+          onTap: () =>
+              _navigateToBacktestWithPreloadedStrategy(strategy.name, strategy.funds),
           borderRadius: BorderRadius.circular(12),
           child: Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+                color: theme.isDarkMode
+                    ? colors.darkColorDivider
+                    : colors.colorDivider,
               ),
             ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header with badge
-            Row(
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                if (strategy.isFirstTime)
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: colors.pending.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(5),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.info_outline,
-                          size: 14,
-                          color: colors.pending,
-                        ),
-                        const SizedBox(width: 4),
-                        TextWidget.captionText(
-                          text: strategy.description,
-                          theme: theme.isDarkMode,
-                          color: colors.pending,
-                          fw: 0,
-                        ),
-                      ],
-                    ),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 12),
-      
-            // Strategy name and subtitle
-            TextWidget.subText(
-              text: strategy.name,
-              theme: theme.isDarkMode,
-              color: theme.isDarkMode
-                  ? colors.textPrimaryDark
-                  : colors.textPrimaryLight,
-              fw: 2,
-            ),
-            if (strategy.isFirstTime)
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                margin: const EdgeInsets.only(top: 4),
-                decoration: BoxDecoration(
+                // Header with badge
+                // Row(
+                //   crossAxisAlignment: CrossAxisAlignment.start,
+                //   mainAxisAlignment: MainAxisAlignment.end,
+                //   children: [
+                //     if (strategy.isFirstTime)
+                //       Container(
+                //         padding: const EdgeInsets.symmetric(
+                //             horizontal: 8, vertical: 4),
+                //         decoration: BoxDecoration(
+                //           color: colors.pending.withOpacity(0.1),
+                //           borderRadius: BorderRadius.circular(5),
+                //         ),
+                //         child: Row(
+                //           mainAxisSize: MainAxisSize.min,
+                //           children: [
+                //             Icon(
+                //               Icons.info_outline,
+                //               size: 14,
+                //               color: colors.pending,
+                //             ),
+                //             const SizedBox(width: 4),
+                //             TextWidget.captionText(
+                //               text: strategy.description,
+                //               theme: theme.isDarkMode,
+                //               color: colors.pending,
+                //               fw: 0,
+                //             ),
+                //           ],
+                //         ),
+                //       ),
+                //   ],
+                // ),
+                const SizedBox(height: 12),
+
+                // Strategy name and subtitle
+                TextWidget.subText(
+                  text: strategy.name,
+                  theme: theme.isDarkMode,
                   color: theme.isDarkMode
-                      ? colors.darkColorDivider
-                      : colors.colorDivider,
-                  borderRadius: BorderRadius.circular(5),
+                      ? colors.textPrimaryDark
+                      : colors.textPrimaryLight,
+                  fw: 2,
                 ),
-                child: TextWidget.captionText(
-                  text: 'First time in Indian context',
+                // if (strategy.isFirstTime)
+                //   Container(
+                //     padding:
+                //         const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                //     margin: const EdgeInsets.only(top: 4),
+                //     decoration: BoxDecoration(
+                //       color: theme.isDarkMode
+                //           ? colors.darkColorDivider
+                //           : colors.colorDivider,
+                //       borderRadius: BorderRadius.circular(5),
+                //     ),
+                //     child: TextWidget.captionText(
+                //       text: 'First time in Indian context',
+                //       theme: theme.isDarkMode,
+                //       color: theme.isDarkMode
+                //           ? colors.textSecondaryDark
+                //           : colors.textSecondaryLight,
+                //       fw: 0,
+                //     ),
+                //   ),
+                const SizedBox(height: 8),
+
+                TextWidget.paraText(
+                  text: strategy.subtitle,
                   theme: theme.isDarkMode,
                   color: theme.isDarkMode
                       ? colors.textSecondaryDark
                       : colors.textSecondaryLight,
                   fw: 0,
                 ),
-              ),
-            const SizedBox(height: 8),
-      
-            TextWidget.paraText(
-              text: strategy.subtitle,
-              theme: theme.isDarkMode,
-              color: theme.isDarkMode
-                  ? colors.textSecondaryDark
-                  : colors.textSecondaryLight,
-              fw: 0,
+                const SizedBox(height: 16),
+
+                // Fund allocation chips
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: strategy.funds
+                      .map((fund) => _buildFundChip(fund, theme))
+                      .toList(),
+                ),
+                // const SizedBox(height: 16),
+
+                // // View strategy button
+                // SizedBox(
+                //   width: double.infinity,
+                //   height: 45,
+                //   child: OutlinedButton(
+                //     onPressed: () => _navigateToBacktestWithAllocation(
+                //         strategy.name, strategy.funds),
+                //     style: OutlinedButton.styleFrom(
+                //       side: BorderSide(color: colors.colorBlue),
+                //       shape: RoundedRectangleBorder(
+                //         borderRadius: BorderRadius.circular(5),
+                //       ),
+                //       padding: const EdgeInsets.symmetric(vertical: 12),
+                //       backgroundColor:
+                //           theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
+                //     ),
+                //     child: Row(
+                //       mainAxisAlignment: MainAxisAlignment.center,
+                //       children: [
+                //         TextWidget.subText(
+                //           text: 'View Strategy Backtest',
+                //           theme: theme.isDarkMode,
+                //           color: colors.colorWhite,
+                //           fw: 2,
+                //         ),
+                //       ],
+                //     ),
+                //   ),
+                // ),
+              ],
             ),
-            const SizedBox(height: 16),
-      
-            // Fund allocation chips
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: strategy.funds
-                  .map((fund) => _buildFundChip(fund, theme))
-                  .toList(),
-            ),
-            // const SizedBox(height: 16),
-      
-            // // View strategy button
-            // SizedBox(
-            //   width: double.infinity,
-            //   height: 45,
-            //   child: OutlinedButton(
-            //     onPressed: () => _navigateToBacktestWithAllocation(
-            //         strategy.name, strategy.funds),
-            //     style: OutlinedButton.styleFrom(
-            //       side: BorderSide(color: colors.colorBlue),
-            //       shape: RoundedRectangleBorder(
-            //         borderRadius: BorderRadius.circular(5),
-            //       ),
-            //       padding: const EdgeInsets.symmetric(vertical: 12),
-            //       backgroundColor:
-            //           theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
-            //     ),
-            //     child: Row(
-            //       mainAxisAlignment: MainAxisAlignment.center,
-            //       children: [
-            //         TextWidget.subText(
-            //           text: 'View Strategy Backtest',
-            //           theme: theme.isDarkMode,
-            //           color: colors.colorWhite,
-            //           fw: 2,
-            //         ),
-            //       ],
-            //     ),
-            //   ),
-            // ),
-          ],
-        ),
           ),
         ),
       ),
@@ -550,29 +563,23 @@ class _StrategyDashboardScreenState
 
   void _navigateToStrategyCreation() {
     ref.read(dashboardProvider).clearStrategy();
+    ref.read(dashboardProvider).shocustomButton(false);
     Navigator.pushNamed(context, Routes.createBasketStrategy);
   }
 
-  void _navigateToBacktestWithAllocation(
+
+  // New method to navigate to backtest with preloaded strategy data
+  void _navigateToBacktestWithPreloadedStrategy(
       String strategyName, List<StrategyFund> funds) async {
     try {
       // Clear any existing strategy data
       ref.read(dashboardProvider).clearStrategy();
-
-      // Show loading indicator
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => const Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
-
-      // Fetch real fund data for each category
+      ref.read(dashboardProvider).shocustomButton(true);
+      // Fetch real fund data for each category and perform backtest
       final List<Map<String, dynamic>> realFundAllocations = [];
+      final List<FundListModel> preloadedFunds = [];
 
       for (final fund in funds) {
-        // Get real fund data for this category
         final realFundData = await ref
             .read(dashboardProvider)
             .getRealFundDataForCategory(fund.name);
@@ -586,6 +593,19 @@ class _StrategyDashboardScreenState
             'isin': realFund['isin'],
             'amcCode': realFund['amcCode'],
           });
+
+          // Create FundListModel with real fund data for preloading
+          preloadedFunds.add(FundListModel(
+            name: realFund['name'],
+            type: realFund['schemeType'],
+            fiveYearCAGR: realFund['fiveYearCAGR']?.toDouble() ?? 0.0,
+            threeYearCAGR: realFund['threeYearCAGR']?.toDouble() ?? 0.0,
+            aum: realFund['aum']?.toDouble() ?? 0.0,
+            sharpe: realFund['sharpe']?.toDouble() ?? 0.0,
+            percentage: fund.percentage,
+            isin: realFund['isin'] ?? '',
+            aMCCode: realFund['amcCode'] ?? '',
+          ));
         } else {
           // Fallback to original data if real data fetch fails
           realFundAllocations.add({
@@ -593,11 +613,27 @@ class _StrategyDashboardScreenState
             'percentage': fund.percentage,
             'schemeType': _getSchemeType(fund.name),
           });
+
+          // Create fallback FundListModel
+          preloadedFunds.add(FundListModel(
+            name: fund.name,
+            type: _getSchemeType(fund.name),
+            fiveYearCAGR: 0.0,
+            threeYearCAGR: 0.0,
+            aum: 0.0,
+            sharpe: 0.0,
+            percentage: fund.percentage,
+            isin: '',
+            aMCCode: '',
+          ));
         }
       }
 
-      // Close loading dialog
-      Navigator.of(context).pop();
+      // Preload strategy data with real fund data
+      ref.read(dashboardProvider).preloadStrategyData(
+        strategyName: strategyName,
+        funds: preloadedFunds,
+      );
 
       // Perform backtest with real fund data
       await ref.read(dashboardProvider).performBacktestWithAllocation(
@@ -611,20 +647,10 @@ class _StrategyDashboardScreenState
       // Navigate directly to backtest analysis
       Navigator.pushNamed(context, Routes.basketBacktestAnalysis);
     } catch (e) {
-      // Close loading dialog if it's open
-      if (Navigator.of(context).canPop()) {
-        Navigator.of(context).pop();
-      }
-
-      // Show error message to user
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to load backtest data: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      print('Error navigating to backtest: $e');
     }
   }
+
 
   String _getSchemeType(String fundName) {
     switch (fundName.toLowerCase()) {
@@ -642,6 +668,7 @@ class _StrategyDashboardScreenState
   }
 
   void _loadStrategyData(Data strategyData) {
+    ref.read(dashboardProvider).shocustomButton(false);
     ref.read(dashboardProvider).loadStrategy(strategyData);
     Navigator.pushNamed(context, Routes.createBasketStrategy);
   }

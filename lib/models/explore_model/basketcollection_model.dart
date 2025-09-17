@@ -80,6 +80,7 @@ class SchemaValues {
   String? schemeType;
   String? isin;
   String? aMCCode;
+  double? aum;
 
   SchemaValues({this.percentage, this.schemaName, this.schemeType, this.isin});
 
@@ -89,6 +90,7 @@ class SchemaValues {
     schemeType = json['scheme_type'];
     isin = json['isin'];
     aMCCode = json['aMCCode'];
+    aum = json['aum'];
   }
 
   Map<String, dynamic> toJson() {
@@ -98,6 +100,7 @@ class SchemaValues {
     data['scheme_type'] = this.schemeType;
     data['isin'] = this.isin;
     data['aMCCode'] = this.aMCCode;
+    data['aum'] = this.aum;
     return data;
   }
 }

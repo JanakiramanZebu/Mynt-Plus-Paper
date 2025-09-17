@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:mynt_plus/models/explore_model/basket_backtest_analysis_model.dart';
 import 'package:mynt_plus/models/explore_model/basketcollection_model.dart';
 import 'package:mynt_plus/models/mf_model/mutual_fundmodel.dart';
+import 'package:mynt_plus/models/mf_model/sip_mf_list_model.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/sharedWidget/snack_bar.dart';
@@ -751,8 +752,8 @@ Color getSectorAllocationColor(String sector) {
     notifyListeners();
   }
 
-  Future<void> saveStrategy(String strategyName) async {
-    await createStrategy(strategyName);
+  Future<void> saveStrategy(String strategyName, BuildContext context) async {
+    await createStrategy(strategyName, context);
   }
 
   Future<SavedStrategyModel> fetchbasketlist() async {
@@ -771,7 +772,11 @@ Color getSectorAllocationColor(String sector) {
   }
 
   Future<void> updateStrategy(BuildContext context) async {
-    if (_editingStrategy == null || _selectedFunds.isEmpty) return;
+    if (_editingStrategy == null || _selectedFunds.isEmpty ) 
+    {
+      error(context, "Please add funds to the strategy");
+      return;
+    }
 
     try {
       strategyLoader(true);
@@ -793,11 +798,13 @@ Color getSectorAllocationColor(String sector) {
 
       await fetchbasketlist();
       Navigator.pop(context);
+      Navigator.pop(context);
 
       _editingStrategy = null;
       _strategyError = null;
     } catch (e) {
       print("Update Strategy Error: $e");
+      // error(context, "Failed to update strategy. Please try again.");
       // _strategyError = e.toString();
       rethrow;
     } finally {
@@ -806,8 +813,12 @@ Color getSectorAllocationColor(String sector) {
     }
   }
 
-  Future<void> createStrategy(String basketName) async {
-    if (_selectedFunds.isEmpty || basketName.isEmpty) return;
+  Future<void> createStrategy(String basketName, BuildContext context) async {
+    if (_selectedFunds.isEmpty || basketName.isEmpty) 
+    {
+      error(context, "Please add funds to the strategy");
+      return;
+    }
 
     try {
       strategyLoader(true);
@@ -844,6 +855,7 @@ Color getSectorAllocationColor(String sector) {
               'percentage': fund.percentage.round(),
               'isin': fund.isin ?? '',
               'aMCCode': fund.aMCCode ?? '',
+              'aum': fund.aum,
             })
         .toList();
   }
@@ -900,7 +912,7 @@ Color getSectorAllocationColor(String sector) {
           type: schema.schemeType ?? '',
           fiveYearCAGR: 0.0, // Default value since not available in schema
           threeYearCAGR: 0.0, // Default value since not available in schema
-          aum: 0.0, // Default value since not available in schema
+          aum: schema.aum?.toDouble() ?? 0.0, // Default value since not available in schema
           sharpe: 0.0, // Default value since not available in schema
           percentage: schema.percentage?.toDouble() ?? 0.0,
           isin: schema.isin ?? '',
@@ -1079,6 +1091,26 @@ Color getSectorAllocationColor(String sector) {
     notifyListeners();
   }
 
+  bool _showcustomButton = false;
+  bool get showcustomButton => _showcustomButton;
+  void shocustomButton(bool value) {
+    _showcustomButton = value;
+    notifyListeners();
+  }
+
+  // Method to preload strategy data for editing
+  void preloadStrategyData({
+    required String strategyName,
+    required List<FundListModel> funds,
+  }) {
+    _strategyNameController.text = strategyName;
+    _selectedFunds.clear();
+    _selectedFunds.addAll(funds);
+    _selectedDuration = '5Y'; // Default duration for predefined strategies
+    _initializeControllers();
+    notifyListeners();
+  }
+
   // Filter and Search Methods
   void updateSelectedFilter(String filter) {
     _selectedFilter = filter;
@@ -1180,6 +1212,13 @@ Color getSectorAllocationColor(String sector) {
     if (_selectedInvestmentType != 'One-time') return true;
     
     return false;
+  }
+
+  bool _stratergysavebackbutton = false;
+  bool get stratergysavebackbutton => _stratergysavebackbutton;
+  void stratergySavebackbutton(bool value) {
+    _stratergysavebackbutton = value;
+    notifyListeners();
   }
 
   // Change detection methods
@@ -1457,7 +1496,9 @@ Color getSectorAllocationColor(String sector) {
         .map((map) => SchemeValue(
               schemaName: map['schema_name'] ?? '',
               percentage: map['percentage'] ?? 0,
-              schemeType: map['scheme_type'] ?? '',
+              schemeType: map['scheme_type'].toUpperCase() ?? '',
+              isin: map['isin'] ?? '',
+              aMCCode: map['aMCCode'] ?? '',
             ))
         .toList();
 
@@ -1499,16 +1540,16 @@ Color getSectorAllocationColor(String sector) {
       String searchTerm = '';
       switch (category.toLowerCase()) {
         case 'equity':
-          searchTerm = 'HDFC Equity';
+          searchTerm = 'Parag Parikh Flexi Cap Fund';
           break;
         case 'debt':
-          searchTerm = 'HDFC Money Market';
+          searchTerm = 'HDFC Money Market Fund';
           break;
         case 'hybrid':
-          searchTerm = 'HDFC Balanced Advantage';
+          searchTerm = 'HDFC Balanced Advantage Fund';
           break;
         case 'commodities':
-          searchTerm = 'Gold';
+          searchTerm = 'Nippon India ETF Gold BeES';
           break;
         default:
           searchTerm = 'HDFC';
@@ -1525,6 +1566,10 @@ Color getSectorAllocationColor(String sector) {
           'schemeType': fund.schemeType ?? 'EQUITY',
           'isin': fund.iSIN ?? '',
           'amcCode': fund.aMCCode ?? '',
+          'fiveYearCAGR': 0.0, // Not available in MutualFundList
+          'threeYearCAGR': 0.0, // Not available in MutualFundList
+          'aum': double.tryParse(fund.aUM ?? '0') ?? 0.0,
+          'sharpe': 0.0, // Not available in MutualFundList
         }];
       }
       
@@ -1535,6 +1580,10 @@ Color getSectorAllocationColor(String sector) {
         'schemeType': category.toUpperCase(),
         'isin': '',
         'amcCode': '',
+        'fiveYearCAGR': 0.0,
+        'threeYearCAGR': 0.0,
+        'aum': 0.0,
+        'sharpe': 0.0,
       }];
     } catch (e) {
       print("Error fetching real fund data for $category: $e");
@@ -1545,6 +1594,10 @@ Color getSectorAllocationColor(String sector) {
         'schemeType': category.toUpperCase(),
         'isin': '',
         'amcCode': '',
+        'fiveYearCAGR': 0.0,
+        'threeYearCAGR': 0.0,
+        'aum': 0.0,
+        'sharpe': 0.0,
       }];
     }
   }
@@ -1566,6 +1619,8 @@ Color getSectorAllocationColor(String sector) {
         schemaName: fund['name'] as String,
         percentage: (fund['percentage'] as double).round(),
         schemeType: fund['schemeType'] as String,
+        isin: fund['isin'] as String,
+        aMCCode: fund['amcCode'] ?? ''
       )).toList();
 
       // Create backtest request

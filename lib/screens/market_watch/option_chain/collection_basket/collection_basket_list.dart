@@ -480,10 +480,10 @@ class _FundSelectionScreenState extends ConsumerState<FundSelectionScreen> {
                     onTap: () {
                       if (isSelected) {
                         ref.read(dashboardProvider).removeFundFromStrategy(fund);
-                        successMessage(context, 'Fund removed from strategy');
+                        // successMessage(context, 'Fund removed from strategy');
                       } else {
                         ref.read(dashboardProvider).addFundToStrategy(fund);
-                        successMessage(context, 'Fund added to strategy');
+                        // successMessage(context, 'Fund added to strategy');
                       }
                     },
                     child: Padding(

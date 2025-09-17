@@ -7,6 +7,7 @@ import 'package:mynt_plus/provider/dashboard_provider.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/res/global_state_text.dart';
 import 'package:mynt_plus/res/res.dart';
+import 'package:mynt_plus/routes/route_names.dart';
 import 'package:mynt_plus/screens/market_watch/option_chain/collection_basket/basket_backtest_analysisi.dart';
 import 'package:mynt_plus/screens/market_watch/option_chain/collection_basket/collection_basket_list.dart';
 import 'package:mynt_plus/sharedWidget/splash_loader.dart';
@@ -44,6 +45,7 @@ class _StrategyBuilderScreenState extends ConsumerState<StrategyBuilderScreen> {
           // Check if there are unsaved changes
           if (strategy.hasStrategyChanged) {
             await _showUnsavedChangesDialog();
+            strategy.stratergySavebackbutton(true);
           } else {
             Navigator.of(context).pop();
           }
@@ -406,8 +408,10 @@ class _StrategyBuilderScreenState extends ConsumerState<StrategyBuilderScreen> {
                               height: 45,
                               child: ElevatedButton(
                                 onPressed: strategy.isStrategyValid
-                                    ? () => _showInvestmentDetailsBottomSheet(
-                                        context)
+                                    ? () {
+                                        strategy.stratergySavebackbutton(false);
+                                       _showInvestmentDetailsBottomSheet(
+                                        context);}
                                     : null,
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: colors.colorBlue,
@@ -769,10 +773,6 @@ class _StrategyBuilderScreenState extends ConsumerState<StrategyBuilderScreen> {
     );
   }
 
-  void _updateStrategy(BuildContext context) {
-    ref.read(dashboardProvider).updateStrategy(context);
-    // _showUpdateSuccessDialog();
-  }
 
   void _handleBackNavigation() async {
     final strategy = ref.read(dashboardProvider);
@@ -780,6 +780,7 @@ class _StrategyBuilderScreenState extends ConsumerState<StrategyBuilderScreen> {
     // Check if there are unsaved changes
     if (strategy.hasStrategyChanged) {
       await _showUnsavedChangesDialog();
+      strategy.stratergySavebackbutton(true);
     } else {
       Navigator.of(context).pop();
     }
@@ -896,14 +897,12 @@ class _StrategyBuilderScreenState extends ConsumerState<StrategyBuilderScreen> {
                         if (strategy.isEditingMode) {
                           // Update existing strategy
                           await strategy.updateStrategy(context);
-                          Navigator.of(context).pop(); // Close dialog
-                          // Navigator.of(context).pop(); // Go back after saving
+                          // Navigator.of(context).pop();
                         } else {
                           // Close the unsaved changes dialog first
                           Navigator.of(context).pop();
-                          // Save new strategy - show name dialog first
                           _showSaveStrategyDialog(onSaved: () {
-                            Navigator.of(context).pop(); // Go back after saving
+                            Navigator.of(context).pop();
                           });
                         }
                       } catch (e) {}
@@ -944,12 +943,10 @@ class _StrategyBuilderScreenState extends ConsumerState<StrategyBuilderScreen> {
           // Update existing strategy
           await strategy.updateStrategy(context);
         } else {
-          // Save new strategy - show dialog for name input
           _showSaveStrategyDialog();
-          return; // Exit early as dialog will handle the rest
+          return;
         }
       }
-
       // Proceed with backtest
       await _performBacktest(context);
     } catch (e) {
@@ -965,14 +962,9 @@ class _StrategyBuilderScreenState extends ConsumerState<StrategyBuilderScreen> {
       strategy.backtestAnalysis(
           uuid: strategy.editingStrategy?.data?.first.uuid ?? '');
 
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const BasketBacktestAnalysisScreen(),
-        ),
-      );
+      Navigator.pushNamed(context, Routes.basketBacktestAnalysis);
 
-      successMessage(context, 'Backtest functionality will be implemented');
+      // successMessage(context, 'Backtest started successfully');
     } catch (e) {
       error(context, 'Failed to start backtest. Please try again.');
     }
@@ -1108,16 +1100,20 @@ class _StrategyBuilderScreenState extends ConsumerState<StrategyBuilderScreen> {
                       // await _performBacktest(context);
                     } else {
                       await ref.read(dashboardProvider).saveStrategy(
-                          strategy.strategyNameController.text.trim());
-                      Navigator.of(context).pop(); // Close the save dialog
-
-                      if (strategy.isStrategyValid) {
-                        Navigator.of(context).pop();
-                        Navigator.of(context).pop();
-                      } else {
-                        Navigator.of(context).pop();
-                      }
-                      // await _performBacktest(context);
+                          strategy.strategyNameController.text.trim(), context);
+                      Navigator.of(context).pop();
+                      Navigator.of(context).pop();
+                     if(!strategy.stratergysavebackbutton){
+                      Navigator.of(context).pop();
+                      await _performBacktest(context);
+                     }
+                      
+                      // if (strategy.isStrategyValid) {
+                      //   Navigator.of(context).pop();
+                      //   Navigator.of(context).pop();
+                      // } else {
+                      //   Navigator.of(context).pop();
+                      // }
                     }
                     // _showSuccessDialog();
                   } catch (e) {
