@@ -469,7 +469,8 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
           final chartState = ref.read(chartProvider);
           if (chartState.chartArgs != null) {
             ref.read(chartProvider.notifier).showChart(
-              chartState.chartArgs!
+              chartState.chartArgs!,
+              previousRoute: null
               );
           }
         }
@@ -510,7 +511,8 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                               final chartState = ref.read(chartProvider);
                               if (chartState.chartArgs != null) {
                                 ref.read(chartProvider.notifier).showChart(
-                                  chartState.chartArgs!
+                                  chartState.chartArgs!,
+                                  previousRoute: null
                                 );
                               }
                             }

@@ -972,7 +972,7 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
                                         tsym: _exchTsym.tsym ?? "",
                                         token: _exchTsym.token ?? "",
                                       );
-                                      ref.read(chartProvider.notifier).showChart(chartArgs, previousRoute: Routes.holdingDetail);
+                                      ref.read(chartProvider.notifier).showChart(chartArgs, previousRoute: null);
                                   },
                                   splashColor: theme.isDarkMode
                                       ? Colors.white.withOpacity(0.15)

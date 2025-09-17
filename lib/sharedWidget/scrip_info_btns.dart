@@ -170,13 +170,6 @@ class ScripInfoBtns extends ConsumerWidget {
             expDate: marketwatch.getQuotes!.expDate ?? '',
             option: marketwatch.getQuotes!.option ?? ''
           );
-        } else if (currentRoute == Routes.positionGroupDetail ||
-                   currentRoute == Routes.positionDetail ||
-                   currentRoute == Routes.holdingDetail) {
-          // For portfolio screens, we want to return to the same screen
-          // but we don't need special args since they don't expect DepthInputArgs
-          previousRoute = currentRoute;
-          originalArgs = null; // Portfolio screens don't use DepthInputArgs
         }
         
         ref.read(chartProvider.notifier).showChart(chartArgs, previousRoute: previousRoute, originalArgs: originalArgs);

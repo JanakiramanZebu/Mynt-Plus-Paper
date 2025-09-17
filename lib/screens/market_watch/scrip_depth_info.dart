@@ -1477,9 +1477,9 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                         // Check if we should return to option chain based on currentRouteName
                                                                         String? previousRoute;
                                                                         dynamic originalArgs;
-                                                                        
-                                                                        if (currentRouteName == Routes.optionChain) {
-                                                                          // previousRoute = Routes.optionChain;
+
+                                                                        if (widget.isfromOptionChain??false) {
+                                                                          previousRoute = Routes.optionChain;
                                                                           // Store the original DepthInputArgs to return to the same option chain state
                                                                           originalArgs = widget.wlValue;
                                                                         }
@@ -1558,7 +1558,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                         .exch,
                                                                     widget
                                                                         .wlValue
-                                                                        .token) && !widget.isfromOptionChain!)
+                                                                        .token) && !(widget.isfromOptionChain??false))
                                                               Expanded(
                                                                 child: Center(
                                                                   child:

@@ -128,7 +128,7 @@ class _AddScripState extends ConsumerState<SearchScreen>
               if (chartState.chartArgs != null) {
                 ref.read(chartProvider.notifier).showChart(
                   chartState.chartArgs!,
-                  previousRoute: Routes.searchScrip
+                  previousRoute: null
                 );
               }
             }
@@ -167,7 +167,7 @@ class _AddScripState extends ConsumerState<SearchScreen>
                             if (chartState.chartArgs != null) {
                               ref.read(chartProvider.notifier).showChart(
                                 chartState.chartArgs!,
-                                previousRoute: Routes.searchScrip
+                                 previousRoute: null,
                               );
                             }
                           }

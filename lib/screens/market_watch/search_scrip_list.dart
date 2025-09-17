@@ -102,8 +102,8 @@ print(!searchScrip.exarr.contains('"${scrip.exch}"'));
                     // Set search as the previous route for chart navigation
                     ref.read(chartProvider.notifier).showChart(
                       chartArgs, 
-                      previousRoute: Routes.searchScrip
-                    );
+                      previousRoute: null
+                      );
                     
                     currentRouteName = 'Chart';
                     await searchScrip.searchClear();

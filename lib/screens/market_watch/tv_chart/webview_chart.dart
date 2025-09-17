@@ -428,35 +428,8 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
                   splashColor: Colors.grey.withOpacity(0.4),
                   highlightColor: Colors.grey.withOpacity(0.2),
                   onTap: () {
-                    final chartState = ref.read(chartProvider);
-                    final prevRoute = chartState.previousRoute;
-                    final originalArgs = chartState.originalArgs;
+                    // Simply hide the chart - let PopScope in ChartOverlayWidget handle navigation
                     ref.read(chartProvider.notifier).hideChart();
-                    
-                    // Handle navigation after hiding chart
-                    if (prevRoute != null && prevRoute.isNotEmpty) {
-                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                        if (mounted) {
-                          if (prevRoute == Routes.optionChain && originalArgs != null) {
-                            // Use the stored original DepthInputArgs to navigate back to option chain
-                            rootNavigatorKey.currentState?.pushNamedAndRemoveUntil(
-                              Routes.optionChain, 
-                              (route) => route.settings.name == Routes.homeScreen || route.isFirst,
-                              arguments: originalArgs
-                            );
-                          } else if (prevRoute == Routes.positionDetail ||
-                                     prevRoute == Routes.holdingDetail) {
-                            // For portfolio screens, navigate back without special arguments
-                            rootNavigatorKey.currentState?.pushNamedAndRemoveUntil(
-                              prevRoute, 
-                              (route) => route.settings.name == Routes.homeScreen || route.isFirst
-                            );
-                          } else {
-                            rootNavigatorKey.currentState?.pushReplacementNamed(prevRoute);
-                          }
-                        }
-                      });
-                    }
                   },
                   child: Container(
                     width: 44,

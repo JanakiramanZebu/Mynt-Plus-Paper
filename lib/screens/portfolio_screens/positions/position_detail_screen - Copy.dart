@@ -920,7 +920,7 @@ class _PositionDetailScreenState extends ConsumerState<PositionDetailScreen> {
                                                       tsym: widget.positionList.tsym ?? "",
                                                       token: widget.positionList.token ?? "",
                                                     );
-                                                    ref.read(chartProvider.notifier).showChart(chartArgs);
+                                                    ref.read(chartProvider.notifier).showChart(chartArgs,previousRoute: null);
                                                   },
                                                   child: TextWidget.subText(
                                                     text: "Chart",
