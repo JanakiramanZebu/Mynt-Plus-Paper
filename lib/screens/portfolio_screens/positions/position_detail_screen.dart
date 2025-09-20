@@ -622,6 +622,8 @@ class _PositionDetailScreenState extends ConsumerState<PositionDetailScreen> {
                                           CrossAxisAlignment.start,
                                       children: [
                                         const SizedBox(height: 10),
+
+                                        if(widget.positionList.qty != "0")...[
                                         Row(
                                           mainAxisAlignment:
                                               MainAxisAlignment.center,
@@ -683,7 +685,7 @@ class _PositionDetailScreenState extends ConsumerState<PositionDetailScreen> {
                                             ),
                                           ],
                                         ),
-
+                                        ],
                                         const SizedBox(height: 25),
                                         // const SizedBox(height: 10),
                                         // TextWidget.titleText(

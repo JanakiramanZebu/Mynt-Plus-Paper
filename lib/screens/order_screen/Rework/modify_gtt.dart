@@ -50,8 +50,8 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
   String price = "0.00";
   String validityType = "GTT";
   OrderScreenArgs? headerData;
-  bool _GTTPriceTypeIsMarket = false;
-  bool _GTTOCOPriceTypeIsMarket = false;
+  // bool _GTTPriceTypeIsMarket = false;
+  // bool _GTTOCOPriceTypeIsMarket = false;
 
   @override
   void initState() {
@@ -594,10 +594,10 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                     theme.isDarkMode ? colors.highlightDark : colors.highlightLight,
                                                           onTap: () {
                                                             setState(() {
-                                                              _GTTPriceTypeIsMarket =
-                                                                  !_GTTPriceTypeIsMarket;
+                                                              orderInput.setGTTPriceTypeIsMarket(
+                                                                  !orderInput.GTTPriceTypeIsMarket);
                                                               orderInput.chngGTTPriceType(
-                                                                  _GTTPriceTypeIsMarket
+                                                                  orderInput.GTTPriceTypeIsMarket
                                                                       ? "Market"
                                                                       : "Limit");
                                                               if (orderInput
@@ -1153,13 +1153,17 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                       headerTitleText(
                                                           "Price", theme),
                                                       const SizedBox(width: 4),
-                                                      Text(
+                                                      TextWidget.subText(
+                                                      text:
                                                           "${orderInput.actOcoPrcType}",
-                                                          style: textStyle(
-                                                              const Color(
-                                                                  0xff777777),
-                                                              14,
-                                                              FontWeight.w600))
+                                                      theme: theme.isDarkMode,
+                                                      color: theme.isDarkMode
+                                                          ? colors
+                                                              .textPrimaryDark
+                                                          : colors
+                                                              .textPrimaryLight,
+                                                      fw: 1,
+                                                    ),
                                                     ]),
                                                 const SizedBox(height: 8),
                                                 SizedBox(
@@ -1219,10 +1223,10 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                         suffixIcon: InkWell(
                                                           onTap: () {
                                                             setState(() {
-                                                              _GTTOCOPriceTypeIsMarket =
-                                                                  !_GTTOCOPriceTypeIsMarket;
+                                                              orderInput.setGTTOCOPriceTypeIsMarket(
+                                                                  !orderInput.GTTOCOPriceTypeIsMarket);
                                                               orderInput.chngOCOPriceType(
-                                                                  _GTTOCOPriceTypeIsMarket
+                                                                  orderInput.GTTOCOPriceTypeIsMarket
                                                                       ? "Market"
                                                                       : "Limit");
                                                               if (orderInput
@@ -1243,10 +1247,13 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                               }
                                                             });
                                                           },
-                                                          child: SvgPicture.asset(
-                                                              assets.switchIcon,
-                                                              fit: BoxFit
-                                                                  .scaleDown),
+                                                          child: Padding(
+                                                            padding: const EdgeInsets.all(12.0),
+                                                            child: SvgPicture.asset(
+                                                                assets.switchIcon,
+                                                                fit: BoxFit
+                                                                    .contain),
+                                                          ),
                                                         ),
                                                         textCtrl: orderInput
                                                             .ocoPriceCtrl,
@@ -1483,10 +1490,10 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                         warningMessage(
                                                             context,
                                                             val1 <= ltp
-                                                                ? "Target Trigger Price can not be Less than LTP"
+                                                                ? "Target Trigger Price cannot be Less than LTP"
                                                                 : val2 >= ltp
-                                                                    ? "Stoploss Trigger Price can not be Greater than LTP"
-                                                                    : "Trigger Price can not be equal to LTP");
+                                                                    ? "Stoploss Trigger Price cannot be Greater than LTP"
+                                                                    : "Trigger Price cannot be equal to LTP");
                                                       }
                                                       // }
                                                     } else {
@@ -1624,7 +1631,7 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
         qty: orderInput.qtyCtrl.text,
         tsym: '${widget.gttOrderBook.tsym}',
         validity: "GTT",
-        prc: orderInput.priceCtrl.text,
+        prc: orderInput.actPrcType == "Market" || orderInput.actPrcType == "SL MKT" ? "0.00" : orderInput.priceCtrl.text,
         prd: orderInput.orderType,
         trantype: isBuy! ? 'B' : "S",
         ret: 'DAY',
@@ -1653,13 +1660,13 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                 orderInput.actOcoPrcType == "SL MKT"
             ? orderInput.trgPrcCtrl.text
             : "",
-        prc1: orderInput.priceCtrl.text,
+        prc1: orderInput.actPrcType == "Market" || orderInput.actPrcType == "SL MKT" ? "0.00" : orderInput.priceCtrl.text,
         prd1: orderInput.orderType,
         d1: orderInput.val1Ctrl.text,
         prctyp1: orderInput.prcType,
         d2: orderInput.val2Ctrl.text,
         prctyp2: orderInput.ocoPrcType,
-        prc2: orderInput.ocoPriceCtrl.text,
+        prc2: orderInput.actOcoPrcType == "Market" || orderInput.actOcoPrcType == "SL MKT" ? "0.00" : orderInput.ocoPriceCtrl.text,
         prd2: orderInput.ocoOrderType,
         qty2: orderInput.ocoQtyCtrl.text,
         trgprc2: orderInput.actOcoPrcType == "SL Limit" ||

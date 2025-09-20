@@ -116,6 +116,8 @@ class Assets {
   final String calendar = "assets/icon/calendar.svg";
   final String timeAlaram = "assets/icon/time-alarm.svg";
   final String breakup = "assets/icon/breakup.svg";
+  final String pdfIcon = "assets/profile/pdf_icon.svg";
+  final String excelIcon = "assets/profile/excel_icon.svg";
 
   final String themeIcon = "assets/icon/theme_icon.svg";
 
@@ -210,6 +212,7 @@ class Assets {
   final String ledger = "assets/icon/dashboard/ledger.svg";
   final String margincal = "assets/icon/dashboard/margin_cal.svg";
   final String brokercal = "assets/icon/dashboard/broker-cal.svg";
+  final String pledgeandunpledge = "assets/icon/dashboard/pledge&unpledge.svg";
 
   // Bonds
   final String govtBond = "assets/icon/bonds/gov_bonds.svg";

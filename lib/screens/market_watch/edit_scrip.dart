@@ -204,9 +204,14 @@ class _EditScripState extends ConsumerState<EditScrip> {
                                     index: i,
                                     child: Material(
                                       color: Colors.transparent,
-                                      child: InkWell(
-                                        onTap: () {}, // Prevent tap from interfering with drag
-                                        borderRadius: BorderRadius.circular(8),
+                                      child: TextButton(
+                                        onPressed: () {}, // Prevent tap from interfering with drag
+                                        style: TextButton.styleFrom(
+                                          padding: EdgeInsets.zero,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                        ),
                                         child: Container(
                                           padding: const EdgeInsets.all(12), // Increased padding for larger touch area
                                           margin: const EdgeInsets.symmetric(vertical: 4), // Add vertical margin

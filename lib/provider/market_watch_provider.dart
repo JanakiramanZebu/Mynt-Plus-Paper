@@ -2835,7 +2835,11 @@ class MarketWatchProvider extends DefaultChangeNotifier {
           // Load data for the new active watchlist
           await changeWLScrip(newActiveWatchlist, context);
         // }
+        if(_marketWatchlist!.values!.length < 1){
         successMessage(context, "Watchlist deleted successfully");
+        }else{
+          error(context, "Failed to delete watchlist");
+        }
         // Update UI to reflect changes
         notifyListeners();
       }else{
@@ -2967,6 +2971,11 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         } catch (e) {
           print("Error handling session expiration: $e");
         }
+      }
+      else if (_addDeleteScripModel!.emsg ==
+          "Invalid Input : At least one stock must remain in the Market Watch.") {
+            // _delScripQty = 1;
+        error(context, "At least one stock must remain in the Market Watch.");
       }
       return false;
     } catch (e) {
@@ -3710,7 +3719,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       _scrips[index]['isSelected'] = true;
       _delScripQty = _delScripQty + 1;
     }
-
+    print("delScripQty: $_delScripQty");
     notifyListeners();
   }
 
@@ -3726,7 +3735,10 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     if (_scrips.isEmpty) {
       Navigator.pop(context);
     }
+    if((_addDeleteScripModel!.emsg !=
+          "Invalid Input : At least one stock must remain in the Market Watch.")){
     _delScripQty = 0;
+    }
     notifyListeners();
   }
 

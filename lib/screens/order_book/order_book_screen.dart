@@ -30,7 +30,7 @@ class _OrderBookScreenState extends ConsumerState<OrderBookScreen>
     with TickerProviderStateMixin {
   @override
   void initState() {
-    setState(() {
+    super.initState();
       ref.read(orderProvider).tabCtrl = TabController(
           length: ref.read(orderProvider).orderTabName.length,
           vsync: this,
@@ -41,13 +41,11 @@ class _OrderBookScreenState extends ConsumerState<OrderBookScreen>
             .read(orderProvider)
             .changeTabIndex(ref.read(orderProvider).tabCtrl.index, context);
       });
-    });
 
     FirebaseAnalytics.instance.logScreenView(
       screenName: 'Place order screen',
       screenClass: 'Order_screen',
     );
-    super.initState();
   }
 
   @override
