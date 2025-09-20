@@ -130,10 +130,12 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
   bool _isCoverOrderEnabled = true;
   bool _isBracketOrderEnabled = false;
   bool _isMTFEnabled = false;
-  bool _GTTPriceTypeIsMarket = false;
-  bool _GTTOCOPriceTypeIsMarket = false;
+  // bool _GTTPriceTypeIsMarket = false;
+  // bool _GTTOCOPriceTypeIsMarket = false;
   
   bool _hasValidCircuitBreakerValues = false;
+
+  bool isvalidqty = false;
 
   @override
   void initState() {
@@ -511,7 +513,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                         margin: const EdgeInsets.only(right: 10),
                         child: Column(children: [
                           Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
-                            TextWidget.subText(
+                            TextWidget.titleText(
                               text: "${widget.scripInfo.symbol!.replaceAll("-EQ", "")} ",
                               theme: theme.isDarkMode,
                               color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
@@ -531,7 +533,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                             //     overflow: TextOverflow.ellipsis,
                             //     maxLines: 1),
                             if (widget.scripInfo.expDate!.isNotEmpty)
-                              TextWidget.subText(
+                              TextWidget.titleText(
                                 text: " ${widget.scripInfo.expDate} ",
                                 theme: theme.isDarkMode,
                                 color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
@@ -548,7 +550,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                             //         14,
                             //         FontWeight.w400)),
                             if (widget.scripInfo.option!.isNotEmpty)
-                              TextWidget.subText(
+                              TextWidget.titleText(
                                 text: widget.scripInfo.option!,
                                 theme: theme.isDarkMode,
                                 color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
@@ -569,7 +571,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                             // CustomExchBadge(
                             //     exch: " ${widget.scripInfo.exch}"),
 
-                            TextWidget.subText(
+                            TextWidget.titleText(
                               fw: 0,
                               text: " ${widget.scripInfo.exch}",
                               textOverflow: TextOverflow.ellipsis,
@@ -1064,42 +1066,47 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                 const SizedBox(height: 8),
                                 SizedBox(
                                     height: 45,
-                                    child: CustomTextFormField(
-                                        fillColor: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
-                                        onChanged: (value) {
-                                          double inputPrice = double.tryParse(value) ?? 0;
-
-                                          if (value.isNotEmpty && inputPrice > 0) {
-                                            final regex = RegExp(r'^(\d+)?(\.\d{0,2})?$');
-                                            if (!regex.hasMatch(value)) {
-                                              orderInput.val1Ctrl.text = value.substring(0, value.length - 1);
-                                              orderInput.val1Ctrl.selection =
-                                                  TextSelection.collapsed(offset: orderInput.val1Ctrl.text.length);
+                                    child: Semantics(
+                                      identifier: 'trigger_price_input',
+                                      child: CustomTextFormField(
+                                          inputFormate: [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}$'))],
+                                          fillColor: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
+                                          onChanged: (value) {
+                                            double inputPrice = double.tryParse(value) ?? 0;
+                                      
+                                            if (value.isNotEmpty && inputPrice > 0) {
+                                              final regex = RegExp(r'^(\d+)?(\.\d{0,2})?$');
+                                              if (!regex.hasMatch(value)) {
+                                                orderInput.val1Ctrl.text = value.substring(0, value.length - 1);
+                                                orderInput.val1Ctrl.selection =
+                                                    TextSelection.collapsed(offset: orderInput.val1Ctrl.text.length);
+                                              }
                                             }
-                                          }
-                                          ScaffoldMessenger.of(context).removeCurrentSnackBar();
-                                          if (value.isEmpty || inputPrice <= 0) {
-                                            warningMessage(context,
-                                                "Trigger Price can not be ${inputPrice <= 0 ? 'zero' : 'empty'}");
-                                          }
-                                        },
-                                        hintText: "${widget.orderArg.ltp}",
-                                        hintStyle: TextWidget.textStyle(
-                                          fontSize: 14,
-                                          theme: theme.isDarkMode,
-                                          color:
-                                             (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
-                                          fw: 0,
-                                        ),
-                                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                                        style: TextWidget.textStyle(
-                                          fontSize: 16,
-                                          color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                                          theme: theme.isDarkMode,
-                                          fw: 0,
-                                        ),
-                                        textCtrl: orderInput.val1Ctrl,
-                                        textAlign: TextAlign.start)),
+                                            ScaffoldMessenger.of(context).removeCurrentSnackBar();
+                                            if (value.isEmpty) {
+                                           warningMessage(context, "Target Trigger Price cannot be empty");
+                                    } else if (inputPrice <= 0) {
+                                           warningMessage(context,"Target Trigger Price cannot be 0");
+                                          } 
+                                          },
+                                          hintText: "${widget.orderArg.ltp}",
+                                          hintStyle: TextWidget.textStyle(
+                                            fontSize: 14,
+                                            theme: theme.isDarkMode,
+                                            color:
+                                               (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                                            fw: 0,
+                                          ),
+                                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                          style: TextWidget.textStyle(
+                                            fontSize: 16,
+                                            color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                                            theme: theme.isDarkMode,
+                                            fw: 0,
+                                          ),
+                                          textCtrl: orderInput.val1Ctrl,
+                                          textAlign: TextAlign.start),
+                                    )),
                               ]),
                             ),
 
@@ -1275,7 +1282,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                               ScaffoldMessenger.of(context).removeCurrentSnackBar();
                                               if (value.isEmpty || value == "0") {
                                                 warningMessage(
-                                                    context, "Quantity can not be ${value == "0" ? 'zero' : 'empty'}");
+                                                    context, "Quantity cannot be ${value == "0" ? '0' : 'empty'}");
                                               } else {
                                                 String newValue = value.replaceAll(RegExp(r'[^0-9]'), '');
 
@@ -1321,6 +1328,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                     SizedBox(
                                         height: 45,
                                         child: CustomTextFormField(
+                                            inputFormate: [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}$'))],
                                             fillColor: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
                                             onChanged: (value) {
                                               double inputPrice = double.tryParse(value) ?? 0;
@@ -1334,9 +1342,10 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                 }
                                               }
                                               ScaffoldMessenger.of(context).removeCurrentSnackBar();
-                                              if (value.isEmpty || inputPrice <= 0) {
-                                                warningMessage(
-                                                    context, "Price can not be ${inputPrice <= 0 ? 'zero' : 'empty'}");
+                                              if (value.isEmpty) {
+                                                warningMessage(context, "Price cannot be empty");
+                                              } else if (inputPrice <= 0) {
+                                                warningMessage(context, "Price cannot be 0");
                                               } else {
                                                 setState(() {
                                                   ordPrice = value;
@@ -1382,9 +1391,10 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                     theme.isDarkMode ? colors.highlightDark : colors.highlightLight,
                                                 onTap: () {
                                                   setState(() {
-                                                    _GTTPriceTypeIsMarket = !_GTTPriceTypeIsMarket;
+                                                    orderInput.setGTTPriceTypeOrderIsMarket(
+                                                        !orderInput.GTTPriceTypeOrderIsMarket);
                                                     orderInput
-                                                        .chngGTTPriceType(_GTTPriceTypeIsMarket ? "Market" : "Limit");
+                                                        .chngGTTPriceType(orderInput.GTTPriceTypeOrderIsMarket ? "Market" : "Limit");
                                                     if (orderInput.actPrcType == "Market" ||
                                                         orderInput.actPrcType == "SL MKT") {
                                                       orderInput.priceCtrl.text = "Market";
@@ -1504,7 +1514,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                         onTap: () {
                                           if (isBuy! && widget.scripInfo.seg == "EQT") {
                                             ScaffoldMessenger.of(context).removeCurrentSnackBar();
-                                            warningMessage(context, "OCO Order can not be placed for Buy order");
+                                            warningMessage(context, "OCO Order cannot be placed for Buy order");
                                             return;
                                           }
 
@@ -1607,42 +1617,47 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                   const SizedBox(height: 8),
                                   SizedBox(
                                       height: 45,
-                                      child: CustomTextFormField(
-                                          fillColor: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
-                                          onChanged: (value) {
-                                            double inputPrice = double.tryParse(value) ?? 0;
-
-                                            if (value.isNotEmpty && inputPrice > 0) {
-                                              final regex = RegExp(r'^(\d+)?(\.\d{0,2})?$');
-                                              if (!regex.hasMatch(value)) {
-                                                orderInput.val2Ctrl.text = value.substring(0, value.length - 1);
-                                                orderInput.val2Ctrl.selection =
-                                                    TextSelection.collapsed(offset: orderInput.val2Ctrl.text.length);
+                                      child: Semantics(
+                                        identifier: 'stoploss_trigger_price',
+                                        child: CustomTextFormField(
+                                          inputFormate: [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}$'))],
+                                            fillColor: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
+                                            onChanged: (value) {
+                                              double inputPrice = double.tryParse(value) ?? 0;
+                                        
+                                              if (value.isNotEmpty && inputPrice > 0) {
+                                                final regex = RegExp(r'^(\d+)?(\.\d{0,2})?$');
+                                                if (!regex.hasMatch(value)) {
+                                                  orderInput.val2Ctrl.text = value.substring(0, value.length - 1);
+                                                  orderInput.val2Ctrl.selection =
+                                                      TextSelection.collapsed(offset: orderInput.val2Ctrl.text.length);
+                                                }
                                               }
-                                            }
-                                            ScaffoldMessenger.of(context).removeCurrentSnackBar();
-                                            if (value.isEmpty || inputPrice <= 0) {
-                                              warningMessage(context,
-                                                  "Trigger Price can not be ${inputPrice <= 0 ? 'zero' : 'empty'}");
-                                            }
-                                          },
-                                          hintText: "${widget.orderArg.ltp}",
-                                          hintStyle: TextWidget.textStyle(
-                                            fontSize: 14,
-                                            theme: theme.isDarkMode,
-                                            color:
-                                                (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
-                                            fw: 0,
-                                          ),
-                                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                                          style: TextWidget.textStyle(
-                                            fontSize: 16,
-                                            color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                                            theme: theme.isDarkMode,
-                                            fw: 0,
-                                          ),
-                                          textCtrl: orderInput.val2Ctrl,
-                                          textAlign: TextAlign.start)),
+                                              ScaffoldMessenger.of(context).removeCurrentSnackBar();
+                                              if (value.isEmpty) {
+                                           warningMessage(context, "Stoploss Trigger Price cannot be empty");
+                                    } else if (inputPrice <= 0) {
+                                           warningMessage(context,"Stoploss Trigger Price cannot be 0");
+                                          } 
+                                            },
+                                            hintText: "${widget.orderArg.ltp}",
+                                            hintStyle: TextWidget.textStyle(
+                                              fontSize: 14,
+                                              theme: theme.isDarkMode,
+                                              color:
+                                                  (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                                              fw: 0,
+                                            ),
+                                            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                            style: TextWidget.textStyle(
+                                              fontSize: 16,
+                                              color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                                              theme: theme.isDarkMode,
+                                              fw: 0,
+                                            ),
+                                            textCtrl: orderInput.val2Ctrl,
+                                            textAlign: TextAlign.start),
+                                      )),
                                 ]),
                               ),
 
@@ -1656,177 +1671,180 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                       const SizedBox(height: 8),
                                       SizedBox(
                                           height: 45,
-                                          child: CustomTextFormField(
-                                              fillColor: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
-                                              hintText: "0", //orderInput.ocoQtyCtrl.text,
-                                              hintStyle: TextWidget.textStyle(
-                                                fontSize: 14,
-                                                theme: theme.isDarkMode,
-                                                color:(theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
-                                                fw: 0,
-                                              ),
-                                              inputFormate: [FilteringTextInputFormatter.digitsOnly],
-                                              keyboardType: TextInputType.number,
-                                              style: TextWidget.textStyle(
-                                                fontSize: 16,
-                                                color:
-                                                    theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                                                theme: theme.isDarkMode,
-                                                fw: 0,
-                                              ),
-                                              // prefixIcon: InkWell(
-                                              //   onTap: () {
-                                              //     setState(() {
-                                              //       String input =
-                                              //           orderInput
-                                              //               .ocoQtyCtrl
-                                              //               .text;
-                                              //       int currentQty =
-                                              //           int.tryParse(
-                                              //                   input) ??
-                                              //               0;
-                                              //       int adjustedQty =
-                                              //           ((currentQty /
-                                              //                       multiplayer)
-                                              //                   .floor()) *
-                                              //               multiplayer;
-
-                                              //       if (currentQty !=
-                                              //           adjustedQty) {
-                                              //         orderInput
-                                              //                 .ocoQtyCtrl
-                                              //                 .text =
-                                              //             adjustedQty
-                                              //                 .toString();
-                                              //       } else if (input
-                                              //               .isNotEmpty &&
-                                              //           currentQty >
-                                              //               multiplayer) {
-                                              //         orderInput
-                                              //             .ocoQtyCtrl
-                                              //             .text = (currentQty -
-                                              //                 multiplayer)
-                                              //             .toString();
-                                              //       } else {
-                                              //         orderInput
-                                              //                 .ocoQtyCtrl
-                                              //                 .text =
-                                              //             multiplayer
-                                              //                 .toString();
-                                              //       }
-                                              //     });
-                                              //   },
-                                              //   child: SvgPicture.asset(
-                                              //       theme.isDarkMode
-                                              //           ? assets
-                                              //               .darkCMinus
-                                              //           : assets
-                                              //               .minusIcon,
-                                              //       fit: BoxFit
-                                              //           .scaleDown),
-                                              // ),
-
-                                              // suffixIcon: InkWell(
-                                              //       onTap: () {},
-                                              //       child: SvgPicture.asset(
-                                              //           assets.switchIcon,
-                                              //           fit: BoxFit.scaleDown),
-                                              //     ),
-
-                                              // suffixIcon: InkWell(
-                                              //   onTap: () {
-                                              //     setState(() {
-                                              //       String input =
-                                              //           orderInput
-                                              //               .ocoQtyCtrl
-                                              //               .text;
-                                              //       int currentQty =
-                                              //           int.tryParse(
-                                              //                   input) ??
-                                              //               0;
-                                              //       int adjustedQty =
-                                              //           ((currentQty /
-                                              //                       multiplayer)
-                                              //                   .round()) *
-                                              //               multiplayer;
-
-                                              //       if (currentQty !=
-                                              //           adjustedQty) {
-                                              //         orderInput
-                                              //                 .ocoQtyCtrl
-                                              //                 .text =
-                                              //             adjustedQty
-                                              //                 .toString();
-                                              //       } else if (input
-                                              //               .isNotEmpty &&
-                                              //           currentQty <
-                                              //               ((frezQtyOrderSliceMaxLimit *
-                                              //                           frezQty) ==
-                                              //                       frezQtyOrderSliceMaxLimit
-                                              //                   ? 999999
-                                              //                   : frezQtyOrderSliceMaxLimit *
-                                              //                       frezQty)) {
-                                              //         orderInput
-                                              //             .ocoQtyCtrl
-                                              //             .text = (int.parse(orderInput
-                                              //                     .ocoQtyCtrl
-                                              //                     .text) +
-                                              //                 multiplayer)
-                                              //             .toString();
-                                              //       } else {
-                                              //         ScaffoldMessenger
-                                              //                 .of(context)
-                                              //             .removeCurrentSnackBar();
-                                              //         ScaffoldMessenger
-                                              //                 .of(
-                                              //                     context)
-                                              //             .showSnackBar(
-                                              //                 warningMessage(
-                                              //                     context,
-                                              //                     "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit * frezQty}"));
-                                              //         // orderInput
-                                              //         //     .ocoQtyCtrl
-                                              //         //     .text = "$multiplayer";
-                                              //       }
-                                              //     });
-                                              //   },
-                                              //   child: SvgPicture.asset(
-                                              //       theme.isDarkMode
-                                              //           ? assets.darkAdd
-                                              //           : assets
-                                              //               .addIcon,
-                                              //       fit: BoxFit
-                                              //           .scaleDown),
-                                              // ),
-                                              textCtrl: orderInput.ocoQtyCtrl,
-                                              textAlign: TextAlign.start,
-                                              onChanged: (value) {
-                                                ScaffoldMessenger.of(context).removeCurrentSnackBar();
-                                                if (value.isEmpty || value == "0") {
-                                                  warningMessage(context,
-                                                      "Quantity can not be ${value == "0" ? 'zero' : 'empty'}");
-                                                } else {
-                                                  String newValue = value.replaceAll(RegExp(r'[^0-9]'), '');
-
-                                                  int number = int.tryParse(newValue) ?? 0;
-                                                  if (number >
-                                                      (frezQty == lotSize
-                                                          ? 999999
-                                                          : frezQtyOrderSliceMaxLimit * frezQty)) {
-                                                    orderInput.qtyCtrl.text = orderInput.qtyCtrl.text;
-                                                    ScaffoldMessenger.of(context).removeCurrentSnackBar();
+                                          child: Semantics(
+                                            identifier: 'oco_qty_input',
+                                            child: CustomTextFormField(
+                                                fillColor: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
+                                                hintText: "0", //orderInput.ocoQtyCtrl.text,
+                                                hintStyle: TextWidget.textStyle(
+                                                  fontSize: 14,
+                                                  theme: theme.isDarkMode,
+                                                  color:(theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                                                  fw: 0,
+                                                ),
+                                                inputFormate: [FilteringTextInputFormatter.digitsOnly],
+                                                keyboardType: TextInputType.number,
+                                                style: TextWidget.textStyle(
+                                                  fontSize: 16,
+                                                  color:
+                                                      theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                                                  theme: theme.isDarkMode,
+                                                  fw: 0,
+                                                ),
+                                                // prefixIcon: InkWell(
+                                                //   onTap: () {
+                                                //     setState(() {
+                                                //       String input =
+                                                //           orderInput
+                                                //               .ocoQtyCtrl
+                                                //               .text;
+                                                //       int currentQty =
+                                                //           int.tryParse(
+                                                //                   input) ??
+                                                //               0;
+                                                //       int adjustedQty =
+                                                //           ((currentQty /
+                                                //                       multiplayer)
+                                                //                   .floor()) *
+                                                //               multiplayer;
+                                            
+                                                //       if (currentQty !=
+                                                //           adjustedQty) {
+                                                //         orderInput
+                                                //                 .ocoQtyCtrl
+                                                //                 .text =
+                                                //             adjustedQty
+                                                //                 .toString();
+                                                //       } else if (input
+                                                //               .isNotEmpty &&
+                                                //           currentQty >
+                                                //               multiplayer) {
+                                                //         orderInput
+                                                //             .ocoQtyCtrl
+                                                //             .text = (currentQty -
+                                                //                 multiplayer)
+                                                //             .toString();
+                                                //       } else {
+                                                //         orderInput
+                                                //                 .ocoQtyCtrl
+                                                //                 .text =
+                                                //             multiplayer
+                                                //                 .toString();
+                                                //       }
+                                                //     });
+                                                //   },
+                                                //   child: SvgPicture.asset(
+                                                //       theme.isDarkMode
+                                                //           ? assets
+                                                //               .darkCMinus
+                                                //           : assets
+                                                //               .minusIcon,
+                                                //       fit: BoxFit
+                                                //           .scaleDown),
+                                                // ),
+                                            
+                                                // suffixIcon: InkWell(
+                                                //       onTap: () {},
+                                                //       child: SvgPicture.asset(
+                                                //           assets.switchIcon,
+                                                //           fit: BoxFit.scaleDown),
+                                                //     ),
+                                            
+                                                // suffixIcon: InkWell(
+                                                //   onTap: () {
+                                                //     setState(() {
+                                                //       String input =
+                                                //           orderInput
+                                                //               .ocoQtyCtrl
+                                                //               .text;
+                                                //       int currentQty =
+                                                //           int.tryParse(
+                                                //                   input) ??
+                                                //               0;
+                                                //       int adjustedQty =
+                                                //           ((currentQty /
+                                                //                       multiplayer)
+                                                //                   .round()) *
+                                                //               multiplayer;
+                                            
+                                                //       if (currentQty !=
+                                                //           adjustedQty) {
+                                                //         orderInput
+                                                //                 .ocoQtyCtrl
+                                                //                 .text =
+                                                //             adjustedQty
+                                                //                 .toString();
+                                                //       } else if (input
+                                                //               .isNotEmpty &&
+                                                //           currentQty <
+                                                //               ((frezQtyOrderSliceMaxLimit *
+                                                //                           frezQty) ==
+                                                //                       frezQtyOrderSliceMaxLimit
+                                                //                   ? 999999
+                                                //                   : frezQtyOrderSliceMaxLimit *
+                                                //                       frezQty)) {
+                                                //         orderInput
+                                                //             .ocoQtyCtrl
+                                                //             .text = (int.parse(orderInput
+                                                //                     .ocoQtyCtrl
+                                                //                     .text) +
+                                                //                 multiplayer)
+                                                //             .toString();
+                                                //       } else {
+                                                //         ScaffoldMessenger
+                                                //                 .of(context)
+                                                //             .removeCurrentSnackBar();
+                                                //         ScaffoldMessenger
+                                                //                 .of(
+                                                //                     context)
+                                                //             .showSnackBar(
+                                                //                 warningMessage(
+                                                //                     context,
+                                                //                     "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit * frezQty}"));
+                                                //         // orderInput
+                                                //         //     .ocoQtyCtrl
+                                                //         //     .text = "$multiplayer";
+                                                //       }
+                                                //     });
+                                                //   },
+                                                //   child: SvgPicture.asset(
+                                                //       theme.isDarkMode
+                                                //           ? assets.darkAdd
+                                                //           : assets
+                                                //               .addIcon,
+                                                //       fit: BoxFit
+                                                //           .scaleDown),
+                                                // ),
+                                                textCtrl: orderInput.ocoQtyCtrl,
+                                                textAlign: TextAlign.start,
+                                                onChanged: (value) {
+                                                  ScaffoldMessenger.of(context).removeCurrentSnackBar();
+                                                  if (value.isEmpty || value == "0") {
                                                     warningMessage(context,
-                                                        "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit * frezQty}");
+                                                        "OCO Quantity cannot be ${value == "0" ? '0' : 'empty'}");
+                                                  } else {
+                                                    String newValue = value.replaceAll(RegExp(r'[^0-9]'), '');
+                                            
+                                                    int number = int.tryParse(newValue) ?? 0;
+                                                    if (number >
+                                                        (frezQty == lotSize
+                                                            ? 999999
+                                                            : frezQtyOrderSliceMaxLimit * frezQty)) {
+                                                      orderInput.qtyCtrl.text = orderInput.qtyCtrl.text;
+                                                      ScaffoldMessenger.of(context).removeCurrentSnackBar();
+                                                      warningMessage(context,
+                                                          "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit * frezQty}");
+                                                    }
+                                            
+                                                    if (newValue != value) {
+                                                      orderInput.ocoQtyCtrl.text = newValue;
+                                                      orderInput.ocoQtyCtrl.selection = TextSelection.fromPosition(
+                                                        TextPosition(offset: newValue.length),
+                                                      );
+                                                    }
                                                   }
-
-                                                  if (newValue != value) {
-                                                    orderInput.ocoQtyCtrl.text = newValue;
-                                                    orderInput.ocoQtyCtrl.selection = TextSelection.fromPosition(
-                                                      TextPosition(offset: newValue.length),
-                                                    );
-                                                  }
-                                                }
-                                              }))
+                                                }),
+                                          ))
                                     ])),
                                     const SizedBox(width: 16),
                                     Expanded(
@@ -1849,71 +1867,79 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                       const SizedBox(height: 8),
                                       SizedBox(
                                           height: 44,
-                                          child: CustomTextFormField(
-                                              fillColor: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
-                                              onChanged: (value) {
-                                                double inputPrice = double.tryParse(value) ?? 0;
-                                                if (value.isNotEmpty && inputPrice > 0) {
-                                                  final regex = RegExp(r'^(\d+)?(\.\d{0,2})?$');
-                                                  if (!regex.hasMatch(value)) {
-                                                    orderInput.ocoPriceCtrl.text = value.substring(0, value.length - 1);
-                                                    orderInput.ocoPriceCtrl.selection = TextSelection.collapsed(
-                                                      offset: orderInput.ocoPriceCtrl.text.length,
-                                                    );
-                                                  }
-                                                }
-                                                if (value.isEmpty || inputPrice <= 0) {
-                                                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                                                  warningMessage(context,
-                                                      "Price can not be ${inputPrice <= 0 ? 'zero' : 'empty'}");
-                                                }
-                                              },
-                                              hintText: "${widget.orderArg.ltp}",
-                                              hintStyle: TextWidget.textStyle(
-                                                fontSize: 14,
-                                                theme: theme.isDarkMode,
-                                                color:(theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
-                                                fw: 0,
-                                              ),
-                                              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                                              style: TextWidget.textStyle(
-                                                fontSize: 16,
-                                                color:
-                                                    theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                                                theme: theme.isDarkMode,
-                                                fw: 0,
-                                              ),
-                                              isReadable: orderInput.actOcoPrcType == "Limit" ||
-                                                      orderInput.actOcoPrcType == "SL Limit"
-                                                  ? false
-                                                  : true,
-                                              // prefixIcon: Container(
-                                              //     margin: const EdgeInsets.all(
-                                              //         12),
-                                              //     decoration: BoxDecoration(
-                                              //         borderRadius:
-                                              //             BorderRadius.circular(20),
-                                              //         color: theme.isDarkMode ? const Color(0xff555555) : colors.colorWhite),
-                                              //     child: SvgPicture.asset(color: theme.isDarkMode ? colors.colorWhite : colors.colorGrey, orderInput.actOcoPrcType == "Limit" || orderInput.actOcoPrcType == "SL Limit" ? assets.ruppeIcon : assets.lock, fit: BoxFit.scaleDown)),
-
-                                              suffixIcon: InkWell(
-                                                onTap: () {
-                                                  setState(() {
-                                                    _GTTOCOPriceTypeIsMarket = !_GTTOCOPriceTypeIsMarket;
-                                                    orderInput.chngOCOPriceType(
-                                                        _GTTOCOPriceTypeIsMarket ? "Market" : "Limit");
-                                                    if (orderInput.actOcoPrcType == "Market" ||
-                                                        orderInput.actOcoPrcType == "SL MKT") {
-                                                      orderInput.ocoPriceCtrl.text = "Market";
-                                                    } else {
-                                                      orderInput.ocoPriceCtrl.text = "${widget.orderArg.ltp}";
+                                          child: Semantics(
+                                            identifier: 'oco_price_input',
+                                            child: CustomTextFormField(
+                                                inputFormate: [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}$'))],
+                                                fillColor: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
+                                                onChanged: (value) {
+                                                  double inputPrice = double.tryParse(value) ?? 0;
+                                                  if (value.isNotEmpty && inputPrice > 0) {
+                                                    final regex = RegExp(r'^(\d+)?(\.\d{0,2})?$');
+                                                    if (!regex.hasMatch(value)) {
+                                                      orderInput.ocoPriceCtrl.text = value.substring(0, value.length - 1);
+                                                      orderInput.ocoPriceCtrl.selection = TextSelection.collapsed(
+                                                        offset: orderInput.ocoPriceCtrl.text.length,
+                                                      );
                                                     }
-                                                  });
+                                                  }
+                                                  if (value.isEmpty || inputPrice <= 0) {
+                                                    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                                                    warningMessage(context,
+                                                        "OCO Price cannot be ${inputPrice <= 0 ? '0' : 'empty'}");
+                                                  }
                                                 },
-                                                child: SvgPicture.asset(assets.switchIcon, fit: BoxFit.scaleDown),
-                                              ),
-                                              textCtrl: orderInput.ocoPriceCtrl,
-                                              textAlign: TextAlign.start))
+                                                hintText: "${widget.orderArg.ltp}",
+                                                hintStyle: TextWidget.textStyle(
+                                                  fontSize: 14,
+                                                  theme: theme.isDarkMode,
+                                                  color:(theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                                                  fw: 0,
+                                                ),
+                                                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                                style: TextWidget.textStyle(
+                                                  fontSize: 16,
+                                                  color:
+                                                      theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                                                  theme: theme.isDarkMode,
+                                                  fw: 0,
+                                                ),
+                                                isReadable: orderInput.actOcoPrcType == "Limit" ||
+                                                        orderInput.actOcoPrcType == "SL Limit"
+                                                    ? false
+                                                    : true,
+                                                // prefixIcon: Container(
+                                                //     margin: const EdgeInsets.all(
+                                                //         12),
+                                                //     decoration: BoxDecoration(
+                                                //         borderRadius:
+                                                //             BorderRadius.circular(20),
+                                                //         color: theme.isDarkMode ? const Color(0xff555555) : colors.colorWhite),
+                                                //     child: SvgPicture.asset(color: theme.isDarkMode ? colors.colorWhite : colors.colorGrey, orderInput.actOcoPrcType == "Limit" || orderInput.actOcoPrcType == "SL Limit" ? assets.ruppeIcon : assets.lock, fit: BoxFit.scaleDown)),
+                                            
+                                                suffixIcon: InkWell(
+                                                  onTap: () {
+                                                    setState(() {
+                                                      orderInput.setGTTOCOPriceTypeOrderIsMarket(
+                                                          !orderInput.GTTOCOPriceTypeOrderIsMarket);
+                                                      orderInput.chngOCOPriceType(
+                                                          orderInput.GTTOCOPriceTypeOrderIsMarket ? "Market" : "Limit");
+                                                      if (orderInput.actOcoPrcType == "Market" ||
+                                                          orderInput.actOcoPrcType == "SL MKT") {
+                                                        orderInput.ocoPriceCtrl.text = "Market";
+                                                      } else {
+                                                        orderInput.ocoPriceCtrl.text = "${widget.orderArg.ltp}";
+                                                      }
+                                                    });
+                                                  },
+                                                  child: Padding(
+                                                    padding: const EdgeInsets.all(12.0),
+                                                    child: SvgPicture.asset(assets.switchIcon, fit: BoxFit.contain),
+                                                  ),
+                                                ),
+                                                textCtrl: orderInput.ocoPriceCtrl,
+                                                textAlign: TextAlign.start),
+                                          ))
                                     ]))
                                   ])),
 
@@ -1980,7 +2006,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                               //                             .showSnackBar(
                               //                                 warningMessage(
                               //                                     context,
-                              //                                     "Trigger can not be empty"));
+                              //                                     "Trigger cannot be empty"));
                               //                       }
                               //                     },
                               //                     keyboardType:
@@ -2509,6 +2535,14 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                 crossAxisAlignment: CrossAxisAlignment.end,
                                                 children: [
                                                   headerTitleText(_isQtyToAmount ? "Amount" : "Qty", theme),
+                                                  if(isvalidqty)...[
+                                                  TextWidget.titleText(
+                                                    text: " *",
+                                                    theme: theme.isDarkMode,
+                                                    color: theme.isDarkMode ? colors.lossDark : colors.lossLight,
+                                                    fw: 2,
+                                                  ),
+                                                  ],
                                                   // Text(
                                                   // "Lot: ${widget.scripInfo.ls} ${widget.scripInfo.prcunt ?? ''}  ",
                                                   // style: textStyle(
@@ -2521,175 +2555,187 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                             const SizedBox(height: 8),
                                             SizedBox(
                                               height: 45,
-                                              child: CustomTextFormField(
-                                                fillColor: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
-                                                hintText: "0", //qtyCtrl.text,
-                                                hintStyle: TextWidget.textStyle(
-                                                  fontSize: 14,
-                                                  theme: theme.isDarkMode,
-                                                  color:(theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
-                                                  fw: 0,
-                                                ),
-                                                inputFormate: [FilteringTextInputFormatter.digitsOnly],
-                                                keyboardType: TextInputType.number,
-                                                style: TextWidget.textStyle(
-                                                  fontSize: 16,
-                                                  color: theme.isDarkMode
-                                                      ? colors.textPrimaryDark
-                                                      : colors.textPrimaryLight,
-                                                  theme: theme.isDarkMode,
-                                                  fw: 0,
-                                                ),
-                                                prefixIcon: widget.scripInfo.exch == "NSE" || widget.scripInfo.exch == "BSE" ?  null
-                                                : Material(
-                                                  color: Colors.transparent,
-                                                  shape: const CircleBorder(),
-                                                  child:
-                                                    InkWell(
-                                                    customBorder: const CircleBorder(),
-                                                      splashColor: theme.isDarkMode
-                                                          ? colors.splashColorDark
-                                                          : colors.splashColorLight,
-                                                      highlightColor: theme.isDarkMode
-                                                          ? colors.highlightDark
-                                                          : colors.highlightLight,
+                                              child: Semantics(
+                                                identifier: 'qty_input',
+                                                child: CustomTextFormField(
+                                                  fillColor: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
+                                                  hintText: "0", //qtyCtrl.text,
+                                                  hintStyle: TextWidget.textStyle(
+                                                    fontSize: 14,
+                                                    theme: theme.isDarkMode,
+                                                    color:(theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                                                    fw: 0,
+                                                  ),
+                                                  inputFormate: [FilteringTextInputFormatter.digitsOnly],
+                                                  keyboardType: TextInputType.number,
+                                                  style: TextWidget.textStyle(
+                                                    fontSize: 16,
+                                                    color: theme.isDarkMode
+                                                        ? colors.textPrimaryDark
+                                                        : colors.textPrimaryLight,
+                                                    theme: theme.isDarkMode,
+                                                    fw: 0,
+                                                  ),
+                                                  prefixIcon: widget.scripInfo.exch == "NSE" || widget.scripInfo.exch == "BSE" ?  null
+                                                  : Material(
+                                                    color: Colors.transparent,
+                                                    shape: const CircleBorder(),
+                                                    child:
+                                                      InkWell(
+                                                      customBorder: const CircleBorder(),
+                                                        splashColor: theme.isDarkMode
+                                                            ? colors.splashColorDark
+                                                            : colors.splashColorLight,
+                                                        highlightColor: theme.isDarkMode
+                                                            ? colors.highlightDark
+                                                            : colors.highlightLight,
+                                                      onTap: () {
+                                                      setState(() {
+                                                
+                                                        String input =qtyCtrl.text;
+                                                        int currentQty =
+                                                            int.tryParse(input) ?? 0;
+                                                        int adjustedQty =
+                                                            ((currentQty / multiplayer).floor()) * multiplayer;
+                                                        if (currentQty != adjustedQty) {
+                                                          qtyCtrl.text = adjustedQty.toString();
+                                                
+                                                        } else if (input .isNotEmpty && currentQty > multiplayer) {
+                                                          qtyCtrl .text = (currentQty -  multiplayer).toString();
+                                                
+                                                        } else {
+                                                          qtyCtrl.text ="$multiplayer";
+                                                        }
+                                                          marginUpdate();
+                                                      });
+                                                      },
+                                                      child: SvgPicture.asset(
+                                                              theme.isDarkMode
+                                                                  ? assets.darkCMinus
+                                                                  : assets.minusIcon,
+                                                              fit: BoxFit.scaleDown,
+                                                      ),
+                                                  )),
+                                                
+                                                  suffixIcon:
+                                                      widget.scripInfo.exch == "NSE" || widget.scripInfo.exch == "BSE"
+                                                          ? Material(
+                                                              color: Colors.transparent,
+                                                              shape: const CircleBorder(),
+                                                              child: InkWell(
+                                                                customBorder: const CircleBorder(),
+                                                                splashColor: theme.isDarkMode
+                                                                    ? colors.splashColorDark
+                                                                    : colors.splashColorLight,
+                                                                highlightColor: theme.isDarkMode
+                                                                    ? colors.highlightDark
+                                                                    : colors.highlightLight,
+                                                                onTap: () {
+                                                                  setState(() {
+                                                                    _isQtyToAmount = !_isQtyToAmount;
+                                                                    if(_isQtyToAmount){
+                                                                      qtyCtrl.text = ((double.tryParse(widget.orderArg.ltp ?? "0.00") ?? 0).ceil()).toString();
+                                                                    }else{
+                                                                      qtyCtrl.text = "1";
+                                                                    }
+                                                                    marginUpdate();
+                                                                  });
+                                                                },
+                                                                child: Padding(
+                                                                  padding: const EdgeInsets.all(12.0),
+                                                                  child: SvgPicture.asset(
+                                                                    assets.switchIcon,
+                                                                    fit: BoxFit.contain,
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            )
+                                                          : 
+                                                          // null,
+                                                
+                                                  // suffixIcon:
+                                                  Material(
+                                                    color: Colors.transparent,
+                                                    shape: const CircleBorder(),
+                                                    child:InkWell(
+                                                            customBorder: const CircleBorder(),
+                                                            splashColor: theme.isDarkMode
+                                                                ? colors.splashColorDark
+                                                                : colors.splashColorLight,
+                                                            highlightColor: theme.isDarkMode
+                                                                ? colors.highlightDark
+                                                                : colors.highlightLight,
                                                     onTap: () {
                                                     setState(() {
-
-                                                      String input =qtyCtrl.text;
-                                                      int currentQty =
-                                                          int.tryParse(input) ?? 0;
-                                                      int adjustedQty =
-                                                          ((currentQty / multiplayer).floor()) * multiplayer;
+                                                          String input =qtyCtrl.text;
+                                                          int currentQty = int.tryParse(input) ?? 0;
+                                                          int adjustedQty = ((currentQty / multiplayer).round()) * multiplayer;
+                                                
                                                       if (currentQty != adjustedQty) {
-                                                        qtyCtrl.text = adjustedQty.toString();
-
-                                                      } else if (input .isNotEmpty && currentQty > multiplayer) {
-                                                        qtyCtrl .text = (currentQty -  multiplayer).toString();
-
+                                                          qtyCtrl.text = adjustedQty.toString();
+                                                
+                                                      } else if (input .isNotEmpty && currentQty <
+                                                            ((frezQtyOrderSliceMaxLimit*frezQty)==frezQtyOrderSliceMaxLimit?999999:frezQtyOrderSliceMaxLimit*frezQty)) {
+                                                            qtyCtrl.text = (currentQty + multiplayer).toString();
                                                       } else {
-                                                        qtyCtrl.text ="$multiplayer";
+                                                          ScaffoldMessenger.of(context).removeCurrentSnackBar();
+                                                          warningMessage(context,"Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit*frezQty}");
+                                                        // qtyCtrl.text =
+                                                        //     "$multiplayer";
                                                       }
                                                         marginUpdate();
                                                     });
                                                     },
                                                     child: SvgPicture.asset(
-                                                            theme.isDarkMode
-                                                                ? assets.darkCMinus
-                                                                : assets.minusIcon,
-                                                            fit: BoxFit.scaleDown,
-                                                    ),
-                                                )),
-
-                                                suffixIcon:
-                                                    widget.scripInfo.exch == "NSE" || widget.scripInfo.exch == "BSE"
-                                                        ? Material(
-                                                            color: Colors.transparent,
-                                                            shape: const CircleBorder(),
-                                                            child: InkWell(
-                                                              customBorder: const CircleBorder(),
-                                                              splashColor: theme.isDarkMode
-                                                                  ? colors.splashColorDark
-                                                                  : colors.splashColorLight,
-                                                              highlightColor: theme.isDarkMode
-                                                                  ? colors.highlightDark
-                                                                  : colors.highlightLight,
-                                                              onTap: () {
-                                                                setState(() {
-                                                                  _isQtyToAmount = !_isQtyToAmount;
-                                                                  marginUpdate();
-                                                                });
-                                                              },
-                                                              child: Padding(
-                                                                padding: const EdgeInsets.all(12.0),
-                                                                child: SvgPicture.asset(
-                                                                  assets.switchIcon,
-                                                                  fit: BoxFit.contain,
-                                                                ),
-                                                              ),
-                                                            ),
-                                                          )
-                                                        : 
-                                                        // null,
-
-                                                // suffixIcon:
-                                                Material(
-                                                  color: Colors.transparent,
-                                                  shape: const CircleBorder(),
-                                                  child:InkWell(
-                                                          customBorder: const CircleBorder(),
-                                                          splashColor: theme.isDarkMode
-                                                              ? colors.splashColorDark
-                                                              : colors.splashColorLight,
-                                                          highlightColor: theme.isDarkMode
-                                                              ? colors.highlightDark
-                                                              : colors.highlightLight,
-                                                  onTap: () {
-                                                  setState(() {
-                                                        String input =qtyCtrl.text;
-                                                        int currentQty = int.tryParse(input) ?? 0;
-                                                        int adjustedQty = ((currentQty / multiplayer).round()) * multiplayer;
-
-                                                    if (currentQty != adjustedQty) {
-                                                        qtyCtrl.text = adjustedQty.toString();
-
-                                                    } else if (input .isNotEmpty && currentQty <
-                                                          ((frezQtyOrderSliceMaxLimit*frezQty)==frezQtyOrderSliceMaxLimit?999999:frezQtyOrderSliceMaxLimit*frezQty)) {
-                                                          qtyCtrl.text = (currentQty + multiplayer).toString();
+                                                        theme.isDarkMode 
+                                                            ? assets.darkAdd
+                                                            : assets.addIcon,
+                                                        fit: BoxFit.scaleDown),
+                                                          )),
+                                                
+                                                  textCtrl: qtyCtrl,
+                                                  textAlign: widget.scripInfo.exch == "NSE" || widget.scripInfo.exch == "BSE" ? TextAlign.start : TextAlign.center,
+                                                  onChanged: (value) {
+                                                    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                                                    if (value.isEmpty || value == "0") {
+                                                     
+                                                      warningMessage(context,
+                                                          "${_isQtyToAmount ? 'Amount' : 'Quantity'} cannot be ${value == "0" ? '0' : 'empty'}");
                                                     } else {
+                                                      String newValue = value.replaceAll(RegExp(r'[^0-9]'), '');
+                                                      double ltp = double.tryParse(widget.orderArg.ltp ?? "0.0") ?? 0.0;
+                                                      var number = !_isQtyToAmount
+                                                          ? int.tryParse(newValue) ?? 0
+                                                          : ((double.tryParse(newValue) ?? 0.0) ~/ ltp);
+                                                
+                                                      if (_isQtyToAmount && number < 1) {
+                                                       
                                                         ScaffoldMessenger.of(context).removeCurrentSnackBar();
-                                                        warningMessage(context,"Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit*frezQty}");
-                                                      // qtyCtrl.text =
-                                                      //     "$multiplayer";
-                                                    }
+                                                        warningMessage(context,
+                                                            "Minimum Allowed Amount should be greater than $ltp");
+                                                      } else if (number >
+                                                          (frezQty == lotSize
+                                                              ? 999999
+                                                              : frezQtyOrderSliceMaxLimit * frezQty)) {
+                                                       
+                                                        qtyCtrl.text = qtyCtrl.text;
+                                                
+                                                        ScaffoldMessenger.of(context).removeCurrentSnackBar();
+                                                        warningMessage(context,
+                                                            "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit * frezQty}");
+                                                      }
+                                                
+                                                      if (newValue != value) {
+                                                        qtyCtrl.text = newValue;
+                                                        qtyCtrl.selection = TextSelection.fromPosition(
+                                                          TextPosition(offset: newValue.length),
+                                                        );
+                                                      }
                                                       marginUpdate();
-                                                  });
+                                                      
+                                                    }
                                                   },
-                                                  child: SvgPicture.asset(
-                                                      theme.isDarkMode 
-                                                          ? assets.darkAdd
-                                                          : assets.addIcon,
-                                                      fit: BoxFit.scaleDown),
-                                                        )),
-
-                                                textCtrl: qtyCtrl,
-                                                textAlign: widget.scripInfo.exch == "NSE" || widget.scripInfo.exch == "BSE" ? TextAlign.start : TextAlign.center,
-                                                onChanged: (value) {
-                                                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                                                  if (value.isEmpty || value == "0") {
-                                                    warningMessage(context,
-                                                        "${_isQtyToAmount ? 'Amount' : 'Quantity'} can not be ${value == "0" ? 'zero' : 'empty'}");
-                                                  } else {
-                                                    String newValue = value.replaceAll(RegExp(r'[^0-9]'), '');
-                                                    double ltp = double.tryParse(widget.orderArg.ltp ?? "0.0") ?? 0.0;
-                                                    var number = !_isQtyToAmount
-                                                        ? int.tryParse(newValue) ?? 0
-                                                        : ((double.tryParse(newValue) ?? 0.0) ~/ ltp);
-
-                                                    if (_isQtyToAmount && number < 1) {
-                                                      ScaffoldMessenger.of(context).removeCurrentSnackBar();
-                                                      warningMessage(context,
-                                                          "Minimum Allowed Amount should be greater than $ltp");
-                                                    } else if (number >
-                                                        (frezQty == lotSize
-                                                            ? 999999
-                                                            : frezQtyOrderSliceMaxLimit * frezQty)) {
-                                                      qtyCtrl.text = qtyCtrl.text;
-
-                                                      ScaffoldMessenger.of(context).removeCurrentSnackBar();
-                                                      warningMessage(context,
-                                                          "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit * frezQty}");
-                                                    }
-
-                                                    if (newValue != value) {
-                                                      qtyCtrl.text = newValue;
-                                                      qtyCtrl.selection = TextSelection.fromPosition(
-                                                        TextPosition(offset: newValue.length),
-                                                      );
-                                                    }
-                                                    marginUpdate();
-                                                  }
-                                                },
+                                                ),
                                               ),
                                             ),
                                             // if (widget.scripInfo.frzqty != null) ...[
@@ -2746,88 +2792,94 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                             const SizedBox(height: 8),
                                             SizedBox(
                                                 height: 45,
-                                                child: CustomTextFormField(
-                                                    fillColor:
-                                                        theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
-                                                    onChanged: (value) {
-                                                      double inputPrice = double.tryParse(value) ?? 0;
-                                                      if (value.isNotEmpty && inputPrice > 0) {
-                                                        final regex = RegExp(r'^(\d+)?(\.\d{0,2})?$');
-                                                        if (!regex.hasMatch(value)) {
-                                                          priceCtrl.text = value.substring(0, value.length - 1);
-                                                          priceCtrl.selection = TextSelection.collapsed(
-                                                            offset: priceCtrl.text.length,
-                                                          );
+                                                child: Semantics(
+                                                  identifier: 'price_input',
+                                                  child: CustomTextFormField(
+                                                    inputFormate: [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}$'))],
+                                                      fillColor:
+                                                          theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
+                                                      onChanged: (value) {
+                                                        double inputPrice = double.tryParse(value) ?? 0;
+                                                        if (value.isNotEmpty && inputPrice > 0) {
+                                                          final regex = RegExp(r'^(\d+)?(\.\d{0,2})?$');
+                                                          if (!regex.hasMatch(value)) {
+                                                            priceCtrl.text = value.substring(0, value.length - 1);
+                                                            priceCtrl.selection = TextSelection.collapsed(
+                                                              offset: priceCtrl.text.length,
+                                                            );
+                                                          }
                                                         }
-                                                      }
-                                                      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                                                      if (value.isEmpty || inputPrice <= 0) {
-                                                        warningMessage(context,
-                                                            "Price can not be ${inputPrice <= 0 ? 'zero' : 'empty'}");
-                                                      } else {
-                                                        setState(() {
-                                                          ordPrice = value;
-                                                          marginUpdate();
-                                                        });
-                                                      }
-                                                    },
-                                                    hintText: "${widget.orderArg.ltp}",
-                                                    hintStyle: TextWidget.textStyle(
-                                                      fontSize: 14,
-                                                      theme: theme.isDarkMode,
-                                                      color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
-                                                      fw: 0,
-                                                    ),
-                                                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                                                    style: TextWidget.textStyle(
-                                                      fontSize: 16,
-                                                      color: theme.isDarkMode
-                                                          ? colors.textPrimaryDark
-                                                          : colors.textPrimaryLight,
-                                                      theme: theme.isDarkMode,
-                                                      fw: 0,
-                                                    ),
-                                                    isReadable:
-                                                        priceType == "Limit" || priceType == "SL Limit" ? false : true,
-                                                    // prefixIcon: Container(
-                                                    //     margin:
-                                                    //         const EdgeInsets.all(
-                                                    //             12),
-                                                    //     decoration: BoxDecoration(
-                                                    //         borderRadius: BorderRadius.circular(20),
-                                                    //         color: theme.isDarkMode ? const Color(0xff555555) : colors.colorWhite),
-                                                    //     child: SvgPicture.asset(color: theme.isDarkMode ? colors.colorWhite : colors.colorGrey, priceType == "Limit" || priceType == "SL Limit" ? assets.ruppeIcon : assets.lock, fit: BoxFit.scaleDown)),
-                                                    suffixIcon: Material(
-                                                      color: Colors.transparent,
-                                                      shape: const CircleBorder(),
-                                                      child: InkWell(
-                                                        customBorder: const CircleBorder(),
-                                                        splashColor: theme.isDarkMode
-                                                            ? colors.splashColorDark
-                                                            : colors.splashColorLight,
-                                                        highlightColor: theme.isDarkMode
-                                                            ? colors.highlightDark
-                                                            : colors.highlightLight,
-                                                        onTap: () {
+                                                        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                                                        if (value.isEmpty) {
+                                                         warningMessage(context, "Price cannot be empty");
+                                                        } else if (inputPrice <= 0) {
+                                                         warningMessage(context, "Price cannot be 0");
+                                                        } else {
                                                           setState(() {
-                                                            _isMarketOrder = !_isMarketOrder;
-                                                            updatePriceType();
-                                                            orderInput.chngPriceType(
-                                                                priceType, widget.orderArg.exchange);
+                                                            ordPrice = value;
                                                             marginUpdate();
-                                                          });
-                                                        },
-                                                        child: Padding(
-                                                          padding: const EdgeInsets.all(12.0),
-                                                          child: SvgPicture.asset(
-                                                            assets.switchIcon,
-                                                            fit: BoxFit.contain,
+                                                         });
+                                                        }
+
+                                                      },
+                                                      hintText: "${widget.orderArg.ltp}",
+                                                      hintStyle: TextWidget.textStyle(
+                                                        fontSize: 14,
+                                                        theme: theme.isDarkMode,
+                                                        color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                                                        fw: 0,
+                                                      ),
+                                                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                                      style: TextWidget.textStyle(
+                                                        fontSize: 16,
+                                                        color: theme.isDarkMode
+                                                            ? colors.textPrimaryDark
+                                                            : colors.textPrimaryLight,
+                                                        theme: theme.isDarkMode,
+                                                        fw: 0,
+                                                      ),
+                                                      isReadable:
+                                                          priceType == "Limit" || priceType == "SL Limit" ? false : true,
+                                                      // prefixIcon: Container(
+                                                      //     margin:
+                                                      //         const EdgeInsets.all(
+                                                      //             12),
+                                                      //     decoration: BoxDecoration(
+                                                      //         borderRadius: BorderRadius.circular(20),
+                                                      //         color: theme.isDarkMode ? const Color(0xff555555) : colors.colorWhite),
+                                                      //     child: SvgPicture.asset(color: theme.isDarkMode ? colors.colorWhite : colors.colorGrey, priceType == "Limit" || priceType == "SL Limit" ? assets.ruppeIcon : assets.lock, fit: BoxFit.scaleDown)),
+                                                      suffixIcon: Material(
+                                                        color: Colors.transparent,
+                                                        shape: const CircleBorder(),
+                                                        child: InkWell(
+                                                          customBorder: const CircleBorder(),
+                                                          splashColor: theme.isDarkMode
+                                                              ? colors.splashColorDark
+                                                              : colors.splashColorLight,
+                                                          highlightColor: theme.isDarkMode
+                                                              ? colors.highlightDark
+                                                              : colors.highlightLight,
+                                                          onTap: () {
+                                                            setState(() {
+                                                              _isMarketOrder = !_isMarketOrder;
+                                                              updatePriceType();
+                                                              orderInput.chngPriceType(
+                                                                  priceType, widget.orderArg.exchange);
+                                                              marginUpdate();
+                                                            });
+                                                          },
+                                                          child: Padding(
+                                                            padding: const EdgeInsets.all(12.0),
+                                                            child: SvgPicture.asset(
+                                                              assets.switchIcon,
+                                                              fit: BoxFit.contain,
+                                                            ),
                                                           ),
                                                         ),
                                                       ),
-                                                    ),
-                                                    textCtrl: priceCtrl,
-                                                    textAlign: TextAlign.start)),
+                                                      textCtrl: priceCtrl,
+                                                      textAlign: TextAlign.start),
+                                                )),
                                             // const SizedBox(height: 8),
                                             // Text(
                                             //     "Cir Lv : ${widget.scripInfo.lc ?? 0.00} - ${widget.scripInfo.uc ?? 0.00}",
@@ -3756,15 +3808,15 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                           warningMessage(
                                                               context,
                                                               sipqtyctrl.text.isEmpty
-                                                                  ? "Quantity can not be empty"
-                                                                  : "Quantity can not be 0");
+                                                                  ? "Quantity cannot be empty"
+                                                                  : "Quantity cannot be 0");
                                                         } else if (sip.numberofSips.text.isEmpty ||
                                                             sip.numberofSips.text == "0") {
                                                           warningMessage(
                                                               context,
                                                               sip.numberofSips.text.isEmpty
-                                                                  ? "Number of SIP can not be empty"
-                                                                  : "Number of SIP can not be 0");
+                                                                  ? "Number of SIP cannot be empty"
+                                                                  : "Number of SIP cannot be 0");
                                                         } else {
                                                           bool sipQty =
                                                               int.tryParse(sipqtyctrl.text) != null ? true : false;
@@ -3786,7 +3838,22 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                                   orderInput.priceCtrl.text.isNotEmpty &&
                                                                   orderInput.ocoPriceCtrl.text.isNotEmpty &&
                                                                   orderInput.ocoQtyCtrl.text.isNotEmpty) &&
-                                                              orderInput.qtyCtrl.text.isNotEmpty) {
+                                                              orderInput.qtyCtrl.text.isNotEmpty
+                                                              && 
+                                                              double.tryParse(orderInput.val1Ctrl.text) != null &&
+                                                              double.tryParse(orderInput.val1Ctrl.text)! > 0 &&
+                                                              double.tryParse(orderInput.val2Ctrl.text) != null &&
+                                                              double.tryParse(orderInput.val2Ctrl.text)! > 0 &&
+                                                              double.tryParse(orderInput.qtyCtrl.text) != null &&
+                                                              double.tryParse(orderInput.qtyCtrl.text)! > 0 &&
+                                                              double.tryParse(orderInput.ocoQtyCtrl.text) != null &&
+                                                              double.tryParse(orderInput.ocoQtyCtrl.text)! > 0 &&
+                                                              (orderInput.priceCtrl.text == "Market" || 
+                                                              (double.tryParse(orderInput.priceCtrl.text) != null &&
+                                                                double.tryParse(orderInput.priceCtrl.text)! > 0)) &&
+                                                              (orderInput.ocoPriceCtrl.text == "Market" || 
+                                                              (double.tryParse(orderInput.ocoPriceCtrl.text) != null &&
+                                                                double.tryParse(orderInput.ocoPriceCtrl.text)! > 0))) {
                                                             // if (orderInput
                                                             //             .actOcoPrcType == "SL Limit" ||
                                                             //     orderInput
@@ -3799,7 +3866,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                             //             context)
                                                             //         .showSnackBar(warningMessage(
                                                             //             context,
-                                                            //             "Trigger can not be empty"));
+                                                            //             "Trigger cannot be empty"));
                                                             //   } else {
                                                             //     prepareToPlaceOCOOrder(orderInput);
                                                             //   }
@@ -3815,19 +3882,60 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                               warningMessage(
                                                                   context,
                                                                   val1 <= ltp
-                                                                      ? "Target Trigger Price can not be Less than LTP"
+                                                                      ? "Target Trigger Price cannot be Less than LTP"
                                                                       : val2 >= ltp
-                                                                          ? "Stoploss Trigger Price can not be Greater than LTP"
-                                                                          : "Trigger Price can not be equal to LTP");
+                                                                          ? "Stoploss Trigger Price cannot be Greater than LTP"
+                                                                          : "Target Trigger Price cannot be equal to LTP");
                                                             }
                                                             // }
                                                           } else {
-                                                            warningMessage(context, "Enter all Input fields");
+                                                          if(orderInput.val1Ctrl.text.isEmpty){
+                                                           warningMessage(context, "Target Trigger price cannot be empty");
+                                                         }
+                                                         else if(double.parse(orderInput.val1Ctrl.text) <= 0){
+                                                           warningMessage(context, "Target Trigger price cannot be 0");
+                                                         }
+                                                         else if(orderInput.qtyCtrl.text.isEmpty){
+                                                           warningMessage(context, "Quantity cannot be empty");
+                                                         }
+                                                         else if(double.parse(orderInput.qtyCtrl.text) <= 0){
+                                                           warningMessage(context, "Quantity cannot be 0");
+                                                         }
+                                                         else if(orderInput.priceCtrl.text.isEmpty){
+                                                           warningMessage(context, "Price cannot be empty");
+                                                         }
+                                                          else if(double.parse(orderInput.priceCtrl.text) <= 0){
+                                                           warningMessage(context, "Price cannot be 0");
+                                                         }
+                                                         else if(orderInput.val2Ctrl.text.isEmpty){
+                                                           warningMessage(context, "Stoploss Trigger price cannot be empty");
+                                                         }
+                                                         else if(double.parse(orderInput.val2Ctrl.text) <= 0){
+                                                           warningMessage(context, "Stoploss Trigger price cannot be 0");
+                                                         }
+                                                         else if(orderInput.ocoQtyCtrl.text.isEmpty){
+                                                            warningMessage(context, "OCO quantity cannot be empty");
+                                                         }
+                                                         else if(double.parse(orderInput.ocoQtyCtrl.text) <= 0){
+                                                           warningMessage(context, "OCO quantity cannot be 0");
+                                                         }
+                                                         else if(orderInput.ocoPriceCtrl.text.isEmpty){
+                                                           warningMessage(context, "OCO price cannot be empty");
+                                                         }
+                                                         else if(double.parse(orderInput.ocoPriceCtrl.text) <= 0){
+                                                           warningMessage(context, "OCO price cannot be 0");
+                                                         }
+                                                         else {
+                                                           warningMessage(context, "Enter all Input fields");
+                                                         }
                                                           }
                                                         } else {
                                                           if ((orderInput.val1Ctrl.text.isNotEmpty &&
                                                                   orderInput.priceCtrl.text.isNotEmpty) &&
-                                                              orderInput.qtyCtrl.text.isNotEmpty) {
+                                                              orderInput.qtyCtrl.text.isNotEmpty 
+                                                              && double.parse(orderInput.val1Ctrl.text) > 0 && 
+                                                              double.parse(orderInput.qtyCtrl.text) > 0 && (orderInput.priceCtrl.text == "Market" || 
+                                                              double.parse(orderInput.priceCtrl.text) > 0)) {
                                                             // if (orderInput
                                                             //             .actPrcType == "SL Limit" ||
                                                             //     orderInput
@@ -3840,7 +3948,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                             //             context)
                                                             //         .showSnackBar(warningMessage(
                                                             //             context,
-                                                            //             "Trigger can not be empty"));
+                                                            //             "Trigger cannot be empty"));
                                                             //   } else {
                                                             //     prepareToPlaceGttOrder(orderInput);
                                                             //   }
@@ -3860,11 +3968,49 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                               prepareToPlaceGttOrder(orderInput);
                                                             } else {
                                                               warningMessage(
-                                                                  context, "Trigger Price can not be equal to LTP");
+                                                                  context, "Target Trigger Price cannot be equal to LTP");
                                                             }
                                                             // }
                                                           } else {
-                                                            warningMessage(context, "Enter all Input fields");
+                                                          if(orderInput.val1Ctrl.text.isEmpty){
+                                                           warningMessage(context, "Target Trigger price cannot be empty");
+                                                         }
+                                                         else if(double.parse(orderInput.val1Ctrl.text) <= 0){
+                                                           warningMessage(context, "Target Trigger price cannot be 0");
+                                                         }
+                                                         else if(orderInput.qtyCtrl.text.isEmpty){
+                                                           warningMessage(context, "Quantity cannot be empty");
+                                                         }
+                                                         else if(double.parse(orderInput.qtyCtrl.text) <= 0){
+                                                           warningMessage(context, "Quantity cannot be 0");
+                                                         }
+                                                         else if(orderInput.priceCtrl.text.isEmpty){
+                                                           warningMessage(context, "Price cannot be empty");
+                                                         }
+                                                          else if(double.parse(orderInput.priceCtrl.text) <= 0){
+                                                           warningMessage(context, "Price cannot be 0");
+                                                         }
+                                                         else if(orderInput.val2Ctrl.text.isEmpty){
+                                                           warningMessage(context, "Stoploss Trigger price cannot be empty");
+                                                         }
+                                                         else if(double.parse(orderInput.val2Ctrl.text) <= 0){
+                                                           warningMessage(context, "Stoploss Trigger price cannot be 0");
+                                                         }
+                                                         else if(orderInput.ocoQtyCtrl.text.isEmpty){
+                                                            warningMessage(context, "OCO quantity cannot be empty");
+                                                         }
+                                                         else if(double.parse(orderInput.ocoQtyCtrl.text) <= 0){
+                                                           warningMessage(context, "OCO quantity cannot be 0");
+                                                         }
+                                                         else if(orderInput.ocoPriceCtrl.text.isEmpty){
+                                                           warningMessage(context, "OCO price cannot be empty");
+                                                         }
+                                                         else if(double.parse(orderInput.ocoPriceCtrl.text) <= 0){
+                                                           warningMessage(context, "OCO price cannot be 0");
+                                                         }
+                                                         else {
+                                                           warningMessage(context, "Enter all Input fields");
+                                                         }
                                                           }
                                                         }
                                                       } else {
@@ -3901,17 +4047,17 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                           warningMessage(
                                                               context,
                                                               convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount).isEmpty
-                                                                  ? "Quantity can not be empty"
-                                                                  : "Price can not be empty");
-                                                        } else if (convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount)
-                                                                    .trim() ==
+                                                                  ? _isQtyToAmount ? "Amount cannot be empty" : "Quantity cannot be empty"
+                                                                  : "Price cannot be empty");
+                                                        } else if ((convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount)
+                                                                    .trim()) ==
                                                                 "0" ||
                                                             priceCtrl.text.trim() == "0") {
                                                           warningMessage(
                                                               context,
                                                               convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount) == "0"
-                                                                  ? "Quantity can not be 0"
-                                                                  : "Price can not be 0");
+                                                                  ? _isQtyToAmount ? "Amount cannot be 0" : "Quantity cannot be 0"
+                                                                  : "Price cannot be 0");
                                                         } else if (int.parse(
                                                                 convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount)
                                                                     .trim()) >
@@ -3930,8 +4076,8 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                           warningMessage(
                                                               context,
                                                               double.parse(ordPrice) < double.parse(widget.scripInfo.lc!)
-                                                                  ? "Price can not be lesser than Lower Circuit Limit ${widget.scripInfo.lc}"
-                                                                  : "Price can not be greater than Upper Circuit Limit ${widget.scripInfo.uc}");
+                                                                  ? "Price cannot be lesser than Lower Circuit Limit ${widget.scripInfo.lc}"
+                                                                  : "Price cannot be greater than Upper Circuit Limit ${widget.scripInfo.uc}");
                                                         } else if ((orderType == "Delivery" ||
                                                                 orderType == "Intraday") &&
                                                             (priceType == "SL Limit" || priceType == "SL MKT")) {
@@ -3940,8 +4086,8 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                             warningMessage(
                                                                 context,
                                                                 triggerPriceCtrl.text.isEmpty
-                                                                    ? "Trigger can not be empty"
-                                                                    : "Trigger can not be 0");
+                                                                    ? "Trigger cannot be empty"
+                                                                    : "Trigger cannot be 0");
                                                           } else {
                                                             if (isBuy!) {
                                                               if (priceType == "SL MKT") {
@@ -3953,7 +4099,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                                     double.parse(triggerPriceCtrl.text) >
                                                                     double.parse(widget.scripInfo.uc!)) {
                                                                   warningMessage(context,
-                                                                      "Trigger can not be greater than upper circuit limit of ${widget.scripInfo.uc}");
+                                                                      "Trigger cannot be greater than upper circuit limit of ${widget.scripInfo.uc}");
                                                                 } else {
                                                                   if ((int.parse(convertQtyOrAmtValue(
                                                                                       qtyCtrl.text, _isQtyToAmount)
@@ -3973,7 +4119,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                                     double.parse(triggerPriceCtrl.text) <
                                                                     double.parse(widget.scripInfo.lc!)) {
                                                                   warningMessage(context,
-                                                                      "Trigger can not be lesser than lower circuit limit of ${widget.scripInfo.lc}");
+                                                                      "Trigger cannot be lesser than lower circuit limit of ${widget.scripInfo.lc}");
                                                                 } else if (double.parse(ordPrice) <
                                                                     double.parse(triggerPriceCtrl.text)) {
                                                                   warningMessage(
@@ -3982,7 +4128,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                                     double.parse(triggerPriceCtrl.text) >
                                                                     double.parse(widget.scripInfo.uc!)) {
                                                                   warningMessage(context,
-                                                                      "Trigger can not be greater than upper circuit limit of ${widget.scripInfo.uc}");
+                                                                      "Trigger cannot be greater than upper circuit limit of ${widget.scripInfo.uc}");
                                                                 } else {
                                                                   if ((int.parse(convertQtyOrAmtValue(
                                                                                       qtyCtrl.text, _isQtyToAmount)
@@ -4007,7 +4153,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                                 } else if (_hasValidCircuitBreakerValues && double.parse(triggerPriceCtrl.text) <
                                                                     double.parse(widget.scripInfo.lc!)) {
                                                                   warningMessage(context,
-                                                                      "Trigger can not be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}");
+                                                                      "Trigger cannot be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}");
                                                                 } else {
                                                                   if ((int.parse(convertQtyOrAmtValue(
                                                                                       qtyCtrl.text, _isQtyToAmount)
@@ -4026,7 +4172,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                                 if (_hasValidCircuitBreakerValues && double.parse(triggerPriceCtrl.text) >
                                                                     double.parse(widget.scripInfo.uc!)) {
                                                                   warningMessage(context,
-                                                                      "Trigger can not be greater than upper circuit limit of ${widget.scripInfo.uc ?? 0.00}");
+                                                                      "Trigger cannot be greater than upper circuit limit of ${widget.scripInfo.uc ?? 0.00}");
                                                                 } else if (double.parse(ordPrice) >
                                                                     double.parse(triggerPriceCtrl.text)) {
                                                                   warningMessage(
@@ -4034,7 +4180,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                                 } else if (_hasValidCircuitBreakerValues && double.parse(triggerPriceCtrl.text) <
                                                                     double.parse(widget.scripInfo.lc!)) {
                                                                   warningMessage(context,
-                                                                      "Trigger can not be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}");
+                                                                      "Trigger cannot be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}");
                                                                 } else {
                                                                   if ((int.parse(convertQtyOrAmtValue(
                                                                                       qtyCtrl.text, _isQtyToAmount)
@@ -4059,8 +4205,8 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                             warningMessage(
                                                                 context,
                                                                 stopLossCtrl.text.isEmpty
-                                                                    ? "Stoploss can not be empty"
-                                                                    : "Stoploss can not be 0");
+                                                                    ? "Stoploss cannot be empty"
+                                                                    : "Stoploss cannot be 0");
                                                           } else {
                                                             if (isBuy!) {
                                                               if (_hasValidCircuitBreakerValues && 
@@ -4068,7 +4214,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                                       double.parse(stopLossCtrl.text)) <
                                                                   double.parse(widget.scripInfo.lc!)) {
                                                                 warningMessage(context,
-                                                                    "Price(Order price - Stoploss = ${(double.parse(ordPrice) - double.parse(stopLossCtrl.text)).toStringAsFixed(2)}) Stoploss can not be lower than ${widget.scripInfo.lc}");
+                                                                    "Price(Order price - Stoploss = ${(double.parse(ordPrice) - double.parse(stopLossCtrl.text)).toStringAsFixed(2)}) Stoploss cannot be lower than ${widget.scripInfo.lc}");
                                                               } else {
                                                                 if ((int.parse(convertQtyOrAmtValue(
                                                                                     qtyCtrl.text, _isQtyToAmount)
@@ -4089,7 +4235,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                                       double.parse(stopLossCtrl.text)) >
                                                                   double.parse(widget.scripInfo.uc!)) {
                                                                 warningMessage(context,
-                                                                    "Price(Order price + Stoploss = ${(double.parse(ordPrice) + double.parse(stopLossCtrl.text))}) Stoploss can not be greater than ${widget.scripInfo.uc}");
+                                                                    "Price(Order price + Stoploss = ${(double.parse(ordPrice) + double.parse(stopLossCtrl.text))}) Stoploss cannot be greater than ${widget.scripInfo.uc}");
                                                               } else {
                                                                 if ((int.parse(convertQtyOrAmtValue(
                                                                                     qtyCtrl.text, _isQtyToAmount)
@@ -4119,8 +4265,8 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                         //             stopLossCtrl
                                                         //                     .text
                                                         //                     .isEmpty
-                                                        //                 ? "Stoploss can not be empty"
-                                                        //                 : "Stoploss can not be 0"));
+                                                        //                 ? "Stoploss cannot be empty"
+                                                        //                 : "Stoploss cannot be 0"));
                                                         //   } else if (isBuy! &&
                                                         //       (double.parse(ordPrice) - double.parse(stopLossCtrl.text)) <
                                                         //           double.parse(widget
@@ -4132,7 +4278,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                         //         .showSnackBar(
                                                         //             warningMessage(
                                                         //                 context,
-                                                        //                 "Price(Order price - Stoploss = ${(double.parse(ordPrice) - double.parse(stopLossCtrl.text)).toStringAsFixed(2)}) Stoploss can not be lower than ${widget.scripInfo.lc ?? 0.00}"));
+                                                        //                 "Price(Order price - Stoploss = ${(double.parse(ordPrice) - double.parse(stopLossCtrl.text)).toStringAsFixed(2)}) Stoploss cannot be lower than ${widget.scripInfo.lc ?? 0.00}"));
                                                         //   } else if (!isBuy! &&
                                                         //       (double.parse(ordPrice) + double.parse(stopLossCtrl.text)) >
                                                         //           double.parse(widget
@@ -4144,7 +4290,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                         //         .showSnackBar(
                                                         //             warningMessage(
                                                         //                 context,
-                                                        //                 "Price(Order price + Stoploss = ${(double.parse(ordPrice) + double.parse(stopLossCtrl.text))}) Stoploss can not be greater than ${widget.scripInfo.uc ?? 0.00}"));
+                                                        //                 "Price(Order price + Stoploss = ${(double.parse(ordPrice) + double.parse(stopLossCtrl.text))}) Stoploss cannot be greater than ${widget.scripInfo.uc ?? 0.00}"));
                                                         //   } else if ((triggerPriceCtrl
                                                         //               .text
                                                         //               .isEmpty ||
@@ -4159,8 +4305,8 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                         //             triggerPriceCtrl
                                                         //                     .text
                                                         //                     .isEmpty
-                                                        //                 ? "Trigger can not be empty"
-                                                        //                 : "Trigger can not be 0"));
+                                                        //                 ? "Trigger cannot be empty"
+                                                        //                 : "Trigger cannot be 0"));
                                                         //   } else {
                                                         //     if (isBuy!) {
                                                         //       if (double.parse(
@@ -4174,7 +4320,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                         //                 context)
                                                         //             .showSnackBar(warningMessage(
                                                         //                 context,
-                                                        //                 "Trigger can not be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}"));
+                                                        //                 "Trigger cannot be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}"));
                                                         //       } else if (double.parse(
                                                         //               ordPrice) <
                                                         //           double.parse(triggerPriceCtrl
@@ -4195,7 +4341,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                         //                 context)
                                                         //             .showSnackBar(warningMessage(
                                                         //                 context,
-                                                        //                 "Trigger can not be greater than upper circuit limit of ${widget.scripInfo.uc ?? 0.00}"));
+                                                        //                 "Trigger cannot be greater than upper circuit limit of ${widget.scripInfo.uc ?? 0.00}"));
                                                         //       } else {
                                                         //         if ((int.parse(qtyCtrl.text.isEmpty
                                                         //                     ? "0"
@@ -4228,7 +4374,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                         //                 context)
                                                         //             .showSnackBar(warningMessage(
                                                         //                 context,
-                                                        //                 "Trigger can not be greater than upper circuit limit of ${widget.scripInfo.uc ?? 0.00}"));
+                                                        //                 "Trigger cannot be greater than upper circuit limit of ${widget.scripInfo.uc ?? 0.00}"));
                                                         //       } else if (double.parse(
                                                         //               ordPrice) >
                                                         //           double.parse(triggerPriceCtrl
@@ -4249,7 +4395,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                         //                 context)
                                                         //             .showSnackBar(warningMessage(
                                                         //                 context,
-                                                        //                 "Trigger can not be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}"));
+                                                        //                 "Trigger cannot be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}"));
                                                         //       } else {
                                                         //         if ((int.parse(qtyCtrl.text.isEmpty
                                                         //                     ? "0"
@@ -4285,23 +4431,23 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
 
                                                           if (stopLossCtrl.text.isEmpty || targetCtrl.text.isEmpty) {
                                                             warningMessage(context,
-                                                                "${stopLossCtrl.text.isEmpty ? "Stoploss" : "Target"} can not be empty");
+                                                                "${targetCtrl.text.isEmpty ? "Target" : "Stoploss"} cannot be empty");
                                                           } else if (double.parse(stopLossCtrl.text) <= 0 ||
                                                               double.parse(targetCtrl.text) <= 0) {
                                                             warningMessage(context,
-                                                                "${double.parse(stopLossCtrl.text) <= 0 ? "Stoploss" : "Target"} can not be zero");
+                                                                "${double.parse(targetCtrl.text) <= 0 ? "Target" : "Stoploss"} cannot be 0");
                                                           } else if (isBuy! && _hasValidCircuitBreakerValues &&
                                                               (double.parse(ordPrice) - double.parse(stopLossCtrl.text)) < double.parse(widget.scripInfo.lc!)) {
                                                             warningMessage(context,
-                                                                "Price(Order price - Stoploss = ${(double.parse(ordPrice) - double.parse(stopLossCtrl.text)).toStringAsFixed(2)}) Stoploss can not be lower than ${widget.scripInfo.lc}");
+                                                                "Price(Order price - Stoploss = ${(double.parse(ordPrice) - double.parse(stopLossCtrl.text)).toStringAsFixed(2)}) Stoploss cannot be lower than ${widget.scripInfo.lc}");
                                                           } else if (!isBuy! && _hasValidCircuitBreakerValues &&
                                                               (double.parse(ordPrice) + double.parse(stopLossCtrl.text)) > double.parse(widget.scripInfo.uc!)) {
                                                             warningMessage(context,
-                                                                "Price(Order price + Stoploss = ${(double.parse(ordPrice) + double.parse(stopLossCtrl.text))}) Stoploss can not be greater than ${widget.scripInfo.uc}");
+                                                                "Price(Order price + Stoploss = ${(double.parse(ordPrice) + double.parse(stopLossCtrl.text))}) Stoploss cannot be greater than ${widget.scripInfo.uc}");
                                                           } else if(trailingTicksCtrl.text.isNotEmpty && (trailTicksRemainder > 0.0001)){
-                                                                      warningMessage(context, "Trailing price should be in multiples of tick size: $tickSize");
+                                                                      warningMessage(context, "Trailing SL should be in multiples of tick size: $tickSize");
                                                           } else if(trailingTicksCtrl.text.isNotEmpty && (enteredValue <= 0)){
-                                                                      warningMessage(context, "Trailing price should be positive value");
+                                                                      warningMessage(context, "Trailing SL should be positive value");
                                                           } else {
                                                             if ((int.parse(convertQtyOrAmtValue(
                                                                                 qtyCtrl.text, _isQtyToAmount)
@@ -4327,7 +4473,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                         //         .showSnackBar(
                                                         //             warningMessage(
                                                         //                 context,
-                                                        //                 "${stopLossCtrl.text.isEmpty ? "Stoploss" : "Target"} can not be empty"));
+                                                        //                 "${stopLossCtrl.text.isEmpty ? "Stoploss" : "Target"} cannot be empty"));
                                                         //   } else if (isBuy! &&
                                                         //       (double.parse(ordPrice) - double.parse(stopLossCtrl.text)) <
                                                         //           double.parse(widget
@@ -4339,7 +4485,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                         //         .showSnackBar(
                                                         //             warningMessage(
                                                         //                 context,
-                                                        //                 "Price(Order price - Stoploss = ${(double.parse(ordPrice) - double.parse(stopLossCtrl.text)).toStringAsFixed(2)}) Stoploss can not be lower than ${widget.scripInfo.lc ?? 0.00}"));
+                                                        //                 "Price(Order price - Stoploss = ${(double.parse(ordPrice) - double.parse(stopLossCtrl.text)).toStringAsFixed(2)}) Stoploss cannot be lower than ${widget.scripInfo.lc ?? 0.00}"));
                                                         //   } else if (!isBuy! &&
                                                         //       (double.parse(ordPrice) +
                                                         //               double.parse(stopLossCtrl
@@ -4353,7 +4499,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                         //         .showSnackBar(
                                                         //             warningMessage(
                                                         //                 context,
-                                                        //                 "Price(Order price + Stoploss = ${(double.parse(ordPrice) + double.parse(stopLossCtrl.text))}) Stoploss can not be greater than ${widget.scripInfo.uc ?? 0.00}"));
+                                                        //                 "Price(Order price + Stoploss = ${(double.parse(ordPrice) + double.parse(stopLossCtrl.text))}) Stoploss cannot be greater than ${widget.scripInfo.uc ?? 0.00}"));
                                                         //   } else if (triggerPriceCtrl
                                                         //           .text
                                                         //           .isEmpty &&
@@ -4363,7 +4509,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                         //         .showSnackBar(
                                                         //             warningMessage(
                                                         //                 context,
-                                                        //                 "Trigger can not be empty"));
+                                                        //                 "Trigger cannot be empty"));
                                                         //   } else {
                                                         //     if (isBuy!) {
                                                         //       if (double.parse(
@@ -4377,7 +4523,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                         //                 context)
                                                         //             .showSnackBar(warningMessage(
                                                         //                 context,
-                                                        //                 "Trigger can not be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}"));
+                                                        //                 "Trigger cannot be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}"));
                                                         //       } else if (double.parse(
                                                         //               ordPrice) <
                                                         //           double.parse(triggerPriceCtrl
@@ -4398,7 +4544,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                         //                 context)
                                                         //             .showSnackBar(warningMessage(
                                                         //                 context,
-                                                        //                 "Trigger can not be greater than upper circuit limit of ${widget.scripInfo.uc ?? 0.00}"));
+                                                        //                 "Trigger cannot be greater than upper circuit limit of ${widget.scripInfo.uc ?? 0.00}"));
                                                         //       } else {
                                                         //         if ((int.parse(qtyCtrl.text.isEmpty
                                                         //                     ? "0"
@@ -4431,7 +4577,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                         //                 context)
                                                         //             .showSnackBar(warningMessage(
                                                         //                 context,
-                                                        //                 "Trigger can not be greater than upper circuit limit of ${widget.scripInfo.uc ?? 0.00}"));
+                                                        //                 "Trigger cannot be greater than upper circuit limit of ${widget.scripInfo.uc ?? 0.00}"));
                                                         //       } else if (double.parse(
                                                         //               ordPrice) >
                                                         //           double.parse(triggerPriceCtrl
@@ -4452,7 +4598,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                         //                 context)
                                                         //             .showSnackBar(warningMessage(
                                                         //                 context,
-                                                        //                 "Trigger can not be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}"));
+                                                        //                 "Trigger cannot be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}"));
                                                         //       } else {
                                                         //         if ((int.parse(qtyCtrl.text.isEmpty
                                                         //                     ? "0"
@@ -4725,6 +4871,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
           SizedBox(
               height: 45,
               child: CustomTextFormField(
+                  inputFormate: [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}$'))],
                   fillColor: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
                   hintText: "0.00",
                   hintStyle: TextWidget.textStyle(
@@ -4744,10 +4891,12 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                     }
 
                     ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                    if (value.isNotEmpty) {
+                    if (value.isNotEmpty && value != "0") {
                       marginUpdate();
+                    } else if (value == "0") {
+                      warningMessage(context, "Trigger cannot be 0");
                     } else {
-                      warningMessage(context, "Trigger can not be empty");
+                      warningMessage(context, "Trigger cannot be empty");
                     }
                   },
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -4782,6 +4931,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
           SizedBox(
               height: 45,
               child: CustomTextFormField(
+                  inputFormate: [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}$'))],
                   fillColor: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
                   hintText: "0.00",
                   onChanged: (value) {
@@ -4796,7 +4946,9 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
 
                     ScaffoldMessenger.of(context).hideCurrentSnackBar();
                     if (value.isEmpty) {
-                      warningMessage(context, "Target can not be empty");
+                      warningMessage(context, "Target cannot be empty");
+                    }else if(value.isNotEmpty && double.parse(value) <= 0) {
+                      warningMessage(context, "Target cannot be 0");
                     }
                   },
                   hintStyle: TextWidget.textStyle(
@@ -4836,6 +4988,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
           SizedBox(
               height: 45,
               child: CustomTextFormField(
+                  inputFormate: [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}$'))],
                   fillColor: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
                   onChanged: (value) {
                     if (value.isNotEmpty && double.parse(value) > 0) {
@@ -4848,7 +5001,9 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                     }
                     ScaffoldMessenger.of(context).hideCurrentSnackBar();
                     if (value.isEmpty) {
-                      warningMessage(context, "Stoploss can not be empty");
+                      warningMessage(context, "Stoploss cannot be empty");
+                    }else if(value.isNotEmpty && double.parse(value) <= 0) {
+                      warningMessage(context, "Stoploss cannot be 0");
                     }
                   },
                   hintText: "0.00",
@@ -4885,11 +5040,12 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          headerTitleText("Trailing Price", theme),
+          headerTitleText("Trailing SL", theme),
           const SizedBox(height: 8),
           SizedBox(
               height: 45,
               child: CustomTextFormField(
+                  inputFormate: [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}$'))],
                   fillColor: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
                   hintText: "0.00",
                   onChanged: (value) {
@@ -4909,11 +5065,11 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                       double remainder = (quotient - quotient.round()).abs();
 
                       if (remainder > 0.0001) {
-                        warningMessage(context, "Trailing price should be in multiples of tick size: $tickSize");
+                        warningMessage(context, "Trailing SL should be in multiples of tick size: $tickSize");
                       }
                     }
                     if (value.isEmpty) {
-                      warningMessage(context, "Trailing price can not be empty");
+                      warningMessage(context, "Trailing SL cannot be empty");
                     }
                   },
                   hintStyle: TextWidget.textStyle(
@@ -5016,21 +5172,29 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                 const SizedBox(height: 8),
                                 CustomTextFormField(
                                   fillColor: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
-                                  inputFormate: [FilteringTextInputFormatter.digitsOnly],
+                                  inputFormate: [FilteringTextInputFormatter.allow(
+    RegExp(r'^(0|[1-9][0-9]{0,19})$'),
+  ),],
                                   onChanged: (value) {
                                     dialogSetState(() {
                                       if (value.isEmpty) {
                                         mktProtErrorText = "Market Protection cannot be empty";
-                                      } else if (value.isNotEmpty) {
-                                        int intValue = int.tryParse(value) ?? 0;
-                                        if (intValue > 20) {
-                                          mktProtErrorText = "Cannot enter greater than 20%";
-                                        } else if (intValue < 1) {
-                                          mktProtErrorText = "Cannot enter less than 1% ";
-                                        } else {
-                                          mktProtErrorText = "";
-                                        }
+                                      } else {
+                                      int intValue = int.tryParse(value) ?? 0;
+
+                                      if (intValue > 20) {
+                                       // force value back to 20
+                                       mktProtDialogCtrl.text = "20";
+                                       mktProtDialogCtrl.selection = TextSelection.fromPosition(
+                                         TextPosition(offset: mktProtDialogCtrl.text.length),
+                                        );
+                                        mktProtErrorText = "Cannot enter greater than 20%";
+                                     } else if (intValue < 1) {
+                                        mktProtErrorText = "Cannot enter less than 1%";
+                                      } else {
+                                        mktProtErrorText = "";
                                       }
+                                    }
                                     });
                                   },
                                   keyboardType: TextInputType.number,
@@ -5456,13 +5620,14 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
     );
   }
 
-  prepareToPlaceGttOrder(OrderInputProvider orderInput) async {
+  prepareToPlaceGttOrder(OrderInputProvider 
+  orderInput) async {
     PlaceGTTOrderInput input = PlaceGTTOrderInput(
         exch: '${widget.scripInfo.exch}',
         qty: orderInput.qtyCtrl.text,
         tsym: '${widget.scripInfo.tsym}',
         validity: "GTT",
-        prc: orderInput.priceCtrl.text,
+        prc: orderInput.actPrcType == "Market" || orderInput.actPrcType == "SL MKT" ? "0.00" : orderInput.priceCtrl.text,
         prd: orderInput.orderType,
         trantype: isBuy! ? 'B' : "S",
         ret: 'DAY',
@@ -5488,13 +5653,13 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
         trgprc1: orderInput.actOcoPrcType == "SL Limit" || orderInput.actOcoPrcType == "SL MKT"
             ? orderInput.trgPrcCtrl.text
             : "",
-        prc1: orderInput.priceCtrl.text,
+        prc1: orderInput.actPrcType == "Market" || orderInput.actPrcType == "SL MKT" ? "0.00" : orderInput.priceCtrl.text,
         prd1: orderInput.orderType,
         d1: orderInput.val1Ctrl.text,
         prctyp1: orderInput.prcType,
         d2: orderInput.val2Ctrl.text,
         prctyp2: orderInput.ocoPrcType,
-        prc2: orderInput.ocoPriceCtrl.text,
+        prc2: orderInput.actOcoPrcType == "Market" || orderInput.actOcoPrcType == "SL MKT" ? "0.00" : orderInput.ocoPriceCtrl.text,
         prd2: orderInput.ocoOrderType,
         qty2: orderInput.ocoQtyCtrl.text,
         trgprc2: orderInput.actOcoPrcType == "SL Limit" || orderInput.actOcoPrcType == "SL MKT"
@@ -5708,6 +5873,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
   }
 
   String convertQtyOrAmtValue(String value, bool isQtyToAmount) {
+    if (value.trim().isEmpty) return "";
     double ltp = double.tryParse(widget.orderArg.ltp ?? "0.0") ?? 0.0;
     return isQtyToAmount ? ((double.tryParse(value) ?? 0.0) ~/ ltp).toString() : value;
   }

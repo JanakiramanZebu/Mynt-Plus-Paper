@@ -669,7 +669,7 @@ class _ColumnHeaders extends ConsumerWidget {
             // Left arrow icon
             Material(
               color: Colors.transparent,
-              shape: const CircleBorder(),
+              // shape: const CircleBorder(),
               child: InkWell(
                 onTap: onToggleView,
                 borderRadius: BorderRadius.circular(5),
@@ -746,7 +746,7 @@ class _ColumnHeaders extends ConsumerWidget {
 
             Material(
               color: Colors.transparent,
-              shape: const CircleBorder(),
+              // shape: const CircleBorder(),
               child: InkWell(
                 onTap: onToggleView,
                 borderRadius: BorderRadius.circular(5),

@@ -568,7 +568,7 @@ mixin LedgerApi on ApiCore {
     }
   }
 
-  Future getpdffileapitaxpnl(eq, der, eqcharge, year) async {
+  Future getpdffileapitaxpnl(eq, der, eqcharge, year, format) async {
     try {
       // final url = Uri.parse('${apiLinks.reportsapi}/getdocdownloadsmobile?cc=${prefs.clientId}&recno=${recno}');
       // final url = Uri.parse(
@@ -580,11 +580,12 @@ mixin LedgerApi on ApiCore {
       // );
       //file download.
       // print("${response}");
-      final uri = Uri.parse('${apiLinks.reportsapi}/taxpnl_pdf');
+      final pdfuri = Uri.parse('${apiLinks.reportsapi}/taxpnl_pdf');
+      final exceluri = Uri.parse('${apiLinks.reportsapi}/tax_p_l_excel');
       // final uri = Uri.parse('${apiLinks.reportsapi}/getdocdownloads');
       final fromapi = '01/04/$year';
       final toapi = '31/03/${(year) + 1}';
-      final res = await apiClient.post(uri,
+      final res = await apiClient.post(format == "PDF" ? pdfuri : exceluri,
           headers: funddefaultHeaders,
           // headers: testingrameshheader,
           body:
@@ -599,8 +600,11 @@ mixin LedgerApi on ApiCore {
           }));
 
       final json = jsonDecode((res.body));
+      
+    // final filepath = json['filepath'].split('static').last.replaceAll(r'\', '/');
       if (json['stat'] != 'Not Ok') {
         // final urival = Uri.parse('${apiLinks.reportsapi}${json['path']}');
+        // final urival = Uri.parse('http://192.168.5.207:5100/static${filepath}');
 
         // if (!await launchUrl(urival, mode: LaunchMode.externalApplication)) {
         //   throw 'Could not launch';

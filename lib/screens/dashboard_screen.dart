@@ -171,8 +171,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
       }
       
       // Check mounted before async operations
-      if (!mounted) return;
-      await ref.read(mfProvider).fetchEtfCategory();
+      // if (!mounted) return;
+      // await ref.read(mfProvider).fetchEtfCategory();
       
       // Check mounted after async operation
       if (!mounted) return;

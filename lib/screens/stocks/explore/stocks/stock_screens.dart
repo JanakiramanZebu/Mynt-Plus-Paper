@@ -100,6 +100,11 @@ class _StockScreenState extends ConsumerState<StockScreen>
     //       : "0.00";
     final items = [
       {
+        'label': 'Pledge & Unpledge',
+        'icon': assets.pledgeandunpledge,
+        'subtitle': 'Track your pledge and unpledge status'
+      },
+      {
         'label': 'P&L Summary',
         'icon': assets.plsummary,
         'subtitle': 'Insights for sharper decisions'
@@ -481,83 +486,87 @@ class _StockScreenState extends ConsumerState<StockScreen>
               ),
               optionZTile(context, theme, funds),
               const SizedBox(height: 16),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // const SizedBox(height: 16),
+              // Padding(
+              //   padding: const EdgeInsets.symmetric(horizontal: 16),
+              //   child: Column(
+              //     crossAxisAlignment: CrossAxisAlignment.start,
+              //     children: [
+              //       // const SizedBox(height: 16),
 
-                    // ETF Collections Section
-                    Container(
-                      padding: const EdgeInsets.only(right: 8, bottom: 8),
-                      height: 35,
-                      child: TabBar(
-                        controller: _tabController,
-                        tabAlignment: TabAlignment.start,
-                        isScrollable: true,
-                        indicatorSize: TabBarIndicatorSize.tab,
-                        indicatorColor: colors.colorWhite,
-                        indicator: BoxDecoration(
-                          color: theme.isDarkMode
-                              ? colors.searchBgDark
-                              : const Color(0xffF1F3F8),
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                        unselectedLabelColor: theme.isDarkMode
-                            ? colors.textSecondaryDark
-                            : colors.textSecondaryLight,
-                        labelStyle: TextWidget.textStyle(
-                            fontSize: 14,
-                            theme: false,
-                            fw: 2,
-                            color: theme.isDarkMode
-                                ? colors.textPrimaryDark
-                                : colors.textPrimaryLight),
-                        unselectedLabelStyle: TextWidget.textStyle(
-                            fontSize: 14,
-                            theme: false,
-                            fw: 3,
-                            color: colors.textSecondaryLight),
-                        labelPadding: const EdgeInsets.symmetric(horizontal: 4),
-                        // onTap: (index) {
-                        //   if (index == 0) {
-                        //     Navigator.pushNamed(context, Routes.algoList);
-                        //   }
-                        // },
-                        tabs: const [
-                          Tab(
-                            child: Padding(
-                              padding: EdgeInsets.only(
-                                  left: 10, right: 10, top: 0, bottom: 0),
-                              child: Text("ETF Collections"),
-                            ),
-                          ),
-                          // Tab(
-                          //   child: Padding(
-                          //     padding: EdgeInsets.only(
-                          //         left: 10, right: 10, top: 0, bottom: 0),
-                          //     child: Text("Stock Scanner"),
-                          //   ),
-                          // ),
-                        ],
-                      ),
-                    ),
 
-                    // Tab Bar View
-                    SizedBox(
-                      height: 450,
-                      child: TabBarView(
-                        controller: _tabController,
-                        children: [
-                          buildETFCollectionsTab(theme),
-                          // buildStockScannerTab(theme),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              //       // ETF Collections Section
+              //       Container(
+              //         padding: const EdgeInsets.only(right: 8, bottom: 8),
+              //         height: 35,
+              //         child: TabBar(
+              //           controller: _tabController,
+              //           tabAlignment: TabAlignment.start,
+              //           isScrollable: true,
+              //           indicatorSize: TabBarIndicatorSize.tab,
+              //           indicatorColor: colors.colorWhite,
+              //           indicator: BoxDecoration(
+              //             color: theme.isDarkMode
+              //                 ? colors.searchBgDark
+              //                 : const Color(0xffF1F3F8),
+              //             borderRadius: BorderRadius.circular(5),
+              //           ),
+              //           unselectedLabelColor: theme.isDarkMode
+              //               ? colors.textSecondaryDark
+              //               : colors.textSecondaryLight,
+              //           labelStyle: TextWidget.textStyle(
+              //               fontSize: 14,
+              //               theme: false,
+              //               fw: 2,
+              //               color: theme.isDarkMode
+              //                   ? colors.textPrimaryDark
+              //                   : colors.textPrimaryLight),
+              //           unselectedLabelStyle: TextWidget.textStyle(
+              //               fontSize: 14,
+              //               theme: false,
+              //               fw: 3,
+              //               color: colors.textSecondaryLight),
+              //           labelPadding: const EdgeInsets.symmetric(horizontal: 4),
+              //           // onTap: (index) {
+              //           //   if (index == 0) {
+              //           //     Navigator.pushNamed(context, Routes.algoList);
+              //           //   }
+              //           // },
+              //           tabs: const [
+              //             Tab(
+              //               child: Padding(
+              //                 padding: EdgeInsets.only(
+              //                     left: 10, right: 10, top: 0, bottom: 0),
+              //                 child: Text("ETF Collections"),
+              //               ),
+              //             ),
+              //             // Tab(
+              //             //   child: Padding(
+              //             //     padding: EdgeInsets.only(
+              //             //         left: 10, right: 10, top: 0, bottom: 0),
+              //             //     child: Text("Stock Scanner"),
+              //             //   ),
+              //             // ),
+              //           ],
+              //         ),
+              //       ),
+
+              //       // Tab Bar View
+              //       SizedBox(
+              //         height: 450,
+              //         child: TabBarView(
+              //           controller: _tabController,
+              //           children: [
+              //             buildETFCollectionsTab(theme),
+              //             // buildStockScannerTab(theme),
+              //           ],
+              //         ),
+              //       ),
+              //     ],
+              //   ),
+              // ),
+
+// ETF End
+
               // const SizedBox(height: 16),
               // Padding(
               //   padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -766,7 +775,7 @@ class _StockScreenState extends ConsumerState<StockScreen>
                         InkWell(
                           canRequestFocus: false,
                           onTap: () {
-                            Navigator.pushNamed(context, Routes.basketScreen);
+                            // Navigator.pushNamed(context, Routes.basketScreen);
                             // Navigator.pushNamed(context, Routes.portfolioDashboard);
                           },
                           child: Container(
@@ -804,6 +813,19 @@ class _StockScreenState extends ConsumerState<StockScreen>
                               theme: theme,
                               onTap: () async {
                                 switch (item['label']) {
+                                  case 'Pledge & Unpledge':
+                                    Future.delayed(Duration(milliseconds: 150),
+                                      () async {
+                                    if (ledgerdate.pledgeandunpledge == null) {
+                                      await ledgerdate.getCurrentDate("pandu");
+                                      ledgerdate
+                                          .fetchpledgeandunpledge(context);
+                                    }
+                                    Navigator.pushNamed(
+                                        context, Routes.pledgeandun,
+                                        arguments: "DDDDD");
+                                  });
+                                    break;
                                   case 'P&L Summary':
                                     await ledgerdate.getCurrentDate('pandu');
                                     Navigator.pushNamed(

@@ -1103,7 +1103,6 @@ Future<void> _navigateToModifyOrder(
 
 Future<void> _navigateToPlaceOrder(
     BuildContext context, WidgetRef ref, orderBookData) async {
-  Navigator.pop(context);
 
   await ref.read(marketWatchProvider).fetchScripInfo(
       "${orderBookData.token}", "${orderBookData.exch}", context, true);
@@ -1121,6 +1120,7 @@ Future<void> _navigateToPlaceOrder(
       holdQty: '',
       isModify: false,
       raw: orderBookData.toJson());
+  Navigator.pop(context);
 
   Navigator.pushNamed(context, Routes.placeOrderScreen, arguments: {
     "orderArg": orderArgs,

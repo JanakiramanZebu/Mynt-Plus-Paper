@@ -936,6 +936,8 @@ class AuthProvider extends DefaultChangeNotifier {
           Navigator.pushNamedAndRemoveUntil(
               context, Routes.loginScreen, (route) => false);
         }
+      }else if(_logoutModel!.emsg == "Session Expired :  Invalid Session Key"){
+        ref.read(authProvider).ifSessionExpired(context);
       }
     } catch (e) {
       ref.read(indexListProvider).logError.add({"type": "API", "Error": "$e"});

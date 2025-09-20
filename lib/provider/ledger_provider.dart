@@ -996,6 +996,22 @@ class LDProvider extends DefaultChangeNotifier {
       debugPrint("$e");
     }
   }
+
+
+  Future redirecttopositionsbeta(BuildContext context) async {
+    try {
+      final Uri uri =
+          Uri.parse('https://profile.zebuetrade.com/positions/?uid=${pref.clientId}&token=${pref.token}');
+      print("urilinks: $uri");
+      if (await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+        throw 'Could not launch  ';
+      }
+
+      notifyListeners();
+    } catch (e) {
+      debugPrint("$e");
+    }
+  }
 //  final Uri uri = Uri.parse(
 //           "${apiLinks.reportsapi}/downloaddocmob?cc=${prefs.clientId}&recno=${recno}");
 //       if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
@@ -1566,6 +1582,13 @@ class LDProvider extends DefaultChangeNotifier {
     }
   }
 
+  String _selectedFormat = "PDF";
+  String get selectedFormat => _selectedFormat;
+  void selectedFormatFunction(String value) {
+    _selectedFormat = value;
+    notifyListeners();
+  }
+
   Future pdfdownloadfortaxpnl(
       BuildContext context, eq, dercomcur, eqcharge, year) async {
     if (year <= _yearforTaxpnlDummy) {
@@ -1574,7 +1597,7 @@ class LDProvider extends DefaultChangeNotifier {
         notifyListeners();
 
         // _pdfresponse =
-             api.getpdffileapitaxpnl(eq, dercomcur, eqcharge, year);
+             api.getpdffileapitaxpnl(eq, dercomcur, eqcharge, year, selectedFormat);
         // if (_pdfresponse == 'File Sent to mail successfully') {
           // if (_istaxpnlclosed == false) {
           //   Navigator.pop(context);
