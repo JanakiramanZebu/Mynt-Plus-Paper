@@ -5,6 +5,7 @@ class PortfolioAnalysisModel {
   final InflationAdjustedData inflationAdjusted;
   final List<EquityScheme> equity;
   final List<DebtScheme> debt;
+  final List<HybridScheme> hybrid;
   final TaxDetails taxDetails;
 
   PortfolioAnalysisModel({
@@ -13,6 +14,7 @@ class PortfolioAnalysisModel {
     required this.inflationAdjusted,
     required this.equity,
     required this.debt,
+    required this.hybrid,
     required this.taxDetails,
   });
 
@@ -34,6 +36,7 @@ class PortfolioAnalysisModel {
             sharpeRatio: 0.0,
             maxDrawdown: 0.0,
             chartData: [],
+            dateTime: [],
           ),
         ),
         benchmark: _safeFromJson<BenchmarkData>(
@@ -49,6 +52,7 @@ class PortfolioAnalysisModel {
             sharpeRatio: 0.0,
             maxDrawdown: 0.0,
             chartData: [],
+            dateTime: [],
             schemeName: '',
           ),
         ),
@@ -71,12 +75,17 @@ class PortfolioAnalysisModel {
           json['DEBT'],
           (data) => DebtScheme.fromJson(data),
         ),
+        hybrid: _safeListFromJson<HybridScheme>(
+          json['HYBRID'],
+          (data) => HybridScheme.fromJson(data),
+        ),
         taxDetails: _safeFromJson<TaxDetails>(
           json['tax_details'], 
           (data) => TaxDetails.fromJson(data),
           () => TaxDetails(
             equity: TaxCategory(tax: 0.0, postGainTotal: 0.0),
             debt: TaxCategory(tax: 0.0, postGainTotal: 0.0),
+            hybrid: TaxCategory(tax: 0.0, postGainTotal: 0.0),
           ),
         ),
       );
@@ -129,6 +138,7 @@ class PortfolioTotal {
   final double sharpeRatio;
   final double maxDrawdown;
   final List<double> chartData;
+  final List<String> dateTime;
 
   PortfolioTotal({
     required this.investmentAmount,
@@ -140,6 +150,7 @@ class PortfolioTotal {
     required this.sharpeRatio,
     required this.maxDrawdown,
     required this.chartData,
+    required this.dateTime,
   });
 
   factory PortfolioTotal.fromJson(Map<String, dynamic> json) {
@@ -153,6 +164,7 @@ class PortfolioTotal {
       sharpeRatio: (json['sharpe_ratio'] ?? 0.0).toDouble(),
       maxDrawdown: (json['max_drawdown'] ?? 0.0).toDouble(),
       chartData: List<double>.from(json['chart_data'] ?? []),
+      dateTime: List<String>.from(json['date_time'] ?? []),
     );
   }
 }
@@ -167,6 +179,7 @@ class BenchmarkData {
   final double sharpeRatio;
   final double maxDrawdown;
   final List<double> chartData;
+  final List<String> dateTime;
   final String schemeName;
 
   BenchmarkData({
@@ -179,6 +192,7 @@ class BenchmarkData {
     required this.sharpeRatio,
     required this.maxDrawdown,
     required this.chartData,
+    required this.dateTime,
     required this.schemeName,
   });
 
@@ -193,6 +207,7 @@ class BenchmarkData {
       sharpeRatio: (json['sharpe_ratio'] ?? 0.0).toDouble(),
       maxDrawdown: (json['max_drawdown'] ?? 0.0).toDouble(),
       chartData: List<double>.from(json['chart_data'] ?? []),
+      dateTime: List<String>.from(json['date_time'] ?? []),
       schemeName: json['scheme_name'] ?? '',
     );
   }
@@ -236,6 +251,7 @@ class EquityScheme {
   final double sharpeRatio;
   final double maxDrawdown;
   final List<double> chartData;
+  final List<String> dateTime;
 
   EquityScheme({
     required this.schemaName,
@@ -249,6 +265,7 @@ class EquityScheme {
     required this.sharpeRatio,
     required this.maxDrawdown,
     required this.chartData,
+    required this.dateTime,
   });
 
   factory EquityScheme.fromJson(Map<String, dynamic> json) {
@@ -264,6 +281,7 @@ class EquityScheme {
       sharpeRatio: (json['sharpe_ratio'] ?? 0.0).toDouble(),
       maxDrawdown: (json['max_drawdown'] ?? 0.0).toDouble(),
       chartData: List<double>.from(json['chart_data'] ?? []),
+      dateTime: List<String>.from(json['date_time'] ?? []),
     );
   }
 }
@@ -280,6 +298,7 @@ class DebtScheme {
   final double sharpeRatio;
   final double maxDrawdown;
   final List<double> chartData;
+  final List<String> dateTime;
 
   DebtScheme({
     required this.schemaName,
@@ -293,6 +312,7 @@ class DebtScheme {
     required this.sharpeRatio,
     required this.maxDrawdown,
     required this.chartData,
+    required this.dateTime,
   });
 
   factory DebtScheme.fromJson(Map<String, dynamic> json) {
@@ -308,6 +328,54 @@ class DebtScheme {
       sharpeRatio: (json['sharpe_ratio'] ?? 0.0).toDouble(),
       maxDrawdown: (json['max_drawdown'] ?? 0.0).toDouble(),
       chartData: List<double>.from(json['chart_data'] ?? []),
+      dateTime: List<String>.from(json['date_time'] ?? []),
+    );
+  }
+}
+
+class HybridScheme {
+  final String schemaName;
+  final int percentage;
+  final double investmentAmount;
+  final double currentValue;
+  final double gain;
+  final double gainPerc;
+  final double xirr;
+  final double volatility;
+  final double sharpeRatio;
+  final double maxDrawdown;
+  final List<double> chartData;
+  final List<String> dateTime;
+
+  HybridScheme({
+    required this.schemaName,
+    required this.percentage,
+    required this.investmentAmount,
+    required this.currentValue,
+    required this.gain,
+    required this.gainPerc,
+    required this.xirr,
+    required this.volatility,
+    required this.sharpeRatio,
+    required this.maxDrawdown,
+    required this.chartData,
+    required this.dateTime,
+  });
+
+  factory HybridScheme.fromJson(Map<String, dynamic> json) {
+    return HybridScheme(
+      schemaName: json['schema_name'] ?? '',
+      percentage: json['percentage'] ?? 0,
+      investmentAmount: (json['investment_amount'] ?? 0.0).toDouble(),
+      currentValue: (json['current_value'] ?? 0.0).toDouble(),
+      gain: (json['gain'] ?? 0.0).toDouble(),
+      gainPerc: (json['gain_perc'] ?? 0.0).toDouble(),
+      xirr: (json['xirr'] ?? 0.0).toDouble(),
+      volatility: (json['volatility'] ?? 0.0).toDouble(),
+      sharpeRatio: (json['sharpe_ratio'] ?? 0.0).toDouble(),
+      maxDrawdown: (json['max_drawdown'] ?? 0.0).toDouble(),
+      chartData: List<double>.from(json['chart_data'] ?? []),
+      dateTime: List<String>.from(json['date_time'] ?? []),
     );
   }
 }
@@ -315,16 +383,19 @@ class DebtScheme {
 class TaxDetails {
   final TaxCategory equity;
   final TaxCategory debt;
+  final TaxCategory hybrid;
 
   TaxDetails({
     required this.equity,
     required this.debt,
+    required this.hybrid,
   });
 
   factory TaxDetails.fromJson(Map<String, dynamic> json) {
     return TaxDetails(
       equity: TaxCategory.fromJson(json['EQUITY']),
       debt: TaxCategory.fromJson(json['DEBT']),
+      hybrid: TaxCategory.fromJson(json['HYBRID']),
     );
   }
 }
@@ -370,6 +441,7 @@ class BacktestRequest {
 }
 
 class SchemeValue {
+  final String name;
   final String schemaName;
   final int percentage;
   final String schemeType;
@@ -377,6 +449,7 @@ class SchemeValue {
   final String aMCCode;
 
   SchemeValue({
+    required this.name,
     required this.schemaName,
     required this.percentage,
     required this.schemeType,
@@ -386,6 +459,7 @@ class SchemeValue {
 
   Map<String, dynamic> toJson() {
     return {
+      'name': name,
       'schema_name': schemaName,
       'percentage': percentage,
       'scheme_type': schemeType,

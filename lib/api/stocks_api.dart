@@ -488,8 +488,10 @@ mixin StocksAPI on ApiCore {
       "year_in": request.yearIn,
       "investment_amount": request.investmentAmount,
       "scheme_values": request.schemeValues.map((s) => {
+            "name": s.name,
             "schema_name": s.schemaName,
             "percentage": s.percentage,
+            "isin": s.isin,
             "scheme_type": s.schemeType,
           }).toList(),
       "compare_symbol": request.compareSymbol,

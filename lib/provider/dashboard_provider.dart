@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:mynt_plus/models/explore_model/basket_backtest_analysis_model.dart';
 import 'package:mynt_plus/models/explore_model/basketcollection_model.dart';
 import 'package:mynt_plus/models/mf_model/mutual_fundmodel.dart';
+import 'package:mynt_plus/models/trading_personality_model.dart';
 import 'package:mynt_plus/models/mf_model/sip_mf_list_model.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/res/res.dart';
@@ -700,6 +701,29 @@ Color getSectorAllocationColor(String sector) {
   List<FundListModel> _selectedFunds = [];
   List<FundListModel> get selectedFunds => _selectedFunds;
 
+  // Trading Personality Selection
+  TradingPersonalityType _selectedPersonality = TradingPersonalityType.aurora;
+  TradingPersonalityType get selectedPersonality => _selectedPersonality;
+  
+  void updateSelectedPersonality(TradingPersonalityType personality) {
+    _selectedPersonality = personality;
+    notifyListeners();
+  }
+
+  // Strategy Name Error Management
+  String? _strategyNameError;
+  String? get strategyNameError => _strategyNameError;
+  
+  void setStrategyNameError(String? error) {
+    _strategyNameError = error;
+    notifyListeners();
+  }
+  
+  void clearStrategyNameError() {
+    _strategyNameError = null;
+    notifyListeners();
+  }
+
   // Saved Strategies
   SavedStrategyModel? _savedStrategies;
   SavedStrategyModel? get savedStrategies => _savedStrategies;
@@ -784,20 +808,17 @@ Color getSectorAllocationColor(String sector) {
       final uuid = _editingStrategy!.data?.first.uuid ?? '';
       final schemaValues = _convertFundsToSchemaValues(_selectedFunds);
 
-      final investmentDetails =
-          _editingStrategy!.data?.first.investmentDetails ?? '';
-
       await api.updatebasketsStrategy(
         uuid: uuid,
         yearIn: _getYearInFromDuration(_selectedDuration),
         schemeValues: schemaValues,
         basketName: strategyNameController.text ?? '',
         investmentAmount: double.tryParse(_investmentController.text) ?? 0.0,
-        invesmentdetail: investmentDetails,
+        invesmentdetail: 'Updated Strategy|personality:${_selectedPersonality.name}',
       );
 
       await fetchbasketlist();
-      Navigator.pop(context);
+       Navigator.pop(context);
       Navigator.pop(context);
 
       _editingStrategy = null;
@@ -830,7 +851,7 @@ Color getSectorAllocationColor(String sector) {
         schemeValues: schemaValues,
         basketName: basketName,
         investmentAmount: double.tryParse(_investmentController.text) ?? 0.0,
-        invesmentdetail: 'Created Strategy',
+        invesmentdetail: 'Created Strategy|personality:${_selectedPersonality.name}',
       );
 
       await fetchbasketlist();
@@ -850,7 +871,8 @@ Color getSectorAllocationColor(String sector) {
       List<FundListModel> funds) {
     return funds
         .map((fund) => {
-              'schema_name': fund.name,
+              'name': fund.name,
+              'schema_name': fund.schemeName,
               'scheme_type': fund.type,
               'percentage': fund.percentage.round(),
               'isin': fund.isin ?? '',
@@ -908,7 +930,8 @@ Color getSectorAllocationColor(String sector) {
     if (strategyData.schemaValues != null) {
       for (final schema in strategyData.schemaValues!) {
         final fund = FundListModel(
-          name: schema.schemaName ?? '',
+          name: schema.name ?? '',
+          schemeName: schema.schemaName ?? '',
           type: schema.schemeType ?? '',
           fiveYearCAGR: 0.0, // Default value since not available in schema
           threeYearCAGR: 0.0, // Default value since not available in schema
@@ -923,6 +946,9 @@ Color getSectorAllocationColor(String sector) {
     }
     _strategyNameController.text = strategyData.basketName ?? '';
     _investmentController.text = strategyData.investAmount?.toString() ?? '0';
+
+    // Load trading personality information from investment details
+    _selectedPersonality = getPersonalityFromInvestmentDetails(strategyData.investmentDetails);
 
     if (strategyData.years != null) {
       if (strategyData.years! <= 1) {
@@ -944,6 +970,7 @@ Color getSectorAllocationColor(String sector) {
     if (!_selectedFunds.any((f) => f.name == fund.name)) {
       final newFund = FundListModel(
         name: fund.name,
+        schemeName: fund.schemeName,
         type: fund.type,
         fiveYearCAGR: fund.fiveYearCAGR,
         threeYearCAGR: fund.threeYearCAGR,
@@ -975,6 +1002,30 @@ Color getSectorAllocationColor(String sector) {
     notifyListeners();
   }
 
+  void toggleFundLock(FundListModel fund, BuildContext context) {
+    final index = _selectedFunds.indexWhere((f) => f.name == fund.name);
+    if (index != -1) {
+      // Check if trying to lock and there's only one fund
+      if (!_selectedFunds[index].isLocked && _selectedFunds.length == 1) {
+        error(context, "You need at least 2 funds to lock percentages");
+        return;
+      }
+      
+      // Check if trying to lock and all other funds are already locked
+      if (!_selectedFunds[index].isLocked) {
+        final lockedCount = _selectedFunds.where((f) => f.isLocked).length;
+        if (lockedCount >= _selectedFunds.length - 1) {
+          error(context, "Cannot lock all funds");
+         
+          return;
+        }
+      }
+      
+      _selectedFunds[index].isLocked = !_selectedFunds[index].isLocked;
+      notifyListeners();
+    }
+  }
+
   void updateFundPercentage(FundListModel fund, double percentage) {
     final index = _selectedFunds.indexWhere((f) => f.name == fund.name);
     if (index != -1) {
@@ -993,46 +1044,64 @@ Color getSectorAllocationColor(String sector) {
     if (_selectedFunds.length <= 1) return;
 
     final changedFund = _selectedFunds[changedIndex];
-    final remainingPercentage = 100.0 - changedFund.percentage;
+    
+    // Get locked funds total percentage (excluding the changed fund if it's locked)
+    double lockedPercentage = 0.0;
+    for (int i = 0; i < _selectedFunds.length; i++) {
+      if (i != changedIndex && _selectedFunds[i].isLocked) {
+        lockedPercentage += _selectedFunds[i].percentage;
+      }
+    }
+
+    final remainingPercentage = 100.0 - changedFund.percentage - lockedPercentage;
+
+    // Get unlocked funds (excluding the changed fund)
+    List<int> unlockedIndices = [];
+    for (int i = 0; i < _selectedFunds.length; i++) {
+      if (i != changedIndex && !_selectedFunds[i].isLocked) {
+        unlockedIndices.add(i);
+      }
+    }
 
     if (remainingPercentage <= 0) {
-      for (int i = 0; i < _selectedFunds.length; i++) {
-        if (i != changedIndex) {
-          _selectedFunds[i].percentage = 0.0;
-        }
+      // Set all unlocked funds to 0
+      for (int i in unlockedIndices) {
+        _selectedFunds[i].percentage = 0.0;
       }
       _updateAllControllerValues();
       return;
     }
 
-    final otherFundsCount = _selectedFunds.length - 1;
-    final equalPercentage = remainingPercentage / otherFundsCount;
-
-    for (int i = 0; i < _selectedFunds.length; i++) {
-      if (i != changedIndex) {
-        _selectedFunds[i].percentage = equalPercentage.round().toDouble();
-      }
+    if (unlockedIndices.isEmpty) {
+      _updateAllControllerValues();
+      return;
     }
 
+    final equalPercentage = remainingPercentage / unlockedIndices.length;
+
+    for (int i in unlockedIndices) {
+      _selectedFunds[i].percentage = equalPercentage.round().toDouble();
+    }
+
+    // Handle rounding differences
     final currentTotal =
         _selectedFunds.fold(0.0, (sum, fund) => sum + fund.percentage);
     final difference = 100.0 - currentTotal;
 
-    if (difference != 0 && otherFundsCount > 0) {
-      int maxIndex = -1;
-      double maxPercentage = -1;
-      for (int i = 0; i < _selectedFunds.length; i++) {
-        if (i != changedIndex && _selectedFunds[i].percentage > maxPercentage) {
+    if (difference != 0 && unlockedIndices.isNotEmpty) {
+      int maxIndex = unlockedIndices.first;
+      double maxPercentage = _selectedFunds[maxIndex].percentage;
+      
+      for (int i in unlockedIndices) {
+        if (_selectedFunds[i].percentage > maxPercentage) {
           maxIndex = i;
           maxPercentage = _selectedFunds[i].percentage;
         }
       }
 
-      if (maxIndex != -1) {
-        _selectedFunds[maxIndex].percentage += difference;
-        _selectedFunds[maxIndex].percentage =
-            _selectedFunds[maxIndex].percentage.clamp(0, 100);
-      }
+      _selectedFunds[maxIndex].percentage += difference;
+      _selectedFunds[maxIndex].percentage =
+          _selectedFunds[maxIndex].percentage.clamp(0, 100);
     }
     _updateAllControllerValues();
   }
@@ -1049,19 +1118,39 @@ Color getSectorAllocationColor(String sector) {
   void _redistributePercentages() {
     if (_selectedFunds.isEmpty) return;
 
-    final equalPercentage = 100.0 / _selectedFunds.length;
+    // Get locked funds and their total percentage
+    double lockedPercentage = 0.0;
+    List<int> unlockedIndices = [];
+    
     for (int i = 0; i < _selectedFunds.length; i++) {
-      if (i == _selectedFunds.length - 1) {
-        final usedPercentage = _selectedFunds
-            .take(i)
-            .fold(0.0, (sum, fund) => sum + fund.percentage);
-        _selectedFunds[i].percentage =
-            (100.0 - usedPercentage).round().toDouble();
+      if (_selectedFunds[i].isLocked) {
+        lockedPercentage += _selectedFunds[i].percentage;
       } else {
-        _selectedFunds[i].percentage = equalPercentage.round().toDouble();
+        unlockedIndices.add(i);
       }
     }
 
+    // If no unlocked funds, nothing to redistribute
+    if (unlockedIndices.isEmpty) {
+      _updateAllControllerValues();
+      return;
+    }
+
+    final remainingPercentage = 100.0 - lockedPercentage;
+    final equalPercentage = remainingPercentage / unlockedIndices.length;
+
+    // Distribute remaining percentage equally among unlocked funds
+    for (int i = 0; i < unlockedIndices.length; i++) {
+      final index = unlockedIndices[i];
+      if (i == unlockedIndices.length - 1) {
+        // Last unlocked fund gets the remaining percentage to ensure total = 100%
+        final usedPercentage = lockedPercentage + 
+            unlockedIndices.take(i).fold(0.0, (sum, idx) => sum + _selectedFunds[idx].percentage);
+        _selectedFunds[index].percentage = (100.0 - usedPercentage).round().toDouble();
+      } else {
+        _selectedFunds[index].percentage = equalPercentage.round().toDouble();
+      }
+    }
 
     _updateAllControllerValues();
   }
@@ -1088,6 +1177,7 @@ Color getSectorAllocationColor(String sector) {
     _selectedDuration = '3Y';
     _editingStrategy = null;
     _investmentError = null;
+    _selectedPersonality = TradingPersonalityType.aurora; // Reset to default personality
     notifyListeners();
   }
 
@@ -1119,6 +1209,74 @@ Color getSectorAllocationColor(String sector) {
 
   bool isFundSelected(FundListModel fund) {
     return _selectedFunds.any((f) => f.name == fund.name);
+  }
+
+  // Group selected funds by type
+  Map<String, List<FundListModel>> get groupedSelectedFunds {
+    Map<String, List<FundListModel>> grouped = {};
+    
+    for (final fund in _selectedFunds) {
+      String category = _getCategoryFromType(fund.type);
+      if (!grouped.containsKey(category)) {
+        grouped[category] = [];
+      }
+      grouped[category]!.add(fund);
+    }
+    
+    // Sort categories in preferred order
+    Map<String, List<FundListModel>> sortedGrouped = {};
+    const order = ['Equity', 'Hybrid', 'Debt'];
+    
+    for (String category in order) {
+      if (grouped.containsKey(category)) {
+        sortedGrouped[category] = grouped[category]!;
+      }
+    }
+    
+    // Add any other categories not in the predefined order
+    for (String category in grouped.keys) {
+      if (!order.contains(category)) {
+        sortedGrouped[category] = grouped[category]!;
+      }
+    }
+    
+    return sortedGrouped;
+  }
+
+  String _getCategoryFromType(String type) {
+    final lowerType = type.toLowerCase();
+    if (lowerType.contains('equity') || lowerType.contains('elss') || lowerType.contains('large cap') || 
+        lowerType.contains('mid cap') || lowerType.contains('small cap') || lowerType.contains('flexi cap')) {
+      return 'Equity';
+    } else if (lowerType.contains('hybrid') || lowerType.contains('balanced') || lowerType.contains('arbitrage')) {
+      return 'Hybrid';
+    } else if (lowerType.contains('debt') || lowerType.contains('liquid') || lowerType.contains('gilt') || 
+               lowerType.contains('duration') || lowerType.contains('credit') || lowerType.contains('ultra short')) {
+      return 'Debt';
+    }
+    return 'Other';
+  }
+
+  // Helper method to extract trading personality from investment details
+  TradingPersonalityType getPersonalityFromInvestmentDetails(String? investmentDetails) {
+    if (investmentDetails == null || !investmentDetails.contains('personality:')) {
+      return TradingPersonalityType.aurora; // Default to Earth if no personality info found
+    }
+    
+    try {
+      final personalityPart = investmentDetails.split('personality:')[1];
+      final personalityName = personalityPart.split('|')[0]; // In case there are more parts
+      
+      // Find the matching personality type by name
+      final personality = TradingPersonalities.getPersonalityByName(personalityName);
+      if (personality != null) {
+        return personality.type;
+      }
+    } catch (e) {
+      // If parsing fails, return default
+    }
+    
+    return TradingPersonalityType.aurora; // Default fallback
   }
 
   // Investment Configuration Methods
@@ -1247,10 +1405,10 @@ Color getSectorAllocationColor(String sector) {
 
     for (final currentFund in _selectedFunds) {
       final originalFund = originalFunds.firstWhere(
-        (f) => f.schemaName == currentFund.name,
-        orElse: () => SchemaValues(schemaName: '', percentage: 0),
+        (f) => f.name == currentFund.name,
+        orElse: () => SchemaValues(name: '', percentage: 0),
       );
-      if ((originalFund.schemaName?.isEmpty ?? true) || 
+      if ((originalFund.name?.isEmpty ?? true) || 
           (currentFund.percentage - (originalFund.percentage ?? 0)).abs() > 0.01) {
         return true;
       }
@@ -1494,6 +1652,7 @@ Color getSectorAllocationColor(String sector) {
     // Convert selected funds to schema values
     final schemaValues = _convertFundsToSchemaValues(_selectedFunds)
         .map((map) => SchemeValue(
+              name: map['name'] ?? '',
               schemaName: map['schema_name'] ?? '',
               percentage: map['percentage'] ?? 0,
               schemeType: map['scheme_type'].toUpperCase() ?? '',
@@ -1616,7 +1775,8 @@ Color getSectorAllocationColor(String sector) {
 
       // Create scheme values from fund allocations
       final schemeValues = fundAllocations.map((fund) => SchemeValue(
-        schemaName: fund['name'] as String,
+        name: fund['name'] as String,
+        schemaName: fund['schema_name'] as String,
         percentage: (fund['percentage'] as double).round(),
         schemeType: fund['schemeType'] as String,
         isin: fund['isin'] as String,
@@ -1682,4 +1842,42 @@ extension NumberFormatting on double {
   //   super.dispose();
   // }
 }
+
+
+ void handleSaveStrategy(DashboardProvider strategy, BuildContext context) {
+    // Validate strategy name
+    if (strategy.strategyNameController.text.trim().isEmpty) {
+      strategy.setStrategyNameError('Strategy name is required');
+      return;
+    }
+    
+    if (strategy.strategyNameController.text.trim().length < 3) {
+      strategy.setStrategyNameError('Strategy name must be at least 3 characters');
+      return;
+    }
+
+    // Validate total percentage
+    if (strategy.totalPercentage != 100) {
+      strategy.setStrategyNameError('Total percentage must be 100%');
+      return;
+    }
+    
+    // Clear any existing error
+    strategy.clearStrategyNameError();
+    
+    // Proceed with strategy creation/update
+    if (strategy.isEditingMode) {
+      strategy.updateStrategy(context);
+    } else {
+      strategy.createStrategy(strategy.strategyNameController.text, context);
+    }
+    
+    // Navigate back after successful save
+    Navigator.pop(context);
+    Navigator.pop(context);
+    if(!strategy.stratergysavebackbutton){
+                      Navigator.of(context).pop();
+                       strategy.backtestAnalysis(uuid: strategy.editingStrategy?.data?.first.uuid ?? '');
+                     }
+  }
 

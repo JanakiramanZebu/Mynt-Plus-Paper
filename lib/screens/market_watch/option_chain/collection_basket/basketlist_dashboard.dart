@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mynt_plus/models/explore_model/basketcollection_model.dart';
+import 'package:mynt_plus/models/planet_avatar_model.dart';
 import 'package:mynt_plus/provider/dashboard_provider.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/res/global_state_text.dart';
@@ -9,6 +10,7 @@ import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/routes/route_names.dart';
 import 'package:mynt_plus/sharedWidget/splash_loader.dart';
 
+import '../../../../models/trading_personality_model.dart';
 import '../../../../sharedWidget/custom_back_btn.dart';
 
 class StrategyDashboardScreen extends ConsumerStatefulWidget {
@@ -32,7 +34,6 @@ class _StrategyDashboardScreenState
         StrategyFund(name: 'Equity', percentage: 90.0, color: Colors.green),
         StrategyFund(name: 'Debt', percentage: 10.0, color: Colors.blue),
       ],
-      isFirstTime: false,
     ),
     InvestmentStrategy(
       name: 'The Popular Balanced (60-40)',
@@ -43,21 +44,17 @@ class _StrategyDashboardScreenState
         StrategyFund(name: 'Equity', percentage: 60.0, color: Colors.green),
         StrategyFund(name: 'Debt', percentage: 40.0, color: Colors.blue),
       ],
-      isFirstTime: true,
     ),
     InvestmentStrategy(
-      name: 'Equal-Weight (25/25/25/25)',
+      name: 'Equal-Weight (25/25/50)',
       subtitle:
           'Straightforward diversification — four asset classes with equal allocation.',
       description: 'Built for steady, risk-conscious investors',
       funds: [
         StrategyFund(name: 'Equity', percentage: 25.0, color: Colors.green),
         StrategyFund(name: 'Debt', percentage: 25.0, color: Colors.blue),
-        StrategyFund(name: 'Hybrid', percentage: 25.0, color: Colors.orange),
-        StrategyFund(
-            name: 'Commodities', percentage: 25.0, color: Colors.purple),
+        StrategyFund(name: 'Hybrid', percentage: 50.0, color: Colors.orange),      
       ],
-      isFirstTime: true,
     ),
   ];
 
@@ -112,10 +109,18 @@ class _StrategyDashboardScreenState
                 const SizedBox(height: 24),
                 // Investment Strategies Section
                 _buildInvestmentStrategiesSection(theme),
+                // Add bottom padding to prevent content from being hidden behind FAB
+                const SizedBox(height: 80),
               ],
             ),
           );
         }),
+      ),
+      floatingActionButton: Consumer(
+        builder: (context, ref, child) {
+          final theme = ref.watch(themeProvider);
+          return _buildCreateNewButton(theme);
+        },
       ),
     );
   }
@@ -126,20 +131,13 @@ class _StrategyDashboardScreenState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            TextWidget.titleText(
-              text: 'My Saved Strategies',
-              theme: theme.isDarkMode,
-              color: theme.isDarkMode
-                  ? colors.textPrimaryDark
-                  : colors.textPrimaryLight,
-              fw: 1,
-            ),
-        if (strategy.savedStrategies?.data?.isNotEmpty ?? false)
-            _buildCreateNewButton(theme),
-          ],
+        TextWidget.titleText(
+          text: 'My Saved Strategies',
+          theme: theme.isDarkMode,
+          color: theme.isDarkMode
+              ? colors.textPrimaryDark
+              : colors.textPrimaryLight,
+          fw: 1,
         ),
         const SizedBox(height: 16),
         if (strategy.savedStrategies?.data?.isEmpty ?? true)
@@ -203,36 +201,66 @@ class _StrategyDashboardScreenState
           //       : colors.textSecondaryLight,
           //   fw: 0,
           // ),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: () => _navigateToStrategyCreation(),
-            style: ElevatedButton.styleFrom(
-              backgroundColor:
-                  theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(5),
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            ),
-            child: TextWidget.subText(
-              text: 'Create Now',
-              theme: theme.isDarkMode,
-              color: colors.colorWhite,
-              fw: 2,
-            ),
-          ),
+          // const SizedBox(height: 16),
+          // ElevatedButton(
+          //   onPressed: () => _navigateToStrategyCreation(),
+          //   style: ElevatedButton.styleFrom(
+          //     backgroundColor:
+          //         theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
+          //     shape: RoundedRectangleBorder(
+          //       borderRadius: BorderRadius.circular(5),
+          //     ),
+          //     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          //   ),
+          //   child: TextWidget.subText(
+          //     text: 'Create Now',
+          //     theme: theme.isDarkMode,
+          //     color: colors.colorWhite,
+          //     fw: 2,
+          //   ),
+          // ),
         ],
       ),
     );
   }
 
+  // Helper method to calculate allocation percentages
+  Map<String, double> _calculateAllocationPercentages(Data strategyData) {
+    Map<String, double> allocations = {
+      'Equity': 0.0,
+      'Debt': 0.0,
+      'Hybrid': 0.0,
+    };
+
+    if (strategyData.schemaValues != null) {
+      for (var schema in strategyData.schemaValues!) {
+        if (schema.percentage != null && schema.schemeType != null) {
+          String type = schema.schemeType!.toUpperCase();
+          if (type == 'EQUITY') {
+            allocations['Equity'] = allocations['Equity']! + schema.percentage!;
+          } else if (type == 'DEBT') {
+            allocations['Debt'] = allocations['Debt']! + schema.percentage!;
+          } else if (type == 'HYBRID') {
+            allocations['Hybrid'] = allocations['Hybrid']! + schema.percentage!;
+          }
+        }
+      }
+    }
+
+    return allocations;
+  }
+
   Widget _buildSavedStrategyCard(Data strategyData, ThemesProvider theme) {
+    final strategy = ref.read(dashboardProvider);
+    final planetType = strategy.getPersonalityFromInvestmentDetails(strategyData.investmentDetails);
+    final planet = TradingPersonalities.getPersonality(planetType);
+    
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-        borderRadius: BorderRadius.circular(5),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: theme.isDarkMode
               ? colors.textSecondaryDark.withOpacity(0.2)
@@ -241,135 +269,168 @@ class _StrategyDashboardScreenState
       ),
       child: InkWell(
         onTap: () => _loadStrategyData(strategyData),
+        // onLongPress: () => _showDeleteConfirmation(strategyData),
         borderRadius: BorderRadius.circular(5),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Strategy Name with Planet Avatar
             Row(
               children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      TextWidget.subText(
-                        text: strategyData.basketName ?? 'Unnamed Strategy',
-                        theme: theme.isDarkMode,
-                        color: theme.isDarkMode
-                            ? colors.textPrimaryDark
-                            : colors.textPrimaryLight,
-                        fw: 2,
-                      ),
-                      const SizedBox(height: 8),
-                      TextWidget.paraText(
-                        text:
-                            '${strategyData.years ?? 0} years • ${strategyData.investmentDetails ?? 'N/A'} • ₹${strategyData.investAmount?.toString() ?? '0'}',
-                        theme: theme.isDarkMode,
-                        color: theme.isDarkMode
-                            ? colors.textSecondaryDark
-                            : colors.textSecondaryLight,
-                        fw: 0,
-                      ),
-                      if (strategyData.datetime != null) ...[
-                        const SizedBox(height: 4),
-                        TextWidget.paraText(
-                          text:
-                              'Created: ${_formatDateTime(strategyData.datetime!)}',
-                          theme: theme.isDarkMode,
-                          color: theme.isDarkMode
-                              ? colors.textSecondaryDark
-                              : colors.textSecondaryLight,
-                          fw: 0,
-                        ),
+                // Planet Avatar
+                Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        planet.primaryColor,
+                        planet.secondaryColor,
                       ],
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: planet.primaryColor.withOpacity(0.3),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
                     ],
                   ),
-                ),
-                PopupMenuButton<String>(
-                  color:
-                      theme.isDarkMode ? colors.searchBgDark : colors.searchBg,
-                  icon: Icon(
-                    Icons.more_vert,
-                    color: theme.isDarkMode
-                        ? colors.textSecondaryDark
-                        : colors.textSecondaryLight,
+                  child: Center(
+                    child: Text(
+                      planet.emoji,
+                      style: const TextStyle(fontSize: 20),
+                    ),
                   ),
-                  onSelected: (value) => _handleMenuAction(value, strategyData),
-                  itemBuilder: (context) => [
-                    PopupMenuItem(
-                        value: 'edit',
-                        child: TextWidget.paraText(
-                          text: 'Edit',
-                          color: theme.isDarkMode
-                              ? colors.textSecondaryDark
-                              : colors.textSecondaryLight,
-                          theme: theme.isDarkMode,
-                          fw: 0,
-                        )),
-                    PopupMenuItem(
-                        value: 'delete',
-                        child: TextWidget.paraText(
-                          text: 'Delete',
-                          color: theme.isDarkMode
-                              ? colors.textSecondaryDark
-                              : colors.textSecondaryLight,
-                          theme: theme.isDarkMode,
-                          fw: 0,
-                        )),
-                  ],
+                ),
+                const SizedBox(width: 12),
+                // Strategy Name
+                Expanded(
+                  child: TextWidget.subText(
+                    text: strategyData.basketName ?? 'Unnamed Strategy',
+                    theme: theme.isDarkMode,
+                    color: theme.isDarkMode
+                        ? colors.textPrimaryDark
+                        : colors.textPrimaryLight,
+                    fw: 2,
+                    maxLines: 2,
+                    textOverflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ],
             ),
-            //   if (strategyData.schemaValues != null && strategyData.schemaValues!.isNotEmpty) ...[
-            //     const SizedBox(height: 12),
-            //     TextWidget.captionText(
-            //       text: 'Fund Allocation:',
-            //       theme: theme.isDarkMode,
-            //       color: theme.isDarkMode
-            //           ? colors.textSecondaryDark
-            //           : colors.textSecondaryLight,
-            //       fw: 1,
-            //     ),
-            //     const SizedBox(height: 8),
-            //     Wrap(
-            //       spacing: 8,
-            //       runSpacing: 4,
-            //       children: strategyData.schemaValues!.map((schema) => _buildSchemaChip(schema, theme)).toList(),
-            //     ),
+            const SizedBox(height: 12),
+            
+            // Invested Amount and Years on same line
+            Row(
+                    children: [
+                      Expanded(
+                        child: _buildModernTaxComponent(
+                            'Daily change',
+                            '0.00%',
+                            theme.isDarkMode
+                                ? colors.profitDark
+                                : colors.profitLight,
+                            theme),
+                      ),
+                      // Vertical separator between Current and Invested
+                      Container(
+                        width: 1,
+                        height: 40,
+                        color: theme.isDarkMode
+                            ? colors.textSecondaryDark.withOpacity(0.2)
+                            : colors.textSecondaryLight
+                                .withOpacity(0.3),
+                      ),
+                      Expanded(
+                        child: _buildModernTaxComponent(
+                            'Returns',
+                            '0.00%',
+                            theme.isDarkMode
+                                ? colors.profitDark
+                                : colors.profitLight,
+                            theme),
+                      ),
+                    ],
+                  ),
+            
+            // const SizedBox(height: 12),
+            
+            // // Allocation chips and date in a row
+            // Row(
+            //   crossAxisAlignment: CrossAxisAlignment.center,
+            //   children: [
+            //     // Left side: Allocation chips
+                
+                
+                
             //   ],
+            // ),
           ],
         ),
       ),
     );
   }
 
+
+   Widget _buildModernTaxComponent(
+      String label, String value, Color color, ThemesProvider theme) {
+    return Column(
+      children: [
+        TextWidget.paraText(
+          text: label,
+          theme: theme.isDarkMode,
+          color: theme.isDarkMode
+              ? colors.textSecondaryDark
+              : colors.textSecondaryLight,
+          fw: 0,
+        ),
+        const SizedBox(height: 8),
+        TextWidget.subText(
+          text: value,
+          theme: theme.isDarkMode,
+          color: color,
+          fw: 1,
+        ),
+      ],
+    );
+  }
+
   Widget _buildCreateNewButton(ThemesProvider theme) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () => _navigateToStrategyCreation(),
-        borderRadius: BorderRadius.circular(5),
-        splashColor:
-            theme.isDarkMode ? colors.splashColorDark : colors.splashColorLight,
-        highlightColor:
-            theme.isDarkMode ? colors.splashColorDark : colors.splashColorLight,
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.add,
-                color: colors.colorBlue,
-                size: 20,
-              ),
-              const SizedBox(width: 8),
-              TextWidget.subText(
-                text: 'New Strategy',
-                theme: theme.isDarkMode,
-                color: colors.colorBlue,
-                fw: 2,
-              ),
-            ],
+    return Container(
+      width: 50,
+      height: 50,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: colors.colorBlue,
+        boxShadow: [
+          BoxShadow(
+            color: colors.colorBlue.withOpacity(0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        shape: const CircleBorder(),
+        clipBehavior: Clip.hardEdge,
+        child: InkWell(
+          splashColor: Colors.white.withOpacity(0.2),
+          highlightColor: Colors.white.withOpacity(0.1),
+          onTap: () => _navigateToStrategyCreation(),
+          child: Container(
+            width: 50,
+            height: 50,
+            alignment: Alignment.center,
+            child: Icon(
+              Icons.add,
+              color: Colors.white,
+              size: 24,
+            ),
           ),
         ),
       ),
@@ -452,7 +513,7 @@ class _StrategyDashboardScreenState
                 //       ),
                 //   ],
                 // ),
-                const SizedBox(height: 12),
+                // const SizedBox(height: 12),
 
                 // Strategy name and subtitle
                 TextWidget.subText(
@@ -556,6 +617,52 @@ class _StrategyDashboardScreenState
         text: '${fund.name} ${fund.percentage.toStringAsFixed(0)}%',
         theme: theme.isDarkMode,
         color: fund.color,
+        fw: 0,
+      ),
+    );
+  }
+
+  Widget _buildAllocationChips(Data strategyData, ThemesProvider theme) {
+    final allocations = _calculateAllocationPercentages(strategyData);
+    
+    // Filter out allocations with 0% and create chips
+    List<Widget> chips = [];
+    
+    if (allocations['Equity']! > 0) {
+      chips.add(_buildAllocationChip('Equity', allocations['Equity']!, Colors.green, theme));
+    }
+    if (allocations['Debt']! > 0) {
+      chips.add(_buildAllocationChip('Debt', allocations['Debt']!, Colors.blue, theme));
+    }
+    if (allocations['Hybrid']! > 0) {
+      chips.add(_buildAllocationChip('Hybrid', allocations['Hybrid']!, Colors.orange, theme));
+    }
+    
+    if (chips.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: chips,
+    );
+  }
+
+  Widget _buildAllocationChip(String name, double percentage, Color color, ThemesProvider theme) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(5),
+        border: Border.all(
+          color: color.withOpacity(0.3),
+        ),
+      ),
+      child: TextWidget.paraText(
+        text: '$name ${percentage.toStringAsFixed(0)}%',
+        theme: theme.isDarkMode,
+        color: color,
         fw: 0,
       ),
     );
@@ -673,16 +780,16 @@ class _StrategyDashboardScreenState
     Navigator.pushNamed(context, Routes.createBasketStrategy);
   }
 
-  void _handleMenuAction(String action, Data strategyData) {
-    switch (action) {
-      case 'edit':
-        _loadStrategyData(strategyData);
-        break;
-      case 'delete':
-        _showDeleteConfirmation(strategyData);
-        break;
-    }
-  }
+  // void _handleMenuAction(String action, Data strategyData) {
+  //   switch (action) {
+  //     case 'edit':
+  //       _loadStrategyData(strategyData);
+  //       break;
+  //     case 'delete':
+  //       _showDeleteConfirmation(strategyData);
+  //       break;
+  //   }
+  // }
 
   String _formatDateTime(String dateTimeString) {
     try {
@@ -805,14 +912,12 @@ class InvestmentStrategy {
   final String subtitle;
   final String description;
   final List<StrategyFund> funds;
-  final bool isFirstTime;
 
   InvestmentStrategy({
     required this.name,
     required this.subtitle,
     required this.description,
     required this.funds,
-    required this.isFirstTime,
   });
 }
 

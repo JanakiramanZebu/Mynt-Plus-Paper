@@ -31,7 +31,9 @@ class Routes {
   static const String basketScreen = 'basketScreen';
   static const String createBasketStrategy = 'createBasketStrategy';
   static const String basketBacktestAnalysis = 'basketBacktestAnalysis';
+  static const String benchmarkBacktestAnalysis = 'benchmarkBacktestAnalysis';
   static const String basketSelectionScreen = 'basketSelectionScreen';
+  static const String saveStrategyScreen = 'saveStrategyScreen';
 
   static const String allIndex = 'allIndex';
   static const String topIndiciesIndex = 'topIndiciesIndex';

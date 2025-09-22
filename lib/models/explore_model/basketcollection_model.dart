@@ -32,6 +32,7 @@ class Data {
   String? datetime;
   String? investmentDetails;
   String? basketName;
+  String? name;
 
   Data(
       {this.schemaValues,
@@ -41,6 +42,7 @@ class Data {
       this.datetime,
       this.investmentDetails,
       this.basketName,
+      this.name,
       });
 
   Data.fromJson(Map<String, dynamic> json) {
@@ -56,6 +58,7 @@ class Data {
     datetime = json['datetime'];
     investmentDetails = json['investment_details'];
     basketName = json['basket_name'];
+    name = json['name'];
   }
 
   Map<String, dynamic> toJson() {
@@ -70,6 +73,7 @@ class Data {
     data['datetime'] = this.datetime;
     data['investment_details'] = this.investmentDetails;
     data['basket_name'] = this.basketName;
+    data['name'] = this.name;
     return data;
   }
 }
@@ -81,8 +85,9 @@ class SchemaValues {
   String? isin;
   String? aMCCode;
   double? aum;
+  String? name;
 
-  SchemaValues({this.percentage, this.schemaName, this.schemeType, this.isin});
+  SchemaValues({this.percentage, this.schemaName, this.schemeType, this.isin, this.name});
 
   SchemaValues.fromJson(Map<String, dynamic> json) {
     percentage = json['percentage'];
@@ -91,6 +96,7 @@ class SchemaValues {
     isin = json['isin'];
     aMCCode = json['aMCCode'];
     aum = json['aum'];
+    name = json['name'];
   }
 
   Map<String, dynamic> toJson() {
@@ -101,6 +107,7 @@ class SchemaValues {
     data['isin'] = this.isin;
     data['aMCCode'] = this.aMCCode;
     data['aum'] = this.aum;
+    data['name'] = this.name;
     return data;
   }
 }
@@ -117,6 +124,8 @@ class FundListModel {
   final String? aMCCode;
   final String? isin;
   double percentage;
+  final String? schemeName;
+  bool isLocked;
 
   FundListModel({
     required this.name,
@@ -128,5 +137,7 @@ class FundListModel {
     this.aMCCode,
     this.percentage = 0.0,
     this.isin,
+    this.schemeName,
+    this.isLocked = false,
   });
 }

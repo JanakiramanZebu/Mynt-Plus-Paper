@@ -33,7 +33,8 @@ class _FundSelectionScreenState extends ConsumerState<FundSelectionScreen> {
     // Convert API data to FundModel
     List<FundListModel> funds = (strategy.basketSearchItems ?? [])
         .map((item) => FundListModel(
-              name: item.schemeName ?? "Unknown Scheme",
+              name: item.name ?? "Unknown Scheme",
+              schemeName: item.schemeName ?? "Unknown Scheme",
               type: _getFundTypeFromScheme(item.schemeType),
               fiveYearCAGR: 0.0,
               threeYearCAGR: 0.0,
@@ -110,128 +111,134 @@ class _FundSelectionScreenState extends ConsumerState<FundSelectionScreen> {
         ),
         title: Container(
           padding: const EdgeInsets.only(right: 12, top: 8, bottom: 7),
-          child: Container(
-            height: 40,
-            decoration: BoxDecoration(
-              color: theme.isDarkMode ? colors.searchBgDark : colors.searchBg,
-              borderRadius: BorderRadius.circular(5),
-            ),
-            child: Row(
-              children: [
-                // Search icon
-                const SizedBox(width: 12),
-                SvgPicture.asset(
-                  assets.searchIcon,
-                  color: theme.isDarkMode
-                      ? colors.textSecondaryDark
-                      : colors.textSecondaryLight,
-                  width: 18,
-                  height: 18,
-                ),
-                const SizedBox(width: 8),
-                // Text input
-                Expanded(
-                  child: TextFormField(
-                    controller: strategy.searchController,
-                    style: TextWidget.textStyle(
-                      fontSize: 16,
-                      color: theme.isDarkMode
-                          ? colors.textPrimaryDark
-                          : colors.textPrimaryLight,
-                      theme: theme.isDarkMode,
-                      fw: 0,
-                    ),
-                    decoration: InputDecoration(
-                      isCollapsed: true,
-                      border: InputBorder.none,
-                      enabledBorder: InputBorder.none,
-                      focusedBorder: InputBorder.none,
-                      hintText: "Search funds...",
-                      hintStyle: TextWidget.textStyle(
-                        fontSize: 14,
-                        theme: theme.isDarkMode,
-                        fw: 0,
-                        color: (theme.isDarkMode
-                                ? colors.textSecondaryDark
-                                : colors.textSecondaryLight)
-                            .withOpacity(0.4),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 0, vertical: 12),
-                    ),
-                    onChanged: (value) {
-                      strategy.searchController.text = value;
-                      strategy.Basketsearch(value);
-                    },
+          child: Row(
+            children: [
+              // Search container
+              Expanded(
+                child: Container(
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: theme.isDarkMode ? colors.searchBgDark : colors.searchBg,
+                    borderRadius: BorderRadius.circular(5),
                   ),
-                ),
-                // Clear button
-                if (strategy.searchController.text.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: Material(
-                      color: Colors.transparent,
-                      shape: const CircleBorder(),
-                      child: InkWell(
-                        customBorder: const CircleBorder(),
-                        onTap: () {
-                          strategy.searchController.clear();
-                          strategy.Basketsearch("");
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: SvgPicture.asset(
-                            assets.removeIcon,
-                            width: 20,
-                            height: 20,
+                  child: Row(
+                    children: [
+                      // Search icon
+                      const SizedBox(width: 12),
+                      SvgPicture.asset(
+                        assets.searchIcon,
+                        color: theme.isDarkMode
+                            ? colors.textSecondaryDark
+                            : colors.textSecondaryLight,
+                        width: 18,
+                        height: 18,
+                      ),
+                      const SizedBox(width: 8),
+                      // Text input
+                      Expanded(
+                        child: TextFormField(
+                          controller: strategy.searchController,
+                          style: TextWidget.textStyle(
+                            fontSize: 16,
                             color: theme.isDarkMode
-                                ? colors.textSecondaryDark
-                                : colors.textSecondaryLight,
+                                ? colors.textPrimaryDark
+                                : colors.textPrimaryLight,
+                            theme: theme.isDarkMode,
+                            fw: 0,
                           ),
+                          decoration: InputDecoration(
+                            isCollapsed: true,
+                            border: InputBorder.none,
+                            enabledBorder: InputBorder.none,
+                            focusedBorder: InputBorder.none,
+                            hintText: "Search funds...",
+                            hintStyle: TextWidget.textStyle(
+                              fontSize: 14,
+                              theme: theme.isDarkMode,
+                              fw: 0,
+                              color: (theme.isDarkMode
+                                      ? colors.textSecondaryDark
+                                      : colors.textSecondaryLight)
+                                  .withOpacity(0.4),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 0, vertical: 12),
+                          ),
+                          onChanged: (value) {
+                            strategy.searchController.text = value;
+                            strategy.Basketsearch(value);
+                          },
                         ),
                       ),
+                      // Clear button
+                      if (strategy.searchController.text.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: Material(
+                            color: Colors.transparent,
+                            shape: const CircleBorder(),
+                            child: InkWell(
+                              customBorder: const CircleBorder(),
+                              onTap: () {
+                                strategy.searchController.clear();
+                                strategy.Basketsearch("");
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: SvgPicture.asset(
+                                  assets.removeIcon,
+                                  width: 20,
+                                  height: 20,
+                                  color: theme.isDarkMode
+                                      ? colors.textSecondaryDark
+                                      : colors.textSecondaryLight,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+              // DONE button (only when funds are selected)
+              if (strategy.selectedFunds.isNotEmpty) ...[
+                const SizedBox(width: 5),
+                Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(5),
+                    splashColor: theme.isDarkMode
+                        ? colors.splashColorDark
+                        : colors.splashColorLight,
+                    highlightColor: theme.isDarkMode
+                        ? colors.highlightDark
+                        : colors.highlightLight,
+                    onTap: () {
+                      // Clear search and navigate back
+                      strategy.searchController.clear();
+                      strategy.Basketsearch("");
+                      Navigator.pop(context);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                      child: TextWidget.subText(
+                        text: 'Done',
+                        theme: theme.isDarkMode,
+                        color: colors.colorBlue,
+                        fw: 2,
+                      ),
                     ),
                   ),
+                ),
               ],
-            ),
+            ],
           ),
         ),
       ),
       body: SafeArea(
         child: Column(
           children: [
-            // Filter Tabs Section (like search screen)
-            // Container(
-            //   decoration: BoxDecoration(
-            //     color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-            //     border: Border(
-            //       bottom: BorderSide(
-            //         color: theme.isDarkMode
-            //             ? const Color(0xFF2A2A2A)
-            //             : const Color(0xFFE0E0E0),
-            //         width: 1.0,
-            //       ),
-            //     ),
-            //   ),
-            //   child: Column(
-            //     mainAxisSize: MainAxisSize.min,
-            //     children: [
-            //       // Tabs content
-            //       Container(
-            //         height: 32,
-            //         child: Row(
-            //           children: [
-            //             const SizedBox(width: 8),
-            //             Expanded(
-            //               child: _buildFilterTabs(theme),
-            //             ),
-            //           ],
-            //         ),
-            //       ),
-            //     ],
-            //   ),
-            // ),
-
             // Search Results Section
             if (strategy.searchController.text.isNotEmpty)
               if (strategy.basketSearchItems?.isNotEmpty ?? false)
@@ -244,38 +251,6 @@ class _FundSelectionScreenState extends ConsumerState<FundSelectionScreen> {
                     child: NoDataFound(),
                   ),
                 ),
-            // Selected Funds Count
-            // if (strategy.selectedFunds.isNotEmpty &&
-            //     strategy.searchController.text.isEmpty)
-            //   Container(
-            //     padding: const EdgeInsets.only(
-            //         left: 16, right: 8, top: 0, bottom: 0),
-            //     child: Row(
-            //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            //       children: [
-            //         TextWidget.subText(
-            //           text: '${strategy.selectedFunds.length} funds selected',
-            //           theme: theme.isDarkMode,
-            //           color: theme.isDarkMode
-            //               ? colors.textSecondaryDark
-            //               : colors.textSecondaryLight,
-            //           fw: 0,
-            //         ),
-            //         TextButton(
-            //           onPressed: () =>
-            //               ref.read(dashboardProvider).clearStrategy(),
-            //           child: TextWidget.subText(
-            //             text: 'Clear',
-            //             theme: theme.isDarkMode,
-            //             color: theme.isDarkMode
-            //                 ? colors.primaryDark
-            //                 : colors.primaryLight,
-            //             fw: 2,
-            //           ),
-            //         ),
-            //       ],
-            //     ),
-            //   ),
 
             // Fund List
             if (strategy.searchController.text.isEmpty)
@@ -292,6 +267,7 @@ class _FundSelectionScreenState extends ConsumerState<FundSelectionScreen> {
                   },
                 ),
               ),
+
           ],
         ),
         ),
@@ -456,17 +432,17 @@ class _FundSelectionScreenState extends ConsumerState<FundSelectionScreen> {
                       : colors.textSecondaryLight,
                   fw: 0,
                 ),
-                if (fund.aum > 0) ...[
-                  const SizedBox(width: 8),
-                  TextWidget.paraText(
-                    text: 'AUM ${_formatAumValue(fund.aum)}',
-                    theme: theme.isDarkMode,
-                    color: theme.isDarkMode
-                        ? colors.textSecondaryDark
-                        : colors.textSecondaryLight,
-                    fw: 0,
-                  ),
-                ],
+                // if (fund.aum > 0) ...[
+                //   const SizedBox(width: 8),
+                //   TextWidget.paraText(
+                //     text: 'AUM ${_formatAumValue(fund.aum)}',
+                //     theme: theme.isDarkMode,
+                //     color: theme.isDarkMode
+                //         ? colors.textSecondaryDark
+                //         : colors.textSecondaryLight,
+                //     fw: 0,
+                //   ),
+                // ],
               ],
             ),
           ),

@@ -6,9 +6,11 @@ import 'package:mynt_plus/screens/algo/algo_create.dart';
 import 'package:mynt_plus/screens/bonds/bonds_common_search_screen.dart';
 import 'package:mynt_plus/screens/algo/algo_strategytlist.dart';
 import 'package:mynt_plus/screens/market_watch/option_chain/collection_basket/basket_backtest_analysisi.dart';
+import 'package:mynt_plus/screens/market_watch/option_chain/collection_basket/benchmark_backtest.dart';
 import 'package:mynt_plus/screens/market_watch/option_chain/collection_basket/basketlist_dashboard.dart';
 import 'package:mynt_plus/screens/market_watch/option_chain/collection_basket/collection_basket_list.dart';
 import 'package:mynt_plus/screens/market_watch/option_chain/collection_basket/create_baskerscreen.dart';
+import 'package:mynt_plus/screens/market_watch/option_chain/collection_basket/save_strategy_screen.dart';
 // import 'package:mynt_plus/screens/ipo/ipo_common_search_screen.dart';
 import 'package:mynt_plus/screens/mutual_fund/cagr_calculator_screen.dart';
 import 'package:mynt_plus/screens/mutual_fund/mf_hold_singlepage.dart';
@@ -485,9 +487,26 @@ class AppRoutes {
           pageBuilder: (_, __, ___) => const FundSelectionScreen(),
           beginOffset: const Offset(-1.0, 0.0),
         );
-      case Routes.basketBacktestAnalysis:
+      case Routes.saveStrategyScreen:
         return _createRoute(
-          pageBuilder: (_, __, ___) => const BasketBacktestAnalysisScreen(),
+          pageBuilder: (_, __, ___) {
+            final routeArgs = args as Map<String, dynamic>?;
+            return SaveStrategyScreen(
+              isEditMode: routeArgs?['isEditMode'] ?? false,
+              editStrategyName: routeArgs?['strategyName'],
+              editStrategyUuid: routeArgs?['strategyUuid'],
+            );
+          },
+          beginOffset: const Offset(-1.0, 0.0),
+        );
+      // case Routes.basketBacktestAnalysis:
+      //   return _createRoute(
+      //     pageBuilder: (_, __, ___) => const BasketBacktestAnalysisScreen(),
+      //     beginOffset: const Offset(-1.0, 0.0),
+      //   );
+      case Routes.benchmarkBacktestAnalysis:
+        return _createRoute(
+          pageBuilder: (_, __, ___) => const BenchMarkBacktestScreen(),
           beginOffset: const Offset(-1.0, 0.0),
         );
 
