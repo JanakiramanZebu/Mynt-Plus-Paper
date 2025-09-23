@@ -64,6 +64,7 @@ class _ModifyPlaceOrderScreenState extends ConsumerState<ModifyPlaceOrderScreen>
   bool _isMarketOrder = false;
   bool _isStoplossOrder = false;
   bool _isBOCOOrderEnabled = false;
+  bool _isFirstLegBOCOOrder = false;
   bool isAdvancedOptionClicked = false;
   bool _addValidityAndDisclosedQty = false;
 
@@ -100,6 +101,13 @@ class _ModifyPlaceOrderScreenState extends ConsumerState<ModifyPlaceOrderScreen>
       isAdvancedOptionClicked = _isStoplossOrder = ["SL-LMT", "SL-MKT"].contains(priceType);
 
       _isBOCOOrderEnabled = widget.modifyOrderArgs.sPrdtAli == "BO" || widget.modifyOrderArgs.sPrdtAli == "CO";
+
+      // Check if this is first leg order
+      // CO: First leg when blprc is available
+      // BO: First leg when both blprc and bpprc are available
+      _isFirstLegBOCOOrder = _isBOCOOrderEnabled &&
+        ((widget.modifyOrderArgs.sPrdtAli == "CO" && widget.modifyOrderArgs.blprc != null) ||
+         (widget.modifyOrderArgs.sPrdtAli == "BO" && widget.modifyOrderArgs.blprc != null && widget.modifyOrderArgs.bpprc != null));
 
       multiplayer = int.parse((widget.orderArg.exchange == "MCX" ? widget.scripInfo.prcqqty : widget.orderArg.lotSize).toString());
       isBuy = widget.modifyOrderArgs.trantype == "B" ? true : false;
@@ -625,12 +633,18 @@ class _ModifyPlaceOrderScreenState extends ConsumerState<ModifyPlaceOrderScreen>
                                                       splashColor: theme.isDarkMode ? colors.splashColorDark : colors.splashColorLight,
                                                       highlightColor: theme.isDarkMode ? colors.highlightDark : colors.highlightLight,
                                                       onTap: () {
-                                                        setState(() {
-                                                          _isMarketOrder = !_isMarketOrder;
-                                                          updatePriceType();
+                                                        if (_isBOCOOrderEnabled && !_isFirstLegBOCOOrder) {
+                                                          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                                                                warningMessage(context, 'Order type cannot be changed for ${widget.modifyOrderArgs.sPrdtAli} orders');
+                                                          
+                                                        } else {
+                                                          setState(() {
+                                                            _isMarketOrder = !_isMarketOrder;
+                                                            updatePriceType();
 
-                                                          marginUpdate();
-                                                        });
+                                                            marginUpdate();
+                                                          });
+                                                        }
                                                       },
                                                       child: Padding(
                                                         padding: const EdgeInsets.all(12.0),
@@ -645,12 +659,8 @@ class _ModifyPlaceOrderScreenState extends ConsumerState<ModifyPlaceOrderScreen>
                                 ],
                               ),
                             ),
-                            const SizedBox(height: 16),
-
-                            if (_isBOCOOrderEnabled) ...[
-                              const SizedBox(height: 16),
-                              stopLossOption(theme, context, widget.scripInfo)
-                            ] else ...[
+                            
+                            // else ...[
                               // Advance Option section
                               const SizedBox(height: 16),
 
@@ -702,12 +712,17 @@ class _ModifyPlaceOrderScreenState extends ConsumerState<ModifyPlaceOrderScreen>
                                           child: GestureDetector(
                                             behavior: HitTestBehavior.translucent, // Improves touch detection
                                             onTap: () {
-                                              setState(() {
-                                                _isStoplossOrder = !_isStoplossOrder;
-                                                updatePriceType();
-                                                // orderInput.chngPriceType(priceType, widget.orderArg.exchange);
-                                                marginUpdate();
-                                              });
+                                              if (_isBOCOOrderEnabled && !_isFirstLegBOCOOrder) {
+                                                   ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                                                        warningMessage(context, 'Order type cannot be changed for ${widget.modifyOrderArgs.sPrdtAli} orders');
+                                              } else {
+                                                setState(() {
+                                                  _isStoplossOrder = !_isStoplossOrder;
+                                                  updatePriceType();
+                                                  // orderInput.chngPriceType(priceType, widget.orderArg.exchange);
+                                                  marginUpdate();
+                                                });
+                                              }
                                             },
                                             child: Container(
                                               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -854,6 +869,9 @@ class _ModifyPlaceOrderScreenState extends ConsumerState<ModifyPlaceOrderScreen>
                                         //     ),
                                         //   ),
                                         // ),
+
+                                        
+                                        if(!_isBOCOOrderEnabled) ...[
                                         Divider(color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider),
                                         Theme(
                                           data: ThemeData(
@@ -927,6 +945,9 @@ class _ModifyPlaceOrderScreenState extends ConsumerState<ModifyPlaceOrderScreen>
                                           addValidityAndDisclosedQtyOption(theme, context, widget.scripInfo),
                                           const SizedBox(height: 10)
                                         ],
+
+                                        ],
+
                                         Divider(color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider),
                                         // SizedBox(
                                         //     height: priceType == "Market"
@@ -937,7 +958,13 @@ class _ModifyPlaceOrderScreenState extends ConsumerState<ModifyPlaceOrderScreen>
                                   ),
                                 ],
                               ),
-                            ],
+                            // ],
+                            const SizedBox(height: 16),
+
+                            if (_isBOCOOrderEnabled) ...[
+                              const SizedBox(height: 16),
+                              stopLossOption(theme, context, widget.scripInfo)
+                            ], 
 
                             // const SizedBox(height: 16),
                             // const Divider(color: Color(0xffDDDDDD)),
