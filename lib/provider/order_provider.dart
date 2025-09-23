@@ -1813,6 +1813,7 @@ class OrderProvider extends DefaultChangeNotifier {
         ref.read(indexListProvider).bottomMenu(2, context);
         // Switch to Orders tab in Portfolio screen
         ref.read(portfolioProvider).changeTabIndex(2);
+        ref.read(orderProvider).changeTabIndex(3, context);
         HapticFeedback.heavyImpact();
         SystemSound.play(SystemSoundType.click);
       } else {
@@ -1912,6 +1913,8 @@ class OrderProvider extends DefaultChangeNotifier {
 
         Navigator.pop(context);
         ref.read(indexListProvider).bottomMenu(2, context);
+        ref.read(portfolioProvider).changeTabIndex(2);
+        ref.read(orderProvider).changeTabIndex(3, context);
         HapticFeedback.heavyImpact();
         SystemSound.play(SystemSoundType.click);
       } else {

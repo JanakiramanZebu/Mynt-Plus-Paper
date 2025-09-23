@@ -851,6 +851,7 @@ class _UserAccountScreenState extends ConsumerState<UserAccountScreen> {
             child: Tooltip(
               key: key,
               message: message,
+              showDuration: const Duration(milliseconds: 100),
               preferBelow: false,
               child: child,
             ),
@@ -3198,6 +3199,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                 },
                 style: ElevatedButton.styleFrom(
                     elevation: 0,
+                    minimumSize: Size(100, 45),
                     backgroundColor: theme.isDarkMode
                         ? colors.primaryDark
                         : colors.primaryLight,
@@ -3561,6 +3563,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                   },
                   style: ElevatedButton.styleFrom(
                       elevation: 0,
+                    minimumSize: Size(100, 45),
                       backgroundColor: theme.isDarkMode
                           ? colors.primaryDark
                           : colors.primaryLight,
@@ -4651,12 +4654,11 @@ class ReportsScreen extends ConsumerWidget {
                           //   Navigator.pushNamed(context, Routes.holdingscreen,
                           //       arguments: "DDDDD");
                           //   break;
-                          // case 'Positions':
-                          //   ledgerdate.fetchposition(context);
-
-                          //   Navigator.pushNamed(context, Routes.positionscreen,
-                          //       arguments: "DDDDD");
-                          //   break;
+                          case 'Positions':
+                            ledgerdate.fetchposition(context);
+                            Navigator.pushNamed(context, Routes.positionscreen,
+                                arguments: "DDDDD");
+                            break;
                           // case 'Profit & Loss':
                           //   // ledgerdate.fetchposition(context);
                           //   if (ledgerdate.pnlAllData == null) {
@@ -4747,9 +4749,9 @@ class ReportsScreen extends ConsumerWidget {
                             Navigator.pushNamed(context, Routes.caeventmainpage,
                                 arguments: "DDDDD");
                             break;
-                          case 'Positions':
-                           ledgerdate.redirecttopositionsbeta(context);
-                            break;
+                          // case 'Positions':
+                          //  ledgerdate.redirecttopositionsbeta(context);
+                          //   break;
                           // Add other cases as needed
                         }
                       },

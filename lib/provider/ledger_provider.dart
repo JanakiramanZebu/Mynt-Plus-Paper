@@ -1103,7 +1103,7 @@ class LDProvider extends DefaultChangeNotifier {
       final time = DateFormat('hh:mm:ss a').format(DateTime.now());
       _timedis = time;
       _positiondata = await api.getposition();
-      print("objectobjectobjectobjectobjectobjectobjectobject $time");
+      // print("objectobjectobjectobjectobjectobjectobjectobject $time");
       notifyListeners();
     });
   }

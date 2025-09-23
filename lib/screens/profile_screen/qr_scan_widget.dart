@@ -195,10 +195,10 @@ class _BarcodeScannerWithScanWindowState
     final currentCount = _prefs.cameraPermissionDeniedCount;
     _prefs.setCameraPermissionDeniedCount(currentCount + 1);
     
-    if (currentCount + 1 >= 2) {
-      _hasShownPermissionDialog = true;
-      _showPermissionDialog();
-    }
+    // Pop the screen immediately when permission is denied
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Navigator.pop(context);
+    });
   }
 }
 

@@ -422,6 +422,10 @@ class OrderInputProvider extends DefaultChangeNotifier {
     _qtyCtrl.clear();
     _ocoPriceCtrl.clear();
     _priceCtrl.clear();
+    _GTTPriceTypeOrderIsMarket = false;
+    _GTTOCOPriceTypeOrderIsMarket = false;
+    _GTTPriceTypeIsMarket = false;
+    _GTTOCOPriceTypeIsMarket = false;
     notifyListeners();
   }
 
