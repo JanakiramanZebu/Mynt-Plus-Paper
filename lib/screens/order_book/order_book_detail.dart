@@ -866,65 +866,161 @@ void _showExitPositionDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          backgroundColor: theme.isDarkMode
-              ? const Color.fromARGB(255, 18, 18, 18)
-              : colors.colorWhite,
-          titleTextStyle: textStyles.appBarTitleTxt.copyWith(
-              color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack),
-          contentTextStyle: textStyles.menuTxt,
-          titlePadding:
-              const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+           backgroundColor: theme
+                                                                        .isDarkMode
+                                                                    ? const Color(
+                                                                        0xFF121212)
+                                                                    : const Color(
+                                                                        0xFFF1F3F8),
           shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(14))),
-          scrollable: true,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 14,
+            borderRadius: BorderRadius.all(Radius.circular(8)),
           ),
-          insetPadding: const EdgeInsets.symmetric(horizontal: 20),
-          title: TextWidget.titleText(
-              text: "Exit Position", theme: theme.isDarkMode, fw: 1),
-          content: SizedBox(
-            width: MediaQuery.of(context).size.width,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                TextWidget.subText(
-                    text: "Are you sure you want to exit a position ?",
-                    theme: theme.isDarkMode,
-                    fw: 0),
-              ],
-            ),
+          scrollable: true,
+          titlePadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          insetPadding:
+              const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+          actionsPadding:
+              const EdgeInsets.only(bottom: 16, right: 16, left: 16, top: 8),
+          title: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Material(
+                    color: Colors.transparent,
+                    shape: const CircleBorder(),
+                    child: InkWell(
+                      onTap: () async {
+                        await Future.delayed(const Duration(milliseconds: 150));
+                        Navigator.pop(context);
+                      },
+                      borderRadius: BorderRadius.circular(20),
+                      splashColor: theme.isDarkMode
+                          ? colors.splashColorDark
+                          : colors.splashColorLight,
+                      highlightColor: theme.isDarkMode
+                          ? colors.splashColorDark
+                          : colors.splashColorLight,
+                      child: Padding(
+                        padding: const EdgeInsets.all(6.0),
+                        child: Icon(
+                          Icons.close_rounded,
+                          size: 22,
+                          color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: MediaQuery.of(context).size.width,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    TextWidget.subText(
+                      text: "Are you sure you want to exit a position ?",
+                      theme: theme.isDarkMode,
+                     color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                      fw: 3,
+                      align: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
           actions: [
-            TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: TextWidget.subText(
-                    text: "No",
-                    theme: false,
-                    color: theme.isDarkMode
-                        ? colors.colorLightBlue
-                        : colors.colorBlue,
-                    fw: 0)),
-            ElevatedButton(
-              onPressed: () async {
-                await ref.read(orderProvider).fetchExitSNOOrd(
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(
+                onPressed: () async {
+                  await ref.read(orderProvider).fetchExitSNOOrd(
                     "${orderBookData.snonum}",
                     "${orderBookData.prd}",
                     context,
                     true);
-              },
-              style: ElevatedButton.styleFrom(
-                  elevation: 0,
-                  backgroundColor:
-                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                },
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size(0, 45),
+                  side: BorderSide(color: colors.btnOutlinedBorder),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(50),
-                  )),
-              child: TextWidget.subText(
-                  text: "Yes", theme: theme.isDarkMode, fw: 0),
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  backgroundColor: colors.primaryDark,
+                ),
+                child: TextWidget.titleText(
+                  text: "Exit",
+                  theme: theme.isDarkMode,
+                  color:
+                       colors.colorWhite ,
+                  fw: 2,
+                ),
+              ),
             ),
           ],
         );
+        
+        
+        // AlertDialog(
+        //   backgroundColor: theme.isDarkMode
+        //       ? const Color.fromARGB(255, 18, 18, 18)
+        //       : colors.colorWhite,
+        //   titleTextStyle: textStyles.appBarTitleTxt.copyWith(
+        //       color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack),
+        //   contentTextStyle: textStyles.menuTxt,
+        //   titlePadding:
+        //       const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        //   shape: const RoundedRectangleBorder(
+        //       borderRadius: BorderRadius.all(Radius.circular(14))),
+        //   scrollable: true,
+        //   contentPadding: const EdgeInsets.symmetric(
+        //     horizontal: 14,
+        //   ),
+        //   insetPadding: const EdgeInsets.symmetric(horizontal: 20),
+        //   title: TextWidget.titleText(
+        //       text: "", theme: theme.isDarkMode, fw: 1),
+        //   content: SizedBox(
+        //     width: MediaQuery.of(context).size.width,
+        //     child: Column(
+        //       crossAxisAlignment: CrossAxisAlignment.start,
+        //       children: [
+        //         TextWidget.subText(
+        //             text: "",
+        //             theme: theme.isDarkMode,
+        //             fw: 0),
+        //       ],
+        //     ),
+        //   ),
+        //   actions: [
+        //     TextButton(
+        //         onPressed: () => Navigator.of(context).pop(),
+        //         child: TextWidget.subText(
+        //             text: "No",
+        //             theme: false,
+        //             color: theme.isDarkMode
+        //                 ? colors.colorLightBlue
+        //                 : colors.colorBlue,
+        //             fw: 0)),
+        //     ElevatedButton(
+        //       onPressed: () async {
+               
+        //       },
+        //       style: ElevatedButton.styleFrom(
+        //           elevation: 0,
+        //           backgroundColor:
+        //               theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+        //           shape: RoundedRectangleBorder(
+        //             borderRadius: BorderRadius.circular(50),
+        //           )),
+        //       child: TextWidget.subText(
+        //           text: "Yes", theme: theme.isDarkMode, fw: 0),
+        //     ),
+        //   ],
+        // );
       });
 }
 
