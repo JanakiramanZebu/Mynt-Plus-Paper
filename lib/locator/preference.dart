@@ -342,9 +342,52 @@ class Preferences {
   // Camera permission tracking
   Future setCameraPermissionDeniedCount(int count) async =>
       await _prefInstance!.setInt(_cameraPermissionDeniedCount, count);
-  
-  int get cameraPermissionDeniedCount => 
+
+  int get cameraPermissionDeniedCount =>
       _prefInstance?.getInt(_cameraPermissionDeniedCount) ?? 0;
+
+  // Banner image cache methods
+  Future setBannerImageCache(String bannerId, String cacheData) async =>
+      await _prefInstance!.setString('${_bannerImageCache}_$bannerId', cacheData);
+
+  String? getBannerImageCache(String bannerId) =>
+      _prefInstance?.getString('${_bannerImageCache}_$bannerId');
+
+  Future removeBannerImageCache(String bannerId) async =>
+      await _prefInstance!.remove('${_bannerImageCache}_$bannerId');
+
+  Future<List<String>> getAllBannerCacheKeys() async {
+    final keys = _prefInstance!.getKeys();
+    return keys.where((key) => key.startsWith('${_bannerImageCache}_')).toList();
+  }
+
+  Future clearAllBannerCache() async {
+    final keys = await getAllBannerCacheKeys();
+    for (final key in keys) {
+      await _prefInstance!.remove(key);
+    }
+  }
+
+  // Banner seen tracking methods
+  Future setBannerSeen(String userId, String bannerId) async =>
+      await _prefInstance!.setBool('${_bannerSeen}_${userId}_$bannerId', true);
+
+  bool isBannerSeen(String userId, String bannerId) =>
+      _prefInstance?.getBool('${_bannerSeen}_${userId}_$bannerId') ?? false;
+
+  Future<List<String>> getSeenBannerIds(String userId) async {
+    final keys = _prefInstance!.getKeys();
+    final seenKeys = keys.where((key) => key.startsWith('${_bannerSeen}_${userId}_')).toList();
+    return seenKeys.map((key) => key.replaceFirst('${_bannerSeen}_${userId}_', '')).toList();
+  }
+
+  Future clearSeenBanners(String userId) async {
+    final keys = _prefInstance!.getKeys();
+    final seenKeys = keys.where((key) => key.startsWith('${_bannerSeen}_${userId}_')).toList();
+    for (final key in seenKeys) {
+      await _prefInstance!.remove(key);
+    }
+  }
 }
 
 const String _userTheme = 'userTheme';
@@ -372,6 +415,8 @@ const String _basketList = 'basketList';
 const String _basketScrips = 'basketScrips';
 const String _orderTracking = 'orderTracking';
 const String _cameraPermissionDeniedCount = 'cameraPermissionDeniedCount';
+const String _bannerImageCache = 'bannerImageCache';
+const String _bannerSeen = 'bannerSeen';
 
 ////MARKET WATCH Filter
 const String _isMWScripName = "isMWScripName";

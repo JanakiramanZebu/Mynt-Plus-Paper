@@ -14,9 +14,11 @@ import 'package:mynt_plus/screens/stocks/explore/stocks/etf_category_detail_scre
 import 'package:url_launcher/url_launcher.dart';
 import '../locator/constant.dart';
 import '../locator/preference.dart';
+import '../models/banner_model/banner_model.dart';
 import '../models/marketwatch_model/market_watch_scrip_model.dart';
 import '../provider/api_key_provider.dart';
 import '../provider/auth_provider.dart';
+import '../provider/banner_provider.dart';
 import '../provider/fund_provider.dart';
 import '../provider/index_list_provider.dart';
 import '../provider/market_watch_provider.dart';
@@ -36,6 +38,7 @@ import '../res/assets.dart';
 import '../res/global_state_text.dart';
 import '../res/res.dart';
 import '../routes/route_names.dart';
+import '../sharedWidget/dynamic_banner_widget.dart';
 import '../sharedWidget/functions.dart';
 import '../sharedWidget/internet_widget.dart';
 import 'market_watch/index/index_screen.dart';
@@ -73,6 +76,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     ref.read(networkStateProvider).networkStream();
     ref.read(marketWatchProvider).fToast.init(context);
     ref.read(versionProvider).checkVersion(context);
+
+    // Initialize banner system
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        ref.read(bannerProvider).loadBanners();
+      }
+    });
+
     super.initState();
   }
 
@@ -623,7 +634,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       if ((internetStatus == ConnectivityResult.wifi ||
               internetStatus == ConnectivityResult.mobile)) {
         // Use the selected tab directly to return the corresponding screen
-        return _onItemTapped(selectedTab, theme);
+        return Stack(
+          children: [
+            _onItemTapped(selectedTab, theme),
+            const DynamicBannerWidget(
+              screenType: BannerScreenType.homescreen,
+              showImmediately: true,
+            ),
+          ],
+        );
       }
       return SizedBox.shrink();
     });

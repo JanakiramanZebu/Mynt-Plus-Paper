@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:local_auth/error_codes.dart' as auth_error;
+import 'package:mynt_plus/provider/banner_provider.dart';
 import 'package:mynt_plus/provider/mf_provider.dart';
 import 'package:mynt_plus/provider/profile_all_details_provider.dart';
 import 'package:mynt_plus/provider/thems.dart';
@@ -57,9 +58,9 @@ class AuthProvider extends DefaultChangeNotifier {
   final api = locator<ApiExporter>();
   final Preferences pref = locator<Preferences>();
   final Ref ref;
-  final String _version = "1.0.95(1)";
+  final String _version = "1.0.50(118+1)";
   late final String _versiontext =
-      "Version 3.0.2 Build $_version Released on 20 Sep";
+      "Version 3.0.2 Build $_version Released on 23 Sep";
   String get versiontext => _versiontext;
 
   //  Text field controller for Login and otp screen
@@ -914,6 +915,9 @@ class AuthProvider extends DefaultChangeNotifier {
         pref.setMobileLogin(false);
 
         ref.read(fundProvider).clearFunds();
+
+        // Clear banner seen storage on logout
+        ref.read(bannerProvider).onUserLogout();
 
         // Update UI state
         ref.read(indexListProvider).bottomMenu(0, context);
@@ -1854,6 +1858,9 @@ class AuthProvider extends DefaultChangeNotifier {
     pref.setHideLoginOptBtn(false);
     pref.setMobileLogin(false);
 
+    // Clear banner seen storage on logout (network failure scenario)
+    ref.read(bannerProvider).onUserLogout();
+
     // Update UI state
     ref.read(indexListProvider).bottomMenu(0, context);
 
@@ -1965,6 +1972,9 @@ class AuthProvider extends DefaultChangeNotifier {
       pref.setLogout(true);
       pref.setHideLoginOptBtn(false);
       pref.setMobileLogin(false);
+
+      // Clear banner seen storage on session expiry
+      ref.read(bannerProvider).onUserLogout();
 
       // Prefill the login field for convenience
       loginMethCtrl.text = pref.clientId ?? "";

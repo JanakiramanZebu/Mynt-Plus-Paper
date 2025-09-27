@@ -1,6 +1,7 @@
 import 'package:mynt_plus/api/ledger_api.dart';
 import '../api_key_generate_api.dart';
 import '../auth_api.dart';
+import '../banner_api.dart';
 import '../bond_api.dart';
 import '../change_password_api.dart';
 import '../fund_api.dart';
@@ -23,6 +24,7 @@ class ApiExporter
     with
         ApiCore,
         AuthApi,
+        BannerApi,
         ChangePasswordApi,
         IndexApi,
         MarketWatchApi,
