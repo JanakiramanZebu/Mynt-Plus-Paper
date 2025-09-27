@@ -284,7 +284,7 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                   return const SizedBox(width: 8);
                                 },
                                 itemCount: (orderType == "CO - BO")
-                                    ? 2
+                                    ? 3
                                     : priceTypes.length))),
             
                     Row(
@@ -721,9 +721,7 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
     orderType = selectedOrderType == "Cover" || selectedOrderType == "Bracket"
         ? "CO - BO"
         : selectedOrderType;
-    priceType = (orderType == "CO - BO" && selectedPriceType == "SL Limit")
-        ? "Limit"
-        : (orderType == "CO - BO" && selectedPriceType == "SL MKT")
+    priceType = (orderType == "CO - BO" && selectedPriceType == "SL MKT")
             ? "Market"
             : selectedPriceType;
   }
