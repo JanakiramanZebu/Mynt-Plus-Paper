@@ -324,7 +324,7 @@ class TradeBook extends ConsumerWidget {
                                       ),
                                       TextWidget.paraText(
                                         text:
-                                            "${tradeBook[index].avgprc ?? '0.00'}",
+                                            tradeBook[index].flprc ?? '0.00',
                                         color: theme.isDarkMode
                                             ? colors.textSecondaryDark
                                             : colors.textSecondaryLight,
@@ -558,7 +558,7 @@ class TradeBook extends ConsumerWidget {
                                       ],
                                     ),
                                     TextWidget.paraText(
-                                      text: "${tradeBook[index].prc ?? '0.00'}",
+                                      text: tradeBook[index].flprc ?? '0.00',
                                       color: theme.isDarkMode
                                           ? colors.textSecondaryDark
                                           : colors.textSecondaryLight,

@@ -1,20 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../models/marketwatch_model/get_quotes.dart';
 import '../../models/order_book_model/trade_book_model.dart';
 import '../../provider/market_watch_provider.dart';
 import '../../provider/thems.dart';
 import '../../provider/websocket_provider.dart';
 import '../../res/res.dart';
-import '../../sharedWidget/custom_back_btn.dart';
 import '../../sharedWidget/custom_drag_handler.dart';
-import '../../sharedWidget/custom_exch_badge.dart';
 import '../../sharedWidget/functions.dart';
-import '../../sharedWidget/scrip_info_btns.dart';
 import '../../../res/global_state_text.dart';
-import '../market_watch/scrip_depth_info.dart';
 
 class TradeBookDetail extends ConsumerStatefulWidget {
   final TradeBookModel tradeData;
@@ -226,7 +221,7 @@ class _TradeBookDetailState extends ConsumerState<TradeBookDetail> {
                                             ),
                                             const SizedBox(height: 4),
                                             TextWidget.titleText(
-                                                text: "$formattedLTP",
+                                                text: formattedLTP,
                                                 theme: false,
                                                 color: (formattedLTP ==
                                                             "null") ||
@@ -305,14 +300,10 @@ class _TradeBookDetailState extends ConsumerState<TradeBookDetail> {
 
                                 rowOfInfoData(
                                     "Price",
-                                    displayData.avgprc != null &&
-                                            displayData.avgprc != "null"
-                                        ? displayData.avgprc!
-                                        : displayData.prc != null &&
-                                                displayData.prc != "null"
-                                            ? displayData.prc!
-                                            : "0.00",
-                                    theme),
+                                    displayData.flprc != null && displayData.flprc != "null"
+                                        ? displayData.flprc ?? "0.00"
+                                        : displayData.prc ?? "0.00",
+                                        theme),
                                 const SizedBox(height: 8),
                                 rowOfInfoData(
                                     "Trade Value",
@@ -331,18 +322,18 @@ class _TradeBookDetailState extends ConsumerState<TradeBookDetail> {
                                 //     "${displayData.prctyp ?? ''}", theme),
                                 // const SizedBox(height: 8),
                                 rowOfInfoData("Validity",
-                                    "${displayData.ret ?? ''}", theme),
+                                    displayData.ret ?? '', theme),
                                 const SizedBox(height: 8),
 
                                 rowOfInfoData("Fill Id",
-                                    "${displayData.flid ?? ''}", theme),
+                                    displayData.flid ?? '', theme),
                                 const SizedBox(height: 8),
 
                                 // rowOfInfoData("Product",
                                 //     "${displayData.sPrdtAli ?? ''}", theme),
                                 // const SizedBox(height: 8),
                                 rowOfInfoData("Order Id",
-                                    "${displayData.norenordno ?? ''}", theme),
+                                    displayData.norenordno ?? '', theme),
                                 const SizedBox(height: 8),
                                 rowOfInfoData(
                                     "Date & Time",
