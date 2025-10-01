@@ -919,6 +919,9 @@ class AuthProvider extends DefaultChangeNotifier {
         // Clear banner seen storage on logout
         ref.read(bannerProvider).onUserLogout();
 
+        // Clear pending watchlists on logout
+        ref.read(marketWatchProvider).clearPendingWatchlists();
+
         // Update UI state
         ref.read(indexListProvider).bottomMenu(0, context);
 
@@ -1861,6 +1864,9 @@ class AuthProvider extends DefaultChangeNotifier {
     // Clear banner seen storage on logout (network failure scenario)
     ref.read(bannerProvider).onUserLogout();
 
+    // Clear pending watchlists on logout (network failure scenario)
+    ref.read(marketWatchProvider).clearPendingWatchlists();
+
     // Update UI state
     ref.read(indexListProvider).bottomMenu(0, context);
 
@@ -1975,6 +1981,9 @@ class AuthProvider extends DefaultChangeNotifier {
 
       // Clear banner seen storage on session expiry
       ref.read(bannerProvider).onUserLogout();
+
+      // Clear pending watchlists on session expiry
+      ref.read(marketWatchProvider).clearPendingWatchlists();
 
       // Prefill the login field for convenience
       loginMethCtrl.text = pref.clientId ?? "";

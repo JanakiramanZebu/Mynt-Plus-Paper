@@ -105,6 +105,57 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     "Sensex"
   ];
 
+  // Restricted names that users cannot use for watchlist names
+  // Includes both internal names and display names (case-insensitive)
+  static final List<String> _restrictedWatchlistNames = [
+    "holdings",
+    "my stocks",
+    "nifty 50",
+    "nifty50",
+    "nifty bank",
+    "niftybank",
+    "sensex"
+  ];
+
+  // Centralized validation method for watchlist names
+  String? validateWatchlistName(String name) {
+    final trimmedName = name.trim();
+
+    // Check if empty
+    if (trimmedName.isEmpty) {
+      return "Watchlist name cannot be empty";
+    }
+
+    final lowerCaseName = trimmedName.toLowerCase();
+
+    print("VALIDATION: Checking '$lowerCaseName' against restricted names: $_restrictedWatchlistNames");
+
+    // Check against restricted names (predefined display names)
+    if (_restrictedWatchlistNames.contains(lowerCaseName)) {
+      print("VALIDATION: '$lowerCaseName' is RESTRICTED");
+      return "This watchlist name is reserved";
+    }
+
+    print("VALIDATION: '$lowerCaseName' passed restricted check");
+
+    // Check against existing user watchlists (case-insensitive)
+    if (_marketWatchlist != null && _marketWatchlist!.values != null) {
+      final existingLowerCase = _marketWatchlist!.values!.map((name) => name.toLowerCase()).toList();
+      if (existingLowerCase.contains(lowerCaseName)) {
+        return "Watchlist name already exists";
+      }
+    }
+
+    // Check against pending watchlists (case-insensitive)
+    final pendingLowerCase = _pendingWatchlists.map((name) => name.toLowerCase()).toList();
+    if (pendingLowerCase.contains(lowerCaseName)) {
+      return "Watchlist name already exists";
+    }
+
+    // Validation passed
+    return null;
+  }
+
 // Search scrip Filter by Instument name
 
   final List<Tab> _searchTabList = const [
@@ -258,6 +309,11 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   AddDeleteScripModel? _addDeleteScripModel;
   AddDeleteScripModel? get addDeleteScripModel => _addDeleteScripModel;
 
+  // Track watchlists that are created locally but not yet synced to API
+  // These are watchlists created without any scrips
+  final Set<String> _pendingWatchlists = {};
+  Set<String> get pendingWatchlists => _pendingWatchlists;
+
   SearchScripNewModel? _searchScripModel;
 
   SearchScripNewModel? get searchScripModel => _searchScripModel;
@@ -374,8 +430,48 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     // Load saved page index
     // _loadCurrentPageIndex();
 
+    // Load pending watchlists from storage
+    _loadPendingWatchlists();
+
     // Listen to WebSocket data updates using a proper subscription
     _setupWebSocketListener();
+  }
+
+  // Load pending watchlists from SharedPreferences
+  Future<void> _loadPendingWatchlists() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final List<String>? savedPending = prefs.getStringList('pending_watchlists');
+      if (savedPending != null) {
+        _pendingWatchlists.addAll(savedPending);
+        print("Loaded pending watchlists: $savedPending");
+      }
+    } catch (e) {
+      print("Error loading pending watchlists: $e");
+    }
+  }
+
+  // Save pending watchlists to SharedPreferences
+  Future<void> _savePendingWatchlists() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setStringList('pending_watchlists', _pendingWatchlists.toList());
+      print("Saved pending watchlists: ${_pendingWatchlists.toList()}");
+    } catch (e) {
+      print("Error saving pending watchlists: $e");
+    }
+  }
+
+  // Clear pending watchlists (called on logout/account switch)
+  Future<void> clearPendingWatchlists() async {
+    try {
+      _pendingWatchlists.clear();
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('pending_watchlists');
+      print("Cleared pending watchlists");
+    } catch (e) {
+      print("Error clearing pending watchlists: $e");
+    }
   }
 
   // Setup WebSocket listener with proper error handling
@@ -1343,12 +1439,23 @@ class MarketWatchProvider extends DefaultChangeNotifier {
           _wlName = _marketWatchlist!.values!.first;
         }
 
-        // Debug: Print watchlist before adding predefined lists
-        print(
-            "DEBUG: Watchlist before adding predefined: ${_marketWatchlist!.values}");
+        // Create a new list to build the final watchlist order
+        // Filter out any predefined watchlists that might be in the API response
+        final updatedValues = _marketWatchlist!.values!
+            .where((wl) => !_preDefWL.contains(wl))
+            .toList();
 
-        // Create a completely new MarketWatchlist object to ensure reactive updates work
-        final updatedValues = List<String>.from(_marketWatchlist!.values!);
+        // Add pending watchlists that are not yet synced to API
+        for (var pendingWL in _pendingWatchlists) {
+          if (!updatedValues.contains(pendingWL)) {
+            updatedValues.add(pendingWL);
+          }
+        }
+
+        // Sort ONLY user watchlists (before adding predefined)
+        updatedValues.sort((a, b) => a.compareTo(b));
+
+        // Now add predefined watchlists at the end
         updatedValues.addAll(_preDefWL);
 
         // Create a new MarketWatchlist object to trigger proper change detection
@@ -1358,11 +1465,6 @@ class MarketWatchProvider extends DefaultChangeNotifier {
           values: updatedValues,
           emsg: _marketWatchlist!.emsg,
         );
-
-        // Debug: Print watchlist after adding predefined lists
-        print(
-            "DEBUG: Watchlist after adding predefined: ${_marketWatchlist!.values}");
-        print("DEBUG: Predefined list being added: $_preDefWL");
 
         // Force immediate UI update with the predefined tabs visible
         notifyListeners();
@@ -1398,6 +1500,15 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   Future fetchMWScrip(String wlname, context) async {
     try {
       toggleLoadingOn(true);
+
+      // If this is a pending watchlist, return empty scrip list without API call
+      if (_pendingWatchlists.contains(wlname)) {
+        _watchListValues = [];
+        _marketWatchScripData.addAll({wlname: jsonEncode([])});
+        toggleLoadingOn(false);
+        notifyListeners();
+        return null;
+      }
 
 //  await requestWSMarketWatchScrip(context: context, isSubscribe: false);
       _marketWatchScrip = await api.getMWScrip(wlname);
@@ -2706,6 +2817,15 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       // Clear current scrips first to ensure clean state
       _scrips.clear();
 
+      // Check if this is a pending watchlist (not yet synced to API)
+      if (_pendingWatchlists.contains(wName)) {
+        print("Watchlist $wName is pending (not synced), showing empty list");
+        // Don't subscribe to WebSocket for pending watchlists
+        await requestMWScrip(context: context, isSubscribe: false);
+        notifyListeners();
+        return;
+      }
+
       // Special handling for predefined watchlists
       bool isPredefined =
           (wName == "Nifty50" || wName == "Niftybank" || wName == "Sensex");
@@ -2788,6 +2908,51 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
 // Delete market scrips by watchlist name
   Future<void> deleteWatchList(String walName, BuildContext context) async {
+    // Calculate how many user watchlists exist (excluding predefined)
+    final userWatchlistCount = _marketWatchlist!.values!
+        .where((wl) => !_preDefWL.contains(wl))
+        .length;
+
+    // Check if this is the last user watchlist
+    if (userWatchlistCount == 1 && !_preDefWL.contains(walName)) {
+      error(context, "Cannot delete the last watchlist");
+      return;
+    }
+
+    // Check if this is a pending watchlist (created locally but not yet synced)
+    if (_pendingWatchlists.contains(walName)) {
+      // Just remove from pending list and local state, no API call needed
+      _pendingWatchlists.remove(walName);
+      await _savePendingWatchlists();
+
+      // Remove from marketWatchlist
+      if (_marketWatchlist != null && _marketWatchlist!.values != null) {
+        final updatedValues = List<String>.from(_marketWatchlist!.values!);
+        updatedValues.remove(walName);
+
+        _marketWatchlist = MarketWatchlist(
+          requestTime: _marketWatchlist!.requestTime,
+          stat: _marketWatchlist!.stat,
+          values: updatedValues,
+          emsg: _marketWatchlist!.emsg,
+        );
+      }
+
+      // Switch to first watchlist if deleted was active
+      if (walName == _wlName && _marketWatchlist!.values!.isNotEmpty) {
+        String newActiveWatchlist = _marketWatchlist!.values!.first;
+        _wlName = newActiveWatchlist;
+        _isPreDefWLs = _preDefWL.contains(newActiveWatchlist) ? "Yes" : "No";
+        setCurrentWatchlistPageIndex(0);
+        await changeWLScrip(newActiveWatchlist, context);
+      }
+
+      successMessage(context, "Watchlist deleted successfully");
+      notifyListeners();
+      return;
+    }
+
+    // Normal flow for synced watchlists
     String input = "";
 
     // Get the scrips for this watchlist, even if it's not the active one
@@ -2825,21 +2990,18 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         await fetchMWList(context, false, true);
 
         // If we deleted the active watchlist, switch to the first available one
-        // if (wasActiveWatchlist &&
-        //     _marketWatchlist != null &&
-        //     _marketWatchlist!.values!.isNotEmpty) {
+        if (wasActiveWatchlist &&
+            _marketWatchlist != null &&
+            _marketWatchlist!.values!.isNotEmpty) {
           String newActiveWatchlist = _marketWatchlist!.values!.first;
           _wlName = newActiveWatchlist;
           _isPreDefWLs = _preDefWL.contains(newActiveWatchlist) ? "Yes" : "No";
           setCurrentWatchlistPageIndex(0);
           // Load data for the new active watchlist
           await changeWLScrip(newActiveWatchlist, context);
-        // }
-        if(_marketWatchlist!.values!.length < 1){
-        successMessage(context, "Watchlist deleted successfully");
-        }else{
-          error(context, "Failed to delete watchlist");
         }
+
+        successMessage(context, "Watchlist deleted successfully");
         // Update UI to reflect changes
         notifyListeners();
       }else{
@@ -2855,47 +3017,63 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
 // Add market scrips by watchlist name
   addWatchList(String wlName, BuildContext context) async {
-    _addDeleteScripModel = await api.getAddDeleteSciptoMW(
-        isAdd: true, scripToken: "", wlname: wlName);
+    // Validate watchlist name using centralized validation
+    final validationError = validateWatchlistName(wlName);
+    if (validationError != null) {
+      error(context, validationError);
+      return;
+    }
 
-    if (_addDeleteScripModel!.stat!.toUpperCase() == "OK") {
-      toggleLoadingOn(true);
-      // await changeWlName(wlName, "No");
-      await fetchMWList(context, false);
-      _wlName = wlName;
-      await changeWLScrip(wlName, context);
-      
-      // Find the index of the newly created watchlist and set it as current
-      if (_marketWatchlist != null && _marketWatchlist!.values != null) {
-        final newWatchlistIndex = _marketWatchlist!.values!.indexOf(wlName);
-        if (newWatchlistIndex != -1) {
-          setCurrentWatchlistPageIndex(newWatchlistIndex);
-        } else {
-          setCurrentWatchlistPageIndex(0);
-        }
-        successMessage(context, "Watchlist created successfully");
-      } else {
-        setCurrentWatchlistPageIndex(0);
-      }      
-      
-      notifyListeners();
-      await Future.delayed(const Duration(milliseconds: 100));
-      notifyListeners();
-      toggleLoadingOn(false);
-    }  else if (_addDeleteScripModel!.emsg ==
-          "Invalid Input : The scrips you're trying to add are already in the Market Watch or it's Invalid Scrip.") {
-        error(context, "Unable to create your watchlist. Please try again.");
-      }  else if (_addDeleteScripModel!.emsg ==
-          "Session Expired :  Invalid Session Key") {
-        try {
-          ref.read(authProvider).ifSessionExpired(context);
-        } catch (e) {
-          print("Error handling session expiration: $e");
-        }
-       } else {
-        error(context, "Failed to create watchlist: ${_addDeleteScripModel!.emsg}");
-       }
+    // Use trimmed name
+    wlName = wlName.trim();
 
+    // Store watchlist locally instead of calling API
+    // API will be called when user adds the first scrip
+    _pendingWatchlists.add(wlName);
+    await _savePendingWatchlists(); // Persist to storage
+
+    // Add to the existing marketWatchlist for UI display
+    if (_marketWatchlist != null && _marketWatchlist!.values != null) {
+      // Filter out predefined watchlists first
+      final updatedValues = _marketWatchlist!.values!
+          .where((wl) => !_preDefWL.contains(wl))
+          .toList();
+
+      // Add the new watchlist
+      updatedValues.add(wlName);
+
+      // Sort only user watchlists
+      updatedValues.sort((a, b) => a.compareTo(b));
+
+      // Add predefined watchlists back at the end
+      updatedValues.addAll(_preDefWL);
+
+      _marketWatchlist = MarketWatchlist(
+        requestTime: _marketWatchlist!.requestTime,
+        stat: _marketWatchlist!.stat,
+        values: updatedValues,
+        emsg: _marketWatchlist!.emsg,
+      );
+
+    }
+
+    // Set as current watchlist
+    _wlName = wlName;
+
+    // Initialize empty scrip list for this watchlist
+    _scrips = [];
+    _watchListValues = [];
+
+    // Find the index and set as current
+    if (_marketWatchlist != null && _marketWatchlist!.values != null) {
+      final newWatchlistIndex = _marketWatchlist!.values!.indexOf(wlName);
+      if (newWatchlistIndex != -1) {
+        setCurrentWatchlistPageIndex(newWatchlistIndex);
+      }
+      successMessage(context, "Watchlist created successfully");
+    }
+
+    notifyListeners();
   }
 
   Future<bool> addDelMarketScrip(
@@ -2907,8 +3085,47 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       bool isReOrder,
       bool isOptionStike) async {
     try {
-      _addDeleteScripModel = await api.getAddDeleteSciptoMW(
-          isAdd: isAdd, scripToken: scripTok, wlname: wlName);
+      // Check if this is a pending watchlist (created locally without API call)
+      bool wasPending = false;
+      if (isAdd && _pendingWatchlists.contains(wlName)) {
+        wasPending = true;
+        // This is the first scrip being added to a pending watchlist
+        // Create the watchlist via API with this scrip
+        print("Creating pending watchlist '$wlName' with first scrip");
+        _addDeleteScripModel = await api.getAddDeleteSciptoMW(
+            isAdd: true, scripToken: scripTok, wlname: wlName);
+
+        if (_addDeleteScripModel!.stat!.toUpperCase() == "OK") {
+          // Successfully created watchlist with scrip, remove from pending
+          _pendingWatchlists.remove(wlName);
+          await _savePendingWatchlists(); // Persist the change
+          // Refresh the entire watchlist to sync with API
+          await fetchMWList(context, false, true);
+
+          // After fetchMWList, update the page index to point to the correct watchlist
+          if (_marketWatchlist != null && _marketWatchlist!.values != null) {
+            final newIndex = _marketWatchlist!.values!.indexOf(wlName);
+            if (newIndex != -1) {
+              setCurrentWatchlistPageIndex(newIndex);
+              _wlName = wlName; // Ensure current watchlist name is set
+            }
+          }
+
+          // Fetch the scrip data for the newly created watchlist
+          await fetchMWScrip(wlName, context);
+
+          // For pending watchlists, we need to call changeWLScrip here
+          // to update the UI immediately after syncing
+          await changeWLScrip(wlName, context);
+
+          // Return early since we've handled everything for pending watchlists
+          return true;
+        }
+      } else {
+        // Normal flow for existing watchlists
+        _addDeleteScripModel = await api.getAddDeleteSciptoMW(
+            isAdd: isAdd, scripToken: scripTok, wlname: wlName);
+      }
 
       if (_addDeleteScripModel!.stat!.toUpperCase() == "OK") {
         ConstantName.sessCheck = true;
