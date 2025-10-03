@@ -35,7 +35,7 @@ class HoldingScreen extends ConsumerStatefulWidget {
   ConsumerState<HoldingScreen> createState() => _HoldingScreenState();
 }
 
-class _HoldingScreenState extends ConsumerState<HoldingScreen> {
+class _HoldingScreenState extends ConsumerState<HoldingScreen> with TickerProviderStateMixin {
   StreamSubscription? _socketSubscription;
 
   // Cached values to avoid recalculations
@@ -71,10 +71,15 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
   Widget? _cachedDarkDivider;
   Widget? _cachedLightDivider;
 
+
   @override
   void initState() {
     super.initState();
-
+    ref.read(portfolioProvider).holdingsTabController.addListener(() {
+      if (mounted) {
+        setState(() {});
+      }
+    });
     // Delay initialization to avoid setState during build
     // Use a longer delay to ensure we batch multiple initialization steps
     Future.delayed(const Duration(milliseconds: 50), () {
@@ -605,9 +610,11 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
           FocusScope.of(context).unfocus();
         },
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            
             Padding(
-              padding: const EdgeInsets.only(top: 10, left: 16, right: 16),
+              padding: const EdgeInsets.only(top: 0, left: 16, right: 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -1015,19 +1022,16 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
                                     ? colors.highlightDark
                                     : colors.highlightLight,
                                 onTap: () async {
-                                  Future.delayed(Duration(milliseconds: 150),
-                                      () async {
-                                    await ref
-                                        .read(indexListProvider)
-                                        .bottomMenu(3, context);
-                                    mf.mfExTabchange(2);
-                                  });
+                                  Future.delayed(const Duration(milliseconds: 150), () {
+                              Navigator.pushNamed(
+                                  context, Routes.portfolioDashboard);
+                            });
                                 },
                                 child: Padding(
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 10, vertical: 5),
                                   child: TextWidget.subText(
-                                    text: "My MF",
+                                    text: "Insights",
                                     theme: false,
                                     color: theme.isDarkMode
                                         ? colors.secondaryDark

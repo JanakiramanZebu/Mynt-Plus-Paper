@@ -69,53 +69,59 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8.0),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8,),
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
                       height: 35,
                       child: TabBar(
                         controller: _tabController,
                         tabAlignment: TabAlignment.start,
                         isScrollable: true,
-                        indicatorSize: TabBarIndicatorSize.label,
+                        indicatorSize: TabBarIndicatorSize.tab,
                         indicator: BoxDecoration(
                           color: theme.isDarkMode ? colors.searchBgDark : const Color(0xffF1F3F8),
                           borderRadius: BorderRadius.circular(5),
                         ),
-                        unselectedLabelColor: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                        labelStyle: TextWidget.textStyle(
-                            fontSize: 14, theme: false, fw: 1, color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight),
-                        unselectedLabelStyle: TextWidget.textStyle(
-                            fontSize: 14,
-                            theme: false,
-                            color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                            fw: 0,
-                            letterSpacing: -0.28),
-                        labelPadding: const EdgeInsets.symmetric(horizontal: 4),
+                        unselectedLabelColor: theme.isDarkMode
+                        ? colors.textSecondaryDark
+                        : colors.textSecondaryLight,
+                    labelStyle: TextWidget.textStyle(
+                        fontSize: 14,
+                        theme: false,
+                        fw: 2,
+                        color: theme.isDarkMode
+                            ? colors.textPrimaryDark
+                            : colors.textPrimaryLight),
+                    unselectedLabelStyle: TextWidget.textStyle(
+                        fontSize: 14,
+                        theme: false,
+                        fw: 3,
+                        color: colors.textSecondaryLight),
+                        // labelPadding: const EdgeInsets.symmetric(horizontal: 4),
                         tabs: tablistitems.asMap().entries.map((entry) {
                           final index = entry.key;
                           final tabData = entry.value;
-                          
                           return Tab(
-                            child: Builder(
-                              builder: (context) {
-                                final isSelected = _tabController.index == index;
+                            text: tabData['title'].toString(),
+                          //   child: Builder(
+                          //     builder: (context) {
+                          //       final isSelected = _tabController.index == index;
                                 
-                                return Padding(
-                                  padding: const EdgeInsets.only(
-                                      left: 10, right: 10, top: 0, bottom: 0),
-                                  child: Row(
-                                    crossAxisAlignment: CrossAxisAlignment.center,
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      TextWidget.paraText(
-                                          text: tabData['title'].toString(),
-                                          theme: false,
-                                          color: isSelected ? theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight : theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                                          fw: isSelected ? 2 : 2),
-                                    ],
-                                  ),
-                                );
-                              },
-                            ),
+                          //       return Padding(
+                          //         padding: const EdgeInsets.only(
+                          //             left: 10, right: 10, top: 0, bottom: 0),
+                          //         child: Row(
+                          //           crossAxisAlignment: CrossAxisAlignment.center,
+                          //           mainAxisSize: MainAxisSize.min,
+                          //           children: [
+                          //             TextWidget.paraText(
+                          //                 text: ,
+                          //                 theme: false,
+                          //                 color: isSelected ? theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight : theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                          //                 fw: isSelected ? 2 : 3),
+                          //           ],
+                          //         ),
+                          //       );
+                          //     },
+                          //   ),
                           );
                         }).toList(),
                       ),

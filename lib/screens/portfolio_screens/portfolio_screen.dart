@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/provider/fund_provider.dart';
+import 'package:mynt_plus/screens/mutual_fund/mf_hold_new_screen.dart';
 import '../../provider/ledger_provider.dart';
 import '../../provider/portfolio_provider.dart';
 import '../../provider/order_provider.dart';
@@ -25,6 +26,8 @@ class PortfolioScreen extends ConsumerStatefulWidget {
 
 class _PortfolioScreenState extends ConsumerState<PortfolioScreen>
     with TickerProviderStateMixin {
+  late TabController _holdingsTabController;
+
   @override
   void initState() {
     //  await
@@ -35,7 +38,12 @@ class _PortfolioScreenState extends ConsumerState<PortfolioScreen>
         vsync: this,
         initialIndex: ref.read(portfolioProvider).selectedTab);
 
+    // Initialize holdingsTabController to prevent LateInitializationError
+    _holdingsTabController = TabController(length: 2, vsync: this, initialIndex: ref.read(portfolioProvider).selectedHoldingsTab);
+    ref.read(portfolioProvider).holdingsTabController = _holdingsTabController;
+
     ref.read(portfolioProvider).portTab.addListener(() {
+      if (!mounted) return;
       ref
           .read(portfolioProvider)
           .changeTabIndex(ref.read(portfolioProvider).portTab.index);
@@ -125,6 +133,18 @@ class _PortfolioScreenState extends ConsumerState<PortfolioScreen>
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+        ref.read(portfolioProvider).changeHoldingsTabIndex(0);
+  }
+
+  @override
+  void dispose() {
+    _holdingsTabController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Consumer(builder: (context, WidgetRef ref, _) {
       final portfolio = ref.watch(portfolioProvider);
@@ -145,6 +165,7 @@ class _PortfolioScreenState extends ConsumerState<PortfolioScreen>
 
       return Column(children: [
         Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SizedBox(
               width: MediaQuery.of(context).size.width,
@@ -157,7 +178,7 @@ class _PortfolioScreenState extends ConsumerState<PortfolioScreen>
                 indicatorSize: TabBarIndicatorSize.tab,
                 indicatorPadding: const EdgeInsets.symmetric(horizontal: 4),
                 isScrollable: true,
-                labelPadding: const EdgeInsets.symmetric(horizontal: 12),
+                labelPadding: const EdgeInsets.only( left: 16, right: 12),
                 indicatorColor: theme.isDarkMode
                     ? colors.secondaryDark
                     : colors.secondaryLight,
@@ -262,7 +283,20 @@ class _PortfolioScreenState extends ConsumerState<PortfolioScreen>
           // child: TransparentLoaderScreen(
           // isLoading: portfolio.loading,
           child: TabBarView(controller: portfolio.portTab, children: [
-            const HoldingScreen(),
+            portfolio.holdingsTabController.index == 0 ?
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildTabBar(context, ref),
+                Expanded(child: const HoldingScreen()),
+              ],
+            ) : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+               _buildTabBar(context, ref),
+                Expanded(child: const MfHoldNewScreen()),
+              ],
+            ),
             PositionScreen(listofPosition: portfolio.allPostionList),
             const OrdersTabView(),
             const SecureFund(),
@@ -275,6 +309,47 @@ class _PortfolioScreenState extends ConsumerState<PortfolioScreen>
       ]);
     });
   }
+}
+
+Widget _buildTabBar(BuildContext context, WidgetRef ref) {
+  final theme = ref.watch(themeProvider);
+  return  Container(
+            margin: const EdgeInsets.symmetric(horizontal: 16,vertical: 16),
+            height: 35,
+              child: TabBar(
+                    controller: ref.read(portfolioProvider).holdingsTabController,
+                    tabAlignment: TabAlignment.start,
+                    isScrollable: true,
+                    indicatorSize: TabBarIndicatorSize.tab,
+                    indicatorColor: colors.colorWhite,
+                    indicator: BoxDecoration(
+                      color: theme.isDarkMode
+                          ? colors.searchBgDark
+                          : const Color(0xffF1F3F8),
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                    unselectedLabelColor: theme.isDarkMode
+                        ? colors.textSecondaryDark
+                        : colors.textSecondaryLight,
+                    labelStyle: TextWidget.textStyle(
+                        fontSize: 14,
+                        theme: false,
+                        fw: 2,
+                        color: theme.isDarkMode
+                            ? colors.textPrimaryDark
+                            : colors.textPrimaryLight),
+                    unselectedLabelStyle: TextWidget.textStyle(
+                        fontSize: 14,
+                        theme: false,
+                        fw: 3,
+                        color: colors.textSecondaryLight),
+                    labelPadding: const EdgeInsets.symmetric(horizontal: 8),
+                    tabs: const [
+                      Tab(text: "Equity"),
+                      Tab(text: "Mutual Fund"),
+                    ],
+                  ),
+                );
 }
 
 // Orders tab view that embeds the OrderBook functionality

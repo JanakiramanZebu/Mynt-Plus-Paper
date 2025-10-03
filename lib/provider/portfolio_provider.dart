@@ -141,6 +141,8 @@ class PortfolioProvider extends DefaultChangeNotifier {
   String _subscr = "";
   String get subscr => _subscr;
 
+  late TabController holdingsTabController;
+
   PortfolioProvider(this.ref);
 
   bool _showSearchHold = false;
@@ -251,6 +253,14 @@ class PortfolioProvider extends DefaultChangeNotifier {
     
     notifyListeners();
   }
+
+  int _selectedHoldingsTab = 0;
+  int get selectedHoldingsTab => _selectedHoldingsTab;
+
+changeHoldingsTabIndex(int index) {
+  _selectedHoldingsTab = index;
+  notifyListeners();
+}
 
   chngPosSelection(String val) {
     _posSelection = val;

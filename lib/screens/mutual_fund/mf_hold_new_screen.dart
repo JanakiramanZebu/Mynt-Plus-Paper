@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:mynt_plus/provider/index_list_provider.dart';
 import 'package:mynt_plus/provider/portfolio_provider.dart';
 import 'package:mynt_plus/sharedWidget/loader_ui.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
@@ -36,6 +37,10 @@ class MfHoldNewScreen extends ConsumerWidget {
     final hasHoldingsData = mfData.mfholdingnew?.data != null && 
                            mfData.mfholdingnew!.data!.isNotEmpty;
 
+    if(!hasHoldingsData) {
+      return const Expanded(child: Center(child: NoDataFound()));
+    }
+    
     return TransparentLoaderScreen(
       isLoading: mfData.holdstatload ?? false,
       child: Scaffold(
@@ -48,13 +53,13 @@ class MfHoldNewScreen extends ConsumerWidget {
                     child: GestureDetector(
                       onTap: () => FocusScope.of(context).unfocus(),
                       behavior: HitTestBehavior.opaque,
-                      child: hasHoldingsData 
-                          ? Column(
+                      child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
+                                
                                 // Summary container
                                 Container(
-                            padding: const EdgeInsets.all(16),
+                            padding: const EdgeInsets.only(left: 16, right: 16, top: 0, bottom: 16),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -386,10 +391,7 @@ class MfHoldNewScreen extends ConsumerWidget {
                                 _buildListContent(context, theme.isDarkMode, mfData, showSearch, searchText, items, theme),
                               ],
                             )
-                          : const SizedBox(
-                              height: 400,
-                              child: Center(child: NoDataFound()),
-                            ),
+                        
                     ),
                   ),
                 ),

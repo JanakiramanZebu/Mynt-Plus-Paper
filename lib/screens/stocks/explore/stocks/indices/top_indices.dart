@@ -52,7 +52,7 @@ class _TopIndicesState extends State<TopIndices> {
       final theme = ref.watch(themeProvider);
       // final indices = ref.watch(indexListProvider);
       return const Padding(
-        padding:  EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        padding:  EdgeInsets.symmetric(horizontal: 16, vertical: 0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

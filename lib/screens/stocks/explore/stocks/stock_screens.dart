@@ -1,17 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:mynt_plus/screens/stocks/explore/stocks/news/news_screen.dart';
+import 'package:mynt_plus/provider/mf_provider.dart';
 import 'package:share_plus/share_plus.dart';
-import 'dart:math' as math;
 
 import '../../../../locator/locator.dart';
 import '../../../../locator/preference.dart';
 import '../../../../provider/fund_provider.dart';
 import '../../../../provider/index_list_provider.dart';
 import '../../../../provider/ledger_provider.dart';
-import '../../../../provider/mf_provider.dart';
-import '../../../../provider/order_provider.dart';
 import '../../../../provider/portfolio_provider.dart';
 import '../../../../provider/stocks_provider.dart';
 import '../../../../provider/thems.dart';
@@ -20,9 +17,6 @@ import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
 import '../../../../routes/route_names.dart';
 import '../../../../sharedWidget/functions.dart';
-import '../../../market_watch/index/index_screen.dart';
-import '../explore_caevents.dart';
-import '../explore_liveIPO.dart';
 import 'indices/top_indices.dart';
 import 'trade_action/trade_action_widget.dart';
 import 'etf_category_detail_screen.dart';
@@ -41,6 +35,7 @@ class StockScreen extends ConsumerStatefulWidget {
 class _StockScreenState extends ConsumerState<StockScreen>
     with TickerProviderStateMixin {
   late TabController _tabController;
+  late TabController _statabController;
   @override
   void initState() {
     super.initState();
@@ -49,6 +44,20 @@ class _StockScreenState extends ConsumerState<StockScreen>
       _fetchPortfolioData();
     });
     _tabController = TabController(length: 1, vsync: this);
+    _statabController = TabController(length: 4, vsync: this);
+    _statabController.addListener(() {
+      setState(() {});
+    });
+    _tabController.addListener(() {
+      setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    _statabController.dispose();
+    super.dispose();
   }
 
   Future<void> _fetchPortfolioData() async {
@@ -56,6 +65,7 @@ class _StockScreenState extends ConsumerState<StockScreen>
       await Future.wait([
         ref.read(portfolioProvider).fetchHoldings(context, ""),
         ref.read(portfolioProvider).fetchPositionBook(context, false),
+        ref.read(portfolioProvider).fetchMFHoldings(context),
       ]);
 
       ref
@@ -76,6 +86,86 @@ class _StockScreenState extends ConsumerState<StockScreen>
     }
   }
 
+  // Get P&L data based on selected tab
+  Map<String, dynamic> _getPnLDataForTab(int tabIndex, PortfolioProvider portfolio, FundProvider funds, MFProvider mf) {
+    switch (tabIndex) {
+      case 0: // Equity Holdings - no change needed
+        return {
+          'pnl': portfolio.totalPnlHolding,
+          'percentage': portfolio.totPnlPercHolding,
+          'invested': portfolio.totInvesHold,
+          'current': portfolio.totalCurrentVal,
+          'label': 'P&L'
+        };
+      case 1: // MF Holdings - invested, current, Returns, Percentage
+        return {
+          'pnl': mf.mfholdingnew?.summary?.absReturnValue?.toString() ?? "0.00",
+          'percentage': mf.mfholdingnew?.summary?.absReturnPercent?.toString() ?? "0.00",
+          'invested': mf.mfholdingnew?.summary?.invested?.toString() ?? "0.00",
+          'current': mf.mfholdingnew?.summary?.currentValue?.toString() ?? "0.00",
+          'label': 'Returns'
+        };
+      case 2: // Position - P&L, MTM
+        return {
+          'pnl': portfolio.totPnL,
+          'percentage': portfolio.totMtM,
+          'invested': '0.00', // Not used for position
+          'current': '0.00', // Not used for position
+          'label': 'P&L'
+        };
+      case 3: // Funds - Available margin, Available Capital, Margin Used
+        // Calculate available capital as cash + available margin
+        
+        return {
+          'pnl': funds.fundDetailModel?.avlMrg ?? '0.00', // Available margin
+          'percentage': '', // Margin Used
+          'invested': funds.fundDetailModel?.totCredit ?? 0.00, // Available Capital
+          'current': funds.fundDetailModel?.utilizedMrgn ?? 0.00, // Not used for funds
+          'label': 'Available Margin'
+        };
+      default:
+        return {
+          'pnl': portfolio.totalPnlHolding,
+          'percentage': portfolio.totPnlPercHolding,
+          'invested': portfolio.totInvesHold,
+          'current': portfolio.totalCurrentVal,
+          'label': 'P&L'
+        };
+    }
+  }
+
+  // Get left label based on tab index
+  String _getLeftLabel(int tabIndex) {
+    switch (tabIndex) {
+      case 0: // Equity Holdings
+        return "Invested ";
+      case 1: // MF Holdings
+        return "Invested ";
+      case 2: // Position
+        return "P&L ";
+      case 3: // Funds
+        return "Capital ";
+      default:
+        return "Invested ";
+    }
+  }
+
+  // Get right label based on tab index
+  String _getRightLabel(int tabIndex) {
+    switch (tabIndex) {
+      case 0: // Equity Holdings
+        return "Current ";
+      case 1: // MF Holdings
+        return "Current ";
+      case 2: // Position
+        return "MTM ";
+      case 3: // Funds
+        return "Used ";
+      default:
+        return "Current ";
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = ref.watch(themeProvider);
@@ -84,17 +174,17 @@ class _StockScreenState extends ConsumerState<StockScreen>
     final indexList = ref.watch(indexListProvider);
     final ledgerdate = ref.watch(ledgerProvider);
     final trancation = ref.watch(transcationProvider);
+    final mf = ref.watch(mfProvider);
 
     final Preferences pref = locator<Preferences>();
     final String reflink = "https://oa.mynt.in/?ref=${pref.clientId}";
 
-    double totalCurrentVal = portfolio.totalPnlHolding;
-    double cash = totalCurrentVal +
-        (double.tryParse(funds.fundDetailModel?.cash?.toString() ?? "0") ??
-            0.0);
+    // Get P&L data based on current tab
+    final pnlData = _getPnLDataForTab(_statabController.index, portfolio, funds, mf);
+    double totalCurrentVal = double.tryParse(pnlData['pnl'].toString()) ?? 0.0;
     // double _invest = double.parse("${portfolio.holdingsModel?.first.invested ?? 0.0}");
-    String _totalPnlHolding = "${portfolio.totInvesHold ?? 0.0}";
-    String _totalCurrentVal = "${portfolio.totalCurrentVal ?? 0.0}";
+    String _totalPnlHolding = pnlData['invested'].toString();
+    String _totalCurrentVal = pnlData['current'].toString();
     // String _totPnlPercHolding = _invest > 0
     //       ? ((_totalPnlHolding / _invest) * 100).toStringAsFixed(2)
     //       : "0.00";
@@ -170,87 +260,138 @@ class _StockScreenState extends ConsumerState<StockScreen>
               // const SizedBox(
               //   height: 16,
               // ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(
-                        left: 16, right: 12, top: 0, bottom: 0),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            Container(
-                                decoration: BoxDecoration(
-                                  color: theme.isDarkMode
-                                      ? colors.darkGrey
-                                      : const Color(0xffF1F3F8),
-                                  borderRadius: BorderRadius.circular(30),
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: SvgPicture.asset(
-                                    "assets/icon/briefcase.svg",
-                                    width: 14,
-                                    height: 14,
+              Container(
+                margin: const EdgeInsets.only(left: 16, right: 16, top: 0,bottom: 16),
+                decoration: BoxDecoration(
+                  color: theme.isDarkMode
+                        ? colors.colorBlack
+                        : colors.colorWhite,
+                  borderRadius: BorderRadius.circular(5),
+                   border: Border.all(
+                            color: theme.isDarkMode
+                                ? colors.darkColorDivider
+                                : colors.colorDivider,
+                          ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(
+                          16),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                  decoration: BoxDecoration(
                                     color: theme.isDarkMode
-                                        ? colors.textSecondaryDark
-                                        : colors.primaryLight,
+                                        ? colors.darkGrey
+                                        : const Color(0xffF1F3F8),
+                                    borderRadius: BorderRadius.circular(30),
                                   ),
-                                )),
-                            const SizedBox(width: 12),
-                            TextWidget.subText(
-                              text: "Stocks Portfolio",
-                              theme: false,
-                              color: theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : colors.colorBlack,
-                              fw: 0,
-                            ),
-                          ],
-                        ),
-                        // const SizedBox(width: 12),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            InkWell(
-                              canRequestFocus: false,
-                              onTap: () async {
-                                Future.delayed(
-                                    const Duration(milliseconds: 150), () {
-                                  trancation.changebool(true);
-                                  Navigator.pushNamed(
-                                      context, Routes.fundscreen,
-                                      arguments: trancation);
-                                });
-                              },
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 4),
-                                child: TextWidget.subText(
-                                  text: "Add Money",
-                                  theme: false,
-                                  color: theme.isDarkMode
-                                      ? colors.primaryDark
-                                      : colors.primaryLight,
-                                  fw: 2,
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: SvgPicture.asset(
+                                      "assets/icon/briefcase.svg",
+                                      width: 14,
+                                      height: 14,
+                                      color: theme.isDarkMode
+                                          ? colors.textSecondaryDark
+                                          : colors.primaryLight,
+                                    ),
+                                  )),
+                              const SizedBox(width: 12),
+                              TextWidget.subText(
+                                text: "Portfolio",
+                                theme: false,
+                                color: theme.isDarkMode
+                                    ? colors.colorWhite
+                                    : colors.colorBlack,
+                                fw: 2,
+                              ),
+                            ],
+                          ),
+                          // const SizedBox(width: 12),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              InkWell(
+                                canRequestFocus: false,
+                                onTap: () async {
+                                  Future.delayed(
+                                      const Duration(milliseconds: 150), () {
+                                    trancation.changebool(true);
+                                    Navigator.pushNamed(
+                                        context, Routes.fundscreen,
+                                        arguments: trancation);
+                                  });
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 4),
+                                  child: TextWidget.subText(
+                                    text: "Add Money",
+                                    theme: false,
+                                    color: theme.isDarkMode
+                                        ? colors.primaryDark
+                                        : colors.primaryLight,
+                                    fw: 2,
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-                      ],
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 12),
-
-                  // if (portfolio.holdingsModel != null &&
-                  //             portfolio.holdingsModel!.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Material(
+                    const SizedBox(height: 5),
+                
+                   Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 16),
+                    height: 35,
+                     child: TabBar(
+                            controller: _statabController,
+                            tabAlignment: TabAlignment.start,
+                            isScrollable: true,
+                            indicatorSize: TabBarIndicatorSize.tab,
+                            indicatorColor: colors.colorWhite,
+                            indicator: BoxDecoration(
+                              color: theme.isDarkMode
+                                  ? colors.searchBgDark
+                                  : const Color(0xffF1F3F8),
+                              borderRadius: BorderRadius.circular(5),
+                            ),
+                            unselectedLabelColor: theme.isDarkMode
+                                ? colors.textSecondaryDark
+                                : colors.textSecondaryLight,
+                            labelStyle: TextWidget.textStyle(
+                                fontSize: 14,
+                                theme: false,
+                                fw: 2,
+                                color: theme.isDarkMode
+                            ? colors.textPrimaryDark
+                            : colors.textPrimaryLight),
+                            unselectedLabelStyle: TextWidget.textStyle(
+                                fontSize: 14,
+                                theme: false,
+                                fw: 3,
+                                color: colors.textSecondaryLight),
+                            labelPadding: const EdgeInsets.symmetric(horizontal: 8),
+                            tabs: const [
+                              Tab(text: "Equity"),
+                              Tab(text: "Mutual Fund"),
+                              Tab(text: "Position"),
+                              Tab(text: "Funds"),
+                            ],
+                          ),
+                   ),
+                   const SizedBox(height: 5),
+                    // if (portfolio.holdingsModel != null &&
+                    //             portfolio.holdingsModel!.isNotEmpty)
+                    Material(
                       color: Colors.transparent,
                       shape: const RoundedRectangleBorder(),
                       child: InkWell(
@@ -263,226 +404,359 @@ class _StockScreenState extends ConsumerState<StockScreen>
                             ? colors.highlightDark
                             : colors.highlightLight,
                         onTap: () {
+                          if(_statabController.index == 0){
+                          Future.delayed(const Duration(milliseconds: 150), () {
                           indexList.bottomMenu(2, context);
-                          portfolio.changeTabIndex(0);
+                            portfolio.changeTabIndex(0);
+                            portfolio.changeHoldingsTabIndex(0);
+                          });
+                          }
+                          else if(_statabController.index == 1){
+                          Future.delayed(const Duration(milliseconds: 150), () {
+                          indexList.bottomMenu(2, context);
+                            portfolio.changeTabIndex(0);
+                            portfolio.changeHoldingsTabIndex(1);
+                          });
+                          }
+                          else if(_statabController.index == 2){
+                          Future.delayed(const Duration(milliseconds: 150), () {
+                          indexList.bottomMenu(2, context);
+                            portfolio.changeTabIndex(1);
+                          });
+                          }
+                          else if(_statabController.index == 3){
+                          Future.delayed(const Duration(milliseconds: 150), () {
+                          indexList.bottomMenu(2, context);
+                            portfolio.changeTabIndex(3);
+                          });
+                          }
                         },
                         child: Container(
                           padding: const EdgeInsets.symmetric(
                               horizontal: 16, vertical: 14),
                           decoration: BoxDecoration(
-                            color: theme.isDarkMode
-                                ? colors.colorBlack
-                                : colors.searchBg,
+                            // color: colors.colorWhite,
                             borderRadius: BorderRadius.circular(5),
                           ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  TextWidget.subText(
-                                    text: "P&L",
-                                    theme: false,
-                                    color: theme.isDarkMode
-                                        ? colors.textSecondaryDark
-                                        : colors.textSecondaryLight,
-                                    fw: 0,
-                                  ),
-                                  Row(
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: [
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                 if(_statabController.index == 2)
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                  children: [
+                                   Column(
+                                  children: [
+                                    TextWidget.subText(
+                                        text: _getRightLabel(_statabController.index),
+                                        theme: false,
+                                        color: theme.isDarkMode
+                                            ? colors.textSecondaryDark
+                                            : colors.textSecondaryLight,
+                                        fw: 0,
+                                        align: TextAlign.center,
+                                      ),
+                                    TextWidget.titleText(
+                                            text: formatAmountCompact(double.parse(pnlData['percentage'].toString())),
+                                            theme: false,
+                                            color: pnlData['percentage']
+                                                        .toString()
+                                                        .startsWith("-")
+                                                    ? theme.isDarkMode ? colors.lossDark : colors.lossLight : pnlData['percentage'] == "NaN" || pnlData['percentage'] == "0.00" ?
+                                                   theme.isDarkMode
+                                                      ? colors.textPrimaryDark
+                                                      : colors.textPrimaryLight :
+                                                   theme.isDarkMode
+                                                      ? colors.successDark
+                                                      : colors.successLight,
+                                              fw: 0,
+                                          ),
+                                  ],
+                                ),
+                                 Container(
+                                  margin: const EdgeInsets.symmetric(horizontal: 16),
+                              height: 30, // adjust height as needed
+                              width: 1,
+                              color: theme.isDarkMode
+                                  ? colors.textSecondaryDark.withOpacity(0.3)
+                                  : colors.textSecondaryLight.withOpacity(0.3),
+                            ),
+                             Column(
+                                      children: [
+                                        TextWidget.subText(
+                                          text: pnlData['label'],
+                                          theme: false,
+                                          color: theme.isDarkMode
+                                              ? colors.textSecondaryDark
+                                              : colors.textSecondaryLight,
+                                          fw: 0,
+                                          align: TextAlign.center,
+                                        ),
+                                        TextWidget.titleText(
+                                              text:
+                                                  "${getFormatter(value: totalCurrentVal, v4d: false, noDecimal: false)}",
+                                              theme: false,
+                                              color: totalCurrentVal
+                                                      .toString()
+                                                      .startsWith("-")
+                                                   ?  theme.isDarkMode ? colors.lossDark : colors.lossLight : totalCurrentVal.toDouble() == 0 ?
+                                                   theme.isDarkMode
+                                                      ? colors.textPrimaryDark
+                                                      : colors.textPrimaryLight :
+                                                   theme.isDarkMode
+                                                      ? colors.successDark
+                                                      : colors.successLight,
+                                              fw: 0,
+                                            ),
+                                          
+                                      ],
+                                    ),
+                                
+                                 ],
+                                ),
+                                if(_statabController.index != 2)
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    TextWidget.subText(
+                                      text: pnlData['label'],
+                                      theme: false,
+                                      color: theme.isDarkMode
+                                          ? colors.textSecondaryDark
+                                          : colors.textSecondaryLight,
+                                      fw: 0,
+                                    ),
+                                    Row(
+                                      crossAxisAlignment: CrossAxisAlignment.end,
+                                      children: [
+                                        TextWidget.titleText(
+                                          text:
+                                              "${getFormatter(value: totalCurrentVal, v4d: false, noDecimal: false)}",
+                                          theme: false,
+                                          color: totalCurrentVal
+                                                  .toString()
+                                                  .startsWith("-")
+                                               ?  theme.isDarkMode ? colors.lossDark : colors.lossLight : totalCurrentVal.toDouble() == 0 ?
+                                               theme.isDarkMode
+                                                  ? colors.textPrimaryDark
+                                                  : colors.textPrimaryLight :
+                                               theme.isDarkMode
+                                                  ? colors.successDark
+                                                  : colors.successLight,
+                                          fw: 0,
+                                        ),
+                                        if (_statabController.index != 2 && _statabController.index != 3) // Don't show percentage for Position tab
+                                          TextWidget.paraText(
+                                            text:
+                                                " (${pnlData['percentage'] == "NaN" ? 0.00 : pnlData['percentage']}%)",
+                                            theme: false,
+                                            color: pnlData['percentage']
+                                                    .toString()
+                                                    .startsWith("-")
+                                                ? theme.isDarkMode ? colors.lossDark : colors.lossLight : pnlData['percentage'] == "NaN" || pnlData['percentage'] == "0" || pnlData['percentage'] == "0.00" ?
+                                               theme.isDarkMode
+                                                  ? colors.textPrimaryDark
+                                                  : colors.textPrimaryLight :
+                                               theme.isDarkMode
+                                                  ? colors.successDark
+                                                  : colors.successLight,
+                                            fw: 0,
+                                          ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 10),
+                                if(_statabController.index != 2)
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    if (_statabController.index != 2)...[
+                                    Row(
+                                      crossAxisAlignment: CrossAxisAlignment.end,
+                                      children: [
+                                        TextWidget.subText(
+                                          text: _getLeftLabel(_statabController.index),
+                                          theme: false,
+                                          color: theme.isDarkMode
+                                              ? colors.textSecondaryDark
+                                              : colors.textSecondaryLight,
+                                          fw: 0,
+                                        ),
+                                        TextWidget.paraText(
+                                          text: formatAmountCompact(
+                                              double.parse(_totalPnlHolding)),
+                                          theme: false,
+                                          color: theme.isDarkMode
+                                              ? colors.colorWhite
+                                              : colors.colorBlack,
+                                          fw: 0,
+                                        ),
+                                      ],
+                                    ),
+                                    Row(
+                                      crossAxisAlignment: CrossAxisAlignment.end,
+                                      children: [
+                                        TextWidget.subText(
+                                          text: _getRightLabel(_statabController.index),
+                                          theme: false,
+                                          color: theme.isDarkMode
+                                              ? colors.textSecondaryDark
+                                              : colors.textSecondaryLight,
+                                          fw: 0,
+                                        ),
+                                        TextWidget.paraText(
+                                          text: _statabController.index == 2 
+                                              ? formatAmountCompact(double.parse(pnlData['percentage'].toString()))
+                                              : formatAmountCompact(double.parse(_totalCurrentVal)),
+                                          theme: false,
+                                          color: theme.isDarkMode
+                                              ? colors.colorWhite
+                                              : colors.colorBlack,
+                                          fw: 0,
+                                        ),
+                                      ],
+                                    ),
+                                    ]else...[
+                                      TextWidget.subText(
+                                        text: _getRightLabel(_statabController.index),
+                                        theme: false,
+                                        color: theme.isDarkMode
+                                            ? colors.textSecondaryDark
+                                            : colors.textSecondaryLight,
+                                        fw: 0,
+                                      ),
                                       TextWidget.titleText(
-                                        text:
-                                            "${getFormatter(value: totalCurrentVal, v4d: false, noDecimal: false)} ",
+                                        text: formatAmountCompact(double.parse(pnlData['percentage'].toString())),
                                         theme: false,
-                                        color: totalCurrentVal
-                                                .toString()
-                                                .startsWith("-")
-                                            ? theme.isDarkMode
-                                                ? colors.lossDark
-                                                : colors.lossLight
-                                            : theme.isDarkMode
-                                                ? colors.successDark
-                                                : colors.successLight,
-                                        fw: 0,
-                                      ),
-                                      TextWidget.paraText(
-                                        text:
-                                            "(${portfolio.totPnlPercHolding == "NaN" ? 0.00 : portfolio.totPnlPercHolding}%)",
-                                        theme: false,
-                                        color: portfolio.totPnlPercHolding
-                                                .toString()
-                                                .startsWith("-")
-                                            ? theme.isDarkMode
-                                                ? colors.lossDark
-                                                : colors.lossLight
-                                            : theme.isDarkMode
-                                                ? colors.successDark
-                                                : colors.successLight,
-                                        fw: 0,
+                                        color: pnlData['percentage']
+                                                    .toString()
+                                                    .startsWith("-")
+                                                ? theme.isDarkMode ? colors.lossDark : colors.lossLight : pnlData['percentage'] == "NaN" || pnlData['percentage'] == "0.00" ?
+                                               theme.isDarkMode
+                                                  ? colors.textPrimaryDark
+                                                  : colors.textPrimaryLight :
+                                               theme.isDarkMode
+                                                  ? colors.successDark
+                                                  : colors.successLight,
+                                          fw: 0,
                                       ),
                                     ],
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 10),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  Row(
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: [
-                                      TextWidget.subText(
-                                        text: "Invested ",
-                                        theme: false,
-                                        color: theme.isDarkMode
-                                            ? colors.textSecondaryDark
-                                            : colors.textSecondaryLight,
-                                        fw: 0,
-                                      ),
-                                      TextWidget.paraText(
-                                        text: formatAmountCompact(
-                                            double.parse(_totalPnlHolding)),
-                                        theme: false,
-                                        color: theme.isDarkMode
-                                            ? colors.colorWhite
-                                            : colors.colorBlack,
-                                        fw: 0,
-                                      ),
-                                    ],
-                                  ),
-                                  Row(
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: [
-                                      TextWidget.subText(
-                                        text: "Current ",
-                                        theme: false,
-                                        color: theme.isDarkMode
-                                            ? colors.textSecondaryDark
-                                            : colors.textSecondaryLight,
-                                        fw: 0,
-                                      ),
-                                      TextWidget.paraText(
-                                        text: formatAmountCompact(
-                                            double.parse(_totalCurrentVal)),
-                                        theme: false,
-                                        color: theme.isDarkMode
-                                            ? colors.colorWhite
-                                            : colors.colorBlack,
-                                        fw: 0,
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              )
-                            ],
+                                  ],
+                                )
+                              ],
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-
-                  const SizedBox(height: 12),
-
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    margin: const EdgeInsets.only(top: 4),
-                    child: Material(
-                      color: Colors.transparent,
-                      shape: const RoundedRectangleBorder(),
-                      child: InkWell(
-                        // canRequestFocus: false,
-                        customBorder: const RoundedRectangleBorder(),
-                        splashColor: theme.isDarkMode
-                            ? colors.splashColorDark
-                            : colors.splashColorLight,
-                        highlightColor: theme.isDarkMode
-                            ? colors.highlightDark
-                            : colors.highlightLight,
-                        onTap: () {
-                          Future.delayed(const Duration(milliseconds: 150), () {
-                            Navigator.pushNamed(
-                                context, Routes.portfolioDashboard);
-                          });
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Row(
-                            // mainAxisAlignment: MainAxisAlignment.start,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              TextWidget.subText(
-                                text: "Portfolio insights",
-                                theme: false,
-                                color: theme.isDarkMode
-                                    ? colors.primaryDark
-                                    : colors.primaryLight,
-                                fw: 2,
-                              ),
-                              const SizedBox(width: 6),
-                              SvgPicture.asset(
-                                assets.leftArrow,
-                                // width: 12,
-                                // height: 12,
-                                color: theme.isDarkMode
-                                    ? colors.primaryDark
-                                    : colors.primaryDark,
-                                    fit: BoxFit.scaleDown,
-                              ),
-                            ],
+                
+                    const SizedBox(height: 12),
+                if(_statabController.index == 0)...[
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      // margin: const EdgeInsets.only(top: 4),
+                      child: Material(
+                        color: Colors.transparent,
+                        shape: const RoundedRectangleBorder(),
+                        child: InkWell(
+                          // canRequestFocus: false,
+                          customBorder: const RoundedRectangleBorder(),
+                          splashColor: theme.isDarkMode
+                              ? colors.splashColorDark
+                              : colors.splashColorLight,
+                          highlightColor: theme.isDarkMode
+                              ? colors.highlightDark
+                              : colors.highlightLight,
+                          onTap: () {
+                            Future.delayed(const Duration(milliseconds: 150), () {
+                              Navigator.pushNamed(
+                                  context, Routes.portfolioDashboard);
+                            });
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Row(
+                              // mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                TextWidget.subText(
+                                  text: "Portfolio insights",
+                                  theme: false,
+                                  color: theme.isDarkMode
+                                      ? colors.primaryDark
+                                      : colors.primaryLight,
+                                  fw: 2,
+                                ),
+                                const SizedBox(width: 6),
+                                SvgPicture.asset(
+                                  assets.leftArrow,
+                                  // width: 12,
+                                  // height: 12,
+                                  color: theme.isDarkMode
+                                      ? colors.primaryDark
+                                      : colors.primaryDark,
+                                      fit: BoxFit.scaleDown,
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Center(
-                  //   child: ElevatedButton(
-                  //     onPressed: () async {},
-                  //     style: ElevatedButton.styleFrom(
-                  //       padding: const EdgeInsets.symmetric(vertical: 8),
-                  //       backgroundColor: Colors.white,
-                  //       elevation: 0,
-                  //       // side: const BorderSide(
-                  //       //     color: Color(0xFF87A1DD), width: 1.5),
-                  //       shape: RoundedRectangleBorder(
-                  //         borderRadius: BorderRadius.circular(24),
-                  //       ),
-                  //     ),
-                  //     child: Row(
-                  //       mainAxisSize: MainAxisSize.max,
-                  //       mainAxisAlignment: MainAxisAlignment.center,
-                  //       children: [
-                  //         SvgPicture.asset(
-                  //           'assets/explore/firefox.svg',
-                  //           width: 16,
-                  //           height: 16,
-                  //         ),
-                  //         const SizedBox(width: 8),
-                  //         const Text(
-                  //           "View my portfolio",
-                  //           style: TextStyle(
-                  //               color: Color(0xFF4069C9),
-                  //               fontWeight: FontWeight.w600,
-                  //               fontSize: 14),
-                  //         ),
-                  //         const Icon(
-                  //           Icons.expand_more,
-                  //           color: Color(0xFF4069C9),
-                  //           size: 28,
-                  //           weight: 7,
-                  //         ),
-                  //       ],
-                  //     ),
-                  //   ),
-                  // ),
+                ]else...[
+                  const SizedBox.shrink(),
                 ],
+                    // const SizedBox(height: 16),
+                
+                    // Center(
+                    //   child: ElevatedButton(
+                    //     onPressed: () async {},
+                    //     style: ElevatedButton.styleFrom(
+                    //       padding: const EdgeInsets.symmetric(vertical: 8),
+                    //       backgroundColor: Colors.white,
+                    //       elevation: 0,
+                    //       // side: const BorderSide(
+                    //       //     color: Color(0xFF87A1DD), width: 1.5),
+                    //       shape: RoundedRectangleBorder(
+                    //         borderRadius: BorderRadius.circular(24),
+                    //       ),
+                    //     ),
+                    //     child: Row(
+                    //       mainAxisSize: MainAxisSize.max,
+                    //       mainAxisAlignment: MainAxisAlignment.center,
+                    //       children: [
+                    //         SvgPicture.asset(
+                    //           'assets/explore/firefox.svg',
+                    //           width: 16,
+                    //           height: 16,
+                    //         ),
+                    //         const SizedBox(width: 8),
+                    //         const Text(
+                    //           "View my portfolio",
+                    //           style: TextStyle(
+                    //               color: Color(0xFF4069C9),
+                    //               fontWeight: FontWeight.w600,
+                    //               fontSize: 14),
+                    //         ),
+                    //         const Icon(
+                    //           Icons.expand_more,
+                    //           color: Color(0xFF4069C9),
+                    //           size: 28,
+                    //           weight: 7,
+                    //         ),
+                    //       ],
+                    //     ),
+                    //   ),
+                    // ),
+                  ],
+                ),
               ),
               optionZTile(context, theme, funds),
               const SizedBox(height: 16),
@@ -1085,10 +1359,7 @@ class _StockScreenState extends ConsumerState<StockScreen>
     );
   }
 
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize);
-  }
-
+ 
   Widget productList(String title, String subtitle, String image,
       ThemesProvider theme, VoidCallback action) {
     return InkWell(
