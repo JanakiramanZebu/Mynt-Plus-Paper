@@ -41,6 +41,12 @@ class _PortfolioScreenState extends ConsumerState<PortfolioScreen>
     // Initialize holdingsTabController to prevent LateInitializationError
     _holdingsTabController = TabController(length: 2, vsync: this, initialIndex: ref.read(portfolioProvider).selectedHoldingsTab);
     ref.read(portfolioProvider).holdingsTabController = _holdingsTabController;
+    
+    // Add listener to sync tab controller changes with provider state
+    _holdingsTabController.addListener(() {
+      if (!mounted) return;
+      ref.read(portfolioProvider).changeHoldingsTabIndex(_holdingsTabController.index);
+    });
 
     ref.read(portfolioProvider).portTab.addListener(() {
       if (!mounted) return;
@@ -132,12 +138,7 @@ class _PortfolioScreenState extends ConsumerState<PortfolioScreen>
     super.initState();
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-        ref.read(portfolioProvider).changeHoldingsTabIndex(0);
-  }
-
+  
   @override
   void dispose() {
     _holdingsTabController.dispose();

@@ -7,6 +7,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:mynt_plus/provider/stocks_provider.dart';
 import 'package:mynt_plus/provider/user_profile_provider.dart';
 import 'package:mynt_plus/provider/websocket_provider.dart';
+import 'package:mynt_plus/provider/portfolio_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../api/core/api_export.dart';
@@ -108,6 +109,11 @@ class IndexListProvider extends DefaultChangeNotifier {
     // Store previous index to handle transitions correctly
     final int previousIndex = _selectedBtmIndx;
     _selectedBtmIndx = value;
+
+    // Reset holdings tab index when navigating away from portfolio tab
+    if (previousIndex == 2 && value != 2) {
+      ref.read(portfolioProvider).changeHoldingsTabIndex(0);
+    }
 
     // Handle WebSocket subscriptions based on tab changes
     if (value == 0) {

@@ -657,10 +657,10 @@ class _StockScreenState extends ConsumerState<StockScreen>
                       ),
                     ),
                 
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 5),
                 if(_statabController.index == 0)...[
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      padding: const EdgeInsets.only(left: 16,right: 16,bottom: 8),
                       // margin: const EdgeInsets.only(top: 4),
                       child: Material(
                         color: Colors.transparent,

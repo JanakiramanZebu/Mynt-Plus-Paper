@@ -259,6 +259,14 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
 changeHoldingsTabIndex(int index) {
   _selectedHoldingsTab = index;
+  
+  // Animate the TabController to the new index
+  try {
+    holdingsTabController.animateTo(index);
+  } catch (e) {
+    print("TabController animation error: $e");
+  }
+  
   notifyListeners();
 }
 
