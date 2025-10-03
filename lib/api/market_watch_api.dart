@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import '../models/marketwatch_model/scrip_overview/eodchartdata_model.dart';
 import '../utils/url_utils.dart';
 import '../models/marketwatch_model/add_delete_scrip_model.dart';
 import '../models/marketwatch_model/alert_model/alert_pending_model.dart';
@@ -416,6 +417,79 @@ print("res.body: ${res.body}");
 
       return ModifyAlertModel.fromJson(json as Map<String, dynamic>);
     } catch (e) {
+      rethrow;
+    }
+  }
+
+
+
+  Future<List<EodChartData>> getEODChartData(String tsym, String exch, {String timeframe = "1Y"}) async {
+    try {
+      final uri = Uri.parse(apiLinks.eodchartdata);
+      final formattedSymbol = "$exch:$tsym";
+      
+      // Calculate timestamps based on timeframe
+      final now = DateTime.now();
+      DateTime fromDate;
+      
+      switch (timeframe) {
+        case "5Y":
+          fromDate = DateTime(now.year - 5, now.month, now.day);
+          break;
+        case "3Y":
+          fromDate = DateTime(now.year - 3, now.month, now.day);
+          break;
+        case "1Y":
+          fromDate = DateTime(now.year - 1, now.month, now.day);
+          break;
+        case "3M":
+          fromDate = DateTime(now.year, now.month - 3, now.day);
+          break;
+        case "1M":
+          fromDate = DateTime(now.year, now.month - 1, now.day);
+          break;
+        default:
+          fromDate = DateTime(now.year - 1, now.month, now.day);
+      }
+      
+      final fromTimestamp = fromDate.millisecondsSinceEpoch ~/ 1000;
+      final toTimestamp = now.millisecondsSinceEpoch ~/ 1000;
+      
+      print("API Request for $timeframe: from $fromDate to $now");
+      print("Timestamps: from $fromTimestamp to $toTimestamp");
+      
+      final payload = '''jData={"sym": "$formattedSymbol","from": "$fromTimestamp","to": "$toTimestamp"}&jKey=${prefs.clientSession}''';
+      
+      print("EOD CHART DATA API Payload: $payload");
+      
+      final res = await apiClient.post(uri,
+          headers: defaultHeaders,
+          body: payload);
+
+      print("EOD CHART DATA RESPONSE: ${res.body}");
+      
+      final json = jsonDecode(res.body);
+      
+      print("API Response for $timeframe: ${json.runtimeType} with ${json is List ? json.length : 1} items");
+      
+      // Handle list response
+      if (json is List) {
+        final result = json.map((item) {
+          final itemData = jsonDecode(item as String);
+          return EodChartData.fromJson(itemData as Map<String, dynamic>);
+        }).toList();
+        print("Converted ${result.length} EOD chart data items for $timeframe");
+        return result;
+      } else if (json is Map) {
+        final result = [EodChartData.fromJson(json as Map<String, dynamic>)];
+        print("Converted 1 EOD chart data item for $timeframe");
+        return result;
+      } else {
+        throw Exception("Unexpected response format");
+      }
+    } catch (e) {
+      print("EOD CHART DATA API ERROR: ${e.toString()}");
+      print("Error Type: ${e.runtimeType}");
       rethrow;
     }
   }

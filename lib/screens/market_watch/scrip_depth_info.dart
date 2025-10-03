@@ -2101,20 +2101,20 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                         theme,
                                                                         depthData),
                             
-                                                                  // Fundamentals Section (conditional)
-                                                                  if (scripInfo
-                                                                              .fundamentalData !=
-                                                                          null &&
-                                                                      scripInfo
-                                                                              .fundamentalData
-                                                                              ?.msg !=
-                                                                          "no data found") ...[
-                                                                    _buildFundamentalsSection(
-                                                                        theme,
-                                                                        depthData),
-                                                                  ] else ...[
-                                                                    const SizedBox(),
-                                                                  ]
+                                                                  // Fundamentals Section (conditional) - COMMENTED OUT
+                                                                  // if (scripInfo
+                                                                  //             .fundamentalData !=
+                                                                  //         null &&
+                                                                  //     scripInfo
+                                                                  //             .fundamentalData
+                                                                  //             ?.msg !=
+                                                                  //         "no data found") ...[
+                                                                  //   _buildFundamentalsSection(
+                                                                  //       theme,
+                                                                  //       depthData),
+                                                                  // ] else ...[
+                                                                  //   const SizedBox(),
+                                                                  // ]
                                                                 ]))
                                                       ] else if (scripInfo
                                                               .actDeptBtn ==
@@ -2514,21 +2514,21 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
 
                 if (!mounted) return;
 
-                if (scripInfo.fundamentalData != null &&
-                    scripInfo.fundamentalData?.msg != "no data found") {
-                  await scripInfo.chngDephBtn("Overview");
-                  await Navigator.pushNamed(
-                    context,
-                    Routes.fundamentalDetail,
-                    arguments: {
-                      "wlValue": widget.wlValue,
-                      "depthData": depthData,
-                    },
-                  );
-                  if (mounted && !_isDisposed) {
-                    await scripInfo.chngDephBtn("Overview");
-                  }
-                }
+                // if (scripInfo.fundamentalData != null &&
+                //     scripInfo.fundamentalData?.msg != "no data found") {
+                //   await scripInfo.chngDephBtn("Overview");
+                //   await Navigator.pushNamed(
+                //     context,
+                //     Routes.fundamentalDetail,
+                //     arguments: {
+                //       "wlValue": widget.wlValue,
+                //       "depthData": depthData,
+                //     },
+                //   );
+                //   if (mounted && !_isDisposed) {
+                //     await scripInfo.chngDephBtn("Overview");
+                //   }
+                // }
               } finally {
                 if (mounted && !_isDisposed) {
                   scripInfo.singlePageloader(false);
@@ -2552,6 +2552,89 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                         fw: 0,
                       ),
                       Icon(
+                        Icons.chevron_right,
+                        color: theme.isDarkMode
+                            ? colors.textSecondaryDark
+                            : colors.textSecondaryLight,
+                        size: 20,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                ],
+              ),
+            ),
+          ),
+        ),
+        const ListDivider(),
+        
+        // New Fundamental Analysis button
+        Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () async {
+              if (_isDisposed) return;
+
+              await Future.delayed(const Duration(milliseconds: 150));
+              final scripInfo = ref.read(marketWatchProvider);
+
+              try {
+                if (!mounted) return;
+
+                // Check if fundamental data is available (same as original fundamental screen)
+                if (scripInfo.fundamentalData == null ||
+                    scripInfo.fundamentalData?.msg == "no data found") {
+                  await scripInfo.fetchFundamentalData(
+                      tradeSym: "${widget.wlValue.exch}:${widget.wlValue.tsym}");
+                }
+
+                if (!mounted) return;
+
+                if (scripInfo.fundamentalData != null &&
+                    scripInfo.fundamentalData?.msg != "no data found") {
+                  await scripInfo.chngDephBtn("Overview");
+                  await Navigator.pushNamed(
+                    context,
+                    Routes.newFundamental,
+                    arguments: {
+                      "wlValue": widget.wlValue,
+                      "depthData": depthData,
+                    },
+                  );
+                } else {
+                  // Show message if no fundamental data available
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Fundamental data not available for this scrip'),
+                      backgroundColor: Colors.orange,
+                    ),
+                  );
+                }
+                if (mounted && !_isDisposed) {
+                  await scripInfo.chngDephBtn("Overview");
+                }
+              } catch (e) {
+                // Handle any navigation errors
+                print("Navigation error: $e");
+              }
+            },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                children: [
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      TextWidget.subText(
+                        text: "Stock Report",
+                        theme: false,
+                        color: theme.isDarkMode
+                            ? colors.textPrimaryDark
+                            : colors.textPrimaryLight,
+                        fw: 0,
+                      ),
+                     Icon(
                         Icons.chevron_right,
                         color: theme.isDarkMode
                             ? colors.textSecondaryDark

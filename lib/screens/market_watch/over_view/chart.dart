@@ -28,10 +28,14 @@ class MyHomePageState extends State<ShareHoldChart> {
       final funData = ref.watch(marketWatchProvider).fundamentalData!.shareholdings;
       final theme = ref.read(themeProvider);
       final selctedShareHold = ref.watch(marketWatchProvider).selctedShareHold;
+      
+      // Sort data in specific order: Jun 24, Sep 24, Dec 24, Mar 25, Jun 25
+      final sortedData = _sortDataBySpecificOrder(funData!);
       return SizedBox(
-          height: 320,
+          height: 200,
           width: MediaQuery.of(context).size.width,
-          child: SfCartesianChart(  margin: const EdgeInsets.symmetric(horizontal: 0),
+          child: SfCartesianChart(  margin: const EdgeInsets.only(left: 24), 
+          plotAreaBorderWidth: 0,
               primaryXAxis: CategoryAxis(
                 labelStyle: textStyle(
                     theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
@@ -40,6 +44,7 @@ class MyHomePageState extends State<ShareHoldChart> {
                 majorGridLines: const MajorGridLines(width: 0),
               ),
               primaryYAxis: NumericAxis(
+                  isVisible: false,
                   labelStyle: textStyle(
                       theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
                       12,
@@ -52,7 +57,7 @@ class MyHomePageState extends State<ShareHoldChart> {
                 ColumnSeries(
                     name: selctedShareHold,
                     enableTooltip: true,
-                    dataSource: funData!,
+                    dataSource: sortedData,
                     xValueMapper: (Shareholdings data, _) => data.convDate,
                     yValueMapper: (Shareholdings data, _) => selctedShareHold ==
                             "Promoter Holding"
@@ -67,15 +72,15 @@ class MyHomePageState extends State<ShareHoldChart> {
                                         ? double.parse(data.mutualFunds!)
                                         : double.parse(data.fiiFpi!),
                     color: selctedShareHold == "Promoter Holding"
-                        ? const Color(0xff2e8564)
-                        : selctedShareHold == "Foriegin Institution"
-                            ? const Color(0xff7cd36f)
+                        ? const Color.fromARGB(255, 36, 103, 16)
+                        : selctedShareHold == "Foriegn Institution"
+                            ? const Color(0xFF0E4372)
                             : selctedShareHold == "Other Domestic Institution"
-                                ? const Color(0xfff7cd6c)
+                                ? const Color(0xFFD4A017)
                                 : selctedShareHold == "Retail and Others"
-                                    ? const Color(0XFFfbebc4)
+                                    ? const Color(0xFF6A1B9A)
                                     : selctedShareHold == "Mutual Funds"
-                                        ? const Color(0XFFdedede)
+                                        ? const Color(0xFFff620f)
                                         : const Color(0xfff7cd6c),
                     dataLabelSettings: DataLabelSettings(
                         isVisible: true,
@@ -93,6 +98,29 @@ class MyHomePageState extends State<ShareHoldChart> {
     return GoogleFonts.inter(
         textStyle:
             TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
+  }
+
+  // Sort data in specific order: Jun 24, Sep 24, Dec 24, Mar 25, Jun 25
+  List<Shareholdings> _sortDataBySpecificOrder(List<Shareholdings> data) {
+    // Define the desired order
+    final orderMap = {
+      'Jun 24': 1,
+      'Sep 24': 2,
+      'Dec 24': 3,
+      'Mar 25': 4,
+      'Jun 25': 5,
+    };
+
+    // Create a copy of the data and sort it
+    final sortedData = List<Shareholdings>.from(data);
+    
+    sortedData.sort((a, b) {
+      final aOrder = orderMap[a.convDate] ?? 999; // Default to end if not found
+      final bOrder = orderMap[b.convDate] ?? 999;
+      return aOrder.compareTo(bOrder);
+    });
+
+    return sortedData;
   }
 }
 
@@ -114,8 +142,8 @@ class FBalSheetCahrtState extends State<FBalSheetCahrt> {
   @override
   Widget build(BuildContext context) {
     return Consumer(builder: (context, WidgetRef ref, _) {
-      final balanceSheet =
-          ref.watch(marketWatchProvider).selcteFinType == "Standalone"
+      final balanceSheetData =
+          ref.watch(marketWatchProvider).selcteBalanceSheetFinType == "Standalone"
               ? ref.watch(marketWatchProvider)
                   .fundamentalData!
                   .stockFinancialsStandalone!
@@ -124,20 +152,35 @@ class FBalSheetCahrtState extends State<FBalSheetCahrt> {
                   .fundamentalData!
                   .stockFinancialsConsolidated!
                   .balanceSheet;
+      
+      // Sort data by date (oldest first - Mar 21, Mar 22, Mar 23)
+      final balanceSheet = List<BalanceSheet>.from(balanceSheetData!);
+      balanceSheet.sort((a, b) {
+        // Try to parse yearEndDate first, fallback to convDate if needed
+        try {
+          final dateA = DateTime.parse(a.yearEndDate ?? a.convDate!);
+          final dateB = DateTime.parse(b.yearEndDate ?? b.convDate!);
+          return dateA.compareTo(dateB); // Oldest first
+        } catch (e) {
+          // If parsing fails, use string comparison as fallback
+          return (a.yearEndDate ?? a.convDate!).compareTo(b.yearEndDate ?? b.convDate!);
+        }
+      });
       final theme = ref.read(themeProvider);
       return SizedBox(
-          height: 320,
+          height: 200,
           width: MediaQuery.of(context).size.width,
-          child: SfCartesianChart(   margin: const EdgeInsets.symmetric(horizontal: 0),
-              legend: Legend(
-                  textStyle: textStyle(
-                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                      12,
-                      FontWeight.w400),
-                  isVisible: true,
-                  position: LegendPosition.bottom,
-                  image: const AssetImage('assets/img/bought.png'),
-                  overflowMode: LegendItemOverflowMode.wrap),
+          child: SfCartesianChart(   margin: const EdgeInsets.only(left: 24), 
+          plotAreaBorderWidth: 0,
+              // legend: Legend(
+              //     textStyle: textStyle(
+              //         theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+              //         12,
+              //         FontWeight.w400),
+              //     isVisible: true,
+              //     position: LegendPosition.bottom,
+              //     image: const AssetImage('assets/img/bought.png'),
+              //     overflowMode: LegendItemOverflowMode.wrap),
               primaryXAxis: CategoryAxis(
                 labelStyle: textStyle(
                     theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
@@ -146,6 +189,7 @@ class FBalSheetCahrtState extends State<FBalSheetCahrt> {
                 majorGridLines: const MajorGridLines(width: 0),
               ),
               primaryYAxis: NumericAxis(
+                  isVisible: false,
                   labelStyle: textStyle(
                       theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
                       12,
@@ -162,7 +206,9 @@ class FBalSheetCahrtState extends State<FBalSheetCahrt> {
                   xValueMapper: (BalanceSheet data, _) => data.convDate,
                   yValueMapper: (BalanceSheet data, _) =>
                       double.parse(data.totalAssets!),
-                  color: const Color(0xff2e8564),
+                  color: const Color(0xFF00BCD4), // Bright Cyan
+                  width: 0.4,
+                 
                 ),
                 ColumnSeries(
                   isVisibleInLegend: true,
@@ -173,7 +219,9 @@ class FBalSheetCahrtState extends State<FBalSheetCahrt> {
                   xValueMapper: (BalanceSheet data, _) => data.convDate,
                   yValueMapper: (BalanceSheet data, _) =>
                       double.parse(data.totalLiabilities!),
-                  color: const Color(0xff7cd36f),
+                  color: const Color(0xFFE91E63), // Bright Pink
+                  width: 0.4,
+                
                 )
               ]));
     });
@@ -204,8 +252,8 @@ class FIncomeChartState extends State<FIncomeChart> {
   @override
   Widget build(BuildContext context) {
     return Consumer(builder: (context, WidgetRef ref, _) {
-      final incomeSheet =
-          ref.watch(marketWatchProvider).selcteFinType == "Standalone"
+      final incomeSheetData =
+          ref.watch(marketWatchProvider).selcteIncomeFinType == "Standalone"
               ? ref.watch(marketWatchProvider)
                   .fundamentalData!
                   .stockFinancialsStandalone!
@@ -214,20 +262,35 @@ class FIncomeChartState extends State<FIncomeChart> {
                   .fundamentalData!
                   .stockFinancialsConsolidated!
                   .incomeSheet;
+      
+      // Sort data by date (oldest first - Mar 21, Mar 22, Mar 23)
+      final incomeSheet = List<IncomeSheet>.from(incomeSheetData!);
+      incomeSheet.sort((a, b) {
+        // Try to parse yearEndDate first, fallback to convDate if needed
+        try {
+          final dateA = DateTime.parse(a.yearEndDate ?? a.convDate!);
+          final dateB = DateTime.parse(b.yearEndDate ?? b.convDate!);
+          return dateA.compareTo(dateB); // Oldest first
+        } catch (e) {
+          // If parsing fails, use string comparison as fallback
+          return (a.yearEndDate ?? a.convDate!).compareTo(b.yearEndDate ?? b.convDate!);
+        }
+      });
       final theme = ref.read(themeProvider);
       return SizedBox(
-          height: 320,
+          height: 200,
           width: MediaQuery.of(context).size.width,
-          child: SfCartesianChart(   margin: const EdgeInsets.symmetric(horizontal: 0),
-              legend: Legend(
-                  textStyle: textStyle(
-                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                      12,
-                      FontWeight.w400),
-                  isVisible: true,
-                  position: LegendPosition.bottom,
-                  image: const AssetImage('assets/img/bought.png'),
-                  overflowMode: LegendItemOverflowMode.wrap),
+          child: SfCartesianChart(   margin: const EdgeInsets.only(left: 24),
+          plotAreaBorderWidth: 0,
+              // legend: Legend(
+              //     textStyle: textStyle(
+              //         theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+              //         12,
+              //         FontWeight.w400),
+              //     isVisible: true,
+              //     position: LegendPosition.bottom,
+              //     image: const AssetImage('assets/img/bought.png'),
+              //     overflowMode: LegendItemOverflowMode.wrap),
               primaryXAxis: CategoryAxis(
                 labelStyle: textStyle(
                     theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
@@ -236,6 +299,7 @@ class FIncomeChartState extends State<FIncomeChart> {
                 majorGridLines: const MajorGridLines(width: 0),
               ),
               primaryYAxis: NumericAxis(
+                  isVisible: false,
                   labelStyle: textStyle(
                       theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
                       12,
@@ -252,8 +316,10 @@ class FIncomeChartState extends State<FIncomeChart> {
                     xValueMapper: (IncomeSheet data, _) => data.convDate,
                     yValueMapper: (IncomeSheet data, _) =>
                         double.parse(data.revenue!),
-                    color: const Color(0xff2e8564),
-                    name: "Revenue"),
+                    color: const Color(0xFF2196F3), // Bright Blue
+                    name: "Revenue",
+                    width: 0.4,
+                   ),
                 ColumnSeries(
                   isVisibleInLegend: true,
                   enableTooltip: true,
@@ -262,8 +328,10 @@ class FIncomeChartState extends State<FIncomeChart> {
                   xValueMapper: (IncomeSheet data, _) => data.convDate,
                   yValueMapper: (IncomeSheet data, _) =>
                       double.parse(data.expenditure!),
-                  color: const Color(0xff7cd36f),
+                  color: const Color(0xFFF44336), // Bright Red
                   name: "Expenditure",
+                  width: 0.4,
+                 
                 ),
                 LineSeries(
                     isVisibleInLegend: true,
@@ -276,8 +344,11 @@ class FIncomeChartState extends State<FIncomeChart> {
                     yValueMapper: (IncomeSheet data, _) =>
                         double.parse(data.profitAfterTax!),
                     name: "Profit After Tax",
-                    color: const Color(0xfff7cd6c)),
-              ]));
+                    color: const Color(0xFFFFC107)), // Amber
+              ]
+              
+              
+              ));
     });
   }
 
@@ -307,8 +378,8 @@ class FCashFlowChartState extends State<FCashFlowChart> {
   Widget build(BuildContext context) {
     return Consumer(builder: (context, WidgetRef ref, _) {
       final theme = ref.read(themeProvider);
-      final cashflowSheet =
-          ref.watch(marketWatchProvider).selcteFinType == "Standalone"
+      final cashflowSheetData =
+          ref.watch(marketWatchProvider).selcteCashFlowFinType == "Standalone"
               ? ref.watch(marketWatchProvider)
                   .fundamentalData!
                   .stockFinancialsStandalone!
@@ -317,20 +388,35 @@ class FCashFlowChartState extends State<FCashFlowChart> {
                   .fundamentalData!
                   .stockFinancialsConsolidated!
                   .cashflowSheet;
+      
+      // Sort data by date (oldest first - Mar 21, Mar 22, Mar 23)
+      final cashflowSheet = List<CashflowSheet>.from(cashflowSheetData!);
+      cashflowSheet.sort((a, b) {
+        // Try to parse yearEndDate first, fallback to convDate if needed
+        try {
+          final dateA = DateTime.parse(a.yearEndDate ?? a.convDate!);
+          final dateB = DateTime.parse(b.yearEndDate ?? b.convDate!);
+          return dateA.compareTo(dateB); // Oldest first
+        } catch (e) {
+          // If parsing fails, use string comparison as fallback
+          return (a.yearEndDate ?? a.convDate!).compareTo(b.yearEndDate ?? b.convDate!);
+        }
+      });
 
       return SizedBox(
-          height: 320,
+          height: 200,
           width: MediaQuery.of(context).size.width,
-          child: SfCartesianChart(    margin: const EdgeInsets.symmetric(horizontal: 0),
-              legend: Legend(
-                  textStyle: textStyle(
-                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                      12,
-                      FontWeight.w400),
-                  isVisible: true,
-                  position: LegendPosition.bottom,
-                  image: const AssetImage('assets/img/bought.png'),
-                  overflowMode: LegendItemOverflowMode.wrap),
+          child: SfCartesianChart(    margin: const EdgeInsets.only(left: 24),
+          plotAreaBorderWidth: 0,
+              // legend: Legend(
+              //     textStyle: textStyle(
+              //         theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+              //         12,
+              //         FontWeight.w400),
+              //     isVisible: true,
+              //     position: LegendPosition.bottom,
+              //     image: const AssetImage('assets/img/bought.png'),
+              //     overflowMode: LegendItemOverflowMode.wrap),
               primaryXAxis: CategoryAxis(
                 labelStyle: textStyle(
                     theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
@@ -339,6 +425,7 @@ class FCashFlowChartState extends State<FCashFlowChart> {
                 majorGridLines: const MajorGridLines(width: 0),
               ),
               primaryYAxis: NumericAxis(
+                  isVisible: false,
                   labelStyle: textStyle(
                       theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
                       12,
@@ -355,7 +442,9 @@ class FCashFlowChartState extends State<FCashFlowChart> {
                   xValueMapper: (CashflowSheet data, _) => data.convDate,
                   yValueMapper: (CashflowSheet data, _) =>
                       double.parse(data.cashFromOperatingActivities!),
-                  color: const Color(0xff2e8564),
+                  color: const Color(0xFF03A9F4), // Bright Light Blue
+                  width: 0.4,
+                 
                 ),
                 ColumnSeries(
                   name: "Investing",
@@ -366,7 +455,9 @@ class FCashFlowChartState extends State<FCashFlowChart> {
                   xValueMapper: (CashflowSheet data, _) => data.convDate,
                   yValueMapper: (CashflowSheet data, _) =>
                       double.parse(data.cashFlowFromInvestingActivities!),
-                  color: const Color(0xff7cd36f),
+                  color: const Color(0xFFFF6B35), // Bright Orange
+                  width: 0.4,
+                
                 ),
                 ColumnSeries(
                     name: "Financing",
@@ -377,7 +468,9 @@ class FCashFlowChartState extends State<FCashFlowChart> {
                     xValueMapper: (CashflowSheet data, _) => data.convDate,
                     yValueMapper: (CashflowSheet data, _) =>
                         double.parse(data.cashFromFinancingActivities!),
-                    color: const Color(0xfff7cd6c)),
+                    color: const Color(0xFFE91E63), // Bright Pink
+                    width: 0.4,
+                   )
               ]));
     });
   }
@@ -410,7 +503,7 @@ class PriceComChartState extends State<PriceComChart> {
       final priceCompare = ref.watch(marketWatchProvider);
       final theme = ref.read(themeProvider);
       return SizedBox(
-          height: 320,
+          height: 200,
           width: MediaQuery.of(context).size.width,
           child: SfCartesianChart(   margin: const EdgeInsets.symmetric(horizontal: 0),
               legend: Legend(

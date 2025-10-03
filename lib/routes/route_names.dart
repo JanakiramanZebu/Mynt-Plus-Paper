@@ -19,6 +19,8 @@ class Routes {
   static const String editScrip = 'EditScrip';
   static const String marketScripInfo = 'MarketScripInfo';
   static const String fundamentalDetail = 'FundamentalDetail';
+  static const String stockFundamentals = 'StockFundamentals';
+  static const String newFundamental = 'NewFundamental';
   static const String chartWebView = 'ChartWebView';
 
   static const String sipDetails = 'sipDetails';

@@ -58,6 +58,8 @@ import '../screens/ipo/sme_order_screen/sme_order.dart';
 import '../screens/ipo/IPO_order_screen/ipo_order_screen.dart';
 import '../screens/market_watch/edit_scrip.dart';
 import '../screens/market_watch/fundamental_detail_screen.dart';
+import '../screens/market_watch/new_fundamental_screen.dart';
+import '../screens/market_watch/stock_fundamentals_screen.dart';
 import '../screens/market_watch/futures/future_screen.dart';
 import '../screens/market_watch/option_chain/option_chain_ss.dart';
 import '../screens/market_watch/option_chain/strategy/option_strategey.dart';
@@ -267,6 +269,21 @@ class AppRoutes {
       case Routes.fundamentalDetail:
         return _createRoute(
           pageBuilder: (_, __, ___) => FundamentalDetailScreen(
+            wlValue: args['wlValue'],
+            depthData: args['depthData'],
+          ),
+          beginOffset: const Offset(1.0, 0.0),
+        );
+
+      case Routes.stockFundamentals:
+        return _createRoute(
+          pageBuilder: (_, __, ___) => StockFundamentalsScreen(),
+          beginOffset: const Offset(1.0, 0.0),
+        );
+
+      case Routes.newFundamental:
+        return _createRoute(
+          pageBuilder: (_, __, ___) => NewFundamentalScreen(
             wlValue: args['wlValue'],
             depthData: args['depthData'],
           ),
