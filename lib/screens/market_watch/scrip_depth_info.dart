@@ -2101,20 +2101,19 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                         theme,
                                                                         depthData),
                             
-                                                                  // Fundamentals Section (conditional) - COMMENTED OUT
-                                                                  // if (scripInfo
-                                                                  //             .fundamentalData !=
-                                                                  //         null &&
-                                                                  //     scripInfo
-                                                                  //             .fundamentalData
-                                                                  //             ?.msg !=
-                                                                  //         "no data found") ...[
-                                                                  //   _buildFundamentalsSection(
-                                                                  //       theme,
-                                                                  //       depthData),
-                                                                  // ] else ...[
-                                                                  //   const SizedBox(),
-                                                                  // ]
+                                                                  if (scripInfo
+                                                                              .fundamentalData !=
+                                                                          null &&
+                                                                      scripInfo
+                                                                              .fundamentalData
+                                                                              ?.msg !=
+                                                                          "no data found") ...[
+                                                                    _buildFundamentalsSection(
+                                                                        theme,
+                                                                        depthData),
+                                                                  ] else ...[
+                                                                    const SizedBox(),
+                                                                  ]
                                                                 ]))
                                                       ] else if (scripInfo
                                                               .actDeptBtn ==
@@ -2494,79 +2493,79 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
   Widget _buildFundamentalsSection(ThemesProvider theme, GetQuotes depthData) {
     return Column(
       children: [
-        Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: () async {
-              if (_isDisposed) return;
+        // Material(
+        //   color: Colors.transparent,
+        //   child: InkWell(
+        //     onTap: () async {
+        //       if (_isDisposed) return;
 
-              await Future.delayed(const Duration(milliseconds: 150));
-              final scripInfo = ref.read(marketWatchProvider);
-              scripInfo.singlePageloader(true);
+        //       await Future.delayed(const Duration(milliseconds: 150));
+        //       final scripInfo = ref.read(marketWatchProvider);
+        //       scripInfo.singlePageloader(true);
 
-              try {
-                if (scripInfo.fundamentalData == null ||
-                    scripInfo.fundamentalData?.msg == "no data found") {
-                  await scripInfo.fetchFundamentalData(
-                      tradeSym:
-                          "${widget.wlValue.exch}:${widget.wlValue.tsym}");
-                }
+        //       try {
+        //         if (scripInfo.fundamentalData == null ||
+        //             scripInfo.fundamentalData?.msg == "no data found") {
+        //           await scripInfo.fetchFundamentalData(
+        //               tradeSym:
+        //                   "${widget.wlValue.exch}:${widget.wlValue.tsym}");
+        //         }
 
-                if (!mounted) return;
+        //         if (!mounted) return;
 
-                // if (scripInfo.fundamentalData != null &&
-                //     scripInfo.fundamentalData?.msg != "no data found") {
-                //   await scripInfo.chngDephBtn("Overview");
-                //   await Navigator.pushNamed(
-                //     context,
-                //     Routes.fundamentalDetail,
-                //     arguments: {
-                //       "wlValue": widget.wlValue,
-                //       "depthData": depthData,
-                //     },
-                //   );
-                //   if (mounted && !_isDisposed) {
-                //     await scripInfo.chngDephBtn("Overview");
-                //   }
-                // }
-              } finally {
-                if (mounted && !_isDisposed) {
-                  scripInfo.singlePageloader(false);
-                }
-              }
-            },
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Column(
-                children: [
-                  const SizedBox(height: 12),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      TextWidget.subText(
-                        text: "Fundamentals",
-                        theme: false,
-                        color: theme.isDarkMode
-                            ? colors.textPrimaryDark
-                            : colors.textPrimaryLight,
-                        fw: 0,
-                      ),
-                      Icon(
-                        Icons.chevron_right,
-                        color: theme.isDarkMode
-                            ? colors.textSecondaryDark
-                            : colors.textSecondaryLight,
-                        size: 20,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                ],
-              ),
-            ),
-          ),
-        ),
-        const ListDivider(),
+        //         // if (scripInfo.fundamentalData != null &&
+        //         //     scripInfo.fundamentalData?.msg != "no data found") {
+        //         //   await scripInfo.chngDephBtn("Overview");
+        //         //   await Navigator.pushNamed(
+        //         //     context,
+        //         //     Routes.fundamentalDetail,
+        //         //     arguments: {
+        //         //       "wlValue": widget.wlValue,
+        //         //       "depthData": depthData,
+        //         //     },
+        //         //   );
+        //         //   if (mounted && !_isDisposed) {
+        //         //     await scripInfo.chngDephBtn("Overview");
+        //         //   }
+        //         // }
+        //       } finally {
+        //         if (mounted && !_isDisposed) {
+        //           scripInfo.singlePageloader(false);
+        //         }
+        //       }
+        //     },
+        //     child: Padding(
+        //       padding: const EdgeInsets.symmetric(horizontal: 16),
+        //       child: Column(
+        //         children: [
+        //           const SizedBox(height: 12),
+        //           Row(
+        //             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        //             children: [
+        //               TextWidget.subText(
+        //                 text: "Fundamentals",
+        //                 theme: false,
+        //                 color: theme.isDarkMode
+        //                     ? colors.textPrimaryDark
+        //                     : colors.textPrimaryLight,
+        //                 fw: 0,
+        //               ),
+        //               Icon(
+        //                 Icons.chevron_right,
+        //                 color: theme.isDarkMode
+        //                     ? colors.textSecondaryDark
+        //                     : colors.textSecondaryLight,
+        //                 size: 20,
+        //               ),
+        //             ],
+        //           ),
+        //           const SizedBox(height: 12),
+        //         ],
+        //       ),
+        //     ),
+        //   ),
+        // ),
+        // const ListDivider(),
         
         // New Fundamental Analysis button
         Material(
