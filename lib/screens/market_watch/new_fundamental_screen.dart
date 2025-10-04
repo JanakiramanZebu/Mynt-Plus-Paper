@@ -557,16 +557,8 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
         );
       }
 
-      // Calculate returns data when tech data is available
-      if (marketWatch.techData != null) {
-        // Get LTP from quotes data or use a default value
-        String ltpValue = "0.00";
-        if (marketWatch.getQuotes?.lp != null &&
-            marketWatch.getQuotes!.lp!.isNotEmpty) {
-          ltpValue = marketWatch.getQuotes!.lp!;
-        }
-        marketWatch.techDataCalc(ltpValue);
-      }
+      // Returns data is now available directly from fundamental API
+      // No need to calculate it separately
 
       return Scaffold(
         appBar: AppBar(
@@ -601,7 +593,7 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
           shadowColor:
               theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
           title: TextWidget.headText(
-            text: "Stock Report",
+            text: " ${widget.wlValue.symbol.replaceAll("-EQ", "").toUpperCase()}${widget.wlValue.expDate} ${widget.wlValue.option} Stock Report",
             color: Color(theme.isDarkMode ? 0xffffffff : 0xff000000),
             theme: theme.isDarkMode,
             fw: 1,
@@ -1523,7 +1515,7 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
               ),
 
               // Returns Display Container - Show only selected timeframe return
-              if (marketWatch.returnsGridview.isNotEmpty)
+              if (marketWatch.fundamentalData?.returns != null && marketWatch.fundamentalData!.returns!.isNotEmpty)
                 Container(
                   decoration: BoxDecoration(
                     color: theme.isDarkMode
@@ -1531,7 +1523,7 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                         : colors.colorWhite,
                   ),
                   child: _buildSelectedTimeframeReturn(
-                      marketWatch.returnsGridview,
+                      marketWatch.fundamentalData!.returns!,
                       marketWatch.selectedTimeframe,
                       theme),
                 ),
@@ -1547,9 +1539,9 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                     final isSelected =
                         marketWatch.selectedTimeframe == timeframe;
                     
-                    // Get return percentage for this timeframe
-                    final returnPercentage = marketWatch.returnsGridview.isNotEmpty
-                        ? _getReturnPercentageForTimeframe(marketWatch.returnsGridview, timeframe)
+                    // Get return percentage for this timeframe from fundamental API
+                    final returnPercentage = marketWatch.fundamentalData?.returns != null && marketWatch.fundamentalData!.returns!.isNotEmpty
+                        ? _getReturnPercentageForTimeframe(marketWatch.fundamentalData!.returns!, timeframe)
                         : '0.00%';
                     
                     // Determine color based on positive/negative return
@@ -2027,39 +2019,39 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
   }
 
   // Helper method to get return percentage for a specific timeframe
-  String _getReturnPercentageForTimeframe(List returnsData, String timeframe) {
+  String _getReturnPercentageForTimeframe(List<Returns> returnsData, String timeframe) {
     String returnKey = '';
     
     switch (timeframe) {
       case "1W":
-        returnKey = "One Week";
+        returnKey = "1 week";
         break;
       case "1M":
-        returnKey = "One Month";
+        returnKey = "1 month";
         break;
       case "3M":
-        returnKey = "Three Month";
+        returnKey = "3 month";
         break;
       case "1Y":
-        returnKey = "52 Week";
+        returnKey = "1 year";
         break;
       case "3Y":
-        returnKey = "52 Week"; // Use 52 week as closest approximation for 3Y
+        returnKey = "3 year";
         break;
       case "5Y":
-        returnKey = "52 Week"; // Use 52 week as closest approximation for 5Y
+        returnKey = "5 year";
         break;
       default:
-        returnKey = "One Week";
+        returnKey = "1 week";
     }
 
     // Find the matching return data
     final returnItem = returnsData.firstWhere(
-      (item) => item['duration'] == returnKey,
-      orElse: () => {'duration': timeframe, 'percent': '0.00'},
+      (item) => item.type == returnKey,
+      orElse: () => Returns(returns: "0.00", type: timeframe),
     );
 
-    final percent = returnItem['percent'] ?? '0.00';
+    final percent = returnItem.returns ?? '0.00';
     final percentValue = double.tryParse(percent) ?? 0.0;
     final isPositive = percentValue >= 0;
     
@@ -2068,7 +2060,7 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
 
   // Build selected timeframe return display
   Widget _buildSelectedTimeframeReturn(
-      List returnsData, String selectedTimeframe, ThemesProvider theme) {
+      List<Returns> returnsData, String selectedTimeframe, ThemesProvider theme) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
@@ -2086,13 +2078,13 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
   }
 
   // Build returns grid display (keeping for future use)
-  Widget _buildReturnsGrid(List returnsData, ThemesProvider theme) {
+  Widget _buildReturnsGrid(List<Returns> returnsData, ThemesProvider theme) {
     return Wrap(
       spacing: 12,
       runSpacing: 8,
       children: returnsData.map<Widget>((returnItem) {
-        final duration = returnItem['duration'] ?? '';
-        final percent = returnItem['percent'] ?? '0.00';
+        final duration = returnItem.type ?? '';
+        final percent = returnItem.returns ?? '0.00';
         final percentValue = double.tryParse(percent) ?? 0.0;
         final isPositive = percentValue >= 0;
 
