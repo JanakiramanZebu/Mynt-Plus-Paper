@@ -5,6 +5,7 @@
 import 'package:flutter/services.dart';
 import 'package:mynt_plus/models/order_book_model/order_book_model.dart';
 import 'package:mynt_plus/models/order_book_model/place_order_model.dart';
+import 'package:mynt_plus/models/order_book_model/trade_book_model.dart';
 import 'package:mynt_plus/models/portfolio_model/position_book_model.dart';
 
 import '../../models/json_model/strategy_model.dart';
@@ -54,6 +55,23 @@ mixin MockApiResponse on ApiCore {
       for (final item in json) {
               data.add(
                   PositionBookModel.fromJson(item as Map<String, dynamic>));
+            }
+      return ({'stat': 'success', 'data': data});
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<Map<String, dynamic>> mockTradeBookResponse() async {
+    try {
+      final resp = await rootBundle.loadString("assets/mock_json/mockTradeBook.json");
+
+      final json = jsonDecode(resp);
+      final List<TradeBookModel> data = [];
+      // log("Strategy model =>  $json");
+      for (final item in json) {
+              data.add(
+                  TradeBookModel.fromJson(item as Map<String, dynamic>));
             }
       return ({'stat': 'success', 'data': data});
     } catch (e) {
