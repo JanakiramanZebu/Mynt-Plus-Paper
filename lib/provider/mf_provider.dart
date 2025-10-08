@@ -960,19 +960,19 @@ class MFProvider extends DefaultChangeNotifier {
     _singleloader = false;
   }
 
-  // chngMandate(String val) {
-  //   _mandateId = val;
-  //   if (val != "Lumpsum") {
-  //     var indx = _mandateData!.indexWhere((f) => f.mandateId == val);
-  //     _mandateStatus = _mandateData![indx].status!;
-  //     // print("${_mandateData![indx].mandateId}, ${_mandateData![indx].status}");
-  //   }
-  //   invAmtError = "";
-  //   installmentAmtError = "";
-  //   invDurationError = "";
-  //   upiError = "";
-  //   notifyListeners();
-  // }
+  chngMandate(String val) {
+    _mandateId = val;
+    if (val != "Lumpsum") {
+      var indx = _mandateData!.indexWhere((f) => f.mandateId == val);
+      _mandateStatus = _mandateData![indx].status!;
+      // print("${_mandateData![indx].mandateId}, ${_mandateData![indx].status}");
+    }
+    invAmtError = "";
+    installmentAmtError = "";
+    invDurationError = "";
+    upiError = "";
+    notifyListeners();
+  }
 
   chngOrderType(String val) {
     _mfOrderTpye = val;
@@ -2616,10 +2616,10 @@ class MFProvider extends DefaultChangeNotifier {
           await api.getCreateMandate(amount, startDate, endDate);
 
       if (_createMandateModel?.mandate == null) {
-            warningMessage(context, "${_createMandateModel!.error}");
+            warningMessage(context, "${_createMandateModel!.emsg}");
       } else {
         fetchMFMandateDetail();
-            successMessage(context, "${_createMandateModel!.resp}");
+            successMessage(context, "${_createMandateModel!.msg}");
       }
       // print(
       //     "object ${_createMandateModel!.error} ${_createMandateModel!.url1} ::${_createMandateModel!.mandate}");

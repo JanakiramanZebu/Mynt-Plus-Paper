@@ -363,6 +363,7 @@ class ApiLinks {
   String get mfsipcancelnew => "$newvenketmfurl/order/xsip_cancel";
   String get mfsippausenew => "$newvenketmfurl/order/xsip_pause";
   String get mfredemptionenew => "$newvenketmfurl/order/PlaceRedeemOrder";
+  String get mandatecreatenew => "$newvenketmfurl/order/mandate_creation";
   
 
 }

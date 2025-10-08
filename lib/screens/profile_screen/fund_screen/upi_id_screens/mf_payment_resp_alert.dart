@@ -412,6 +412,7 @@ class _MfPaymentRespAlertState extends State<MfPaymentRespAlert> {
                         const SizedBox(
                           height: 5,
                         ),
+                        if(mfpro.mfOrderTpye != 'SIP')
                         TextWidget.paraText(
                           text: widget.upiData?["status"] == "PAYMENT COMPLETED"
                               ? "Transaction Success" :  widget.upiData?["status"] == "PAYMENT PROCESSING" ?  "Transaction pending"
