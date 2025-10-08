@@ -2503,20 +2503,27 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   }
 
 // Fetching fundametal datas
-  Future fetchFundamentalData({required String tradeSym}) async {
+  Future fetchFundamentalData({required String tradeSym, String? token}) async {
     try {
-      String? token = _getQuotes.token;
-      if (storeQuotes.containsKey(token) && storeQuotes[token]?['f'] != null) {
-        _fundamentalData = storeQuotes[token]?['f'];
-      } else {
-        _fundamentalData = await api.getFundamentalData(tradeSym);
+      // Use provided token or fallback to _getQuotes.token
+      String? cacheToken = token ?? _getQuotes.token;
+      
+      // Clear cache for this specific token to ensure fresh data
+      if (cacheToken != null && storeQuotes.containsKey(cacheToken)) {
+        storeQuotes[cacheToken]?['f'] = null;
       }
+      
+      _fundamentalData = await api.getFundamentalData(tradeSym);
 
       List ltpArgs = [];
 
       if (_fundamentalData!.msg != "no data found") {
-        storeQuotes[token]?['f'] = {};
-        storeQuotes[token]?['f'] = _fundamentalData;
+        if (cacheToken != null) {
+          if (storeQuotes[cacheToken] == null) {
+            storeQuotes[cacheToken] = {};
+          }
+          storeQuotes[cacheToken]?['f'] = _fundamentalData;
+        }
         _peersChartKeys = _fundamentalData!.peerComparisonChart!.keys.toList();
         DateFormat format = DateFormat("yyyy-MM-dd");
         _mfHoldingDate = [];
@@ -2656,6 +2663,20 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   void clearChartData() {
     _eodChartData = [];
     _chartDataLoading = false;
+    notifyListeners();
+  }
+
+  // Method to clear fundamental data
+  void clearFundamentalData() {
+    _fundamentalData = null;
+    notifyListeners();
+  }
+
+  // Method to clear cache for a specific token
+  void clearCacheForToken(String token) {
+    if (storeQuotes.containsKey(token)) {
+      storeQuotes[token]?['f'] = null;
+    }
     notifyListeners();
   }
 

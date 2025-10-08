@@ -9,6 +9,7 @@ import '../../models/marketwatch_model/scrip_overview/eodchartdata_model.dart';
 import '../../models/marketwatch_model/scrip_overview/stock_data.dart';
 import '../../provider/thems.dart';
 import '../../provider/market_watch_provider.dart';
+import '../../provider/websocket_provider.dart';
 import '../../res/res.dart';
 import '../../res/global_state_text.dart';
 import '../../sharedWidget/no_data_found.dart';
@@ -142,6 +143,7 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
   List<PriceData> priceData = [];
   List<EventData> eventData = [];
   bool _hasScrolled = false;
+  bool _isLoadingNewData = true; // Initialize as true to prevent "No Data" flash
 
   // Chart tooltip state (like benchmark_backtest.dart)
   FlSpot? touchedSpot;
@@ -160,14 +162,94 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      // Clear any existing chart data first
+      // Clear any existing data to prevent showing old data
       ref.read(marketWatchProvider).clearChartData();
-      // Fetch 5 year of data first, then filter locally
-      ref.read(marketWatchProvider).fetchEODChartData(
+      ref.read(marketWatchProvider).clearFundamentalData();
+      
+      // Clear cache for this specific token to ensure fresh data
+      if (widget.wlValue.token.isNotEmpty) {
+        ref.read(marketWatchProvider).clearCacheForToken(widget.wlValue.token);
+      }
+      
+      ref.read(websocketProvider).socketDataStream.listen((socketData) {
+        if (mounted && socketData.containsKey(widget.wlValue.token)) {
+          final newData = socketData[widget.wlValue.token];
+          if (newData != null) {
+            // Only update if values actually changed
+            bool valueChanged = false;
+            
+            final newLtp = newData['lp']?.toString();
+            final newChange = newData['chng']?.toString();
+            final newPerChange = newData['pc']?.toString();
+            
+            if (newLtp != null && newLtp != widget.depthData.lp && newLtp != '0.00') {
+              widget.depthData.lp = newLtp;
+              valueChanged = true;
+            }
+            
+            if (newChange != null && newChange != widget.depthData.chng) {
+              widget.depthData.chng = newChange;
+              valueChanged = true;
+            }
+            
+            if (newPerChange != null && newPerChange != widget.depthData.pc) {
+              widget.depthData.pc = newPerChange;
+              valueChanged = true;
+            }
+            
+            // Only rebuild if values actually changed
+            if (valueChanged) {
+              setState(() {});
+            }
+          }
+        }
+      });
+      
+      // Fetch data in parallel for better performance
+      if (widget.wlValue.exch == "NSE" || widget.wlValue.exch == "BSE") {
+        final tradeSym = "${widget.wlValue.exch}:${widget.wlValue.tsym}";
+        
+        // Load both data sources in parallel
+        Future.wait([
+          ref.read(marketWatchProvider).fetchFundamentalData(
+            tradeSym: tradeSym,
+            token: widget.wlValue.token,
+          ),
+          ref.read(marketWatchProvider).fetchEODChartData(
             widget.wlValue.symbol,
             widget.wlValue.exch,
-            timeframe: "5Y", // Always fetch 5 year of data first
-          );
+            timeframe: "5Y",
+          ),
+        ]).then((_) {
+          // Fetch technical data for returns calculation after other data is loaded
+          ref.read(marketWatchProvider).fetchTechData(
+            exch: widget.wlValue.exch,
+            tradeSym: widget.wlValue.tsym,
+            lastPrc: "${widget.depthData.lp ?? widget.depthData.c ?? 0.00}",
+            context: context,
+          ).then((_) {
+            // Calculate returns using the same logic as scrip_depth_info.dart
+            ref.read(marketWatchProvider).techDataCalc("${widget.depthData.lp ?? widget.depthData.c ?? 0.00}");
+          });
+          if (mounted) {
+            setState(() {
+              _isLoadingNewData = false;
+            });
+          }
+        }).catchError((error) {
+          debugPrint("Error loading data: $error");
+          if (mounted) {
+            setState(() {
+              _isLoadingNewData = false;
+            });
+          }
+        });
+      } else {
+        setState(() {
+          _isLoadingNewData = false;
+        });
+      }
+      
     });
   }
 
@@ -175,6 +257,50 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
   void dispose() {
     _hideTooltipTimer?.cancel();
     super.dispose();
+  }
+
+  // Process WebSocket data for live updates (same as scrip_depth_info.dart)
+  void _processDepthData(GetQuotes depthData, Map<String, dynamic> socketData) {
+    depthData.ap = "${socketData['ap']}";
+    depthData.lp = "${socketData['lp']}";
+    depthData.pc = "${socketData['pc']}";
+    depthData.o = "${socketData['o']}";
+    depthData.l = "${socketData['l']}";
+    depthData.c = "${socketData['c']}";
+    depthData.chng = "${socketData['chng']}";
+    depthData.h = "${socketData['h']}";
+    depthData.poi = "${socketData['poi']}";
+    depthData.v = "${socketData['v']}";
+    depthData.toi = "${socketData['toi']}";
+    depthData.sp1 = "${socketData['sp1']}";
+    depthData.sp2 = "${socketData['sp2']}";
+    depthData.sp3 = "${socketData['sp3']}";
+    depthData.sp4 = "${socketData['sp4']}";
+    depthData.sp5 = "${socketData['sp5']}";
+    depthData.bp1 = "${socketData['bp1']}";
+    depthData.bp2 = "${socketData['bp2']}";
+    depthData.bp3 = "${socketData['bp3']}";
+    depthData.bp4 = "${socketData['bp4']}";
+    depthData.bp5 = "${socketData['bp5']}";
+    depthData.sq1 = "${socketData['sq1']}";
+    depthData.sq2 = "${socketData['sq2']}";
+    depthData.sq3 = "${socketData['sq3']}";
+    depthData.sq4 = "${socketData['sq4']}";
+    depthData.sq5 = "${socketData['sq5']}";
+    depthData.bq1 = "${socketData['bq1']}";
+    depthData.bq2 = "${socketData['bq2']}";
+    depthData.bq3 = "${socketData['bq3']}";
+    depthData.bq4 = "${socketData['bq4']}";
+    depthData.bq5 = "${socketData['bq5']}";
+    depthData.tbq = "${socketData['tbq']}";
+    depthData.tsq = "${socketData['tsq']}";
+    depthData.wk52H = "${socketData['52h']}";
+    depthData.wk52L = "${socketData['52l']}";
+    depthData.lc = "${socketData['lc']}";
+    depthData.uc = "${socketData['uc']}";
+    depthData.ltq = "${socketData['ltq']}";
+    depthData.ltt = "${socketData['ltt']}";
+    depthData.ft = "${socketData['ft']}";
   }
 
   void _convertApiDataToPriceData(
@@ -231,14 +357,6 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
     int dataPointsToShow;
 
     switch (selectedTimeframe) {
-      case "5Y":
-        // For 5Y, show all available data (no limit)
-        dataPointsToShow = allPriceData.length;
-        break;
-      case "3Y":
-        // For 3Y, show last 3 years (approximately 750 trading days)
-        dataPointsToShow = 750;
-        break;
       case "1Y":
         // Approximate 250 trading days in a year
         dataPointsToShow = 250;
@@ -494,7 +612,7 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
     return Consumer(builder: (context, WidgetRef ref, _) {
       final theme = ref.read(themeProvider);
       final marketWatch = ref.watch(marketWatchProvider);
-
+      
       // Convert API data to PriceData format when provider data changes
       if (marketWatch.eodChartData.isNotEmpty) {
         print(
@@ -511,6 +629,48 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
       // Convert market watch event data when available
       if (marketWatch.fundamentalData?.stockEvents != null) {
         _convertMarketWatchEventData(marketWatch);
+      }
+
+      // Show loading indicator if still loading
+      if (_isLoadingNewData) {
+        return Scaffold(
+          appBar: AppBar(
+            centerTitle: false,
+            elevation: 1,
+            leadingWidth: 48,
+            titleSpacing: 0,
+            leading: Material(
+              color: Colors.transparent,
+              shape: const CircleBorder(),
+              clipBehavior: Clip.hardEdge,
+              child: InkWell(
+                customBorder: const CircleBorder(),
+                splashColor: Colors.grey.withOpacity(0.4),
+                highlightColor: Colors.grey.withOpacity(0.2),
+                onTap: () {
+                  Navigator.pop(context);
+                },
+                child: Container(
+                  width: 44,
+                  height: 44,
+                  alignment: Alignment.center,
+                  child: Icon(
+                    Icons.arrow_back_ios_outlined,
+                    size: 18,
+                    color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                  ),
+                ),
+              ),
+            ),
+            title: TextWidget.titleText(
+              text: "${widget.wlValue.symbol.toUpperCase()} Fundamental",
+              color: Color(theme.isDarkMode ? 0xffffffff : 0xff000000),
+              theme: theme.isDarkMode,
+              fw: 1,
+            ),
+          ),
+          body: _buildLoadingIndicator(theme),
+        );
       }
 
       // Check if fundamental data is available, if not show error message
@@ -604,53 +764,61 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
             width: double.infinity,
             height: double.infinity,
             color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-            child: NotificationListener<ScrollNotification>(
-              onNotification: (scrollNotification) {
-                if (scrollNotification is ScrollUpdateNotification) {
-                  setState(() {
-                    _hasScrolled = scrollNotification.metrics.pixels > 0;
-                  });
-                }
-                return true;
+            child: Consumer(
+              builder: (context, ref, child) {
+                final marketWatch = ref.watch(marketWatchProvider);
+                
+                return NotificationListener<ScrollNotification>(
+                      onNotification: (scrollNotification) {
+                        if (scrollNotification is ScrollUpdateNotification) {
+                          setState(() {
+                            _hasScrolled = scrollNotification.metrics.pixels > 0;
+                          });
+                        }
+                        return true;
+                      },
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.all(8),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Header Section
+                            _buildHeaderSection(theme, marketWatch),
+                            const SizedBox(height: 24),
+
+                            // Company Overview Section
+                            // _buildCompanyOverviewSection(theme),
+                            // const SizedBox(height: 24),
+
+                            // // Rewards (Investment Thesis & Recommendation) Section
+                            // _buildRewardsSection(theme),
+                            // const SizedBox(height: 24),
+
+                            // // Risks Section
+                            // _buildRisksSection(theme),
+                            // const SizedBox(height: 24),
+
+                            // Price History & Performance Chart
+                            _buildPriceHistoryChart(theme, marketWatch),
+                            const SizedBox(height: 16),
+
+                            // Key Indicators - Always show section, but hide content when no data
+                            _buildRatiosTab(marketWatch, theme),
+                            const SizedBox(height: 16),
+
+                            _buildHoldingsTab(marketWatch, theme),
+                            const SizedBox(height: 16),
+
+                            _buildFinancialTab(marketWatch, theme),
+                            const SizedBox(height: 16),
+
+                            _buildPeersTab(marketWatch, theme),
+                            const SizedBox(height: 16),
+                          ],
+                        ),
+                      ),
+                    );
               },
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(8),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Header Section
-                    _buildHeaderSection(theme, marketWatch),
-                    const SizedBox(height: 24),
-
-                    // Company Overview Section
-                    // _buildCompanyOverviewSection(theme),
-                    // const SizedBox(height: 24),
-
-                    // // Rewards (Investment Thesis & Recommendation) Section
-                    // _buildRewardsSection(theme),
-                    // const SizedBox(height: 24),
-
-                    // // Risks Section
-                    // _buildRisksSection(theme),
-                    // const SizedBox(height: 24),
-
-                    // Price History & Performance Chart
-                    _buildPriceHistoryChart(theme, marketWatch),
-                    const SizedBox(height: 16),
-
-                     _buildRatiosTab(marketWatch, theme),
-
-                    _buildHoldingsTab(marketWatch, theme),
-                    const SizedBox(height: 16),
-
-                    _buildFinancialTab(marketWatch, theme),
-                    const SizedBox(height: 16),
-
-                    _buildPeersTab(marketWatch, theme),
-                    const SizedBox(height: 16),
-                  ],
-                ),
-              ),
             ),
           ),
         ),
@@ -700,43 +868,45 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                   ),
                 ],
               ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  TextWidget.titleText(
-                    text:
-                        "${widget.depthData.lp != "null" ? widget.depthData.lp ?? widget.depthData.c ?? 0.00 : '0.00'}",
-                    color: (widget.depthData.chng == "null" ||
-                                widget.depthData.chng == null) ||
-                            widget.depthData.chng == "0.00"
-                        ? theme.isDarkMode
-                            ? colors.textSecondaryDark
-                            : colors.textSecondaryLight
-                        : widget.depthData.chng!.startsWith("-") ||
-                                widget.depthData.pc!.startsWith("-")
-                            ? theme.isDarkMode
-                                ? colors.lossDark
-                                : colors.lossLight
-                            : theme.isDarkMode
-                                ? colors.profitDark
-                                : colors.profitLight,
-                    theme: theme.isDarkMode,
-                    fw: 0,
-                  ),
-                  const SizedBox(height: 8),
-          
-                  // Price Change and Percentage
-                  TextWidget.paraText(
-                    text:
-                        "${(double.tryParse(widget.depthData.chng ?? '0.00') ?? 0.00).toStringAsFixed(2)} (${(double.tryParse(widget.depthData.pc ?? '0.00') ?? 0.00).toStringAsFixed(2)}%)",
-                    color: theme.isDarkMode
-                        ? colors.textSecondaryDark
-                        : colors.textSecondaryLight,
-                    theme: theme.isDarkMode,
-                    fw: 0,
-                  ),
-                  // const SizedBox(height: 8),
-                ],
+              RepaintBoundary(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    TextWidget.titleText(
+                      text:
+                          "${widget.depthData.lp != "null" ? widget.depthData.lp ?? widget.depthData.c ?? 0.00 : '0.00'}",
+                      color: (widget.depthData.chng == "null" ||
+                                  widget.depthData.chng == null) ||
+                              widget.depthData.chng == "0.00"
+                          ? theme.isDarkMode
+                              ? colors.textSecondaryDark
+                              : colors.textSecondaryLight
+                          : widget.depthData.chng!.startsWith("-") ||
+                                  widget.depthData.pc!.startsWith("-")
+                              ? theme.isDarkMode
+                                  ? colors.lossDark
+                                  : colors.lossLight
+                              : theme.isDarkMode
+                                  ? colors.profitDark
+                                  : colors.profitLight,
+                      theme: theme.isDarkMode,
+                      fw: 0,
+                    ),
+                    const SizedBox(height: 8),
+            
+                    // Price Change and Percentage
+                    TextWidget.paraText(
+                      text:
+                          "${(double.tryParse(widget.depthData.chng ?? '0.00') ?? 0.00).toStringAsFixed(2)} (${(double.tryParse(widget.depthData.pc ?? '0.00') ?? 0.00).toStringAsFixed(2)}%)",
+                      color: theme.isDarkMode
+                          ? colors.textSecondaryDark
+                          : colors.textSecondaryLight,
+                      theme: theme.isDarkMode,
+                      fw: 0,
+                    ),
+                    // const SizedBox(height: 8),
+                  ],
+                ),
               ),
             ],
           ),
@@ -756,15 +926,6 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
   }
  Widget _buildRatiosTab(
       MarketWatchProvider marketWatch, ThemesProvider theme) {
-    if (marketWatch.fundamentalData?.fundamental?.isEmpty ?? true) {
-      return const Center(child: NoDataFound());
-    }
-
-     final funData = marketWatch.fundamentalData?.fundamental?[0];
-     if (funData == null) {
-       return const Center(child: NoDataFound());
-     }
-
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
@@ -782,7 +943,33 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
             fw: 1,
           ),
           const SizedBox(height: 16),
-          _buildRatiosSection(funData, theme),
+          // Show data if available, otherwise show "No Data Found"
+          if (marketWatch.fundamentalData?.fundamental?.isNotEmpty == true) ...[
+            _buildRatiosSection(marketWatch.fundamentalData!.fundamental![0], theme),
+          ] else ...[
+            SizedBox(height: 250, child:  Center(child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        // SvgPicture.asset(assets.noDatafound,
+        // color:   Color(0xff777777)
+        // ),
+        // const SizedBox(height: 2),
+        SizedBox(
+          width: 250,
+          child: TextWidget.subText(
+              text: "Data not available",
+              color: theme.isDarkMode
+                  ? colors.textSecondaryDark
+                  : colors.textSecondaryLight,
+                  fw:0,
+                  align: TextAlign.center,
+              theme: theme.isDarkMode),
+        )
+      ]
+    ))),
+          ],
+          
         ],
       ),
     );
@@ -879,74 +1066,63 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
               ? colors.textPrimaryDark
               : colors.textPrimaryLight,
         ),
-        const SizedBox(width: 2),
-        _buildTapTooltip(
-          message: _getSectionTooltip(title),
-          theme: theme,
-          child: Padding(
-            padding: const EdgeInsets.all(4),
-            child: Icon(
-              Icons.info_outline,
-              size: 14,
-              color: theme.isDarkMode
-                  ? colors.textSecondaryDark
-                  : colors.textSecondaryLight,
+        if (title == "Value" || title == "Growth" || title == "Quality") ...[
+          const SizedBox(width: 4),
+          Material(
+            color: Colors.transparent,
+            shape: const CircleBorder(),
+            child: InkWell(
+              customBorder: const CircleBorder(),
+              splashColor:
+                  theme.isDarkMode ? colors.splashColorDark : colors.splashColorLight,
+              highlightColor:
+                  theme.isDarkMode ? colors.highlightDark : colors.highlightLight,
+              onTap: () {}, // required for splash
+              child: TooltipTheme(
+                data: TooltipThemeData(
+                  textStyle: TextWidget.textStyle(
+                    fontSize: 12,
+                    theme: false,
+                    color: Colors.white,
+                    fw: 0,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.black,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  preferBelow: false,
+                  verticalOffset: 8,
+                ),
+                child: Tooltip(
+                  message: _getSectionTooltip(title),
+                  triggerMode: TooltipTriggerMode.tap,
+                  waitDuration: const Duration(milliseconds: 80),
+                  showDuration: const Duration(seconds: 5),
+                  preferBelow: false,
+                  verticalOffset: 8,
+                  child: SizedBox(
+                    width: 30,
+                    height: 30,
+                    child: Center(
+                      child: Icon(
+                        Icons.info_outline,
+                        size: 18,
+                        color: theme.isDarkMode
+                            ? colors.textSecondaryDark
+                            : colors.textSecondaryLight,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
             ),
           ),
-        ),
+        ],
       ],
     );
   }
 
-  // Build tap tooltip with black styling (same as profile tab version)
-  Widget _buildTapTooltip({
-    required String message,
-    required Widget child,
-    required ThemesProvider theme,
-  }) {
-    final GlobalKey<TooltipState> key = GlobalKey<TooltipState>();
-
-    return Material(
-      color: Colors.transparent,
-      shape: const CircleBorder(),
-      child: InkWell(
-        customBorder: const CircleBorder(),
-        splashColor: theme.isDarkMode ? colors.splashColorDark : colors.splashColorLight,
-        highlightColor: theme.isDarkMode ? colors.highlightDark : colors.highlightLight,
-        borderRadius: BorderRadius.circular(4),
-        onTap: () {
-          key.currentState?.ensureTooltipVisible();
-        },
-        child: TooltipTheme(
-          data: TooltipThemeData(
-            textStyle: TextWidget.textStyle(
-              fontSize: 12,
-              theme: false, // Always use light theme for white text
-              color: Colors.white,
-              fw: 0,
-            ),
-            decoration: BoxDecoration(
-              color: Colors.black,
-              borderRadius: BorderRadius.circular(4),
-            ),
-            preferBelow: false,
-            verticalOffset: 8,
-            waitDuration: const Duration(milliseconds: 100),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(2.0),
-            child: Tooltip(
-              key: key,
-              message: message,
-              preferBelow: false,
-              verticalOffset: 8,
-              child: child,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+  // Info tooltip removed
 
   String _getSectionTooltip(String sectionTitle) {
     switch (sectionTitle) {
@@ -1189,23 +1365,55 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
   }
 
   Widget _buildPeersTab(MarketWatchProvider marketWatch, ThemesProvider theme) {
-    if (marketWatch.fundamentalData?.msg == "no data found") {
-      return const Center(child: NoDataFound());
+    // Show data if available, otherwise show "No Data Found"
+    if (marketWatch.fundamentalData?.msg != "no data found" &&
+        marketWatch.fundamentalData?.peersComparison != null &&
+        marketWatch.fundamentalData!.peersComparison!.stock != null &&
+        marketWatch.fundamentalData!.peersComparison!.peers != null &&
+        (marketWatch.fundamentalData!.peersComparison!.stock!.isNotEmpty ||
+         marketWatch.fundamentalData!.peersComparison!.peers!.isNotEmpty)) {
+      return const PriceComparision();
+    } else {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          TextWidget.titleText(
+            text: "Peers Comparison",
+            theme: theme.isDarkMode,
+            fw: 1,
+            color: theme.isDarkMode
+                ? colors.textPrimaryDark
+                : colors.textPrimaryLight,
+          ),
+          const SizedBox(height: 16),
+           SizedBox(height: 250, child:  Center(child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        // SvgPicture.asset(assets.noDatafound,
+        // color:   Color(0xff777777)
+        // ),
+        // const SizedBox(height: 2),
+        SizedBox(
+          width: 250,
+          child: TextWidget.subText(
+              text: "Data not available",
+              color: theme.isDarkMode
+                  ? colors.textSecondaryDark
+                  : colors.textSecondaryLight,
+                  fw:0,
+                  align: TextAlign.center,
+              theme: theme.isDarkMode),
+        )
+      ]
+    )))
+        ],
+      );
     }
-
-    return const SingleChildScrollView(
-      // padding: EdgeInsets.all(16),
-      child: PriceComparision(),
-    );
   }
 
   Widget _buildHoldingsTab(
       MarketWatchProvider marketWatch, ThemesProvider theme) {
-    if (marketWatch.fundamentalData?.msg == "no data found" ||
-        marketWatch.fundamentalData?.shareholdings == null) {
-      return const Center(child: NoDataFound());
-    }
-
     return Column(
       children: [
         // Pie Chart Section
@@ -1232,12 +1440,39 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
               ),
               const SizedBox(height: 24),
     
-              // Pie Chart Container
-              _buildHoldingsPieChart(marketWatch, theme),
-              const SizedBox(height: 16),
+              // Show data if available, otherwise show "No Data Found"
+              if (marketWatch.fundamentalData?.msg != "no data found" &&
+                  marketWatch.fundamentalData?.shareholdings != null &&
+                  marketWatch.fundamentalData!.shareholdings!.isNotEmpty) ...[
+                // Pie Chart Container
+                _buildHoldingsPieChart(marketWatch, theme),
+                const SizedBox(height: 16),
     
-              // Holdings Table
-              _buildHoldingsTable(marketWatch, theme),
+                // Holdings Table
+                _buildHoldingsTable(marketWatch, theme),
+              ] else ...[
+                SizedBox(height: 250, child:  Center(child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        // SvgPicture.asset(assets.noDatafound,
+        // color:   Color(0xff777777)
+        // ),
+        // const SizedBox(height: 2),
+        SizedBox(
+          width: 250,
+          child: TextWidget.subText(
+              text: "Data not available",
+              color: theme.isDarkMode
+                  ? colors.textSecondaryDark
+                  : colors.textSecondaryLight,
+                  fw:0,
+                  align: TextAlign.center,
+              theme: theme.isDarkMode),
+        )
+      ]
+    ))),
+              ],
               // const ShareHoldChart(),
               // const SizedBox(height: 16),
               // Container(
@@ -1514,35 +1749,20 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                         : _buildScrollablePriceChart(theme, marketWatch),
               ),
 
-              // Returns Display Container - Show only selected timeframe return
-              if (marketWatch.fundamentalData?.returns != null && marketWatch.fundamentalData!.returns!.isNotEmpty)
-                Container(
-                  decoration: BoxDecoration(
-                    color: theme.isDarkMode
-                        ? colors.colorBlack
-                        : colors.colorWhite,
-                  ),
-                  child: _buildSelectedTimeframeReturn(
-                      marketWatch.fundamentalData!.returns!,
-                      marketWatch.selectedTimeframe,
-                      theme),
-                ),
 
-              // Timeframe Toggle with Returns - Match legend style
+              // Timeframe Toggle with Returns - Using technical data instead of backend API
               SizedBox(
                 height: 50, // Increased height to accommodate two lines
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   itemBuilder: (context, index) {
-                    final timeframes = ["1W", "1M", "3M", "1Y", "3Y", "5Y"];
+                    final timeframes = ["1W", "1M", "3M", "1Y"];
                     final timeframe = timeframes[index];
                     final isSelected =
                         marketWatch.selectedTimeframe == timeframe;
                     
-                    // Get return percentage for this timeframe from fundamental API
-                    final returnPercentage = marketWatch.fundamentalData?.returns != null && marketWatch.fundamentalData!.returns!.isNotEmpty
-                        ? _getReturnPercentageForTimeframe(marketWatch.fundamentalData!.returns!, timeframe)
-                        : '0.00%';
+                    // Get return percentage from technical data (returnsGridview) instead of fundamental API
+                    final returnPercentage = _getTechnicalReturnPercentage(marketWatch.returnsGridview, timeframe);
                     
                     // Determine color based on positive/negative return
                     final percentValue = double.tryParse(returnPercentage.replaceAll(RegExp(r'[+%]'), '')) ?? 0.0;
@@ -1611,7 +1831,7 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                   separatorBuilder: (context, index) {
                     return const SizedBox(width: 4);
                   },
-                  itemCount: 6, // 1W, 1M, 3M, 1Y, 3Y, 5Y
+                  itemCount: 4, // 1W, 1M, 3M, 1Y
                 ),
               ),
             ],
@@ -1661,7 +1881,7 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                   bottomTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
-                      reservedSize: 30,
+                      reservedSize: 44,
                       interval: (priceData.length - 1) /
                           4, // Show 5 labels evenly distributed
                       getTitlesWidget: (value, meta) {
@@ -1684,28 +1904,6 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                           ];
 
                           switch (marketWatch.selectedTimeframe) {
-                            case "5Y":
-                              // For 5Y view, show year only
-                              final year = date.year.toString();
-                              return TextWidget.captionText(
-                                text: year,
-                                theme: theme.isDarkMode,
-                                fw: 0,
-                                color: theme.isDarkMode
-                                    ? colors.textSecondaryDark
-                                    : colors.textSecondaryLight,
-                              );
-                            case "3Y":
-                              // For 3Y view, show year only
-                              final year = date.year.toString();
-                              return TextWidget.captionText(
-                                text: year,
-                                theme: theme.isDarkMode,
-                                fw: 0,
-                                color: theme.isDarkMode
-                                    ? colors.textSecondaryDark
-                                    : colors.textSecondaryLight,
-                              );
                             case "1Y":
                               // For yearly view, show month and year
                               final monthName = months[date.month - 1];
@@ -1766,7 +1964,14 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                   topTitles: const AxisTitles(
                       sideTitles: SideTitles(showTitles: false)),
                 ),
-                borderData: FlBorderData(show: false),
+                borderData: FlBorderData(
+                  show: false,
+                ),
+                clipData: const FlClipData.all(),
+                minY: (minPrice - (maxPrice - minPrice) * 0.08) <= 0
+                    ? 0
+                    : minPrice - (maxPrice - minPrice) * 0.08,
+                maxY: maxPrice + (maxPrice - minPrice) * 0.06,
                 lineBarsData: [
                   // Main price line
                   LineChartBarData(
@@ -2018,7 +2223,60 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
     );
   }
 
-  // Helper method to get return percentage for a specific timeframe
+  Widget _buildLoadingIndicator(ThemesProvider theme) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          CircularProgressIndicator(
+            color: theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
+          ),
+          const SizedBox(height: 16),
+          TextWidget.paraText(
+            text: "Loading stock data...",
+            theme: theme.isDarkMode,
+            color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Helper method to get return percentage for a specific timeframe from technical data
+  String _getTechnicalReturnPercentage(List returnsGridview, String timeframe) {
+    String durationKey = '';
+    
+    switch (timeframe) {
+      case "1W":
+        durationKey = "One Week";
+        break;
+      case "1M":
+        durationKey = "One Month";
+        break;
+      case "3M":
+        durationKey = "Three Month";
+        break;
+      case "1Y":
+        durationKey = "52 Week";
+        break;
+      default:
+        durationKey = "One Week";
+    }
+
+    // Find the matching return data from technical returns
+    for (var item in returnsGridview) {
+      if (item['duration'] == durationKey) {
+        final percent = item['percent']?.toString() ?? '0.00';
+        final percentValue = double.tryParse(percent) ?? 0.0;
+        final isPositive = percentValue >= 0;
+        return '${isPositive ? '+' : ''}$percent%';
+      }
+    }
+    
+    return '0.00%';
+  }
+
+  // Helper method to get return percentage for a specific timeframe (keeping for backend API - not used anymore)
   String _getReturnPercentageForTimeframe(List<Returns> returnsData, String timeframe) {
     String returnKey = '';
     
@@ -2034,12 +2292,6 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
         break;
       case "1Y":
         returnKey = "1 year";
-        break;
-      case "3Y":
-        returnKey = "3 year";
-        break;
-      case "5Y":
-        returnKey = "5 year";
         break;
       default:
         returnKey = "1 week";

@@ -1445,7 +1445,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                           setState(() {
                                             isOco = !isOco;
                                             orderInput.disableCondGTT(isOco);
-                                             orderInput.setGTTPriceTypeOrderIsMarket(isOco);
+                                            //  orderInput.setGTTPriceTypeOrderIsMarket(isOco);
                                           });
 
                                           orderInput.chngOCOPriceType("Limit");

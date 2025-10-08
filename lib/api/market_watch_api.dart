@@ -301,7 +301,7 @@ print("res.body: ${res.body}");
           headers: defaultHeaders,
           body:
               '''jData={"uid":"${prefs.clientId}","exch":"$exch","tsym":"${UrlUtils.encodeParameter(tsym)}"}&jKey=${prefs.clientSession}''');
-
+print("Tech Data API => ${res.body}");
       final json = jsonDecode(res.body);
 
       // log(" Tech Data   => ${res.body}");
@@ -494,3 +494,6 @@ print("res.body: ${res.body}");
     }
   }
 }
+
+
+

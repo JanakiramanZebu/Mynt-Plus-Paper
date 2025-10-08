@@ -42,6 +42,12 @@ class _AddScripState extends ConsumerState<SearchScreen>
   void initState() {
     tabcount = widget.isBasket == "Basket" ? 5 : 6;
     tabCtrl = TabController(length: tabcount, vsync: this, initialIndex: 0);
+    // Ensure no stale results carry over from other search screens
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        ref.read(marketWatchProvider).searchClear();
+      }
+    });
     super.initState();
 
     tabCtrl.addListener(() {

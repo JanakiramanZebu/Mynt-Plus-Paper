@@ -40,44 +40,50 @@ class FinancialWidget extends ConsumerWidget {
                           theme: theme.isDarkMode,
                           fw: 1,
                         ),
-                          Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: BoxDecoration(
-                              color: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: provideData.finType.map((filter) {
-                                final isSelected = provideData.selcteIncomeFinType == filter;
-                                return GestureDetector(
-                                  onTap: () {
-                                    provideData.chngIncomeFinType(filter);
-                                  },
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 12, vertical: 6),
-                                    decoration: BoxDecoration(
-                                      color: isSelected
-                                          ? colors.primaryLight
-                                          : Colors.transparent,
-                                      borderRadius: BorderRadius.circular(5),
-                                    ),
-                                    child: TextWidget.paraText(
-                                      text: filter,
-                                      theme: theme.isDarkMode,
-                                      color: isSelected 
-                                          ? colors.colorWhite 
-                                          : theme.isDarkMode 
-                                              ? colors.textSecondaryDark 
-                                              : colors.textPrimaryLight,
-                                      fw: isSelected ? 2 : 0,
-                                    ),
-                                  ),
-                                );
-                              }).toList(),
-                            ),
-                          ),
+                        // Only show toggle buttons if there's data
+                        provideData.fundamentalData!.stockFinancialsConsolidated!
+                                    .incomeSheet!.isEmpty ||
+                                provideData.fundamentalData!.stockFinancialsStandalone!
+                                    .incomeSheet!.isEmpty
+                            ? const SizedBox.shrink()
+                            : Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: BoxDecoration(
+                                  color: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: provideData.finType.map((filter) {
+                                    final isSelected = provideData.selcteIncomeFinType == filter;
+                                    return GestureDetector(
+                                      onTap: () {
+                                        provideData.chngIncomeFinType(filter);
+                                      },
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 12, vertical: 6),
+                                        decoration: BoxDecoration(
+                                          color: isSelected
+                                              ? colors.primaryLight
+                                              : Colors.transparent,
+                                          borderRadius: BorderRadius.circular(5),
+                                        ),
+                                        child: TextWidget.paraText(
+                                          text: filter,
+                                          theme: theme.isDarkMode,
+                                          color: isSelected 
+                                              ? colors.colorWhite 
+                                              : theme.isDarkMode 
+                                                  ? colors.textSecondaryDark 
+                                                  : colors.textPrimaryLight,
+                                          fw: isSelected ? 2 : 0,
+                                        ),
+                                      ),
+                                    );
+                                  }).toList(),
+                                ),
+                              ),
                       ],
                     ),
                 // const SizedBox(height: 16),
@@ -85,19 +91,45 @@ class FinancialWidget extends ConsumerWidget {
                                 .incomeSheet!.isEmpty ||
                         provideData.fundamentalData!.stockFinancialsStandalone!
                             .incomeSheet!.isEmpty
-                        ? const Center(child: NoDataFound())
+                        ?  SizedBox(height: 250, child:  Center(child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        // SvgPicture.asset(assets.noDatafound,
+        // color:   Color(0xff777777)
+        // ),
+        // const SizedBox(height: 2),
+        SizedBox(
+          width: 250,
+          child: TextWidget.subText(
+              text: "Data not available",
+              color: theme.isDarkMode
+                  ? colors.textSecondaryDark
+                  : colors.textSecondaryLight,
+                  fw:0,
+                  align: TextAlign.center,
+              theme: theme.isDarkMode),
+        )
+      ]
+    )))   
                         : const FIncomeChart(),
                 const SizedBox(height: 16),
                   
-                    IncomeSheetData(
-                        themes: theme,
-                    incomSheet:
-                        provideData.selcteIncomeFinType == "Consolidated"
-                            ? provideData.fundamentalData!
-                                .stockFinancialsConsolidated!.incomeSheet!
-                            : provideData.fundamentalData!
-                                .stockFinancialsStandalone!.incomeSheet!,
-                        financialYear: provideData.selcteFinYear)
+                    // Only show data table if there's data
+                    provideData.fundamentalData!.stockFinancialsConsolidated!
+                                .incomeSheet!.isEmpty ||
+                        provideData.fundamentalData!.stockFinancialsStandalone!
+                            .incomeSheet!.isEmpty
+                        ? const SizedBox.shrink()
+                        : IncomeSheetData(
+                            themes: theme,
+                        incomSheet:
+                            provideData.selcteIncomeFinType == "Consolidated"
+                                ? provideData.fundamentalData!
+                                    .stockFinancialsConsolidated!.incomeSheet!
+                                : provideData.fundamentalData!
+                                    .stockFinancialsStandalone!.incomeSheet!,
+                            financialYear: provideData.selcteFinYear)
                   ],
                 ),
               ),
@@ -121,59 +153,96 @@ class FinancialWidget extends ConsumerWidget {
                           theme: theme.isDarkMode,
                           fw: 1,
                         ),
-                          Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: BoxDecoration(
-                              color: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: provideData.finType.map((filter) {
-                                final isSelected = provideData.selcteBalanceSheetFinType == filter;
-                                return GestureDetector(
-                                  onTap: () {
-                                    provideData.chngBalanceSheetFinType(filter);
-                                  },
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 12, vertical: 6),
-                                    decoration: BoxDecoration(
-                                      color: isSelected
-                                          ? colors.primaryLight
-                                          : Colors.transparent,
-                                      borderRadius: BorderRadius.circular(5),
-                                    ),
-                                    child: TextWidget.paraText(
-                                      text: filter,
-                                      theme: theme.isDarkMode,
-                                      color: isSelected 
-                                          ? colors.colorWhite 
-                                          : theme.isDarkMode 
-                                              ? colors.textSecondaryDark 
-                                              : colors.textPrimaryLight,
-                                      fw: isSelected ? 2 : 0,
-                                    ),
-                                  ),
-                                );
-                              }).toList(),
-                            ),
-                          ),
+                        // Only show toggle buttons if there's data
+                        provideData.fundamentalData!.stockFinancialsConsolidated!
+                                    .balanceSheet!.isEmpty ||
+                                provideData.fundamentalData!.stockFinancialsStandalone!
+                                    .balanceSheet!.isEmpty
+                            ? const SizedBox.shrink()
+                            : Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: BoxDecoration(
+                                  color: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: provideData.finType.map((filter) {
+                                    final isSelected = provideData.selcteBalanceSheetFinType == filter;
+                                    return GestureDetector(
+                                      onTap: () {
+                                        provideData.chngBalanceSheetFinType(filter);
+                                      },
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 12, vertical: 6),
+                                        decoration: BoxDecoration(
+                                          color: isSelected
+                                              ? colors.primaryLight
+                                              : Colors.transparent,
+                                          borderRadius: BorderRadius.circular(5),
+                                        ),
+                                        child: TextWidget.paraText(
+                                          text: filter,
+                                          theme: theme.isDarkMode,
+                                          color: isSelected 
+                                              ? colors.colorWhite 
+                                              : theme.isDarkMode 
+                                                  ? colors.textSecondaryDark 
+                                                  : colors.textPrimaryLight,
+                                          fw: isSelected ? 2 : 0,
+                                        ),
+                                      ),
+                                    );
+                                  }).toList(),
+                                ),
+                              ),
                       ],
                     ),
                 // const SizedBox(height: 16),
-                    const FBalSheetCahrt(),
+                    provideData.fundamentalData!.stockFinancialsConsolidated!
+                                .balanceSheet!.isEmpty ||
+                        provideData.fundamentalData!.stockFinancialsStandalone!
+                            .balanceSheet!.isEmpty
+                        ?  SizedBox(height: 250, child:  Center(child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        // SvgPicture.asset(assets.noDatafound,
+        // color:   Color(0xff777777)
+        // ),
+        // const SizedBox(height: 2),
+        SizedBox(
+          width: 250,
+          child: TextWidget.subText(
+              text: "Data not available",
+              color: theme.isDarkMode
+                  ? colors.textSecondaryDark
+                  : colors.textSecondaryLight,
+                  fw:0,
+                  align: TextAlign.center,
+              theme: theme.isDarkMode),
+        )
+      ]
+    )))
+                        : const FBalSheetCahrt(),
                 const SizedBox(height: 16),
                   
-                    BalanceSheetData(
-                        balanceSheet:
-                        provideData.selcteBalanceSheetFinType == "Consolidated"
-                                ? provideData.fundamentalData!
-                                    .stockFinancialsConsolidated!.balanceSheet!
-                                : provideData.fundamentalData!
-                                    .stockFinancialsStandalone!.balanceSheet!,
-                        financialYear: provideData.selcteFinYear,
-                        themes: theme)
+                    // Only show data table if there's data
+                    provideData.fundamentalData!.stockFinancialsConsolidated!
+                                .balanceSheet!.isEmpty ||
+                        provideData.fundamentalData!.stockFinancialsStandalone!
+                            .balanceSheet!.isEmpty
+                        ? const SizedBox.shrink()
+                        : BalanceSheetData(
+                            balanceSheet:
+                            provideData.selcteBalanceSheetFinType == "Consolidated"
+                                    ? provideData.fundamentalData!
+                                        .stockFinancialsConsolidated!.balanceSheet!
+                                    : provideData.fundamentalData!
+                                        .stockFinancialsStandalone!.balanceSheet!,
+                            financialYear: provideData.selcteFinYear,
+                            themes: theme)
                   ],
                 ),
               ),
@@ -198,60 +267,97 @@ class FinancialWidget extends ConsumerWidget {
                           fw: 1,
                         
                         ),
-                          Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: BoxDecoration(
-                              color: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: provideData.finType.map((filter) {
-                                final isSelected = provideData.selcteCashFlowFinType == filter;
-                                return GestureDetector(
-                                  onTap: () {
-                                    provideData.chngCashFlowFinType(filter);
-                                  },
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 12, vertical: 6),
-                                    decoration: BoxDecoration(
-                                      color: isSelected
-                                          ? colors.primaryLight
-                                          : Colors.transparent,
-                                      borderRadius: BorderRadius.circular(5),
-                                    ),
-                                    child: TextWidget.paraText(
-                                      text: filter,
-                                      theme: theme.isDarkMode,
-                                      color: isSelected 
-                                          ? colors.colorWhite 
-                                          : theme.isDarkMode 
-                                              ? colors.textSecondaryDark 
-                                              : colors.textPrimaryLight,
-                                      fw: isSelected ? 2 : 0,
-                                    ),
-                                  ),
-                                );
-                              }).toList(),
-                            ),
-                          ),
+                        // Only show toggle buttons if there's data
+                        provideData.fundamentalData!.stockFinancialsConsolidated!
+                                    .cashflowSheet!.isEmpty ||
+                                provideData.fundamentalData!.stockFinancialsStandalone!
+                                    .cashflowSheet!.isEmpty
+                            ? const SizedBox.shrink()
+                            : Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: BoxDecoration(
+                                  color: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: provideData.finType.map((filter) {
+                                    final isSelected = provideData.selcteCashFlowFinType == filter;
+                                    return GestureDetector(
+                                      onTap: () {
+                                        provideData.chngCashFlowFinType(filter);
+                                      },
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 12, vertical: 6),
+                                        decoration: BoxDecoration(
+                                          color: isSelected
+                                              ? colors.primaryLight
+                                              : Colors.transparent,
+                                          borderRadius: BorderRadius.circular(5),
+                                        ),
+                                        child: TextWidget.paraText(
+                                          text: filter,
+                                          theme: theme.isDarkMode,
+                                          color: isSelected 
+                                              ? colors.colorWhite 
+                                              : theme.isDarkMode 
+                                                  ? colors.textSecondaryDark 
+                                                  : colors.textPrimaryLight,
+                                          fw: isSelected ? 2 : 0,
+                                        ),
+                                      ),
+                                    );
+                                  }).toList(),
+                                ),
+                              ),
                       ],
                     ),
              
                 // const SizedBox(height: 16),
-                    FCashFlowChart(),
+                    provideData.fundamentalData!.stockFinancialsConsolidated!
+                                .cashflowSheet!.isEmpty ||
+                        provideData.fundamentalData!.stockFinancialsStandalone!
+                            .cashflowSheet!.isEmpty
+                        ?  SizedBox(height: 250, child:  Center(child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        // SvgPicture.asset(assets.noDatafound,
+        // color:   Color(0xff777777)
+        // ),
+        // const SizedBox(height: 2),
+        SizedBox(
+          width: 250,
+          child: TextWidget.subText(
+              text: "Data not available",
+              color: theme.isDarkMode
+                  ? colors.textSecondaryDark
+                  : colors.textSecondaryLight,
+                  fw:0,
+                  align: TextAlign.center,
+              theme: theme.isDarkMode),
+        )
+      ]
+    )))
+                        : FCashFlowChart(),
                     const SizedBox(height: 16),
                   
-                    CashFlowSheetData(
-                        cashFlowSheet:
-                        provideData.selcteCashFlowFinType == "Consolidated"
-                                ? provideData.fundamentalData!
-                                    .stockFinancialsConsolidated!.cashflowSheet!
-                                : provideData.fundamentalData!
-                                    .stockFinancialsStandalone!.cashflowSheet!,
-                        financialYear: provideData.selcteFinYear,
-                        themes: theme)
+                    // Only show data table if there's data
+                    provideData.fundamentalData!.stockFinancialsConsolidated!
+                                .cashflowSheet!.isEmpty ||
+                        provideData.fundamentalData!.stockFinancialsStandalone!
+                            .cashflowSheet!.isEmpty
+                        ? const SizedBox.shrink()
+                        : CashFlowSheetData(
+                            cashFlowSheet:
+                            provideData.selcteCashFlowFinType == "Consolidated"
+                                    ? provideData.fundamentalData!
+                                        .stockFinancialsConsolidated!.cashflowSheet!
+                                    : provideData.fundamentalData!
+                                        .stockFinancialsStandalone!.cashflowSheet!,
+                            financialYear: provideData.selcteFinYear,
+                            themes: theme)
                   ],
                 ),
               )
