@@ -121,9 +121,9 @@ class _TimmerScreenForUPI extends State<TimmerScreenForUPI> {
                       ? mfOrder.mandateId
                       : null,
                   onChanged: (value) async {
-                    if (value != null) {
-                      mfOrder.chngMandate("$value");
-                    }
+                    // if (value != null) {
+                    //   // mfOrder.chngMandate("$value");
+                    // }
                   },
                 ),
               ),

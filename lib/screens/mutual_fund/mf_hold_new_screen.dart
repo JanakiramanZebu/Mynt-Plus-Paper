@@ -38,7 +38,7 @@ class MfHoldNewScreen extends ConsumerWidget {
                            mfData.mfholdingnew!.data!.isNotEmpty;
 
     if(!hasHoldingsData) {
-      return const Expanded(child: Center(child: NoDataFound()));
+      return Center(child: NoDataFound());
     }
     
     return TransparentLoaderScreen(

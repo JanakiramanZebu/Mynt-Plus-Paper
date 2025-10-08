@@ -88,6 +88,7 @@ class MFNFOScreen extends ConsumerWidget {
                         mf.installmentAmt.text = amt.split('.').first;
                       }
                       fund.fetchFunds(context);
+                     mf.fetchUpiDetail('', context);
                       ref.read(transcationProvider).initialdata(context);
 
                       if (context.mounted) {

@@ -260,11 +260,11 @@ class MFProvider extends DefaultChangeNotifier {
   TextEditingController rejectsip = TextEditingController();
   TextEditingController pausesip = TextEditingController();
 
-  String? invAmtError,
-      upiError,
-      installmentAmtError,
-      invDurationError,
-      redemptionError,
+  String? invAmtError = "",
+      upiError = "",
+      installmentAmtError = "",
+      invDurationError = "",
+      redemptionError = "",
       redemptionOrderError = "";
 
   RedemptionModel? _redemptionData;
@@ -953,27 +953,26 @@ class MFProvider extends DefaultChangeNotifier {
   invertfun(String isin, String schemeCode, BuildContext context) async {
     _singleloader = true;
     await fetchMFSipData(isin, schemeCode);
-
     await fetchMFMandateDetail();
     // fetchBankDetail();
     await fetchUpiDetail('', context);
-    await chngMandate(mandateId);
+    // await chngMandate(mandateId);
     _singleloader = false;
   }
 
-  chngMandate(String val) {
-    _mandateId = val;
-    if (val != "Lumpsum") {
-      var indx = _mandateData!.indexWhere((f) => f.mandateId == val);
-      _mandateStatus = _mandateData![indx].status!;
-      // print("${_mandateData![indx].mandateId}, ${_mandateData![indx].status}");
-    }
-    invAmtError = "";
-    installmentAmtError = "";
-    invDurationError = "";
-    upiError = "";
-    notifyListeners();
-  }
+  // chngMandate(String val) {
+  //   _mandateId = val;
+  //   if (val != "Lumpsum") {
+  //     var indx = _mandateData!.indexWhere((f) => f.mandateId == val);
+  //     _mandateStatus = _mandateData![indx].status!;
+  //     // print("${_mandateData![indx].mandateId}, ${_mandateData![indx].status}");
+  //   }
+  //   invAmtError = "";
+  //   installmentAmtError = "";
+  //   invDurationError = "";
+  //   upiError = "";
+  //   notifyListeners();
+  // }
 
   chngOrderType(String val) {
     _mfOrderTpye = val;

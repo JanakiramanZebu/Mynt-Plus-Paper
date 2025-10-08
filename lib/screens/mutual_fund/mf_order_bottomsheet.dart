@@ -283,7 +283,7 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                               currentMandateId: mfOrder.mandateId,
                                               onMandateSelected:
                                                   (String mandateId) {
-                                                mfOrder.chngMandate(mandateId);
+                                                // mfOrder.chngMandate(mandateId);
                                                 Navigator.pop(context);
                                               },
                                             ),
