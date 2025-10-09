@@ -858,13 +858,15 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                       onTap: () {
                                                         setState(() {
                                                           int sipQty = int.tryParse(sipqtyctrl.text) ?? multiplayer;
-                                                          if (sipqtyctrl.text.isNotEmpty &&
-                                                              sipQty < (frezQty == lotSize ? 999999 : frezQtyOrderSliceMaxLimit * frezQty)) {
+                                                          bool hasNoFreezeLimit = frezQty <= lotSize;
+                                                          bool withinLimit = hasNoFreezeLimit || sipQty < frezQtyOrderSliceMaxLimit * frezQty;
+
+                                                          if (sipqtyctrl.text.isNotEmpty && withinLimit) {
                                                             sipqtyctrl.text = (sipQty + multiplayer).toString();
                                                             double ltpsip = double.parse("${widget.orderArg.ltp}");
                                                             int inputValue = int.tryParse(sipqtyctrl.text) ?? 0;
                                                             resultsip = inputValue * ltpsip;
-                                                          } else {
+                                                          } else if (!hasNoFreezeLimit) {
                                                             ScaffoldMessenger.of(context).removeCurrentSnackBar();
                                                             warningMessage(context,
                                                                 "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit * frezQty}");
@@ -1220,7 +1222,8 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                 String newValue = value.replaceAll(RegExp(r'[^0-9]'), '');
 
                                                 int number = int.tryParse(newValue) ?? 0;
-                                                if (number > (frezQty == lotSize ? 999999 : frezQtyOrderSliceMaxLimit * frezQty)) {
+                                                bool hasNoFreezeLimit = frezQty <= lotSize;
+                                                if (!hasNoFreezeLimit && number > frezQtyOrderSliceMaxLimit * frezQty) {
                                                   orderInput.qtyCtrl.text = orderInput.qtyCtrl.text;
                                                   warningMessage(context,
                                                       "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit * frezQty}");
@@ -1745,7 +1748,8 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                     String newValue = value.replaceAll(RegExp(r'[^0-9]'), '');
 
                                                     int number = int.tryParse(newValue) ?? 0;
-                                                    if (number > (frezQty == lotSize ? 999999 : frezQtyOrderSliceMaxLimit * frezQty)) {
+                                                    bool hasNoFreezeLimit = frezQty <= lotSize;
+                                                    if (!hasNoFreezeLimit && number > frezQtyOrderSliceMaxLimit * frezQty) {
                                                       orderInput.qtyCtrl.text = orderInput.qtyCtrl.text;
                                                       warningMessage(context,
                                                           "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit * frezQty}");
@@ -2568,17 +2572,18 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                           String input =qtyCtrl.text;
                                                           int currentQty = int.tryParse(input) ?? 0;
                                                           int adjustedQty = ((currentQty / multiplayer).round()) * multiplayer;
-                                                
+                                                          bool hasNoFreezeLimit = frezQty <= lotSize;
+                                                          bool withinLimit = hasNoFreezeLimit || currentQty < frezQtyOrderSliceMaxLimit * frezQty;
+
                                                       if (currentQty != adjustedQty) {
                                                           qtyCtrl.text = adjustedQty.toString();
-                                                
-                                                      } else if (input .isNotEmpty && currentQty <
-                                                            ((frezQtyOrderSliceMaxLimit*frezQty)==frezQtyOrderSliceMaxLimit?999999:frezQtyOrderSliceMaxLimit*frezQty)) {
+
+                                                      } else if (input.isNotEmpty && withinLimit) {
                                                             qtyCtrl.text = (currentQty + multiplayer).toString();
                                                       } else if(input.isEmpty){
                                                         qtyCtrl.text = "$multiplayer";
                                                       }
-                                                      else {
+                                                      else if (!hasNoFreezeLimit) {
                                                           ScaffoldMessenger.of(context).removeCurrentSnackBar();
                                                           warningMessage(context,"Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit*frezQty}");
                                                         // qtyCtrl.text =
@@ -2612,14 +2617,13 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                       if (_isQtyToAmount && number < 1) {
                                                         warningMessage(context,
                                                             "Minimum Allowed Amount should be greater than $ltp");
-                                                      } else if (number >
-                                                          (frezQty == lotSize
-                                                              ? 999999
-                                                              : frezQtyOrderSliceMaxLimit * frezQty)) {
-                                                       
-                                                        qtyCtrl.text = qtyCtrl.text;
-                                                        warningMessage(context,
-                                                            "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit * frezQty}");
+                                                      } else {
+                                                        bool hasNoFreezeLimit = frezQty <= lotSize;
+                                                        if (!hasNoFreezeLimit && number > frezQtyOrderSliceMaxLimit * frezQty) {
+                                                          qtyCtrl.text = qtyCtrl.text;
+                                                          warningMessage(context,
+                                                              "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit * frezQty}");
+                                                        }
                                                       }
 
                                                       if (newValue != value) {
@@ -3867,11 +3871,9 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                               convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount) == "0"
                                                                   ? _isQtyToAmount ? qtyCtrl.text != "0" ? "Minimum Allowed Amount should be greater than ${widget.orderArg.ltp}" : "Amount cannot be 0" : "Quantity cannot be 0"
                                                                   : "Price cannot be 0");
-                                                        } else if (int.parse(convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount).trim()) >
-                                                            (frezQty == lotSize ? 999999 : frezQtyOrderSliceMaxLimit * frezQty)) {
+                                                        } else if (frezQty > lotSize && int.parse(convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount).trim()) > frezQtyOrderSliceMaxLimit * frezQty) {
                                                           warningMessage(context,
                                                               "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit * frezQty}");
-
                                                         } else if ((priceType == "Limit" || priceType == "SL Limit") &&
                                                             _hasValidCircuitBreakerValues &&
                                                             ((double.parse(ordPrice) < double.parse(widget.scripInfo.lc!)) ||
@@ -4276,7 +4278,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                     ),
                                     // if (defaultTargetPlatform ==
                                     //     TargetPlatform.iOS)
-                                    const SizedBox(height: 18)
+                                    const SizedBox(height: 10)
                                   ]
                                 ])),
                           ),

@@ -77,65 +77,69 @@ class _SliceOrderSheetState extends State<SliceOrderSheet> {
           child: GestureDetector(
               onVerticalDragDown: orders.orderloader ? (_) {} : null, // Blocks swipe down
               behavior: HitTestBehavior.opaque,
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
-                  color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Color(0xff999999),
-                      blurRadius: 4.0,
-                      offset: Offset(2.0, 0.0),
+                child: SafeArea(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Color(0xff999999),
+                          blurRadius: 4.0,
+                          offset: Offset(2.0, 0.0),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const CustomDragHandler(),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: TextWidget.subText(
-                        text: "Slice Order",
-                        theme: theme.isDarkMode,
-                        fw: 1,
-                      ),
-                    ),
-                    Divider(
-                      color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          _buildScripInfo(theme),
-                          Row(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const CustomDragHandler(),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          child: TextWidget.subText(
+                            text: "Slice Order",
+                            theme: theme.isDarkMode,
+                            fw: 1,
+                          ),
+                        ),
+                        Divider(
+                          color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              TextWidget.subText(
-                                text: "Qty: ${widget.frezQty} ",
-                                color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                                theme: theme.isDarkMode,
-                                fw: 1,
-                              ),
-                              TextWidget.captionText(
-                                text: " X ${widget.quantity >= orders.frezQtyOrderSliceMaxLimit ? orders.frezQtyOrderSliceMaxLimit : widget.quantity}",
-                                color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                                theme: theme.isDarkMode,
-                                fw: 0,
-                              ),
+                              _buildScripInfo(theme),
+                              Row(
+                                children: [
+                                  TextWidget.subText(
+                                    text: "Qty: ${widget.frezQty} ",
+                                    color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                                    theme: theme.isDarkMode,
+                                    fw: 1,
+                                  ),
+                                  TextWidget.captionText(
+                                    text: " X ${widget.quantity >= orders.frezQtyOrderSliceMaxLimit ? orders.frezQtyOrderSliceMaxLimit : widget.quantity}",
+                                    color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                                    theme: theme.isDarkMode,
+                                    fw: 0,
+                                  ),
+                                ],
+                              )
                             ],
-                          )
-                        ],
-                      ),
+                          ),
+                        ),
+                        if (widget.reminder != 0) _buildReminderSection(theme),
+                      
+                      const SizedBox(height: 10),
+                        _buildActionButton(theme, orders, orderInput, widget.isBracketOrderEnabled, indexpro, portfoliopro),
+                      const SizedBox(height: 10),
+                      ],
                     ),
-                    if (widget.reminder != 0) _buildReminderSection(theme),
-                    _buildActionButton(theme, orders, orderInput, widget.isBracketOrderEnabled, indexpro, portfoliopro),
-                    const SizedBox(height: 10),
-                  ],
-                ),
-              )));
+                                ),
+                )));
     });
   }
 
@@ -244,7 +248,7 @@ class _SliceOrderSheetState extends State<SliceOrderSheet> {
           }
         },
         style: ElevatedButton.styleFrom(
-          padding: const EdgeInsets.symmetric(vertical: 10),
+          padding: const EdgeInsets.symmetric(vertical: 15),
           backgroundColor: widget.isBuy ? colors.primary : colors.tertiary,
           // shape: const StadiumBorder(),
         ),
