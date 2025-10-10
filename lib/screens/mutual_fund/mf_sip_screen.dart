@@ -35,6 +35,7 @@ class MFSipdetScreen extends ConsumerWidget {
                   : RefreshIndicator(
                       onRefresh: () async {
                         await mfData.fetchmfsipnotlivelist();
+                        await mfData.fetchmfsiplist();
                       },
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -109,7 +110,8 @@ class MFSipdetScreen extends ConsumerWidget {
 
             if (sIPRegnNo != null) {
               // await mfData.fetchmfsipsinglepage(sIPRegnNo);
-
+             mfData.fetchMFSipData(item.iSIN, item.schemeCode);
+             mfData.clearPauseError();
               // if (mfData.mfsinglepageres?.stat == "Ok") {
               showModalBottomSheet(
                   context: context,

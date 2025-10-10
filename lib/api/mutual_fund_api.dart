@@ -285,7 +285,7 @@ mixin MutualFundApi on ApiCore {
             "CaseNo": droupreason,
             "CaseRemarks": droupreason == "13" ? "${retext}" : "",
             "placed_by": "${prefs.clientId}",
-            "source": "API",
+            "source": "MOB",
             "SIPRegnNo": orderno,
             "scheme_code": scode
           }));

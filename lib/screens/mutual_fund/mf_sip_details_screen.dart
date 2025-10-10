@@ -87,9 +87,9 @@ class _mfSipdetScren extends State<mfSipdetScren>
                                         _buildHeaderSection(mfdata, theme),
                                         const SizedBox(height: 20),
                                                 
-                                        if (widget.data?.status == "ACTIVE")
                                           Row(
                                             children: [
+                                        if (widget.data?.status == "ACTIVE" && mfdata.mfSIPModel?.data?.first.pAUSEFLAG == "Y")
                                               Expanded(
                                                 child: _buildPauseButton(
                                                     context, mfdata, theme),

@@ -328,7 +328,7 @@ class _MFWatchlistScreenState extends ConsumerState<MFWatchlistScreen> {
   }
 
   String _formatReturns(String? returns) {
-    if (returns == null || returns.isEmpty) {
+    if (returns == null || returns.isEmpty || returns == "0.0") {
       return "0.00%";
     }
     return "$returns%";

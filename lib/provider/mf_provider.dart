@@ -956,6 +956,7 @@ class MFProvider extends DefaultChangeNotifier {
     await fetchMFMandateDetail();
     // fetchBankDetail();
     await fetchUpiDetail('', context);
+    resetmfordervalidation();
     // await chngMandate(mandateId);
     _singleloader = false;
   }
@@ -1762,6 +1763,11 @@ class MFProvider extends DefaultChangeNotifier {
         //   _mutualFundList = _mfWatchlist;
         // }
 
+        // First, reset all isAdd to false
+        _mutualFundList?.forEach((m) => m.isAdd = false);
+        _mutualFundsearchdata?.forEach((m) => m.isAdd = false);
+        
+        // Then, set isAdd to true only for items in the watchlist
         for (var watchListMf in _mfWatchlist!) {
           _mutualFundList!
               .where((m) => m.iSIN == watchListMf.iSIN)
@@ -1918,6 +1924,54 @@ class MFProvider extends DefaultChangeNotifier {
       notifyListeners();
     }
   }
+
+  String _inpauseerror = "";
+  get inpauseerror => _inpauseerror;
+
+  clearPauseError() {
+    _inpauseerror = "";
+    pausesip.text = "";
+    notifyListeners();
+  }
+
+  void installmentDuration(String value, BuildContext context) {
+      pausesip.text = value;
+    try {
+  final sipModel = _mfSIPModel?.data?.first;
+  final orderList = _mfsiporderlist?.data?.first;
+
+  if (sipModel == null || orderList == null) return;
+
+  if (value.isEmpty) {
+    _inpauseerror = "No of installments is Required";
+    notifyListeners();
+    return;
+  }
+   final parsedValue = double.tryParse(value);
+  if (parsedValue == null) {
+    _inpauseerror = "Please enter a valid number";
+    notifyListeners();
+    return;
+  }
+
+  // Check frequency match first
+    final minInstallments = double.parse(sipModel.pAUSEMINIMUMINSTALLMENTS ?? "0") ?? 0;
+    final maxInstallments = double.parse(sipModel.pAUSEMAXIMUMINSTALLMENTS ?? "0") ?? 0;
+
+    // Check if entered value is within range
+    if (double.parse(value) >= minInstallments && double.parse(value) <= maxInstallments) {
+      _inpauseerror = "";
+      notifyListeners();
+    }
+    else {
+      _inpauseerror = "Installment duration should be between ${minInstallments.toStringAsFixed(0)} and ${maxInstallments.toStringAsFixed(0)}";
+      notifyListeners();
+    }
+  } catch (e) {
+    debugPrint("installmentDuration $e");
+  }
+}
+
 
   Future fetchMFMandateDetail() async {
     try {
@@ -2144,7 +2198,9 @@ class MFProvider extends DefaultChangeNotifier {
         Navigator.pop(context);
       }
     } else {
-          warningMessage(context, "No of installments is Required*");
+          // warningMessage(context, "No of installments is Required*");
+          _inpauseerror = "No of installments is Required";
+          notifyListeners();
     }
     rejectsip.text = "";
     pausesip.text = "";
@@ -2198,7 +2254,7 @@ class MFProvider extends DefaultChangeNotifier {
     // Define mapping of title to index dynamically
     Map<String, int> categoryIndex = {
       'Equity': 0,
-      'Fixed Income': 1,
+      'Income': 1,
       'Gold': 2,
       'Hybrid': 3,
       'Solution': 5

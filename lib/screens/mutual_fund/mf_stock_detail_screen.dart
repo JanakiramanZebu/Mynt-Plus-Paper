@@ -26,10 +26,11 @@ import 'widget/scheme.dart';
 
 class MFStockDetailScreen extends StatefulWidget {
   final MutualFundList mfStockData;
+  final bool fromSearch;
 
   // final TaxSaving mfStockData;
   //  final mfData = mfProvider;
-  const MFStockDetailScreen({super.key, required this.mfStockData});
+  const MFStockDetailScreen({super.key, required this.mfStockData, this.fromSearch = false});
 
 //    final MutualFundList mfStockData1;
 //  MFStockDetailScreen({super.key, required this.mfStockData1});
@@ -378,6 +379,7 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
             ),
           ],
         ),
+        if(!widget.fromSearch)
         Padding(
           padding: const EdgeInsets.only(right: 8),
           child: SizedBox(

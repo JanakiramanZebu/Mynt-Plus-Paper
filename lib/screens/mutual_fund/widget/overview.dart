@@ -380,7 +380,7 @@ class MFOverview extends ConsumerWidget {
             _formatValue(mfData.factSheetDataModel?.data?.purchaseMinAmount),
             theme),
         _buildMetricColumn("5Yr CAGR",
-            _formatYearData(mfData.factSheetDataModel?.data?.fiveYear), theme),
+            _formatYearData(mfData.factSheetDataModel?.data?.fiveYear == "null" ? "0" : mfData.factSheetDataModel?.data?.fiveYear ?? "0"), theme),
       ],
     );
   }

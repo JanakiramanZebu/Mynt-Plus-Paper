@@ -83,6 +83,7 @@ class _MfPaymentRespAlertState extends State<MfPaymentRespAlert> {
                           
                                Icons.cancel_rounded,
                           //
+                          color: theme.isDarkMode ? colors.lossDark : colors.lossLight,
                          
                           size: 70,
                         ),

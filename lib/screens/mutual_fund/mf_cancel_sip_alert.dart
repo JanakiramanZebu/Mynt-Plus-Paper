@@ -2,6 +2,7 @@
 
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -145,7 +146,7 @@ class MfSipCancelalert extends ConsumerWidget {
               child: Padding(
                 padding: const EdgeInsets.only(left: 8.0),
                 child: TextWidget.subText(
-                  text: "No of installments Passed *",
+                  text: "No of installments upto ${double.parse(mfData.mfSIPModel?.data?.first.pAUSEMAXIMUMINSTALLMENTS ?? "0").toStringAsFixed(0) ?? 0}",
                   theme: false,
                   color: theme.isDarkMode
                       ? colors.textPrimaryDark
@@ -155,7 +156,19 @@ class MfSipCancelalert extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 10),
-            _buildPauseTextField(mfData, theme),
+            _buildPauseTextField(mfData, theme, context),
+            if(mfData.inpauseerror.isNotEmpty)
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextWidget.paraText(
+                text: mfData.inpauseerror,
+                theme: false,
+                color: theme.isDarkMode
+                    ? colors.lossDark
+                    : colors.lossLight,
+                fw: 3,
+              ),
+            ),
           ]
         ],
       ),
@@ -205,7 +218,7 @@ class MfSipCancelalert extends ConsumerWidget {
                       ),
                       backgroundColor: colors.primaryDark,
                     ),
-                    onPressed: () async {
+                    onPressed: mfData.inpauseerror.isNotEmpty && mfData.inpauseerror != "" ? (){} : () async {
                       try {
                         await mfData.pausesiporder(
                             context, orderNo, freqType, nextSipDate, scode);
@@ -357,7 +370,7 @@ class MfSipCancelalert extends ConsumerWidget {
   }
 
   // Pause SIP text field
-  Widget _buildPauseTextField(MFProvider mfData, ThemesProvider theme) {
+  Widget _buildPauseTextField(MFProvider mfData, ThemesProvider theme, BuildContext context) {
     final isDarkMode = theme.isDarkMode;
 
     return Column(
@@ -368,6 +381,7 @@ class MfSipCancelalert extends ConsumerWidget {
           child: CustomTextFormField(
             textAlign: TextAlign.start,
             fillColor: isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
+            inputFormate: [FilteringTextInputFormatter.digitsOnly],
             style: TextWidget.textStyle(
               theme: theme.isDarkMode,
               color: theme.isDarkMode
@@ -386,6 +400,9 @@ class MfSipCancelalert extends ConsumerWidget {
             ),
             textCtrl: mfData.pausesip,
             keyboardType: TextInputType.number, // Show numeric keyboard
+            onChanged: (value) {
+              mfData.installmentDuration(value, context);
+            },
           ),
         ),
       ],

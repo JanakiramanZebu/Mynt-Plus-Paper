@@ -395,9 +395,8 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
             bValue = b.s3Year;
         }
 
-        final aDouble = double.tryParse(aValue ?? '0.00') ?? 0.00;
-        final bDouble = double.tryParse(bValue ?? '0.00') ?? 0.00;
-        return bDouble.compareTo(aDouble); // Sort in descending order
+         return (double.tryParse(bValue ?? "0") ?? 0)
+            .compareTo(double.tryParse(aValue ?? "0") ?? 0);// Sort in descending order
       });
     }
 
@@ -489,8 +488,8 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
                     successMessage(context, "Missing fund information");
               }
             } catch (e) {
-              successMessage(
-                  context, "Error loading fund details: ${e.toString()}");
+              // successMessage(
+              //     context, "Error loading fund details: ${e.toString()}");
             }
           },
           child: ListTile(
@@ -526,7 +525,7 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
               ),
             ),
             trailing: TextWidget.subText(
-              text: _formatReturns(item.s3Year),
+              text: _formatReturns(_getReturnValue(item, selectedReturn)),
               color: theme.isDarkMode
                   ? colors.textPrimaryDark
                   : colors.textPrimaryLight,

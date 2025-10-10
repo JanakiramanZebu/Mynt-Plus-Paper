@@ -58,7 +58,7 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
       (mandate) => mandate.mandateId == mfOrder.mandateId,
       orElse: () => mfOrder.mandateData!.first,
     );
-    return selectedMandate.amount ?? "N/A";
+    return double.parse(selectedMandate.amount ?? "0").toStringAsFixed(2) ?? "N/A";
   }
 
   Widget _getSelectedMandateStatus(MFProvider mfOrder) {

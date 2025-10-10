@@ -171,7 +171,7 @@ class _MandateSelectionScreenState extends State<MandateSelectionScreen> {
                                                 ),
                                               ),
                                               TextWidget.subText(
-                                                text: "${mandate.amount}",
+                                                text: "${double.parse(mandate.amount ?? '0').toStringAsFixed(2)}",
                                                 theme: theme.isDarkMode,
                                                  color: theme.isDarkMode
                                                     ? colors.textPrimaryDark

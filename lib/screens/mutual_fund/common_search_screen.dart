@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mynt_plus/models/mf_model/mutual_fundmodel.dart';
+import 'package:mynt_plus/sharedWidget/custom_text_form_field.dart';
 import 'package:mynt_plus/sharedWidget/loader_ui.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import 'package:mynt_plus/sharedWidget/snack_bar.dart';
+import 'package:mynt_plus/utils/no_emoji_inputformatter.dart';
 import '../../provider/mf_provider.dart';
 import '../../provider/thems.dart';
 import '../../res/global_state_text.dart';
@@ -146,12 +149,12 @@ class _MfCommonSearchState extends ConsumerState<MfCommonSearch> {
                           ),
                           // textCapitalization:
                           //     TextCapitalization.characters,
-                          // inputFormatters: [
-                          //   UpperCaseTextFormatter(),
-                          //   NoEmojiInputFormatter(),
-                          //   FilteringTextInputFormatter.deny(
-                          //       RegExp('[π£•₹€℅™∆√¶/.,]'))
-                          // ],
+                          inputFormatters: [
+                            UpperCaseTextFormatter(),
+                            NoEmojiInputFormatter(),
+                            FilteringTextInputFormatter.deny(
+                                RegExp('[π£•₹€℅™∆√¶/.,]'))
+                          ],
                           // keyboardType: TextInputType.text,
                           decoration: InputDecoration(
                             isCollapsed: true,
@@ -260,7 +263,7 @@ class _MfCommonSearchState extends ConsumerState<MfCommonSearch> {
                                                       .bottom,
                                                 ),
                                                 child: MFStockDetailScreen(
-                                                    mfStockData: fund)),
+                                                    mfStockData: fund, fromSearch: true)),
                                           );
                                           // Navigator.pushNamed(
                                           //   context,

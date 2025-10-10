@@ -554,7 +554,7 @@ class _SaveTaxesScreenState extends ConsumerState<SaveTaxesScreen>
                 color: theme.isDarkMode
                     ? colors.textPrimaryDark
                     : colors.textPrimaryLight,
-                text: "$returnData%",
+                text: _formatReturns(returnData),
                 textOverflow: TextOverflow.ellipsis,
                 theme: theme.isDarkMode,
                 fw: 0,
@@ -567,6 +567,12 @@ class _SaveTaxesScreenState extends ConsumerState<SaveTaxesScreen>
   }
 }
 
+String _formatReturns(String? returns) {
+    if (returns == null || returns.isEmpty || returns == "0.0") {
+      return "0.00%";
+    }
+    return "$returns%";
+  }
 
 
 
