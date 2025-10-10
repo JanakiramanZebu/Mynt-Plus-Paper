@@ -54,7 +54,8 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
       if (category['title'] == widget.title) {
         List<dynamic> subTabs = category['sub'] ?? [];
         setState(() {
-          tabTitles = subTabs.map((tab) => tab.toString()).toList();
+          // Remove duplicates and convert to list
+          tabTitles = subTabs.map((tab) => tab.toString()).toSet().toList();
         });
         break;
       }

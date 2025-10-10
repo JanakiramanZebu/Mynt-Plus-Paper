@@ -766,6 +766,21 @@ class MFProvider extends DefaultChangeNotifier {
   String _xsipvalue = "";
   String get xsipvalue => _xsipvalue;
 
+  /// Get the pause flag from MONTHLY entry instead of first entry
+  String? get monthlyPauseFlag {
+    if (_mfSIPModel?.data == null || _mfSIPModel!.data!.isEmpty) return null;
+    
+    // Find MONTHLY entry
+    for (var element in _mfSIPModel!.data!) {
+      if (element.sIPFREQUENCY == "MONTHLY") {
+        return element.pAUSEFLAG;
+      }
+    }
+    
+    // Fallback to first entry if no MONTHLY found
+    return _mfSIPModel!.data![0].pAUSEFLAG;
+  }
+
   String _xsipcaseno = "";
   String get xsipcaseno => _xsipcaseno;
 
@@ -1893,18 +1908,43 @@ class MFProvider extends DefaultChangeNotifier {
       print("object ${_mfSIPModel!.toJson()}");
       if (_mfSIPModel!.stat == "Ok") {
         if (_mfSIPModel!.data!.isNotEmpty) {
-          _freqName = "${_mfSIPModel!.data![0].sIPFREQUENCY}";
+          // Debug print all available frequencies
+          print("=== SIP DATA DEBUG ===");
+          print("Total entries: ${_mfSIPModel!.data!.length}");
+          for (int i = 0; i < _mfSIPModel!.data!.length; i++) {
+            print("Index $i: Frequency = '${_mfSIPModel!.data![i].sIPFREQUENCY}', Pause Flag = '${_mfSIPModel!.data![i].pAUSEFLAG}'");
+          }
+          
+          // Find the index where frequency is MONTHLY
+          int monthlyIndex = -1;
+          for (int i = 0; i < _mfSIPModel!.data!.length; i++) {
+            if (_mfSIPModel!.data![i].sIPFREQUENCY == "MONTHLY") {
+              monthlyIndex = i;
+              break;
+            }
+          }
+          
+          // Use MONTHLY index if found, otherwise fallback to first index
+          int indexToUse = monthlyIndex != -1 ? monthlyIndex : 0;
+          
+          print("MONTHLY index found: $monthlyIndex");
+          print("Using index: $indexToUse");
+          print("Selected frequency: '${_mfSIPModel!.data![indexToUse].sIPFREQUENCY}'");
+          print("Selected pause flag: '${_mfSIPModel!.data![indexToUse].pAUSEFLAG}'");
+          print("=====================");
+          
+          _freqName = "${_mfSIPModel!.data![indexToUse].sIPFREQUENCY}";
 
           installmentAmt.text =
-              "${_mfSIPModel!.data![0].sIPMINIMUMINSTALLMENTAMOUNT}";
+              "${_mfSIPModel!.data![indexToUse].sIPMINIMUMINSTALLMENTAMOUNT}";
           invDuration.text =
-              "${_mfSIPModel!.data![0].sIPMAXIMUMINSTALLMENTNUMBERS}";
+              "${_mfSIPModel!.data![indexToUse].sIPMAXIMUMINSTALLMENTNUMBERS}";
           _sipDuration =
-              "${_mfSIPModel!.data![0].sIPMINIMUMINSTALLMENTNUMBERS}";
+              "${_mfSIPModel!.data![indexToUse].sIPMINIMUMINSTALLMENTNUMBERS}";
 
           if (_freqName == "MONTHLY" || _freqName == "QUARTERLY") {
             _dateList =
-                _mfSIPModel!.data![0].sIPDATES!.replaceAll("\"", "").split(',');
+                _mfSIPModel!.data![indexToUse].sIPDATES!.replaceAll("\"", "").split(',');
 
             _dates = _dateList[0];
           } else {
@@ -1912,7 +1952,7 @@ class MFProvider extends DefaultChangeNotifier {
           }
 
           _insAmt =
-              "${_mfSIPModel!.data![0].sIPMINIMUMINSTALLMENTAMOUNT ?? 0.00}";
+              "${_mfSIPModel!.data![indexToUse].sIPMINIMUMINSTALLMENTAMOUNT ?? 0.00}";
         }
       }
       notifyListeners();
@@ -1964,7 +2004,7 @@ class MFProvider extends DefaultChangeNotifier {
       notifyListeners();
     }
     else {
-      _inpauseerror = "Installment duration should be between ${minInstallments.toStringAsFixed(0)} and ${maxInstallments.toStringAsFixed(0)}";
+      _inpauseerror = "Please provide a valid number within the range";
       notifyListeners();
     }
   } catch (e) {
@@ -2215,6 +2255,11 @@ class MFProvider extends DefaultChangeNotifier {
 
       // print("valuesss${_mfallcatnewlist!.data![0].values![0].name}");
       // print("#######${_mfallcatnewlist?.toJson()}");
+
+      // Clear existing sub-categories before populating to prevent duplicates
+      for (var category in _mFCategoryTypesStatic) {
+        category['sub'].clear();
+      }
 
       for (var i = 0; i < _mfallcatnewlist!.data![0].values!.length; i++) {
         _mFCategoryTypesStatic[0]['sub']
@@ -2695,27 +2740,37 @@ class MFProvider extends DefaultChangeNotifier {
       String enddate,
       String mandateId) async {
     try {
-      // print("welcoooo");
-      // toggleLoadingOn(true);
-      // _loadingMessage = "Processing SIP order...";
+      // Debug print before API call
+      print("=== CALLING SIP SETUP API ===");
+      print("Scheme Code: $schemecode");
+      print("Start Date: $startDate");
+      print("Frequency Type: $freqtype");
+      print("Amount: $amt");
+      print("No of Installments: $noofinstallment");
+      print("End Date: $enddate");
+      print("Mandate ID: $mandateId");
+      print("=============================");
+
       _investloader = true;
       notifyListeners();
-// print("okokok11ttt${loading}");
 
       _xsipOrderResponces = await api.getXsipPurchase(schemecode, startDate,
           freqtype, amt, noofinstallment, endDate, mandateId);
-// print("okokok11${loading}");
+
+      // Debug print after API call
+      print("=== SIP SETUP API RESPONSE RECEIVED ===");
+      print("Response Status: ${_xsipOrderResponces?.stat}");
+      print("Response Remarks: ${_xsipOrderResponces?.remarks}");
+      print("Full Response: ${_xsipOrderResponces?.toJson()}");
+      print("======================================");
+
       if (_xsipOrderResponces?.stat == 'Ok') {
-        // _loadingMessage = "SIP order placed successfully!";
         notifyListeners();
 
         // Add a small delay to show the success message
         await Future.delayed(Duration(milliseconds: 1000));
 
-        // toggleLoadingOn(false);
-
-        // toggleLoad(false);
-            successMessage(context, "${_xsipOrderResponces!.remarks}");
+        successMessage(context, "${_xsipOrderResponces!.remarks}");
         _investloader = false;
 
         // fetchAllPayment(
@@ -3311,6 +3366,10 @@ class MFProvider extends DefaultChangeNotifier {
   }
 
   bool isValidUpiId(dynamic mfData, String val) {
+    // Debug print to see maximum purchase amount
+    print("Maximum Purchase Amount = ${mfData.maximumPurchaseAmount}");
+    print("Minimum Purchase Amount = ${mfData.minimumPurchaseAmount}");
+    
     final RegExp upiRegex =
         RegExp(r'^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+$', caseSensitive: false);
     if (val == 'reinitiatefromportfolio') {
@@ -3328,7 +3387,13 @@ class MFProvider extends DefaultChangeNotifier {
         } else if (double.parse(invAmt.text) <
             double.parse(mfData.minimumPurchaseAmount!)) {
           invAmtError =
-              "Investment amount should not be less than ${mfData.minimumPurchaseAmount!}";
+              "Investment amount should not be less than ${double.parse(mfData.minimumPurchaseAmount!).toStringAsFixed(2)}";
+        } else if (mfData.maximumPurchaseAmount != null && 
+                   mfData.maximumPurchaseAmount!.isNotEmpty &&
+                   double.parse(mfData.maximumPurchaseAmount!) > 0 &&
+                   double.parse(invAmt.text) > double.parse(mfData.maximumPurchaseAmount!)) {
+          invAmtError =
+              "Investment amount should not be more than ${double.parse(mfData.maximumPurchaseAmount!).toStringAsFixed(2)}";
         } else {
           invAmtError = "";
         }
@@ -3339,7 +3404,13 @@ class MFProvider extends DefaultChangeNotifier {
                 double.parse(mfData.minimumPurchaseAmount!) &&
             isInitalPay) {
           invAmtError =
-              "Investment amount should not be less than ${mfData.minimumPurchaseAmount!}";
+              "Investment amount should not be less than ${double.parse(mfData.minimumPurchaseAmount!).toStringAsFixed(2)}";
+        } else if (mfData.maximumPurchaseAmount != null && 
+                   mfData.maximumPurchaseAmount!.isNotEmpty &&
+                   double.parse(mfData.maximumPurchaseAmount!) > 0 &&
+                   double.parse(invAmt.text) > double.parse(mfData.maximumPurchaseAmount!)) {
+          invAmtError =
+              "Investment amount should not be more than ${double.parse(mfData.maximumPurchaseAmount!).toStringAsFixed(2)}";
         } else {
           invAmtError = "";
         }
@@ -3349,7 +3420,13 @@ class MFProvider extends DefaultChangeNotifier {
         } else if (double.parse(installmentAmt.text) <
             double.parse(mfData.minimumPurchaseAmount!)) {
           installmentAmtError =
-              "Installment amount should not be less than ${mfData.minimumPurchaseAmount!}";
+              "Installment amount should not be less than ${double.parse(mfData.minimumPurchaseAmount!).toStringAsFixed(2)}";
+        } else if (mfData.maximumPurchaseAmount != null && 
+                   mfData.maximumPurchaseAmount!.isNotEmpty &&
+                   double.parse(mfData.maximumPurchaseAmount!) > 0 &&
+                   double.parse(installmentAmt.text) > double.parse(mfData.maximumPurchaseAmount!)) {
+          installmentAmtError =
+              "Installment amount should not be more than ${double.parse(mfData.maximumPurchaseAmount!).toStringAsFixed(2)}";
         } else {
           installmentAmtError = "";
         }

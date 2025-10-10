@@ -34,6 +34,20 @@ class MfSipCancelalert extends ConsumerWidget {
     required this.mfscode,
   });
 
+  /// Safely parse max installments with error handling
+  String _getMaxInstallments(MFProvider mfData) {
+    try {
+      final maxInstallments = mfData.mfSIPModel?.data?.first.pAUSEMAXIMUMINSTALLMENTS;
+      if (maxInstallments == null || maxInstallments.isEmpty) {
+        return "0";
+      }
+      return double.parse(maxInstallments).toStringAsFixed(0);
+    } catch (e) {
+      print("Error parsing max installments: $e");
+      return "0";
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref.watch(themeProvider);
@@ -146,7 +160,7 @@ class MfSipCancelalert extends ConsumerWidget {
               child: Padding(
                 padding: const EdgeInsets.only(left: 8.0),
                 child: TextWidget.subText(
-                  text: "No of installments upto ${double.parse(mfData.mfSIPModel?.data?.first.pAUSEMAXIMUMINSTALLMENTS ?? "0").toStringAsFixed(0) ?? 0}",
+                  text: "No of installments to pause (Range: 1-${_getMaxInstallments(mfData)})",
                   theme: false,
                   color: theme.isDarkMode
                       ? colors.textPrimaryDark
@@ -391,7 +405,7 @@ class MfSipCancelalert extends ConsumerWidget {
               fw: 0,
             ),
 
-            hintText: 'No of installments Passed',
+            // hintText: 'No of installments Passed (Range: 1-${_getMaxInstallments(mfData)})',
             hintStyle: TextWidget.textStyle(
               fontSize: 14,
               theme: theme.isDarkMode,

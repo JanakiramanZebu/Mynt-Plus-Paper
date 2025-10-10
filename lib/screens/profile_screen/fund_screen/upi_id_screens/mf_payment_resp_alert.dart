@@ -396,6 +396,8 @@ class _MfPaymentRespAlertState extends State<MfPaymentRespAlert> {
                           //
                           color: widget.upiData?["status"] == "PAYMENT COMPLETED" || widget.upiData?["status"] == "REGISTERED"
                               ? theme.isDarkMode ? colors.profitDark : colors.profitLight
+                              : widget.upiData?["status"] == "PAYMENT PROCESSING"
+                              ? colors.pending
                               : theme.isDarkMode ? colors.lossDark : colors.lossLight,
                           size: 70,
                         ),

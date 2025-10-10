@@ -109,21 +109,43 @@ class MFSipdetScreen extends ConsumerWidget {
             final sIPRegnNo = item.sIPRegnNo;
 
             if (sIPRegnNo != null) {
-              // await mfData.fetchmfsipsinglepage(sIPRegnNo);
-             mfData.fetchMFSipData(item.iSIN, item.schemeCode);
-             mfData.clearPauseError();
-              // if (mfData.mfsinglepageres?.stat == "Ok") {
-              showModalBottomSheet(
-                  context: context,
-                  isScrollControlled: true,
-                  shape: const RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.only(
-                                              topLeft: Radius.circular(16),
-                                              topRight: Radius.circular(16),
+              // Show loading dialog
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (context) => const Center(
+                  child: CircularProgressIndicator(),
+                ),
+              );
+              
+              try {
+                // Pre-load SIP data before showing details
+                await mfData.fetchMFSipData(item.iSIN, item.schemeCode);
+                mfData.clearPauseError();
+                
+                // Hide loading dialog
+                Navigator.pop(context);
+                
+                // Show details screen with correct buttons
+                showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    shape: const RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.only(
+                                                topLeft: Radius.circular(16),
+                                                topRight: Radius.circular(16),
+                                              ),
                                             ),
-                                          ),
-                  // backgroundColor: Colors.transparent,
-                  builder: (context) => mfSipdetScren(data: item));
+                    builder: (context) => mfSipdetScren(data: item));
+              } catch (e) {
+                // Hide loading dialog on error
+                Navigator.pop(context);
+                
+                // Show error message
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text("Failed to load SIP details: ${e.toString()}"))
+                );
+              }
               // Navigator.pushNamed(context, Routes.mfSipdetScren);
               // } else {
               // final errorMsg = mfData.mfsinglepageres?.Msg ?? "Failed to fetch SIP details";
