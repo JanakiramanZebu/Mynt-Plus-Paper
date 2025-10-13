@@ -188,6 +188,8 @@ class Routes {
   static const String redeemNewBottomSheet = 'redeemNewBottomSheet';
   static const String algoCreate = 'algoCreate';
   static const String algoList = 'algoList';
+  static const String algoStrategyShowList = 'algoStrategyShowList';
+  static const String createAlgoStrategy = 'createAlgoStrategy';
 
   static const String mfnfoscreen = 'mfnfoscreen';
   static const String mfCategoryList = 'mfCategoryList';

@@ -68,24 +68,24 @@ class _TotpScreenState extends ConsumerState<ApiKeyScreen> {
           mainAxisAlignment: MainAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            const CustomDragHandler(),
+            // const CustomDragHandler(),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    child: TextWidget.titleText(
-                        text: 'Generate API Key',
-                        theme: false,
-                        color: theme.isDarkMode
-                            ? colors.textPrimaryDark
-                            : colors.textPrimaryLight,
-                        fw: 1),
-                  ),
+                  // Padding(
+                  //   padding: const EdgeInsets.symmetric(vertical: 14),
+                  //   child: TextWidget.titleText(
+                  //       text: 'Generate API Key',
+                  //       theme: false,
+                  //       color: theme.isDarkMode
+                  //           ? colors.textPrimaryDark
+                  //           : colors.textPrimaryLight,
+                  //       fw: 1),
+                  // ),
               
-                  ListDivider(),
+                  // ListDivider(),
               
                   // TextWidget.titleText(
                   //     text: 'Authenticator Key',

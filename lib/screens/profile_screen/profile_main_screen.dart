@@ -36,7 +36,9 @@ import '../../sharedWidget/loader_ui.dart';
 import '../../sharedWidget/custom_drag_handler.dart';
 import '../desk_reports/contract_calendar_screen.dart';
 import '../desk_reports/tax_pnl_screen.dart';
+// tabs inlined in bottom sheet builder for API key
 import 'Api_key_screen.dart';
+import 'api_key_screen_new.dart';
 import 'logged_user_bottom_sheet.dart';
 import 'need_help_screen.dart';
 
@@ -1009,6 +1011,151 @@ class _UserAccountScreenState extends ConsumerState<UserAccountScreen> {
   }
 }
 
+class ApiKeyBottomTabs extends ConsumerStatefulWidget {
+  const ApiKeyBottomTabs({super.key});
+
+  @override
+  ConsumerState<ApiKeyBottomTabs> createState() => _ApiKeyBottomTabsState();
+}
+
+class _ApiKeyBottomTabsState extends ConsumerState<ApiKeyBottomTabs>
+    with TickerProviderStateMixin {
+  late TabController _tabController;
+  int selectedTab = 0; // 0 Old, 1 New
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this, initialIndex: 0);
+    _tabController.animation?.addListener(() {
+      final newIndex = _tabController.animation!.value.round();
+      if (selectedTab != newIndex) {
+        setState(() {
+          selectedTab = newIndex;
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = ref.watch(themeProvider);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const CustomDragHandler(),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: TextWidget.titleText(
+            text: 'Generate API Key',
+            theme: false,
+            color: theme.isDarkMode
+                ? colors.textPrimaryDark
+                : colors.textPrimaryLight,
+            fw: 1,
+          ),
+        ),
+        Container(
+          width: MediaQuery.of(context).size.width,
+          padding: const EdgeInsets.only(top: 8),
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(
+                color: theme.isDarkMode
+                    ? colors.darkColorDivider
+                    : colors.colorDivider,
+                width: 0,
+              ),
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              _tabHeader('Base key', 0, theme),
+              _tabHeader('OAuth key', 1, theme),
+            ],
+          ),
+        ),
+        Expanded(
+          child: TabBarView(
+            controller: _tabController,
+            physics: const BouncingScrollPhysics(),
+            children: const [
+              ApiKeyScreen(),
+              ApiKeyScreenNew(),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _tabHeader(String title, int index, ThemesProvider theme) {
+    final isActive = selectedTab == index;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        splashColor: theme.isDarkMode
+            ? Colors.white.withOpacity(0.05)
+            : Colors.black.withOpacity(0.05),
+        highlightColor: theme.isDarkMode
+            ? Colors.white.withOpacity(0.01)
+            : Colors.black.withOpacity(0.01),
+        onTap: () {
+          setState(() {
+            selectedTab = index;
+          });
+          _tabController.animateTo(index);
+          if (_tabController.index != index) {
+            _tabController.index = index;
+          }
+        },
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: MediaQuery.of(context).size.width * 0.5,
+              alignment: Alignment.center,
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              child: TextWidget.subText(
+                text: title,
+                color: isActive
+                    ? theme.isDarkMode
+                        ? colors.secondaryDark
+                        : colors.secondaryLight
+                    : theme.isDarkMode
+                        ? colors.textSecondaryDark
+                        : colors.textSecondaryLight,
+                textOverflow: TextOverflow.ellipsis,
+                maxLines: 1,
+                theme: theme.isDarkMode,
+                fw: 2,
+              ),
+            ),
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 250),
+              curve: Curves.easeInOut,
+              height: 2,
+              width: isActive ? 82 : 0,
+              margin: const EdgeInsets.only(top: 1),
+              decoration: BoxDecoration(
+                color: colors.colorBlue,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
 // Settings Screen
 class SettingsScreen extends ConsumerWidget {
   String _truncateProfileName(String text, {int maxLength = 18}) {
@@ -1035,6 +1182,7 @@ class SettingsScreen extends ConsumerWidget {
       {'title': 'Generate TOTP', 'section': 'Security'},
       {'title': 'Generate API Key', 'section': 'Security'},
       {'title': 'Freeze Account', 'section': 'Security'},
+      // {'title': 'Algo Strategy', 'section': 'Settings'},
     ];
 
     return Scaffold(
@@ -1771,6 +1919,18 @@ class SettingsScreen extends ConsumerWidget {
                               ),
                             ),
                             builder: (_) => ApiKeyScreen());
+
+                              // builder: (_) => Consumer(
+                              //     builder: (context, ref, __) {
+                              //       final screenHeight = MediaQuery.of(context).size.height;
+                              //       return SafeArea(
+                              //         child: SizedBox(
+                              //           height: screenHeight * 0.85,
+                              //           child: const ApiKeyBottomTabs(),
+                              //         ),
+                              //       );
+                              //     },
+                              //   ));
                         break;
                       case 'Generate TOTP':
                         await apikeys.fetchTotp();
@@ -1789,6 +1949,10 @@ class SettingsScreen extends ConsumerWidget {
                                 secretKey:
                                     ref.read(apikeyprovider).totpkey!.pwd));
                         break;
+                      // case 'Algo Strategy':
+                      //   await ref.read(userProfileProvider).fetchAlgoStrategies(context);
+                      //   Navigator.pushNamed(context, Routes.algoStrategyShowList);
+                      //   break;
                     }
                   },
                 );

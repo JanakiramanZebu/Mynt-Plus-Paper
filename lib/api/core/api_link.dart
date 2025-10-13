@@ -25,6 +25,8 @@ class ApiLinks {
   String get apiKey => '$goMyntURL/RequestApiKey';
   String get generateapiKey => '$goMyntURL/UserApiKeyRenReq';
   String get generateapiKeynewuser => '$goMyntURL/GetUserApiKey';
+  String get getapikeynew => 'https://uat.mynt.in/NorenWClientWeb/GetAppKeyData';
+  String get appkeystore => 'https://uat.mynt.in/NorenWClientWeb/AppKeyStore';
   String get gettotp => "$goMyntURL/GetSecretKey";
   String get gentotp => "$goMyntURL/GenSecretKey";
 
@@ -74,6 +76,10 @@ class ApiLinks {
   String get clientDetail => '$goMyntURL/ClientDetails';
   String get freezeAccount => '$goMyntURL/FreezeAccount';
   String get blockAcct => '$goMyntURL/BlockAcct';
+  String get algoStrategy => 'http://192.168.5.119:9005/api/getall';
+  String get createAlgoStrategy => 'http://192.168.5.119:9005/api/new';
+  String get updateAlgoStrategy => 'http://192.168.5.119:9005/api/update';
+  String get deleteAlgoStrategy => 'http://192.168.5.119:9005/api/delete';
 
 // Trade data
 

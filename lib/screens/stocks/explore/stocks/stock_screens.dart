@@ -17,6 +17,7 @@ import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
 import '../../../../routes/route_names.dart';
 import '../../../../sharedWidget/functions.dart';
+import '../../../../screens/stock_search_screen.dart';
 import 'indices/top_indices.dart';
 import 'trade_action/trade_action_widget.dart';
 import 'etf_category_detail_screen.dart';
@@ -759,6 +760,8 @@ class _StockScreenState extends ConsumerState<StockScreen>
                 ),
               ),
               optionZTile(context, theme, funds),
+              // const SizedBox(height: 16),
+              // stockSearchTile(context, theme),
               const SizedBox(height: 16),
               // Padding(
               //   padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -1777,6 +1780,85 @@ class _StockScreenState extends ConsumerState<StockScreen>
                      ? colors.secondaryDark
                      : colors.secondaryLight,
                ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+  Widget stockSearchTile(BuildContext context, ThemesProvider theme) {
+  return Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 16),
+    child: Material(
+      color: Colors.transparent,
+      shape: const RoundedRectangleBorder(),
+      child: InkWell(
+        canRequestFocus: false,
+        borderRadius: BorderRadius.circular(5),
+        customBorder: const RoundedRectangleBorder(),
+        splashColor: theme.isDarkMode
+            ? colors.splashColorDark
+            : colors.splashColorLight,
+        highlightColor: theme.isDarkMode
+            ? colors.highlightDark
+            : colors.highlightLight,
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const StockSearchScreen(),
+            ),
+          );
+        },
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(5),
+            color: theme.isDarkMode
+                ? colors.searchBgDark.withOpacity(0.5)
+                : const Color(0xffF1F3F8).withOpacity(0.5),
+            border: Border.all(
+              color: theme.isDarkMode
+                  ? colors.darkColorDivider
+                  : colors.colorDivider,
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              // Texts
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextWidget.custmText(
+                    text: "Stock Report",
+                    theme: false,
+                    color: theme.isDarkMode
+                        ? colors.primaryDark
+                        : colors.primaryLight,
+                    fs: 20,
+                    fw: 0,
+                  ),
+                  const SizedBox(height: 4),
+                  TextWidget.paraText(
+                    text: "Search and discover stock report",
+                    theme: false,
+                    color: theme.isDarkMode
+                        ? colors.textSecondaryDark
+                        : colors.textSecondaryLight,
+                    fw: 0,
+                  ),
+                ],
+              ),
+              Icon(
+                Icons.search,
+                size: 35,
+                color: theme.isDarkMode
+                    ? colors.secondaryDark
+                    : colors.secondaryLight,
+              ),
             ],
           ),
         ),
