@@ -1049,7 +1049,7 @@ class _StockScreenState extends ConsumerState<StockScreen>
                         InkWell(
                           canRequestFocus: false,
                           onTap: () {
-                            // Navigator.pushNamed(context, Routes.basketScreen);
+                            Navigator.pushNamed(context, Routes.basketScreen);
                             // Navigator.pushNamed(context, Routes.portfolioDashboard);
                           },
                           child: Container(

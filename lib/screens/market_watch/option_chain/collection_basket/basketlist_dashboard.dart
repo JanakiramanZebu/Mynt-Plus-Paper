@@ -30,8 +30,8 @@ class _StrategyDashboardScreenState
           'An equity-heavy portfolio for those chasing higher returns and willing to embrace volatility.',
       description: 'A time-tested option for investors seeking stability',
       funds: [
-        StrategyFund(name: 'Equity', percentage: 90.0, color: Colors.green),
-        StrategyFund(name: 'Debt', percentage: 10.0, color: Colors.blue),
+        StrategyFund(name: 'Equity', schemeName: 'Equity', percentage: 90.0, color: Colors.green),
+        StrategyFund(name: 'Debt', schemeName: 'Debt', percentage: 10.0, color: Colors.blue),
       ],
     ),
     InvestmentStrategy(
@@ -40,8 +40,8 @@ class _StrategyDashboardScreenState
           'The classic "core" portfolio — designed to deliver moderate growth while protecting on the downside.',
       description: 'A time-tested choice for stable investing',
       funds: [
-        StrategyFund(name: 'Equity', percentage: 60.0, color: Colors.green),
-        StrategyFund(name: 'Debt', percentage: 40.0, color: Colors.blue),
+        StrategyFund(name: 'Equity', schemeName: 'Equity', percentage: 60.0, color: Colors.green),
+        StrategyFund(name: 'Debt', schemeName: 'Debt', percentage: 40.0, color: Colors.blue),
       ],
     ),
     InvestmentStrategy(
@@ -50,9 +50,9 @@ class _StrategyDashboardScreenState
           'Straightforward diversification — four asset classes with equal allocation.',
       description: 'Built for steady, risk-conscious investors',
       funds: [
-        StrategyFund(name: 'Equity', percentage: 25.0, color: Colors.green),
-        StrategyFund(name: 'Debt', percentage: 25.0, color: Colors.blue),
-        StrategyFund(name: 'Hybrid', percentage: 50.0, color: Colors.orange),      
+        StrategyFund(name: 'Equity', schemeName: 'Equity', percentage: 25.0, color: Colors.green),
+        StrategyFund(name: 'Debt', schemeName: 'Debt', percentage: 25.0, color: Colors.blue),
+        StrategyFund(name: 'Hybrid', schemeName: 'Hybrid', percentage: 50.0, color: Colors.orange),      
       ],
     ),
   ];
@@ -692,8 +692,11 @@ class _StrategyDashboardScreenState
 
         if (realFundData.isNotEmpty) {
           final realFund = realFundData.first;
+          // Use 'name' instead of 'Scheme_Name' as that's what getRealFundDataForCategory returns
+          final schemeName = realFund['name'] as String? ?? fund.schemeName;
           realFundAllocations.add({
             'name': realFund['name'],
+            'schema_name': schemeName, // Use correct key name for API
             'percentage': fund.percentage,
             'schemeType': realFund['schemeType'],
             'isin': realFund['isin'],
@@ -703,6 +706,7 @@ class _StrategyDashboardScreenState
           // Create FundListModel with real fund data for preloading
           preloadedFunds.add(FundListModel(
             name: realFund['name'],
+            schemeName: schemeName,
             type: realFund['schemeType'],
             fiveYearCAGR: realFund['fiveYearCAGR']?.toDouble() ?? 0.0,
             threeYearCAGR: realFund['threeYearCAGR']?.toDouble() ?? 0.0,
@@ -716,13 +720,17 @@ class _StrategyDashboardScreenState
           // Fallback to original data if real data fetch fails
           realFundAllocations.add({
             'name': fund.name,
+            'schema_name': fund.schemeName, // Use correct key name for API
             'percentage': fund.percentage,
             'schemeType': _getSchemeType(fund.name),
+            'isin': '',
+            'amcCode': '',
           });
 
           // Create fallback FundListModel
           preloadedFunds.add(FundListModel(
             name: fund.name,
+            schemeName: fund.schemeName,
             type: _getSchemeType(fund.name),
             fiveYearCAGR: 0.0,
             threeYearCAGR: 0.0,
@@ -745,13 +753,13 @@ class _StrategyDashboardScreenState
       await ref.read(dashboardProvider).performBacktestWithAllocation(
             strategyName: strategyName,
             fundAllocations: realFundAllocations,
-            years: 5, // Default duration
-            investmentAmount: 100000.0, // Default investment amount
-            compareSymbol: "NSE:NIFTYBEES-EQ", // Default benchmark
+            years: 5, 
+            investmentAmount: 100000.0,
+            compareSymbol: "NSE:NIFTYBEES-EQ", 
           );
 
       // Navigate directly to backtest analysis
-      Navigator.pushNamed(context, Routes.basketBacktestAnalysis);
+      Navigator.pushNamed(context, Routes.benchmarkBacktestAnalysis);
     } catch (e) {
       print('Error navigating to backtest: $e');
     }
@@ -922,11 +930,13 @@ class InvestmentStrategy {
 
 class StrategyFund {
   final String name;
+  final String schemeName;
   final double percentage;
   final Color color;
 
   StrategyFund({
     required this.name,
+    required this.schemeName,
     required this.percentage,
     required this.color,
   });

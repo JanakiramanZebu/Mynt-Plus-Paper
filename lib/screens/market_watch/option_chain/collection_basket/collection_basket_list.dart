@@ -552,7 +552,8 @@ class _FundSelectionScreenState extends ConsumerState<FundSelectionScreen> {
           if (item == null) return const SizedBox.shrink();
 
           final fund = FundListModel(
-            name: item.schemeName ?? "Unknown Scheme",
+            name: item.name ?? "Unknown Scheme",
+            schemeName: item.schemeName ?? "Unknown Scheme",
             type: _getFundTypeFromScheme(item.schemeType),
             fiveYearCAGR: 0.0,
             threeYearCAGR: 0.0,
@@ -625,7 +626,7 @@ class _FundSelectionScreenState extends ConsumerState<FundSelectionScreen> {
                     bottom: 4,
                   ),
                   child: TextWidget.subText(
-                    text: _capitalizeEachWord(item.schemeName ?? "Unknown Scheme"),
+                    text: _capitalizeEachWord(item.name ?? "Unknown Scheme"),
                     theme: theme.isDarkMode,
                     color: theme.isDarkMode
                         ? colors.textPrimaryDark
@@ -646,17 +647,17 @@ class _FundSelectionScreenState extends ConsumerState<FundSelectionScreen> {
                             : colors.textSecondaryLight,
                         fw: 0,
                       ),
-                      if (fund.aum > 0) ...[
-                        const SizedBox(width: 8),
-                        TextWidget.paraText(
-                          text: 'AUM ${_formatAumValue(fund.aum)}',
-                          theme: theme.isDarkMode,
-                          color: theme.isDarkMode
-                              ? colors.textSecondaryDark
-                              : colors.textSecondaryLight,
-                          fw: 0,
-                        ),
-                      ],
+                      // if (fund.aum > 0) ...[
+                      //   const SizedBox(width: 8),
+                      //   TextWidget.paraText(
+                      //     text: 'AUM ${_formatAumValue(fund.aum)}',
+                      //     theme: theme.isDarkMode,
+                      //     color: theme.isDarkMode
+                      //         ? colors.textSecondaryDark
+                      //         : colors.textSecondaryLight,
+                      //     fw: 0,
+                      //   ),
+                      // ],
                     ],
                   ),
                 ),

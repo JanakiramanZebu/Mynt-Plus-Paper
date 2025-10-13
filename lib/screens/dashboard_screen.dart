@@ -442,6 +442,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
                           duration: const Duration(milliseconds: 300),
                           curve: Curves.easeInOut,
                         );
+                        ref.read(mfProvider).mfExTabchange(0);
                       }
                       
                       // Always sync the tab index with the provider and perform other actions
@@ -503,6 +504,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
                if (mounted) {
                  ref.read(stocksProvide).syncTabIndex(index);
                }
+                        ref.read(mfProvider).mfExTabchange(0);
+
              }
            },
            children: [
