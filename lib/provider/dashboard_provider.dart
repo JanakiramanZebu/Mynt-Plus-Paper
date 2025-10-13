@@ -87,7 +87,10 @@ class DashboardProvider extends DefaultChangeNotifier {
       portfolioloader(true);
       final portfolioAnalysis = await api.fetchPortfolioAnalysis(
           "${pref.clientId}", "${pref.clientSession}");
-
+    if(portfolioAnalysis.message == "No data found"){
+      _portfolioAnalysis = null;
+      return;
+    }
       _portfolioAnalysis = portfolioAnalysis;
       _portfolioError = null;
     } catch (e) {
@@ -347,6 +350,20 @@ Color getSectorAllocationColor(String sector) {
   bool _showAll = true; // Default: show all data
   bool get showAll => _showAll;
 
+  // Quick PnL sign filter for Top Gainers / Top Losers
+  // Values: 'all' | 'gainers' | 'losers'
+  String _selectedPnLSignFilter = 'all';
+  String get selectedPnLSignFilter => _selectedPnLSignFilter;
+  void setPnLSignFilter(String value) {
+    if (value == _selectedPnLSignFilter) {
+      // Toggle off when pressing the same filter again
+      _selectedPnLSignFilter = 'all';
+    } else {
+      _selectedPnLSignFilter = value;
+    }
+    notifyListeners();
+  }
+
   Set<String> _selectedAccountTypes = {};
   Set<String> get selectedAccountTypes => _selectedAccountTypes;
 
@@ -409,6 +426,7 @@ Color getSectorAllocationColor(String sector) {
     _selectedAccountTypes.clear();
     _selectedMarketCaps.clear();
     _selectedSectors.clear();
+    _selectedPnLSignFilter = 'all';
     notifyListeners();
   }
 

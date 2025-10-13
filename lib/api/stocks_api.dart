@@ -45,6 +45,18 @@ mixin StocksAPI on ApiCore {
       final uri = Uri.parse('${apiLinks.portfolioAnalysisURL}?client_id=${clientId}&session=${session}');
       final res = await apiClient.get(uri);
       final json = jsonDecode(res.body);
+      if(json['stat'] == 'Not_Ok'){
+        return PortfolioResponse(
+          xirrResult: 0.0,
+          accountAllocation: {},
+          marketCapAllocation: {},
+          sectorAllocation: {},
+          topStocks: [],
+          fundamentals: [],
+          chartData: null,
+          message: "No data found",
+        );
+      }
         
      return PortfolioResponse.fromJson(json as Map<String, dynamic>);
       } catch (e) {

@@ -8,6 +8,7 @@ class PortfolioResponse {
   final List<TopStocks> topStocks;
   final List<Fundamental> fundamentals;
   final ChartData? chartData;
+  final String? message;
 
   PortfolioResponse({
     required this.xirrResult,
@@ -17,6 +18,7 @@ class PortfolioResponse {
     required this.topStocks,
     required this.fundamentals,
     this.chartData,
+    this.message,
   });
 
   factory PortfolioResponse.fromJson(Map<String, dynamic> json) {
@@ -46,6 +48,7 @@ class PortfolioResponse {
       chartData: json['chart_data'] != null 
           ? ChartData.fromJson(json['chart_data']) 
           : null,
+      message: json['message'] ?? "",
     );
   }
 }

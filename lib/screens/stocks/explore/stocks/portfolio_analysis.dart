@@ -27,6 +27,12 @@ class _PortfolioDashboardScreenState
     extends ConsumerState<PortfolioDashboardScreen> {
   FlSpot? touchedSpot;
   bool showTooltip = false;
+  // Heatmap interaction state
+  final GlobalKey _heatmapKey = GlobalKey();
+  List<Rect> _heatmapRects = [];
+  List<TopStocks> _heatmapHoldingsShown = [];
+  OverlayEntry? _heatmapOverlay;
+  int? _selectedHeatmapIndex;
 
   // Search focus management
   final FocusNode _searchFocusNode = FocusNode();
@@ -176,7 +182,22 @@ class _PortfolioDashboardScreenState
         (dashboardState.showPortfolioSearch && searchText.isNotEmpty)
             ? dashboardState.portfolioSearchItems
             : filteredHoldings;
-    final validFundamentals = itemsToDisplay.toList();
+
+    // Apply gainer/loser quick filter only at UI layer, without touching base filters
+    List<TopStocks> displayList = itemsToDisplay;
+    if (dashboardState.selectedPnLSignFilter == 'gainers') {
+      displayList = displayList
+          .where((h) => (h.pnlPercent ?? 0).toDouble() > 0)
+          .toList()
+        ..sort((a, b) => (b.pnlPercent ?? 0).compareTo(a.pnlPercent ?? 0)); // Descending
+    } else if (dashboardState.selectedPnLSignFilter == 'losers') {
+      displayList = displayList
+          .where((h) => (h.pnlPercent ?? 0).toDouble() < 0)
+          .toList()
+        ..sort((a, b) => (a.pnlPercent ?? 0).compareTo(b.pnlPercent ?? 0)); // Ascending
+    }
+
+    final validFundamentals = displayList.toList();
 
     return CustomScrollView(
       controller: _scrollController,
@@ -195,6 +216,8 @@ class _PortfolioDashboardScreenState
                   SizedBox(height: 16),
                   _buildAccountAllocation(data.accountAllocation , theme.isDarkMode),
                   SizedBox(height: 16),
+                  _buildHeatMap(data.topStocks),
+                  SizedBox(height: 16),
                   _buildChartsSection(data),
                   SizedBox(height: 16),
                   _buildSectorAllocationTable(data.sectorAllocation),
@@ -211,7 +234,7 @@ class _PortfolioDashboardScreenState
           delegate: _StickyHeaderDelegate(
             showSearch: dashboardState.showPortfolioSearch,
             child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
               decoration: BoxDecoration(
                 color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
                 boxShadow: _hasScrolled
@@ -238,7 +261,67 @@ class _PortfolioDashboardScreenState
                             : colors.textPrimaryLight,
                         fw: 1,
                       ),
-                      // Filter Icon
+                      // Top Gainers / Top Losers quick filter
+                      Builder(builder: (context) {
+                        final state = ref.watch(dashboardProvider);
+                        final isDark = theme.isDarkMode;
+                        Widget buildChip({
+                          required String label,
+                          required String value,
+                          required Color activeColor,
+                        }) {
+                          final bool isActive = state.selectedPnLSignFilter == value;
+                          final Color bg = isActive
+                              ? (isDark ? activeColor.withOpacity(0.2) : activeColor.withOpacity(0.15))
+                              : Colors.transparent;
+                          final Color border = isActive
+                              ? activeColor
+                              : (isDark ? colors.textSecondaryDark.withOpacity(0.3) : colors.textSecondaryLight.withOpacity(0.3));
+                          final Color textColor = isActive
+                              ? (isDark ? colors.textPrimaryDark : colors.textPrimaryLight)
+                              : (isDark ? colors.textSecondaryDark : colors.textSecondaryLight);
+
+                          return InkWell(
+                            borderRadius: BorderRadius.circular(6),
+                            onTap: () {
+                              state.setPnLSignFilter(value);
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: bg,
+                                borderRadius: BorderRadius.circular(6),
+                                border: Border.all(color: border, width: 1),
+                              ),
+                              child: Text(
+                                label,
+                                style: TextWidget.textStyle(
+                                  fontSize: 12,
+                                  theme: isDark,
+                                  color: textColor,
+                                  fw: isActive ? 1 : 0,
+                                ),
+                              ),
+                            ),
+                          );
+                        }
+
+                        return Row(
+                          children: [
+                            buildChip(
+                              label: 'Gainers',
+                              value: 'gainers',
+                              activeColor: colors.successLight,
+                            ),
+                            const SizedBox(width: 8),
+                            buildChip(
+                              label: 'Losers',
+                              value: 'losers',
+                              activeColor: colors.lossLight,
+                            ),
+                          ],
+                        );
+                      })
                     ],
                   ),
                   SizedBox(height: 12),
@@ -491,14 +574,18 @@ class _PortfolioDashboardScreenState
   Widget _buildHoldingsSliverList(List<TopStocks> validFundamentals,
       ThemesProvider theme, dynamic dashboardState, String searchText) {
     // Show "No Data Found" when search is active with text but no results
-    if (dashboardState.showPortfolioSearch &&
-        searchText.isNotEmpty &&
-        validFundamentals.isEmpty) {
+    final bool isSearching = dashboardState.showPortfolioSearch && searchText.isNotEmpty;
+  final bool noData = validFundamentals.isEmpty;
+
+
+     if (noData) {
       return SliverFillRemaining(
-        child: Container(
-          color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-          child: const Center(
-            child: NoDataFound(),
+        child: SafeArea(
+          child: Container(
+            color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+            child: const Center(
+              child: NoDataFound(),
+            ),
           ),
         ),
       );
@@ -512,7 +599,7 @@ class _PortfolioDashboardScreenState
           }
           final itemIndex = index ~/ 2;
           if (itemIndex >= validFundamentals.length) {
-            return null;
+            return NoDataFound();
           }
           final entry = validFundamentals[itemIndex];
           return _buildSectorPerformanceItem(
@@ -520,6 +607,7 @@ class _PortfolioDashboardScreenState
             value: entry.inverstedAmount ?? 0,
             marketCapType: entry.marketCapType ?? '',
             allocationPercent: entry.allocationPercent ?? 0,
+            pnlPercent: entry.pnlPercent ?? 0,
             qty: entry.qty ?? '',
             exch: entry.exch ?? '',
             token: entry.zebuToken ?? '',
@@ -572,6 +660,7 @@ class _PortfolioDashboardScreenState
             value: entry.inverstedAmount ?? 0,
             marketCapType: entry.marketCapType ?? '',
             allocationPercent: entry.allocationPercent ?? 0,
+            pnlPercent: entry.pnlPercent ?? 0,
             qty: entry.qty ?? '',
             exch: entry.exch ?? '',
             token: entry.zebuToken ?? '',
@@ -1000,6 +1089,413 @@ class _PortfolioDashboardScreenState
     );
   }
 
+  Widget _buildHeatMap(List<TopStocks> holdings) {
+    final theme = ref.watch(themeProvider);
+    final dashboardState = ref.watch(dashboardProvider);
+    
+    // Get filtered holdings based on selected filters
+    final filteredHoldings = dashboardState.getFilteredHoldings(holdings);
+    
+    if (filteredHoldings.isEmpty) return const SizedBox.shrink();
+    
+    // Calculate performance ranges for color coding
+    final pnlPercentages = filteredHoldings
+        .where((holding) => holding.pnlPercent != null)
+        .map((holding) => holding.pnlPercent!)
+        .toList();
+    
+    if (pnlPercentages.isEmpty) return const SizedBox.shrink();
+    
+    final maxGain = pnlPercentages.reduce((a, b) => a > b ? a : b);
+    final maxLoss = pnlPercentages.reduce((a, b) => a < b ? a : b);
+    final maxAbs = [maxGain.abs(), maxLoss.abs()].reduce((a, b) => a > b ? a : b);
+    
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+               TextWidget.subText(
+                text: 'Heatmap',
+                theme: false,
+                color: theme.isDarkMode
+                    ? colors.textPrimaryDark
+                    : colors.textPrimaryLight,
+                fw: 1,
+              ),
+              Row(
+                children: [
+                  _buildHeatmapLegend(maxLoss, maxGain, theme),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          _buildHeatmapGrid(filteredHoldings, maxAbs, theme),
+          const SizedBox(height: 12),
+          _buildHeatmapStats(filteredHoldings, theme),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeatmapGrid(List<TopStocks> holdings, double maxAbs, ThemesProvider theme) {
+    // Calculate sizing values using absolute invested amount
+    final pnlValues = holdings
+        .map((holding) => (holding.inverstedAmount ?? 0).abs())
+        .toList();
+    
+    if (pnlValues.isEmpty) return const SizedBox.shrink();
+    
+    double totalPnlValue = pnlValues.fold(0.0, (sum, value) => sum + value);
+    // Fallback: if all values are zero, assign equal weight to avoid zero area
+    if (totalPnlValue == 0 && pnlValues.isNotEmpty) {
+      totalPnlValue = pnlValues.length.toDouble();
+      for (int i = 0; i < pnlValues.length; i++) {
+        pnlValues[i] = 1.0;
+      }
+    }
+    
+    // Sort holdings by absolute invested amount (descending) for better treemap layout
+    final sortedHoldings = List<TopStocks>.from(holdings)
+      ..sort((a, b) => (b.inverstedAmount ?? 0).abs().compareTo((a.inverstedAmount ?? 0).abs()));
+    
+    return Container(
+      padding: const EdgeInsets.all(8),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final availableWidth = constraints.maxWidth - 0; // Account for padding
+          // Adapt height when there are many tiles
+          final int count = sortedHoldings.length;
+          const double baseHeight = 400.0;
+          final int extraRows = (count / 50).ceil();
+          final double availableHeight = (baseHeight + (extraRows * 60)).clamp(400.0, 700.0);
+          
+          _heatmapHoldingsShown = sortedHoldings; // keep mapping order
+          
+          return GestureDetector(
+            onTapDown: (details) => _onHeatmapTap(details.localPosition),
+            child: SizedBox(
+              key: _heatmapKey,
+              width: availableWidth,
+              height: availableHeight,
+              child: CustomPaint(
+                size: Size(availableWidth, availableHeight),
+                painter: TreemapPainter(
+                  holdings: sortedHoldings,
+                  totalPnlValue: totalPnlValue,
+                  maxAbs: maxAbs,
+                  theme: theme,
+                  containerWidth: availableWidth,
+                  containerHeight: availableHeight,
+                  selectedIndex: _selectedHeatmapIndex,
+                  onLayout: (rects) {
+                    _heatmapRects = rects;
+                  },
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  void _onHeatmapTap(Offset localPosition) {
+    if (_heatmapRects.isEmpty || _heatmapHoldingsShown.isEmpty) return;
+    for (int i = 0; i < _heatmapRects.length && i < _heatmapHoldingsShown.length; i++) {
+      // Slightly deflate to avoid edge ambiguity and improve hit-testing at borders
+      final rect = _heatmapRects[i].deflate(0.5);
+      if (rect.contains(localPosition)) {
+        setState(() {
+          _selectedHeatmapIndex = i;
+        });
+        _showHeatmapTooltipForRect(rect, _heatmapHoldingsShown[i]);
+        // Clear highlight after a short delay
+        Future.delayed(const Duration(milliseconds: 700), () {
+          if (mounted && _selectedHeatmapIndex == i) {
+            setState(() {
+              _selectedHeatmapIndex = null;
+            });
+          }
+        });
+        break;
+      }
+    }
+  }
+
+  void _showHeatmapTooltipForRect(Rect tileRect, TopStocks holding) {
+    final theme = ref.watch(themeProvider);
+    _heatmapOverlay?.remove();
+    _heatmapOverlay = null;
+
+    final renderBox = _heatmapKey.currentContext?.findRenderObject() as RenderBox?;
+    if (renderBox == null) return;
+    final overlayBox = Overlay.of(context).context.findRenderObject() as RenderBox;
+
+    // Prefer positioning near the tile's center to avoid clipping at edges
+    final tileCenterGlobal = renderBox.localToGlobal(tileRect.center);
+    Offset overlayOffset = overlayBox.globalToLocal(tileCenterGlobal);
+
+    final Color bg = Colors.white;
+
+    // Compute clamped position so tooltip stays on screen
+    const double tipMaxWidth = 220;
+    const double tipApproxHeight = 88; // rough height; layout will be close
+    final double minX = 8;
+    final double minY = 8;
+    final double maxX = overlayBox.size.width - tipMaxWidth - 8;
+    final double maxY = overlayBox.size.height - tipApproxHeight - 8;
+    final double left = overlayOffset.dx.clamp(minX, maxX);
+    final double top = (overlayOffset.dy - 40).clamp(minY, maxY); // offset a bit upward
+
+    _heatmapOverlay = OverlayEntry(
+      builder: (ctx) => Positioned(
+        left: left,
+        top: top,
+        child: Material(
+          color: Colors.transparent,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            decoration: BoxDecoration(
+              color: bg,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            constraints: const BoxConstraints(maxWidth: 220),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  (holding.tsym ?? holding.name ?? 'N/A').replaceAll('-EQ', ''),
+                  style: TextWidget.textStyle(fontSize: 13, fw: 2, theme: theme.isDarkMode, color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Invested: ₹${(holding.inverstedAmount ?? 0).toStringAsFixed(0)}',
+                  style: TextWidget.textStyle(fontSize: 12, fw: 0, theme: theme.isDarkMode, color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight),
+                ),
+                // Text(
+                //   'Current: ₹${(holding.currentPrice ?? 0).toStringAsFixed(2)}',
+                //   style: const TextStyle(fontSize: 12, color: Colors.black87),
+                // ),
+                Text(
+                  'P&L: ₹${(holding.pnl ?? 0).toStringAsFixed(0)}  (${(holding.pnlPercent ?? 0).toStringAsFixed(2)}%)',
+                  style: TextWidget.textStyle(fontSize: 12, fw: 0, theme: theme.isDarkMode, color: (holding.pnlPercent ?? 0) > 0 ? theme.isDarkMode ? colors.profitDark : colors.profitLight : (holding.pnlPercent ?? 0) == 0 ? theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight : theme.isDarkMode ? colors.lossDark : colors.lossLight),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    Overlay.of(context).insert(_heatmapOverlay!);
+
+    Future.delayed(const Duration(seconds: 2), () {
+      _heatmapOverlay?.remove();
+      _heatmapOverlay = null;
+    });
+  }
+
+  // Widget _buildHeatmapItem(TopStocks holding, double maxAbs, ThemesProvider theme, {double tileSize = 60.0}) {
+  //   final pnlPercent = holding.pnlPercent ?? 0.0;
+  //   final pnl = holding.pnl ?? 0.0;
+    
+  //   // Calculate color intensity based on performance
+  //   Color backgroundColor;
+  //   Color textColor;
+    
+  //   if (pnlPercent == 0) {
+  //     backgroundColor = const Color(0xFFF8F9FA);
+  //     textColor = const Color(0xFF6C757D);
+  //   } else if (pnlPercent > 0) {
+  //     // Positive performance - green gradient
+  //     final intensity = (pnlPercent / maxAbs).clamp(0.0, 1.0);
+  //     backgroundColor = Color.lerp(
+  //       const Color(0xFFE8F5E8),
+  //       const Color(0xFF28A745),
+  //       intensity,
+  //     )!;
+  //     textColor = intensity > 0.4 ? Colors.white : const Color(0xFF155724);
+  //   } else {
+  //     // Negative performance - red gradient
+  //     final intensity = (pnlPercent.abs() / maxAbs).clamp(0.0, 1.0);
+  //     backgroundColor = Color.lerp(
+  //       const Color(0xFFFFEBEE),
+  //       const Color(0xFFDC3545),
+  //       intensity,
+  //     )!;
+  //     textColor = intensity > 0.4 ? Colors.white : const Color(0xFF721C24);
+  //   }
+    
+  //   // Calculate text size based on tile size
+  //   final fontSize = (tileSize * 0.08).clamp(6.0, 10.0);
+  //   final symbolFontSize = (tileSize * 0.16).clamp(9.0, 16.0);
+    
+  //   return Tooltip(
+  //     message: '${holding.name}\nCurrent: ₹${(holding.currentPrice ?? 0).toStringAsFixed(2)}\nP&L: ₹${pnl.toStringAsFixed(2)}\nReturn: ${pnlPercent.toStringAsFixed(2)}%',
+  //     decoration: BoxDecoration(
+  //       color: Colors.white,
+  //       borderRadius: BorderRadius.circular(6),
+  //     ),
+  //     textStyle: TextWidget.textStyle(
+  //       color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+  //       theme: theme.isDarkMode,
+  //       fontSize: 12,
+  //       fw: 0,
+  //     ),
+  //     child: Container(
+  //       decoration: BoxDecoration(
+  //         color: backgroundColor,
+  //         borderRadius: BorderRadius.circular(2),
+  //       ),
+  //       child: Column(
+  //         mainAxisAlignment: MainAxisAlignment.center,
+  //         children: [
+  //           // Stock symbol/name
+  //           Padding(
+  //             padding: const EdgeInsets.symmetric(horizontal: 3),
+  //             child: TextWidget.captionText(
+  //               text: _truncateText(holding.tsym ?? 'N/A', tileSize > 60 ? 10 : 6),
+  //               theme: theme.isDarkMode,
+  //               color: textColor,
+  //               fw: 1,
+  //               maxLines: 1,
+  //               textOverflow: TextOverflow.ellipsis,
+  //               align: TextAlign.center,
+  //             ),
+  //           ),
+  //           if (tileSize > 35) ...[
+  //             const SizedBox(height: 2),
+  //             // P&L percentage
+  //             TextWidget.paraText(
+  //               text: '${pnlPercent >= 0 ? '+' : ''}${pnlPercent.toStringAsFixed(1)}%',
+  //               theme: theme.isDarkMode,
+  //               color: textColor,
+  //               fw: 2,
+  //               align: TextAlign.center,
+  //             ),
+  //           ],
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
+
+
+  Widget _buildHeatmapLegend(double maxLoss, double maxGain, ThemesProvider theme) {
+    // Match heatmap card palette: red-light -> neutral -> green-light
+    final redLight = Color(0xFFDC3545).withOpacity(0.1);   // same as negative light
+    final neutral = Color(0xFFF8F9FA);   // neutral/zero
+    final greenLight = Color(0xFF28A745).withOpacity(0.1); // same as positive light
+
+    return Container(
+      height: 24,
+      width: 140,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [redLight, neutral, greenLight],
+          stops: [0.0, 0.5, 1.0],
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+        ),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.black12, width: 0.5),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 8),
+            child: Text(
+              '${maxLoss.toStringAsFixed(1)}%',
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: Text(
+              '${maxGain.toStringAsFixed(1)}%',
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeatmapStats(List<TopStocks> holdings, ThemesProvider theme) {
+    final positiveCount = holdings.where((h) => (h.pnlPercent ?? 0) > 0).length;
+    final negativeCount = holdings.where((h) => (h.pnlPercent ?? 0) < 0).length;
+    final neutralCount = holdings.where((h) => (h.pnlPercent ?? 0) == 0).length;
+    
+    // final avgPnlPercent = holdings.isNotEmpty 
+    //     ? holdings.fold(0.0, (sum, h) => sum + (h.pnlPercent ?? 0)) / holdings.length
+    //     : 0.0;
+    
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: theme.isDarkMode 
+            ? colors.textSecondaryDark.withOpacity(0.05)
+            : colors.textSecondaryLight.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          _buildStatItem('Gainers', positiveCount, theme.isDarkMode ? colors.profitDark : colors.profitLight, theme),
+          _buildStatItem('Losers', negativeCount, theme.isDarkMode ? colors.lossDark : colors.lossLight, theme),
+          _buildStatItem('Neutral', neutralCount, theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight, theme),
+          // _buildStatItem('Avg Return', avgPnlPercent, theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight, theme, isPercentage: true),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatItem(String label, dynamic value, Color color, ThemesProvider theme, {bool isPercentage = false}) {
+    return Column(
+      children: [
+        TextWidget.paraText(
+          text: isPercentage 
+              ? '${(value as double).toStringAsFixed(1)}%'
+              : value.toString(),
+          theme: theme.isDarkMode,
+          color: color,
+          fw: 0,
+        ),
+        const SizedBox(height: 2),
+        TextWidget.paraText(
+          text: label,
+          theme: theme.isDarkMode,
+          color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+          fw: 3,
+        ),
+      ],
+    );
+  }
+
+  String _truncateText(String text, int maxLength) {
+    if (text.length <= maxLength) return text;
+    return '${text.substring(0, maxLength - 1)}...';
+  }
+
   Widget _buildChartsSection(PortfolioResponse data) {
     return Column(
       children: [
@@ -1165,6 +1661,7 @@ class _PortfolioDashboardScreenState
     required String sector,
     required String marketCapType,
     required double allocationPercent,
+    required double pnlPercent,
     required double value,
     required String qty,
     required String exch,
@@ -1240,7 +1737,7 @@ class _PortfolioDashboardScreenState
             subtitle: Padding(
               padding: const EdgeInsets.only(top: 4),
               child: TextWidget.paraText(
-                text: 'INV ${value.toStringAsFixed(2)}',
+                text: 'INV ${value.toStringAsFixed(2)} AL ${allocationPercent.toStringAsFixed(2)}%',
                 theme: false,
                 color: theme.isDarkMode
                     ? colors.textSecondaryDark
@@ -1255,11 +1752,9 @@ class _PortfolioDashboardScreenState
                   Padding(
                     padding: const EdgeInsets.only(bottom: 4),
                     child: TextWidget.subText(
-                      text: '${allocationPercent.toStringAsFixed(2)}%',
+                      text: '${pnlPercent.toStringAsFixed(2)}%',
                       theme: false,
-                      color: theme.isDarkMode
-                          ? colors.textPrimaryDark
-                          : colors.textPrimaryLight,
+                      color: pnlPercent > 0 ? theme.isDarkMode ? colors.successDark : colors.successLight : pnlPercent == 0 ? theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight : theme.isDarkMode ? colors.lossDark : colors.lossLight,
                       fw: 0,
                     ),
                   ),
@@ -1837,5 +2332,254 @@ class _StickyHeaderDelegate extends SliverPersistentHeaderDelegate {
   @override
   bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) {
     return true; // Rebuild when search state changes
+  }
+}
+
+// Treemap Painter for efficient space packing
+class TreemapPainter extends CustomPainter {
+  final List<TopStocks> holdings;
+  final double totalPnlValue;
+  final double maxAbs;
+  final ThemesProvider theme;
+  final double containerWidth;
+  final double containerHeight;
+  final void Function(List<Rect>)? onLayout;
+  final int? selectedIndex;
+
+  TreemapPainter({
+    required this.holdings,
+    required this.totalPnlValue,
+    required this.maxAbs,
+    required this.theme,
+    required this.containerWidth,
+    required this.containerHeight,
+    this.onLayout,
+    this.selectedIndex,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (holdings.isEmpty) return;
+
+    // Calculate treemap rectangles using squarified algorithm
+    final rectangles = _calculateTreemapRectangles();
+    if (onLayout != null) onLayout!(rectangles);
+    
+    // Draw each rectangle
+    for (int i = 0; i < rectangles.length && i < holdings.length; i++) {
+      final rect = rectangles[i];
+      final holding = holdings[i];
+      _drawTreemapTile(canvas, rect, holding, isSelected: selectedIndex == i);
+    }
+  }
+
+  List<Rect> _calculateTreemapRectangles() {
+    final rectangles = <Rect>[];
+    // Use absolute invested amount as the sizing value
+    final values = holdings.map((h) => (h.inverstedAmount ?? 0).abs()).toList();
+    
+    if (values.isEmpty) return rectangles;
+    
+    // Use squarified treemap algorithm for better aspect ratios
+    _squarify(values, 0, 0, containerWidth, containerHeight, rectangles);
+    
+    return rectangles;
+  }
+
+  void _squarify(List<double> values, double x, double y, double width, double height, List<Rect> rectangles) {
+    if (values.isEmpty) return;
+    
+    if (values.length == 1) {
+      rectangles.add(Rect.fromLTWH(x, y, width, height));
+      return;
+    }
+    
+    // Calculate the best split point
+    double bestRatio = double.infinity;
+    int bestSplit = 1;
+    
+    for (int i = 1; i <= values.length; i++) {
+      final group1 = values.sublist(0, i);
+      final group2 = values.sublist(i);
+      
+      if (group2.isEmpty) break;
+      
+      final ratio1 = _calculateAspectRatio(group1, width, height);
+      final ratio2 = _calculateAspectRatio(group2, width, height);
+      final maxRatio = ratio1 > ratio2 ? ratio1 : ratio2;
+      
+      if (maxRatio < bestRatio) {
+        bestRatio = maxRatio;
+        bestSplit = i;
+      }
+    }
+    
+    // Split the area
+    final group1 = values.sublist(0, bestSplit);
+    final group2 = values.sublist(bestSplit);
+    
+    final sum1 = group1.fold(0.0, (a, b) => a + b);
+    final sum2 = group2.fold(0.0, (a, b) => a + b);
+    final totalSum = sum1 + sum2;
+    
+    if (width > height) {
+      // Split horizontally
+      final width1 = (sum1 / totalSum) * width;
+      final width2 = width - width1;
+      
+      _squarify(group1, x, y, width1, height, rectangles);
+      _squarify(group2, x + width1, y, width2, height, rectangles);
+    } else {
+      // Split vertically
+      final height1 = (sum1 / totalSum) * height;
+      final height2 = height - height1;
+      
+      _squarify(group1, x, y, width, height1, rectangles);
+      _squarify(group2, x, y + height1, width, height2, rectangles);
+    }
+  }
+
+  double _calculateAspectRatio(List<double> values, double width, double height) {
+    final sum = values.fold(0.0, (a, b) => a + b);
+    if (sum == 0) return 1.0;
+    
+    final area = width * height;
+    final valueArea = (sum / totalPnlValue) * area;
+    
+    if (width > height) {
+      final rectWidth = valueArea / height;
+      return (rectWidth / height).abs();
+    } else {
+      final rectHeight = valueArea / width;
+      return (width / rectHeight).abs();
+    }
+  }
+
+  void _drawTreemapTile(Canvas canvas, Rect rect, TopStocks holding, {bool isSelected = false}) {
+    final pnlPercent = holding.pnlPercent ?? 0.0;
+    
+    // Calculate color based on performance
+    Color backgroundColor;
+    Color textColor;
+    
+    if (pnlPercent == 0) {
+      backgroundColor = const Color(0xFFF8F9FA);
+      textColor = const Color(0xFF6C757D);
+    } else if (pnlPercent > 0) {
+      final intensity = (pnlPercent / maxAbs).clamp(0.0, 1.0);
+      backgroundColor = Color.lerp(
+        const Color(0xFFE8F5E8),
+        const Color(0xFF28A745),
+        intensity,
+      )!;
+      textColor = intensity > 0.4 ? Colors.white : const Color(0xFF155724);
+    } else {
+      final intensity = (pnlPercent.abs() / maxAbs).clamp(0.0, 1.0);
+      backgroundColor = Color.lerp(
+        const Color(0xFFFFEBEE),
+        const Color(0xFFDC3545),
+        intensity,
+      )!;
+      textColor = intensity > 0.4 ? Colors.white : const Color(0xFF721C24);
+    }
+    
+    // Draw rectangle
+    final paint = Paint()
+      ..color = backgroundColor
+      ..style = PaintingStyle.fill;
+    
+    final rrect = RRect.fromRectAndRadius(rect, const Radius.circular(2));
+    canvas.drawRRect(rrect, paint);
+
+    // Selection highlight (brief tap animation via thicker border)
+    if (isSelected) {
+      final borderPaint = Paint()
+        ..color = colors.kColorAccentBlack
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.5;
+      canvas.drawRRect(rrect, borderPaint);
+    }
+    
+    // Draw text; allow much smaller tiles as well
+    if (rect.width > 16 && rect.height > 12) {
+      _drawText(canvas, rect, holding, textColor);
+    }
+  }
+
+  void _drawText(Canvas canvas, Rect rect, TopStocks holding, Color textColor) {
+    final textPainter = TextPainter(
+      textDirection: TextDirection.ltr,
+    );
+    
+    // Stock symbol - fixed font size 12 (or 10 for very small tiles),
+    // single line with ellipsis. For very small tiles show only a single word.
+    String symbol = (holding.tsym?.replaceAll('-EQ', '') ?? 'N/A');
+    if (rect.width < 50 || rect.height < 28) {
+      symbol = _singleWord(symbol);
+    }
+    final symbolStyle = TextStyle(
+      fontSize: rect.width < 50 || rect.height < 28 ? 8 : 12,
+      fontWeight: FontWeight.w500,
+      color: textColor,
+    );
+    
+    final symbolPainter = TextPainter(
+      text: TextSpan(text: symbol, style: symbolStyle),
+      textDirection: TextDirection.ltr,
+      maxLines: 1,
+      ellipsis: '…',
+    );
+    symbolPainter.layout(maxWidth: rect.width - 4); // Leave 2px margin on each side
+    final symbolOffset = Offset(
+      rect.left + (rect.width - symbolPainter.width) / 2,
+      rect.top + (rect.height - symbolPainter.height) / 2 - 8,
+    );
+    symbolPainter.paint(canvas, symbolOffset);
+    
+    // P&L percentage - only if there's enough space
+    if (rect.height > 20 && rect.width > 24) {
+      final pnlPercent = holding.pnlPercent ?? 0.0;
+      final percentageText = '${pnlPercent >= 0 ? '+' : ''}${pnlPercent.toStringAsFixed(1)}%';
+      final percentageStyle = TextStyle(
+        fontSize: rect.width < 50 || rect.height < 28 ? 8 : 10,
+        fontWeight: FontWeight.w500,
+        color: textColor,
+      );
+      
+      textPainter.text = TextSpan(text: percentageText, style: percentageStyle);
+      textPainter.layout(maxWidth: rect.width - 4);
+      
+      // Only draw if percentage text fits
+      if (textPainter.width <= rect.width - 4) {
+        final percentageOffset = Offset(
+          rect.left + (rect.width - textPainter.width) / 2,
+          rect.top + (rect.height - textPainter.height) / 2 + 8,
+        );
+        
+        textPainter.paint(canvas, percentageOffset);
+      }
+    }
+  }
+
+  String _truncateText(String text, int maxLength) {
+    if (text.length <= maxLength) return text;
+    if (maxLength <= 3) return text.substring(0, maxLength);
+    return '${text.substring(0, maxLength - 3)}...';
+  }
+
+  String _singleWord(String text) {
+    final cleaned = text.trim();
+    if (cleaned.isEmpty) return cleaned;
+    // Prefer first word; if there's no space, take the first 4-6 chars
+    final firstSpace = cleaned.indexOf(' ');
+    if (firstSpace > 0) {
+      return cleaned.substring(0, firstSpace);
+    }
+    return cleaned.length > 6 ? cleaned.substring(0, 6) : cleaned;
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return true;
   }
 }

@@ -1027,9 +1027,9 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                             }
                                             ScaffoldMessenger.of(context).removeCurrentSnackBar();
                                             if (value.isEmpty) {
-                                              warningMessage(context, "Target Trigger Price cannot be empty");
+                                              warningMessage(context, "Target trigger price cannot be empty");
                                             } else if (inputPrice <= 0) {
-                                              warningMessage(context, "Target Trigger Price cannot be 0");
+                                              warningMessage(context, "Target trigger price cannot be 0");
                                             }
                                           },
                                           hintText: "${widget.orderArg.ltp}",
@@ -1449,66 +1449,69 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                         theme: theme.isDarkMode,
                                         fw: 0,
                                       ),
-                                      GestureDetector(
-                                        behavior: HitTestBehavior.translucent,
-                                        onTap: () {
-                                            ScaffoldMessenger.of(context).removeCurrentSnackBar();
-                                          if (isBuy! && widget.scripInfo.seg == "EQT") {
-                                            warningMessage(context, "OCO Order cannot be placed for Buy order");
-                                            return;
-                                          }
-
-                                          setState(() {
-                                            isOco = !isOco;
-                                            orderInput.disableCondGTT(isOco);
-                                            //  orderInput.setGTTPriceTypeOrderIsMarket(isOco);
-                                          });
-                                          if(orderInput.ocoPrcType != "MKT"){
-                                          orderInput.chngOCOPriceType("Limit");
-
-                                          ref.read(ordInputProvider).updateOcoPrcQtyCtrl(
-                                                "${widget.orderArg.ltp}",
-                                                widget.orderArg.lotSize!.replaceAll("-", ""),
-                                              );
-                                          }
-                                        },
-                                        child: Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                          child: AnimatedContainer(
-                                            duration: const Duration(milliseconds: 250),
-                                            curve: Curves.easeOut,
-                                            width: 40,
-                                            height: 22,
-                                            padding: const EdgeInsets.symmetric(horizontal: 3),
-                                            decoration: BoxDecoration(
-                                              color: (isBuy! && widget.scripInfo.seg == "EQT")
-                                                  ? (theme.isDarkMode ? Colors.grey[800] : Colors.grey[300]) // Disabled state
-                                                  : isOco
-                                                      ? colors.colorBlue.withOpacity(0.25)
-                                                      : (theme.isDarkMode ? Colors.grey[700] : Colors.grey[300]),
-                                              borderRadius: BorderRadius.circular(20),
-                                            ),
-                                            child: AnimatedAlign(
+                                       Semantics(
+                                        identifier: 'GTT OCO button',
+                                        child: GestureDetector(
+                                          behavior: HitTestBehavior.translucent,
+                                          onTap: () {
+                                              ScaffoldMessenger.of(context).removeCurrentSnackBar();
+                                            if (isBuy! && widget.scripInfo.seg == "EQT") {
+                                              warningMessage(context, "OCO Order cannot be placed for Buy order");
+                                              return;
+                                            }
+                                        
+                                            setState(() {
+                                              isOco = !isOco;
+                                              orderInput.disableCondGTT(isOco);
+                                              //  orderInput.setGTTPriceTypeOrderIsMarket(isOco);
+                                            });
+                                            if(orderInput.ocoPrcType != "MKT"){
+                                            orderInput.chngOCOPriceType("Limit");
+                                        
+                                            ref.read(ordInputProvider).updateOcoPrcQtyCtrl(
+                                                  "${widget.orderArg.ltp}",
+                                                  widget.orderArg.lotSize!.replaceAll("-", ""),
+                                                );
+                                            }
+                                          },
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                            child: AnimatedContainer(
                                               duration: const Duration(milliseconds: 250),
                                               curve: Curves.easeOut,
-                                              alignment: isOco ? Alignment.centerRight : Alignment.centerLeft,
-                                              child: Container(
-                                                width: 16,
-                                                height: 16,
-                                                decoration: BoxDecoration(
-                                                  color: (isBuy! && widget.scripInfo.seg == "EQT")
-                                                      ? (theme.isDarkMode ? Colors.grey[600] : Colors.grey[400]) // Disabled knob
-                                                      : isOco
-                                                          ? colors.colorBlue
-                                                          : Colors.grey[500],
-                                                  shape: BoxShape.circle,
-                                                  boxShadow: [
-                                                    BoxShadow(
-                                                      color: Colors.black.withOpacity(0.25),
-                                                      blurRadius: 3,
-                                                      offset: const Offset(0, 1),
-                                                    ),
-                                                  ],
+                                              width: 40,
+                                              height: 22,
+                                              padding: const EdgeInsets.symmetric(horizontal: 3),
+                                              decoration: BoxDecoration(
+                                                color: (isBuy! && widget.scripInfo.seg == "EQT")
+                                                    ? (theme.isDarkMode ? Colors.grey[800] : Colors.grey[300]) // Disabled state
+                                                    : isOco
+                                                        ? colors.colorBlue.withOpacity(0.25)
+                                                        : (theme.isDarkMode ? Colors.grey[700] : Colors.grey[300]),
+                                                borderRadius: BorderRadius.circular(20),
+                                              ),
+                                              child: AnimatedAlign(
+                                                duration: const Duration(milliseconds: 250),
+                                                curve: Curves.easeOut,
+                                                alignment: isOco ? Alignment.centerRight : Alignment.centerLeft,
+                                                child: Container(
+                                                  width: 16,
+                                                  height: 16,
+                                                  decoration: BoxDecoration(
+                                                    color: (isBuy! && widget.scripInfo.seg == "EQT")
+                                                        ? (theme.isDarkMode ? Colors.grey[600] : Colors.grey[400]) // Disabled knob
+                                                        : isOco
+                                                            ? colors.colorBlue
+                                                            : Colors.grey[500],
+                                                    shape: BoxShape.circle,
+                                                    boxShadow: [
+                                                      BoxShadow(
+                                                        color: Colors.black.withOpacity(0.25),
+                                                        blurRadius: 3,
+                                                        offset: const Offset(0, 1),
+                                                      ),
+                                                    ],
+                                                  ),
                                                 ),
                                               ),
                                             ),
@@ -1574,9 +1577,9 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                               }
                                               ScaffoldMessenger.of(context).removeCurrentSnackBar();
                                               if (value.isEmpty) {
-                                                warningMessage(context, "Stoploss Trigger Price cannot be empty");
+                                                warningMessage(context, "Stoploss trigger price cannot be empty");
                                               } else if (inputPrice <= 0) {
-                                                warningMessage(context, "Stoploss Trigger Price cannot be 0");
+                                                warningMessage(context, "Stoploss trigger price cannot be 0");
                                               }
                                             },
                                             hintText: "${widget.orderArg.ltp}",
@@ -1757,7 +1760,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                 onChanged: (value) {
                                                   ScaffoldMessenger.of(context).removeCurrentSnackBar();
                                                   if (value.isEmpty || value == "0") {
-                                                    warningMessage(context, "OCO Quantity cannot be ${value == "0" ? '0' : 'empty'}");
+                                                    warningMessage(context, "OCO quantity cannot be ${value == "0" ? '0' : 'empty'}");
                                                   } else {
                                                     String newValue = value.replaceAll(RegExp(r'[^0-9]'), '');
 
@@ -1817,9 +1820,9 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                   }
                                                     ScaffoldMessenger.of(context).removeCurrentSnackBar();
                                                     if (value.isEmpty) {
-                                                warningMessage(context, "OCO Price cannot be empty");
+                                                warningMessage(context, "OCO price cannot be empty");
                                               } else if (inputPrice <= 0) {
-                                                warningMessage(context, "OCO Price cannot be 0");
+                                                warningMessage(context, "OCO price cannot be 0");
                                               } else {
                                                 setState(() {
                                                   ordPrice = value;
@@ -3722,18 +3725,18 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                               warningMessage(
                                                                   context,
                                                                   val1 <= ltp
-                                                                      ? "Target Trigger Price cannot be Less than LTP"
+                                                                      ? "Target trigger price cannot be less than LTP"
                                                                       : val2 >= ltp
-                                                                          ? "Stoploss Trigger Price cannot be Greater than LTP"
-                                                                          : "Target Trigger Price cannot be equal to LTP");
+                                                                          ? "Stoploss trigger price cannot be greater than LTP"
+                                                                          : "Target trigger price cannot be equal to LTP");
                                                             }
                                                             // }
                                                           } else {
                                                           if(orderInput.val1Ctrl.text.isEmpty){
-                                                           warningMessage(context, "Target Trigger price cannot be empty");
+                                                           warningMessage(context, "Target trigger price cannot be empty");
                                                          }
                                                          else if(double.parse(orderInput.val1Ctrl.text) <= 0){
-                                                           warningMessage(context, "Target Trigger price cannot be 0");
+                                                           warningMessage(context, "Target trigger price cannot be 0");
                                                          }
                                                          else if(orderInput.qtyCtrl.text.isEmpty){
                                                            warningMessage(context, "Quantity cannot be empty");
@@ -3750,10 +3753,10 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                             warningMessage(context, "Price cannot be 0");
                                                           }
                                                          else if(orderInput.val2Ctrl.text.isEmpty){
-                                                           warningMessage(context, "Stoploss Trigger price cannot be empty");
+                                                           warningMessage(context, "Stoploss trigger price cannot be empty");
                                                          }
                                                          else if(double.parse(orderInput.val2Ctrl.text) <= 0){
-                                                           warningMessage(context, "Stoploss Trigger price cannot be 0");
+                                                           warningMessage(context, "Stoploss trigger price cannot be 0");
                                                          }
                                                          else if(orderInput.ocoQtyCtrl.text.isEmpty){
                                                             warningMessage(context, "OCO quantity cannot be empty");
@@ -3816,15 +3819,15 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                               prepareToPlaceGttOrder(orderInput);
                                                             } else {
                                                               warningMessage(
-                                                                  context, "Target Trigger Price cannot be equal to LTP");
+                                                                  context, "Target trigger price cannot be equal to LTP");
                                                             }
                                                             // }
                                                           } else {
                                                           if(orderInput.val1Ctrl.text.isEmpty){
-                                                           warningMessage(context, "Target Trigger price cannot be empty");
+                                                           warningMessage(context, "Target trigger price cannot be empty");
                                                          }
                                                          else if(double.parse(orderInput.val1Ctrl.text) <= 0){
-                                                           warningMessage(context, "Target Trigger price cannot be 0");
+                                                           warningMessage(context, "Target trigger price cannot be 0");
                                                          }
                                                          else if(orderInput.qtyCtrl.text.isEmpty){
                                                            warningMessage(context, "Quantity cannot be empty");
@@ -3839,10 +3842,10 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                            warningMessage(context, "Price cannot be 0");
                                                          }
                                                          else if(orderInput.val2Ctrl.text.isEmpty){
-                                                           warningMessage(context, "Stoploss Trigger price cannot be empty");
+                                                           warningMessage(context, "Stoploss trigger price cannot be empty");
                                                          }
                                                          else if(double.parse(orderInput.val2Ctrl.text) <= 0){
-                                                           warningMessage(context, "Stoploss Trigger price cannot be 0");
+                                                           warningMessage(context, "Stoploss trigger price cannot be 0");
                                                          }
                                                          else if(orderInput.ocoQtyCtrl.text.isEmpty){
                                                             warningMessage(context, "OCO quantity cannot be empty");

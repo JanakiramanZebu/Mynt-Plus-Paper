@@ -452,7 +452,7 @@ class _mforderdetscreen extends State<mforderdetscreen>
             theme),
 
         rowOfInfoData("Amount",
-            "${mfdata.mforderdet?.data?[0].orderVal ?? "0.00"}", theme),
+            "${double.tryParse(mfdata.mforderdet?.data?[0].orderVal?.toString() ?? '0')?.toStringAsFixed(2) ?? '0.00'}", theme),
 
         // rowOfInfoData(
         //     "Units", "${mfdata.mforderdet?.data?[0].units ?? "0.00"}", theme),

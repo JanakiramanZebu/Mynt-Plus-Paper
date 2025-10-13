@@ -292,7 +292,7 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                 if (value.isEmpty ||
                                                     inputPrice <= 0) {
                                                   warningMessage(context,
-                                                      "Trigger Price can not be ${inputPrice <= 0 ? 'zero' : 'empty'}");
+                                                      "Trigger price can not be ${inputPrice <= 0 ? 'zero' : 'empty'}");
                                                 }
                                               },
                                               hintText:
@@ -941,7 +941,7 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                   if (value.isEmpty ||
                                                       inputPrice <= 0) {
                                                     warningMessage(context,
-                                                        "Trigger Price can not be ${inputPrice <= 0 ? 'zero' : 'empty'}");
+                                                        "Trigger price can not be ${inputPrice <= 0 ? 'zero' : 'empty'}");
                                                   }
                                                 },
                                                 hintText:
@@ -1490,10 +1490,10 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                         warningMessage(
                                                             context,
                                                             val1 <= ltp
-                                                                ? "Target Trigger Price cannot be Less than LTP"
+                                                                ? "Target trigger price cannot be less than LTP"
                                                                 : val2 >= ltp
-                                                                    ? "Stoploss Trigger Price cannot be Greater than LTP"
-                                                                    : "Trigger Price cannot be equal to LTP");
+                                                                    ? "Stoploss trigger price cannot be greater than LTP"
+                                                                    : "Trigger price cannot be equal to LTP");
                                                       }
                                                       // }
                                                     } else {
@@ -1552,7 +1552,7 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                         //   prepareToModifyGttOrder(orderInput);
                                                       } else {
                                                         warningMessage(context,
-                                                            "Trigger Price can not be equal to LTP");
+                                                            "Trigger price can not be equal to LTP");
                                                       }
                                                       // prepareToModifyGttOrder(orderInput);
                                                       // }
