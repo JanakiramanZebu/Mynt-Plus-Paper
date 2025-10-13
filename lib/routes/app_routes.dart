@@ -2,9 +2,12 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/models/order_book_model/place_order_model.dart';
+import 'package:mynt_plus/models/profile_model/algo_strategy_model.dart';
 import 'package:mynt_plus/screens/algo/algo_create.dart';
 import 'package:mynt_plus/screens/bonds/bonds_common_search_screen.dart';
 import 'package:mynt_plus/screens/algo/algo_strategytlist.dart';
+import 'package:mynt_plus/screens/algo/algo_strategy_show_list.dart';
+import 'package:mynt_plus/screens/algo/create_algo_strategy_screen.dart';
 import 'package:mynt_plus/screens/market_watch/option_chain/collection_basket/basket_backtest_analysisi.dart';
 import 'package:mynt_plus/screens/market_watch/option_chain/collection_basket/benchmark_backtest.dart';
 import 'package:mynt_plus/screens/market_watch/option_chain/collection_basket/basketlist_dashboard.dart';
@@ -20,6 +23,7 @@ import 'package:mynt_plus/screens/mutual_fund/redeem_new_bottomsheet.dart';
 import 'package:mynt_plus/screens/order_screen/order_confirmation_screen.dart';
 import 'package:mynt_plus/screens/profile_screen/app_webview/ipo_webview.dart';
 import '../main.dart'; // Import for FirebaseHelper
+import '../models/profile_model/algo_strategy_model.dart';
 import '../screens/authentication/login/login_banner_screen.dart';
 import '../screens/authentication/login/login_screen.dart';
 import '../screens/authentication/password/change_pass.dart';
@@ -262,6 +266,28 @@ class AppRoutes {
       case Routes.algoList:
         return _createRoute(
           pageBuilder: (_, __, ___) => const AlgoStrategyList(),
+          beginOffset: const Offset(-1.0, 0.0),
+        );
+
+      case Routes.algoStrategyShowList:
+        return _createRoute(
+          pageBuilder: (_, __, ___) => const AlgoStrategyShowList(),
+          beginOffset: const Offset(-1.0, 0.0),
+        );
+
+      case Routes.createAlgoStrategy:
+        return _createRoute(
+          pageBuilder: (_, __, ___) {
+            // Get arguments from the route context
+            AlgoStrategyModel? strategyToEdit;
+            if (args is AlgoStrategyModel) {
+              strategyToEdit = args;
+            } else if (args != null) {
+              // If args is not null but not AlgoStrategyModel, try to extract it
+              print("Warning: Unexpected argument type: ${args.runtimeType}");
+            }
+            return CreateAlgoStrategyScreen(strategyToEdit: strategyToEdit);
+          },
           beginOffset: const Offset(-1.0, 0.0),
         );
 

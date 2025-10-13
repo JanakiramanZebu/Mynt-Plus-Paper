@@ -1750,9 +1750,8 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
               ),
 
 
-              // Timeframe Toggle with Returns - Using technical data instead of backend API
               SizedBox(
-                height: 50, // Increased height to accommodate two lines
+                height: 50, 
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   itemBuilder: (context, index) {
@@ -1761,10 +1760,8 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                     final isSelected =
                         marketWatch.selectedTimeframe == timeframe;
                     
-                    // Get return percentage from technical data (returnsGridview) instead of fundamental API
                     final returnPercentage = _getTechnicalReturnPercentage(marketWatch.returnsGridview, timeframe);
                     
-                    // Determine color based on positive/negative return
                     final percentValue = double.tryParse(returnPercentage.replaceAll(RegExp(r'[+%]'), '')) ?? 0.0;
                     final isPositive = percentValue >= 0;
               
@@ -1777,8 +1774,6 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                         _hideTooltipTimer?.cancel();
                         FocusScope.of(context).unfocus();
               
-                        // All timeframes now use local filtering since we have 5Y data
-                        // No need for API calls - just filter existing data
                         print("Filtering data for timeframe: $timeframe");
                         if (marketWatch.eodChartData.isNotEmpty) {
                           _convertApiDataToPriceData(marketWatch.eodChartData, timeframe);
@@ -1836,11 +1831,6 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
               ),
             ],
           ),
-          // const SizedBox(height: 16),
-
-          // Chart Container
-
-          // Event Legend
           if (eventData.isNotEmpty) ...[
             // const SizedBox(height: 16),
             _buildEventLegend(theme),
@@ -1859,19 +1849,19 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
     final maxPrice = priceData.map((e) => e.price).reduce(math.max);
 
     return Container(
-      height: 400, // Fixed height
+      height: 400, 
       padding: const EdgeInsets.only(
-          top: 16, bottom: 16, left: 8, right: 8), // Remove left/right padding
+          top: 16, bottom: 16, left: 8, right: 8), 
       child: Stack(
         children: [
           AnimatedSwitcher(
-            duration: Duration.zero, // Disable animation transitions
+            duration: Duration.zero, 
             child: LineChart(
               key: ValueKey(marketWatch
-                  .selectedTimeframe), // Force rebuild when timeframe changes
+                  .selectedTimeframe), 
               LineChartData(
                 gridData: const FlGridData(
-                  show: false, // Remove all grid lines
+                  show: false, 
                   drawVerticalLine: false,
                   drawHorizontalLine: false,
                 ),
@@ -1883,7 +1873,7 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                       showTitles: true,
                       reservedSize: 44,
                       interval: (priceData.length - 1) /
-                          4, // Show 5 labels evenly distributed
+                          4, 
                       getTitlesWidget: (value, meta) {
                         if (value.toInt() >= 0 &&
                             value.toInt() < priceData.length) {
@@ -1905,7 +1895,7 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
 
                           switch (marketWatch.selectedTimeframe) {
                             case "1Y":
-                              // For yearly view, show month and year
+                              
                               final monthName = months[date.month - 1];
                               final year = date.year.toString().substring(2);
                               return TextWidget.captionText(
@@ -2086,8 +2076,6 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                               }
                             });
                           } else {
-                            // For continuous touch events (pan, long press move), cancel existing timer
-                            // but don't set a new one to avoid interference
                             _hideTooltipTimer?.cancel();
                           }
                         }
@@ -2107,9 +2095,7 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                 ),
               ),
             ),
-          ), // Close AnimatedSwitcher
-
-          // Custom tooltip positioned in top left corner
+          ), 
           if (marketWatch.showTooltip && touchedSpot != null)
             Positioned(
               top: 8,
@@ -2242,7 +2228,6 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
     );
   }
 
-  // Helper method to get return percentage for a specific timeframe from technical data
   String _getTechnicalReturnPercentage(List returnsGridview, String timeframe) {
     String durationKey = '';
     
@@ -2310,24 +2295,7 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
     return '${isPositive ? '+' : ''}$percent%';
   }
 
-  // Build selected timeframe return display
-  Widget _buildSelectedTimeframeReturn(
-      List<Returns> returnsData, String selectedTimeframe, ThemesProvider theme) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: [
-        // TextWidget.subText(
-        //   text: 'Returns',
-        //   theme: theme.isDarkMode,
-        //   fw: 1,
-        //   color: theme.isDarkMode
-        //       ? colors.textPrimaryDark
-        //       : colors.textPrimaryLight,
-        // ),
-     
-      ],
-    );
-  }
+ 
 
   // Build returns grid display (keeping for future use)
   Widget _buildReturnsGrid(List<Returns> returnsData, ThemesProvider theme) {
