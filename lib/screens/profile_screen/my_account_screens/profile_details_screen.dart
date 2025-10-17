@@ -9,7 +9,6 @@ import 'package:mynt_plus/provider/profile_all_details_provider.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/res/global_state_text.dart';
 // import 'package:mynt_plus/routes/route_names.dart';
-import 'package:mynt_plus/sharedWidget/functions.dart';
 import '../../../res/res.dart';
 
 // Avoid direct Platform checks for web builds
@@ -926,14 +925,16 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // SizedBox(height: 40),
-              const Text(
-                ' Email change request ',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              TextWidget.titleText(
+                text: ' Email change request ',
+                theme: theme.isDarkMode,
+                fw: 2,
               ),
               SizedBox(height: 20),
-              Text("Old email id",
-                  style: textStyle(
-                      const Color.fromARGB(255, 0, 0, 0), 14, FontWeight.w600)),
+              TextWidget.subText(
+                  text: "Old email id",
+                  theme: theme.isDarkMode,
+                  fw: 1),
               TextFormField(
                 initialValue:
                     profileprovider.clientAllDetails.clientData?.cLIENTIDMAIL ??
@@ -944,9 +945,10 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                 ),
               ),
               SizedBox(height: 20),
-              Text("New email id *",
-                  style: textStyle(
-                      const Color.fromARGB(255, 0, 0, 0), 16, FontWeight.w600)),
+              TextWidget.titleText(
+                  text: "New email id *",
+                  theme: theme.isDarkMode,
+                  fw: 1),
               TextFormField(
                 controller: profileprovider.newEmailController,
                 //  autovalidate: true,
@@ -971,13 +973,10 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
               ),
               SizedBox(height: 20),
               if (profileprovider.responseval == "success send mail") ...[
-                Text(
-                  "Enter a 4-digit Otp *",
-                  style: textStyle(
-                    const Color.fromARGB(255, 0, 0, 0),
-                    16,
-                    FontWeight.w600,
-                  ),
+                TextWidget.titleText(
+                  text: "Enter a 4-digit Otp *",
+                  theme: theme.isDarkMode,
+                  fw: 1,
                 ),
                 TextFormField(
                   controller: profileprovider.newEmailOTPController,
@@ -1110,15 +1109,17 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
             //       fontWeight: FontWeight.bold),
             // ),
             const SizedBox(height: 40),
-            const Text(
-              ' Mobile change request ',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            TextWidget.headText(
+              text: ' Mobile change request ',
+              theme: theme.isDarkMode,
+              fw: 2,
             ),
             SizedBox(height: 30),
 
-            Text("Present Number",
-                style: textStyle(
-                    const Color.fromARGB(255, 0, 0, 0), 17, FontWeight.w600)),
+            TextWidget.titleText(
+                text: "Present Number",
+                theme: theme.isDarkMode,
+                fw: 1),
             TextFormField(
               initialValue:
                   profileprovider.clientAllDetails.clientData?.mOBILENO ?? "",
@@ -1128,9 +1129,10 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
               ),
             ),
             SizedBox(height: 20),
-            Text("New Mobile number  *",
-                style: textStyle(
-                    const Color.fromARGB(255, 0, 0, 0), 17, FontWeight.w600)),
+            TextWidget.titleText(
+                text: "New Mobile number  *",
+                theme: theme.isDarkMode,
+                fw: 1),
             TextFormField(
               controller: profileprovider.newMobController,
               onChanged: (value) {
@@ -1144,13 +1146,10 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
             ),
             const SizedBox(height: 20),
             if (profileprovider.mobileotp == "otp sent") ...[
-              Text(
-                "Enter a 4-digit Otp *",
-                style: textStyle(
-                  const Color.fromARGB(255, 0, 0, 0),
-                  15,
-                  FontWeight.w600,
-                ),
+              TextWidget.subText(
+                text: "Enter a 4-digit Otp *",
+                theme: theme.isDarkMode,
+                fw: 1,
               ),
               TextFormField(
                 controller: profileprovider.newMobOTPController,
@@ -1267,14 +1266,16 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SizedBox(height: 40),
-            const Text(
-              ' Address change request ',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            TextWidget.headText(
+              text: ' Address change request ',
+              theme: theme.isDarkMode,
+              fw: 2,
             ),
             SizedBox(height: 30),
-            Text("Old Address",
-                style: textStyle(
-                    const Color.fromARGB(255, 0, 0, 0), 15, FontWeight.w600)),
+            TextWidget.subText(
+                text: "Old Address",
+                theme: theme.isDarkMode,
+                fw: 1),
             SizedBox(height: 10),
             Text(
               "${profileprovider.clientAllDetails.clientData?.cLRESIADD1 ?? ''}, ${profileprovider.clientAllDetails.clientData?.cLRESIADD2 ?? ''}, ${profileprovider.clientAllDetails.clientData?.cLRESIADD3 ?? ''}",
@@ -1288,13 +1289,10 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
             ),
             const Divider(color: Color(0xffDDDDDD)),
             SizedBox(height: 20),
-            Text(
-              'New Address *',
-              style: textStyle(
-                theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                16,
-                FontWeight.w600,
-              ),
+            TextWidget.titleText(
+              text: 'New Address *',
+              theme: theme.isDarkMode,
+              fw: 1,
             ),
             TextFormField(
               controller: profileprovider.newAddressController,
@@ -1316,13 +1314,10 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                     // Added a Column to wrap both Text and TextFormField
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Pincode *',
-                        style: textStyle(
-                          const Color.fromARGB(255, 0, 0, 0),
-                          16,
-                          FontWeight.w600,
-                        ), // Text color
+                      TextWidget.titleText(
+                        text: 'Pincode *',
+                        theme: theme.isDarkMode,
+                        fw: 1,
                       ),
                       TextFormField(
                         controller: profileprovider.newAddressPincodeController,
@@ -1349,13 +1344,10 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                     // Added a Column to wrap both Text and TextFormField
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'District *',
-                        style: textStyle(
-                          const Color.fromARGB(255, 0, 0, 0),
-                          16,
-                          FontWeight.w600,
-                        ), // Text color
+                      TextWidget.titleText(
+                        text: 'District *',
+                        theme: theme.isDarkMode,
+                        fw: 1,
                       ),
                       TextFormField(
                         controller:
@@ -1387,13 +1379,10 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                     // Added a Column to wrap both Text and TextFormField
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'State * ',
-                        style: textStyle(
-                          const Color.fromARGB(255, 0, 0, 0),
-                          16,
-                          FontWeight.w600,
-                        ), // Text color
+                      TextWidget.titleText(
+                        text: 'State * ',
+                        theme: theme.isDarkMode,
+                        fw: 1,
                       ),
                       TextFormField(
                         controller: profileprovider.newAddressStateController,
@@ -1420,13 +1409,10 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                     // Added a Column to wrap both Text and TextFormField
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Country *',
-                        style: textStyle(
-                          const Color.fromARGB(255, 0, 0, 0),
-                          16,
-                          FontWeight.w600,
-                        ), // Text color
+                      TextWidget.titleText(
+                        text: 'Country *',
+                        theme: theme.isDarkMode,
+                        fw: 1,
                       ),
                       TextFormField(
                         controller: profileprovider.newAddressCountryController,
@@ -1449,13 +1435,10 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
               ],
             ),
             SizedBox(height: 20),
-            Text(
-              "Proof Type *",
-              style: textStyle(
-                theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                16,
-                FontWeight.w600,
-              ),
+            TextWidget.titleText(
+              text: "Proof Type *",
+              theme: theme.isDarkMode,
+              fw: 1,
             ),
             TextFormField(
               controller: profileprovider.newAddressProofTypeController,
@@ -2055,12 +2038,13 @@ class DematDetailsCard extends StatelessWidget {
                       child: Text("DDPI",
                           overflow: TextOverflow.ellipsis,
                           // maxLines: 1,
-                          style: textStyle(
-                              theme.isDarkMode
+                          style: TextWidget.textStyle(
+                              fontSize: 12,
+                              theme: theme.isDarkMode,
+                              fw: 1,
+                              color: theme.isDarkMode
                                   ? const Color(0xffFFFFFF)
-                                  : const Color(0xff666666),
-                              12,
-                              FontWeight.w600)),
+                                  : const Color(0xff666666))),
                     ),
                     Container(
                       margin: const EdgeInsets.symmetric(horizontal: 4),
@@ -2079,12 +2063,13 @@ class DematDetailsCard extends StatelessWidget {
                       child: Text("POA",
                           overflow: TextOverflow.ellipsis,
                           // maxLines: 1,
-                          style: textStyle(
-                              theme.isDarkMode
+                          style: TextWidget.textStyle(
+                              fontSize: 12,
+                              theme: theme.isDarkMode,
+                              fw: 1,
+                              color: theme.isDarkMode
                                   ? const Color(0xffFFFFFF)
-                                  : const Color(0xff666666),
-                              12,
-                              FontWeight.w600)),
+                                  : const Color(0xff666666))),
                     ),
                   ],
                 ),
@@ -2446,12 +2431,13 @@ class CustomTFExchBadge extends ConsumerWidget {
                       : segment.cOMPANYCODE!.split("_")[0],
                   overflow: TextOverflow.ellipsis,
                   // maxLines: 1,
-                  style: textStyle(
-                      theme.isDarkMode
+                  style: TextWidget.textStyle(
+                      fontSize: 12,
+                      theme: theme.isDarkMode,
+                      fw: 1,
+                      color: theme.isDarkMode
                           ? const Color(0xffFFFFFF)
-                          : const Color(0xff666666),
-                      12,
-                      FontWeight.w600)),
+                          : const Color(0xff666666))),
             );
           }).toList()),
         ],
@@ -2515,12 +2501,13 @@ class MTFSection extends ConsumerWidget {
                       child: Text("DDPI",
                           overflow: TextOverflow.ellipsis,
                           // maxLines: 1,
-                          style: textStyle(
-                              theme.isDarkMode
+                          style: TextWidget.textStyle(
+                              fontSize: 12,
+                              theme: theme.isDarkMode,
+                              fw: 1,
+                              color: theme.isDarkMode
                                   ? const Color(0xffFFFFFF)
-                                  : const Color(0xff666666),
-                              12,
-                              FontWeight.w600)),
+                                  : const Color(0xff666666))),
                     ),
                     Container(
                       margin: const EdgeInsets.symmetric(horizontal: 4),
@@ -2539,12 +2526,13 @@ class MTFSection extends ConsumerWidget {
                       child: Text("POA",
                           overflow: TextOverflow.ellipsis,
                           // maxLines: 1,
-                          style: textStyle(
-                              theme.isDarkMode
+                          style: TextWidget.textStyle(
+                              fontSize: 12,
+                              theme: theme.isDarkMode,
+                              fw: 1,
+                              color: theme.isDarkMode
                                   ? const Color(0xffFFFFFF)
-                                  : const Color(0xff666666),
-                              12,
-                              FontWeight.w600)),
+                                  : const Color(0xff666666))),
                     ),
                   ],
                 ),

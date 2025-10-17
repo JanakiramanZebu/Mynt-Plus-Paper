@@ -18,6 +18,6 @@ class CustBadge extends StatelessWidget {
                               child: Text(badgeName,
                                   overflow: TextOverflow.ellipsis,
                                   style: textStyle(const Color(0xff666666), 10,
-                                      FontWeight.w500)));
+                                      0)));
   }
 }

@@ -2872,7 +2872,7 @@ class MFProvider extends DefaultChangeNotifier {
                   child: Text(
                       "${item.sIPFREQUENCY![0]}${item.sIPFREQUENCY!.substring(1).toLowerCase()}",
                       style: textStyle(
-                          const Color(0xff000000), 13, FontWeight.w500)))),
+                          const Color(0xff000000), 13, 0)))),
           if (item != _mfSIPModel!.data!.last)
             const DropdownMenuItem<String>(enabled: false, child: Divider())
         ]);
@@ -2908,7 +2908,7 @@ class MFProvider extends DefaultChangeNotifier {
                 padding: const EdgeInsets.symmetric(horizontal: 10.0),
                 child: Text(item.toString(),
                     style: textStyle(
-                        const Color(0xff000000), 13, FontWeight.w500)))),
+                        const Color(0xff000000), 13, 0)))),
         if (item != _dateList.last)
           const DropdownMenuItem<String>(enabled: false, child: Divider())
       ]);
@@ -2940,7 +2940,7 @@ class MFProvider extends DefaultChangeNotifier {
                 padding: const EdgeInsets.symmetric(horizontal: 10.0),
                 child: Text("${item.reasonName!}",
                     style: textStyle(
-                        const Color(0xff000000), 13, FontWeight.w500)))),
+                        const Color(0xff000000), 13, 0)))),
         if (item != _xsipOrderCancleResone!.data!.last)
           const DropdownMenuItem<String>(enabled: false, child: Divider())
       ]);
@@ -3043,7 +3043,7 @@ class MFProvider extends DefaultChangeNotifier {
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: textStyle(colors.colorBlack, 14,
-                                        FontWeight.w500)),
+                                        0)),
                                 const SizedBox(
                                   width: 10,
                                 ),
@@ -3057,13 +3057,13 @@ class MFProvider extends DefaultChangeNotifier {
                             const SizedBox(height: 2),
                             Text("Reg date: ${item.regnDate}",
                                 style: textStyle(
-                                    colors.colorGrey, 12, FontWeight.w500))
+                                    colors.colorGrey, 12, 0))
                           ]),
                       Text("${double.parse(item.amount!).ceil()}",
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style:
-                              textStyle(colors.colorBlack, 14, FontWeight.w500))
+                              textStyle(colors.colorBlack, 14, 0))
                     ]))),
         if (item != _mandateData!.last)
           const DropdownMenuItem<String>(enabled: false, child: Divider())
@@ -3116,7 +3116,7 @@ class MFProvider extends DefaultChangeNotifier {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style:
-                            textStyle(colors.colorBlack, 14, FontWeight.w500)),
+                            textStyle(colors.colorBlack, 14, 0)),
                     const SizedBox(height: 2),
                     // Text("*******${item.bankAcNo!.substring(8)}",
                     //     style:
@@ -3223,7 +3223,7 @@ class MFProvider extends DefaultChangeNotifier {
                   child: Text(
                     item.toString(),
                     style:
-                        textStyle(const Color(0xff000000), 13, FontWeight.w500),
+                        textStyle(const Color(0xff000000), 13, 0),
                   ))),
           //If it's last item, we will not add Divider after it.
           if (item != _paymentMethod.last)

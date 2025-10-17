@@ -3,12 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart';
 import 'package:mynt_plus/models/mf_model/mutual_fundmodel.dart';
-import 'package:mynt_plus/sharedWidget/custom_exch_badge.dart';
 import '../../models/mf_model/mf_lumpsum_order.dart';
 import '../../provider/fund_provider.dart';
 import '../../provider/mf_provider.dart';
@@ -17,11 +12,7 @@ import '../../provider/transcation_provider.dart';
 import '../../res/global_state_text.dart';
 import '../../res/res.dart';
 import '../../sharedWidget/cust_text_formfield.dart';
-import '../../sharedWidget/custom_back_btn.dart';
-import '../../sharedWidget/functions.dart';
-import '../../sharedWidget/loader_ui.dart';
 import '../../sharedWidget/snack_bar.dart';
-import '../mutual_fund_old/create_mandate_daialogue.dart';
 import 'mf_order_bottomsheet.dart';
 
 // Utility function to get the appropriate suffix for date numbers
@@ -813,9 +804,11 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                             ],
                           ] else ...[
                             if (mfOrder.installmentAmtError != null) ...[
-                              Text("${mfOrder.installmentAmtError}",
-                                  style: textStyle(
-                                      colors.kColorRedText, 10, FontWeight.w500)),
+                              TextWidget.captionText(
+                                  text: "${mfOrder.installmentAmtError}",
+                                  theme: theme.isDarkMode,
+                                  fw: 0,
+                                  color: colors.kColorRedText),
                               const SizedBox(height: 6)
                             ],
                           ],
@@ -1038,13 +1031,10 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                           if (mfOrder.isInitalPay &&
                               mfOrder.mfOrderTpye != "One-time") ...[
                             const SizedBox(height: 9),
-                            Text("Payment method",
-                                style: textStyle(
-                                    theme.isDarkMode
-                                        ? colors.colorWhite
-                                        : colors.colorBlack,
-                                    16,
-                                    FontWeight.w600)),
+                            TextWidget.titleText(
+                                text: "Payment method",
+                                theme: theme.isDarkMode,
+                                fw: 1),
                             const SizedBox(height: 14),
                             DropdownButtonHideUnderline(
                                 child: DropdownButton2(
@@ -1067,24 +1057,26 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                                       offset: const Offset(0, 8),
                                     ),
                                     isExpanded: true,
-                                    style: textStyle(const Color(0XFF000000), 13,
-                                        FontWeight.w500),
-                                    hint: Text(mfOrder.paymentName,
-                                        style: textStyle(const Color(0XFF000000),
-                                            13, FontWeight.w500)),
+                                    style: TextWidget.textStyle(
+                                        fontSize: 13,
+                                        theme: theme.isDarkMode,
+                                        fw: 0,
+                                        color: const Color(0XFF000000)),
+                                    hint: TextWidget.subText(
+                                        text: mfOrder.paymentName,
+                                        theme: theme.isDarkMode,
+                                        fw: 0,
+                                        color: const Color(0XFF000000)),
                                     items: mfOrder.addDividers(),
                                     value: mfOrder.paymentName,
                                     onChanged: (value) async {
                                       mfOrder.chngPayName("$value");
                                     })),
                             const SizedBox(height: 17),
-                            Text("Bank account",
-                                style: textStyle(
-                                    theme.isDarkMode
-                                        ? colors.colorWhite
-                                        : colors.colorBlack,
-                                    16,
-                                    FontWeight.w600)),
+                            TextWidget.titleText(
+                                text: "Bank account",
+                                theme: theme.isDarkMode,
+                                fw: 1),
                             const SizedBox(height: 14),
                             DropdownButtonHideUnderline(
                                 child: DropdownButton2(
@@ -1106,11 +1098,16 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                                                 BorderRadius.circular(4)),
                                         offset: const Offset(0, 1)),
                                     isExpanded: true,
-                                    style: textStyle(const Color(0XFF000000), 13,
-                                        FontWeight.w500),
-                                    hint: Text(mfOrder.accNum,
-                                        style: textStyle(const Color(0XFF000000),
-                                            13, FontWeight.w500)),
+                                    style: TextWidget.textStyle(
+                                        fontSize: 13,
+                                        theme: theme.isDarkMode,
+                                        fw: 0,
+                                        color: const Color(0XFF000000)),
+                                    hint: TextWidget.subText(
+                                        text: mfOrder.accNum,
+                                        theme: theme.isDarkMode,
+                                        fw: 0,
+                                        color: const Color(0XFF000000)),
                                     items: mfOrder.addBankDividers(),
                                     value: mfOrder.accNum,
                                     onChanged: (value) async {
@@ -1119,13 +1116,10 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                             const SizedBox(height: 8),
                             if (mfOrder.paymentName == "UPI") ...[
                               const SizedBox(height: 12),
-                              Text("UPI ID (Virtual payment address)",
-                                  style: textStyle(
-                                      theme.isDarkMode
-                                          ? colors.colorWhite
-                                          : colors.colorBlack,
-                                      16,
-                                      FontWeight.w600)),
+                              TextWidget.titleText(
+                                  text: "UPI ID (Virtual payment address)",
+                                  theme: theme.isDarkMode,
+                                  fw: 1),
                               const SizedBox(height: 8),
                               Container(
                                   margin: const EdgeInsets.symmetric(vertical: 8),
@@ -1136,24 +1130,28 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                                           ? colors.darkGrey
                                           : const Color(0xffF1F3F8),
                                       hintText: 'exmaple@upi',
-                                      hintStyle: textStyle(
-                                          const Color(0xff666666),
-                                          14,
-                                          FontWeight.w400),
-                                      style: textStyle(
-                                          theme.isDarkMode
+                                      hintStyle: TextWidget.textStyle(
+                                          fontSize: 14,
+                                          theme: theme.isDarkMode,
+                                          fw: 3,
+                                          color: const Color(0xff666666)),
+                                      style: TextWidget.textStyle(
+                                          fontSize: 14,
+                                          theme: theme.isDarkMode,
+                                          fw: 1,
+                                          color: theme.isDarkMode
                                               ? colors.colorWhite
-                                              : colors.colorBlack,
-                                          14,
-                                          FontWeight.w600),
+                                              : colors.colorBlack),
                                       textCtrl: mfOrder.upiId,
                                       onChanged: (value) {
                                         mfOrder.isValidUpiId(widget.mfData,'');
                                       })),
                               if (mfOrder.upiError != null) ...[
-                                Text("${mfOrder.upiError}",
-                                    style: textStyle(colors.kColorRedText, 10,
-                                        FontWeight.w500)),
+                                TextWidget.captionText(
+                                    text: "${mfOrder.upiError}",
+                                    theme: theme.isDarkMode,
+                                    fw: 0,
+                                    color: colors.kColorRedText),
                                 const SizedBox(height: 6)
                               ]
                             ],
@@ -1583,13 +1581,10 @@ void CallUpiNetbanking(BuildContext context, MFProvider mfOrder,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 14),
-            Text(
-              "Payment method",
-              style: textStyle(
-                theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                16,
-                FontWeight.w600,
-              ),
+            TextWidget.titleText(
+              text: "Payment method",
+              theme: theme.isDarkMode,
+              fw: 1,
             ),
             const SizedBox(height: 14),
             DropdownButtonHideUnderline(
@@ -1614,18 +1609,17 @@ void CallUpiNetbanking(BuildContext context, MFProvider mfOrder,
                   customHeights: mfOrder.getCustItemsHeight(),
                 ),
                 isExpanded: true,
-                style: textStyle(
-                  const Color.fromARGB(255, 0, 0, 0),
-                  13,
-                  FontWeight.w500,
+                style: TextWidget.textStyle(
+                  fontSize: 13,
+                  theme: theme.isDarkMode,
+                  fw: 0,
+                  color: const Color.fromARGB(255, 0, 0, 0),
                 ),
-                hint: Text(
-                  mfOrder.paymentName,
-                  style: textStyle(
-                    const Color(0XFF000000),
-                    13,
-                    FontWeight.w500,
-                  ),
+                hint: TextWidget.subText(
+                  text: mfOrder.paymentName,
+                  theme: theme.isDarkMode,
+                  fw: 0,
+                  color: const Color(0XFF000000),
                 ),
                 items:
                     mfOrder.investloader == false ? mfOrder.addDividers() : [],
@@ -1636,13 +1630,10 @@ void CallUpiNetbanking(BuildContext context, MFProvider mfOrder,
               ),
             ),
             const SizedBox(height: 18),
-            Text(
-              "Bank account",
-              style: textStyle(
-                theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                16,
-                FontWeight.w600,
-              ),
+            TextWidget.titleText(
+              text: "Bank account",
+              theme: theme.isDarkMode,
+              fw: 1,
             ),
             const SizedBox(height: 12),
             DropdownButtonHideUnderline(
@@ -1668,22 +1659,21 @@ void CallUpiNetbanking(BuildContext context, MFProvider mfOrder,
                   offset: const Offset(0, 1),
                 ),
                 isExpanded: true,
-                style: textStyle(
-                  theme.isDarkMode
+                style: TextWidget.textStyle(
+                  fontSize: 13,
+                  theme: theme.isDarkMode,
+                  fw: 0,
+                  color: theme.isDarkMode
                       ? colors.colorWhite
                       : const Color(0XFF000000),
-                  13,
-                  FontWeight.w500,
                 ),
-                hint: Text(
-                  mfOrder.accNum,
-                  style: textStyle(
-                    theme.isDarkMode
-                        ? colors.colorWhite
-                        : const Color(0XFF000000),
-                    13,
-                    FontWeight.w500,
-                  ),
+                hint: TextWidget.subText(
+                  text: mfOrder.accNum,
+                  theme: theme.isDarkMode,
+                  fw: 0,
+                  color: theme.isDarkMode
+                      ? colors.colorWhite
+                      : const Color(0XFF000000),
                 ),
                 items: mfOrder.addBankDividers(),
                 value: mfOrder.accNum,
@@ -1697,13 +1687,10 @@ void CallUpiNetbanking(BuildContext context, MFProvider mfOrder,
             // Conditional UPI section
             if (mfOrder.paymentName == "UPI") ...[
               const SizedBox(height: 12),
-              Text(
-                "UPI ID (Virtual payment address)",
-                style: textStyle(
-                  theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                  15,
-                  FontWeight.w600,
-                ),
+              TextWidget.titleText(
+                text: "UPI ID (Virtual payment address)",
+                theme: theme.isDarkMode,
+                fw: 1,
               ),
               const SizedBox(height: 4),
               Container(
@@ -1715,15 +1702,17 @@ void CallUpiNetbanking(BuildContext context, MFProvider mfOrder,
                       ? colors.darkGrey
                       : const Color(0xffF1F3F8),
                   hintText: 'example@upi',
-                  hintStyle: textStyle(
-                    const Color(0xff666666),
-                    14,
-                    FontWeight.w400,
+                  hintStyle: TextWidget.textStyle(
+                    fontSize: 14,
+                    theme: theme.isDarkMode,
+                    fw: 3,
+                    color: const Color(0xff666666),
                   ),
-                  style: textStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    14,
-                    FontWeight.w600,
+                  style: TextWidget.textStyle(
+                    fontSize: 14,
+                    theme: theme.isDarkMode,
+                    fw: 1,
+                    color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
                   ),
                   textCtrl: mfOrder.upiId,
                   onChanged: (value) {
@@ -1734,9 +1723,11 @@ void CallUpiNetbanking(BuildContext context, MFProvider mfOrder,
               if (mfOrder.upiError != null)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 6),
-                  child: Text(
-                    "${mfOrder.upiError}",
-                    style: textStyle(colors.kColorRedText, 10, FontWeight.w500),
+                  child: TextWidget.captionText(
+                    text: "${mfOrder.upiError}",
+                    theme: theme.isDarkMode,
+                    fw: 0,
+                    color: colors.kColorRedText,
                   ),
                 ),
             ],

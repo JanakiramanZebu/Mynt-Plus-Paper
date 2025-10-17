@@ -69,10 +69,11 @@ class MFOverview extends ConsumerWidget {
                   plotAreaBorderWidth: 0,
                   primaryXAxis: CategoryAxis(
                     isVisible: false,
-                    labelStyle: textStyle(
-                      isDarkMode ? colors.colorWhite : colors.colorBlack,
-                      10,
-                      FontWeight.w500,
+                    labelStyle: TextWidget.textStyle(
+                      fontSize: 10,
+                      theme: isDarkMode,
+                      fw: 0,
+                      color: isDarkMode ? colors.colorWhite : colors.colorBlack,
                     ),
                     majorGridLines: const MajorGridLines(width: 0),
                     axisLine: const AxisLine(width: 0),
@@ -275,12 +276,10 @@ class MFOverview extends ConsumerWidget {
                 Center(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 20),
-                    child: Text(
-                      "No returns data available",
-                      style: textStyle(
-                          isDarkMode ? colors.colorWhite : colors.colorBlack,
-                          14,
-                          FontWeight.w500),
+                    child: TextWidget.subText(
+                      text: "No returns data available",
+                      theme: isDarkMode,
+                      fw: 0,
                     ),
                   ),
                 ),
@@ -299,17 +298,16 @@ class MFOverview extends ConsumerWidget {
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                Text(title1,
-                    style: textStyle(
-                        const Color(0xff666666), 10, FontWeight.w400)),
+                TextWidget.captionText(
+                    text: title1,
+                    theme: theme.isDarkMode,
+                    fw: 3,
+                    color: const Color(0xff666666)),
                 const SizedBox(height: 4),
-                Text(value1,
-                    style: textStyle(
-                        theme.isDarkMode
-                            ? colors.colorWhite
-                            : colors.colorBlack,
-                        14,
-                        FontWeight.w600)),
+                TextWidget.subText(
+                    text: value1,
+                    theme: theme.isDarkMode,
+                    fw: 1),
                 const SizedBox(height: 2),
                 Divider(
                     color: theme.isDarkMode
@@ -321,16 +319,16 @@ class MFOverview extends ConsumerWidget {
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                Text(title2,
-                    style: textStyle(
-                        const Color(0xff666666), 10, FontWeight.w400)),
+                TextWidget.captionText(
+                    text: title2,
+                    theme: theme.isDarkMode,
+                    fw: 3,
+                    color: const Color(0xff666666)),
                 const SizedBox(height: 4),
-                Text(
-                  value2,
-                  style: textStyle(
-                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                      14,
-                      FontWeight.w600),
+                TextWidget.subText(
+                  text: value2,
+                  theme: theme.isDarkMode,
+                  fw: 1,
                 ),
                 const SizedBox(height: 2),
                 Divider(
@@ -343,17 +341,16 @@ class MFOverview extends ConsumerWidget {
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                Text(title3,
-                    style: textStyle(
-                        const Color(0xff666666), 10, FontWeight.w400)),
+                TextWidget.captionText(
+                    text: title3,
+                    theme: theme.isDarkMode,
+                    fw: 3,
+                    color: const Color(0xff666666)),
                 const SizedBox(height: 4),
-                Text(value3,
-                    style: textStyle(
-                        theme.isDarkMode
-                            ? colors.colorWhite
-                            : colors.colorBlack,
-                        14,
-                        FontWeight.w600)),
+                TextWidget.subText(
+                    text: value3,
+                    theme: theme.isDarkMode,
+                    fw: 1),
                 const SizedBox(height: 2),
                 Divider(
                     color: theme.isDarkMode

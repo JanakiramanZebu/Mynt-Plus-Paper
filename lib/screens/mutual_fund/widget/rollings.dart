@@ -4,6 +4,7 @@ import '../../../models/mf_model/mutual_fundmodel.dart';
 import '../../../provider/mf_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../res/res.dart';
+import '../../../res/global_state_text.dart';
 import '../../../sharedWidget/functions.dart';
 
 class MFRollingReturns extends ConsumerWidget {
@@ -37,24 +38,19 @@ class MFRollingReturns extends ConsumerWidget {
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
           const SizedBox(height: 20),
-          Text(
-            "Rolling Returns",
-            style: textStyle(
-              isDarkMode ? colors.colorWhite : colors.colorBlack,
-              18,
-              FontWeight.w600
-            )
+          TextWidget.headText(
+            text: "Rolling Returns",
+            theme: isDarkMode,
+            fw: 1,
           ),
           const SizedBox(height: 10),
           
           // When rolling returns data is available, implement here
-          Text(
-            "No rolling returns data available for this fund",
-            style: textStyle(
-              isDarkMode ? colors.colorWhite : const Color(0xff666666),
-              14,
-              FontWeight.w500
-            ),
+          TextWidget.subText(
+            text: "No rolling returns data available for this fund",
+            theme: isDarkMode,
+            fw: 0,
+            color: isDarkMode ? colors.colorWhite : const Color(0xff666666),
           ),
           const SizedBox(height: 20),
         ],

@@ -4,10 +4,10 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import '../../../provider/mf_provider.dart';
 import '../../../provider/thems.dart';
+import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../routes/route_names.dart';
 import '../../../sharedWidget/custom_exch_badge.dart';
-import '../../../sharedWidget/functions.dart';
 
 class MfCommonSearch extends ConsumerWidget {
   const MfCommonSearch({super.key});
@@ -39,11 +39,14 @@ class MfCommonSearch extends ConsumerWidget {
                             ? colors.colorWhite
                             : colors.colorBlack))),
             shadowColor: const Color(0xffECEFF3),
-            title: Text("Mutual Funds Search",
-                style: textStyles.appBarTitleTxt.copyWith(
-                    color: theme.isDarkMode
-                        ? colors.colorWhite
-                        : colors.colorBlack))),
+            title: TextWidget.headText(
+                text: "Mutual Funds Search",
+                theme: theme.isDarkMode,
+                fw: 1,
+                color: theme.isDarkMode
+                    ? colors.colorWhite
+                    : colors.colorBlack),
+        ),
         body: SingleChildScrollView(
           child: Column(
             children: [
@@ -53,19 +56,23 @@ class MfCommonSearch extends ConsumerWidget {
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   child: TextFormField(
                     controller: mfData.mfsearchcontroller,
-                    style: textStyle(
-                        theme.isDarkMode
+                    style: TextWidget.textStyle(
+                        fontSize: 16,
+                        theme: theme.isDarkMode,
+                        fw: 1,
+                        color: theme.isDarkMode
                             ? colors.colorWhite
-                            : colors.colorBlack,
-                        16,
-                        FontWeight.w600),
+                            : colors.colorBlack),
                     decoration: InputDecoration(
                         fillColor: theme.isDarkMode
                             ? colors.darkGrey
                             : const Color(0xffF1F3F8),
                         filled: true,
-                        hintStyle: textStyle(
-                            const Color(0xff69758F), 15, FontWeight.w500),
+                        hintStyle: TextWidget.textStyle(
+                            fontSize: 15,
+                            theme: theme.isDarkMode,
+                            fw: 0,
+                            color: const Color(0xff69758F)),
                         prefixIconColor: const Color(0xff586279),
                         prefixIcon: Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 20.0),
@@ -164,15 +171,15 @@ class MfCommonSearch extends ConsumerWidget {
                                         mainAxisAlignment:
                                             MainAxisAlignment.start,
                                         children: [
-                                      Text(item.schemeName ?? "Unknown Scheme",
+                                      TextWidget.subText(
+                                          text: item.schemeName ?? "Unknown Scheme",
                                           maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: textStyle(
-                                              theme.isDarkMode
-                                                  ? colors.colorWhite
-                                                  : colors.colorBlack,
-                                              14,
-                                              FontWeight.w500)),
+                                          textOverflow: TextOverflow.ellipsis,
+                                          theme: theme.isDarkMode,
+                                          fw: 0,
+                                          color: theme.isDarkMode
+                                              ? colors.colorWhite
+                                              : colors.colorBlack),
                                       const SizedBox(height: 4),
                                       SizedBox(
                                           height: 18,
@@ -273,22 +280,28 @@ class MfCommonSearch extends ConsumerWidget {
       String value2, dynamic theme) {
     return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
       Row(children: [
-        Text(label1,
-            style: textStyle(const Color(0xff999999), 12, FontWeight.w500)),
-        Text(value1,
-            style: textStyle(
-                theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                12,
-                FontWeight.w500))
+        TextWidget.captionText(
+            text: label1,
+            theme: theme.isDarkMode,
+            fw: 0,
+            color: const Color(0xff999999)),
+        TextWidget.captionText(
+            text: value1,
+            theme: theme.isDarkMode,
+            fw: 0,
+            color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack)
       ]),
       Row(children: [
-        Text(label2,
-            style: textStyle(const Color(0xff999999), 12, FontWeight.w500)),
-        Text(value2,
-            style: textStyle(
-                theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                12,
-                FontWeight.w500))
+        TextWidget.captionText(
+            text: label2,
+            theme: theme.isDarkMode,
+            fw: 0,
+            color: const Color(0xff999999)),
+        TextWidget.captionText(
+            text: value2,
+            theme: theme.isDarkMode,
+            fw: 0,
+            color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack)
       ])
     ]);
   }

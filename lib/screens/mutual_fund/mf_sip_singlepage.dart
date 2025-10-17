@@ -2,24 +2,13 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:mynt_plus/screens/mutual_fund/mf_timeline.dart';
 import 'package:mynt_plus/screens/mutual_fund/redeem_new_bottomsheet.dart';
-import 'package:mynt_plus/sharedWidget/functions.dart';
-import 'package:mynt_plus/sharedWidget/ipo_time_line.dart';
-import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 
 import '../../provider/mf_provider.dart';
 import '../../provider/thems.dart';
 import '../../res/global_state_text.dart';
 import '../../res/res.dart';
-import '../../sharedWidget/custom_exch_badge.dart';
-// import '../../sharedWidget/loader_ui.dart';
 import '../../sharedWidget/loader_ui.dart';
-import '../mutual_fund_old/cancle_xsip_resone.dart';
-// import '../mutual_fund_old/mf_order_filter_sheet.dart';
-import '../portfolio_screens/mfHoldings/mf_holding_screen.dart';
-import '../mutual_fund/mf_cancel_alert.dart';
 
 class MFSipSinglePageScreen extends StatefulWidget {
   const MFSipSinglePageScreen({super.key});
@@ -72,13 +61,12 @@ class _MFSipSinglePageScreen extends State<MFSipSinglePageScreen>
             backgroundColor:
                 theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
             shadowColor: const Color(0xffECEFF3),
-            title: Text("Holding details",
-                style: textStyles.appBarTitleTxt.copyWith(
-                  fontSize: 17,
-                  fontWeight: FontWeight.bold,
-                  color:
-                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                )),
+            title: TextWidget.headText(
+                text: "Holding details",
+                theme: theme.isDarkMode,
+                fw: 2,
+                color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+            ),
           ),
           body: Stack(children: [
             TransparentLoaderScreen(
@@ -142,24 +130,20 @@ class _MFSipSinglePageScreen extends State<MFSipSinglePageScreen>
                                         crossAxisAlignment:
                                             CrossAxisAlignment.end,
                                         children: [
-                                          Text(
-                                            "₹ ${_formatValue(data.profitLoss)} ",
-                                            style: textStyle(
-                                              _getColorBasedOnValue(
-                                                  data.profitLoss),
-                                              14,
-                                              FontWeight.w500,
-                                            ),
+                                          TextWidget.subText(
+                                            text: "₹ ${_formatValue(data.profitLoss)} ",
+                                            theme: theme.isDarkMode,
+                                            fw: 0,
+                                            color: _getColorBasedOnValue(
+                                                data.profitLoss),
                                           ),
                                           const SizedBox(height: 3),
-                                          Text(
-                                            "(${(double.tryParse(data.profitLoss ?? '0') ?? 0).toStringAsFixed(2)}%)",
-                                            style: textStyle(
-                                              _getColorBasedOnValue(
-                                                  data.profitLoss),
-                                              14,
-                                              FontWeight.w500,
-                                            ),
+                                          TextWidget.subText(
+                                            text: "(${(double.tryParse(data.profitLoss ?? '0') ?? 0).toStringAsFixed(2)}%)",
+                                            theme: theme.isDarkMode,
+                                            fw: 0,
+                                            color: _getColorBasedOnValue(
+                                                data.profitLoss),
                                           ),
                                         ],
                                       ),

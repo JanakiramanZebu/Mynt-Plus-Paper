@@ -10,7 +10,7 @@ import '../../../../res/res.dart';
 import '../../../../routes/route_names.dart';
 import '../../../../sharedWidget/custom_back_btn.dart';
 import '../../../../sharedWidget/custom_exch_badge.dart';
-import '../../../../sharedWidget/functions.dart';
+import '../../../../res/global_state_text.dart';
 import '../../../../sharedWidget/scrip_info_btns.dart';
 
 class PositionGroupDetail extends ConsumerWidget {
@@ -89,13 +89,10 @@ class PositionGroupDetail extends ConsumerWidget {
                                             : colors.colorBlack)),
                               ],
                             ),
-                            Text("₹${positionData['lp']}",
-                                style: textStyle(
-                                    theme.isDarkMode
-                                        ? colors.colorWhite
-                                        : colors.colorBlack,
-                                    16,
-                                    FontWeight.w600)),
+                            TextWidget.titleText(
+                                text: "₹${positionData['lp']}",
+                                theme: theme.isDarkMode,
+                                fw: 1),
                           ],
                         ),
                         const SizedBox(height: 4),
@@ -105,23 +102,23 @@ class PositionGroupDetail extends ConsumerWidget {
                             children: [
                               Row(children: [
                                 CustomExchBadge(exch: "${positionData['exch']}"),
-                                Text("  ${positionData['expDate']}",
-                                    style: textStyle(const Color(0xff000000), 12,
-                                        FontWeight.w600))
+                                TextWidget.captionText(
+                                    text: "  ${positionData['expDate']}",
+                                    theme: theme.isDarkMode,
+                                    fw: 1)
                               ]),
-                              Text(
-                                  "${double.parse("${positionData['chng'] ?? 0.00} ").toStringAsFixed(2)} (${positionData['perChange'] ?? 0.00}%)",
-                                  style: textStyle(
-                                      (positionData['chng'].toString() == "null") ||
+                              TextWidget.captionText(
+                                  text: "${double.parse("${positionData['chng'] ?? 0.00} ").toStringAsFixed(2)} (${positionData['perChange'] ?? 0.00}%)",
+                                  theme: theme.isDarkMode,
+                                  fw: 0,
+                                  color: (positionData['chng'].toString() == "null") ||
                                               positionData['chng'] == "0.00"
                                           ? colors.ltpgrey
                                           : positionData['chng']!.startsWith("-") ||
                                                   positionData['perChange']!
                                                       .startsWith("-")
                                               ? colors.darkred
-                                              : colors.ltpgreen,
-                                      12,
-                                      FontWeight.w500))
+                                              : colors.ltpgreen)
                             ])
                       ]),
                 )),
@@ -141,24 +138,29 @@ class PositionGroupDetail extends ConsumerWidget {
                             color: theme.isDarkMode
                                 ? const Color(0xff666666).withOpacity(.2)
                                 : const Color(0xff999999).withOpacity(.2)),
-                        child: Text("${positionData['s_prdt_ali']}",
-                            style: textStyle(
-                                const Color(0xff666666), 12, FontWeight.w600))),
+                        child: TextWidget.captionText(
+                            text: "${positionData['s_prdt_ali']}",
+                            theme: theme.isDarkMode,
+                            fw: 1,
+                            color: const Color(0xff666666))),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(positions.isNetPnl ? "P&L" : "MTM",
-                            style: textStyle(
-                                const Color(0xff5E6B7D), 12, FontWeight.w500)),
+                        TextWidget.captionText(
+                            text: positions.isNetPnl ? "P&L" : "MTM",
+                            theme: theme.isDarkMode,
+                            fw: 0,
+                            color: const Color(0xff5E6B7D)),
                         const SizedBox(height: 6),
                         Row(
                           children: [
                             if (positions.isNetPnl) ...[
-                              Text(
-                                  "₹${positionData['profitNloss'] ?? positionData['rpnl']}",
-                                  style: textStyle(
-                                      positionData['profitNloss'] != null
+                              TextWidget.subText(
+                                  text: "₹${positionData['profitNloss'] ?? positionData['rpnl']}",
+                                  theme: theme.isDarkMode,
+                                  fw: 1,
+                                  color: positionData['profitNloss'] != null
                                           ? positionData['profitNloss']!
                                                   .startsWith("-")
                                               ? colors.darkred
@@ -170,19 +172,17 @@ class PositionGroupDetail extends ConsumerWidget {
                                               ? colors.darkred
                                               : positionData['rpnl'] == "0.00"
                                                   ? colors.ltpgrey
-                                                  : colors.ltpgreen,
-                                      15,
-                                      FontWeight.w600))
+                                                  : colors.ltpgreen)
                             ] else ...[
-                              Text("₹${positionData['mTm']}",
-                                  style: textStyle(
-                                      positionData['mTm']!.startsWith("-")
+                              TextWidget.subText(
+                                  text: "₹${positionData['mTm']}",
+                                  theme: theme.isDarkMode,
+                                  fw: 1,
+                                  color: positionData['mTm']!.startsWith("-")
                                           ? colors.darkred
                                           : positionData['mTm'] == "0.00"
                                               ? colors.ltpgrey
-                                              : colors.ltpgreen,
-                                      15,
-                                      FontWeight.w600))
+                                              : colors.ltpgreen)
                             ]
                           ],
                         ),
@@ -202,13 +202,10 @@ class PositionGroupDetail extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const SizedBox(height: 10),
-                        Text("Position details",
-                            style: textStyle(
-                                theme.isDarkMode
-                                    ? colors.colorWhite
-                                    : colors.colorBlack,
-                                16,
-                                FontWeight.w600)),
+                        TextWidget.titleText(
+                            text: "Position details",
+                            theme: theme.isDarkMode,
+                            fw: 1),
                         const SizedBox(height: 16),
                         Row(
                           children: [
@@ -216,38 +213,30 @@ class PositionGroupDetail extends ConsumerWidget {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text("Price",
-                                      style: textStyle(
-                                          theme.isDarkMode
-                                              ? colors.colorWhite
-                                              : colors.colorBlack,
-                                          14,
-                                          FontWeight.w600)),
+                                  TextWidget.subText(
+                                      text: "Price",
+                                      theme: theme.isDarkMode,
+                                      fw: 1),
                                   const SizedBox(height: 2),
-                                  Text("${positionData['dayavgprc'] ?? 0.00}",
-                                      style: textStyle(
-                                          theme.isDarkMode
-                                              ? colors.colorWhite
-                                              : colors.colorBlack,
-                                          14,
-                                          FontWeight.w600)),
+                                  TextWidget.subText(
+                                      text: "${positionData['dayavgprc'] ?? 0.00}",
+                                      theme: theme.isDarkMode,
+                                      fw: 1),
                                   const SizedBox(height: 2),
                                   Divider(
                                       color: theme.isDarkMode
                                           ? colors.darkColorDivider
                                           : colors.colorDivider),
-                                  Text("Day Buy Avg",
-                                      style: textStyle(const Color(0xff666666), 12,
-                                          FontWeight.w500)),
+                                  TextWidget.captionText(
+                                      text: "Day Buy Avg",
+                                      theme: theme.isDarkMode,
+                                      fw: 0,
+                                      color: const Color(0xff666666)),
                                   const SizedBox(height: 2),
-                                  Text(
-                                    "${positionData['daybuyavgprc'] ?? 0.00}",
-                                    style: textStyle(
-                                        theme.isDarkMode
-                                            ? colors.colorWhite
-                                            : colors.colorBlack,
-                                        14,
-                                        FontWeight.w500),
+                                  TextWidget.subText(
+                                    text: "${positionData['daybuyavgprc'] ?? 0.00}",
+                                    theme: theme.isDarkMode,
+                                    fw: 0,
                                   ),
                                   const SizedBox(height: 2),
                                   Divider(
@@ -262,38 +251,30 @@ class PositionGroupDetail extends ConsumerWidget {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text("Net Qty",
-                                      style: textStyle(
-                                          theme.isDarkMode
-                                              ? colors.colorWhite
-                                              : colors.colorBlack,
-                                          14,
-                                          FontWeight.w600)),
+                                  TextWidget.subText(
+                                      text: "Net Qty",
+                                      theme: theme.isDarkMode,
+                                      fw: 1),
                                   const SizedBox(height: 2),
-                                  Text("${positionData['netqty'] ?? 0}",
-                                      style: textStyle(
-                                          theme.isDarkMode
-                                              ? colors.colorWhite
-                                              : colors.colorBlack,
-                                          14,
-                                          FontWeight.w600)),
+                                  TextWidget.subText(
+                                      text: "${positionData['netqty'] ?? 0}",
+                                      theme: theme.isDarkMode,
+                                      fw: 1),
                                   const SizedBox(height: 2),
                                   Divider(
                                       color: theme.isDarkMode
                                           ? colors.darkColorDivider
                                           : colors.colorDivider),
-                                  Text("Day Buy Qty",
-                                      style: textStyle(const Color(0xff666666), 12,
-                                          FontWeight.w500)),
+                                  TextWidget.captionText(
+                                      text: "Day Buy Qty",
+                                      theme: theme.isDarkMode,
+                                      fw: 0,
+                                      color: const Color(0xff666666)),
                                   const SizedBox(height: 2),
-                                  Text(
-                                    "${positionData['daybuyqty'] ?? 0}",
-                                    style: textStyle(
-                                        theme.isDarkMode
-                                            ? colors.colorWhite
-                                            : colors.colorBlack,
-                                        14,
-                                        FontWeight.w500),
+                                  TextWidget.subText(
+                                    text: "${positionData['daybuyqty'] ?? 0}",
+                                    theme: theme.isDarkMode,
+                                    fw: 0,
                                   ),
                                   const SizedBox(height: 2),
                                   Divider(
@@ -312,18 +293,16 @@ class PositionGroupDetail extends ConsumerWidget {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text("Day Sell Avg",
-                                      style: textStyle(const Color(0xff666666), 12,
-                                          FontWeight.w500)),
+                                  TextWidget.captionText(
+                                      text: "Day Sell Avg",
+                                      theme: theme.isDarkMode,
+                                      fw: 0,
+                                      color: const Color(0xff666666)),
                                   const SizedBox(height: 2),
-                                  Text(
-                                    "${positionData['daysellavgprc'] ?? 0.00}",
-                                    style: textStyle(
-                                        theme.isDarkMode
-                                            ? colors.colorWhite
-                                            : colors.colorBlack,
-                                        14,
-                                        FontWeight.w500),
+                                  TextWidget.subText(
+                                    text: "${positionData['daysellavgprc'] ?? 0.00}",
+                                    theme: theme.isDarkMode,
+                                    fw: 0,
                                   ),
                                   const SizedBox(height: 2),
                                   Divider(
@@ -338,18 +317,16 @@ class PositionGroupDetail extends ConsumerWidget {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text("Day Sell Qty",
-                                      style: textStyle(const Color(0xff666666), 12,
-                                          FontWeight.w500)),
+                                  TextWidget.captionText(
+                                      text: "Day Sell Qty",
+                                      theme: theme.isDarkMode,
+                                      fw: 0,
+                                      color: const Color(0xff666666)),
                                   const SizedBox(height: 2),
-                                  Text(
-                                    "${positionData['daysellqty'] ?? 0}",
-                                    style: textStyle(
-                                        theme.isDarkMode
-                                            ? colors.colorWhite
-                                            : colors.colorBlack,
-                                        14,
-                                        FontWeight.w500),
+                                  TextWidget.subText(
+                                    text: "${positionData['daysellqty'] ?? 0}",
+                                    theme: theme.isDarkMode,
+                                    fw: 0,
                                   ),
                                   const SizedBox(height: 2),
                                   Divider(
@@ -368,18 +345,16 @@ class PositionGroupDetail extends ConsumerWidget {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text("CF Buy Avg",
-                                      style: textStyle(const Color(0xff666666), 12,
-                                          FontWeight.w500)),
+                                  TextWidget.captionText(
+                                      text: "CF Buy Avg",
+                                      theme: theme.isDarkMode,
+                                      fw: 0,
+                                      color: const Color(0xff666666)),
                                   const SizedBox(height: 2),
-                                  Text(
-                                    "${positionData['cfbuyavgprc'] ?? 0.00}",
-                                    style: textStyle(
-                                        theme.isDarkMode
-                                            ? colors.colorWhite
-                                            : colors.colorBlack,
-                                        14,
-                                        FontWeight.w500),
+                                  TextWidget.subText(
+                                    text: "${positionData['cfbuyavgprc'] ?? 0.00}",
+                                    theme: theme.isDarkMode,
+                                    fw: 0,
                                   ),
                                   const SizedBox(height: 2),
                                   Divider(
@@ -394,18 +369,16 @@ class PositionGroupDetail extends ConsumerWidget {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text("CF Buy Qty",
-                                      style: textStyle(const Color(0xff666666), 12,
-                                          FontWeight.w500)),
+                                  TextWidget.captionText(
+                                      text: "CF Buy Qty",
+                                      theme: theme.isDarkMode,
+                                      fw: 0,
+                                      color: const Color(0xff666666)),
                                   const SizedBox(height: 2),
-                                  Text(
-                                    "${positionData['cfbuyqty'] ?? 0}",
-                                    style: textStyle(
-                                        theme.isDarkMode
-                                            ? colors.colorWhite
-                                            : colors.colorBlack,
-                                        14,
-                                        FontWeight.w500),
+                                  TextWidget.subText(
+                                    text: "${positionData['cfbuyqty'] ?? 0}",
+                                    theme: theme.isDarkMode,
+                                    fw: 0,
                                   ),
                                   const SizedBox(height: 2),
                                   Divider(
@@ -424,18 +397,16 @@ class PositionGroupDetail extends ConsumerWidget {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text("CF Sell Avg",
-                                      style: textStyle(const Color(0xff666666), 12,
-                                          FontWeight.w500)),
+                                  TextWidget.captionText(
+                                      text: "CF Sell Avg",
+                                      theme: theme.isDarkMode,
+                                      fw: 0,
+                                      color: const Color(0xff666666)),
                                   const SizedBox(height: 2),
-                                  Text(
-                                    "${positionData['cfsellavgprc'] ?? 0.00}",
-                                    style: textStyle(
-                                        theme.isDarkMode
-                                            ? colors.colorWhite
-                                            : colors.colorBlack,
-                                        14,
-                                        FontWeight.w500),
+                                  TextWidget.subText(
+                                    text: "${positionData['cfsellavgprc'] ?? 0.00}",
+                                    theme: theme.isDarkMode,
+                                    fw: 0,
                                   ),
                                   const SizedBox(height: 2),
                                   Divider(
@@ -450,18 +421,16 @@ class PositionGroupDetail extends ConsumerWidget {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text("CF Sell Qty",
-                                      style: textStyle(const Color(0xff666666), 12,
-                                          FontWeight.w500)),
+                                  TextWidget.captionText(
+                                      text: "CF Sell Qty",
+                                      theme: theme.isDarkMode,
+                                      fw: 0,
+                                      color: const Color(0xff666666)),
                                   const SizedBox(height: 2),
-                                  Text(
-                                    "${positionData['cfsellqty'] ?? 0}",
-                                    style: textStyle(
-                                        theme.isDarkMode
-                                            ? colors.colorWhite
-                                            : colors.colorBlack,
-                                        14,
-                                        FontWeight.w500),
+                                  TextWidget.subText(
+                                    text: "${positionData['cfsellqty'] ?? 0}",
+                                    theme: theme.isDarkMode,
+                                    fw: 0,
                                   ),
                                   const SizedBox(height: 2),
                                   Divider(
@@ -474,22 +443,15 @@ class PositionGroupDetail extends ConsumerWidget {
                           ],
                         ),
                         const SizedBox(height: 4),
-                        Text("Net Buy Value",
-                            style: textStyle(
-                                theme.isDarkMode
-                                    ? colors.colorWhite
-                                    : colors.colorBlack,
-                                14,
-                                FontWeight.w500)),
+                        TextWidget.subText(
+                            text: "Net Buy Value",
+                            theme: theme.isDarkMode,
+                            fw: 0),
                         const SizedBox(height: 2),
-                        Text(
-                          "${positionData['totbuyamt'] ?? 0.00}",
-                          style: textStyle(
-                              theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : colors.colorBlack,
-                              14,
-                              FontWeight.w500),
+                        TextWidget.subText(
+                          text: "${positionData['totbuyamt'] ?? 0.00}",
+                          theme: theme.isDarkMode,
+                          fw: 0,
                         ),
                         const SizedBox(height: 2),
                         Divider(
@@ -497,22 +459,15 @@ class PositionGroupDetail extends ConsumerWidget {
                                 ? colors.darkColorDivider
                                 : colors.colorDivider),
                         const SizedBox(height: 4),
-                        Text("Net Sell Value",
-                            style: textStyle(
-                                theme.isDarkMode
-                                    ? colors.colorWhite
-                                    : colors.colorBlack,
-                                14,
-                                FontWeight.w500)),
+                        TextWidget.subText(
+                            text: "Net Sell Value",
+                            theme: theme.isDarkMode,
+                            fw: 0),
                         const SizedBox(height: 2),
-                        Text(
-                          "${positionData['totsellamt'] ?? 0.00}",
-                          style: textStyle(
-                              theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : colors.colorBlack,
-                              14,
-                              FontWeight.w500),
+                        TextWidget.subText(
+                          text: "${positionData['totsellamt'] ?? 0.00}",
+                          theme: theme.isDarkMode,
+                          fw: 0,
                         ),
                         const SizedBox(height: 2),
                         Divider(
@@ -520,25 +475,18 @@ class PositionGroupDetail extends ConsumerWidget {
                                 ? colors.darkColorDivider
                                 : colors.colorDivider),
                         const SizedBox(height: 4),
-                        Text("Net Value",
-                            style: textStyle(
-                                theme.isDarkMode
-                                    ? colors.colorWhite
-                                    : colors.colorBlack,
-                                14,
-                                FontWeight.w500)),
+                        TextWidget.subText(
+                            text: "Net Value",
+                            theme: theme.isDarkMode,
+                            fw: 0),
                         const SizedBox(height: 2),
-                        Text(
-                          (double.parse("${positionData['totbuyamt'] ?? 0.00}") +
+                        TextWidget.subText(
+                          text: (double.parse("${positionData['totbuyamt'] ?? 0.00}") +
                                   double.parse(
                                       "${positionData['totsellamt'] ?? 0.00}"))
                               .toStringAsFixed(2),
-                          style: textStyle(
-                              theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : colors.colorBlack,
-                              14,
-                              FontWeight.w500),
+                          theme: theme.isDarkMode,
+                          fw: 0,
                         ),
                       ])),
               // ScripInfoBtns(exch: '${positionData['exch']}', token: '${positionData['token']}', insName: '')
@@ -596,9 +544,11 @@ class PositionGroupDetail extends ConsumerWidget {
                                       });
                                 },
                                 child: Center(
-                                    child: Text("Add More",
-                                        style: textStyle(const Color(0xffFFFFFF),
-                                            14, FontWeight.w600))),
+                                    child: TextWidget.subText(
+                                        text: "Add More",
+                                        theme: false,
+                                        fw: 1,
+                                        color: const Color(0xffFFFFFF))),
                               )),
                         ),
                         if (positionData['qty'] != "0" && !positions.isDay) ...[
@@ -651,11 +601,11 @@ class PositionGroupDetail extends ConsumerWidget {
                                           });
                                     },
                                     child: Center(
-                                        child: Text("Exit",
-                                            style: textStyle(
-                                                const Color(0xffFFFFFF),
-                                                14,
-                                                FontWeight.w600))),
+                                        child: TextWidget.subText(
+                                            text: "Exit",
+                                            theme: false,
+                                            fw: 1,
+                                            color: const Color(0xffFFFFFF))),
                                   )))
                         ]
                       ]),

@@ -243,7 +243,7 @@ class _NoInternetScreenState extends ConsumerState<NoInternetScreen> {
                                   ? const Color(0xff000000)
                                   : const Color(0xffFFFFFF),
                               15,
-                              FontWeight.w500)),
+                              0)),
                 ),
               ),
               Container(

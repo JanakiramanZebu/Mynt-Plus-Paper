@@ -11,6 +11,7 @@ import 'package:mynt_plus/models/mf_model/mf_order_det_model.dart';
 import '../../provider/mf_provider.dart';
 import '../../provider/thems.dart';
 import '../../res/res.dart';
+import '../../res/global_state_text.dart';
 
 class MfCancelAlert extends ConsumerWidget {
   final Data mfcancel;
@@ -77,9 +78,11 @@ class MfCancelAlert extends ConsumerWidget {
                 onPressed: () {
                   Navigator.pop(context);
                 },
-                child: Text(
-                  "No",
-                  style: textStyle(colors.colorGrey, 12, FontWeight.w600)
+                child: TextWidget.captionText(
+                  text: "No",
+                  theme: theme.isDarkMode,
+                  fw: 1,
+                  color: colors.colorGrey,
                 )
               ),
             ),

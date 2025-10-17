@@ -8,6 +8,7 @@ import '../../../models/mf_model/mutual_fundmodel.dart';
 import '../../../provider/mf_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../res/res.dart';
+import '../../../res/global_state_text.dart';
 import '../../../sharedWidget/functions.dart';
 
 class MFPerformance extends ConsumerWidget {
@@ -56,13 +57,10 @@ class MFPerformance extends ConsumerWidget {
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
           const SizedBox(height: 20),
-          Text(
-            "Riskometer",
-            style: textStyle(
-              isDarkMode ? colors.colorWhite : colors.colorBlack,
-              18,
-              FontWeight.w600
-            )
+          TextWidget.headText(
+            text: "Riskometer",
+            theme: isDarkMode,
+            fw: 1,
           ),
 
           Padding(
@@ -89,14 +87,18 @@ class MFPerformance extends ConsumerWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        "RISK METER",
-                        style: textStyle(const Color(0xff999999), 14, FontWeight.w500),
+                      TextWidget.subText(
+                        text: "RISK METER",
+                        theme: isDarkMode,
+                        fw: 0,
+                        color: const Color(0xff999999),
                       ),
                       const SizedBox(height: 4),
-                      Text(
-                        riskText,
-                        style: textStyle(colors.colorBlack, 16, FontWeight.w500),
+                      TextWidget.titleText(
+                        text: riskText,
+                        theme: isDarkMode,
+                        fw: 0,
+                        color: colors.colorBlack,
                       ),
                     ],
                   ),
@@ -119,17 +121,16 @@ class MFPerformance extends ConsumerWidget {
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                Text(title1,
-                    style: textStyle(
-                        const Color(0xff666666), 10, FontWeight.w400)),
+                TextWidget.captionText(
+                    text: title1,
+                    theme: theme.isDarkMode,
+                    fw: 3,
+                    color: const Color(0xff666666)),
                 const SizedBox(height: 4),
-                Text(value1,
-                    style: textStyle(
-                        theme.isDarkMode
-                            ? colors.colorWhite
-                            : colors.colorBlack,
-                        14,
-                        FontWeight.w600)),
+                TextWidget.subText(
+                    text: value1,
+                    theme: theme.isDarkMode,
+                    fw: 1),
                 const SizedBox(height: 2),
                 Divider(
                     color: theme.isDarkMode
@@ -141,16 +142,16 @@ class MFPerformance extends ConsumerWidget {
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                Text(title2,
-                    style: textStyle(
-                        const Color(0xff666666), 10, FontWeight.w400)),
+                TextWidget.captionText(
+                    text: title2,
+                    theme: theme.isDarkMode,
+                    fw: 3,
+                    color: const Color(0xff666666)),
                 const SizedBox(height: 4),
-                Text(
-                  value2,
-                  style: textStyle(
-                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                      14,
-                      FontWeight.w600),
+                TextWidget.subText(
+                  text: value2,
+                  theme: theme.isDarkMode,
+                  fw: 1,
                 ),
                 const SizedBox(height: 2),
                 Divider(

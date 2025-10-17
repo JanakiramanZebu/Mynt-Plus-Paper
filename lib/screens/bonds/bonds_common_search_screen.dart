@@ -205,7 +205,7 @@ class BondsCommonSearch extends ConsumerWidget {
                                 ? colors.colorWhite
                                 : colors.colorBlack,
                             14,
-                            FontWeight.w500),
+                            0),
                       ),
                       const SizedBox(height: 4),
                     ],

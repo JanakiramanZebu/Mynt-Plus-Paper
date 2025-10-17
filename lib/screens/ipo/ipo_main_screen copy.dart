@@ -185,7 +185,7 @@ class _IPOScreenState extends ConsumerState<IPOScreen> with TickerProviderStateM
                           const SizedBox(height: 3),
                           Text('This will take a few seconds.',
                               style: textStyle(
-                                  colors.colorGrey, 13, FontWeight.w500)),
+                                  colors.colorGrey, 13, 0)),
                         ])
                   : const IPOSubScreen(),
 

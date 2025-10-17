@@ -211,7 +211,7 @@ class _MFHoldingScreen extends State<MFHoldingScreen> {
                               ? colors.colorWhite
                               : colors.colorBlack,
                           16,
-                          FontWeight.w600,
+                          1,
                         ),
                         inputFormatters: [UpperCaseTextFormatter()],
                         decoration: InputDecoration(
@@ -223,7 +223,7 @@ class _MFHoldingScreen extends State<MFHoldingScreen> {
                             textStyle: textStyle(
                               const Color(0xff69758F),
                               15,
-                              FontWeight.w500,
+                              0,
                             ),
                           ),
                           prefixIconColor: const Color(0xff586279),

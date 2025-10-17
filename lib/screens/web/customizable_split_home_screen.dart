@@ -2221,7 +2221,7 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
                   style: textStyle(
                     theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
                     14,
-                    FontWeight.w600,
+                    1,
                   ),
                 ),
               ),

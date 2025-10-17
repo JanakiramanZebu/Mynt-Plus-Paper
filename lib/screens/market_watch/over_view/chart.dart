@@ -6,6 +6,7 @@ import '../../../models/marketwatch_model/scrip_overview/stock_data.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../res/res.dart';
+import '../../../res/global_state_text.dart';
 
 class ShareHoldChart extends StatefulWidget {
   const ShareHoldChart({super.key});
@@ -33,17 +34,19 @@ class MyHomePageState extends State<ShareHoldChart> {
           width: MediaQuery.of(context).size.width,
           child: SfCartesianChart(  margin: const EdgeInsets.symmetric(horizontal: 0),
               primaryXAxis: CategoryAxis(
-                labelStyle: textStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    10,
-                    FontWeight.w500),
+                labelStyle: TextWidget.textStyle(
+                    fontSize: 10,
+                    theme: theme.isDarkMode,
+                    fw: 0,
+                    color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack),
                 majorGridLines: const MajorGridLines(width: 0),
               ),
               primaryYAxis: NumericAxis(
-                  labelStyle: textStyle(
-                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                      12,
-                      FontWeight.w500),
+                  labelStyle: TextWidget.textStyle(
+                      fontSize: 12,
+                      theme: theme.isDarkMode,
+                      fw: 0,
+                      color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack),
                   majorGridLines: const MajorGridLines(width: 0),
                   minimum: 0,
                   maximum: 100),
@@ -139,17 +142,19 @@ class FBalSheetCahrtState extends State<FBalSheetCahrt> {
                   image: const AssetImage('assets/img/bought.png'),
                   overflowMode: LegendItemOverflowMode.wrap),
               primaryXAxis: CategoryAxis(
-                labelStyle: textStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    10,
-                    FontWeight.w500),
+                labelStyle: TextWidget.textStyle(
+                    fontSize: 10,
+                    theme: theme.isDarkMode,
+                    fw: 0,
+                    color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack),
                 majorGridLines: const MajorGridLines(width: 0),
               ),
               primaryYAxis: NumericAxis(
-                  labelStyle: textStyle(
-                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                      12,
-                      FontWeight.w500),
+                  labelStyle: TextWidget.textStyle(
+                      fontSize: 12,
+                      theme: theme.isDarkMode,
+                      fw: 0,
+                      color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack),
                   majorGridLines: const MajorGridLines(width: 0)),
               tooltipBehavior: _tooltip,
               series: <CartesianSeries<BalanceSheet, String>>[
@@ -229,17 +234,19 @@ class FIncomeChartState extends State<FIncomeChart> {
                   image: const AssetImage('assets/img/bought.png'),
                   overflowMode: LegendItemOverflowMode.wrap),
               primaryXAxis: CategoryAxis(
-                labelStyle: textStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    10,
-                    FontWeight.w500),
+                labelStyle: TextWidget.textStyle(
+                    fontSize: 10,
+                    theme: theme.isDarkMode,
+                    fw: 0,
+                    color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack),
                 majorGridLines: const MajorGridLines(width: 0),
               ),
               primaryYAxis: NumericAxis(
-                  labelStyle: textStyle(
-                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                      12,
-                      FontWeight.w500),
+                  labelStyle: TextWidget.textStyle(
+                      fontSize: 12,
+                      theme: theme.isDarkMode,
+                      fw: 0,
+                      color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack),
                   majorGridLines: const MajorGridLines(width: 0)),
               
               tooltipBehavior: _tooltip,
@@ -332,17 +339,19 @@ class FCashFlowChartState extends State<FCashFlowChart> {
                   image: const AssetImage('assets/img/bought.png'),
                   overflowMode: LegendItemOverflowMode.wrap),
               primaryXAxis: CategoryAxis(
-                labelStyle: textStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    10,
-                    FontWeight.w500),
+                labelStyle: TextWidget.textStyle(
+                    fontSize: 10,
+                    theme: theme.isDarkMode,
+                    fw: 0,
+                    color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack),
                 majorGridLines: const MajorGridLines(width: 0),
               ),
               primaryYAxis: NumericAxis(
-                  labelStyle: textStyle(
-                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                      12,
-                      FontWeight.w500),
+                  labelStyle: TextWidget.textStyle(
+                      fontSize: 12,
+                      theme: theme.isDarkMode,
+                      fw: 0,
+                      color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack),
                   majorGridLines: const MajorGridLines(width: 0)),
               tooltipBehavior: _tooltip,
               series: <CartesianSeries<CashflowSheet, String>>[
@@ -423,17 +432,19 @@ class PriceComChartState extends State<PriceComChart> {
                   position: LegendPosition.bottom,
                   overflowMode: LegendItemOverflowMode.wrap),
               primaryXAxis: CategoryAxis(
-                labelStyle: textStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    10,
-                    FontWeight.w500),
+                labelStyle: TextWidget.textStyle(
+                    fontSize: 10,
+                    theme: theme.isDarkMode,
+                    fw: 0,
+                    color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack),
                 majorGridLines: const MajorGridLines(width: 0),
               ),
               primaryYAxis: NumericAxis(
-                  labelStyle: textStyle(
-                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                      12,
-                      FontWeight.w500),
+                  labelStyle: TextWidget.textStyle(
+                      fontSize: 12,
+                      theme: theme.isDarkMode,
+                      fw: 0,
+                      color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack),
                   majorGridLines: const MajorGridLines(width: 0)),
               tooltipBehavior: _tooltip,
               series: <CartesianSeries<PrcComparisionChartData, String>>[

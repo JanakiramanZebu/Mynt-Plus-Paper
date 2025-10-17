@@ -106,7 +106,7 @@ class _AllTradeState extends ConsumerState<AllTrade> with TickerProviderStateMix
                 style: textStyle(
                     theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
                     14,
-                    FontWeight.w600))),
+                    1))),
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.start,
@@ -131,10 +131,10 @@ class _AllTradeState extends ConsumerState<AllTrade> with TickerProviderStateMix
                     indicatorSize: TabBarIndicatorSize.tab,
                     unselectedLabelColor: const Color(0XFF666666),
                     unselectedLabelStyle:
-                        textStyle(const Color(0XFF666666), 14, FontWeight.w500),
+                        textStyle(const Color(0XFF666666), 14, 0),
                     labelColor: const Color(0XFF0037B7),
                     labelStyle:
-                        textStyle(const Color(0XFF0037B7), 14, FontWeight.w600),
+                        textStyle(const Color(0XFF0037B7), 14, 1),
                     controller: tabCtrl,
                     tabs: tabList)),
             Expanded(

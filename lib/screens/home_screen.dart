@@ -516,7 +516,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                               ? colors.colorWhite
                               : colors.colorBlack,
                           14,
-                          FontWeight.w600),
+                          1),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
@@ -529,7 +529,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                               ? colors.colorLightBlue
                               : colors.colorBlue,
                           15,
-                          FontWeight.w600)),
+                          1)),
                   const SizedBox(width: 3),
                   SvgPicture.asset(assets.downArrow,
                       color: theme.isDarkMode
@@ -1437,7 +1437,7 @@ class PositionGroupActions extends ConsumerWidget {
                                 ? colors.colorWhite
                                 : colors.colorBlack,
                             12,
-                            FontWeight.w600))),
+                            1))),
           ),
       ]),
     );
@@ -1535,7 +1535,7 @@ class PositionGroupActions extends ConsumerWidget {
                                   ? colors.colorWhite
                                   : colors.colorBlack,
                               14,
-                              FontWeight.w500)),
+                              0)),
                 );
               }),
             ],
@@ -1567,7 +1567,7 @@ class _FundsWebActions extends ConsumerWidget {
         },
         child: Text(
           "Web",
-          style: textStyle(colors.colorBlue, 14, FontWeight.w600),
+          style: textStyle(colors.colorBlue, 14, 1),
         ),
       ),
     );
@@ -1615,7 +1615,7 @@ class _OrderbookActions extends ConsumerWidget {
                             ? colors.colorWhite
                             : colors.colorBlack,
                         12,
-                        FontWeight.w600))))
+                        1))))
       ]);
     }
 
@@ -1698,7 +1698,7 @@ class _UserProfileTile extends ConsumerWidget {
                 style: textStyle(
                     Color(theme.isDarkMode ? 0xffffffff : 0xff000000),
                     16,
-                    FontWeight.w600)),
+                    1)),
             Icon(
               Icons.expand_more,
               color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
@@ -1707,7 +1707,7 @@ class _UserProfileTile extends ConsumerWidget {
           ],
         ),
         subtitle: Text("Client ID: $uid",
-            style: textStyle(const Color(0xff666666), 12, FontWeight.w500)),
+            style: textStyle(const Color(0xff666666), 12, 0)),
         trailing: SizedBox(
             width: 100,
             child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [

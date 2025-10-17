@@ -106,14 +106,14 @@ class _IPOFinancialChartState extends State<IPOFinancialChart> {
           labelStyle: textStyle(
               widget.theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
               10,
-              FontWeight.w500),
+              0),
           majorGridLines: const MajorGridLines(width: 0),
         ),
         primaryYAxis: NumericAxis(
           labelStyle: textStyle(
               widget.theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
               12,
-              FontWeight.w500),
+              0),
           majorGridLines: const MajorGridLines(width: 0), // Remove grid lines
         ),
         // title: ChartTitle(text: 'IPO Financial Data Over Periods'),
@@ -121,7 +121,7 @@ class _IPOFinancialChartState extends State<IPOFinancialChart> {
             textStyle: textStyle(
                 widget.theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
                 12,
-                FontWeight.w400),
+                3),
             isVisible: true,
             position: LegendPosition.bottom,
             overflowMode: LegendItemOverflowMode.wrap),

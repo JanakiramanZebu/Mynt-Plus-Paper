@@ -32,7 +32,9 @@ class TextWidget {
                       ? FontWeight.w600
                       : fw == 0
                           ? FontWeight.w500
-                          : FontWeight.normal,
+                          : fw == 3
+                              ? FontWeight.w400
+                              : FontWeight.normal,
             )
           : GoogleFonts.inter(
               textStyle: TextStyle(
@@ -48,7 +50,9 @@ class TextWidget {
                         ? FontWeight.w600
                         : fw == 0
                             ? FontWeight.w500
-                            : FontWeight.normal,
+                            : fw == 3
+                                ? FontWeight.w400
+                                : FontWeight.normal,
               )),
     );
   }
@@ -81,7 +85,9 @@ class TextWidget {
                       ? FontWeight.w600
                       : fw == 0
                           ? FontWeight.w500
-                          : FontWeight.normal,
+                          : fw == 3
+                              ? FontWeight.w400
+                              : FontWeight.normal,
             )
           : GoogleFonts.inter(
               textStyle: TextStyle(
@@ -97,7 +103,9 @@ class TextWidget {
                         ? FontWeight.w600
                         : fw == 0
                             ? FontWeight.w500
-                            : FontWeight.normal,
+                            : fw == 3
+                                ? FontWeight.w400
+                                : FontWeight.normal,
               )),
     );
   }
@@ -130,7 +138,9 @@ class TextWidget {
                       ? FontWeight.w600
                       : fw == 0
                           ? FontWeight.w500
-                          : FontWeight.normal,
+                          : fw == 3
+                              ? FontWeight.w400
+                              : FontWeight.normal,
             )
           : GoogleFonts.inter(
               textStyle: TextStyle(
@@ -146,7 +156,9 @@ class TextWidget {
                         ? FontWeight.w600
                         : fw == 0
                             ? FontWeight.w500
-                            : FontWeight.normal,
+                            : fw == 3
+                                ? FontWeight.w400
+                                : FontWeight.normal,
               )),
     );
   }
@@ -306,7 +318,9 @@ class TextWidget {
                       ? FontWeight.w600
                       : fw == 0
                           ? FontWeight.w500
-                          : FontWeight.normal,
+                          : fw == 3
+                              ? FontWeight.w400
+                              : FontWeight.normal,
             )
           : GoogleFonts.inter(
               textStyle: TextStyle(
@@ -322,7 +336,9 @@ class TextWidget {
                         ? FontWeight.w600
                         : fw == 0
                             ? FontWeight.w500
-                            : FontWeight.normal,
+                            : fw == 3
+                                ? FontWeight.w400
+                                : FontWeight.normal,
               )),
     );
   }
@@ -355,7 +371,9 @@ class TextWidget {
                       ? FontWeight.w600
                       : fw == 0
                           ? FontWeight.w500
-                          : FontWeight.normal,
+                          : fw == 3
+                              ? FontWeight.w400
+                              : FontWeight.normal,
             )
           : GoogleFonts.inter(
               textStyle: TextStyle(
@@ -371,7 +389,9 @@ class TextWidget {
                         ? FontWeight.w600
                         : fw == 0
                             ? FontWeight.w500
-                            : FontWeight.normal,
+                            : fw == 3
+                                ? FontWeight.w400
+                                : FontWeight.normal,
               )),
     );
   }
@@ -407,7 +427,9 @@ class TextWidget {
                       ? FontWeight.w600
                       : fw == 0
                           ? FontWeight.w500
-                          : FontWeight.normal,
+                          : fw == 3
+                              ? FontWeight.w400
+                              : FontWeight.normal,
               letterSpacing: letterSpacing ?? 0.5,
             )
           : GoogleFonts.inter(
@@ -424,7 +446,9 @@ class TextWidget {
                         ? FontWeight.w600
                         : fw == 0
                             ? FontWeight.w500
-                            : FontWeight.normal,
+                            : fw == 3
+                                ? FontWeight.w400
+                                : FontWeight.normal,
                 letterSpacing: letterSpacing ?? 0.5,
               )),
     );

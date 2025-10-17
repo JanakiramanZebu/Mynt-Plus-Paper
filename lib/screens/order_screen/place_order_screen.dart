@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:math';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
@@ -38,8 +37,6 @@ import '../../sharedWidget/no_internet_widget.dart';
 import '../../sharedWidget/snack_bar.dart';
 import '../market_watch/slice_order_pop.dart';
 import '../profile_screen/profile_main_screen.dart';
-import 'gtt_condition.dart';
-import 'invest_type_widget.dart';
 import 'margin_charges_bottom_sheet.dart';
 import 'order_screen_header.dart';
 import 'package:intl/intl.dart';
@@ -571,33 +568,23 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                           Row(
                               crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
-                                Text(
-                                    "${widget.scripInfo.symbol!.replaceAll("-EQ", "")} ",
-                                    style: textStyle(
-                                        theme.isDarkMode
-                                            ? colors.colorWhite
-                                            : colors.colorBlack,
-                                        14,
-                                        FontWeight.w400),
-                                    overflow: TextOverflow.ellipsis,
+                                TextWidget.subText(
+                                    text: "${widget.scripInfo.symbol!.replaceAll("-EQ", "")} ",
+                                    theme: theme.isDarkMode,
+                                    fw: 3,
+                                    textOverflow: TextOverflow.ellipsis,
                                     maxLines: 1),
                                 if (widget.scripInfo.expDate!.isNotEmpty)
-                                  Text(" ${widget.scripInfo.expDate} ",
-                                      style: textStyle(
-                                          theme.isDarkMode
-                                              ? colors.colorWhite
-                                              : colors.colorBlack,
-                                          14,
-                                          FontWeight.w400)),
+                                  TextWidget.subText(
+                                      text: " ${widget.scripInfo.expDate} ",
+                                      theme: theme.isDarkMode,
+                                      fw: 3),
                                 if (widget.scripInfo.option!.isNotEmpty)
-                                  Text(widget.scripInfo.option!,
-                                      style: textStyle(
-                                          theme.isDarkMode
-                                              ? colors.colorWhite
-                                              : colors.colorBlack,
-                                          14,
-                                          FontWeight.w400),
-                                      overflow: TextOverflow.ellipsis,
+                                  TextWidget.subText(
+                                      text: widget.scripInfo.option!,
+                                      theme: theme.isDarkMode,
+                                      fw: 3,
+                                      textOverflow: TextOverflow.ellipsis,
                                       maxLines: 1),
                                 CustomExchBadge(
                                     exch: " ${widget.scripInfo.exch}"),
@@ -1209,20 +1196,16 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                       const SizedBox(height: 40),
                                       Center(
                                           child: Column(children: [
-                                        Text(
-                                          "₹${resultsip == 0.0 ? widget.orderArg.ltp : resultsip.toStringAsFixed(2)}",
-                                          style: textStyle(
-                                              const Color(0xff43A833),
-                                              20,
-                                              FontWeight.w600),
+                                        TextWidget.headText(
+                                          text: "₹${resultsip == 0.0 ? widget.orderArg.ltp : resultsip.toStringAsFixed(2)}",
+                                          theme: theme.isDarkMode,
+                                          fw: 1,
+                                          color: const Color(0xff43A833),
                                         ),
-                                        Text("Installment Amount",
-                                            style: textStyle(
-                                                theme.isDarkMode
-                                                    ? colors.colorWhite
-                                                    : colors.colorBlack,
-                                                15,
-                                                FontWeight.w600))
+                                        TextWidget.subText(
+                                            text: "Installment Amount",
+                                            theme: theme.isDarkMode,
+                                            fw: 1)
                                       ]))
                                     ])
                               ],
@@ -3285,13 +3268,11 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                 //                 FontWeight.w500))
                                                 // ]
                                                 if (_isQtyToAmount)
-                                                  Text(
-                                                      "Qty : ${convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount)}",
-                                                      style: textStyle(
-                                                          const Color(
-                                                              0xff666666),
-                                                          14,
-                                                          FontWeight.w500)),
+                                                  TextWidget.subText(
+                                                      text: "Qty : ${convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount)}",
+                                                      theme: theme.isDarkMode,
+                                                      fw: 0,
+                                                      color: const Color(0xff666666)),
                                               ],
                                             ),
                                           ),
@@ -3584,13 +3565,10 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          'Stoploss order',
-                          style: textStyle(
-                            theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                            14,
-                            FontWeight.w400,
-                          ),
+                        TextWidget.subText(
+                          text: 'Stoploss order',
+                          theme: theme.isDarkMode,
+                          fw: 3,
                         ),
                         AnimatedContainer(
                           duration: const Duration(milliseconds: 250),
@@ -3677,13 +3655,10 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          'After market order (AMO)',
-                          style: textStyle(
-                            theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                            14,
-                            FontWeight.w400,
-                          ),
+                        TextWidget.subText(
+                          text: 'After market order (AMO)',
+                          theme: theme.isDarkMode,
+                          fw: 3,
                         ),
                         AnimatedContainer(
                           duration: const Duration(milliseconds: 250),
@@ -3752,13 +3727,10 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          'Add validity & Disclosed quantity',
-                          style: textStyle(
-                            theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                            14,
-                            FontWeight.w400,
-                          ),
+                        TextWidget.subText(
+                          text: 'Add validity & Disclosed quantity',
+                          theme: theme.isDarkMode,
+                          fw: 3,
                         ),
                         AnimatedContainer(
                           duration: const Duration(milliseconds: 250),
@@ -3852,13 +3824,10 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
     child: Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          'Cover - Only SL',
-          style: textStyle(
-            theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-            14,
-            FontWeight.w400,
-          ),
+        TextWidget.subText(
+          text: 'Cover - Only SL',
+          theme: theme.isDarkMode,
+          fw: 3,
         ),
         AnimatedContainer(
           duration: const Duration(milliseconds: 250),
@@ -3923,13 +3892,10 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
     child: Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          'Bracket - TGT / SL',
-          style: textStyle(
-            theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-            14,
-            FontWeight.w400,
-          ),
+        TextWidget.subText(
+          text: 'Bracket - TGT / SL',
+          theme: theme.isDarkMode,
+          fw: 3,
         ),
         AnimatedContainer(
           duration: const Duration(milliseconds: 250),
@@ -4251,12 +4217,11 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                           theme: theme
                                                                               .isDarkMode,
                                                                         ),
-                                                                        Text(
-                                                                            "${orderProvide.orderMarginModel == null ? 0.00 : orderProvide.orderMarginModel!.ordermargin}  + ${orderProvide.getBrokerageModel == null ? 0.00 : orderProvide.getBrokerageModel!.brkageAmt ?? 0.00}",
-                                                                            style: textStyle(
-                                                                                !theme.isDarkMode ? colors.colorBlue : colors.colorLightBlue,
-                                                                                12,
-                                                                                FontWeight.bold)),
+                                                                        TextWidget.captionText(
+                                                                            text: "${orderProvide.orderMarginModel == null ? 0.00 : orderProvide.orderMarginModel!.ordermargin}  + ${orderProvide.getBrokerageModel == null ? 0.00 : orderProvide.getBrokerageModel!.brkageAmt ?? 0.00}",
+                                                                            theme: theme.isDarkMode,
+                                                                            fw: 2,
+                                                                            color: !theme.isDarkMode ? colors.colorBlue : colors.colorLightBlue),
                                                                         Icon(
                                                                             Icons
                                                                                 .arrow_drop_down,
@@ -6040,12 +6005,13 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                   padding: const EdgeInsets.all(8.0),
                   child: Text(
                     " $marketProtection %",
-                    style: textStyle(
-                      theme.isDarkMode
+                    style: TextWidget.textStyle(
+                      fontSize: 14,
+                      theme: theme.isDarkMode,
+                      fw: 1,
+                      color: theme.isDarkMode
                           ? colors.colorLightBlue
                           : colors.colorBlue,
-                      14,
-                      FontWeight.w600,
                     ).copyWith(
                       decoration: TextDecoration.underline,
                     ),
@@ -6351,16 +6317,11 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                         color: Color.fromARGB(190, 255, 170, 0),
                                         size: 24),
                                     Expanded(
-                                        child: Text(
-                                      " Exchange surveillance active",
-                                      style: textStyle(
-                                        theme.isDarkMode
-                                            ? colors.textPrimary
-                                            : colors.textPrimaryLight,
-                                        16,
-                                        FontWeight.w600,
-                                      ),
-                                      overflow: TextOverflow.ellipsis,
+                                        child: TextWidget.titleText(
+                                      text: " Exchange surveillance active",
+                                      theme: theme.isDarkMode,
+                                      fw: 1,
+                                      textOverflow: TextOverflow.ellipsis,
                                     )),
                                   ],
                                 ),

@@ -73,7 +73,7 @@ class VersionBottomSheet extends ConsumerWidget {
                   style: textStyle(
                       theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
                       30,
-                      FontWeight.w600)),
+                      2)),
             ),
             const SizedBox(
               height: 10,
@@ -83,7 +83,7 @@ class VersionBottomSheet extends ConsumerWidget {
                   style: textStyle(
                       theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
                       20,
-                      FontWeight.w600)),
+                      2)),
             ),
             const SizedBox(
               height: 10,
@@ -93,12 +93,12 @@ class VersionBottomSheet extends ConsumerWidget {
               child: Text(
                   "Enhance your experience with the latest features, improvements, and fixes.",
                   textAlign: TextAlign.center,
-                  style: textStyle(colors.colorGrey, 15, FontWeight.w400)),
+                  style: textStyle(colors.colorGrey, 15, 3)),
             ),
             Center(
               child: Text("Update now to stay ahead!",
                   textAlign: TextAlign.center,
-                  style: textStyle(colors.colorGrey, 15, FontWeight.w400)),
+                  style: textStyle(colors.colorGrey, 15, 3)),
             ),
             const SizedBox(
               height: 10,
@@ -129,7 +129,7 @@ class VersionBottomSheet extends ConsumerWidget {
                             ? colors.colorBlack
                             : colors.colorWhite,
                         15,
-                        FontWeight.w500)),
+                        0)),
               ),
             ),
           ],

@@ -6,6 +6,7 @@ import 'package:mynt_plus/provider/portfolio_provider.dart';
 
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/res/res.dart';
+import 'package:mynt_plus/res/global_state_text.dart';
 import 'package:mynt_plus/screens/authentication/password/forgot_pass_unblock_user.dart';
 
 import '../../models/portfolio_model/mf_holdings_model.dart';
@@ -201,9 +202,13 @@ class _RedemptionBottomScreenState extends ConsumerState<RedemptionBottomScreen>
                         ),
                       ),
                       if(mf.redemptionError != null && mf.redemptionError!.isNotEmpty)...[
-                        Text("${mf.redemptionError}",
-                        textAlign: TextAlign.start,
-              style: textStyle(colors.kColorRedText, 10, FontWeight.w500)),
+                        TextWidget.captionText(
+                          text: "${mf.redemptionError}",
+                          theme: theme.isDarkMode,
+                          fw: 0,
+                          color: colors.kColorRedText,
+                          align: TextAlign.start,
+                        ),
             const SizedBox(height: 6)
                       ],
                       Row(
@@ -289,9 +294,13 @@ class _RedemptionBottomScreenState extends ConsumerState<RedemptionBottomScreen>
                       ),
                       if(mf.redemptionOrderError != "")...[
                         const SizedBox(height: 8),
-                        Text("${mf.redemptionOrderError}",
-                        textAlign: TextAlign.start,
-              style: textStyle(colors.kColorRedText, 12, FontWeight.w500)),
+                        TextWidget.subText(
+                          text: "${mf.redemptionOrderError}",
+                          theme: theme.isDarkMode,
+                          fw: 0,
+                          color: colors.kColorRedText,
+                          align: TextAlign.start,
+                        ),
             const SizedBox(height: 6)
                       ]
                     ]),
