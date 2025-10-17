@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import '../../../utils/custom_navigator.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -816,9 +818,13 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
                                               ledgerdate.fetchpledgeandunpledge(
                                                   context);
                                             }
-                                            Navigator.pushNamed(
-                                                context, Routes.pledgeandun,
-                                                arguments: "DDDDD");
+                                            if (kIsWeb && WebNavigationHelper.isAvailable) {
+                                              WebNavigationHelper.navigateTo("pledgeAndUnpledge");
+                                            } else {
+                                              Navigator.pushNamed(
+                                                  context, Routes.pledgeandun,
+                                                  arguments: "DDDDD");
+                                            }
                                           },
                                           splashColor: theme.isDarkMode
                                               ? colors.splashColorDark

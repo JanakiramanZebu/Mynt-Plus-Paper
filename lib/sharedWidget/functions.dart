@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
+import '../res/global_state_text.dart';
 
 final NumberFormat numberFormat = NumberFormat("##,##,##,##,##0.00", "hi");
 final numberFormatter = NumberFormat("##,##,###", "en_IN");
@@ -310,27 +311,39 @@ String convertToISOFormat(String dateTimeString) {
 }
 
 TextStyle textStylebanner(Color color, double fontSize, fWeight) {
-  return GoogleFonts.inter(
-      textStyle: TextStyle(
-          fontWeight: fWeight,
-          color: color,
-          fontSize: fontSize,
-          decoration: TextDecoration.none));
+  if (kIsWeb) {
+    return TextStyle(
+      fontFamily: 'tenon',
+      fontWeight: fWeight,
+      color: color,
+      fontSize: fontSize,
+      decoration: TextDecoration.none,
+    );
+  } else {
+    return TextWidget.textStyle(
+        fontSize: fontSize,
+        color: color,
+        theme: false,
+        fw: fWeight,
+        decoration: TextDecoration.none);
+  }
 }
 
 TextStyle textStyle(Color color, double fontSize, fWeight) {
-  return GoogleFonts.inter(
-      textStyle:
-          TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
+  return TextWidget.textStyle(
+      fontSize: fontSize,
+      color: color,
+      theme: false,
+      fw: fWeight);
 }
 
 TextStyle textStylewithls(Color color, double fontSize, fWeight, ls) {
-  return GoogleFonts.inter(
-      textStyle: TextStyle(
-          fontWeight: fWeight,
-          color: color,
-          fontSize: fontSize,
-          letterSpacing: ls));
+  return TextWidget.textStyle(
+      fontSize: fontSize,
+      color: color,
+      theme: false,
+      fw: fWeight,
+      letterSpacing: ls);
 }
 
 ipostartdate(String startdate, String enddate) {

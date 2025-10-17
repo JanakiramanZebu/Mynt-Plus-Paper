@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_heatmap_calendar/flutter_heatmap_calendar.dart';
+import '../../../res/global_state_text.dart';
 
 void main() {
   runApp(MyApp());
@@ -105,7 +106,11 @@ class _HeatmapCalendarScreenState extends State<HeatmapCalendarScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text("less", style: TextStyle(fontSize: 12, color: Colors.grey)),
+          TextWidget.captionText(
+            text: "less",
+            theme: false,
+            color: Colors.grey,
+          ),
           SizedBox(width: 5),
           for (int i = 1; i <= 6; i++)
             Container(
@@ -118,7 +123,11 @@ class _HeatmapCalendarScreenState extends State<HeatmapCalendarScreen> {
               ),
             ),
           SizedBox(width: 5),
-          Text("more", style: TextStyle(fontSize: 12, color: Colors.grey)),
+          TextWidget.captionText(
+            text: "more",
+            theme: false,
+            color: Colors.grey,
+          ),
         ],
       ),
     );

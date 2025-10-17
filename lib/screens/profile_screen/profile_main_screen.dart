@@ -1,9 +1,8 @@
 // ignore_for_file: use_build_context_synchronously, deprecated_member_use
 
-import 'dart:math';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import '../../utils/custom_navigator.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
@@ -22,7 +21,6 @@ import '../../provider/fund_provider.dart';
 import '../../provider/index_list_provider.dart';
 import '../../provider/ledger_provider.dart';
 import '../../provider/mf_provider.dart';
-import '../../provider/notification_provider.dart';
 import '../../provider/portfolio_provider.dart';
 import '../../provider/profile_all_details_provider.dart';
 import '../../provider/thems.dart';
@@ -32,13 +30,10 @@ import '../../res/global_state_text.dart';
 import '../../res/res.dart';
 import '../../routes/route_names.dart';
 import '../../sharedWidget/custom_back_btn.dart';
-import '../../sharedWidget/functions.dart';
 import '../../sharedWidget/list_divider.dart';
 import '../../sharedWidget/loader_ui.dart';
 import '../../sharedWidget/custom_drag_handler.dart';
-import '../desk_reports/calenderPnl_screen.dart';
 import '../desk_reports/contract_calendar_screen.dart';
-import '../desk_reports/pdf_downalod_screen.dart';
 import '../desk_reports/tax_pnl_screen.dart';
 import 'Api_key_screen.dart';
 import 'logged_user_bottom_sheet.dart';
@@ -346,8 +341,12 @@ class UserAccountScreen extends ConsumerWidget {
                         break;
                       case 'Corporate Actions':
                         // ledgerdate.fetchposition(context);
-                        Navigator.pushNamed(context, Routes.cabuyback,
-                            arguments: "DDDDD");
+                        if (kIsWeb && WebNavigationHelper.isAvailable) {
+                          WebNavigationHelper.navigateTo("corporateActions");
+                        } else {
+                          Navigator.pushNamed(context, Routes.cabuyback,
+                              arguments: "DDDDD");
+                        }
                         if (reportsprovider.holdingsAllData == null ||
                             reportsprovider.cpactiondata == null) {
                           if (reportsprovider.cpactionloader != true) {
@@ -362,12 +361,20 @@ class UserAccountScreen extends ConsumerWidget {
                                   reportsprovider.today, context);
                             }
                           } else {
+                            if (kIsWeb && WebNavigationHelper.isAvailable) {
+                              WebNavigationHelper.navigateTo("corporateActions");
+                            } else {
+                              Navigator.pushNamed(context, Routes.cabuyback,
+                                  arguments: "DDDDD");
+                            }
+                          }
+                        } else {
+                          if (kIsWeb && WebNavigationHelper.isAvailable) {
+                            WebNavigationHelper.navigateTo("corporateActions");
+                          } else {
                             Navigator.pushNamed(context, Routes.cabuyback,
                                 arguments: "DDDDD");
                           }
-                        } else {
-                          Navigator.pushNamed(context, Routes.cabuyback,
-                              arguments: "DDDDD");
                         }
                         // cop action
                         break;
@@ -376,8 +383,12 @@ class UserAccountScreen extends ConsumerWidget {
                           await reportsprovider.getCurrentDate("pandu");
                           reportsprovider.fetchpledgeandunpledge(context);
                         }
-                        Navigator.pushNamed(context, Routes.pledgeandun,
-                            arguments: "DDDDD");
+                        if (kIsWeb && WebNavigationHelper.isAvailable) {
+                          WebNavigationHelper.navigateTo("pledgeAndUnpledge");
+                        } else {
+                          Navigator.pushNamed(context, Routes.pledgeandun,
+                              arguments: "DDDDD");
+                        }
                         break;
                       case "Reports":
                         if (reportsprovider.ledgerAllData == null) {
@@ -429,31 +440,35 @@ class UserAccountScreen extends ConsumerWidget {
                           reportsprovider.fetchpdfdownload(context,
                               reportsprovider.startDate, reportsprovider.today);
                         }
-                        await Navigator.push(
-                          context,
-                          PageRouteBuilder(
-                            pageBuilder:
-                                (context, animation, secondaryAnimation) =>
-                                    ReportsScreen(),
-                            transitionsBuilder: (context, animation,
-                                secondaryAnimation, child) {
-                              final slideTween = Tween(
-                                begin: const Offset(
-                                    -1.0, 0.0), // Slide in from right
-                                end: Offset.zero,
-                              ).chain(CurveTween(
-                                  curve:
-                                      Curves.easeOutQuart)); // Optional curve
+                        if (kIsWeb && WebNavigationHelper.isAvailable) {
+                          WebNavigationHelper.navigateTo("reports");
+                        } else {
+                          await Navigator.push(
+                            context,
+                            PageRouteBuilder(
+                              pageBuilder:
+                                  (context, animation, secondaryAnimation) =>
+                                      ReportsScreen(),
+                              transitionsBuilder: (context, animation,
+                                  secondaryAnimation, child) {
+                                final slideTween = Tween(
+                                  begin: const Offset(
+                                      -1.0, 0.0), // Slide in from right
+                                  end: Offset.zero,
+                                ).chain(CurveTween(
+                                    curve:
+                                        Curves.easeOutQuart)); // Optional curve
 
-                              return SlideTransition(
-                                position: animation.drive(slideTween),
-                                child: child,
-                              );
-                            },
-                            transitionDuration:
-                                const Duration(milliseconds: 180),
-                          ),
-                        );
+                                return SlideTransition(
+                                  position: animation.drive(slideTween),
+                                  child: child,
+                                );
+                              },
+                              transitionDuration:
+                                  const Duration(milliseconds: 180),
+                            ),
+                          );
+                        }
                         break;
                       case "IPO":
                         Navigator.pushNamed(context, Routes.ipo);
@@ -474,32 +489,36 @@ class UserAccountScreen extends ConsumerWidget {
                         );
                         break;
                       case "Settings":
-                        await Navigator.push(
-                          context,
-                          PageRouteBuilder(
-                            pageBuilder:
-                                (context, animation, secondaryAnimation) =>
-                                    SettingsScreen(),
-                            transitionsBuilder: (context, animation,
-                                secondaryAnimation, child) {
-                              final slideTween = Tween(
-                                begin: const Offset(
-                                    -1.0, 0.0), // Slide in from right
-                                end: Offset.zero,
-                              ).chain(CurveTween(
-                                  curve:
-                                      Curves.easeOutQuart)); // Optional curve
+                        // Open settings in left panel
+                        if (kIsWeb && WebNavigationHelper.isAvailable) {
+                          WebNavigationHelper.navigateTo("settings");
+                        } else {
+                          await Navigator.push(
+                            context,
+                            PageRouteBuilder(
+                              pageBuilder:
+                                  (context, animation, secondaryAnimation) =>
+                                      SettingsScreen(),
+                              transitionsBuilder: (context, animation,
+                                  secondaryAnimation, child) {
+                                final slideTween = Tween(
+                                  begin: const Offset(
+                                      -1.0, 0.0), // Slide in from right
+                                  end: Offset.zero,
+                                ).chain(CurveTween(
+                                    curve:
+                                        Curves.easeOutQuart)); // Optional curve
 
-                              return SlideTransition(
-                                position: animation.drive(slideTween),
-                                child: child,
-                              );
-                            },
-                            transitionDuration:
-                                const Duration(milliseconds: 180),
-                          ),
-                        );
-
+                                return SlideTransition(
+                                  position: animation.drive(slideTween),
+                                  child: child,
+                                );
+                              },
+                              transitionDuration:
+                                  const Duration(milliseconds: 180),
+                            ),
+                          );
+                        }
                         break;
                       case "Rate Us":
                         if (TargetPlatform.iOS == defaultTargetPlatform) {
@@ -1864,7 +1883,6 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = ref.watch(themeProvider);
-    final userProfile = ref.watch(userProfileProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -2104,8 +2122,10 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
         _buildDetailRow("Mobile", clientData?.mOBILENO ?? "N/A", theme, ref),
         _buildDetailRow(
             "Address",
-            "${clientData?.cLRESIADD1} ${clientData?.cLRESIADD2} ${clientData?.cLRESIADD3}" ??
-                "N/A",
+            () {
+              final address = "${clientData?.cLRESIADD1 ?? ""} ${clientData?.cLRESIADD2 ?? ""} ${clientData?.cLRESIADD3 ?? ""}".trim();
+              return address.isEmpty ? "N/A" : address;
+            }(),
             theme,
             ref),
         // _buildDetailRow("DP ID", clientData?.cLIENTDPCODE ?? "N/A", theme),
@@ -3205,7 +3225,6 @@ class ReportsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref.watch(themeProvider);
-    final userProfile = ref.watch(userProfileProvider);
     final ledgerdate = ref.watch(ledgerProvider);
 
     final reportsItems = [

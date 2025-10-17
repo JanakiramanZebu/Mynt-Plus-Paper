@@ -787,6 +787,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     portfolio.cancelTimer();
 
     // Unsubscribe from real-time data for other tabs
+    marketWatchList.requestMWScrip(context: context, isSubscribe: false);
     portfolio.requestWSHoldings(context: context, isSubscribe: false);
     orderProviderRef.requestWSOrderBook(context: context, isSubscribe: false);
     portfolio.requestWSPosition(context: context, isSubscribe: false);

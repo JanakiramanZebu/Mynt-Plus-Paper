@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import '../utils/custom_navigator.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../provider/thems.dart';
-import '../../provider/websocket_provider.dart';
 import '../../res/res.dart';
+import '../../res/global_state_text.dart';
 import '../models/marketwatch_model/get_quotes.dart';
-import '../models/marketwatch_model/market_watch_scrip_model.dart';
 import '../provider/market_watch_provider.dart';
 import '../provider/user_profile_provider.dart';
 import '../routes/route_names.dart';
@@ -30,9 +30,11 @@ class ScripInfoBtns extends ConsumerWidget {
       this.navigationLock});
 
   TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
+    return TextWidget.textStyle(
+        fontSize: fontSize,
+        color: color,
+        theme: false,
+        fw: fWeight);
   }
 
   @override
@@ -182,10 +184,14 @@ class ScripInfoBtns extends ConsumerWidget {
         
         // Navigate to option chain screen
         Navigator.pop(context);
-        Navigator.pushNamed(
-            context,
-            Routes.optionChain,
-            arguments: depthArgs);
+        if (kIsWeb && WebNavigationHelper.isAvailable) {
+          WebNavigationHelper.navigateTo("optionChain", arguments: depthArgs);
+        } else {
+          Navigator.pushNamed(
+              context,
+              Routes.optionChain,
+              arguments: depthArgs);
+        }
       } else {
         // For other buttons (Overview, Fundamental, Set Alert, etc.)
         // Create depth args for the bottom sheet

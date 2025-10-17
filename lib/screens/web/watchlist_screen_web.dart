@@ -8,28 +8,18 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter_swipe_action_cell/flutter_swipe_action_cell.dart';
-import 'package:mynt_plus/res/colors.dart';
 import '../../utils/responsive_modal.dart';
-import '../../models/marketwatch_model/get_quotes.dart';
-import '../../models/order_book_model/order_book_model.dart';
 import '../../provider/market_watch_provider.dart';
-
 import '../../provider/thems.dart';
-import '../../provider/user_profile_provider.dart';
-import '../../provider/websocket_provider.dart';
-import '../../res/global_state_text.dart';
 import '../../res/res.dart';
+import '../../res/global_state_text.dart';
 import '../../routes/route_names.dart';
-import '../../sharedWidget/custom_exch_badge.dart';
 import '../../sharedWidget/custom_text_btn.dart';
-import '../../sharedWidget/functions.dart';
 import '../../sharedWidget/list_divider.dart';
-import '../../sharedWidget/snack_bar.dart';
-import 'index/index_screen.dart';
-import 'my_stocks/stocks_screen.dart';
-import 'scrip_filter_bottom_sheet.dart';
-import 'watchlist_card.dart';
-import 'watchlists_bottom_sheet.dart';
+import '../market_watch/my_stocks/stocks_screen.dart';
+import '../market_watch/scrip_filter_bottom_sheet.dart';
+import 'watchlist_card_web.dart';
+import '../market_watch/watchlists_bottom_sheet.dart';
 
 class MockMarketWatchlist {
   final List<String> values;
@@ -78,21 +68,21 @@ class _SliverTabsDelegate extends SliverPersistentHeaderDelegate {
   }
 }
 
-class WatchListScreen extends StatefulWidget {
-  const WatchListScreen({super.key});
+class WatchListScreenWeb extends StatefulWidget {
+  const WatchListScreenWeb({super.key});
 
   @override
-  State<WatchListScreen> createState() => _WatchListScreenState();
+  State<WatchListScreenWeb> createState() => _WatchListScreenWebState();
 }
 
-class _WatchListScreenState extends State<WatchListScreen>
+class _WatchListScreenWebState extends State<WatchListScreenWeb>
     with AutomaticKeepAliveClientMixin {
   final ScrollController _tabScrollController = ScrollController();
   late final SwipeActionController _swipeController;
   late final PageController _pageController;
 
   final TextEditingController _searchController = TextEditingController();
-  final double _tabWidth = 95.0;
+  final double _tabWidth = 120.0; // Slightly wider for web
   final List<String> _lastTabNames = [];
 
   Timer? _scrollDebounce;
@@ -109,8 +99,8 @@ class _WatchListScreenState extends State<WatchListScreen>
     super.initState();
 
     FirebaseAnalytics.instance.logScreenView(
-      screenName: 'Watchlist screen',
-      screenClass: 'WatchList_screen',
+      screenName: 'Watchlist screen web',
+      screenClass: 'WatchList_screen_web',
     );
 
     _swipeController = SwipeActionController(
@@ -165,9 +155,6 @@ class _WatchListScreenState extends State<WatchListScreen>
   /// Initialize immediately with existing data - no loader needed
   void _initializeWithStoredData() {
     if (_isDisposed || !mounted) return;
-
-    final marketWatch =
-        ProviderScope.containerOf(context).read(marketWatchProvider);
 
     // Set tab scroll position to the stored page index
     _scrollToSelectedTab(_currentPageIndex, force: true);
@@ -443,12 +430,18 @@ class _WatchListScreenState extends State<WatchListScreen>
   ) {
     return SliverToBoxAdapter(
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12), // Increased padding for web
         child: Container(
-          height: 40,
+          height: 48, // Increased height for web
           decoration: BoxDecoration(
             color: theme.isDarkMode ? colors.searchBgDark : colors.searchBg,
-            borderRadius: BorderRadius.circular(5),
+            borderRadius: BorderRadius.circular(8), // Increased border radius for web
+            border: Border.all(
+              color: theme.isDarkMode 
+                ? colors.dividerDark.withOpacity(0.3)
+                : colors.dividerLight.withOpacity(0.3),
+              width: 1,
+            ),
           ),
           child: Row(
             children: [
@@ -469,16 +462,16 @@ class _WatchListScreenState extends State<WatchListScreen>
                   },
                   child: Row(
                     children: [
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 16), // Increased padding for web
                       SvgPicture.asset(
                         assets.searchIcon,
-                        width: 18,
-                        height: 18,
+                        width: 20, // Slightly larger for web
+                        height: 20,
                         color: theme.isDarkMode
                             ? colors.textSecondaryDark
                             : colors.textSecondaryLight,
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 12), // Increased spacing for web
                       Expanded(
                         child: TextWidget.subText(
                           text: 'Search & add',
@@ -494,7 +487,7 @@ class _WatchListScreenState extends State<WatchListScreen>
               ),
               if (isPreDef != 'Yes' && scripLen > 1)
                 Padding(
-                  padding: const EdgeInsets.only(right: 6),
+                  padding: const EdgeInsets.only(right: 8), // Increased padding for web
                   child: Material(
                     color: Colors.transparent,
                     shape: const CircleBorder(),
@@ -520,11 +513,11 @@ class _WatchListScreenState extends State<WatchListScreen>
                         );
                       },
                       child: Padding(
-                        padding: const EdgeInsets.all(8),
+                        padding: const EdgeInsets.all(10), // Increased padding for web
                         child: SvgPicture.asset(
                           assets.searchFilter,
-                          width: 16,
-                          height: 16,
+                          width: 18, // Slightly larger for web
+                          height: 18,
                           color: theme.isDarkMode
                               ? colors.textSecondaryDark
                               : colors.textSecondaryLight,
@@ -549,24 +542,25 @@ class _WatchListScreenState extends State<WatchListScreen>
     return SliverPersistentHeader(
       pinned: true,
       delegate: _SliverTabsDelegate(
-        height: 45,
+        height: 40, // Increased height for web
         selectedWatchlistName: wlName,
         watchlistNames: watchList?.values?.cast<String>(),
         child: Container(
-          padding: const EdgeInsets.only(top: 6),
+          padding: const EdgeInsets.only(top: 8), // Increased padding for web
           decoration: BoxDecoration(
             color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
             border: Border(
               bottom: BorderSide(
                 color:
                     theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
+                width: 1,
               ),
             ),
           ),
           child: Row(
             children: [
               Padding(
-                padding: const EdgeInsets.only(left: 8, right: 4),
+                padding: const EdgeInsets.only(left: 12, right: 6), // Increased padding for web
                 child: Material(
                   color: Colors.transparent,
                   shape: const CircleBorder(),
@@ -595,13 +589,13 @@ class _WatchListScreenState extends State<WatchListScreen>
                       );
                     },
                     child: SizedBox(
-                      height: 32,
-                      width: 32,
+                      height: 36, // Increased size for web
+                      width: 36,
                       child: Center(
                         child: SvgPicture.asset(
                           assets.hamMenu,
-                          width: 20,
-                          height: 20,
+                          width: 22, // Slightly larger for web
+                          height: 22,
                           color: theme.isDarkMode
                               ? colors.textSecondaryDark
                               : colors.textSecondaryLight,
@@ -630,7 +624,7 @@ class _WatchListScreenState extends State<WatchListScreen>
     if (watchList?.values == null) return const SizedBox.shrink();
 
     return SizedBox(
-      height: 40,
+      height: 35, // Increased height for web
       child: ListView.builder(
         key: const PageStorageKey<String>('watchlistTabs'),
         controller: _tabScrollController,
@@ -652,7 +646,6 @@ class _WatchListScreenState extends State<WatchListScreen>
                 highlightColor: theme.isDarkMode
                     ? Colors.white.withOpacity(.01)
                     : Colors.black.withOpacity(.01),
-                // onTapDown: (_) => HapticFeedback.lightImpact(),
                 onTap: () => _handleTabTap(name, i, ref),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -660,7 +653,7 @@ class _WatchListScreenState extends State<WatchListScreen>
                     Container(
                       alignment: Alignment.center,
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 6),
+                          horizontal: 12, vertical: 2), // Increased padding for web
                       child: TextWidget.subText(
                         text: _formatTabName(name),
                         color: selected
@@ -670,18 +663,18 @@ class _WatchListScreenState extends State<WatchListScreen>
                             : (theme.isDarkMode
                                 ? colors.textSecondaryDark
                                 : colors.textSecondaryLight),
+                        theme: theme.isDarkMode,
+                        fw: selected ? 1 : 3,
                         textOverflow: TextOverflow.ellipsis,
                         maxLines: 1,
-                        theme: theme.isDarkMode,
-                        fw: selected ? 2 : null,
                       ),
                     ),
                     AnimatedContainer(
                       duration: const Duration(milliseconds: 250),
                       curve: Curves.easeInOut,
-                      height: 2,
-                      width: selected ? _tabWidth - 18 : 0,
-                      margin: const EdgeInsets.only(top: 1),
+                      height: 3, // Slightly thicker for web
+                      width: selected ? _tabWidth - 24 : 0, // Adjusted width for web
+                      margin: const EdgeInsets.only(top: 2), // Increased margin for web
                       decoration: BoxDecoration(
                         color: colors.colorBlue,
                         borderRadius: BorderRadius.circular(2),
@@ -700,7 +693,7 @@ class _WatchListScreenState extends State<WatchListScreen>
   Widget _buildEmptyState(ThemesProvider theme, MarketWatchProvider mw) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
+        padding: const EdgeInsets.symmetric(horizontal: 24), // Increased padding for web
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -718,20 +711,19 @@ class _WatchListScreenState extends State<WatchListScreen>
                 );
               },
             ),
-            const SizedBox(height: 8),
-            TextWidget.subText(
+            const SizedBox(height: 12), // Increased spacing for web
+            TextWidget.headText(
               text: 'No symbol in this watchlist',
               color: theme.isDarkMode
                   ? colors.textPrimaryDark
                   : colors.textPrimaryLight,
               theme: theme.isDarkMode,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12), // Increased spacing for web
             SizedBox(
-              width: 250,
+              width: 300, // Increased width for web
               child: TextWidget.paraText(
-                text:
-                    'Use the search box above to find and add stocks, indices, futures or options.',
+                text: 'Use the search box above to find and add stocks, indices, futures or options.',
                 color: theme.isDarkMode
                     ? colors.textSecondaryDark
                     : colors.textSecondaryLight,
@@ -752,7 +744,7 @@ class _WatchListScreenState extends State<WatchListScreen>
       cacheExtent: 500,
       separatorBuilder: (_, __) => const ListDivider(),
       itemBuilder: (_, i) =>
-          RepaintBoundary(child: WatchlistCard(watchListData: scrips[i])),
+          RepaintBoundary(child: WatchlistCardWeb(watchListData: scrips[i])),
     );
   }
 
@@ -763,9 +755,9 @@ class _WatchListScreenState extends State<WatchListScreen>
     if (v == 'Sensex') return 'Sensex';
     return v.isEmpty
         ? ''
-        : v.length <= 10
+        : v.length <= 12 // Increased length limit for web
             ? '${v[0].toUpperCase()}${v.substring(1)}'
-            : '${v.substring(0, 9)}..';
+            : '${v.substring(0, 11)}..';
   }
 
   bool _listsEqual(List<String> a, List<String> b) {

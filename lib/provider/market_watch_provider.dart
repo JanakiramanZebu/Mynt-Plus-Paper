@@ -3,6 +3,8 @@
 import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:mynt_plus/provider/thems.dart';
@@ -33,6 +35,7 @@ import '../models/marketwatch_model/watchlist_rename_model.dart';
 import '../res/global_state_text.dart';
 import '../res/res.dart';
 import '../screens/market_watch/scrip_depth_info.dart';
+import '../screens/web/scrip_tabs_manager.dart';
 import '../sharedWidget/functions.dart';
 import '../sharedWidget/snack_bar.dart';
 import 'auth_provider.dart';
@@ -711,21 +714,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         expDate: '${flow ? raw['expDate'] : raw.expDate}',
         option: '${flow ? raw['option'] : raw.option}');
     getResponsiveWidth(context) == 600
-        ? showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return Dialog(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: SizedBox(
-                  width: MediaQuery.of(context).size.width *
-                      0.4, // set your desired width here
-                  child: ScripDepthInfo(wlValue: depthArgs, isBasket: basket),
-                ),
-              );
-            },
-          )
+        ? _openScripInWebPanel(context, depthArgs, basket)
         : showModalBottomSheet(
             shape: const RoundedRectangleBorder(
                 borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
@@ -1114,9 +1103,20 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   }
 
   void setChartScript(String exch, String token, String tsym) async {
-    await ConstantName.chartwebViewController!.evaluateJavascript(
-        source:
-            "window.changeScript([{exch: '$exch', token: '$token', tsym: '$tsym'}], '${ref.read(themeProvider).isDarkMode}')");
+    if (kIsWeb) {
+      // On Flutter Web, JS injection into a cross-origin iframe is blocked.
+      // Reload the chart with the desired symbol via URL parameters instead.
+      final isDark = ref.read(themeProvider).isDarkMode;
+      final url =
+          "https://mynt.zebuetrade.com/tv?src=app&symbol=$tsym&user=${pref.clientId}&usession=${pref.clientSession}&token=$token&exch=$exch&dark=$isDark";
+      await ConstantName.chartwebViewController?.loadUrl(
+        urlRequest: URLRequest(url: WebUri(url)),
+      );
+    } else {
+      await ConstantName.chartwebViewController!.evaluateJavascript(
+          source:
+              "window.changeScript([{exch: '$exch', token: '$token', tsym: '$tsym'}], '${ref.read(themeProvider).isDarkMode}')");
+    }
     if (_chartTabs.length == 5 &&
         (_chartTabs.any((t) => t.token == token)) != true) {
       removeChartTab(_chartTabs.last, false);
@@ -3981,5 +3981,34 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     // Could add error state management here if needed
     debugPrint("Option Chain Error: $error");
     notifyListeners();
+  }
+
+  // Callback to show scrip depth info in panel
+  Function(dynamic)? _onShowScripDepthInfoInPanel;
+
+  // Set callback for showing scrip depth info in panel
+  void setOnShowScripDepthInfoInPanel(Function(dynamic) callback) {
+    _onShowScripDepthInfoInPanel = callback;
+  }
+
+  // Open scrip in web panel using the scrip tabs manager
+  void _openScripInWebPanel(BuildContext context, DepthInputArgs depthArgs, String basket) {
+    // Import the scrip tabs provider to add the new scrip
+    final container = ProviderScope.containerOf(context);
+    final scripTabsNotifier = container.read(scripTabsProvider.notifier);
+    
+    // Check if scrip already exists in tabs
+    if (scripTabsNotifier.hasScrip(depthArgs)) {
+      // Scrip already exists, just switch to it
+      scripTabsNotifier.addScrip(depthArgs); // This will switch to existing tab
+    } else {
+      // Add the scrip to the tabs manager
+      scripTabsNotifier.addScrip(depthArgs);
+    }
+    
+    // Switch to scrip details panel if callback is available
+    if (_onShowScripDepthInfoInPanel != null) {
+      _onShowScripDepthInfoInPanel!(depthArgs);
+    }
   }
 }

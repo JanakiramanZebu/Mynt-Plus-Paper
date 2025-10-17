@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mynt_plus/screens/dashboard_screen.dart';
-import 'package:mynt_plus/screens/market_watch/watchlist_screen.dart';
+import 'package:mynt_plus/screens/web/watchlist_screen_web.dart';
 import 'package:mynt_plus/screens/portfolio_screens/portfolio_screen.dart';
 import 'package:mynt_plus/screens/profile_screen/profile_main_screen.dart';
-import 'package:mynt_plus/res/assets.dart';
 import 'package:mynt_plus/res/res.dart';
+import 'package:mynt_plus/res/global_state_text.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/routes/app_routes.dart';
 import 'package:mynt_plus/utils/custom_navigator.dart';
@@ -27,7 +28,6 @@ class _MainControlerScreenForWebState
   final GlobalKey<NavigatorState> _rightPanelNavigatorKey =
       GlobalKey<NavigatorState>();
   String _currentRoute = '/dashboard';
-  Object? _currentArguments;
 
   // Split panel state
   double _splitRatio = 0.3; // 30% left, 70% right
@@ -57,7 +57,6 @@ class _MainControlerScreenForWebState
   void navigateInRightPanel(String route, {Object? arguments}) {
     setState(() {
       _currentRoute = route;
-      _currentArguments = arguments;
     });
   }
 
@@ -84,7 +83,6 @@ class _MainControlerScreenForWebState
     if (_currentRoute != newRoute) {
       setState(() {
         _currentRoute = newRoute;
-        _currentArguments = null;
       });
     }
   }
@@ -176,13 +174,11 @@ class _MainControlerScreenForWebState
                 colorFilter: ColorFilter.mode(_getNavButtonColor(theme, isSelected), BlendMode.srcIn),
               ),
               const SizedBox(width: 8),
-              Text(
-                label,
-                style: TextStyle(
-                  color: _getNavButtonColor(theme, isSelected),
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                  fontSize: 14,
-                ),
+              TextWidget.paraText(
+                text: label,
+                theme: theme.isDarkMode,
+                color: _getNavButtonColor(theme, isSelected),
+                fw: isSelected ? 1 : 0,
               ),
             ],
           ),
@@ -277,14 +273,14 @@ class _MainControlerScreenForWebState
     if (_isPanelsSwapped) {
       return _getTabContentWithNavigator();
     } else {
-      return const WatchListScreen();
+      return const WatchListScreenWeb();
     }
   }
 
   // Get right panel content (considering swap)
   Widget _getRightPanel() {
     if (_isPanelsSwapped) {
-      return const WatchListScreen();
+      return const WatchListScreenWeb();
     } else {
       return _getTabContentWithNavigator();
     }
@@ -374,7 +370,7 @@ class _MainControlerScreenForWebState
       case 1:
         return Container(
           constraints: const BoxConstraints.expand(),
-          child: const WatchListScreen(),
+          child: const WatchListScreenWeb(),
         );
       case 2:
         return Container(

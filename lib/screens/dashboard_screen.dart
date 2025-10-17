@@ -365,6 +365,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
   }
 
   TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize);
+    return TextWidget.textStyle(
+        fontSize: fontSize,
+        color: color,
+        theme: false,
+        fw: fWeight);
   }
 }

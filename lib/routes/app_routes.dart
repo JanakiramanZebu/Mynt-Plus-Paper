@@ -5,6 +5,7 @@ import 'package:mynt_plus/models/order_book_model/place_order_model.dart';
 import 'package:mynt_plus/screens/algo/algo_create.dart';
 import 'package:mynt_plus/screens/bonds/bonds_common_search_screen.dart';
 import 'package:mynt_plus/screens/algo/algo_strategytlist.dart';
+import 'package:mynt_plus/screens/web/customizable_split_home_screen.dart';
 // import 'package:mynt_plus/screens/ipo/ipo_common_search_screen.dart';
 import 'package:mynt_plus/screens/mutual_fund/cagr_calculator_screen.dart';
 import 'package:mynt_plus/screens/mutual_fund/mf_hold_singlepage.dart';
@@ -13,6 +14,7 @@ import 'package:mynt_plus/screens/mutual_fund/order_single_page.dart';
 import 'package:mynt_plus/screens/mutual_fund/redeem_new_bottomsheet.dart';
 import 'package:mynt_plus/screens/order_screen/order_confirmation_screen.dart';
 import 'package:mynt_plus/screens/profile_screen/app_webview/ipo_webview.dart';
+// import 'package:mynt_plus/screens/web/grid_dashboard_web.dart';
 import '../main.dart'; // Import for FirebaseHelper
 import '../screens/authentication/login/login_banner_screen.dart';
 import '../screens/authentication/login/login_screen.dart';
@@ -42,7 +44,7 @@ import '../screens/desk_reports/profitnloss_screen.dart';
 import '../screens/desk_reports/tax_pnl_screen.dart';
 import '../screens/desk_reports/tradebook_screen.dart';
 import '../screens/home_screen.dart';
-import '../screens/main_screen_control_web.dart';
+import '../screens/web/main_screen_control_web.dart';
 import '../screens/ipo/ipo_main_screen.dart';
 import '../screens/ipo/ipo_orderbook_screen/ipo_modify_order/modify_order_screen.dart';
 import '../screens/ipo/ipo_orderbook_screen/ipo_order_book_main_screen.dart';
@@ -72,6 +74,7 @@ import '../screens/order_book/basket/basket_list.dart';
 import '../screens/order_book/exit_order_screen.dart';
 import '../screens/order_book/gtt_order_detail.dart';
 import '../screens/order_book/order_book_detail.dart';
+import '../screens/order_book/order_book_screen.dart';
 import '../screens/order_book/pending_alert_detail_screen.dart';
 import '../screens/order_book/sip_order_details.dart';
 import '../screens/order_book/trade_book_detail.dart';
@@ -200,8 +203,7 @@ class AppRoutes {
       // case Routes.homeScreen:
       //   return MaterialPageRoute(builder: (_) => const HomeScreenDashBoard());
       case Routes.mainControlerScreenForWeb:
-        return MaterialPageRoute(
-            builder: (_) => const MainControlerScreenForWeb());
+        return MaterialPageRoute(builder: (_) => const CustomizableSplitHomeScreen());
       case Routes.loginScreen:
         return _createRoute(
           pageBuilder: (_, __, ___) => const LoginScreen(),
@@ -806,6 +808,12 @@ class AppRoutes {
         return _createRoute(
           pageBuilder: (_, __, ___) => const mfSipdetScren(data: {}),
           beginOffset: const Offset(-1.0, 0.0),
+        );
+
+      case Routes.orderBook:
+        return _createRoute(
+          pageBuilder: (_, __, ___) => const OrderBookScreen(),
+          beginOffset: const Offset(0.0, 1.0),
         );
 
       case Routes.mfholdsinlepage:

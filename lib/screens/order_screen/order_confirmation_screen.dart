@@ -1,5 +1,7 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mynt_plus/utils/custom_navigator.dart';
 import '../../models/order_book_model/order_history_model.dart';
 import '../../models/order_book_model/place_order_model.dart';
 import '../../provider/order_provider.dart';
@@ -107,9 +109,13 @@ class _OrderConfirmationScreenState extends ConsumerState<OrderConfirmationScree
 
   void _navigateToOrderBook() {
     // Navigate to order book
+    if (kIsWeb) {
+      WebNavigationHelper.navigateTo("orderBook");
+    } else {
     ref.read(indexListProvider).bottomMenu(2, context);
     ref.read(portfolioProvider).changeTabIndex(2);
     ref.read(orderProvider).changeTabIndex(0, context);
+    }
 
     Navigator.of(context).popUntil((route) => route.isFirst);
   }

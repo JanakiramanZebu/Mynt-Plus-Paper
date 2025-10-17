@@ -11,22 +11,21 @@ import '../../provider/thems.dart';
 import '../../provider/websocket_provider.dart';
 import '../../res/global_state_text.dart';
 import '../../res/res.dart';
-import '../../routes/route_names.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
 import '../../sharedWidget/snack_bar.dart';
 import '../../utils/responsive_navigation.dart';
 import '../../utils/responsive_snackbar.dart';
-import 'edit_scrip.dart';
+import '../market_watch/edit_scrip.dart';
 
-class WatchlistCard extends ConsumerStatefulWidget {
+class WatchlistCardWeb extends ConsumerStatefulWidget {
   final dynamic watchListData;
-  const WatchlistCard({super.key, required this.watchListData});
+  const WatchlistCardWeb({super.key, required this.watchListData});
 
   @override
-  ConsumerState<WatchlistCard> createState() => _WatchlistCardState();
+  ConsumerState<WatchlistCardWeb> createState() => _WatchlistCardWebState();
 }
 
-class _WatchlistCardState extends ConsumerState<WatchlistCard> {
+class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
   // Add navigation lock to prevent multiple navigation events
   bool _isNavigating = false;
   bool _isHovered = false;
@@ -43,7 +42,7 @@ class _WatchlistCardState extends ConsumerState<WatchlistCard> {
         onEnter: (_) => setState(() => _isHovered = true),
         onExit: (_) => setState(() => _isHovered = false),
         child: InkWell(
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: BorderRadius.circular(8), // Increased border radius for web
           splashColor: theme.isDarkMode
               ? Colors.white.withOpacity(0.15)
               : Colors.black.withOpacity(0.15),
@@ -102,98 +101,105 @@ class _WatchlistCardState extends ConsumerState<WatchlistCard> {
               }
             }
           },
-          child: ListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-            dense: false,
-            // visualDensity: VisualDensity.compact,
-            // minVerticalPadding: 0,
-            title: Padding(
-              padding: const EdgeInsets.only(bottom: 4),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    widget.watchListData["symbol"]
-                        .toString()
-                        .replaceAll("-EQ", "")
-                        .toUpperCase(),
-                    style: TextWidget.textStyle(
-                      fontSize: 14,
-                      color: theme.isDarkMode
-                          ? colors.textPrimaryDark
-                          : colors.textPrimaryLight,
-                      fw: 0,
-                      theme: theme.isDarkMode,
-                    ),
-                  ),
-                  if (widget.watchListData["option"].toString().isNotEmpty)
-                    Text(
-                      "${widget.watchListData["option"]}",
-                      style: TextWidget.textStyle(
-                        fontSize: 14,
-                        color: theme.isDarkMode
-                            ? colors.textPrimaryDark
-                            : colors.textPrimaryLight,
-                        theme: theme.isDarkMode,
-                        fw: 0,
-                      ),
-                    ),
-                ],
-              ),
-            ),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16), // Increased padding for web
+            child: Row(
               children: [
-                Padding(
-                  padding: const EdgeInsets.only(top: 4),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
+                // Left side - Symbol info
+                Expanded(
+                  flex: 3,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      CustomExchBadge(exch: '${widget.watchListData["exch"]}'),
-                      if (widget.watchListData['expDate'].toString().isNotEmpty)
-                        TextWidget.paraText(
-                          text: " ${widget.watchListData['expDate']}",
-                          color: theme.isDarkMode
-                              ? colors.textSecondaryDark
-                              : colors.textSecondaryLight,
-                          theme: theme.isDarkMode,
-                          fw: 0,
-                        ),
-                      if (widget.watchListData['holdingQty'] != null &&
-                          widget.watchListData['holdingQty']
-                              .toString()
-                              .isNotEmpty &&
-                          widget.watchListData['holdingQty'] != "null") ...[
-                        const SizedBox(width: 6),
-                        SvgPicture.asset(assets.suitcase,
-                            height: 12,
-                            width: 16,
+                      // Symbol name and option
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          TextWidget.subText(
+                            text: widget.watchListData["symbol"]
+                                .toString()
+                                .replaceAll("-EQ", "")
+                                .toUpperCase(),
                             color: theme.isDarkMode
-                                ? colors.secondaryDark
-                                : colors.secondaryLight),
-                        const SizedBox(width: 4),
-                        TextWidget.paraText(
-                          text: "${widget.watchListData['holdingQty']}",
-                          color: theme.isDarkMode
-                              ? colors.textSecondaryDark
-                              : colors.textSecondaryLight,
-                          theme: theme.isDarkMode,
-                          fw: 0,
-                        ),
-                      ]
+                                ? colors.textPrimaryDark
+                                : colors.textPrimaryLight,
+                            theme: theme.isDarkMode,
+                            fw: 0,
+                          ),
+                          if (widget.watchListData["option"].toString().isNotEmpty)
+                            Padding(
+                              padding: const EdgeInsets.only(left: 4),
+                              child: TextWidget.subText(
+                                text: "${widget.watchListData["option"]}",
+                                color: theme.isDarkMode
+                                    ? colors.textPrimaryDark
+                                    : colors.textPrimaryLight,
+                                theme: theme.isDarkMode,
+                                fw: 0,
+                              ),
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 8), // Increased spacing for web
+                      // Exchange badge and additional info
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          TextWidget.paraText(
+                            text: '${widget.watchListData["exch"]}',
+                            color: theme.isDarkMode
+                                ? colors.textSecondaryDark
+                                : colors.textSecondaryLight,
+                            theme: theme.isDarkMode,
+                            fw: 3,
+                          ),
+                          if (widget.watchListData['expDate'].toString().isNotEmpty)
+                            Padding(
+                              padding: const EdgeInsets.only(left: 8),
+                              child: TextWidget.paraText(
+                                text: " ${widget.watchListData['expDate']}",
+                                color: theme.isDarkMode
+                                    ? colors.textSecondaryDark
+                                    : colors.textSecondaryLight,
+                                theme: theme.isDarkMode,
+                                fw: 0,
+                              ),
+                            ),
+                          if (widget.watchListData['holdingQty'] != null &&
+                              widget.watchListData['holdingQty']
+                                  .toString()
+                                  .isNotEmpty &&
+                              widget.watchListData['holdingQty'] != "null") ...[
+                            const SizedBox(width: 8),
+                            SvgPicture.asset(assets.suitcase,
+                                height: 14, // Slightly larger for web
+                                width: 18,
+                                color: theme.isDarkMode
+                                    ? colors.secondaryDark
+                                    : colors.secondaryLight),
+                            const SizedBox(width: 4),
+                            TextWidget.paraText(
+                              text: "${widget.watchListData['holdingQty']}",
+                              color: theme.isDarkMode
+                                  ? colors.textSecondaryDark
+                                  : colors.textSecondaryLight,
+                              theme: theme.isDarkMode,
+                              fw: 3,
+                            ),
+                          ]
+                        ],
+                      ),
                     ],
                   ),
                 ),
-              ],
-            ),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _isHovered
-                    ? Container(
-                        width: 160,
+                // Right side - Action buttons and price data
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Action buttons (shown on hover)
+                    if (_isHovered)
+                      Container(
+                        width: 200, // Increased width for web
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           mainAxisSize: MainAxisSize.min,
@@ -234,38 +240,33 @@ class _WatchlistCardState extends ConsumerState<WatchlistCard> {
                               onPressed: () {
                                 // Navigate to chart screen
                                 ref.read(marketWatchProvider).singlePageloader(true);
-                                 ref.read(marketWatchProvider)
-                                                        .chngDephBtn("Chart");
-                                                         ref.read(userProfileProvider)
-                                                     .setChartdialog(true);
-                                                  
-                                                 ref.read(marketWatchProvider).setChartScript(
-                                                     widget.watchListData["exch"].toString(),
-                                                     widget.watchListData["token"].toString(),
-                                                     widget.watchListData["tsym"].toString());
-                                                  
-                                                 ref.read(marketWatchProvider)
-                                                     .singlePageloader(false);
-                                // Navigator.pushNamed(
-                                //     context, Routes.chartWebView,
-                                //     arguments: {
-                                //       'token': widget.watchListData["token"]
-                                //           .toString(),
-                                //       'symbol': widget.watchListData["symbol"]
-                                //           .toString(),
-                                //       'exch': widget.watchListData["exch"]
-                                //           .toString(),
-                                //     });
+                                ref.read(marketWatchProvider)
+                                    .chngDephBtn("Chart");
+                                ref.read(userProfileProvider)
+                                    .setChartdialog(true);
+                                
+                                ref.read(marketWatchProvider).setChartScript(
+                                    widget.watchListData["exch"].toString(),
+                                    widget.watchListData["token"].toString(),
+                                    widget.watchListData["tsym"].toString());
+                                
+                                ref.read(marketWatchProvider)
+                                    .singlePageloader(false);
                               },
                             ),
                           ],
                         ),
                       )
-                    : SizedBox(),
-                RepaintBoundary(
-                  child: _PriceDataWidget(
-                      token: widget.watchListData['token'],
-                      initialData: widget.watchListData),
+                    else
+                      const SizedBox(),
+                    const SizedBox(width: 16), // Increased spacing for web
+                    // Price data
+                    RepaintBoundary(
+                      child: _PriceDataWidgetWeb(
+                          token: widget.watchListData['token'],
+                          initialData: widget.watchListData),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -281,31 +282,27 @@ class _WatchlistCardState extends ConsumerState<WatchlistCard> {
     required VoidCallback? onPressed,
   }) {
     final theme = ref.read(themeProvider);
-
     return SizedBox(
-      width: 45,
-      height: 28,
+      width: 55, // Increased width for web
+      height: 32, // Increased height for web
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(4),
+          borderRadius: BorderRadius.circular(6), // Increased border radius for web
           splashColor: color.withOpacity(0.15),
           highlightColor: color.withOpacity(0.08),
           onTap: onPressed,
           child: Container(
             decoration: BoxDecoration(
-              border: Border.all(color: color, width: 1),
-              borderRadius: BorderRadius.circular(4),
+              border: Border.all(color: color, width: 1.5), // Slightly thicker border for web
+              borderRadius: BorderRadius.circular(6),
             ),
             child: Center(
-              child: Text(
-                label,
-                style: TextWidget.textStyle(
-                  fontSize: 11,
-                  color: color,
-                  theme: theme.isDarkMode,
-                  fw: 2,
-                ),
+              child: TextWidget.paraText(
+                text: label,
+                color: color,
+                theme: theme.isDarkMode,
+                fw: 1,
               ),
             ),
           ),
@@ -444,20 +441,20 @@ class _WatchlistCardState extends ConsumerState<WatchlistCard> {
   }
 }
 
-class _PriceDataWidget extends ConsumerStatefulWidget {
+class _PriceDataWidgetWeb extends ConsumerStatefulWidget {
   final String token;
   final Map<String, dynamic> initialData;
 
-  const _PriceDataWidget({
+  const _PriceDataWidgetWeb({
     required this.token,
     required this.initialData,
   });
 
   @override
-  ConsumerState<_PriceDataWidget> createState() => _PriceDataWidgetState();
+  ConsumerState<_PriceDataWidgetWeb> createState() => _PriceDataWidgetWebState();
 }
 
-class _PriceDataWidgetState extends ConsumerState<_PriceDataWidget> {
+class _PriceDataWidgetWebState extends ConsumerState<_PriceDataWidgetWeb> {
   late String ltp;
   late String change;
   late String perChange;
@@ -520,7 +517,6 @@ class _PriceDataWidgetState extends ConsumerState<_PriceDataWidget> {
 
       // Only rebuild if values actually changed and not already rebuilding
       if (valueChanged) {
-        // FIX: Remove debounce delay to ensure immediate LTP updates
         // Immediately update UI for price changes
         if (mounted) {
           setState(() {});
@@ -554,10 +550,6 @@ class _PriceDataWidgetState extends ConsumerState<_PriceDataWidget> {
     final displayChange = _safeFormatPrice(change);
     final displayPerChange = _safeFormatPrice(perChange);
 
-    // Use cached text styles to avoid creating new objects
-    // final priceTextStyle =
-    //     TextWidget.textStyle(fontSize: 14, theme: theme.isDarkMode, fw: 1);
-
     final changeColor =
         displayChange.startsWith("-") || displayPerChange.startsWith('-')
             ? theme.isDarkMode
@@ -571,37 +563,25 @@ class _PriceDataWidgetState extends ConsumerState<_PriceDataWidget> {
                     ? colors.profitDark
                     : colors.profitLight;
 
-    final changeTextStyle = TextWidget.textStyle(
-      fontSize: 16, // or keep 12 if you prefer
-      color: changeColor,
-      theme: theme.isDarkMode,
-      fw: 0,
-      // fw = 0 → FontWeight.w500 as per your logic
-    );
-
-    // Build the UI with minimal widget creation
+    // Build the UI with web-optimized text styles
     return Column(
         crossAxisAlignment: CrossAxisAlignment.end,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Padding(
-            padding: const EdgeInsets.only(bottom: 4),
-            child: Text(
-              displayLtp,
-              style: changeTextStyle,
-            ),
+          TextWidget.titleText(
+            text: displayLtp,
+            color: changeColor,
+            theme: theme.isDarkMode,
+            fw: 2,
           ),
-          // const SizedBox(height: 8),
-
-          Padding(
-            padding: const EdgeInsets.only(top: 4),
-            child: TextWidget.paraText(
-                text: "$displayChange ($displayPerChange%)",
-                color: theme.isDarkMode
-                    ? colors.textSecondaryDark
-                    : colors.textSecondaryLight,
-                fw: 0,
-                theme: theme.isDarkMode),
+          const SizedBox(height: 4), // Increased spacing for web
+          TextWidget.paraText(
+            text: "$displayChange ($displayPerChange%)",
+            color: theme.isDarkMode
+                ? colors.textSecondaryDark
+                : colors.textSecondaryLight,
+            theme: theme.isDarkMode,
+            fw: 3,
           ),
         ]);
   }

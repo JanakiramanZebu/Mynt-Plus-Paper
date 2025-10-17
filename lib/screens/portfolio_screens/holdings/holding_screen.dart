@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import '../../../utils/custom_navigator.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
@@ -971,9 +973,13 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
                                       ledgerdate
                                           .fetchpledgeandunpledge(context);
                                     }
-                                    Navigator.pushNamed(
-                                        context, Routes.pledgeandun,
-                                        arguments: "DDDDD");
+                                    if (kIsWeb && WebNavigationHelper.isAvailable) {
+                                      WebNavigationHelper.navigateTo("pledgeAndUnpledge");
+                                    } else {
+                                      Navigator.pushNamed(
+                                          context, Routes.pledgeandun,
+                                          arguments: "DDDDD");
+                                    }
                                   });
                                 },
                                 child: Padding(
