@@ -5069,10 +5069,10 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
       addBasketScrip(orderInput, bsktName, widget.isBasket == "Basket");
     } else {
       if (!isSliceOrd) {
+            ScaffoldMessenger.of(context).removeCurrentSnackBar();
         bool placeorder = true;
         if (priceType == "Limit" || priceType == "SL Limit") {
           String r = roundOffWithInterval(double.parse(priceCtrl.text), tik).toStringAsFixed(2);
-            ScaffoldMessenger.of(context).removeCurrentSnackBar();
           if (double.parse(priceCtrl.text) != double.parse(r)) {
             placeorder = false;
             warningMessage(context, "Price should be multiple of tick size $tik => $r");
@@ -5080,20 +5080,17 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
         }
         if (placeorder && (priceType == "SL Limit" || priceType == "SL MKT")) {
           String r = roundOffWithInterval(double.parse(triggerPriceCtrl.text), tik).toStringAsFixed(2);
-            ScaffoldMessenger.of(context).removeCurrentSnackBar();
           if (double.parse(triggerPriceCtrl.text) != double.parse(r)) {
             placeorder = false;
             warningMessage(context, "Trigger should be multiple of tick size $tik => $r");
           }
         }
         int q = ((int.parse(getFinalQuantity(qtyCtrl.text)) / lotSize).round() * lotSize);
-          ScaffoldMessenger.of(context).removeCurrentSnackBar();
         if (int.parse(getFinalQuantity(qtyCtrl.text)) != q && widget.scripInfo.exch != 'MCX') {
           placeorder = false;
           warningMessage(context, "Quantity should be multiple of lot size $lotSize => $q");
         }
 
-          ScaffoldMessenger.of(context).removeCurrentSnackBar();
         if ((priceType == "Market" || priceType == "SL MKT") &&
             (mktProtCtrl.text.isEmpty || double.parse(mktProtCtrl.text.toString()) > 20 || double.parse(mktProtCtrl.text.toString()) < 1)) {
           placeorder = false;
