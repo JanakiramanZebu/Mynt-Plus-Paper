@@ -24,7 +24,7 @@ class PortfolioDashboardScreen extends ConsumerStatefulWidget {
 }
 
 class _PortfolioDashboardScreenState
-    extends ConsumerState<PortfolioDashboardScreen> {
+    extends ConsumerState<PortfolioDashboardScreen> with TickerProviderStateMixin {
   FlSpot? touchedSpot;
   bool showTooltip = false;
   // Heatmap interaction state
@@ -33,7 +33,8 @@ class _PortfolioDashboardScreenState
   List<TopStocks> _heatmapHoldingsShown = [];
   OverlayEntry? _heatmapOverlay;
   int? _selectedHeatmapIndex;
-
+  late TabController tabCtrl;
+ 
   // Search focus management
   final FocusNode _searchFocusNode = FocusNode();
 
@@ -45,6 +46,7 @@ class _PortfolioDashboardScreenState
   @override
   void initState() {
     super.initState();
+    tabCtrl = TabController(length: 3, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) {      
         ref.read(dashboardProvider).getPortfolioAnalysis();      
     });
@@ -72,6 +74,7 @@ class _PortfolioDashboardScreenState
     _hideTooltipTimer?.cancel();
     _searchFocusNode.dispose();
     _scrollController.dispose();
+    tabCtrl.dispose();
     super.dispose();
   }
 
@@ -213,15 +216,76 @@ class _PortfolioDashboardScreenState
                 children: [
                   if (data.chartData != null)
                     _buildInvestmentChart(data.chartData!, data),
-                  SizedBox(height: 16),
-                  _buildAccountAllocation(data.accountAllocation , theme.isDarkMode),
-                  SizedBox(height: 16),
+                    const SizedBox(height: 20),
+                    SizedBox(
+                    height: 30,
+                    child: TabBar(
+                            controller: tabCtrl,
+                            tabAlignment: TabAlignment.start,
+                            isScrollable: true,
+                            indicatorSize: TabBarIndicatorSize.tab,
+                            indicatorColor: colors.colorWhite,
+                            indicator: BoxDecoration(
+                              color: theme.isDarkMode
+                                  ? colors.searchBgDark
+                                  : const Color(0xffF1F3F8),
+                              borderRadius: BorderRadius.circular(5),
+                            ),
+                            unselectedLabelColor: theme.isDarkMode
+                                ? colors.textSecondaryDark
+                                : colors.textSecondaryLight,
+                            labelStyle: TextWidget.textStyle(
+                                fontSize: 14,
+                                theme: false,
+                                fw: 2,
+                                color: theme.isDarkMode
+                            ? colors.textPrimaryDark
+                            : colors.textPrimaryLight),
+                            unselectedLabelStyle: TextWidget.textStyle(
+                                fontSize: 14,
+                                theme: false,
+                                fw: 3,
+                                color: colors.textSecondaryLight),
+                            // labelPadding: const EdgeInsets.symmetric(horizontal: 8),
+                            tabs: const [
+                              Tab(text: "Market Cap"),
+                              Tab(text: "Sector"),
+                              Tab(text: "Asset Allocation"),
+                            ],
+                          ),
+                  ),
+                 const SizedBox(height: 10),
+                  SizedBox(
+                    height: 250,
+                    child: TabBarView(
+                      controller: tabCtrl,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          child: _buildChartsSection(data),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          child: _buildSectorAllocationTable(data.sectorAllocation),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          child: _buildAccountAllocation(data.accountAllocation , theme.isDarkMode),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // const SizedBox(height: 16),
                   _buildHeatMap(data.topStocks),
-                  SizedBox(height: 16),
-                  _buildChartsSection(data),
-                  SizedBox(height: 16),
-                  _buildSectorAllocationTable(data.sectorAllocation),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
+                  
+                  // SizedBox(height: 16),
+                  // _buildAccountAllocation(data.accountAllocation , theme.isDarkMode),
+                  // SizedBox(height: 16),
+                  // _buildChartsSection(data),
+                  // SizedBox(height: 16),
+                  // _buildSectorAllocationTable(data.sectorAllocation),
+                  // SizedBox(height: 16),
                 ],
               ),
             ),
@@ -1001,20 +1065,20 @@ class _PortfolioDashboardScreenState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              TextWidget.subText(
-                text: 'Asset Allocation',
-                theme: false,
-                color: theme.isDarkMode
-                    ? colors.textPrimaryDark
-                    : colors.textPrimaryLight,
-                fw: 1,
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
+          // Row(
+          //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          //   children: [
+          //     TextWidget.subText(
+          //       text: 'Asset Allocation',
+          //       theme: false,
+          //       color: theme.isDarkMode
+          //           ? colors.textPrimaryDark
+          //           : colors.textPrimaryLight,
+          //       fw: 1,
+          //     ),
+          //   ],
+          // ),
+          // const SizedBox(height: 16),
           ...sortedEntries
               .map((entry) => _buildAccountTypeCard(
                     entry.key,
@@ -1548,20 +1612,20 @@ class _PortfolioDashboardScreenState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              TextWidget.subText(
-                text: 'Market Cap',
-                theme: false,
-                color: theme.isDarkMode
-                    ? colors.textPrimaryDark
-                    : colors.textPrimaryLight,
-                fw: 1,
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
+          // Row(
+          //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          //   children: [
+          //     TextWidget.subText(
+          //       text: 'Market Cap',
+          //       theme: false,
+          //       color: theme.isDarkMode
+          //           ? colors.textPrimaryDark
+          //           : colors.textPrimaryLight,
+          //       fw: 1,
+          //     ),
+          //   ],
+          // ),
+          // const SizedBox(height: 16),
           Row(
             children: [
               // Donut Chart
@@ -1629,20 +1693,20 @@ class _PortfolioDashboardScreenState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              TextWidget.subText(
-                text: 'Sector',
-                theme: false,
-                color: theme.isDarkMode
-                    ? colors.textPrimaryDark
-                    : colors.textPrimaryLight,
-                fw: 1,
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
+          // Row(
+          //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          //   children: [
+          //     TextWidget.subText(
+          //       text: 'Sector',
+          //       theme: false,
+          //       color: theme.isDarkMode
+          //           ? colors.textPrimaryDark
+          //           : colors.textPrimaryLight,
+          //       fw: 1,
+          //     ),
+          //   ],
+          // ),
+          // const SizedBox(height: 16),
           // Horizontal Stacked Bar Chart
           SizedBox(
             height: 30,
