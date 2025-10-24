@@ -105,7 +105,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
   bool isGtt = true;
 
   // List<String> validityTypesGTT = ["DAY", "GTT"];
-
+  bool _isStock =true;
   int lotSize = 0;
   int multiplayer = 0;
   String ordPrice = "0.00";
@@ -125,6 +125,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
   bool isAdvancedOptionClicked = false;
   bool _isMarketOrder = false;
   bool _isQtyToAmount = false;
+  bool _isLotToQty = true;
   bool _isStoplossOrder = false;
   bool _afterMarketOrder = false;
   bool _addValidityAndDisclosedQty = false;
@@ -135,8 +136,6 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
   // bool _GTTOCOPriceTypeIsMarket = false;
 
   bool _hasValidCircuitBreakerValues = false;
-
-  bool isvalidqty = false;
 
   @override
   void initState() {
@@ -151,6 +150,8 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
     bool checkRawValue = widget.orderArg.raw.isNotEmpty;
     Map orderRawValue = widget.orderArg.raw;
     bool prdcheck = widget.orderArg.prd?.isNotEmpty ?? false;
+    
+    _isStock = widget.scripInfo.exch == "NSE" || widget.scripInfo.exch == "BSE";
 
     orderType = prdcheck // ① honour prd
         ? {"C": "Delivery", "I": "Intraday", "F": "MTF"}[widget.orderArg.prd] ?? "Delivery"
@@ -265,6 +266,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
       _addValidityAndDisclosedQty = isUserOrderPreferenceAvailable && userOrderPreference['validity'] == 'IOC' ? true : false;
       isAdvancedOptionClicked = !isAdvancedOptionClicked ? _addValidityAndDisclosedQty : isAdvancedOptionClicked;
 
+      
       lotSize = int.parse("${widget.scripInfo.ls ?? 0}");
 
       frezQty = sfq > 1
@@ -2470,15 +2472,64 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                                 crossAxisAlignment: CrossAxisAlignment.end,
                                                 children: [
-                                                  headerTitleText(_isQtyToAmount ? "Amount" : "Qty", theme),
-                                                  if (isvalidqty) ...[
-                                                    TextWidget.titleText(
-                                                      text: " *",
-                                                      theme: theme.isDarkMode,
-                                                      color: theme.isDarkMode ? colors.lossDark : colors.lossLight,
-                                                      fw: 2,
-                                                    ),
-                                                  ],
+                                                  Row(
+                                                    children: [
+                                                      headerTitleText(
+                                                        (_isStock)
+                                                          ? (_isQtyToAmount ? "Amount" : "Qty")
+                                                          : (_isLotToQty ? "Qty" : "Lot"),
+                                                        theme
+                                                      ),
+                                                      const SizedBox(width: 16),
+                                                      if(widget.scripInfo.exch == "NFO" || widget.scripInfo.exch == "BFO" || _isStock)
+                                                      Material(
+                                                        color: Colors.transparent,
+                                                        shape: const CircleBorder(),
+                                                        child: InkWell(
+                                                          customBorder: const CircleBorder(),
+                                                          splashColor: theme.isDarkMode ? colors.splashColorDark : colors.splashColorLight,
+                                                          highlightColor: theme.isDarkMode ? colors.highlightDark : colors.highlightLight,
+                                                          onTap: () {
+                                                            setState(() {
+                                                              if (_isStock) {
+                                                                // NSE/BSE: Toggle between Qty and Amount
+                                                                _isQtyToAmount = !_isQtyToAmount;
+                                                                if (_isQtyToAmount) {
+                                                                  qtyCtrl.text = ((double.tryParse(widget.orderArg.ltp ?? "0.00") ?? 0).ceil()).toString();
+                                                                } else {
+                                                                  qtyCtrl.text = "1";
+                                                                }
+                                                              } else {
+                                                                // NFO/BFO: Toggle between Lot and Qty
+                                                                _isLotToQty = !_isLotToQty;
+                                                                if (_isLotToQty) {
+                                                                  // Converting from Lot to Qty: multiply by lot size
+                                                                  int currentLot = int.tryParse(qtyCtrl.text) ??  1;
+                                                                  qtyCtrl.text = (currentLot * lotSize).toString();
+                                                                } else {
+                                                                  // Converting from Qty to Lot: divide by lot size
+                                                                  int currentQty = int.tryParse(qtyCtrl.text) ?? lotSize;
+                                                                  qtyCtrl.text = ((currentQty / lotSize).round()).toString();
+                                                                  // if (qtyCtrl.text == "0") qtyCtrl.text = "1";
+                                                                }
+                                                              }
+                                                              marginUpdate();
+                                                            });
+                                                          },
+                                                          child: Padding(
+                                                            padding: const EdgeInsets.all(0.0),
+                                                            child: SvgPicture.asset(
+                                                              assets.switchIcon,
+                                                              width: 16,
+                                                              height: 16,
+                                                              fit: BoxFit.contain,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+
                                                   // Text(
                                                   // "Lot: ${widget.scripInfo.ls} ${widget.scripInfo.prcunt ?? ''}  ",
                                                   // style: textStyle(
@@ -2510,7 +2561,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                     theme: theme.isDarkMode,
                                                     fw: 0,
                                                   ),
-                                                  prefixIcon: widget.scripInfo.exch == "NSE" || widget.scripInfo.exch == "BSE"
+                                                  prefixIcon: _isStock
                                                       ? null
                                                       : Material(
                                                           color: Colors.transparent,
@@ -2522,14 +2573,25 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                             onTap: () {
                                                               setState(() {
                                                                 String input = qtyCtrl.text;
-                                                                int currentQty = int.tryParse(input) ?? 0;
-                                                                int adjustedQty = ((currentQty / multiplayer).floor()) * multiplayer;
-                                                                if (currentQty != adjustedQty) {
-                                                                  qtyCtrl.text = adjustedQty.toString();
-                                                                } else if (input.isNotEmpty && currentQty > multiplayer) {
-                                                                  qtyCtrl.text = (currentQty - multiplayer).toString();
+                                                                int currentValue = int.tryParse(input) ?? 0;
+                                                                int adjustedQty = currentValue >= multiplayer ? ((currentValue / multiplayer).floor()) * multiplayer : multiplayer;
+
+                                                                if (_isLotToQty) {
+                                                                  // Qty mode: decrement by Lot size
+                                                                  if (currentValue != adjustedQty) {
+                                                                    qtyCtrl.text = (adjustedQty).toString();
+                                                                  }else if(input.isNotEmpty && currentValue > multiplayer){
+                                                                          qtyCtrl.text = (currentValue - multiplayer).toString();
+                                                                  }else {
+                                                                    qtyCtrl.text = "$multiplayer";
+                                                                  }
                                                                 } else {
-                                                                  qtyCtrl.text = "$multiplayer";
+                                                                  // Lot mode: decrement by 1
+                                                                  if (currentValue > 1) {
+                                                                    qtyCtrl.text = (currentValue - 1).toString();
+                                                                  } else {
+                                                                    qtyCtrl.text = "1";
+                                                                  }
                                                                 }
                                                                 marginUpdate();
                                                               });
@@ -2540,40 +2602,9 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                             ),
                                                           )),
 
-                                                  suffixIcon: widget.scripInfo.exch == "NSE" || widget.scripInfo.exch == "BSE"
-                                                      ? Material(
-                                                          color: Colors.transparent,
-                                                          shape: const CircleBorder(),
-                                                          child: InkWell(
-                                                            customBorder: const CircleBorder(),
-                                                            splashColor: theme.isDarkMode ? colors.splashColorDark : colors.splashColorLight,
-                                                            highlightColor: theme.isDarkMode ? colors.highlightDark : colors.highlightLight,
-                                                            onTap: () {
-                                                              setState(() {
-                                                                _isQtyToAmount = !_isQtyToAmount;
-                                                                if (_isQtyToAmount) {
-                                                                  qtyCtrl.text =
-                                                                      ((double.tryParse(widget.orderArg.ltp ?? "0.00") ?? 0).ceil()).toString();
-                                                                } else {
-                                                                  qtyCtrl.text = "1";
-                                                                }
-                                                                marginUpdate();
-                                                              });
-                                                            },
-                                                            child: Padding(
-                                                              padding: const EdgeInsets.all(12.0),
-                                                              child: SvgPicture.asset(
-                                                                assets.switchIcon,
-                                                                fit: BoxFit.contain,
-                                                              ),
-                                                            ),
-                                                          ),
-                                                        )
-                                                      :
-                                                      // null,
-
-                                                      // suffixIcon:
-                                                      Material(
+                                                  suffixIcon: _isStock
+                                                      ? null
+                                                      : Material(
                                                           color: Colors.transparent,
                                                           shape: const CircleBorder(),
                                                           child: InkWell(
@@ -2584,54 +2615,78 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                             highlightColor: theme.isDarkMode
                                                                 ? colors.highlightDark
                                                                 : colors.highlightLight,
-                                                    onTap: () {
-                                                    setState(() {
-                                                          String input =qtyCtrl.text;
-                                                          int currentQty = int.tryParse(input) ?? 0;
-                                                          int adjustedQty = ((currentQty / multiplayer).round()) * multiplayer;
-                                                          bool hasNoFreezeLimit = frezQty <= lotSize;
-                                                          bool withinLimit = hasNoFreezeLimit || currentQty < frezQtyOrderSliceMaxLimit * frezQty;
+                                                            onTap: () {
+                                                              setState(() {
+                                                                String input = qtyCtrl.text;
+                                                                int currentValue = int.tryParse(input) ?? 0;
+                                                                int adjustedQty = currentValue >= multiplayer ? ((currentValue / multiplayer).floor()) * multiplayer : multiplayer;
 
-                                                      if (currentQty != adjustedQty) {
-                                                          qtyCtrl.text = adjustedQty.toString();
+                                                                
+                                                                bool hasNoFreezeLimit = frezQty <= lotSize;
+                                                                bool withinLimit = hasNoFreezeLimit || currentValue < frezQtyOrderSliceMaxLimit * frezQty;
+                                                                
+                                                                if (_isLotToQty) {
+                                                                  // Qty mode: increment by Lot Size, check against freeze limit
+                                                                  if (currentValue != adjustedQty) {
+                                                                      qtyCtrl.text = adjustedQty.toString();
 
-                                                      } else if (input.isNotEmpty && withinLimit) {
-                                                            qtyCtrl.text = (currentQty + multiplayer).toString();
-                                                      } else if(input.isEmpty){
-                                                        qtyCtrl.text = "$multiplayer";
-                                                      }
-                                                      else if (!hasNoFreezeLimit) {
-                                                          ScaffoldMessenger.of(context).removeCurrentSnackBar();
-                                                          warningMessage(context,"Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit*frezQty}");
-                                                        // qtyCtrl.text =
-                                                        //     "$multiplayer";
-                                                      }
-                                                        marginUpdate();
-                                                    });
-                                                    },
-                                                    child: SvgPicture.asset(
-                                                        theme.isDarkMode 
-                                                            ? assets.darkAdd
-                                                            : assets.addIcon,
-                                                        fit: BoxFit.scaleDown),
-                                                          )),
+                                                                  } else if (input.isNotEmpty && withinLimit) {
+                                                                        qtyCtrl.text = (currentValue + multiplayer).toString();
+                                                                  } else if(input.isEmpty){
+                                                                    qtyCtrl.text = "$multiplayer";
+                                                                  }
+                                                                  else if (!hasNoFreezeLimit) {
+                                                                      ScaffoldMessenger.of(context).removeCurrentSnackBar();
+                                                                      warningMessage(context,"Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit*frezQty}");
+                                                                    // qtyCtrl.text =
+                                                                    //     "$multiplayer";
+                                                                  }
+                                                                } else {
+                                                                  // Lot mode: increment by 1 lot, check against freeze limit
+                                                                  bool hasNoFreezeLimit = frezQty <= lotSize;
+                                                                  int maxAllowedLots = hasNoFreezeLimit ? 999999 : (frezQtyOrderSliceMaxLimit * frezQty) ~/ lotSize;
+
+                                                                  if (input.isEmpty) {
+                                                                    qtyCtrl.text = "1";
+                                                                  } else if (currentValue < maxAllowedLots) {
+                                                                    qtyCtrl.text = (currentValue + 1).toString();
+                                                                  } else {
+                                                                    ScaffoldMessenger.of(context).removeCurrentSnackBar();
+                                                                    warningMessage(context,"Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit*frezQty}");
+                                                                  }
+                                                                }
+                                                                marginUpdate();
+                                                              });
+                                                            },
+                                                            child: SvgPicture.asset(
+                                                              theme.isDarkMode
+                                                                  ? assets.darkAdd
+                                                                  : assets.addIcon,
+                                                              fit: BoxFit.scaleDown
+                                                            ),
+                                                          ),
+                                                        ),
 
                                                   textCtrl: qtyCtrl,
-                                                  textAlign: widget.scripInfo.exch == "NSE" || widget.scripInfo.exch == "BSE"
+                                                  textAlign: _isStock
                                                       ? TextAlign.start
                                                       : TextAlign.center,
                                                   onChanged: (value) {
                                                      ScaffoldMessenger.of(context).removeCurrentSnackBar();
                                                     if (value.isEmpty || value == "0") {
+                                                      String fieldName = (_isStock)
+                                                          ? (_isQtyToAmount ? 'Amount' : 'Quantity')
+                                                          : (_isLotToQty ? 'Quantity' : 'Lot');
                                                       warningMessage(context,
-                                                          "${_isQtyToAmount ? 'Amount' : 'Quantity'} cannot be ${value == "0" ? '0' : 'empty'}");
+                                                          "$fieldName cannot be ${value == "0" ? '0' : 'empty'}");
                                                     } else {
                                                       String newValue = value.replaceAll(RegExp(r'[^0-9]'), '');
                                                       double ltp = double.tryParse(widget.orderArg.ltp ?? "0.0") ?? 0.0;
-                                                      var number =
-                                                          !_isQtyToAmount ? int.tryParse(newValue) ?? 0 : ((double.tryParse(newValue) ?? 0.0) ~/ ltp);
+                                                      var number = (_isStock)
+                                                          ? (!_isQtyToAmount ? int.tryParse(newValue) ?? 0 : ((double.tryParse(newValue) ?? 0.0) ~/ ltp))
+                                                          : (!_isLotToQty ? int.tryParse(newValue) ?? 0 : ((int.tryParse(newValue) ?? 0) ~/ lotSize));
 
-                                                      if (_isQtyToAmount && number < 1) {
+                                                      if (_isQtyToAmount && number < 1 && (_isStock)) {
                                                         warningMessage(context,
                                                             "Minimum Allowed Amount should be greater than $ltp");
                                                       } else {
@@ -2664,15 +2719,22 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                             //                 12,
                                             //                 FontWeight.w500))
                                             // ]
-                                            if (_isQtyToAmount)
+                                            if (_isQtyToAmount && (_isStock))
                                               TextWidget.subText(
-                                                text: "Qty : ${convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount)}",
+                                                text: "Qty : ${getFinalQuantity(qtyCtrl.text)}",
+                                                theme: theme.isDarkMode,
+                                                color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                                                fw: 0,
+                                              ),
+                                            if (_isLotToQty && (widget.scripInfo.exch == "NFO" || widget.scripInfo.exch == "BFO"))
+                                              TextWidget.subText(
+                                                text: "Lot : ${((int.tryParse(qtyCtrl.text) ?? 0) / lotSize).ceil()}",
                                                 theme: theme.isDarkMode,
                                                 color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                                                 fw: 0,
                                               ),
                                             // Text(
-                                            //     "Qty : ${convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount)}",
+                                            //     "Qty : ${getFinalQuantity(qtyCtrl.text)}",
                                             //     style: textStyle(
                                             //         const Color(
                                             //             0xff666666),
@@ -3867,41 +3929,43 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                   } else {
                                                         setState(() {
                                                           if (frezQty == 0) {
-                                                            quantity = int.parse(convertQtyOrAmtValue(
-                                                                        qtyCtrl.text, _isQtyToAmount)
-                                                                    .isEmpty
+                                                            quantity = int.parse(getFinalQuantity(qtyCtrl.text).isEmpty
                                                                 ? "0"
-                                                                : convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount));
+                                                                : getFinalQuantity(qtyCtrl.text));
                                                             // frezQty;
                                                           } else {
                                                             quantity = int.parse(
-                                                                    convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount)
-                                                                            .isEmpty
+                                                                    getFinalQuantity(qtyCtrl.text).isEmpty
                                                                         ? "0"
-                                                                        : convertQtyOrAmtValue(
-                                                                            qtyCtrl.text, _isQtyToAmount)) ~/
-                                                                frezQty;
+                                                                        : getFinalQuantity(qtyCtrl.text)) ~/ frezQty;
                                                           }
                                                           reminder = int.parse(
-                                                                  convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount)
-                                                                          .isEmpty
+                                                                  getFinalQuantity(qtyCtrl.text).isEmpty
                                                                       ? "0"
-                                                                      : convertQtyOrAmtValue(
-                                                                          qtyCtrl.text, _isQtyToAmount)) -
-                                                              (frezQty * quantity);
+                                                                      : getFinalQuantity(qtyCtrl.text)) - (frezQty * quantity);
                                                           maxQty = frezQty * frezQtyOrderSliceMaxLimit;
                                                         });
                                                         ScaffoldMessenger.of(context).removeCurrentSnackBar();
-                                                        if (convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount).trim().isEmpty ||priceCtrl.text.trim().isEmpty) {
-                                                          warningMessage(context, convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount).isEmpty
-                                                                  ? _isQtyToAmount ? "Amount cannot be empty" : "Quantity cannot be empty"
+                                                        if (getFinalQuantity(qtyCtrl.text).trim().isEmpty ||priceCtrl.text.trim().isEmpty) {
+                                                          String fieldName = (_isStock)
+                                                              ? (_isQtyToAmount ? "Amount" : "Quantity")
+                                                              : (_isLotToQty ? "Quantity" : "Lot");
+                                                          warningMessage(context, getFinalQuantity(qtyCtrl.text).isEmpty
+                                                                  ? "$fieldName cannot be empty"
                                                                   : "Price cannot be empty");
-                                                        } else if ((convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount).trim()) =="0" ||priceCtrl.text.trim() == "0") {
+                                                        } else if ((getFinalQuantity(qtyCtrl.text).trim()) =="0" ||priceCtrl.text.trim() == "0") {
+                                                          String fieldName = (_isStock)
+                                                              ? (_isQtyToAmount ? "Amount" : "Quantity")
+                                                              : (_isLotToQty ? "Quantity" : "Lot");
                                                           warningMessage(context,
-                                                              convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount) == "0"
-                                                                  ? _isQtyToAmount ? qtyCtrl.text != "0" ? "Minimum Allowed Amount should be greater than ${widget.orderArg.ltp}" : "Amount cannot be 0" : "Quantity cannot be 0"
+                                                              getFinalQuantity(qtyCtrl.text) == "0"
+                                                                  ? (_isStock)
+                                                                      ? (_isQtyToAmount
+                                                                          ? (qtyCtrl.text != "0" ? "Minimum Allowed Amount should be greater than ${widget.orderArg.ltp}" : "Amount cannot be 0")
+                                                                          : "Quantity cannot be 0")
+                                                                      : "$fieldName cannot be 0"
                                                                   : "Price cannot be 0");
-                                                        } else if (frezQty > lotSize && int.parse(convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount).trim()) > frezQtyOrderSliceMaxLimit * frezQty) {
+                                                        } else if (frezQty > lotSize && int.parse(getFinalQuantity(qtyCtrl.text).trim()) > frezQtyOrderSliceMaxLimit * frezQty) {
                                                           warningMessage(context,
                                                               "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit * frezQty}");
                                                         } else if ((priceType == "Limit" || priceType == "SL Limit") &&
@@ -3927,9 +3991,9 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                                       warningMessage(context,
                                                                           "Trigger cannot be greater than upper circuit limit of ${widget.scripInfo.uc}");
                                                                     } else {
-                                                                      if ((int.parse(convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount).isEmpty
+                                                                      if ((int.parse(getFinalQuantity(qtyCtrl.text).isEmpty
                                                                                   ? "0"
-                                                                                  : convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount)) >
+                                                                                  : getFinalQuantity(qtyCtrl.text)) >
                                                                               frezQty &&
                                                                           widget.scripInfo.frzqty != null)) {
                                                                         placeOrder(orderInput, true, theme);
@@ -3949,9 +4013,9 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                                       warningMessage(context,
                                                                           "Trigger cannot be greater than upper circuit limit of ${widget.scripInfo.uc}");
                                                                     } else {
-                                                                      if ((int.parse(convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount).isEmpty
+                                                                      if ((int.parse(getFinalQuantity(qtyCtrl.text).isEmpty
                                                                                   ? "0"
-                                                                                  : convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount)) >
+                                                                                  : getFinalQuantity(qtyCtrl.text)) >
                                                                               frezQty &&
                                                                           widget.scripInfo.frzqty != null)) {
                                                                         placeOrder(orderInput, true, theme);
@@ -3969,9 +4033,9 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                                       warningMessage(context,
                                                                           "Trigger cannot be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}");
                                                                     } else {
-                                                                      if ((int.parse(convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount).isEmpty
+                                                                      if ((int.parse(getFinalQuantity(qtyCtrl.text).isEmpty
                                                                                   ? "0"
-                                                                                  : convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount)) >
+                                                                                  : getFinalQuantity(qtyCtrl.text)) >
                                                                               frezQty &&
                                                                           widget.scripInfo.frzqty != null)) {
                                                                         placeOrder(orderInput, true, theme);
@@ -3991,9 +4055,9 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                                       warningMessage(context,
                                                                           "Trigger cannot be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}");
                                                                     } else {
-                                                                      if ((int.parse(convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount).isEmpty
+                                                                      if ((int.parse(getFinalQuantity(qtyCtrl.text).isEmpty
                                                                                   ? "0"
-                                                                                  : convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount)) >
+                                                                                  : getFinalQuantity(qtyCtrl.text)) >
                                                                               frezQty &&
                                                                           widget.scripInfo.frzqty != null)) {
                                                                         placeOrder(orderInput, true, theme);
@@ -4016,9 +4080,9 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                                     warningMessage(context,
                                                                         "Price(Order price - Stoploss = ${(double.parse(ordPrice) - double.parse(stopLossCtrl.text)).toStringAsFixed(2)}) Stoploss cannot be lower than ${widget.scripInfo.lc}");
                                                                   } else {
-                                                                    if ((int.parse(convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount).isEmpty
+                                                                    if ((int.parse(getFinalQuantity(qtyCtrl.text).isEmpty
                                                                                 ? "0"
-                                                                                : convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount)) >
+                                                                                : getFinalQuantity(qtyCtrl.text)) >
                                                                             frezQty &&
                                                                         widget.scripInfo.frzqty != null)) {
                                                                       placeOrder(orderInput, true, theme);
@@ -4033,9 +4097,9 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                                     warningMessage(context,
                                                                         "Price(Order price + Stoploss = ${(double.parse(ordPrice) + double.parse(stopLossCtrl.text))}) Stoploss cannot be greater than ${widget.scripInfo.uc}");
                                                                   } else {
-                                                                    if ((int.parse(convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount).isEmpty
+                                                                    if ((int.parse(getFinalQuantity(qtyCtrl.text).isEmpty
                                                                                 ? "0"
-                                                                                : convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount)) >
+                                                                                : getFinalQuantity(qtyCtrl.text)) >
                                                                             frezQty &&
                                                                         widget.scripInfo.frzqty != null)) {
                                                                       placeOrder(orderInput, true, theme);
@@ -4088,8 +4152,8 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                                   warningMessage(context, "Trigger cannot be greater than upper circuit limit of $uc");
 
                                                                 } else {
-                                                                  if (int.parse(convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount).isEmpty
-                                                                            ? "0" : convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount)) >
+                                                                  if (int.parse(getFinalQuantity(qtyCtrl.text).isEmpty
+                                                                            ? "0" : getFinalQuantity(qtyCtrl.text)) >
                                                                             frezQty && widget.scripInfo.frzqty != null) {
                                                                         placeOrder(
                                                                             orderInput,
@@ -4112,8 +4176,8 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                                 } else if (userTriggerPrice < lc) {
                                                                         warningMessage(context,"Trigger cannot be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}");
                                                                 } else {
-                                                                  if (int.parse(convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount).isEmpty
-                                                                        ? "0" : convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount)) >
+                                                                  if (int.parse(getFinalQuantity(qtyCtrl.text).isEmpty
+                                                                        ? "0" : getFinalQuantity(qtyCtrl.text)) >
                                                                         frezQty &&  widget.scripInfo.frzqty != null) {
 
                                                                         placeOrder(
@@ -4158,9 +4222,9 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                               } else if (trailingTicksCtrl.text.isNotEmpty && (enteredValue <= 0)) {
                                                                 warningMessage(context, "Trailing SL should be positive value");
                                                               } else {
-                                                                if ((int.parse(convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount).isEmpty
+                                                                if ((int.parse(getFinalQuantity(qtyCtrl.text).isEmpty
                                                                             ? "0"
-                                                                            : convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount)) >
+                                                                            : getFinalQuantity(qtyCtrl.text)) >
                                                                         frezQty &&
                                                                     widget.scripInfo.frzqty != null)) {
                                                                   placeOrder(orderInput, true, theme);
@@ -4212,9 +4276,9 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                                         context,
                                                                         "Trigger cannot be greater than upper circuit limit of ${widget.scripInfo.uc ?? 0.00}");
                                                               } else {
-                                                                if ((int.parse(convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount).isEmpty
+                                                                if ((int.parse(getFinalQuantity(qtyCtrl.text).isEmpty
                                                                             ? "0"
-                                                                            : convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount)) > frezQty && widget.scripInfo.frzqty != null))  {
+                                                                            : getFinalQuantity(qtyCtrl.text)) > frezQty && widget.scripInfo.frzqty != null))  {
                                                                     placeOrder(
                                                                       orderInput,
                                                                       true,
@@ -4237,8 +4301,8 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                                 warningMessage(context,"Trigger cannot be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}");
 
                                                               } else {
-                                                                if ((int.parse(convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount).isEmpty
-                                                                        ? "0" : convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount)) 
+                                                                if ((int.parse(getFinalQuantity(qtyCtrl.text).isEmpty
+                                                                        ? "0" : getFinalQuantity(qtyCtrl.text)) 
                                                                         > frezQty && widget.scripInfo.frzqty != null)) {
 
                                                                   placeOrder(
@@ -4256,9 +4320,9 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                           }
                                                         }
                                                         else {
-                                                          if ((int.parse(convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount).isEmpty
+                                                          if ((int.parse(getFinalQuantity(qtyCtrl.text).isEmpty
                                                                       ? "0"
-                                                                      : convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount)) >
+                                                                      : getFinalQuantity(qtyCtrl.text)) >
                                                                   frezQty &&
                                                               widget.scripInfo.frzqty != null)) {
                                                             placeOrder(orderInput, true, theme);
@@ -5022,9 +5086,9 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
             warningMessage(context, "Trigger should be multiple of tick size $tik => $r");
           }
         }
-        int q = ((int.parse(convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount)) / lotSize).round() * lotSize);
+        int q = ((int.parse(getFinalQuantity(qtyCtrl.text)) / lotSize).round() * lotSize);
           ScaffoldMessenger.of(context).removeCurrentSnackBar();
-        if (int.parse(convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount)) != q && widget.scripInfo.exch != 'MCX') {
+        if (int.parse(getFinalQuantity(qtyCtrl.text)) != q && widget.scripInfo.exch != 'MCX') {
           placeorder = false;
           warningMessage(context, "Quantity should be multiple of lot size $lotSize => $q");
         }
@@ -5053,8 +5117,8 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
               prctype: orderInput.prcType,
               prd: orderInput.orderType,
               qty: widget.scripInfo.exch == 'MCX'
-                  ? (int.parse(convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount)) * lotSize).toString()
-                  : convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount),
+                  ? (int.parse(getFinalQuantity(qtyCtrl.text)) * lotSize).toString()
+                  : getFinalQuantity(qtyCtrl.text),
               ret: validityType,
               trailprc: orderType == "CO - BO" && trailingTicksCtrl.text.isNotEmpty && (double.tryParse(trailingTicksCtrl.text) ?? 0) > 0
                   ? trailingTicksCtrl.text
@@ -5068,9 +5132,9 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
           ref.read(orderProvider).setOrderloader(false);
         }
       } else {
-        int q = ((int.parse(convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount)) / lotSize).round() * lotSize);
+        int q = ((int.parse(getFinalQuantity(qtyCtrl.text)) / lotSize).round() * lotSize);
           ScaffoldMessenger.of(context).removeCurrentSnackBar();
-        if (int.parse(convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount)) != q && widget.scripInfo.exch != 'MCX') {
+        if (int.parse(getFinalQuantity(qtyCtrl.text)) != q && widget.scripInfo.exch != 'MCX') {
           warningMessage(context, "Quantity should be multiple of lot size $lotSize => $q");
         } else if (frezQtyOrderSliceMaxLimit < quantity) {
           warningMessage(context,
@@ -5120,8 +5184,8 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
         prctyp: ref.read(ordInputProvider).prcType,
         prd: ref.read(ordInputProvider).orderType,
         qty: widget.scripInfo.exch == 'MCX'
-            ? (double.parse(convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount)).toInt() * lotSize).toString()
-            : convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount),
+            ? (double.parse(getFinalQuantity(qtyCtrl.text)).toInt() * lotSize).toString()
+            : getFinalQuantity(qtyCtrl.text),
         rorgprc: '0',
         rorgqty: '0',
         trantype: isBuy! ? "B" : "S",
@@ -5135,8 +5199,8 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
         prc: (priceType == "Market" || priceType == "SL MKT") ? "0" : ordPrice,
         prd: ref.read(ordInputProvider).orderType,
         qty: widget.scripInfo.exch == 'MCX'
-            ? (double.parse(convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount)).toInt() * lotSize).toString()
-            : convertQtyOrAmtValue(qtyCtrl.text, _isQtyToAmount),
+            ? (double.parse(getFinalQuantity(qtyCtrl.text)).toInt() * lotSize).toString()
+            : getFinalQuantity(qtyCtrl.text),
         trantype: isBuy! ? "B" : "S",
         tsym: "${widget.scripInfo.tsym}");
     ref.read(orderProvider).fetchGetBrokerage(brokerageInput, context);
@@ -5504,5 +5568,24 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
     if (value.trim().isEmpty) return "";
     double ltp = double.tryParse(widget.orderArg.ltp ?? "0.0") ?? 0.0;
     return isQtyToAmount ? ((double.tryParse(value) ?? 0.0) ~/ ltp).toString() : value;
+  }
+
+  String convertLotOrQtyValue(String value, bool isLotToQty) {
+    if (value.trim().isEmpty) return "";
+    return isLotToQty ? ((int.tryParse(value) ?? 0) ~/ lotSize).toString() : value;
+  }
+
+  // Get the final quantity for order placement
+  String getFinalQuantity(String value) {
+    if (value.trim().isEmpty) return "0";
+
+    if (_isStock) {
+      // NSE/BSE: convert amount to qty if in amount mode
+      return convertQtyOrAmtValue(value, _isQtyToAmount);
+    } else {
+      // NFO/BFO: if in lot mode, multiply by lotSize; if in qty mode, use as is
+      int inputValue = int.tryParse(value) ?? 0;
+      return _isLotToQty ? value : (inputValue * lotSize).toString();
+    }
   }
 }
