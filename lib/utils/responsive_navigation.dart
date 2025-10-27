@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mynt_plus/routes/route_names.dart';
-import 'package:mynt_plus/screens/order_screen/place_order_screen.dart';
+import 'package:mynt_plus/screens/Mobile/order_screen/place_order_screen.dart';
 import 'package:mynt_plus/utils/responsive_modal.dart';
 
 import '../sharedWidget/functions.dart';

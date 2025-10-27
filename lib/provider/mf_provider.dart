@@ -53,7 +53,7 @@ import '../res/global_state_text.dart';
 import '../res/res.dart';
 // import '../routes/route_names.dart';
 import '../routes/route_names.dart';
-import '../screens/profile_screen/fund_screen/upi_id_screens/upi_id_payment_fail_or_success.dart';
+import '../screens/Mobile/profile_screen/fund_screen/upi_id_screens/upi_id_payment_fail_or_success.dart';
 import '../sharedWidget/custom_drag_handler.dart';
 import '../sharedWidget/functions.dart';
 import '../sharedWidget/snack_bar.dart';

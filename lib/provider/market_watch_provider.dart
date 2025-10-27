@@ -2,9 +2,8 @@
 
 import 'dart:convert';
 import 'dart:math';
-import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:mynt_plus/provider/thems.dart';
@@ -15,6 +14,8 @@ import '../api/core/api_export.dart';
 import '../locator/constant.dart';
 import '../locator/locator.dart';
 import '../locator/preference.dart';
+import '../utils/custom_navigator.dart';
+import '../screens/web/market_watch/scrip_tabs_manager.dart';
 import '../models/marketwatch_model/add_delete_scrip_model.dart';
 import '../models/marketwatch_model/alert_model/alert_pending_model.dart';
 import '../models/marketwatch_model/alert_model/cancel_alert_model.dart';
@@ -28,14 +29,15 @@ import '../models/marketwatch_model/market_watchlist_model.dart';
 import '../models/marketwatch_model/opt_chain_model.dart';
 import '../models/marketwatch_model/pre_define_wl_model.dart';
 import '../models/marketwatch_model/scrip_info.dart';
+// import '../models/marketwatch_model/scrip_overview/eodchartdata_model.dart';
 import '../models/marketwatch_model/scrip_overview/stock_data.dart';
 import '../models/marketwatch_model/scrip_overview/technical_data.dart';
 import '../models/marketwatch_model/search_scrip_new_model.dart';
 import '../models/marketwatch_model/watchlist_rename_model.dart';
 import '../res/global_state_text.dart';
 import '../res/res.dart';
-import '../screens/market_watch/scrip_depth_info.dart';
-import '../screens/web/scrip_tabs_manager.dart';
+import '../screens/Mobile/market_watch/scrip_depth_info.dart';
+// import '../screens/market_watch/scrip_depth_info.dart';
 import '../sharedWidget/functions.dart';
 import '../sharedWidget/snack_bar.dart';
 import 'auth_provider.dart';
@@ -108,6 +110,57 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     "Sensex"
   ];
 
+  // Restricted names that users cannot use for watchlist names
+  // Includes both internal names and display names (case-insensitive)
+  static final List<String> _restrictedWatchlistNames = [
+    "holdings",
+    "my stocks",
+    "nifty 50",
+    "nifty50",
+    "nifty bank",
+    "niftybank",
+    "sensex"
+  ];
+
+  // Centralized validation method for watchlist names
+  String? validateWatchlistName(String name) {
+    final trimmedName = name.trim();
+
+    // Check if empty
+    if (trimmedName.isEmpty) {
+      return "Watchlist name cannot be empty";
+    }
+
+    final lowerCaseName = trimmedName.toLowerCase();
+
+    print("VALIDATION: Checking '$lowerCaseName' against restricted names: $_restrictedWatchlistNames");
+
+    // Check against restricted names (predefined display names)
+    if (_restrictedWatchlistNames.contains(lowerCaseName)) {
+      print("VALIDATION: '$lowerCaseName' is RESTRICTED");
+      return "This watchlist name is reserved";
+    }
+
+    print("VALIDATION: '$lowerCaseName' passed restricted check");
+
+    // Check against existing user watchlists (case-insensitive)
+    if (_marketWatchlist != null && _marketWatchlist!.values != null) {
+      final existingLowerCase = _marketWatchlist!.values!.map((name) => name.toLowerCase()).toList();
+      if (existingLowerCase.contains(lowerCaseName)) {
+        return "Watchlist name already exists";
+      }
+    }
+
+    // Check against pending watchlists (case-insensitive)
+    final pendingLowerCase = _pendingWatchlists.map((name) => name.toLowerCase()).toList();
+    if (pendingLowerCase.contains(lowerCaseName)) {
+      return "Watchlist name already exists";
+    }
+
+    // Validation passed
+    return null;
+  }
+
 // Search scrip Filter by Instument name
 
   final List<Tab> _searchTabList = const [
@@ -141,6 +194,25 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   List<ManagePriceAlertModel>? get setManagePrice => _setManagePrice;
   int _delScripQty = 0;
   int get delScripQty => _delScripQty;
+
+  // Chart and UI state variables
+  int _selectedIndex = 0;
+  int get selectedIndex => _selectedIndex;
+  
+  String _selectedTimeframe = "3M";
+  String get selectedTimeframe => _selectedTimeframe;
+  
+  bool _showTooltip = false;
+  bool get showTooltip => _showTooltip;
+  
+  int _touchedIndex = -1;
+  int get touchedIndex => _touchedIndex;
+  
+  Set<int> _hoveredEventDots = {};
+  Set<int> get hoveredEventDots => _hoveredEventDots;
+  
+  int? _selectedEventDot;
+  int? get selectedEventDot => _selectedEventDot;
 
   // GetQuotes? _getQuotes;
   GetQuotes _getQuotes = GetQuotes(
@@ -261,6 +333,11 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   AddDeleteScripModel? _addDeleteScripModel;
   AddDeleteScripModel? get addDeleteScripModel => _addDeleteScripModel;
 
+  // Track watchlists that are created locally but not yet synced to API
+  // These are watchlists created without any scrips
+  final Set<String> _pendingWatchlists = {};
+  Set<String> get pendingWatchlists => _pendingWatchlists;
+
   SearchScripNewModel? _searchScripModel;
 
   SearchScripNewModel? get searchScripModel => _searchScripModel;
@@ -377,8 +454,48 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     // Load saved page index
     // _loadCurrentPageIndex();
 
+    // Load pending watchlists from storage
+    _loadPendingWatchlists();
+
     // Listen to WebSocket data updates using a proper subscription
     _setupWebSocketListener();
+  }
+
+  // Load pending watchlists from SharedPreferences
+  Future<void> _loadPendingWatchlists() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final List<String>? savedPending = prefs.getStringList('pending_watchlists');
+      if (savedPending != null) {
+        _pendingWatchlists.addAll(savedPending);
+        print("Loaded pending watchlists: $savedPending");
+      }
+    } catch (e) {
+      print("Error loading pending watchlists: $e");
+    }
+  }
+
+  // Save pending watchlists to SharedPreferences
+  Future<void> _savePendingWatchlists() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setStringList('pending_watchlists', _pendingWatchlists.toList());
+      print("Saved pending watchlists: ${_pendingWatchlists.toList()}");
+    } catch (e) {
+      print("Error saving pending watchlists: $e");
+    }
+  }
+
+  // Clear pending watchlists (called on logout/account switch)
+  Future<void> clearPendingWatchlists() async {
+    try {
+      _pendingWatchlists.clear();
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('pending_watchlists');
+      print("Cleared pending watchlists");
+    } catch (e) {
+      print("Error clearing pending watchlists: $e");
+    }
   }
 
   // Setup WebSocket listener with proper error handling
@@ -651,6 +768,9 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   StockData? _fundamentalData;
   StockData? get fundamentalData => _fundamentalData;
 
+  // List<EodChartData> _eodChartData = [];
+  // List<EodChartData> get eodChartData => _eodChartData;
+
   List<String> _exarr = [];
   List<String> get exarr => _exarr;
 
@@ -677,6 +797,9 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   bool _scripDepthloader = false;
   bool get scripDepthloader => _scripDepthloader;
 
+  bool _chartDataLoading = false;
+  bool get chartDataLoading => _chartDataLoading;
+
   bool _isFuturesExpanded = false;
   bool get isFuturesExpanded => _isFuturesExpanded;
 
@@ -700,6 +823,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   }
 
   calldepthApis(BuildContext context, raw, basket) async {
+    String? currentRoute = context.widget.runtimeType.toString();
+
     ref.read(userProfileProvider).setonloadChartdialog(true);
     chngDephBtn(basket == "Option|-|Deph" ? "Option" : "Overview");
     singlePageloader(true);
@@ -713,44 +838,36 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         symbol: '${flow ? raw['symbol'] : raw.symbol}',
         expDate: '${flow ? raw['expDate'] : raw.expDate}',
         option: '${flow ? raw['option'] : raw.option}');
-    getResponsiveWidth(context) == 600
-        ? _openScripInWebPanel(context, depthArgs, basket)
-        : showModalBottomSheet(
-            shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
-            backgroundColor: const Color(0xffffffff),
-            isDismissible: false,
-            enableDrag: false,
-            showDragHandle: false,
-            useSafeArea: false,
-            isScrollControlled: true,
-            context: context,
-            builder: (BuildContext context) {
-              return PopScope(
-                  canPop: false,
-                  onPopInvokedWithResult: (didPop, result) async {
-                    if (didPop) return;
-                  },
-                  child: ScripDepthInfo(wlValue: depthArgs, isBasket: basket));
-            });
-
-    // showModalBottomSheet(
-    //     isScrollControlled: true,
-    //     useSafeArea: true,
-    //     isDismissible: true,
-    //     enableDrag: true,
-    //     shape: const RoundedRectangleBorder(
-    //       borderRadius: BorderRadius.only(
-    //         topLeft: Radius.circular(16),
-    //         topRight: Radius.circular(16),
-    //       ),
-    //     ),
-    //     context: context,
-    //     builder: (context) => Container(
-    //         padding: EdgeInsets.only(
-    //           bottom: MediaQuery.of(context).viewInsets.bottom,
-    //         ),
-    //         child: ScripDepthInfo(wlValue: depthArgs, isBasket: basket)));
+    
+    // Check if running on web platform
+    if (kIsWeb) {
+      // For web, use the panel system instead of bottom sheet
+      openScripInWebPanel(context, depthArgs, basket);
+    } else {
+      // For mobile, use bottom sheet
+      showModalBottomSheet(
+          isScrollControlled: true,
+          useSafeArea: true,
+          isDismissible: true,
+          enableDrag: true,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(16),
+              topRight: Radius.circular(16),
+            ),
+          ),
+          context: context,
+          builder: (context) => Container(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              child: ScripDepthInfo(
+                wlValue: depthArgs,
+                isBasket: basket,
+                isfromOptionChain:
+                    currentRoute.toLowerCase().contains("option") ? true : false,
+              )));
+    }
 
     await ref.read(websocketProvider).establishConnection(
         channelInput:
@@ -816,6 +933,31 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
+  bool _isETF = false;
+  bool get isETF => _isETF;
+
+  // Store ETF category information
+  String _etfCategoryTitle = '';
+  String _etfCategoryIcon = '';
+  String _etfCategoryDescription = '';
+
+  String get etfCategoryTitle => _etfCategoryTitle;
+  String get etfCategoryIcon => _etfCategoryIcon;
+  String get etfCategoryDescription => _etfCategoryDescription;
+
+  setETF(bool value) {
+    _isETF = value;
+    print("isETF: $_isETF");
+    notifyListeners();
+  }
+
+  setETFCategory(String title, String icon, String description) {
+    _etfCategoryTitle = title;
+    _etfCategoryIcon = icon;
+    _etfCategoryDescription = description;
+    notifyListeners();
+  }
+
   List<String> shareHoldType = [
     "Promoter Holding",
     "Foriegn Institution",
@@ -853,12 +995,35 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
   List<String> finType = ["Standalone", "Consolidated"];
 
-  String _selctedFinType = "Standalone";
+  // Income section financial type
+  String _selctedIncomeFinType = "Standalone";
+  String get selcteIncomeFinType => _selctedIncomeFinType;
+  chngIncomeFinType(String val) async {
+    _selctedIncomeFinType = val;
+    notifyListeners();
+  }
 
+  // Balance Sheet section financial type
+  String _selctedBalanceSheetFinType = "Standalone";
+  String get selcteBalanceSheetFinType => _selctedBalanceSheetFinType;
+  chngBalanceSheetFinType(String val) async {
+    _selctedBalanceSheetFinType = val;
+    notifyListeners();
+  }
+
+  // Cash Flow section financial type
+  String _selctedCashFlowFinType = "Standalone";
+  String get selcteCashFlowFinType => _selctedCashFlowFinType;
+  chngCashFlowFinType(String val) async {
+    _selctedCashFlowFinType = val;
+    notifyListeners();
+  }
+
+  // Keep the old methods for backward compatibility
+  String _selctedFinType = "Standalone";
   String get selcteFinType => _selctedFinType;
   chngFinType(String val) async {
     _selctedFinType = val;
-
     notifyListeners();
   }
 
@@ -875,26 +1040,22 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
   List<double> getCustomItemsHeight(List<String> numofList) {
     List<double> itemsHeights = [];
-    for (var i = 0; i < (numofList.length * 2) - 1; i++) {
-      if (i.isEven) {
-        itemsHeights.add(40);
-      }
-      if (i.isOdd) {
-        itemsHeights.add(4);
-      }
+    // Since dividers are commented out, only create heights for the actual items
+    for (var i = 0; i < numofList.length; i++) {
+      itemsHeights.add(40);
     }
     return itemsHeights;
   }
 
   List<String> peersType = [
     "LTP",
-    "Mkt Cap",
+    "Market Cap",
     "PE Ratio",
     "PB Ratio",
     "ROCE",
     "Evebitda",
     "Debt to EQ",
-    "Div yield"
+    "Dividend yield"
   ];
 
   String _selctedPeers = "LTP";
@@ -903,6 +1064,14 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   chngPeersType(String val) async {
     _selctedPeers = val;
 
+    notifyListeners();
+  }
+
+  // Method to cycle through peers type options
+  cyclePeersType() async {
+    int currentIndex = peersType.indexOf(_selctedPeers);
+    int nextIndex = (currentIndex + 1) % peersType.length;
+    _selctedPeers = peersType[nextIndex];
     notifyListeners();
   }
 
@@ -916,22 +1085,25 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         [
           DropdownMenuItem<String>(
               value: item.toString(),
-              child: TextWidget.paraText(
-                text: item.toString(),
-                theme: ref.read(themeProvider).isDarkMode,
-                fw: 0,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                child: TextWidget.subText(
+                  text: item.toString(),
+                  theme: ref.read(themeProvider).isDarkMode,
+                  fw: 0,
+                ),
               )),
           //If it's last item, we will not add Divider after it.
-          if (item != numofList.last)
-            DropdownMenuItem<String>(
-              enabled: false,
-              child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 2.0),
-                  child: Divider(
-                    color: colors.colorDivider,
-                    height: 1,
-                  )),
-            ),
+          // if (item != numofList.last)
+          //   DropdownMenuItem<String>(
+          //     enabled: false,
+          //     child: Padding(
+          //         padding: const EdgeInsets.symmetric(vertical: 2.0),
+          //         child: Divider(
+          //           color: colors.colorDivider,
+          //           height: 1,
+          //         )),
+          //   ),
         ],
       );
     }
@@ -958,21 +1130,23 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       menuItems.addAll(
         [
           DropdownMenuItem<String>(
-              value: item.toString(),
-              child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                  child: Text(
-                    item.toString(),
-                  ))),
-          //If it's last item, we will not add Divider after it.
-          if (item != numofList.last)
-            DropdownMenuItem<String>(
-              enabled: false,
-              child: Divider(
-                  color: ref.read(themeProvider).isDarkMode
-                      ? colors.darkColorDivider
-                      : colors.colorDivider),
+            value: item.toString(),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10.0),
+              child: TextWidget.subText(
+                text: item.toString(),
+                theme: ref.read(themeProvider).isDarkMode,
+                fw: 0,
+              ),
             ),
+          ),
+
+          //If it's last item, we will not add Divider after it.
+          // if (item != numofList.last)
+          //   const DropdownMenuItem<String>(
+          //     enabled: false,
+          //     child: ListDivider(),
+          //   ),
         ],
       );
     }
@@ -1103,20 +1277,9 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   }
 
   void setChartScript(String exch, String token, String tsym) async {
-    if (kIsWeb) {
-      // On Flutter Web, JS injection into a cross-origin iframe is blocked.
-      // Reload the chart with the desired symbol via URL parameters instead.
-      final isDark = ref.read(themeProvider).isDarkMode;
-      final url =
-          "https://mynt.zebuetrade.com/tv?src=app&symbol=$tsym&user=${pref.clientId}&usession=${pref.clientSession}&token=$token&exch=$exch&dark=$isDark";
-      await ConstantName.chartwebViewController?.loadUrl(
-        urlRequest: URLRequest(url: WebUri(url)),
-      );
-    } else {
-      await ConstantName.chartwebViewController!.evaluateJavascript(
-          source:
-              "window.changeScript([{exch: '$exch', token: '$token', tsym: '$tsym'}], '${ref.read(themeProvider).isDarkMode}')");
-    }
+    await ConstantName.chartwebViewController?.evaluateJavascript(
+        source:
+            "window.changeScript([{exch: '$exch', token: '$token', tsym: '$tsym'}], '${ref.read(themeProvider).isDarkMode}')");
     if (_chartTabs.length == 5 &&
         (_chartTabs.any((t) => t.token == token)) != true) {
       removeChartTab(_chartTabs.last, false);
@@ -1244,7 +1407,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
               element.tsym!.toLowerCase().contains(value.toLowerCase()))
           .toList();
       if (_alertPendingSearch!.isEmpty) {
-        showResponsiveWarningMessage(context, 'No Data Found');
+        warningMessage(context, 'No Data Found');
       } else {
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
       }
@@ -1312,6 +1475,12 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   List _scrips = [];
   List get scrips => _scrips;
 
+  // Method to clear current scrips
+  void clearCurrentScrips() {
+    _scrips.clear();
+    notifyListeners();
+  }
+
 // Fetching data from the api and stored in a variable
 
   Future fetchMWList(BuildContext context, bool waitis,
@@ -1347,12 +1516,23 @@ class MarketWatchProvider extends DefaultChangeNotifier {
           _wlName = _marketWatchlist!.values!.first;
         }
 
-        // Debug: Print watchlist before adding predefined lists
-        print(
-            "DEBUG: Watchlist before adding predefined: ${_marketWatchlist!.values}");
+        // Create a new list to build the final watchlist order
+        // Filter out any predefined watchlists that might be in the API response
+        final updatedValues = _marketWatchlist!.values!
+            .where((wl) => !_preDefWL.contains(wl))
+            .toList();
 
-        // Create a completely new MarketWatchlist object to ensure reactive updates work
-        final updatedValues = List<String>.from(_marketWatchlist!.values!);
+        // Add pending watchlists that are not yet synced to API
+        for (var pendingWL in _pendingWatchlists) {
+          if (!updatedValues.contains(pendingWL)) {
+            updatedValues.add(pendingWL);
+          }
+        }
+
+        // Sort ONLY user watchlists (before adding predefined)
+        updatedValues.sort((a, b) => a.compareTo(b));
+
+        // Now add predefined watchlists at the end
         updatedValues.addAll(_preDefWL);
 
         // Create a new MarketWatchlist object to trigger proper change detection
@@ -1362,11 +1542,6 @@ class MarketWatchProvider extends DefaultChangeNotifier {
           values: updatedValues,
           emsg: _marketWatchlist!.emsg,
         );
-
-        // Debug: Print watchlist after adding predefined lists
-        print(
-            "DEBUG: Watchlist after adding predefined: ${_marketWatchlist!.values}");
-        print("DEBUG: Predefined list being added: $_preDefWL");
 
         // Force immediate UI update with the predefined tabs visible
         notifyListeners();
@@ -1402,6 +1577,15 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   Future fetchMWScrip(String wlname, context) async {
     try {
       toggleLoadingOn(true);
+
+      // If this is a pending watchlist, return empty scrip list without API call
+      if (_pendingWatchlists.contains(wlname)) {
+        _watchListValues = [];
+        _marketWatchScripData.addAll({wlname: jsonEncode([])});
+        toggleLoadingOn(false);
+        notifyListeners();
+        return null;
+      }
 
 //  await requestWSMarketWatchScrip(context: context, isSubscribe: false);
       _marketWatchScrip = await api.getMWScrip(wlname);
@@ -2331,20 +2515,27 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   }
 
 // Fetching fundametal datas
-  Future fetchFundamentalData({required String tradeSym}) async {
+  Future fetchFundamentalData({required String tradeSym, String? token}) async {
     try {
-      String? token = _getQuotes.token;
-      if (storeQuotes.containsKey(token) && storeQuotes[token]?['f'] != null) {
-        _fundamentalData = storeQuotes[token]?['f'];
-      } else {
-        _fundamentalData = await api.getFundamentalData(tradeSym);
+      // Use provided token or fallback to _getQuotes.token
+      String? cacheToken = token ?? _getQuotes.token;
+      
+      // Clear cache for this specific token to ensure fresh data
+      if (cacheToken != null && storeQuotes.containsKey(cacheToken)) {
+        storeQuotes[cacheToken]?['f'] = null;
       }
+      
+      _fundamentalData = await api.getFundamentalData(tradeSym);
 
       List ltpArgs = [];
 
       if (_fundamentalData!.msg != "no data found") {
-        storeQuotes[token]?['f'] = {};
-        storeQuotes[token]?['f'] = _fundamentalData;
+        if (cacheToken != null) {
+          if (storeQuotes[cacheToken] == null) {
+            storeQuotes[cacheToken] = {};
+          }
+          storeQuotes[cacheToken]?['f'] = _fundamentalData;
+        }
         _peersChartKeys = _fundamentalData!.peerComparisonChart!.keys.toList();
         DateFormat format = DateFormat("yyyy-MM-dd");
         _mfHoldingDate = [];
@@ -2479,6 +2670,49 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       debugPrint(" FUNDAMENTAL ERROR ::: ${e.toString()}");
     } finally {}
   }
+
+  // Method to clear chart data
+  // void clearChartData() {
+  //   _eodChartData = [];
+  //   _chartDataLoading = false;
+  //   notifyListeners();
+  // }
+
+  // Method to clear fundamental data
+  void clearFundamentalData() {
+    _fundamentalData = null;
+    notifyListeners();
+  }
+
+  // Method to clear cache for a specific token
+  void clearCacheForToken(String token) {
+    if (storeQuotes.containsKey(token)) {
+      storeQuotes[token]?['f'] = null;
+    }
+    notifyListeners();
+  }
+
+  // Future<void> fetchEODChartData(String tsym, String exch, {String timeframe = "1Y"}) async {
+  //   try {
+  //     // Clear old data and set loading state
+  //     _eodChartData = [];
+  //     _chartDataLoading = true;
+  //     notifyListeners();
+
+  //     _eodChartData = await api.getEODChartData(tsym, exch, timeframe: timeframe);
+  //     print("EOD Chart Data fetched successfully for $timeframe = ${_eodChartData.length} items");
+
+  //     _chartDataLoading = false;
+  //     notifyListeners();
+  //   } catch (e) {
+  //     _chartDataLoading = false;
+  //     print("PROVIDER: EOD CHART DATA ERROR ::: ${e.toString()}");
+  //     print("PROVIDER: Error Type: ${e.runtimeType}");
+  //     notifyListeners();
+  //     rethrow;
+  //   }
+  // }
+
 
 // Scrip returns data(Year/Month/Week/Day)
   techDataCalc(String lastPrc) {
@@ -2707,6 +2941,18 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     try {
       print("Changing watchlist to: $wName");
 
+      // Clear current scrips first to ensure clean state
+      _scrips.clear();
+
+      // Check if this is a pending watchlist (not yet synced to API)
+      if (_pendingWatchlists.contains(wName)) {
+        print("Watchlist $wName is pending (not synced), showing empty list");
+        // Don't subscribe to WebSocket for pending watchlists
+        await requestMWScrip(context: context, isSubscribe: false);
+        notifyListeners();
+        return;
+      }
+
       // Special handling for predefined watchlists
       bool isPredefined =
           (wName == "Nifty50" || wName == "Niftybank" || wName == "Sensex");
@@ -2789,6 +3035,51 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
 // Delete market scrips by watchlist name
   Future<void> deleteWatchList(String walName, BuildContext context) async {
+    // Calculate how many user watchlists exist (excluding predefined)
+    final userWatchlistCount = _marketWatchlist!.values!
+        .where((wl) => !_preDefWL.contains(wl))
+        .length;
+
+    // Check if this is the last user watchlist
+    if (userWatchlistCount == 1 && !_preDefWL.contains(walName)) {
+      error(context, "Cannot delete the last watchlist");
+      return;
+    }
+
+    // Check if this is a pending watchlist (created locally but not yet synced)
+    if (_pendingWatchlists.contains(walName)) {
+      // Just remove from pending list and local state, no API call needed
+      _pendingWatchlists.remove(walName);
+      await _savePendingWatchlists();
+
+      // Remove from marketWatchlist
+      if (_marketWatchlist != null && _marketWatchlist!.values != null) {
+        final updatedValues = List<String>.from(_marketWatchlist!.values!);
+        updatedValues.remove(walName);
+
+        _marketWatchlist = MarketWatchlist(
+          requestTime: _marketWatchlist!.requestTime,
+          stat: _marketWatchlist!.stat,
+          values: updatedValues,
+          emsg: _marketWatchlist!.emsg,
+        );
+      }
+
+      // Switch to first watchlist if deleted was active
+      if (walName == _wlName && _marketWatchlist!.values!.isNotEmpty) {
+        String newActiveWatchlist = _marketWatchlist!.values!.first;
+        _wlName = newActiveWatchlist;
+        _isPreDefWLs = _preDefWL.contains(newActiveWatchlist) ? "Yes" : "No";
+        setCurrentWatchlistPageIndex(0);
+        await changeWLScrip(newActiveWatchlist, context);
+      }
+
+      successMessage(context, "Watchlist deleted successfully");
+      notifyListeners();
+      return;
+    }
+
+    // Normal flow for synced watchlists
     String input = "";
 
     // Get the scrips for this watchlist, even if it's not the active one
@@ -2826,44 +3117,90 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         await fetchMWList(context, false, true);
 
         // If we deleted the active watchlist, switch to the first available one
-        // if (wasActiveWatchlist &&
-        //     _marketWatchlist != null &&
-        //     _marketWatchlist!.values!.isNotEmpty) {
-        String newActiveWatchlist = _marketWatchlist!.values!.first;
-        _wlName = newActiveWatchlist;
-        _isPreDefWLs = _preDefWL.contains(newActiveWatchlist) ? "Yes" : "No";
-        setCurrentWatchlistPageIndex(0);
-        // Load data for the new active watchlist
-        await changeWLScrip(newActiveWatchlist, context);
-        // }
+        if (wasActiveWatchlist &&
+            _marketWatchlist != null &&
+            _marketWatchlist!.values!.isNotEmpty) {
+          String newActiveWatchlist = _marketWatchlist!.values!.first;
+          _wlName = newActiveWatchlist;
+          _isPreDefWLs = _preDefWL.contains(newActiveWatchlist) ? "Yes" : "No";
+          setCurrentWatchlistPageIndex(0);
+          // Load data for the new active watchlist
+          await changeWLScrip(newActiveWatchlist, context);
+        }
 
+        successMessage(context, "Watchlist deleted successfully");
         // Update UI to reflect changes
         notifyListeners();
+      }else{
+        error(context, "Failed to delete watchlist");
       }
+    } catch (e) {
+      print("Error in deleteWatchList: $e");
     } finally {
       toggleLoadingOn(false);
+      notifyListeners();
     }
   }
 
 // Add market scrips by watchlist name
   addWatchList(String wlName, BuildContext context) async {
-    _addDeleteScripModel = await api.getAddDeleteSciptoMW(
-        isAdd: true, scripToken: "", wlname: wlName);
-
-    if (_addDeleteScripModel!.stat!.toUpperCase() == "OK") {
-      toggleLoadingOn(true);
-      // await changeWlName(wlName, "No");
-      await fetchMWList(context, false);
-      _wlName = wlName;
-      await changeWLScrip(wlName, context);
-      setCurrentWatchlistPageIndex(0);
-      notifyListeners();
-      await Future.delayed(const Duration(milliseconds: 100));
-      notifyListeners();
-      toggleLoadingOn(false);
-    } else {
-      ref.read(authProvider).ifSessionExpired(context);
+    // Validate watchlist name using centralized validation
+    final validationError = validateWatchlistName(wlName);
+    if (validationError != null) {
+      error(context, validationError);
+      return;
     }
+
+    // Use trimmed name
+    wlName = wlName.trim();
+
+    // Store watchlist locally instead of calling API
+    // API will be called when user adds the first scrip
+    _pendingWatchlists.add(wlName);
+    await _savePendingWatchlists(); // Persist to storage
+
+    // Add to the existing marketWatchlist for UI display
+    if (_marketWatchlist != null && _marketWatchlist!.values != null) {
+      // Filter out predefined watchlists first
+      final updatedValues = _marketWatchlist!.values!
+          .where((wl) => !_preDefWL.contains(wl))
+          .toList();
+
+      // Add the new watchlist
+      updatedValues.add(wlName);
+
+      // Sort only user watchlists
+      updatedValues.sort((a, b) => a.compareTo(b));
+
+      // Add predefined watchlists back at the end
+      updatedValues.addAll(_preDefWL);
+
+      _marketWatchlist = MarketWatchlist(
+        requestTime: _marketWatchlist!.requestTime,
+        stat: _marketWatchlist!.stat,
+        values: updatedValues,
+        emsg: _marketWatchlist!.emsg,
+      );
+
+    }
+
+    // Set as current watchlist
+    _wlName = wlName;
+
+    // Initialize empty scrip list for this watchlist
+    _scrips = [];
+    _watchListValues = [];
+
+    // Find the index and set as current
+    if (_marketWatchlist != null && _marketWatchlist!.values != null) {
+      final newWatchlistIndex = _marketWatchlist!.values!.indexOf(wlName);
+      if (newWatchlistIndex != -1) {
+        setCurrentWatchlistPageIndex(newWatchlistIndex);
+      }
+      successMessage(context, "Watchlist created successfully");
+    }
+
+    notifyListeners();
   }
 
   Future<bool> addDelMarketScrip(
@@ -2875,8 +3212,47 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       bool isReOrder,
       bool isOptionStike) async {
     try {
-      _addDeleteScripModel = await api.getAddDeleteSciptoMW(
-          isAdd: isAdd, scripToken: scripTok, wlname: wlName);
+      // Check if this is a pending watchlist (created locally without API call)
+      bool wasPending = false;
+      if (isAdd && _pendingWatchlists.contains(wlName)) {
+        wasPending = true;
+        // This is the first scrip being added to a pending watchlist
+        // Create the watchlist via API with this scrip
+        print("Creating pending watchlist '$wlName' with first scrip");
+        _addDeleteScripModel = await api.getAddDeleteSciptoMW(
+            isAdd: true, scripToken: scripTok, wlname: wlName);
+
+        if (_addDeleteScripModel!.stat!.toUpperCase() == "OK") {
+          // Successfully created watchlist with scrip, remove from pending
+          _pendingWatchlists.remove(wlName);
+          await _savePendingWatchlists(); // Persist the change
+          // Refresh the entire watchlist to sync with API
+          await fetchMWList(context, false, true);
+
+          // After fetchMWList, update the page index to point to the correct watchlist
+          if (_marketWatchlist != null && _marketWatchlist!.values != null) {
+            final newIndex = _marketWatchlist!.values!.indexOf(wlName);
+            if (newIndex != -1) {
+              setCurrentWatchlistPageIndex(newIndex);
+              _wlName = wlName; // Ensure current watchlist name is set
+            }
+          }
+
+          // Fetch the scrip data for the newly created watchlist
+          await fetchMWScrip(wlName, context);
+
+          // For pending watchlists, we need to call changeWLScrip here
+          // to update the UI immediately after syncing
+          await changeWLScrip(wlName, context);
+
+          // Return early since we've handled everything for pending watchlists
+          return true;
+        }
+      } else {
+        // Normal flow for existing watchlists
+        _addDeleteScripModel = await api.getAddDeleteSciptoMW(
+            isAdd: isAdd, scripToken: scripTok, wlname: wlName);
+      }
 
       if (_addDeleteScripModel!.stat!.toUpperCase() == "OK") {
         ConstantName.sessCheck = true;
@@ -2891,7 +3267,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
           // Wrap ScaffoldMessenger calls in try-catch to handle disposed widgets
           try {
             ScaffoldMessenger.of(context).hideCurrentSnackBar();
-            showResponsiveSuccess(context, "Scrip order was changed");
+            successMessage(context, "Scrip order was changed");
           } catch (e) {
             if (e.toString().contains("widget was disposed") ||
                 e.toString().contains("after the widget was disposed")) {
@@ -2905,7 +3281,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
           // Wrap ScaffoldMessenger calls in try-catch to handle disposed widgets
           try {
             ScaffoldMessenger.of(context).hideCurrentSnackBar();
-            showResponsiveSuccess(context,
+            successMessage(
+                context,
                 isAdd
                     ? "Scrip was added to watchlist $wlName"
                     : "Scrip was removed from watchlist $wlName");
@@ -2938,6 +3315,10 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         } catch (e) {
           print("Error handling session expiration: $e");
         }
+      } else if (_addDeleteScripModel!.emsg ==
+          "Invalid Input : At least one stock must remain in the Market Watch.") {
+        // _delScripQty = 1;
+        error(context, "At least one stock must remain in the Market Watch.");
       }
       return false;
     } catch (e) {
@@ -3098,6 +3479,18 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       _alertPendingModel!.sort((a, b) {
         return double.parse(a.d ?? "0.00")
             .compareTo(double.parse(b.d ?? "0.00"));
+      });
+    } else if (sorting == "CHANGEASC") {
+      _alertPendingModel!.sort((a, b) {
+        final aChange = double.tryParse(a.change ?? '0.0') ?? 0.0;
+        final bChange = double.tryParse(b.change ?? '0.0') ?? 0.0;
+        return aChange.compareTo(bChange);
+      });
+    } else if (sorting == "CHANGEDSC") {
+      _alertPendingModel!.sort((a, b) {
+        final bChange = double.tryParse(b.change ?? '0.0') ?? 0.0;
+        final aChange = double.tryParse(a.change ?? '0.0') ?? 0.0;
+        return bChange.compareTo(aChange);
       });
     }
     notifyListeners();
@@ -3669,7 +4062,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       _scrips[index]['isSelected'] = true;
       _delScripQty = _delScripQty + 1;
     }
-
+    print("delScripQty: $_delScripQty");
     notifyListeners();
   }
 
@@ -3685,7 +4078,10 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     if (_scrips.isEmpty) {
       Navigator.pop(context);
     }
-    _delScripQty = 0;
+    if((_addDeleteScripModel!.emsg !=
+          "Invalid Input : At least one stock must remain in the Market Watch.")){
+      _delScripQty = 0;
+    }
     notifyListeners();
   }
 
@@ -3751,18 +4147,87 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         ref.read(orderProvider).tabSize();
 
         // Display success message
-        showResponsiveSuccess(context, "Alert created successfully");
+        successMessage(context, "Alert created successfully");
 
         // Close the alert creation screens
         Navigator.pop(context);
         Navigator.pop(context);
+        if(scripsize){
+          Navigator.pop(context);
+        }
 
-        // Navigate to the Alert tab after closing the alert creation screens
-        ref.read(indexListProvider).bottomMenu(2, context);
-        ref.read(portfolioProvider).changeTabIndex(2);
-        ref.read(orderProvider).changeTabIndex(5, context);
-      } else if (_setAlertModel!.stat! == "Not_Ok") {
+        // Add a small delay to ensure Navigator.pop operations complete before navigation
+        Future.delayed(const Duration(milliseconds: 100), () {
+          // Navigate to the Alert tab after closing the alert creation screens
+          ref.read(indexListProvider).bottomMenu(2, context);
+          ref.read(portfolioProvider).changeTabIndex(2);
+          ref.read(orderProvider).changeTabIndex(5, context);
+        });
+      } else if (_setAlertModel!.stat! == "Not_Ok" &&
+          _setAlertModel!.stat == "Session Expired :  Invalid Session Key") {
         ref.read(authProvider).ifSessionExpired(context);
+      }
+
+      if (_setAlertModel!.stat! != "OI created") {
+        warningMessage(context, "Alert not created");
+      }
+
+      notifyListeners();
+      return _setAlertModel;
+    } catch (e) {
+      debugPrint(e.toString());
+    } finally {
+      toggleLoadingOn(false);
+    }
+  }
+
+   Future fetchSetAlertWeb(
+      String exch,
+      String tysm,
+      String value,
+      String alertTypeVal,
+      BuildContext context,
+      int index,
+      String lp,
+      String remark) async {
+    try {
+      toggleLoadingOn(true);
+      _setAlertModel =
+          await api.getSetAlert(exch, tysm, value, alertTypeVal, remark);
+
+      if (_setAlertModel!.stat! == "OI created") {
+        // Fetch updated alert list
+        await fetchPendingAlert(context);
+
+        // Update the tab count immediately
+        ref.read(orderProvider).tabSize();
+
+        // Display success message
+        successMessage(context, "Alert created successfully");
+        
+            // Close the dialog
+            Navigator.of(context).pop();
+            
+            // Small delay to ensure dialog pop completes, then add Order Book tab and switch to Alerts
+            Future.delayed(const Duration(milliseconds: 200), () {
+              if (kIsWeb && WebNavigationHelper.isAvailable) {
+                // Navigate to Order Book in web panel using WebNavigationHelper
+                WebNavigationHelper.navigateTo("orderBook");
+                
+                // Additional delay to ensure Order Book screen loads, then switch to Alerts tab within it
+                Future.delayed(const Duration(milliseconds: 300), () {
+                  ref.read(orderProvider).changeTabIndex(5, context);
+                });
+              } else {
+                // Fallback for non-web platforms
+                ref.read(orderProvider).changeTabIndex(5, context);
+              }
+            });
+      } else if (_setAlertModel!.stat! == "Not_Ok" &&
+          _setAlertModel!.stat == "Session Expired :  Invalid Session Key") {
+        ref.read(authProvider).ifSessionExpired(context);
+      } else if (_setAlertModel!.stat! != "OI created") {
+        warningMessage(context, "Alert not created");
       }
 
       notifyListeners();
@@ -3804,6 +4269,9 @@ class MarketWatchProvider extends DefaultChangeNotifier {
                   .toStringAsFixed(2);
             }
           }
+
+          // Apply default sorting (Scrip Name ascending) when alerts are initially loaded
+          filterPendingAlert("ASC");
         } else {
           _alertPendingModel = [];
           ConstantName.sessCheck = false;
@@ -3834,7 +4302,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         // This should be safe since we're using the context from the caller
         // which should be the order book screen that remains active
         try {
-          showResponsiveSuccess(context, "Alert deleted successfully");
+          successMessage(context, "Alert deleted successfully");
         } catch (e) {
           print("Could not show SnackBar: $e");
         }
@@ -3869,8 +4337,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
         // Update the tab count immediately
         ref.read(orderProvider).tabSize();
-
-        showResponsiveSuccess(context, "Alert modified successfully");
+        successMessage(context, "Alert modified successfully");
       } else if (_modifyalertmodel!.stat == "Not_Ok") {
         ref.read(authProvider).ifSessionExpired(context);
       }
@@ -3911,12 +4378,13 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
         Navigator.pop(context);
         Navigator.pop(context);
-        showResponsiveSuccess(context,
+        successMessage(context,
             "The name of the watchlist has been successfully changed.");
         notifyListeners();
       } else if (_watchlistRenameModel!.stat == "Not_Ok") {
         Navigator.pop(context);
-        showResponsiveWarningMessage(context, "${_watchlistRenameModel!.emsg}");
+        Navigator.pop(context);
+        warningMessage(context, "${_watchlistRenameModel!.emsg}");
       } else if (_watchlistRenameModel!.emsg ==
           "Session Expired :  Invalid Session Key") {
         ref.read(authProvider).ifSessionExpired(context);
@@ -3983,8 +4451,47 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
-  // Callback to show scrip depth info in panel
-  Function(dynamic)? _onShowScripDepthInfoInPanel;
+
+  // Chart and UI state management methods
+  void updateSelectedTimeframe(String timeframe) {
+    _selectedTimeframe = timeframe;
+    notifyListeners();
+  }
+
+  void updateSelectedIndex(int index) {
+    _selectedIndex = index;
+    notifyListeners();
+  }
+
+  void updateShowTooltip(bool show) {
+    _showTooltip = show;
+    notifyListeners();
+  }
+
+  void updateTouchedIndex(int index) {
+    _touchedIndex = index;
+    notifyListeners();
+  }
+
+  void updateHoveredEventDots(Set<int> dots) {
+    _hoveredEventDots = dots;
+    notifyListeners();
+  }
+
+  void updateSelectedEventDot(int? dot) {
+    _selectedEventDot = dot;
+    notifyListeners();
+  }
+
+  void clearChartInteractionState() {
+    _showTooltip = false;
+    _touchedIndex = -1;
+    _hoveredEventDots.clear();
+    _selectedEventDot = null;
+    notifyListeners();
+  }
+
+ Function(dynamic)? _onShowScripDepthInfoInPanel;
 
   // Set callback for showing scrip depth info in panel
   void setOnShowScripDepthInfoInPanel(Function(dynamic) callback) {
@@ -3992,7 +4499,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   }
 
   // Open scrip in web panel using the scrip tabs manager
-  void _openScripInWebPanel(BuildContext context, DepthInputArgs depthArgs, String basket) {
+  void openScripInWebPanel(BuildContext context, DepthInputArgs depthArgs, String basket) {
     // Import the scrip tabs provider to add the new scrip
     final container = ProviderScope.containerOf(context);
     final scripTabsNotifier = container.read(scripTabsProvider.notifier);
@@ -4011,4 +4518,6 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       _onShowScripDepthInfoInPanel!(depthArgs);
     }
   }
+ 
+
 }

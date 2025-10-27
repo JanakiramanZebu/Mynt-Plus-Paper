@@ -6,7 +6,7 @@ import 'package:mynt_plus/locator/preference.dart';
 import 'package:mynt_plus/models/client_profile_all_details/profile_all_details_model.dart';
 import 'package:mynt_plus/provider/core/default_change_notifier.dart';
 import 'package:mynt_plus/provider/fund_provider.dart';
-import 'package:mynt_plus/screens/profile_screen/in_app_webview_screen.dart';
+import 'package:mynt_plus/screens/Mobile/profile_screen/in_app_webview_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../sharedWidget/snack_bar.dart';
 

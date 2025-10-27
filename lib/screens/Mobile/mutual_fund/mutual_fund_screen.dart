@@ -1,0 +1,810 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:mynt_plus/provider/thems.dart';
+import '../../../provider/mf_provider.dart';
+import '../../../res/global_state_text.dart';
+import '../../../res/res.dart';
+import '../../../routes/route_names.dart';
+import '../../../sharedWidget/functions.dart';
+import 'package:skeletonizer/skeletonizer.dart';
+
+import '../../../sharedWidget/list_divider.dart';
+
+class MutualFundNewScreen extends ConsumerWidget {
+  final TabController tabController;
+  const MutualFundNewScreen({super.key, required this.tabController});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final mfData = ref.watch(mfProvider);
+    final theme = ref.watch(themeProvider);
+
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: SizedBox(
+              child: Skeletonizer(
+                enabled: mfData.holdstatload ?? false,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            TextWidget.paraText(
+                              text: "Invested",
+                              color: theme.isDarkMode
+                                  ? colors.textPrimaryDark
+                                  : colors.textPrimaryLight,
+                              textOverflow: TextOverflow.ellipsis,
+                              theme: theme.isDarkMode,
+                            ),
+                            const SizedBox(height: 6),
+                            TextWidget.titleText(
+                              text:
+                                  "${(mfData.mfholdingnew?.summary?.invested == "" || mfData.mfholdingnew?.summary?.invested == null) ? "0.00" : mfData.mfholdingnew?.summary?.invested}",
+                              color: theme.isDarkMode
+                                  ? colors.textSecondaryDark
+                                  : colors.textSecondaryLight,
+                              textOverflow: TextOverflow.ellipsis,
+                              theme: theme.isDarkMode,
+                              fw: 0
+                            ),
+                          ],
+                        ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            TextWidget.paraText(
+                              text: "Profit / Loss",
+                              color: theme.isDarkMode
+                                  ? colors.textPrimaryDark
+                                  : colors.textPrimaryLight,
+                              textOverflow: TextOverflow.ellipsis,
+                              theme: theme.isDarkMode,
+                            ),
+                            const SizedBox(height: 6),
+                            TextWidget.titleText(
+                              text:
+                                  "${(mfData.mfholdingnew?.summary?.absReturnValue == "" || mfData.mfholdingnew?.summary?.absReturnValue == null) ? "0.00" : mfData.mfholdingnew?.summary?.absReturnValue}",
+                              color: theme.isDarkMode
+                                  ? colors.textSecondaryDark
+                                  : colors.textSecondaryLight,
+                              textOverflow: TextOverflow.ellipsis,
+                              theme: theme.isDarkMode,
+                              fw: 0
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            TextWidget.paraText(
+                              text: "Current",
+                              color: theme.isDarkMode
+                                  ? colors.textPrimaryDark
+                                  : colors.textPrimaryLight,
+                              textOverflow: TextOverflow.ellipsis,
+                              theme: theme.isDarkMode,
+                            ),
+                            const SizedBox(height: 6),
+                            TextWidget.titleText(
+                              text:
+                                  "${(mfData.mfholdingnew?.summary?.currentValue == "" || mfData.mfholdingnew?.summary?.currentValue == null) ? "0.00" : mfData.mfholdingnew?.summary?.currentValue}",
+                              color: theme.isDarkMode
+                                  ? colors.textSecondaryDark
+                                  : colors.textSecondaryLight,
+                              textOverflow: TextOverflow.ellipsis,
+                              theme: theme.isDarkMode,
+                              fw: 0,
+                            ),
+                          ],
+                        ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            TextWidget.paraText(
+                              
+                                text: "Abs Returns %",
+                                color: theme.isDarkMode
+                                    ? colors.textPrimaryDark
+                                    : colors.textPrimaryLight,
+                                textOverflow: TextOverflow.ellipsis,
+                                theme: theme.isDarkMode,
+                                ),
+                            const SizedBox(height: 6),
+                            TextWidget.titleText(
+                               
+                                text:
+                                    "${mfData.mfholdingnew?.summary?.absReturnPercent?.toString() ?? "0"}%", // Ensures percentage is always a valid string
+                                color: theme.isDarkMode
+                                    ? colors.textSecondaryDark
+                                    : colors.textSecondaryLight,
+                                textOverflow: TextOverflow.ellipsis,
+                                theme: theme.isDarkMode,
+                                fw: 0
+                                ),
+
+                              //     Text(
+                              //   _formatValue(mfData.mfholdingnew?.summary?.absReturnValue),
+                              //   style: TextStyle(
+                              //     fontSize: 14,
+                              //     fontWeight: FontWeight.w500,
+                              //     color: _getColorBasedOnValue(
+                              //       mfData.mfholdingnew?.summary?.absReturnValue,
+                              //     ),
+                              //   ),
+                              // ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          buildSlidingPanelContent(mfData.bestMFListStaticnew, mfData, theme),
+          const SizedBox(height: 16),
+          Padding(
+            padding: const EdgeInsets.only(left: 16, top: 10, bottom: 0),
+            child: TextWidget.titleText(
+                align: TextAlign.right,
+                text: 'Quick Access',
+                color: theme.isDarkMode
+                    ? colors.textPrimaryDark
+                    : colors.textPrimaryLight,
+                textOverflow: TextOverflow.ellipsis,
+                theme: theme.isDarkMode,
+                fw: 1),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(0.0),
+            child: Column(
+              children: [
+                nfoCard(context, mfData, theme),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(0.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: sipcaltor(context, mfData, theme),
+                ),
+                Expanded(
+                  child: cargrcalss(context, mfData, theme),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.all(0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(left: 16, top: 14, bottom: 8),
+                  child: TextWidget.titleText(
+                      align: TextAlign.right,
+                      text: "Categories",
+                      color: theme.isDarkMode
+                          ? colors.textPrimaryDark
+                          : colors.textPrimaryLight,
+                      textOverflow: TextOverflow.ellipsis,
+                      theme: theme.isDarkMode,
+                      fw: 1),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(left: 16, right: 16, top: 8),
+                  child: ListView.separated(
+                    physics: const NeverScrollableScrollPhysics(),
+                    shrinkWrap: true,
+                    itemBuilder: (BuildContext context, int index) {
+                      return buildCategoryCard(
+                          context: context,
+                          dataIcon: mfData.mFCategoryTypesStatic[index]
+                              ['dataIcon'],
+                          title: mfData.mFCategoryTypesStatic[index]['title'],
+                          description: mfData.mFCategoryTypesStatic[index]
+                              ['description'],
+                          chips: mfData.mFCategoryTypesStatic[index]['sub'],
+                          mfData: mfData,
+                          theme: theme);
+                    },
+                    separatorBuilder: (BuildContext context, int index) {
+                      return const SizedBox(height: 20);
+                    },
+                    itemCount: mfData.mFCategoryTypesStatic.length,
+                  ),
+                ),
+                const SizedBox(
+                  height: 20,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget tabButton(IconData icon, String title) {
+    return ElevatedButton(
+      onPressed: () {},
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.black,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(25),
+        ),
+        padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
+            color: Colors.white,
+            size: 20,
+          ),
+          const SizedBox(width: 6),
+          Text(
+            title,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildSlidingPanelContent(
+      bestMFList, MFProvider mfData, ThemesProvider theme) {
+    return Container(
+      // padding: const EdgeInsets.all(16.0),
+      // color:
+      // const Color(0xFFF9F9F9),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // const SizedBox(height: 9),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextWidget.titleText(
+                    align: TextAlign.right,
+                    text: "Collections",
+                    color: theme.isDarkMode
+                        ? colors.textPrimaryDark
+                        : colors.textPrimaryLight,
+                    textOverflow: TextOverflow.ellipsis,
+                    theme: theme.isDarkMode,
+                    fw: 1),
+                const SizedBox(height: 10),
+                TextWidget.paraText(
+                    align: TextAlign.right,
+                    text:
+                        "Find the right mutual fund across these asset classes",
+                    color: theme.isDarkMode
+                        ? colors.textSecondaryDark
+                        : colors.textSecondaryLight,
+                    textOverflow: TextOverflow.ellipsis,
+                    theme: theme.isDarkMode,
+                    fw: 3),
+              ],
+            ),
+          ),
+
+          // const SizedBox(height: 24),
+          SingleChildScrollView(
+            child: Column(
+              children: [
+                Builder(
+                  builder: (context) {
+                    double screenWidth = MediaQuery.of(context).size.width;
+                    double screenHeight = MediaQuery.of(context).size.height;
+
+                    int crossAxisCount = screenWidth > 600 ? 3 : 2;
+                    double childAspectRatio = 1.2;
+
+                    return LayoutBuilder(
+                      builder: (context, constraints) {
+                        return ListView.separated(
+                          shrinkWrap:
+                              true, // Allow GridView to take only required space
+                          physics:
+                              const NeverScrollableScrollPhysics(), // Disable GridView's scrolling
+                          separatorBuilder: (_, __) => const ListDivider(),
+                          itemCount: bestMFList?.length ?? 0,
+                          itemBuilder: (BuildContext context, int index) {
+                            if (bestMFList == null ||
+                                index >= bestMFList.length) {
+                              return const SizedBox.shrink();
+                            }
+
+                            return InkWell(
+                              onTap: () async {
+                                mfData.changetitle(bestMFList[index]['title']);
+                                Navigator.pushNamed(
+                                  context,
+                                  Routes.bestMfScreen,
+                                  arguments: bestMFList[index]['title'],
+                                );
+                              },
+                              child: ListTile(
+                                contentPadding:
+                                    const EdgeInsets.symmetric(horizontal: 16),
+                                dense: false,
+                                leading: SvgPicture.asset(
+                                  bestMFList[index]['image'] ??
+                                      'assets/explore/default.svg',
+                                  height: 40,
+                                  width: 40,
+                                ),
+                                title: TextWidget.subText(
+                                  text: bestMFList[index]['title'] ?? '',
+                                  color: theme.isDarkMode
+                                      ? colors.textPrimaryDark
+                                      : colors.textPrimaryLight,
+                                  textOverflow: TextOverflow.ellipsis,
+                                  theme: theme.isDarkMode,
+                                ),
+                                subtitle: TextWidget.paraText(
+                                  text:
+                                      "${bestMFList[index]['subtitle'] ?? ''}",
+                                  color: theme.isDarkMode
+                                      ? colors.textSecondaryDark
+                                      : colors.textSecondaryLight,
+                                  maxLines: 2,
+                                  textOverflow: TextOverflow.ellipsis,
+                                  theme: theme.isDarkMode,
+                                ),
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    );
+                  },
+                ),
+              ],
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget buildCategoryCard(
+      {required String? dataIcon,
+      required BuildContext context,
+      required String? title,
+      required String? description,
+      required List<dynamic>? chips,
+      required MFProvider mfData,
+      required ThemesProvider theme}) {
+    if (dataIcon == null ||
+        title == null ||
+        description == null ||
+        chips == null) {
+      return const SizedBox.shrink();
+    }
+
+    return InkWell(
+      onTap: () async {
+        if (chips.isNotEmpty) {
+          final firstChip = chips[0]?.toString() ?? "";
+          mfData.fetchcatdatanew(title, firstChip);
+          mfData.changetitle(firstChip);
+          Navigator.pushNamed(context, Routes.mfCategoryList, arguments: title);
+        }
+      },
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: theme.isDarkMode
+              ? const Color.fromARGB(255, 0, 0, 0)
+              : Colors.white,
+          border: Border.all(
+            color: theme.isDarkMode
+                ? const Color(0xFF2A2A2A)
+                : const Color(0xFFDDDDDD),
+            width: 1.0,
+          ),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Image.asset(
+              dataIcon,
+              width: 40,
+              height: 40,
+            ),
+            const SizedBox(height: 8),
+            TextWidget.subText(
+                align: TextAlign.right,
+                text: title,
+                color: theme.isDarkMode
+                    ? colors.textPrimaryDark
+                    : colors.textPrimaryLight,
+                textOverflow: TextOverflow.ellipsis,
+                theme: theme.isDarkMode,
+                fw: 0),
+            const SizedBox(height: 8),
+            TextWidget.paraText(
+                align: TextAlign.right,
+                text: description,
+                color: theme.isDarkMode
+                    ? colors.textSecondaryDark
+                    : colors.textSecondaryLight,
+                textOverflow: TextOverflow.ellipsis,
+                theme: theme.isDarkMode,
+                fw: 3),
+            const SizedBox(height: 16),
+            SizedBox(
+              height: 35, // Match your chip height
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: chips.length,
+                separatorBuilder: (context, index) => const SizedBox(width: 8),
+                itemBuilder: (context, index) {
+                  final chipText = chips[index]?.toString() ?? "";
+
+                  return TextButton(
+                    onPressed: () async {
+                      mfData.fetchcatdatanew(title, chipText);
+                      mfData.changetitle(chipText);
+                      Navigator.pushNamed(
+                        context,
+                        Routes.mfCategoryList,
+                        arguments: title,
+                      );
+                      FocusScope.of(context).unfocus();
+                    },
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 0),
+                      backgroundColor: !theme.isDarkMode
+                          ? const Color(0xffF1F3F8)
+                          : colors.colorbluegrey,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4),
+                        side: BorderSide(
+                          color: colors.primaryLight,
+                          width: 1,
+                        ),
+                      ),
+                    ),
+                    child: TextWidget.paraText(
+                        align: TextAlign.right,
+                        text: chipText,
+                        color: theme.isDarkMode
+                            ? colors.textPrimaryDark
+                            : colors.textPrimaryLight,
+                        textOverflow: TextOverflow.ellipsis,
+                        theme: theme.isDarkMode,
+                        fw: 0),
+                  );
+                },
+              ),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget nfoCard(BuildContext context, MFProvider mf, ThemesProvider theme) {
+    return GestureDetector(
+      onTap: () async {
+        Navigator.pushNamed(context, Routes.mfnfoscreen);
+      },
+      child: Container(
+        padding: const EdgeInsets.all(16.0),
+        margin: const EdgeInsets.all(16.0),
+        decoration: BoxDecoration(
+          color: theme.isDarkMode
+              ? const Color.fromARGB(255, 0, 0, 0)
+              : Colors.white,
+          borderRadius: BorderRadius.circular(10.0),
+          border: Border.all(
+            color: theme.isDarkMode
+                ? const Color(0xFF2A2A2A)
+                : Colors.grey.shade300,
+            width: 1,
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.only(bottom: 0),
+                      child: TextWidget.paraText(
+                          align: TextAlign.left,
+                          text: "INVEST IN",
+                          color: theme.isDarkMode
+                              ? colors.primaryDark
+                              : colors.primaryLight,
+                          textOverflow: TextOverflow.ellipsis,
+                          theme: theme.isDarkMode,
+                          fw: 3),
+                    ),
+                    const SizedBox(height: 8),
+                    TextWidget.subText(
+                        align: TextAlign.left,
+                        text: "New Fund Offer (NFO)",
+                        color: theme.isDarkMode
+                            ? colors.textPrimaryDark
+                            : colors.textPrimaryLight,
+                        textOverflow: TextOverflow.ellipsis,
+                        theme: theme.isDarkMode,
+                        fw: 3),
+                  ],
+                ),
+                SvgPicture.asset(
+                  'assets/explore/gift.svg',
+                  width: 38,
+                  height: 34,
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            TextWidget.paraText(
+                align: TextAlign.left,
+                text:
+                    "A new fund offer (NFO) is the first subscription for any new fund by an investment company.",
+                color: theme.isDarkMode
+                    ? colors.textSecondaryDark
+                    : colors.textSecondaryLight,
+                maxLines: 2,
+                textOverflow: TextOverflow.ellipsis,
+                theme: theme.isDarkMode,
+                fw: 3),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                TextWidget.paraText(
+                    align: TextAlign.left,
+                    text: "See all NFOs",
+                    color: theme.isDarkMode
+                        ? colors.primaryDark
+                        : colors.primaryLight,
+                    textOverflow: TextOverflow.ellipsis,
+                    theme: theme.isDarkMode,
+                    fw: 3),
+                SizedBox(width: 4),
+                Icon(
+                  Icons.arrow_forward,
+                  color: theme.isDarkMode
+                      ? colors.primaryDark
+                      : colors.primaryLight,
+                  size: 16,
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget sipcaltor(BuildContext context, MFProvider mf, ThemesProvider theme) {
+    return GestureDetector(
+      onTap: () async {
+        Navigator.pushNamed(context, Routes.mfsipcalscreen);
+      },
+      child: Container(
+        padding: const EdgeInsets.all(16.0),
+        margin: const EdgeInsets.only(left: 16, right: 0, top: 0),
+        decoration: BoxDecoration(
+          color: theme.isDarkMode
+              ? const Color.fromARGB(255, 0, 0, 0)
+              : Colors.white,
+          borderRadius: BorderRadius.circular(10.0),
+          border: Border.all(
+            color: theme.isDarkMode
+                ? const Color(0xFF2A2A2A)
+                : Colors.grey.shade300,
+            width: 1,
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Center(
+              child: SvgPicture.asset(
+                'assets/explore/sipca.svg',
+                width: 38,
+                height: 34,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Center(
+              child: TextWidget.paraText(
+                  align: TextAlign.right,
+                  text: "SIP Calculator",
+                  color: theme.isDarkMode
+                      ? colors.textSecondaryDark
+                      : colors.textSecondaryLight,
+                  textOverflow: TextOverflow.ellipsis,
+                  theme: theme.isDarkMode,
+                  fw: 3),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget cargrcalss(BuildContext context, MFProvider mf, ThemesProvider theme) {
+    return GestureDetector(
+      onTap: () async {
+        Navigator.pushNamed(context, Routes.mfcagrcalss);
+      },
+      child: Container(
+        padding: const EdgeInsets.all(16.0),
+        margin: const EdgeInsets.only(left: 16, right: 16, top: 0),
+        decoration: BoxDecoration(
+          color: theme.isDarkMode
+              ? const Color.fromARGB(255, 0, 0, 0)
+              : Colors.white,
+          borderRadius: BorderRadius.circular(10.0),
+          border: Border.all(
+            color: theme.isDarkMode
+                ? const Color(0xFF2A2A2A)
+                : Colors.grey.shade300,
+            width: 1,
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Center(
+              child: SvgPicture.asset(
+                'assets/explore/cagrcal.svg',
+                width: 40,
+                height: 34,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Center(
+              child: TextWidget.paraText(
+                  align: TextAlign.right,
+                  text: "CAGR Calculator",
+                  color: theme.isDarkMode
+                      ? colors.textSecondaryDark
+                      : colors.textSecondaryLight,
+                  textOverflow: TextOverflow.ellipsis,
+                  theme: theme.isDarkMode,
+                  fw: 3),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+
+
+
+
+
+
+
+
+
+// LayoutBuilder(
+//                         builder: (context, constraints) {
+//                           return SizedBox(
+//                             width: constraints.maxWidth,
+//                             child: GridView.builder(
+//                               shrinkWrap:
+//                                   true, // Allow GridView to take only required space
+//                               physics:
+//                                   const NeverScrollableScrollPhysics(), // Disable GridView's scrolling
+//                               gridDelegate:
+//                                   SliverGridDelegateWithFixedCrossAxisCount(
+//                                 crossAxisCount: crossAxisCount,
+//                                 crossAxisSpacing: screenWidth * 0.04,
+//                                 mainAxisSpacing: screenHeight * 0.02,
+//                                 childAspectRatio: childAspectRatio,
+//                               ),
+//                               itemCount: bestMFList?.length ?? 0,
+//                               itemBuilder: (BuildContext context, int index) {
+//                                 if (bestMFList == null ||
+//                                     index >= bestMFList.length) {
+//                                   return const SizedBox.shrink();
+//                                 }
+
+//                                 return GestureDetector(
+//                                   onTap: () async {
+//                                     mfData.changetitle(
+//                                         bestMFList[index]['title']);
+//                                     Navigator.pushNamed(
+//                                       context,
+//                                       Routes.bestMfScreen,
+//                                       arguments: bestMFList[index]['title'],
+//                                     );
+//                                   },
+//                                   child: Container(
+//                                     height: 150,
+//                                     padding: const EdgeInsets.symmetric(
+//                                         vertical: 16, horizontal: 16),
+//                                     decoration: BoxDecoration(
+//                                       color: theme.isDarkMode
+//                                           ? const Color.fromARGB(255, 0, 0, 0)
+//                                           : colors.colorWhite,
+//                                       borderRadius: BorderRadius.circular(8),
+//                                     ),
+//                                     child: Column(
+//                                       crossAxisAlignment:
+//                                           CrossAxisAlignment.start, 
+//                                       children: [
+//                                         SvgPicture.asset(
+//                                           bestMFList[index]['image'] ??
+//                                               'assets/explore/default.svg',
+//                                           height: 50,
+//                                           width: 60,
+//                                         ),
+//                                         const SizedBox(
+//                                           height: 12,
+//                                         ),
+//                                         TextWidget.subText(
+//                                             align: TextAlign.left,
+//                                             text: bestMFList[index]['title'] ??
+//                                                 '',
+//                                             color: theme.isDarkMode
+//                                                 ? colors.textPrimaryDark
+//                                                 : colors.textPrimaryLight,
+//                                             textOverflow: TextOverflow.ellipsis,
+//                                             theme: theme.isDarkMode,
+//                                             fw: 0),
+//                                             const SizedBox(
+//                                           height: 12,
+//                                         ),
+//                                         TextWidget.paraText(
+//                                             align: TextAlign.left,
+//                                             text:
+//                                                 "${bestMFList[index]['subtitle'] ?? ''}",
+//                                             color: theme.isDarkMode
+//                                                 ? colors.textSecondaryDark
+//                                                 : colors.textSecondaryLight,
+//                                             maxLines: 2,
+//                                             textOverflow: TextOverflow.ellipsis,
+//                                             theme: theme.isDarkMode,
+//                                             fw: 3),
+//                                       ],
+//                                     ),
+//                                   ),
+//                                 );
+//                               },
+//                             ),
+//                           );
+//                         },
+//                       ),

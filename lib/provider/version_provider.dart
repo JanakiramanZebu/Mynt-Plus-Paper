@@ -7,7 +7,7 @@ import '../api/core/api_export.dart';
 import '../locator/locator.dart';
 import '../locator/preference.dart';
 import '../models/version_model/version_mod.dart';
-import '../screens/version_ui/version_ui.dart';
+import '../screens/Mobile/version_ui/version_ui.dart';
 import 'core/default_change_notifier.dart';
 
 final versionProvider =

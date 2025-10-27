@@ -22,30 +22,30 @@ import '../../../provider/version_provider.dart';
 import '../../../provider/websocket_provider.dart';
 import '../../../provider/webview_chart_provider.dart';
 import '../../../provider/iop_provider.dart';
-import '../../../provider/transcation_provider.dart';
 import '../../../provider/fund_provider.dart';
 import '../../../provider/ledger_provider.dart';
-import '../../../res/global_state_text.dart';
-import '../desk_reports/ca_action/ca_action_buyback.dart';
+import '../Mobile/desk_reports/ca_action/ca_action_buyback.dart';
 import '../../../res/res.dart';
+import '../../../res/global_font_web.dart';
+import '../../../res/web_colors.dart';
 import '../../../sharedWidget/functions.dart';
 import '../../../sharedWidget/internet_widget.dart';
-import 'default_index_list_web.dart';
+import 'market_watch/index/default_index_list_web.dart';
 import 'splitter_widget.dart';
-import '../market_watch/tv_chart/webview_chart.dart';
-import 'watchlist_screen_web.dart';
-import 'scrip_tabs_manager.dart';
-import 'holding_screen_web.dart';
-import 'position_screen_web.dart';
-import '../order_book/order_book_screen.dart';
-import '../market_watch/option_chain/option_chain_ss.dart';
-import '../desk_reports/pledge_unpledge_screen.dart';
+import '../Mobile/market_watch/tv_chart/webview_chart.dart';
+import 'market_watch/watchlist_screen_web.dart';
+import 'market_watch/scrip_tabs_manager.dart';
+import 'holdings/holding_screen_web.dart';
+import 'position/position_screen_web.dart';
+import '../Mobile/order_book/order_book_screen.dart';
+import '../Mobile/market_watch/option_chain/option_chain_ss.dart';
+import '../Mobile/desk_reports/pledge_unpledge_screen.dart';
 // Removed CA Event and CP Action from panel screens
-import '../profile_screen/fund_screen/secure_fund.dart';
-import '../mutual_fund/mf_main_screen.dart';
-import '../profile_screen/profile_main_screen.dart';
-import '../ipo/ipo_main_screen.dart';
-import '../bonds/bonds_main_screen.dart';
+import '../Mobile/profile_screen/fund_screen/secure_fund.dart';
+import '../Mobile/mutual_fund/mf_main_screen.dart';
+import '../Mobile/profile_screen/profile_main_screen.dart';
+import '../Mobile/ipo/ipo_main_screen.dart';
+import '../Mobile/bonds/bonds_main_screen.dart';
 import '../../../utils/custom_navigator.dart';
 import '../../models/marketwatch_model/get_quotes.dart';
 
@@ -420,11 +420,11 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
 
   _buildAppBar(bool isDarkMode) {
     return PreferredSize(
-      preferredSize: Size.fromHeight(60),
+      preferredSize: Size.fromHeight(54), // Increased height for better visibility
       child: AppBar(
-        shadowColor: isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+        shadowColor: Colors.transparent,
         elevation: 0,
-        backgroundColor: isDarkMode ? colors.colorBlack : colors.colorWhite,
+        backgroundColor: WebDarkColors.background, // Web dark background
         automaticallyImplyLeading: false,
         title: Row(
           children: [
@@ -432,7 +432,7 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
             SvgPicture.asset(
               assets.appLogoIcon,
               width: 100,
-              height: 40,
+              height: 38,
               fit: BoxFit.contain,
             ),
             const SizedBox(width: 16),
@@ -445,8 +445,8 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
             // Navigation screens
             _buildNavigationScreens(isDarkMode),
             const SizedBox(width: 16),
-            // Notification bell
-            _buildNotificationBell(isDarkMode),
+            // Swap button
+            _buildSwapButton(isDarkMode),
             const SizedBox(width: 16),
             // Profile section
             _buildProfileSection(isDarkMode),
@@ -519,7 +519,7 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
       child2: _buildResizableGridSlot(1, theme),
       direction: Axis.horizontal,
       initialSplitRatio: splitRatio,
-      splitterSize: 12.0,
+      splitterSize: 0.0,
       splitterColor: null, // Let the splitter use theme colors
       enableResize: enableResize,
       onSplitChanged: () {
@@ -536,12 +536,7 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
         margin: const EdgeInsets.all(4),
         decoration: BoxDecoration(
           color: theme.isDarkMode ? colors.colorGrey.withOpacity(0.1) : colors.colorGrey.withOpacity(0.05),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: theme.isDarkMode ? colors.colorGrey.withOpacity(0.3) : colors.colorGrey.withOpacity(0.2),
-            width: 1,
-            style: BorderStyle.solid,
-          ),
+          // Removed border to eliminate thick border between layouts
         ),
         child: const Center(
           child: Icon(
@@ -567,12 +562,7 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
         margin: const EdgeInsets.all(4),
         decoration: BoxDecoration(
           color: theme.isDarkMode ? colors.colorGrey.withOpacity(0.1) : colors.colorGrey.withOpacity(0.05),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: theme.isDarkMode ? colors.colorGrey.withOpacity(0.3) : colors.colorGrey.withOpacity(0.2),
-            width: 1,
-            style: BorderStyle.solid,
-          ),
+          // Removed border to eliminate thick border between layouts
         ),
         child: const Center(
           child: Icon(
@@ -588,6 +578,7 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
     
     return Container(
       // margin: const EdgeInsets.all(0),
+      color: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
       child: DragTarget<Object>(
         onAccept: (draggedData) {
           print('=== DRAG TARGET ACCEPT ===');
@@ -637,13 +628,16 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
               color: isHighlighted 
                   ? (isPanelSwap ? colors.ltpgreen.withOpacity(0.15) : colors.colorBlue.withOpacity(0.15))
                   : (theme.isDarkMode ? colors.colorGrey.withOpacity(0.1) : colors.colorGrey.withOpacity(0.05)),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: isHighlighted
-                    ? (isPanelSwap ? colors.ltpgreen : colors.colorBlue)
-                    : (theme.isDarkMode ? colors.colorGrey.withOpacity(0.3) : colors.colorGrey.withOpacity(0.2)),
-                width: isHighlighted ? 3 : 1,
-                style: BorderStyle.solid,
+              // Add single border based on panel position
+              border: Border(
+                right: index == 0 ? BorderSide(
+                  color: theme.isDarkMode ? colors.colorGrey.withOpacity(0.3) : colors.colorGrey.withOpacity(0.2),
+                  // width: 1,
+                ) : BorderSide.none,
+                left: index == 1 ? BorderSide(
+                  color: theme.isDarkMode ? colors.colorGrey.withOpacity(0.3) : colors.colorGrey.withOpacity(0.2),
+                  // width: 1,
+                ) : BorderSide.none,
               ),
               boxShadow: isHighlighted ? [
                 BoxShadow(
@@ -662,8 +656,7 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
                   Positioned.fill(
                     child: Container(
                       decoration: BoxDecoration(
-                        color: colors.colorBlue.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
+                        color: (theme.isDarkMode ? WebDarkColors.primary : WebColors.primary).withOpacity(0.1),
                       ),
                       child: Center(
                         child: Column(
@@ -671,15 +664,17 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
                           children: [
                             Icon(
                               Icons.add_circle_outline,
-                              color: colors.colorBlue,
+                              color: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
                               size: 32,
                             ),
                             const SizedBox(height: 4),
-                            TextWidget.captionText(
-                              text: 'Drop to add',
-                              theme: theme.isDarkMode,
-                              color: colors.colorBlue,
-                              fw: 1,
+                            Text(
+                              'Drop to add',
+                              style: WebTextStyles.caption(
+                                isDarkTheme: theme.isDarkMode,
+                                color: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
+                                fontWeight: WebFonts.semiBold,
+                              ),
                             ),
                           ],
                         ),
@@ -700,16 +695,10 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
       onTap: () {
         _showAddScreenDialog();
       },
-      borderRadius: BorderRadius.circular(12),
       child: Container(
         decoration: BoxDecoration(
-          color: theme.isDarkMode ? colors.colorGrey.withOpacity(0.1) : colors.colorGrey.withOpacity(0.05),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: theme.isDarkMode ? colors.colorGrey.withOpacity(0.3) : colors.colorGrey.withOpacity(0.2),
-            width: 1,
-            style: BorderStyle.solid,
-          ),
+          color: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
+          // Removed border to eliminate thick border between layouts
         ),
         child: Center(
           child: Column(
@@ -717,15 +706,17 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
             children: [
               Icon(
                 Icons.add_circle_outline,
-                color: theme.isDarkMode ? colors.colorGrey : colors.colorGrey.withOpacity(0.6),
+                color: theme.isDarkMode ? WebDarkColors.iconSecondary : WebColors.iconSecondary,
                 size: 32,
               ),
               const SizedBox(height: 8),
-              TextWidget.captionText(
-                text: 'Tap to add screen',
-                theme: theme.isDarkMode,
-                color: theme.isDarkMode ? colors.colorGrey : colors.colorGrey.withOpacity(0.6),
-                fw: 0,
+              Text(
+                'Tap to add screen',
+                style: WebTextStyles.caption(
+                  isDarkTheme: theme.isDarkMode,
+                  color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
+                  fontWeight: WebFonts.regular,
+                ),
               ),
             ],
           ),
@@ -748,7 +739,7 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
       children: [
         // Screen content (not draggable) - with padding to show below header
         Positioned(
-          top: 40, // Offset by header height
+          top: activeScreen == ScreenType.watchlist ? 0 : 40, // No header for watchlist, 40px for others
           left: 0,
           right: 0,
           bottom: 0,
@@ -761,7 +752,8 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
           ),
         ),
         
-        // Header with controls (draggable)
+        // Header with controls (draggable) - COMMENTED OUT FOR FUTURE USE
+        /*
         Positioned(
           top: 0,
           left: 0,
@@ -777,13 +769,11 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
             },
             feedback: Material(
               elevation: 8,
-              borderRadius: BorderRadius.circular(12),
               child: Container(
                 width: 200,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: colors.colorBlue.withOpacity(0.9),
-                  borderRadius: BorderRadius.circular(12),
+                  color: Colors.transparent,
                 ),
                 child: Center(
                   child: Row(
@@ -791,17 +781,19 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
                     children: [
                       Icon(
                         Icons.drag_indicator,
-                        color: Colors.white,
+                        color: WebDarkColors.iconSecondary,
                         size: 16,
                       ),
                       const SizedBox(width: 8),
-                      TextWidget.paraText(
-                        text: _getScreenTitleNullable(panel.screens.isNotEmpty 
+                      Text(
+                        _getScreenTitleNullable(panel.screens.isNotEmpty 
                             ? panel.screens[panel.activeScreenIndex] 
                             : panel.screenType),
-                        theme: false,
-                        color: Colors.white,
-                        fw: 2,
+                        style: WebTextStyles.para(
+                          isDarkTheme: true,
+                          color: WebDarkColors.textSecondary,
+                          fontWeight: WebFonts.bold,
+                        ),
                       ),
                     ],
                   ),
@@ -829,20 +821,16 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
             child: Container(
               height: 40,
               decoration: BoxDecoration(
-                color: colors.colorBlue.withOpacity(0.9),
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(12),
-                  topRight: Radius.circular(12),
-                ),
+                color: Colors.transparent,
               ),
               child: Row(
                 children: [
                   // Drag handle
                   Container(
                     padding: const EdgeInsets.all(8),
-                    child: const Icon(
+                    child: Icon(
                       Icons.drag_indicator,
-                      color: Colors.white,
+                      color: theme.isDarkMode ? Colors.grey[400] : Colors.grey[600],
                       size: 16,
                     ),
                   ),
@@ -851,15 +839,16 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
                     Expanded(
                       child: SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
+                        physics: const BouncingScrollPhysics(),
                         child: Row(
-                          children: [ 
-                            Row(
-                              children: panel.screens.asMap().entries.map((entry) {
+                          children: panel.screens.asMap().entries.map((entry) {
                                 int index = entry.key;
                                 ScreenType screenType = entry.value;
                                 bool isActive = index == panel.activeScreenIndex;
                                 
-                                return GestureDetector(
+                                return Container(
+                                  constraints: const BoxConstraints(minWidth: 80),
+                                  child: GestureDetector(
                                   onTap: () {
                                     setState(() {
                                       panel.activeScreenIndex = index;
@@ -880,16 +869,18 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
                                       children: [
                                         Icon(
                                           _getIconForScreenType(screenType),
-                                          color: Colors.white,
+                                          color: WebDarkColors.textPrimary,
                                           size: 12,
                                         ),
                                         const SizedBox(width: 4),
-                                        TextWidget.overlineText(
-                                          text: _getScreenTitle(screenType),
-                                          theme: false,
-                                          color: Colors.white,
-                                          fw: isActive ? 2 : 0,
-                                          textOverflow: TextOverflow.ellipsis,
+                                        Text(
+                                          _getScreenTitle(screenType),
+                                          style: WebTextStyles.overline(
+                                            isDarkTheme: true,
+                                            color: WebDarkColors.textPrimary,
+                                            fontWeight: isActive ? WebFonts.bold : WebFonts.regular,
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
                                         ),
                                         if (panel.screens.length > 1 && screenType != ScreenType.watchlist) ...[
                                           const SizedBox(width: 4),
@@ -897,7 +888,7 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
                                             onTap: () => _removeScreenFromPanel(panel, index),
                                             child: Icon(
                                               Icons.close,
-                                              color: Colors.white.withOpacity(0.7),
+                                              color: WebDarkColors.textSecondary,
                                               size: 10,
                                             ),
                                           ),
@@ -905,17 +896,9 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
                                       ],
                                     ),
                                   ),
-                                );
+                                    ),
+                                  );
                               }).toList(),
-                            ),
-                            if (activeScreen != ScreenType.watchlist)
-                      IconButton(
-                        icon: const Icon(Icons.add, color: Colors.white, size: 16),
-                        tooltip: 'Add Screen Tab',
-                        onPressed: () {
-                          _showAddScreenToPanelDialog(panel);
-                        },
-                      ),
                           ],
                         ),
                       ),
@@ -926,16 +909,18 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
                     Expanded(
                       child: Row(
                         children: [
-                          TextWidget.paraText(
-                            text: _getScreenTitleNullable(activeScreen),
-                            theme: false,
-                            color: Colors.white,
-                            fw: 2,
-                            textOverflow: TextOverflow.ellipsis,
+                          Text(
+                            _getScreenTitleNullable(activeScreen),
+                            style: WebTextStyles.para(
+                              isDarkTheme: true,
+                              color: WebDarkColors.textPrimary,
+                              fontWeight: WebFonts.bold,
+                            ),
+                            overflow: TextOverflow.ellipsis,
                           ),
-                  if (activeScreen != ScreenType.watchlist)
+                  if (activeScreen != ScreenType.watchlist && _hasAvailableScreensToAdd(panel))
                       IconButton(
-                        icon: const Icon(Icons.add, color: Colors.white, size: 16),
+                        icon: Icon(Icons.add, color: WebDarkColors.textPrimary, size: 16),
                         tooltip: 'Add Screen Tab',
                         onPressed: () {
                           _showAddScreenToPanelDialog(panel);
@@ -948,7 +933,7 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
                   // Screen selector (not for watchlist)
                   if (activeScreen != ScreenType.watchlist)
                     PopupMenuButton<ScreenType>(
-                      icon: const Icon(Icons.swap_horiz, color: Colors.white, size: 16),
+                      icon: Icon(Icons.swap_horiz, color: WebDarkColors.textPrimary, size: 16),
                       tooltip: 'Replace Screen',
                       onSelected: (ScreenType newType) {
                         setState(() {
@@ -986,7 +971,7 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
                   // Remove button (not for watchlist)
                   if (activeScreen != ScreenType.watchlist)
                     IconButton(
-                      icon: const Icon(Icons.close, color: Colors.white, size: 16),
+                      icon: Icon(Icons.close, color: WebDarkColors.textPrimary, size: 16),
                       onPressed: () {
                         setState(() {
                           panel.screenType = null;
@@ -1001,6 +986,173 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
             ),
           ),
         ),
+        */
+        
+        // Tab header for non-watchlist panels (Layout 1)
+        if (activeScreen != ScreenType.watchlist)
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              height: 40,
+              decoration: BoxDecoration(
+                color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary.withOpacity(0.1),
+               
+              ),
+              child: Row(
+                children: [
+                  const SizedBox(width: 8),
+                  // Tabs for multiple screens
+                  if (panel.screens.length > 1) ...[
+                    Expanded(
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        physics: const BouncingScrollPhysics(),
+                        child: IntrinsicWidth(
+                          child: Row(
+                            children: panel.screens.asMap().entries.map((entry) {
+                              int index = entry.key;
+                              ScreenType screenType = entry.value;
+                              bool isActive = index == panel.activeScreenIndex;
+                              
+                              return Container(
+                                constraints: const BoxConstraints(minWidth: 80),
+                                child: GestureDetector(
+                                  onTap: () {
+                                setState(() {
+                                  panel.activeScreenIndex = index;
+                                  panel.screenType = screenType;
+                                });
+                                _saveLayout();
+                                _handleScreenTypeChange(screenType);
+                              },
+                              child: Container(
+                                margin: const EdgeInsets.symmetric(horizontal: 2),
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: isActive 
+                                      ? Colors.white.withOpacity(0.2)
+                                      : Colors.transparent,
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      _getIconForScreenType(screenType),
+                                      color: WebDarkColors.textPrimary,
+                                      size: 12,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      _getScreenTitle(screenType),
+                                      style: WebTextStyles.para(
+                                        isDarkTheme: true,
+                                        color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+                                        fontWeight: isActive ? WebFonts.bold : WebFonts.medium,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    if (panel.screens.length > 1) ...[
+                                      const SizedBox(width: 8),
+                                      GestureDetector(
+                                        onTap: () => _removeScreenFromPanel(panel, index),
+                                        child: Icon(
+                                          Icons.close,
+                                          color: WebDarkColors.textSecondary,
+                                          size: 14,
+                                        ),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ),
+                                ),
+                              );
+                          }).toList(),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ] else ...[
+                    // Single screen title
+                    Expanded(
+                      child: Row(
+                        children: [
+                          Text(
+                            _getScreenTitleNullable(activeScreen),
+                            style: WebTextStyles.sub(
+                              isDarkTheme: true,
+                              color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+                              fontWeight: WebFonts.bold,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                  // Add screen button (only show if there are screens available to add)
+                  if (activeScreen != ScreenType.watchlist && _hasAvailableScreensToAdd(panel))
+                    IconButton(
+                      icon: Icon(Icons.add, color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary, size: 18),
+                      tooltip: 'Add Screen Tab',
+                      onPressed: () {
+                        _showAddScreenToPanelDialog(panel);
+                      },
+                    ),
+                  // Screen selector
+                  PopupMenuButton<ScreenType>(
+                    icon: Icon(Icons.swap_horiz, color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary, size: 18),
+                    tooltip: 'Replace Screen',
+                    onSelected: (ScreenType newType) {
+                      setState(() {
+                        if (panel.screens.isNotEmpty) {
+                          panel.screens[panel.activeScreenIndex] = newType;
+                          panel.screenType = newType;
+                        } else {
+                          panel.screenType = newType;
+                          panel.screens = [newType];
+                        }
+                      });
+                      _saveLayout();
+                      _handleScreenTypeChange(newType);
+                    },
+                    itemBuilder: (context) => ScreenType.values
+                        .where((type) => _shouldShowScreenOption(type, panel))
+                        .map((type) {
+                      return PopupMenuItem(
+                        value: type,
+                        child: Row(
+                          children: [
+                            Icon(
+                              _getIconForScreenType(type), 
+                              size: 16,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(_getScreenTitle(type)),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                  // Remove button
+                  IconButton(
+                    icon: Icon(Icons.close, color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary, size: 18),
+                    onPressed: () {
+                      setState(() {
+                        panel.screenType = null;
+                        panel.screens.clear();
+                        panel.activeScreenIndex = 0;
+                      });
+                      _saveLayout();
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
       ],
     );
   }
@@ -1045,52 +1197,32 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
       }
     }
     
-    return InkWell(
+    return _HoverableNavItem(
+      title: title,
+      isActive: isActive,
       onTap: onTap,
-      borderRadius: BorderRadius.circular(6),
+    );
+  }
+
+  // Build swap button for app bar
+  Widget _buildSwapButton(bool isDarkMode) {
+    return InkWell(
+      onTap: _handleSwapPanels,
+      borderRadius: BorderRadius.circular(20),
+      splashColor: Colors.white.withOpacity(0.2),
+      highlightColor: Colors.white.withOpacity(0.1),
+      hoverColor: Colors.white.withOpacity(0.1),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          color: isActive 
-              ? colors.colorBlue.withOpacity(0.1)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(6),
-          border: isActive 
-              ? Border.all(color: colors.colorBlue.withOpacity(0.3), width: 1)
-              : null,
-        ),
-        child: TextWidget.titleText(
-          text: title,
-          theme: isDarkMode,
-          color: isActive 
-              ? colors.colorBlue
-              : (isDarkMode ? colors.colorWhite : colors.colorBlack),
-          fw: isActive ? 1 : 0,
+        padding: const EdgeInsets.all(8),
+        child: Icon(
+          Icons.swap_horiz,
+          color: WebDarkColors.textPrimary, // Always white on dark background
+          size: 24,
         ),
       ),
     );
   }
 
-  // Build notification bell for app bar
-  Widget _buildNotificationBell(bool isDarkMode) {
-    return IconButton(
-      onPressed: () {
-        // Handle notification tap
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Notifications'),
-            duration: Duration(seconds: 2),
-          ),
-        );
-      },
-      icon: Icon(
-        Icons.notifications_outlined,
-        color: isDarkMode ? colors.colorWhite : colors.colorBlack,
-        size: 24,
-      ),
-      tooltip: 'Notifications',
-    );
-  }
 
   // Build profile section for app bar
   Widget _buildProfileSection(bool isDarkMode) {
@@ -1310,6 +1442,45 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
     });
   }
 
+  // Handle swap button press - swaps the positions of both panels
+  void _handleSwapPanels() {
+    setState(() {
+      // Make sure we have exactly 2 panels
+      if (_panels.length == 2) {
+        // Swap the screen types between the two panels
+        final tempScreenType = _panels[0].screenType;
+        _panels[0].screenType = _panels[1].screenType;
+        _panels[1].screenType = tempScreenType;
+        
+        // Swap the multiple screens structure
+        final tempScreens = List<ScreenType>.from(_panels[0].screens);
+        final tempActiveScreenIndex = _panels[0].activeScreenIndex;
+        
+        _panels[0].screens = List<ScreenType>.from(_panels[1].screens);
+        _panels[0].activeScreenIndex = _panels[1].activeScreenIndex;
+        
+        _panels[1].screens = tempScreens;
+        _panels[1].activeScreenIndex = tempActiveScreenIndex;
+        
+        // Also swap the panel properties to maintain consistency
+        final tempWidth = _panels[0].width;
+        final tempHeight = _panels[0].height;
+        final tempVisible = _panels[0].isVisible;
+        
+        _panels[0].width = _panels[1].width;
+        _panels[0].height = _panels[1].height;
+        _panels[0].isVisible = _panels[1].isVisible;
+        
+        _panels[1].width = tempWidth;
+        _panels[1].height = tempHeight;
+        _panels[1].isVisible = tempVisible;
+      }
+    });
+    
+    // Save the layout
+    _saveLayout();
+  }
+
   // Show add screen dialog
   void _showAddScreenDialog() {
     showDialog(
@@ -1319,7 +1490,7 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
           builder: (context, ref, child) {
             final theme = ref.watch(themeProvider);
             return AlertDialog(
-              backgroundColor: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+              backgroundColor: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
@@ -1330,16 +1501,16 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
                     children: [
                       Icon(
                         Icons.add_circle_outline,
-                        color: colors.colorBlue,
+                        color: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
                         size: 24,
                       ),
                       const SizedBox(width: 8),
                       Text(
                         'Add Screen',
-                        style: textStyle(
-                          theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                          18,
-                          2,
+                        style: WebTextStyles.head(
+                          isDarkTheme: theme.isDarkMode,
+                          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+                          fontWeight: WebFonts.bold,
                         ),
                       ),
                     ],
@@ -1396,14 +1567,12 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
           _handleScreenTypeChange(screenType);
           Navigator.of(context).pop();
         },
-        borderRadius: BorderRadius.circular(12),
         child: Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             color: theme.isDarkMode 
                 ? colors.colorGrey.withOpacity(0.1)
                 : colors.colorGrey.withOpacity(0.05),
-            borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: theme.isDarkMode 
                   ? colors.colorGrey.withOpacity(0.2)
@@ -1416,12 +1585,12 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: colors.colorBlue.withOpacity(0.1),
+                  color: (theme.isDarkMode ? WebDarkColors.primary : WebColors.primary).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
                   _getIconForScreenType(screenType),
-                  color: colors.colorBlue,
+                  color: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
                   size: 20,
                 ),
               ),
@@ -1438,7 +1607,7 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
               ),
               Icon(
                 Icons.arrow_forward_ios,
-                color: theme.isDarkMode ? colors.colorGrey : colors.colorGrey.withOpacity(0.6),
+                color: theme.isDarkMode ? WebDarkColors.iconSecondary : WebColors.iconSecondary,
                 size: 16,
               ),
             ],
@@ -1498,8 +1667,7 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
         _handleScripDepthInfoTap();
         break;
       case ScreenType.pledgeUnpledge:
-        // Reports area; unsubscribe others
-        _handleFundsTap();
+        _handlePledgeUnpledgeTap();
         break;
       case ScreenType.corporateActions:
         _handleCorporateActionsTap();
@@ -1548,29 +1716,56 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
       }
     }
     
-    // Find the panel that doesn't have watchlist (prefer left panel)
+    // Find the best panel to add scrip tab to
     int targetPanelIndex = -1;
+    
+    // First, look for a panel that already has multiple tabs (like Holdings, Order Book)
     for (int i = 0; i < _panels.length; i++) {
       final panel = _panels[i];
       bool hasWatchlist = panel.screenType == ScreenType.watchlist ||
           (panel.screens.isNotEmpty && panel.screens.contains(ScreenType.watchlist));
       
-      if (!hasWatchlist) {
+      // Skip watchlist panels, but prefer panels with existing tabs
+      if (!hasWatchlist && panel.screens.length > 0) {
         targetPanelIndex = i;
         break;
       }
     }
     
-    // If no panel without watchlist found, use the left panel (index 0) - avoid right panel with watchlist
+    // If no panel with existing tabs, find any non-watchlist panel
     if (targetPanelIndex == -1) {
-      targetPanelIndex = 0; // Always use left panel to avoid replacing watchlist
+      for (int i = 0; i < _panels.length; i++) {
+        final panel = _panels[i];
+        bool hasWatchlist = panel.screenType == ScreenType.watchlist ||
+            (panel.screens.isNotEmpty && panel.screens.contains(ScreenType.watchlist));
+        
+        if (!hasWatchlist) {
+          targetPanelIndex = i;
+          break;
+        }
+      }
     }
     
-    // Set the ScripDepthInfo screen in the target panel
+    // If no suitable panel found, use left panel (index 0)
+    if (targetPanelIndex == -1) {
+      targetPanelIndex = 0;
+    }
+    
+    // Add ScripDepthInfo as a new tab (don't replace existing tabs)
     setState(() {
+      if (_panels[targetPanelIndex].screens.isEmpty) {
+        // If panel is empty, initialize with ScripDepthInfo
+        _panels[targetPanelIndex].screens = [ScreenType.scripDepthInfo];
+        _panels[targetPanelIndex].activeScreenIndex = 0;
+      } else {
+        // Add to existing tabs
+        if (!_panels[targetPanelIndex].screens.contains(ScreenType.scripDepthInfo)) {
+          _panels[targetPanelIndex].screens.add(ScreenType.scripDepthInfo);
+        }
+        _panels[targetPanelIndex].activeScreenIndex = _panels[targetPanelIndex].screens.indexOf(ScreenType.scripDepthInfo);
+      }
+      // Update screenType for backward compatibility
       _panels[targetPanelIndex].screenType = ScreenType.scripDepthInfo;
-      _panels[targetPanelIndex].screens = [ScreenType.scripDepthInfo];
-      _panels[targetPanelIndex].activeScreenIndex = 0;
     });
     
     _saveLayout();
@@ -1727,9 +1922,47 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
     portfolio.cancelTimer();
   }
 
+  // Check if there are any screens available to add to a panel
+  bool _hasAvailableScreensToAdd(PanelConfig panel) {
+    return ScreenType.values
+        .where((screenType) => _shouldShowScreenOption(screenType, panel))
+        .isNotEmpty;
+  }
+
+  // Add screen as a panel tab
+  void _addScreenAsPanelTab(ScreenType screenType) {
+    // Find the first available panel (preferably left panel)
+    for (int i = 0; i < _panels.length; i++) {
+      // Check if screen already exists in this panel
+      bool alreadyExists = _panels[i].screens.contains(screenType);
+      
+      if (alreadyExists) {
+        // Switch to existing tab
+        setState(() {
+          _panels[i].activeScreenIndex = _panels[i].screens.indexOf(screenType);
+          _panels[i].screenType = screenType; // Update for backward compatibility
+        });
+        _saveLayout();
+        return;
+      }
+    }
+    
+    // Screen doesn't exist, add to left panel (index 0)
+    if (_panels.isNotEmpty) {
+      setState(() {
+        _panels[0].screens.add(screenType);
+        _panels[0].activeScreenIndex = _panels[0].screens.length - 1;
+        _panels[0].screenType = screenType; // Update for backward compatibility
+      });
+      _saveLayout();
+      // Call the appropriate handler function for the new screen type
+      _handleScreenTypeChange(screenType);
+    }
+  }
+
   void _handleOrderBookTap() async {
-    // Show order book in right panel
-    _showScreenInRightPanel(ScreenType.orderBook);
+    // Add order book as a panel tab
+    _addScreenAsPanelTab(ScreenType.orderBook);
     
     final portfolio = ref.read(portfolioProvider);
     final orderProviderRef = ref.read(orderProvider);
@@ -1795,8 +2028,8 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
 
   // New handler methods for separate portfolio screens
   void _handleHoldingsTap() async {
-    // Show holdings in right panel
-    _showScreenInRightPanel(ScreenType.holdings);
+    // Add holdings as a panel tab
+    _addScreenAsPanelTab(ScreenType.holdings);
     
     final portfolio = ref.read(portfolioProvider);
     final orderProviderRef = ref.read(orderProvider);
@@ -1819,8 +2052,8 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
   }
 
   void _handlePositionsTap() async {
-    // Show positions in right panel
-    _showScreenInRightPanel(ScreenType.positions);
+    // Add positions as a panel tab
+    _addScreenAsPanelTab(ScreenType.positions);
     
     final portfolio = ref.read(portfolioProvider);
     final orderProviderRef = ref.read(orderProvider);
@@ -1844,8 +2077,8 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
   }
 
   void _handleFundsTap() async {
-    // Show funds in right panel
-    _showScreenInRightPanel(ScreenType.funds);
+    // Add funds as a panel tab
+    _addScreenAsPanelTab(ScreenType.funds);
     
     final portfolio = ref.read(portfolioProvider);
     final orderProviderRef = ref.read(orderProvider);
@@ -1866,8 +2099,9 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
     });
   }
 
-  void _handlePledgeUnpledgeTap() async { // Show pledge/unpledge in right panel
-    _showScreenInRightPanel(ScreenType.pledgeUnpledge);
+  void _handlePledgeUnpledgeTap() async {
+    // Add pledge/unpledge as a panel tab
+    _addScreenAsPanelTab(ScreenType.pledgeUnpledge);
     
     final portfolio = ref.read(portfolioProvider);
     final reportsprovider = ref.read(ledgerProvider);
@@ -1889,8 +2123,8 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
 
   // Handle corporate actions tap
   void _handleCorporateActionsTap() async {
-    // Show corporate actions in left panel
-    _showScreenInLeftPanel(ScreenType.corporateActions);
+    // Add corporate actions as a panel tab
+    _addScreenAsPanelTab(ScreenType.corporateActions);
     
     final portfolio = ref.read(portfolioProvider);
     final reportsprovider = ref.read(ledgerProvider);
@@ -1921,8 +2155,8 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
 
   // Handle reports tap
   void _handleReportsTap() async {
-    // Show reports in left panel
-    _showScreenInLeftPanel(ScreenType.reports);
+    // Add reports as a panel tab
+    _addScreenAsPanelTab(ScreenType.reports);
     
     final portfolio = ref.read(portfolioProvider);
     final reportsprovider = ref.read(ledgerProvider);
@@ -1969,8 +2203,8 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
 
   // Handle settings tap
   void _handleSettingsTap() async {
-    // Show settings in left panel
-    _showScreenInLeftPanel(ScreenType.settings);
+    // Add settings as a panel tab
+    _addScreenAsPanelTab(ScreenType.settings);
     
     final portfolio = ref.read(portfolioProvider);
     
@@ -2053,7 +2287,7 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
           builder: (context, ref, child) {
             final theme = ref.watch(themeProvider);
             return AlertDialog(
-              backgroundColor: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+              backgroundColor: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
@@ -2064,7 +2298,7 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
                     children: [
                       Icon(
                         Icons.add_circle_outline,
-                        color: colors.colorBlue,
+                        color: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
                         size: 24,
                       ),
                       const SizedBox(width: 8),
@@ -2110,15 +2344,9 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
     );
   }
 
-  // Check if screen option should be shown (hide duplicates and app bar only screens)
+  // Check if screen option should be shown (hide duplicates only)
   bool _shouldShowScreenOption(ScreenType screenType, PanelConfig panel) {
-    // Hide app bar only screens from panel selection
-    if (screenType == ScreenType.holdings || 
-        screenType == ScreenType.positions || 
-        screenType == ScreenType.orderBook || 
-        screenType == ScreenType.funds) {
-      return false;
-    }
+    // Allow all screen types including app bar screens to be added as tabs
     
     // Check if current panel has watchlist
     bool panelHasWatchlist = panel.screenType == ScreenType.watchlist ||
@@ -2166,10 +2394,17 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
       margin: const EdgeInsets.only(bottom: 8),
       child: InkWell(
         onTap: () {
+          // Add as a regular screen to the panel
           setState(() {
             if (screenType != ScreenType.watchlist) {
-              panel.screens.add(screenType);
-              panel.activeScreenIndex = panel.screens.length - 1;
+              // Check if screen already exists in this panel
+              if (!panel.screens.contains(screenType)) {
+                panel.screens.add(screenType);
+                panel.activeScreenIndex = panel.screens.length - 1;
+              } else {
+                // Switch to existing screen
+                panel.activeScreenIndex = panel.screens.indexOf(screenType);
+              }
               // Update screenType for backward compatibility
               panel.screenType = screenType;
             } else {
@@ -2185,14 +2420,12 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
           _handleScreenTypeChange(screenType);
           Navigator.of(context).pop();
         },
-        borderRadius: BorderRadius.circular(12),
         child: Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             color: theme.isDarkMode 
                 ? colors.colorGrey.withOpacity(0.1)
                 : colors.colorGrey.withOpacity(0.05),
-            borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: theme.isDarkMode 
                   ? colors.colorGrey.withOpacity(0.2)
@@ -2205,12 +2438,12 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: colors.colorBlue.withOpacity(0.1),
+                  color: (theme.isDarkMode ? WebDarkColors.primary : WebColors.primary).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
                   _getIconForScreenType(screenType),
-                  color: colors.colorBlue,
+                  color: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
                   size: 20,
                 ),
               ),
@@ -2227,7 +2460,7 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
               ),
               Icon(
                 Icons.arrow_forward_ios,
-                color: theme.isDarkMode ? colors.colorGrey : colors.colorGrey.withOpacity(0.6),
+                color: theme.isDarkMode ? WebDarkColors.iconSecondary : WebColors.iconSecondary,
                 size: 16,
               ),
             ],
@@ -2313,7 +2546,7 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
             duration: const Duration(milliseconds: 100),
             curve: Curves.fastLinearToSlowEaseIn,
             decoration: BoxDecoration(
-              color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+              color: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
             ),
             height: MediaQuery.of(context).size.height,
             width: MediaQuery.of(context).size.width,
@@ -2359,8 +2592,8 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
                 final theme = ref.read(themeProvider);
                 return AlertDialog(
                   backgroundColor: theme.isDarkMode
-                      ? const Color(0xFF121212)
-                      : const Color(0xFFF1F3F8),
+                      ? WebDarkColors.surface
+                      : WebColors.backgroundTertiary,
                   titlePadding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                   shape: const RoundedRectangleBorder(
@@ -2390,19 +2623,19 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
                               },
                               borderRadius: BorderRadius.circular(20),
                               splashColor: theme.isDarkMode
-                                  ? colors.splashColorDark
-                                  : colors.splashColorLight,
+                                  ? WebDarkColors.primary.withOpacity(0.1)
+                                  : WebColors.primary.withOpacity(0.1),
                               highlightColor: theme.isDarkMode
-                                  ? colors.splashColorDark
-                                  : colors.splashColorLight,
+                                  ? WebDarkColors.primary.withOpacity(0.05)
+                                  : WebColors.primary.withOpacity(0.05),
                               child: Padding(
                                 padding: const EdgeInsets.all(6.0),
                                 child: Icon(
                                   Icons.close_rounded,
                                   size: 22,
                                   color: theme.isDarkMode
-                                      ? colors.textSecondaryDark
-                                      : colors.textSecondaryLight,
+                                      ? WebDarkColors.iconSecondary
+                                      : WebColors.iconSecondary,
                                 ),
                               ),
                             ),
@@ -2413,13 +2646,15 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
                       SizedBox(
                         width: MediaQuery.of(context).size.width,
                         child: Center(
-                          child: TextWidget.subText(
-                            text: "Do you want to Exit the App?",
-                            theme: false,
-                            color: theme.isDarkMode
-                                ? colors.textSecondaryDark
-                                : colors.textPrimaryLight,
-                            fw: 3,
+                          child: Text(
+                            "Do you want to Exit the App?",
+                            style: WebTextStyles.sub(
+                              isDarkTheme: theme.isDarkMode,
+                              color: theme.isDarkMode
+                                  ? WebDarkColors.textSecondary
+                                  : WebColors.textPrimary,
+                              fontWeight: WebFonts.regular,
+                            ),
                           ),
                         ),
                       ),
@@ -2432,17 +2667,19 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
                         onPressed: () => Navigator.of(context).pop(true),
                         style: OutlinedButton.styleFrom(
                           minimumSize: const Size(0, 45),
-                          side: BorderSide(color: colors.btnOutlinedBorder),
+                          side: BorderSide(color: theme.isDarkMode ? WebDarkColors.border : WebColors.border),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(5),
                           ),
-                          backgroundColor: colors.primaryDark,
+                          backgroundColor: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
                         ),
-                        child: TextWidget.titleText(
-                          text: "Exit",
-                          color: colors.colorWhite,
-                          theme: theme.isDarkMode,
-                          fw: 2,
+                        child: Text(
+                          "Exit",
+                          style: WebTextStyles.title(
+                            isDarkTheme: theme.isDarkMode,
+                            color: WebDarkColors.textPrimary,
+                            fontWeight: WebFonts.bold,
+                          ),
                         ),
                       ),
                     ),
@@ -2516,26 +2753,27 @@ class _ProfileDropdownState extends State<_ProfileDropdown> {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: _toggleDropdown,
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(5),
+      splashColor: Colors.white.withOpacity(0.2),
+      highlightColor: Colors.white.withOpacity(0.1),
+      hoverColor: Colors.white.withOpacity(0.1),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: widget.isDarkMode 
-              ? colors.colorGrey.withOpacity(0.2) 
-              : colors.colorGrey.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: widget.isDarkMode 
-                ? colors.colorGrey.withOpacity(0.3) 
-                : colors.colorGrey.withOpacity(0.2),
-            width: 1,
+        // decoration: BoxDecoration(
+        //   color: WebDarkColors.surfaceVariant, // Subtle overlay on dark background
+        //   borderRadius: BorderRadius.circular(5),
+        //   border: Border.all(
+        //     color: WebDarkColors.border, // Subtle border
+        //     width: 1,
+        //   ),
+        // ),
+        child: Text(
+          widget.clientId,
+          style: WebTextStyles.sub(
+            isDarkTheme: true,
+            color: WebDarkColors.textPrimary, // Always white on dark background
+            fontWeight: WebFonts.semiBold,
           ),
-        ),
-        child: TextWidget.subText(
-          text: widget.clientId,
-          theme: false,
-          color: widget.isDarkMode ? colors.colorWhite : colors.colorBlack,
-          fw: 1,
         ),
       ),
     );
@@ -2578,17 +2816,15 @@ class _ProfileDropdownOverlay extends StatelessWidget {
                   width: 300,
                   height: MediaQuery.of(context).size.height * 0.8,
                   decoration: BoxDecoration(
-                    color: isDarkMode ? colors.colorBlack : colors.colorWhite,
-                    borderRadius: BorderRadius.circular(12),
+                    color: isDarkMode ? WebDarkColors.surface : WebColors.surface,
                     border: Border.all(
                       color: isDarkMode 
-                          ? colors.colorGrey.withOpacity(0.3) 
-                          : colors.colorGrey.withOpacity(0.2),
+                          ? WebDarkColors.border 
+                          : WebColors.border,
                       width: 1,
                     ),
                   ),
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
                     child: const UserAccountScreen(),
                   ),
                 ),
@@ -2624,6 +2860,7 @@ class PanelConfig {
   // Resize capabilities
   bool enableHorizontalResize;
   bool enableVerticalResize;
+  
 
   PanelConfig({
     required this.id,
@@ -2727,10 +2964,10 @@ class PanelConfig {
 // Screen types enum
 enum ScreenType {
   watchlist,
-  holdings, // App bar only
-  positions, // App bar only
-  orderBook, // App bar only
-  funds, // App bar only
+  holdings, 
+  positions, 
+  orderBook, 
+  funds, 
   mutualFund,
   ipo,
   bond,
@@ -2740,5 +2977,53 @@ enum ScreenType {
   corporateActions,
   reports,
   settings,
+}
+
+// Hoverable navigation item widget
+class _HoverableNavItem extends StatefulWidget {
+  final String title;
+  final bool isActive;
+  final VoidCallback onTap;
+
+  const _HoverableNavItem({
+    required this.title,
+    required this.isActive,
+    required this.onTap,
+  });
+
+  @override
+  State<_HoverableNavItem> createState() => _HoverableNavItemState();
+}
+
+class _HoverableNavItemState extends State<_HoverableNavItem> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: InkWell(
+        onTap: widget.onTap,
+        borderRadius: BorderRadius.circular(6),
+        splashColor: Colors.transparent,
+        highlightColor: Colors.transparent,
+        hoverColor: Colors.transparent,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          child: Text(
+            widget.title,
+            style: WebTextStyles.sub(
+              isDarkTheme: true,
+              color: WebDarkColors.textPrimary,
+              //  (widget.isActive || _isHovered)
+                  // ? WebDarkColors.textSecondary :
+              fontWeight: widget.isActive ? WebFonts.bold : WebFonts.semiBold,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 

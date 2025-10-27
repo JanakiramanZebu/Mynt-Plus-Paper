@@ -33,13 +33,17 @@
   <link rel="manifest" href="manifest.json">
   
   <!-- Tenon Font - Adobe Typekit -->
-  <link rel="stylesheet" href="https://use.typekit.net/vkg7qsk.css">
+  <link rel="stylesheet" href="https://use.typekit.net/vkg7qsk.css" crossorigin="anonymous">
   
-  <style>
+   <style>
     * {
-      font-family: 'tenon' !important;
+      font-family: 'tenon', sans-serif !important;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+      font-synthesis: weight;
     }
-  </style>
+  </style> 
   <!-- flutter_inappwebview web support (web plugin path) -->
   <script type="application/javascript" src="/assets/packages/flutter_inappwebview_web/assets/web/web_support.js"></script>
   <script>
@@ -48,6 +52,7 @@
         navigator.serviceWorker.register('firebase-messaging-sw.js');
       });
     }
+    
   </script>
 </head>
 <body>

@@ -8,6 +8,7 @@ import '../locator/preference.dart';
 import '../provider/auth_provider.dart';
 import '../provider/network_state_provider.dart';
 import '../res/res.dart';
+import '../res/web_resources.dart';
 import '../routes/route_names.dart';
 import '../sharedWidget/internet_widget.dart';
 import '../sharedWidget/snack_bar.dart';
@@ -27,6 +28,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
     SchedulerBinding.instance.addPostFrameCallback((_) {
       initializeResources(context: context);
+      initializeWebResources(); // Initialize web resources
       initialRoute();
       ref.read(networkStateProvider).networkStream();
       ref.read(networkStateProvider).getContext(context);

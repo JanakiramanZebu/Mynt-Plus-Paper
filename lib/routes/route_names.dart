@@ -20,6 +20,8 @@ class Routes {
   static const String editScrip = 'EditScrip';
   static const String marketScripInfo = 'MarketScripInfo';
   static const String fundamentalDetail = 'FundamentalDetail';
+  static const String stockFundamentals = 'StockFundamentals';
+  static const String newFundamental = 'NewFundamental';
   static const String chartWebView = 'ChartWebView';
 
   static const String sipDetails = 'sipDetails';
@@ -29,6 +31,12 @@ class Routes {
   static const String tradeDetail = 'tradeDetail';
   static const String gttOrderDetail = 'gttOrderDetail';
   static const String myaccountScreen = 'myaccountScreen';
+  static const String basketScreen = 'basketScreen';
+  static const String createBasketStrategy = 'createBasketStrategy';
+  static const String basketBacktestAnalysis = 'basketBacktestAnalysis';
+  static const String benchmarkBacktestAnalysis = 'benchmarkBacktestAnalysis';
+  static const String basketSelectionScreen = 'basketSelectionScreen';
+  static const String saveStrategyScreen = 'saveStrategyScreen';
 
   static const String allIndex = 'allIndex';
   static const String topIndiciesIndex = 'topIndiciesIndex';
@@ -100,6 +108,7 @@ class Routes {
   static const String edis = 'Edis';
   static const String setAlert = 'setAlert';
   static const String setAlertScreen = 'setAlertScreen';
+  static const String setAlertWeb = 'setAlertWeb';
 
   static const String placeOrderScreen = 'PlaceOrderScreen';
   static const String orderConfirmation = 'OrderConfirmation';
@@ -181,6 +190,8 @@ class Routes {
   static const String redeemNewBottomSheet = 'redeemNewBottomSheet';
   static const String algoCreate = 'algoCreate';
   static const String algoList = 'algoList';
+  static const String algoStrategyShowList = 'algoStrategyShowList';
+  static const String createAlgoStrategy = 'createAlgoStrategy';
 
   static const String mfnfoscreen = 'mfnfoscreen';
   static const String mfCategoryList = 'mfCategoryList';
@@ -217,4 +228,8 @@ class Routes {
   // rough
   static const String heatmapcalendarscreen = 'HeatmapCalendarScreen ';
   static const String withdrawscreen = 'withdrawscreen';
+  
+  // Refer and Earn
+  static const String referAndEarn = 'referAndEarn';
+
 }

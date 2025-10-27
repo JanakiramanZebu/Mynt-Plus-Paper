@@ -38,7 +38,7 @@ import '../res/global_state_text.dart';
 import '../res/res.dart';
 import '../routes/app_routes.dart';
 import '../routes/route_names.dart';
-import '../screens/authentication/login/bottom_otp_screen.dart';
+import '../screens/Mobile/authentication/login/bottom_otp_screen.dart';
 // import '../sharedWidget/functions.dart';
 import '../screens/web/main_screen_control_web.dart';
 import '../screens/web/main_screen_control_web.dart';

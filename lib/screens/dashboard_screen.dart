@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:mynt_plus/routes/route_names.dart';
-import 'package:mynt_plus/screens/ipo/ipo_main_screen.dart';
+import 'package:mynt_plus/screens/Mobile/ipo/ipo_main_screen.dart';
 // import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import '../../../res/res.dart';
 import '../../provider/thems.dart';
@@ -19,9 +19,9 @@ import '../provider/stocks_provider.dart';
 import '../res/global_state_text.dart';
 import '../sharedWidget/custom_text_form_field.dart';
 import '../utils/no_emoji_inputformatter.dart';
-import 'bonds/bonds_main_screen.dart';
-import 'stocks/explore/stocks/stock_screens.dart';
-import 'mutual_fund/mf_explore_screens.dart';
+import 'Mobile/bonds/bonds_main_screen.dart';
+import 'Mobile/stocks/explore/stocks/stock_screens.dart';
+import 'Mobile/mutual_fund/mf_explore_screens.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});

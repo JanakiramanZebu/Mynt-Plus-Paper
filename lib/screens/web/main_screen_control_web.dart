@@ -3,11 +3,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mynt_plus/screens/dashboard_screen.dart';
-import 'package:mynt_plus/screens/web/watchlist_screen_web.dart';
-import 'package:mynt_plus/screens/portfolio_screens/portfolio_screen.dart';
-import 'package:mynt_plus/screens/profile_screen/profile_main_screen.dart';
+import 'package:mynt_plus/screens/web/market_watch/watchlist_screen_web.dart';
+import 'package:mynt_plus/screens/Mobile/portfolio_screens/portfolio_screen.dart';
+import 'package:mynt_plus/screens/Mobile/profile_screen/profile_main_screen.dart';
 import 'package:mynt_plus/res/res.dart';
-import 'package:mynt_plus/res/global_state_text.dart';
+import 'package:mynt_plus/res/web_resources.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/routes/app_routes.dart';
 import 'package:mynt_plus/utils/custom_navigator.dart';
@@ -108,8 +108,8 @@ class _MainControlerScreenForWebState
             style: IconButton.styleFrom(
               backgroundColor: _isPanelsSwapped
                   ? (theme.isDarkMode
-                      ? colors.colorLightBlue.withOpacity(0.1)
-                      : colors.colorBlue.withOpacity(0.1))
+                      ? WebColors.primaryLight.withOpacity(0.1)
+                      : WebColors.primary.withOpacity(0.1))
                   : null,
             ),
           ),
@@ -152,15 +152,15 @@ class _MainControlerScreenForWebState
           decoration: BoxDecoration(
             color: isSelected
                 ? (theme.isDarkMode
-                    ? colors.colorLightBlue.withOpacity(0.1)
-                    : colors.colorBlue.withOpacity(0.1))
+                    ? WebColors.primaryLight.withOpacity(0.1)
+                    : WebColors.primary.withOpacity(0.1))
                 : Colors.transparent,
             borderRadius: BorderRadius.circular(8),
             border: isSelected
                 ? Border.all(
                     color: theme.isDarkMode
-                        ? colors.colorLightBlue
-                        : colors.colorBlue,
+                        ? WebColors.primaryLight
+                        : WebColors.primary,
                     width: 1,
                   )
                 : null,
@@ -174,11 +174,13 @@ class _MainControlerScreenForWebState
                 colorFilter: ColorFilter.mode(_getNavButtonColor(theme, isSelected), BlendMode.srcIn),
               ),
               const SizedBox(width: 8),
-              TextWidget.paraText(
-                text: label,
-                theme: theme.isDarkMode,
-                color: _getNavButtonColor(theme, isSelected),
-                fw: isSelected ? 1 : 0,
+              Text(
+                label,
+                style: WebTextStyles.para(
+                  isDarkTheme: theme.isDarkMode,
+                  color: _getNavButtonColor(theme, isSelected),
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                ),
               ),
             ],
           ),
@@ -190,13 +192,13 @@ class _MainControlerScreenForWebState
   // Get color for navigation button
   Color _getNavButtonColor(ThemesProvider theme, bool isSelected) {
     if (theme.isDarkMode && isSelected) {
-      return colors.colorLightBlue;
+      return WebColors.primaryLight;
     } else if (theme.isDarkMode && !isSelected) {
-      return colors.textSecondaryDark;
+      return WebDarkColors.textSecondary;
     } else if (!theme.isDarkMode && isSelected) {
-      return colors.colorBlue;
+      return WebColors.primary;
     } else {
-      return colors.textSecondaryLight;
+      return WebColors.textSecondary;
     }
   }
 
@@ -251,7 +253,7 @@ class _MainControlerScreenForWebState
         child: Container(
           width: _splitterWidth,
           color: _isDraggingSplitter
-              ? colors.colorBlue.withOpacity(0.3)
+              ? WebColors.primary.withOpacity(0.3)
               : Colors.grey.withOpacity(0.2),
           child: Center(
             child: Container(
