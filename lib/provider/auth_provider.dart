@@ -1731,6 +1731,9 @@ class AuthProvider extends DefaultChangeNotifier {
         _logoutMsg = "";
 
         if (ref.read(indexListProvider).checkSess!.stat == "Ok") {
+          await ref.read(portfolioProvider).clearAllportfolio();
+          await ref.read(fundProvider).clearFunds();
+          await ref.read(orderProvider).clearAllorders();
           ref.read(indexListProvider).fetchNotifyMsg();
           ref.read(portfolioProvider).changeTabIndex(0);
           await ref.read(themeProvider).navigateToNewPage(context);
@@ -1738,12 +1741,13 @@ class AuthProvider extends DefaultChangeNotifier {
 
           await ref.read(indexListProvider).getDeafultIndexList(context);
 
+          // Reset watchlist page index to first tab when switching accounts
+          ref.read(marketWatchProvider).resetCurrentWatchlistPageIndex();
+
           // Fetch watchlist data with proper initialization
           await ref.read(marketWatchProvider).fetchMWList(context, false);
 
-          ref.read(portfolioProvider).clearAllportfolio();
-          await ref.read(fundProvider).clearFunds();
-          ref.read(orderProvider).clearAllorders();
+          
           ref.read(ledgerProvider).setterfornullallSwitch = null;
           
             ref.read(userProfileProvider).getProfileimage();

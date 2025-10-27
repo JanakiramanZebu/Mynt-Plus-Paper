@@ -429,6 +429,15 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     _saveCurrentPageIndex();
   }
 
+  // Method to reset current watchlist page index (used during account switch)
+  void resetCurrentWatchlistPageIndex() {
+    _currentWatchlistPageIndex = 0;
+    _wlName = "";  // Reset watchlist name to force selection of first watchlist
+    _saveCurrentPageIndex();
+    notifyListeners();
+    print("Watchlist page index and name reset to 0");
+  }
+
   // Save current page index to SharedPreferences
   Future<void> _saveCurrentPageIndex() async {
     try {
