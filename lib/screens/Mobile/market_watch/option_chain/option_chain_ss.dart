@@ -184,7 +184,7 @@ class _OptionChainSSState extends ConsumerState<OptionChainSS> {
           //   );
           // }),
           // leadingWidth: 48,
-option chain , set alert web socket           toolbarHeight: 40,
+         toolbarHeight: 40,
           elevation: 0,
           title: _NewAppBarTitle(
             wlValue: widget.wlValue,
