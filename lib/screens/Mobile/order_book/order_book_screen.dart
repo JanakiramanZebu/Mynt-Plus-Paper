@@ -28,18 +28,31 @@ class OrderBookScreen extends ConsumerStatefulWidget {
 
 class _OrderBookScreenState extends ConsumerState<OrderBookScreen>
     with TickerProviderStateMixin {
+  int _lastTabLength = 0;
+  
   @override
   void initState() {
+    // Get the current tab count and selected tab
+    final orderProv = ref.read(orderProvider);
+    final tabLength = orderProv.orderTabName.length;
+    final selectedTab = orderProv.selectedTab;
+    
+    // Ensure we have at least one tab and valid initial index
+    final safeTabLength = tabLength > 0 ? tabLength : 1;
+    final safeInitialIndex = selectedTab >= 0 && selectedTab < safeTabLength 
+        ? selectedTab 
+        : 0;
+    
+    _lastTabLength = safeTabLength;
+    
     setState(() {
-      ref.read(orderProvider).tabCtrl = TabController(
-          length: ref.read(orderProvider).orderTabName.length,
+      orderProv.tabCtrl = TabController(
+          length: safeTabLength,
           vsync: this,
-          initialIndex: ref.read(orderProvider).selectedTab);
+          initialIndex: safeInitialIndex);
 
-      ref.read(orderProvider).tabCtrl.addListener(() {
-        ref
-            .read(orderProvider)
-            .changeTabIndex(ref.read(orderProvider).tabCtrl.index, context);
+      orderProv.tabCtrl.addListener(() {
+        orderProv.changeTabIndex(orderProv.tabCtrl.index, context);
       });
     });
 
@@ -55,7 +68,30 @@ class _OrderBookScreenState extends ConsumerState<OrderBookScreen>
     return Consumer(builder: (context, WidgetRef ref, _) {
       final orderBook = ref.watch(orderProvider);
       final theme = ref.watch(themeProvider);
-      final sipBook = ref.watch(orderProvider);
+      
+      // Check if tab length has changed and recreate TabController if needed
+      if (orderBook.orderTabName.length != _lastTabLength) {
+        final newTabLength = orderBook.orderTabName.length;
+        _lastTabLength = newTabLength;
+        
+        // Dispose old controller if it exists
+        if (orderBook.tabCtrl.length != newTabLength) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              final safeTabLength = newTabLength > 0 ? newTabLength : 1;
+              orderBook.tabCtrl.dispose();
+              orderBook.tabCtrl = TabController(
+                length: safeTabLength,
+                vsync: this,
+                initialIndex: 0
+              );
+              orderBook.tabCtrl.addListener(() {
+                orderBook.changeTabIndex(orderBook.tabCtrl.index, context);
+              });
+            }
+          });
+        }
+      }
 
       return GestureDetector(
         onTap: () {

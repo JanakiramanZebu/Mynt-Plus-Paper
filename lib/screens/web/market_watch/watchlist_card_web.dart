@@ -4,7 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter/foundation.dart';
 import 'package:mynt_plus/provider/user_profile_provider.dart';
+import 'package:mynt_plus/routes/app_routes.dart';
 import 'package:percent_indicator/percent_indicator.dart';
+import '../../../routes/route_names.dart';
+import '../../../utils/custom_navigator.dart';
 import '../../../models/marketwatch_model/get_quotes.dart';
 import '../../../models/order_book_model/order_book_model.dart';
 import '../../../provider/market_watch_provider.dart';
@@ -19,6 +22,7 @@ import '../../../utils/responsive_snackbar.dart';
 import '../../Mobile/market_watch/edit_scrip.dart';
 import '../../Mobile/market_watch/futures/future_screen.dart';
 import '../../Mobile/market_watch/new_fundamental_screen.dart';
+import 'set_alert_web.dart';
 
 // Provider to manage expanded watchlist item
 final expandedWatchlistItemProvider = StateNotifierProvider<ExpandedWatchlistItemNotifier, String?>((ref) {
@@ -46,6 +50,7 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
   bool _isNavigating = false;
   bool _isHovered = false;
   bool _isExpanded = false;
+  bool _isMenuOpen = false;
 
   @override
   Widget build(BuildContext context) {
@@ -248,15 +253,15 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Action buttons (shown on hover)
-                    if (_isHovered)
+                    // Action buttons (shown on hover or when menu is open)
+                    if (_isHovered || _isMenuOpen)
                       Builder(
                         builder: (context) {
                           // Check if this is an index or commodity
                           final instname = widget.watchListData["instname"]?.toString() ?? "";
                           final isIndexOrCommodity = instname == "UNDIND" || instname == "COM";
                           
-                          // Get exchange and token for futures/fundamentals check
+                          // Get exchange and token for futures/fundamentals/options check
                           final exch = widget.watchListData["exch"]?.toString() ?? "";
                           final token = widget.watchListData["token"]?.toString() ?? "";
                           
@@ -266,20 +271,23 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                           // Check if fundamentals available (not for indices or commodities)
                           final hasFundamentals = instname != "UNDIND" && instname != "COM";
                           
+                          // Check if options available (same condition as futures)
+                          final hasOptions = marketWatch.getOptionawait(exch, token);
+                          
                           return Container(
                             width: 200, // Increased width for web
                             child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              mainAxisAlignment: MainAxisAlignment.start,
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 // Only show Buy/Sell buttons if not index or commodity
                                 if (!isIndexOrCommodity) ...[
                                   _buildHoverButton(
-                                    label: _isNavigating ? 'Wait...' : 'B',
+                                    label: 'B',
                                     color: theme.isDarkMode
                                         ? WebDarkColors.success
                                         : WebColors.success,
-                                    onPressed: _isNavigating ? null : () async {
+                                    onPressed: () async {
                                       try {
                                         await _placeOrderInput(context, depthData, true);
                                       } catch (e) {
@@ -288,12 +296,13 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                                       }
                                     },
                                   ),
+                                  const SizedBox(width: 8),
                                   _buildHoverButton(
-                                    label: _isNavigating ? 'Wait...' : 'S',
+                                    label: 'S',
                                     color: theme.isDarkMode
                                         ? WebDarkColors.loss
                                         : WebColors.loss,
-                                    onPressed: _isNavigating ? null : () async {
+                                    onPressed: () async {
                                       try {
                                         await _placeOrderInput(context, depthData, false);
                                       } catch (e) {
@@ -302,6 +311,8 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                                       }
                                     },
                                   ),
+                                  const SizedBox(width: 8),
+
                                 ],
                                 // Chart button always shows (icon only)
                                 _buildHoverButton(
@@ -326,12 +337,14 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                                         .singlePageloader(false);
                                   },
                                 ),
-                                // Three dots menu (only if has futures or fundamentals)
-                                if (hasFutures || hasFundamentals)
+                                  const SizedBox(width: 8),
+                                // Three dots menu (only if has futures, fundamentals or options)
+                                if (hasFutures || hasFundamentals || hasOptions)
                                   _buildThreeDotsMenu(
                                     theme: theme,
                                     hasFutures: hasFutures,
                                     hasFundamentals: hasFundamentals,
+                                    hasOptions: hasOptions,
                                     exch: exch,
                                     token: token,
                                     depthData: depthData,
@@ -381,17 +394,14 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
     return StreamBuilder<dynamic>(
       stream: ref.watch(websocketProvider).socketDataStream,
       builder: (context, snapshot) {
-        // 🔥 CRITICAL FIX: Pre-load from existing socket data like mobile does!
         Map<String, dynamic> socketData;
         
         if (snapshot.hasData) {
-          // Use stream data if available
           final socketDatas = Map<String, dynamic>.from(snapshot.data as Map);
           socketData = socketDatas.containsKey(currentToken) 
               ? Map<String, dynamic>.from(socketDatas[currentToken] as Map? ?? {})
               : <String, dynamic>{};
         } else {
-          // 🚀 Pre-load from existing socket data on first render (like mobile)
           final existingSocketData = ref.read(websocketProvider).socketDatas;
           socketData = existingSocketData.containsKey(currentToken)
               ? Map<String, dynamic>.from(existingSocketData[currentToken] ?? {})
@@ -477,7 +487,7 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
             const SizedBox(height: 12),
             
             // Open Interest (only for futures/options, not equity)
-            if (widget.watchListData['instname']?.toString() != "EQT") ...[
+            if (depthData.seg != "EQT") ...[
               Row(
                 children: [
                   Expanded(
@@ -516,15 +526,15 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Market Depth Header
-        Text(
-          "Market Depth",
-          style: WebTextStyles.title(
-            isDarkTheme: theme.isDarkMode,
-            color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
-            fontWeight: WebFonts.medium,
-          ),
-        ),
-        const SizedBox(height: 12),
+        // Text(
+        //   "Market Depth",
+        //   style: WebTextStyles.title(
+        //     isDarkTheme: theme.isDarkMode,
+        //     color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+        //     fontWeight: WebFonts.medium,
+        //   ),
+        // ),
+        // const SizedBox(height: 12),
         
         Row(
           children: [
@@ -599,27 +609,89 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
         const SizedBox(height: 12),
         
         // Total Quantities
+        _buildTotalQuantities(socketData, theme),
+      ],
+    );
+  }
+  
+  // Helper to build total quantities with percentages
+  Widget _buildTotalQuantities(Map<String, dynamic> socketData, ThemesProvider theme) {
+    final scripInfo = ref.read(marketWatchProvider);
+    final tbq = socketData['tbq']?.toString() ?? "0";
+    final tsq = socketData['tsq']?.toString() ?? "0";
+    
+    return Column(
+      children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              "${socketData['tbq']?.toString() ?? "0"} (Buy Total)",
-              style: WebTextStyles.para(
-                isDarkTheme: theme.isDarkMode,
-                color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
-                fontWeight: WebFonts.regular,
-              ),
+            Row(
+              children: [
+                Text(
+                  tbq,
+                  style: WebTextStyles.sub(
+                    isDarkTheme: theme.isDarkMode,
+                    color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
+                    fontWeight: WebFonts.regular,
+                    letterSpacing: 0.0,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  "(${scripInfo.totBuyQtyPer.toStringAsFixed(2)}%)",
+                  style: WebTextStyles.para(
+                    isDarkTheme: theme.isDarkMode,
+                    color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
+                    fontWeight: WebFonts.regular,
+                    letterSpacing: 0.0,
+                  ),
+                ),
+              ],
             ),
-            Text(
-              "(Sell Total) ${socketData['tsq']?.toString() ?? "0"}",
-              style: WebTextStyles.para(
-                isDarkTheme: theme.isDarkMode,
-                color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
-                fontWeight: WebFonts.regular,
-              ),
+            Row(
+              children: [
+                Text(
+                  "(${scripInfo.totSellQtyPer.toStringAsFixed(2)}%)",
+                  style: WebTextStyles.para(
+                    isDarkTheme: theme.isDarkMode,
+                    color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
+                    fontWeight: WebFonts.regular,
+                    letterSpacing: 0.0,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  tsq,
+                  style: WebTextStyles.sub(
+                    isDarkTheme: theme.isDarkMode,
+                    color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
+                    fontWeight: WebFonts.regular,
+                    letterSpacing: 0.0,
+                  ),
+                ),
+              ],
             ),
           ],
         ),
+        if (scripInfo.totBuyQtyPer.toStringAsFixed(2) != "0.00" || 
+            scripInfo.totSellQtyPer.toStringAsFixed(2) != "0.00")
+          Column(
+            children: [
+              const SizedBox(height: 10),
+              LinearPercentIndicator(
+                lineHeight: 5.0,
+                barRadius: const Radius.circular(4.0),
+                backgroundColor: theme.isDarkMode 
+                    ? WebDarkColors.error 
+                    : WebColors.error,
+                percent: scripInfo.totBuyQtyPerChng,
+                padding: const EdgeInsets.symmetric(horizontal: 0),
+                progressColor: theme.isDarkMode 
+                    ? WebDarkColors.primary 
+                    : WebColors.primary,
+              ),
+            ],
+          ),
       ],
     );
   }
@@ -914,30 +986,37 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
   Widget _buildInfoItem(ThemesProvider theme, String label, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             label,
-            style: WebTextStyles.custom(
-              fontSize: 12,
+            style: WebTextStyles.para(
               isDarkTheme: theme.isDarkMode,
               color: theme.isDarkMode
                   ? WebDarkColors.textSecondary
                   : WebColors.textSecondary,
-              fontWeight: FontWeight.w500,
+              fontWeight: WebFonts.regular,
+              letterSpacing: 0.0,
             ),
           ),
+          const SizedBox(height: 4),
           Text(
             value,
-            style: WebTextStyles.custom(
-              fontSize: 12,
+            style: WebTextStyles.sub(
               isDarkTheme: theme.isDarkMode,
               color: theme.isDarkMode
                   ? WebDarkColors.textPrimary
                   : WebColors.textPrimary,
-              fontWeight: FontWeight.w600,
+              fontWeight: WebFonts.regular,
+              letterSpacing: 0.0,
             ),
+          ),
+          const SizedBox(height: 4),
+          Divider(
+            color: theme.isDarkMode
+                ? WebDarkColors.divider
+                : WebColors.divider,
           ),
         ],
       ),
@@ -992,6 +1071,7 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
     required ThemesProvider theme,
     required bool hasFutures,
     required bool hasFundamentals,
+    required bool hasOptions,
     required String exch,
     required String token,
     required GetQuotes depthData,
@@ -1010,6 +1090,11 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
               ? Colors.white.withOpacity(0.08)
               : Colors.black.withOpacity(0.08),
           onTap: () {
+            // Set menu as open
+            setState(() {
+              _isMenuOpen = true;
+            });
+            
             // Show popup menu
             final RenderBox button = context.findRenderObject() as RenderBox;
             final RenderBox overlay =
@@ -1074,8 +1159,45 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                       ],
                     ),
                   ),
+                if (hasOptions)
+                  PopupMenuItem<String>(
+                    value: 'options',
+                    child: Row(
+                      children: [                       
+                        Text(
+                          'Options Chain',
+                          style: WebTextStyles.sub(
+                            isDarkTheme: theme.isDarkMode,
+                            color: theme.isDarkMode
+                                ? WebDarkColors.textPrimary
+                                : WebColors.textPrimary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                PopupMenuItem<String>(
+                  value: 'setAlert',
+                  child: Row(
+                    children: [
+                      Text(
+                        'Set Alert',
+                        style: WebTextStyles.sub(
+                          isDarkTheme: theme.isDarkMode,
+                          color: theme.isDarkMode
+                              ? WebDarkColors.textPrimary
+                              : WebColors.textPrimary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ).then((value) {
+              // Reset menu state when menu closes
+              setState(() {
+                _isMenuOpen = false;
+              });
               if (value != null) {
                 _handleMenuAction(value, depthData, exch, token);
               }
@@ -1262,18 +1384,8 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
 
           if (marketWatch.fundamentalData != null &&
               marketWatch.fundamentalData?.msg != "no data found") {
-            // Create DepthInputArgs for the new screen
-            DepthInputArgs depthArgs = DepthInputArgs(
-              exch: widget.watchListData["exch"].toString(),
-              token: widget.watchListData["token"].toString(),
-              tsym: widget.watchListData["tsym"].toString(),
-              instname: widget.watchListData["instname"]?.toString() ?? widget.watchListData["symbol"].toString(),
-              symbol: widget.watchListData["symbol"].toString(),
-              expDate: widget.watchListData["expDate"]?.toString() ?? "",
-              option: widget.watchListData["option"]?.toString() ?? "",
-            );
-            
-            // Get depth data from provider
+            // Create DepthInputArgs and get depth data
+            DepthInputArgs depthArgs = _createDepthArgs();
             final depthData = marketWatch.getQuotes!;
             
             // Show as dialog
@@ -1365,6 +1477,56 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
             marketWatch.singlePageloader(false);
           }
         }
+      } else if (action == 'options') {
+        // Open Options Chain
+        try {
+          // Setup option script
+          final tsym = widget.watchListData["tsym"]?.toString() ?? "";
+          marketWatch.setOptionScript(context, exch, token, tsym);
+
+          // Wait for setup to complete
+          await Future.delayed(const Duration(milliseconds: 150));
+
+          if (!mounted) return;
+
+          // Navigate to options chain
+          final DepthInputArgs wlValue = _createDepthArgs();
+          if (kIsWeb && WebNavigationHelper.isAvailable) {
+            WebNavigationHelper.navigateTo("optionChain", arguments: wlValue);
+          } else {
+            await Navigator.pushNamed(context, Routes.optionChain, arguments: wlValue);
+          }
+        } catch (e) {
+          if (mounted) {
+            showResponsiveError(context, 'Failed to open Options Chain');
+          }
+        }
+      } else if (action == 'setAlert') {
+        try {
+          // Reset state before showing dialog
+          await marketWatch.chngDephBtn("Overview");
+
+          if (!mounted) return;
+
+          // Get depth data from provider and create depth args
+          final depthData = marketWatch.getQuotes!;
+          final depthArgs = _createDepthArgs();
+          
+          // Show Set Alert dialog
+          _showSetAlertDialog(context, depthData, depthArgs);
+
+          // Reset state after dialog is closed
+          if (mounted) {
+            await marketWatch.chngDephBtn("Overview");
+          }
+        } catch (e) {
+          if (mounted) {
+            showResponsiveError(
+              context,
+              'Failed to open Set Alert screen',
+            );
+          }
+        }
       }
     } catch (e) {
       debugPrint('Menu action error: $e');
@@ -1379,6 +1541,96 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
         });
       }
     }
+  }
+
+  // Helper to create DepthInputArgs from watchlist data
+  DepthInputArgs _createDepthArgs() {
+    return DepthInputArgs(
+      exch: widget.watchListData["exch"].toString(),
+      token: widget.watchListData["token"].toString(),
+      tsym: widget.watchListData["tsym"].toString(),
+      instname: widget.watchListData["instname"]?.toString() ?? widget.watchListData["symbol"].toString(),
+      symbol: widget.watchListData["symbol"].toString(),
+      expDate: widget.watchListData["expDate"]?.toString() ?? "",
+      option: widget.watchListData["option"]?.toString() ?? "",
+    );
+  }
+
+  void _showSetAlertDialog(BuildContext context, GetQuotes depthData, DepthInputArgs depthArgs) {
+    final theme = ref.read(themeProvider);
+    
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext dialogContext) {
+        return Dialog(
+          backgroundColor: theme.isDarkMode 
+              ? WebDarkColors.surface 
+              : WebColors.surface,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Container(
+            width: 600,
+            constraints: const BoxConstraints(maxHeight: 700),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Header
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Set Alert',
+                        style: WebTextStyles.title(
+                          isDarkTheme: theme.isDarkMode,
+                          color: theme.isDarkMode
+                              ? WebDarkColors.textPrimary
+                              : WebColors.textPrimary,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      Material(
+                        color: Colors.transparent,
+                        shape: const CircleBorder(),
+                        child: InkWell(
+                          customBorder: const CircleBorder(),
+                          splashColor: theme.isDarkMode
+                              ? Colors.white.withOpacity(.15)
+                              : Colors.black.withOpacity(.15),
+                          highlightColor: theme.isDarkMode
+                              ? Colors.white.withOpacity(.08)
+                              : Colors.black.withOpacity(.08),
+                          onTap: () => Navigator.of(context).pop(),
+                          child: Padding(
+                            padding: const EdgeInsets.all(8),
+                            child: Icon(
+                              Icons.close,
+                              size: 20,
+                              color: theme.isDarkMode
+                                  ? WebDarkColors.iconSecondary
+                                  : WebColors.iconSecondary,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: SetAlertWeb(
+                    depthdata: depthData,
+                    wlvalue: depthArgs,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   // Helper method to safely parse numeric values

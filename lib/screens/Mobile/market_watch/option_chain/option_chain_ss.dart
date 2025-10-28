@@ -139,52 +139,52 @@ class _OptionChainSSState extends ConsumerState<OptionChainSS> {
       },
       child: Scaffold(
         appBar: AppBar(
-          leading: Consumer(builder: (context, ref, _) {
-            final theme = ref.read(themeProvider);
-            return Material(
-              color: Colors.transparent,
-              shape: const CircleBorder(),
-              clipBehavior: Clip.hardEdge,
-              child: InkWell(
-                customBorder: const CircleBorder(),
-                splashColor: Colors.grey.withOpacity(0.4),
-                highlightColor: Colors.grey.withOpacity(0.2),
-                onTap: () async {
-                  // Add delay for visual feedback
-                  await Future.delayed(const Duration(milliseconds: 150));
+          // leading: Consumer(builder: (context, ref, _) {
+          //   final theme = ref.read(themeProvider);
+          //   return Material(
+          //     color: Colors.transparent,
+          //     shape: const CircleBorder(),
+          //     clipBehavior: Clip.hardEdge,
+          //     child: InkWell(
+          //       customBorder: const CircleBorder(),
+          //       splashColor: Colors.grey.withOpacity(0.4),
+          //       highlightColor: Colors.grey.withOpacity(0.2),
+          //       onTap: () async {
+          //         // Add delay for visual feedback
+          //         await Future.delayed(const Duration(milliseconds: 150));
 
-                  final wsProvider = ref.read(websocketProvider);
-                  final scripInfo = ref.read(marketWatchProvider);
-                  final currentContext = context;
-                  Navigator.pop(context);
-                  await scripInfo.calldepthApis(
-                      currentContext, scripInfo.getQuotes!, "");
-                  await scripInfo.requestWSOptChain(
-                      context: currentContext, isSubscribe: false);
-                  await wsProvider.establishConnection(
-                    channelInput:
-                        "${widget.wlValue.exch}|${widget.wlValue.token}",
-                    task: "ud",
-                    context: currentContext,
-                  );
-                },
-                child: Container(
-                  width: 40,
-                  height: 40,
-                  alignment: Alignment.center,
-                  child: Icon(
-                    Icons.arrow_back_ios_outlined,
-                    size: 18,
-                    color: theme.isDarkMode
-                        ? colors.textSecondaryDark
-                        : colors.textSecondaryLight,
-                  ),
-                ),
-              ),
-            );
-          }),
-          leadingWidth: 48,
-          toolbarHeight: 40,
+          //         final wsProvider = ref.read(websocketProvider);
+          //         final scripInfo = ref.read(marketWatchProvider);
+          //         final currentContext = context;
+          //         Navigator.pop(context);
+          //         await scripInfo.calldepthApis(
+          //             currentContext, scripInfo.getQuotes!, "");
+          //         await scripInfo.requestWSOptChain(
+          //             context: currentContext, isSubscribe: false);
+          //         await wsProvider.establishConnection(
+          //           channelInput:
+          //               "${widget.wlValue.exch}|${widget.wlValue.token}",
+          //           task: "ud",
+          //           context: currentContext,
+          //         );
+          //       },
+          //       child: Container(
+          //         width: 40,
+          //         height: 40,
+          //         alignment: Alignment.center,
+          //         child: Icon(
+          //           Icons.arrow_back_ios_outlined,
+          //           size: 18,
+          //           color: theme.isDarkMode
+          //               ? colors.textSecondaryDark
+          //               : colors.textSecondaryLight,
+          //         ),
+          //       ),
+          //     ),
+          //   );
+          // }),
+          // leadingWidth: 48,
+option chain , set alert web socket           toolbarHeight: 40,
           elevation: 0,
           title: _NewAppBarTitle(
             wlValue: widget.wlValue,

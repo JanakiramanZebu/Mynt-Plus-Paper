@@ -5,6 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../../../models/marketwatch_model/get_quotes.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../../provider/thems.dart';
+import '../../../provider/websocket_provider.dart';
 import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/cust_text_formfield.dart';
@@ -28,12 +29,38 @@ class _SetAlertWebState extends State<SetAlertWeb> {
   String alertTypeVal = "";
   String validityTypeVal = "";
   String errorText = "";
+  late GetQuotes depthdata;
 
   @override
   void initState() {
     alertValue = alterItems[0];
     alertTypeVal = alertType[0];
+    // Initialize with widget data
+    depthdata = widget.depthdata;
     super.initState();
+  }
+
+  // Process depth data with socket updates
+  void _processDepthData(Map<String, dynamic> socketData) {
+    if (!mounted) return;
+    
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() {
+          depthdata.ap = "${socketData['ap']}";
+          depthdata.lp = "${socketData['lp']}";
+          depthdata.pc = "${socketData['pc']}";
+          depthdata.o = "${socketData['o']}";
+          depthdata.l = "${socketData['l']}";
+          depthdata.c = "${socketData['c']}";
+          depthdata.chng = "${socketData['chng']}";
+          depthdata.h = "${socketData['h']}";
+          depthdata.poi = "${socketData['poi']}";
+          depthdata.v = "${socketData['v']}";
+          depthdata.toi = "${socketData['toi']}";
+        });
+      }
+    });
   }
 
   validatesetalret(value) {
@@ -45,7 +72,7 @@ class _SetAlertWebState extends State<SetAlertWeb> {
 
       if (alertTypeVal == "LTP" && value.isNotEmpty) {
         double enteredValue = double.parse(value);
-        double currentLtp = double.parse(widget.depthdata.lp ?? "0.0");
+        double currentLtp = double.parse(depthdata.lp ?? "0.0");
 
         // Format numbers to always show 2 decimal places
         String formattedLtp = currentLtp.toStringAsFixed(2);
@@ -72,6 +99,8 @@ class _SetAlertWebState extends State<SetAlertWeb> {
     }
   }
 
+  
+
   @override
   Widget build(BuildContext context) {
     return Consumer(builder: (context, WidgetRef ref, _) {
@@ -92,6 +121,72 @@ class _SetAlertWebState extends State<SetAlertWeb> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     const SizedBox(height: 16),
+
+                     StreamBuilder<Map>(
+                        stream: ref.watch(websocketProvider).socketDataStream,
+                        builder: (context, snapshot) {
+                          final socketDatas = snapshot.data ?? {};
+                  
+                          // Update depth data with WebSocket data if available
+                          if (socketDatas.containsKey(widget.wlvalue.token)) {
+                            _processDepthData(socketDatas[widget.wlvalue.token]);
+                          }
+                  
+                          return Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  TextWidget.titleText(
+                                    text: widget.wlvalue.symbol.toUpperCase(),
+                                    color: theme.isDarkMode
+                                        ? colors.textPrimaryDark
+                                        : colors.textPrimaryLight,
+                                    theme: theme.isDarkMode,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  TextWidget.titleText(
+                                    text: widget.wlvalue.option,
+                                    color: theme.isDarkMode
+                                        ? colors.textPrimaryDark
+                                        : colors.textPrimaryLight,
+                                    theme: theme.isDarkMode,
+                                  ),
+                                ],
+                              ),
+                              Column(
+                                children: [
+                                  TextWidget.titleText(
+                                    text:
+                                        "${depthdata.lp != "null" ? depthdata.lp ?? depthdata.c ?? 0.00 : '0.00'}",
+                                    color: (depthdata.chng == "null" ||
+                                            depthdata.chng == null) ||
+                                        depthdata.chng == "0.00"
+                                        ? theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight
+                                        : depthdata.chng!.startsWith("-") ||
+                                            depthdata.pc!.startsWith("-")
+                                            ? theme.isDarkMode ? colors.lossDark : colors.lossLight
+                                            : theme.isDarkMode ? colors.profitDark : colors.profitLight,
+                                    theme: theme.isDarkMode,
+                                  ),
+                                  const SizedBox(height: 8),
+                                  TextWidget.paraText(
+                                    text:
+                                        "${(double.tryParse(depthdata.chng ?? '0.00') ?? 0.00).toStringAsFixed(2)} (${(double.tryParse(depthdata.pc ?? '0.00') ?? 0.00).toStringAsFixed(2)}%)",
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                        : colors.textSecondaryLight,
+                                    theme: theme.isDarkMode,
+                                  ),
+                                ],
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+
+              
                     Row(
                       children: [
                         Expanded(
@@ -424,7 +519,7 @@ class _SetAlertWebState extends State<SetAlertWeb> {
                                         : "LTP_B", // fallback
                                 context,
                                 scripInfo.alertPendingModel!.length,
-                                "${widget.depthdata.lp}",
+                                "${depthdata.lp}",
                                 remark.text,
                               );
                         } finally {
