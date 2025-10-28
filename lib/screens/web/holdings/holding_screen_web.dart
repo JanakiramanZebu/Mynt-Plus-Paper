@@ -2,6 +2,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:mynt_plus/provider/mf_provider.dart';
+import 'package:mynt_plus/screens/web/holdings/holding_detail_screen_web.dart';
+import 'package:mynt_plus/screens/web/holdings/mf_holdings_screen_web.dart';
 
 import '../../../../provider/portfolio_provider.dart';
 import '../../../../provider/thems.dart';
@@ -23,24 +26,33 @@ class HoldingScreenWeb extends ConsumerStatefulWidget {
 class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
   StreamSubscription? _socketSubscription;
   int _selectedTabIndex = 0; // 0 for Stocks, 1 for Mutual Funds
-  final Set<int> _selectedHoldings = <int>{};
   String _searchQuery = '';
-  String _selectedFilter = 'All';
+  int? _sortColumnIndex;
+  bool _sortAscending = true;
 
   @override
   void initState() {
     super.initState();
-        _setupSocketSubscription();
+    _setupSocketSubscription();
   }
 
   @override
   void dispose() {
     _socketSubscription?.cancel();
+    
+    // Close WebSocket connection when screen is disposed
+    try {
+      ProviderScope.containerOf(context).read(websocketProvider).closeSocket(false);
+    } catch (e) {
+      // Context might not be available during disposal, ignore error
+      print('WebSocket close error during disposal: $e');
+    }
+    
     super.dispose();
   }
 
   void _setupSocketSubscription() {
-      Future.microtask(() {
+    Future.microtask(() {
       final websocket = ref.read(websocketProvider);
 
       _socketSubscription = websocket.socketDataStream.listen((socketDatas) {
@@ -49,17 +61,17 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
         for (var holding in widget.listofHolding) {
           if (holding.exchTsym != null && holding.exchTsym!.isNotEmpty) {
             final exchTsym = holding.exchTsym![0];
-      if (socketDatas.containsKey(exchTsym.token)) {
-        final socketData = socketDatas[exchTsym.token];
-        final lp = socketData['lp']?.toString();
+            if (socketDatas.containsKey(exchTsym.token)) {
+              final socketData = socketDatas[exchTsym.token];
+              final lp = socketData['lp']?.toString();
               if (lp != null && lp != "null" && lp != exchTsym.lp) {
-          exchTsym.lp = lp;
+                exchTsym.lp = lp;
                 needsUpdate = true;
-        }
+              }
 
-        final pc = socketData['pc']?.toString();
+              final pc = socketData['pc']?.toString();
               if (pc != null && pc != "null" && pc != exchTsym.perChange) {
-          exchTsym.perChange = pc;
+                exchTsym.perChange = pc;
                 needsUpdate = true;
               }
             }
@@ -79,8 +91,8 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
     final theme = ref.read(themeProvider);
 
     if (portfolioData.holdloader) {
-        return const Center(child: CircularProgressIndicator());
-      }
+      return const Center(child: CircularProgressIndicator());
+    }
 
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
@@ -96,130 +108,299 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Summary Cards Section
-                _buildSummaryCards(theme, portfolioData),
+                _buildSummaryCards(theme, portfolioData, _selectedTabIndex),
                 const SizedBox(height: 24),
-                
-                // Stock Position Summary
-                _buildStockPositionSummary(theme, portfolioData),
-                const SizedBox(height: 24),
-                
+
                 // Main Content Area
                 _buildMainContent(theme, portfolioData),
               ],
             ),
           ),
-          ),
         ),
-      );
-  }
-
-  Widget _buildSummaryCards(ThemesProvider theme, PortfolioProvider portfolioData) {
-    return Row(
-          children: [
-        Expanded(
-          child: _buildSummaryCard(
-            'Stocks Value',
-            _calculateStocksValue(portfolioData),
-            theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-            theme,
-          ),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: _buildSummaryCard(
-            'Day Change',
-            _calculateDayChange(portfolioData),
-            _getValueColor(_calculateDayChange(portfolioData), theme),
-            theme,
-          ),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: _buildSummaryCard(
-            'Invested',
-            _calculateInvested(portfolioData),
-            theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-            theme,
-          ),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: _buildSummaryCard(
-            'Profit/Loss',
-            _calculateProfitLoss(portfolioData),
-            _getValueColor(_calculateProfitLoss(portfolioData), theme),
-            theme,
-          ),
-        ),
-      ],
+      ),
     );
   }
 
-  Widget _buildSummaryCard(String label, String value, Color valueColor, ThemesProvider theme) {
+  Widget _buildSummaryCards(
+      ThemesProvider theme, PortfolioProvider portfolioData, int selectedTab) {
+    if (selectedTab == 0) {
+      // Stocks tab - show stocks summary
+      return _buildStocksSummaryCards(theme, portfolioData);
+    } else {
+      // Mutual Funds tab - show mutual funds summary
+      return _buildMutualFundsSummaryCards(theme);
+    }
+  }
+
+  Widget _buildStocksSummaryCards(
+      ThemesProvider theme, PortfolioProvider portfolioData) {
+    final positiveCount = _getPositiveHoldingsCount(portfolioData);
+    final negativeCount = _getNegativeHoldingsCount(portfolioData);
+
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: theme.isDarkMode ? colors.kColorLightGreyDarkTheme : colors.kColorLightGrey,
-        borderRadius: BorderRadius.circular(8),
+        color: theme.isDarkMode
+            ? colors.kColorLightGreyDarkTheme
+            : colors.kColorLightGrey,
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-        TextWidget.paraText(
+        children: [
+          // Main stats row
+          Row(
+            children: [
+              Expanded(
+                child: _buildStatItem(
+                  'Stocks Value',
+                  _calculateStocksValue(portfolioData),
+                  _getStatValueColor(
+                      _calculateStocksValue(portfolioData), theme),
+                  theme,
+                ),
+              ),
+              _buildDivider(theme),
+              Expanded(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        TextWidget.subText(
+                          text: 'Day Change',
+                          theme: false,
+                          color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight, // Dark grey
+                          fw: 2,
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            TextWidget.headText(
+                              text: _calculateDayChange(portfolioData),
+                              theme: false,
+                              color: _getValueColor(
+                                  _calculateDayChange(portfolioData), theme),
+                              fw: 2,
+                            ),
+                            TextWidget.headText(
+                              text:
+                                  ' (${_calculateDayChangePercent(portfolioData)}%)',
+                              theme: false,
+                              color: _getValueColor(
+                                  _calculateDayChangePercent(portfolioData),
+                                  theme),
+                              fw: 2,
+                            ),
+                          ],
+                        ),
+                      ],
+                    )
+                  ],
+                ),
+              ),
+              _buildDivider(theme),
+              Expanded(
+                child: _buildStatItem(
+                  'Invested',
+                  _calculateInvested(portfolioData),
+                  _getStatValueColor(_calculateInvested(portfolioData), theme),
+                  theme,
+                ),
+              ),
+              _buildDivider(theme),
+              Expanded(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        TextWidget.subText(
+                          text: 'Profit/Loss',
+                          theme: false,
+                          color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight, // Dark grey
+                          fw: 2,
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            TextWidget.headText(
+                              text: _calculateProfitLoss(portfolioData),
+                              theme: false,
+                              color: _getValueColor(
+                                  _calculateProfitLoss(portfolioData), theme),
+                              fw: 2,
+                            ),
+                            TextWidget.headText(
+                              text:
+                                  ' (${_calculateProfitLossPercent(portfolioData)}%)',
+                              theme: false,
+                              color: _getValueColor(
+                                  _calculateProfitLossPercent(portfolioData),
+                                  theme),
+                              fw: 2,
+                            ),
+                          ],
+                        ),
+                      ],
+                    )
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              _buildPositionChip(
+                  '$positiveCount Positive', theme.isDarkMode ? colors.profitDark : colors.profitLight, theme),
+              const SizedBox(width: 12),
+              _buildPositionChip('$negativeCount Negative', theme.isDarkMode ? colors.lossDark : colors.lossLight, theme),
+              const SizedBox(width: 35),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMutualFundsSummaryCards(ThemesProvider theme) {
+    return Consumer(
+      builder: (context, ref, _) {
+        final mfData = ref.watch(mfProvider);
+        final summary = mfData.mfholdingnew?.summary;
+        final investedValue = _formatValue(summary?.invested);
+        final currentValue = _formatValue(summary?.currentValue);
+        final absReturnValue = _formatValue(summary?.absReturnValue);
+        final absReturnPercent =
+            _formatValue(summary?.absReturnPercent?.toString());
+
+        // Calculate positive and negative mutual fund counts
+        final positiveCount = _getPositiveMutualFundsCount(mfData);
+        final negativeCount = _getNegativeMutualFundsCount(mfData);
+
+        return Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: theme.isDarkMode
+                ? colors.kColorLightGreyDarkTheme
+                : colors.kColorLightGrey,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color:
+                  theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              // Main stats row
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildStatItem(
+                      'Invested',
+                      investedValue,
+                      _getStatValueColor(investedValue, theme),
+                      theme,
+                    ),
+                  ),
+                  _buildDivider(theme),
+                  Expanded(
+                    child: _buildStatItem(
+                      'Current Value',
+                      currentValue,
+                      _getStatValueColor(currentValue, theme),
+                      theme,
+                    ),
+                  ),
+                  _buildDivider(theme),
+                  Expanded(
+                    child: _buildStatItem(
+                      'Returns',
+                      absReturnValue,
+                      _getValueColor(absReturnValue, theme),
+                      theme,
+                    ),
+                  ),
+                  _buildDivider(theme),
+                  Expanded(
+                    child: _buildStatItem(
+                      'Percentage',
+                      '${absReturnPercent}%',
+                      _getValueColor(absReturnPercent, theme),
+                      theme,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  _buildPositionChip(
+                      '$positiveCount Positive', theme.isDarkMode ? colors.profitDark : colors.profitLight, theme),
+                  const SizedBox(width: 12),
+                  _buildPositionChip(
+                      '$negativeCount Negative', theme.isDarkMode ? colors.lossDark : colors.lossLight, theme),
+                  const SizedBox(width: 35),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildStatItem(
+      String label, String value, Color valueColor, ThemesProvider theme) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        TextWidget.subText(
           text: label,
-          theme: theme.isDarkMode,
-          color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+          theme: false,
+          color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight, // Dark grey
+          fw: 2,
         ),
-          const SizedBox(height: 8),
+        const SizedBox(height: 8),
         TextWidget.headText(
           text: value,
           theme: false,
           color: valueColor,
           fw: 2,
         ),
-                            ],
-                          ),
+      ],
     );
   }
 
-  Widget _buildStockPositionSummary(ThemesProvider theme, PortfolioProvider portfolioData) {
-    final positiveCount = _getPositiveHoldingsCount(portfolioData);
-    final negativeCount = _getNegativeHoldingsCount(portfolioData);
-
+  Widget _buildDivider(ThemesProvider theme) {
     return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: theme.isDarkMode ? colors.kColorLightGreyDarkTheme : colors.kColorLightGrey,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
-        ),
-      ),
-      child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-            'Stock Position',
-                              style: TextWidget.textStyle(
-              fontSize: 16,
-              color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-              theme: theme.isDarkMode,
-              fw: 2,
-            ),
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              _buildPositionChip('$positiveCount Positive', Colors.green, theme),
-              const SizedBox(width: 12),
-              _buildPositionChip('$negativeCount Negative', Colors.red, theme),
-            ],
-          ),
-        ],
-      ),
+      height: 40,
+      width: 1,
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      color: const Color(0xFFE5E7EB), // Light grey divider
     );
   }
 
@@ -233,20 +414,23 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
       ),
       child: Text(
         text,
-                              style: TextWidget.textStyle(
+        style: TextWidget.textStyle(
           fontSize: 12,
           color: color,
           theme: false,
-              fw: 2,
+          fw: 2,
         ),
       ),
     );
   }
 
-  Widget _buildMainContent(ThemesProvider theme, PortfolioProvider portfolioData) {
+  Widget _buildMainContent(
+      ThemesProvider theme, PortfolioProvider portfolioData) {
     return Container(
       decoration: BoxDecoration(
-        color: theme.isDarkMode ? colors.kColorLightGreyDarkTheme : colors.kColorLightGrey,
+        color: theme.isDarkMode
+            ? colors.kColorLightGreyDarkTheme
+            : colors.kColorLightGrey,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
           color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
@@ -256,12 +440,17 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
         children: [
           // Tabs
           _buildTabs(theme, portfolioData),
-          
-          // Action Bar
-          _buildActionBar(theme, portfolioData),
-          
-          // Table
-          _buildHoldingsTable(theme, portfolioData),
+
+          // Content based on selected tab
+          if (_selectedTabIndex == 0) ...[
+            // Action Bar for Stocks
+            _buildActionBar(theme, portfolioData),
+            // Table for Stocks
+            _buildHoldingsTable(theme, portfolioData),
+          ] else if (_selectedTabIndex == 1) ...[
+            // Mutual Funds Tab - Show MF Holdings Screen
+            const MfHoldingsScreenWeb(showSummaryCards: false),
+          ],
         ],
       ),
     );
@@ -290,7 +479,7 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
 
   Widget _buildTab(String title, int index, ThemesProvider theme) {
     final isSelected = _selectedTabIndex == index;
-    
+
     return Expanded(
       child: GestureDetector(
         onTap: () => setState(() => _selectedTabIndex = index),
@@ -300,7 +489,7 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
             color: isSelected 
                 ? (theme.isDarkMode ? WebDarkColors.primary : WebColors.primary)
                 : Colors.transparent,
-            border: isSelected 
+            border: isSelected
                 ? Border(
                     bottom: BorderSide(
                       color: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
@@ -326,17 +515,18 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
     );
   }
 
-  Widget _buildActionBar(ThemesProvider theme, PortfolioProvider portfolioData) {
+  Widget _buildActionBar(
+      ThemesProvider theme, PortfolioProvider portfolioData) {
     return Container(
       padding: const EdgeInsets.all(16),
       child: Row(
-              children: [
+        children: [
           // Search Bar
           Expanded(
             flex: 2,
-                  child: Container(
+            child: Container(
               height: 40,
-                    decoration: BoxDecoration(
+              decoration: BoxDecoration(
                 color: theme.isDarkMode ? colors.searchBgDark : colors.searchBg,
                 borderRadius: BorderRadius.circular(6),
               ),
@@ -344,67 +534,43 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
                 onChanged: (value) => setState(() => _searchQuery = value),
                 style: TextWidget.textStyle(
                   fontSize: 14,
-                  color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                  color: theme.isDarkMode
+                      ? colors.textPrimaryDark
+                      : colors.textPrimaryLight,
                   theme: theme.isDarkMode,
                 ),
                 decoration: InputDecoration(
                   hintText: 'Search on holdings',
                   hintStyle: TextWidget.textStyle(
                     fontSize: 12,
-                    color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                    color: theme.isDarkMode
+                        ? colors.textSecondaryDark
+                        : colors.textSecondaryLight,
                     theme: theme.isDarkMode,
                   ),
                   prefixIcon: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: SvgPicture.asset(
-                                      assets.searchIcon,
+                    padding: const EdgeInsets.all(8.0),
+                    child: SvgPicture.asset(
+                      assets.searchIcon,
+                      fit: BoxFit.scaleDown,
                       colorFilter: ColorFilter.mode(
-                        theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                        theme.isDarkMode
+                            ? colors.textSecondaryDark
+                            : colors.textSecondaryLight,
                         BlendMode.srcIn,
                       ),
-                                      width: 20,
+                      width: 20,
                     ),
                   ),
                   border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                 ),
               ),
             ),
           ),
           const SizedBox(width: 16),
-          
-          // Filter Dropdown
-          Container(
-            height: 40,
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            decoration: BoxDecoration(
-              color: theme.isDarkMode ? colors.searchBgDark : colors.searchBg,
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<String>(
-                value: _selectedFilter,
-                items: ['All', 'CNC', 'MIS', 'NRML'].map((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(
-                      value,
-                      style: TextWidget.textStyle(
-                        fontSize: 14,
-                        color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                        theme: theme.isDarkMode,
-                      ),
-                    ),
-                  );
-                }).toList(),
-                onChanged: (String? newValue) {
-                  setState(() => _selectedFilter = newValue!);
-                },
-              ),
-            ),
-          ),
-          const SizedBox(width: 16),
-          
+
           // Refresh Button
           IconButton(
             onPressed: () async {
@@ -412,17 +578,20 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
             },
             icon: Icon(
               Icons.refresh,
-              color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                                  ),
-                                ),
-                            ],
-                          ),
+              color: theme.isDarkMode
+                  ? colors.textPrimaryDark
+                  : colors.textPrimaryLight,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildHoldingsTable(ThemesProvider theme, PortfolioProvider portfolioData) {
+  Widget _buildHoldingsTable(
+      ThemesProvider theme, PortfolioProvider portfolioData) {
     final filteredHoldings = _getFilteredHoldings(portfolioData);
-    
+
     if (filteredHoldings.isEmpty) {
       return const SizedBox(
         height: 400,
@@ -432,111 +601,109 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      child: DataTable(
-        headingRowColor: WidgetStateProperty.all(
-          theme.isDarkMode ? colors.kColorLightGreyDarkTheme : colors.kColorLightGrey,
+      child: SizedBox(
+        width: MediaQuery.of(context).size.width * 0.7,
+        child: DataTable(
+          showCheckboxColumn: false,
+          sortColumnIndex: _sortColumnIndex,
+          sortAscending: _sortAscending,
+          headingRowColor: WidgetStateProperty.all(
+            theme.isDarkMode
+                ? colors.kColorLightGreyDarkTheme
+                : colors.kColorLightGrey,
+          ),
+          dataRowColor: WidgetStateProperty.resolveWith<Color?>(
+            (Set<WidgetState> states) {
+              if (states.contains(WidgetState.selected)) {
+                return (theme.isDarkMode
+                        ? colors.primaryDark
+                        : colors.primaryLight)
+                    .withOpacity(0.1);
+              }
+              return null;
+            },
+          ),
+          columns: [
+            DataColumn(
+              label: _buildSortableColumnHeader('Instrument', theme),
+              onSort: (columnIndex, ascending) =>
+                  _onSortTable(columnIndex, ascending),
+            ),
+            DataColumn(
+              label: _buildSortableColumnHeader('Net Qty', theme),
+              onSort: (columnIndex, ascending) =>
+                  _onSortTable(columnIndex, ascending),
+            ),
+            DataColumn(
+              label: _buildSortableColumnHeader('Avg Price', theme),
+              onSort: (columnIndex, ascending) =>
+                  _onSortTable(columnIndex, ascending),
+            ),
+            DataColumn(
+              label: _buildSortableColumnHeader('LTP', theme),
+              onSort: (columnIndex, ascending) =>
+                  _onSortTable(columnIndex, ascending),
+            ),
+            DataColumn(
+              label: _buildSortableColumnHeader('Invested', theme),
+              onSort: (columnIndex, ascending) =>
+                  _onSortTable(columnIndex, ascending),
+            ),
+            DataColumn(
+              label: _buildSortableColumnHeader('Current Value', theme),
+              onSort: (columnIndex, ascending) =>
+                  _onSortTable(columnIndex, ascending),
+            ),
+            DataColumn(
+              label: _buildSortableColumnHeader('Day P&L', theme),
+              onSort: (columnIndex, ascending) =>
+                  _onSortTable(columnIndex, ascending),
+            ),
+            DataColumn(
+              label: _buildSortableColumnHeader('Day %', theme),
+              onSort: (columnIndex, ascending) =>
+                  _onSortTable(columnIndex, ascending),
+            ),
+            DataColumn(
+              label: _buildSortableColumnHeader('Overall P&L', theme),
+              onSort: (columnIndex, ascending) =>
+                  _onSortTable(columnIndex, ascending),
+            ),
+            DataColumn(
+              label: _buildSortableColumnHeader('Overall %', theme),
+              onSort: (columnIndex, ascending) =>
+                  _onSortTable(columnIndex, ascending),
+            ),
+          ],
+          rows: filteredHoldings.map((holding) {
+            return DataRow(
+              onSelectChanged: (bool? selected) {
+                _showHoldingDetail(holding);
+              },
+              cells: [
+                _buildInstrumentCell(holding, theme),
+                _buildNetQtyCell(holding, theme),
+                _buildAvgPriceCell(holding, theme),
+                _buildLTPCell(holding, theme),
+                _buildInvestedCell(holding, theme),
+                _buildCurrentValueCell(holding, theme),
+                _buildDayPnLCell(holding, theme),
+                _buildDayPercentCell(holding, theme),
+                _buildOverallPnLCell(holding, theme),
+                _buildOverallPercentCell(holding, theme),
+              ],
+            );
+          }).toList(),
         ),
-        dataRowColor: WidgetStateProperty.resolveWith<Color?>(
-          (Set<WidgetState> states) {
-            if (states.contains(WidgetState.selected)) {
-              return (theme.isDarkMode ? colors.primaryDark : colors.primaryLight).withOpacity(0.1);
-            }
-            return null;
-          },
-        ),
-        columns: [
-          DataColumn(
-            label: _buildSortableColumnHeader('Instrument', theme),
-          ),
-          DataColumn(
-            label: _buildSortableColumnHeader('Net Qty', theme),
-          ),
-          DataColumn(
-            label: _buildSortableColumnHeader('Avg Price', theme),
-          ),
-          DataColumn(
-            label: _buildSortableColumnHeader('LTP', theme),
-          ),
-          DataColumn(
-            label: _buildSortableColumnHeader('Invested', theme),
-          ),
-          DataColumn(
-            label: _buildSortableColumnHeader('Current Value', theme),
-          ),
-          DataColumn(
-            label: _buildSortableColumnHeader('Day P&L', theme),
-          ),
-          DataColumn(
-            label: _buildSortableColumnHeader('Day %', theme),
-          ),
-          DataColumn(
-            label: _buildSortableColumnHeader('Overall P&L', theme),
-          ),
-          DataColumn(
-            label: _buildSortableColumnHeader('Overall %', theme),
-          ),
-        ],
-        rows: filteredHoldings.asMap().entries.map((entry) {
-          final index = entry.key;
-          final holding = entry.value;
-          
-          return DataRow(
-            selected: _selectedHoldings.contains(index),
-            onSelectChanged: (bool? selected) {
-              setState(() {
-                if (selected == true) {
-                  _selectedHoldings.add(index);
-                                    } else {
-                  _selectedHoldings.remove(index);
-                                    }
-                                  });
-                                },
-            cells: [
-              _buildInstrumentCell(holding, theme),
-              _buildNetQtyCell(holding, theme),
-              _buildAvgPriceCell(holding, theme),
-              _buildLTPCell(holding, theme),
-              _buildInvestedCell(holding, theme),
-              _buildCurrentValueCell(holding, theme),
-              _buildDayPnLCell(holding, theme),
-              _buildDayPercentCell(holding, theme),
-              _buildOverallPnLCell(holding, theme),
-              _buildOverallPercentCell(holding, theme),
-            ],
-          );
-        }).toList(),
       ),
     );
   }
 
-  Widget _buildSortableColumnHeader(String label, ThemesProvider theme) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          label,
-                                    style: TextWidget.textStyle(
-            fontSize: 12,
-            color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-              theme: theme.isDarkMode,
-            fw: 2,
-          ),
-        ),
-        const SizedBox(width: 4),
-        Icon(
-          Icons.unfold_more,
-          size: 16,
-          color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-        ),
-      ],
-    );
-  }
-
   DataCell _buildInstrumentCell(dynamic holding, ThemesProvider theme) {
-    final exchTsym = holding.exchTsym != null && holding.exchTsym!.isNotEmpty 
-        ? holding.exchTsym![0] 
+    final exchTsym = holding.exchTsym != null && holding.exchTsym!.isNotEmpty
+        ? holding.exchTsym![0]
         : null;
-    
+
     if (exchTsym == null) return const DataCell(Text('N/A'));
 
     return DataCell(
@@ -544,10 +711,13 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
         children: [
           Text(
             '${exchTsym.tsym ?? ''} ${exchTsym.exch ?? ''}',
-                                    style: TextWidget.textStyle(
+            style: TextWidget.textStyle(
               fontSize: 12,
-              color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+              color: theme.isDarkMode
+                  ? colors.textPrimaryDark
+                  : colors.textPrimaryLight,
               theme: theme.isDarkMode,
+              fw: 2,
             ),
           ),
           if (_shouldShowLockIcon(holding)) ...[
@@ -564,22 +734,22 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
                   Icon(
                     Icons.lock,
                     size: 12,
-                    color: Colors.blue,
+                    color: theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
                   ),
                   const SizedBox(width: 2),
                   Text(
-                    '${holding.currentQty ?? 0}',
+                    '${holding.brkcolqty ?? 0}',
                     style: TextWidget.textStyle(
                       fontSize: 10,
-                      color: Colors.blue,
+                      color: theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
                       theme: false,
                       fw: 2,
                     ),
                   ),
                 ],
-                  ),
-                ),
-              ],
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -588,7 +758,7 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
   DataCell _buildNetQtyCell(dynamic holding, ThemesProvider theme) {
     final qty = holding.currentQty ?? 0;
     final qtyText = qty > 0 ? '+$qty' : '$qty';
-    
+
     return DataCell(
       Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -610,34 +780,40 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
   }
 
   DataCell _buildAvgPriceCell(dynamic holding, ThemesProvider theme) {
-    final exchTsym = holding.exchTsym != null && holding.exchTsym!.isNotEmpty 
-        ? holding.exchTsym![0] 
+    final avgPrc = holding.avgPrc != null && holding.avgPrc!.isNotEmpty
+        ? holding.avgPrc!
         : null;
-    
+
     return DataCell(
       Text(
-        exchTsym?.close ?? '0.00',
+        avgPrc ?? '0.00',
         style: TextWidget.textStyle(
           fontSize: 12,
-          color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+          color: theme.isDarkMode
+              ? colors.textPrimaryDark
+              : colors.textPrimaryLight,
           theme: theme.isDarkMode,
+          fw: 2,
         ),
       ),
     );
   }
 
   DataCell _buildLTPCell(dynamic holding, ThemesProvider theme) {
-    final exchTsym = holding.exchTsym != null && holding.exchTsym!.isNotEmpty 
-        ? holding.exchTsym![0] 
+    final exchTsym = holding.exchTsym != null && holding.exchTsym!.isNotEmpty
+        ? holding.exchTsym![0]
         : null;
-    
+
     return DataCell(
       Text(
         exchTsym?.lp ?? '0.00',
-                style: TextWidget.textStyle(
+        style: TextWidget.textStyle(
           fontSize: 12,
-          color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-              theme: theme.isDarkMode,
+          color: theme.isDarkMode
+              ? colors.textPrimaryDark
+              : colors.textPrimaryLight,
+          theme: theme.isDarkMode,
+          fw: 2,
         ),
       ),
     );
@@ -648,9 +824,12 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
       Text(
         holding.invested ?? '0.00',
         style: TextWidget.textStyle(
-              fontSize: 12,
-          color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-              theme: theme.isDarkMode,
+          fontSize: 12,
+          color: theme.isDarkMode
+              ? colors.textPrimaryDark
+              : colors.textPrimaryLight,
+          theme: theme.isDarkMode,
+          fw: 2,
         ),
       ),
     );
@@ -662,20 +841,23 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
         holding.currentValue ?? '0.00',
         style: TextWidget.textStyle(
           fontSize: 12,
-          color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+          color: theme.isDarkMode
+              ? colors.textPrimaryDark
+              : colors.textPrimaryLight,
           theme: theme.isDarkMode,
+          fw: 2,
         ),
       ),
     );
   }
 
   DataCell _buildDayPnLCell(dynamic holding, ThemesProvider theme) {
-    final exchTsym = holding.exchTsym != null && holding.exchTsym!.isNotEmpty 
-        ? holding.exchTsym![0] 
+    final exchTsym = holding.exchTsym != null && holding.exchTsym!.isNotEmpty
+        ? holding.exchTsym![0]
         : null;
-    
+
     final dayPnL = exchTsym?.oneDayChg ?? '0.00';
-    
+
     return DataCell(
       Text(
         dayPnL,
@@ -684,18 +866,18 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
           color: _getValueColor(dayPnL, theme),
           theme: false,
           fw: 2,
-          ),
         ),
-      );
+      ),
+    );
   }
 
   DataCell _buildDayPercentCell(dynamic holding, ThemesProvider theme) {
-    final exchTsym = holding.exchTsym != null && holding.exchTsym!.isNotEmpty 
-        ? holding.exchTsym![0] 
+    final exchTsym = holding.exchTsym != null && holding.exchTsym!.isNotEmpty
+        ? holding.exchTsym![0]
         : null;
-    
+
     final dayPercent = exchTsym?.perChange ?? '0.00';
-    
+
     return DataCell(
       Text(
         '${dayPercent}%',
@@ -710,12 +892,12 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
   }
 
   DataCell _buildOverallPnLCell(dynamic holding, ThemesProvider theme) {
-    final exchTsym = holding.exchTsym != null && holding.exchTsym!.isNotEmpty 
-        ? holding.exchTsym![0] 
+    final exchTsym = holding.exchTsym != null && holding.exchTsym!.isNotEmpty
+        ? holding.exchTsym![0]
         : null;
-    
+
     final overallPnL = exchTsym?.profitNloss ?? '0.00';
-    
+
     return DataCell(
       Text(
         overallPnL,
@@ -730,12 +912,12 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
   }
 
   DataCell _buildOverallPercentCell(dynamic holding, ThemesProvider theme) {
-    final exchTsym = holding.exchTsym != null && holding.exchTsym!.isNotEmpty 
-        ? holding.exchTsym![0] 
+    final exchTsym = holding.exchTsym != null && holding.exchTsym!.isNotEmpty
+        ? holding.exchTsym![0]
         : null;
-    
+
     final overallPercent = exchTsym?.pNlChng ?? '0.00';
-    
+
     return DataCell(
       Text(
         '${overallPercent}%',
@@ -770,13 +952,13 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
         }
       }
     }
-    return '${totalChange.toStringAsFixed(2)}(${_calculateDayChangePercent(portfolioData)}%)';
+    return '${totalChange.toStringAsFixed(2)}';
   }
 
   String _calculateDayChangePercent(PortfolioProvider portfolioData) {
     double totalValue = 0.0;
     double totalChange = 0.0;
-    
+
     for (var holding in widget.listofHolding) {
       if (holding.currentValue != null) {
         totalValue += double.tryParse(holding.currentValue) ?? 0.0;
@@ -788,7 +970,7 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
         }
       }
     }
-    
+
     if (totalValue > 0) {
       return ((totalChange / totalValue) * 100).toStringAsFixed(2);
     }
@@ -815,13 +997,13 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
         }
       }
     }
-    return '${totalPnL.toStringAsFixed(2)}(${_calculateProfitLossPercent(portfolioData)}%)';
+    return '${totalPnL.toStringAsFixed(2)}';
   }
 
   String _calculateProfitLossPercent(PortfolioProvider portfolioData) {
     double totalInvested = 0.0;
     double totalPnL = 0.0;
-    
+
     for (var holding in widget.listofHolding) {
       if (holding.invested != null) {
         totalInvested += double.tryParse(holding.invested) ?? 0.0;
@@ -833,7 +1015,7 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
         }
       }
     }
-    
+
     if (totalInvested > 0) {
       return ((totalPnL / totalInvested) * 100).toStringAsFixed(2);
     }
@@ -841,15 +1023,11 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
   }
 
   int _getStocksCount(PortfolioProvider portfolioData) {
-    return widget.listofHolding.where((holding) => 
-        holding.sPrdtAli == 'CNC' || holding.sPrdtAli == 'MIS' || holding.sPrdtAli == 'NRML'
-    ).length;
+    return widget.listofHolding.length;
   }
 
   int _getMutualFundsCount(PortfolioProvider portfolioData) {
-    return widget.listofHolding.where((holding) => 
-        holding.sPrdtAli == 'MF'
-    ).length;
+    return ref.watch(mfProvider).mfholdingnew?.data?.length ?? 0;
   }
 
   int _getPositiveHoldingsCount(PortfolioProvider portfolioData) {
@@ -881,13 +1059,16 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
   }
 
   List<dynamic> _getFilteredHoldings(PortfolioProvider portfolioData) {
-    List<dynamic> holdings = _selectedTabIndex == 0 
-        ? widget.listofHolding.where((holding) => 
-            holding.sPrdtAli == 'CNC' || holding.sPrdtAli == 'MIS' || holding.sPrdtAli == 'NRML'
-          ).toList()
-        : widget.listofHolding.where((holding) => 
-            holding.sPrdtAli == 'MF'
-          ).toList();
+    List<dynamic> holdings = _selectedTabIndex == 0
+        ? widget.listofHolding
+            .where((holding) =>
+                holding.sPrdtAli == 'CNC' ||
+                holding.sPrdtAli == 'MIS' ||
+                holding.sPrdtAli == 'NRML')
+            .toList()
+        : widget.listofHolding
+            .where((holding) => holding.sPrdtAli == 'MF')
+            .toList();
 
     // Apply search filter
     if (_searchQuery.isNotEmpty) {
@@ -903,11 +1084,100 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
       }).toList();
     }
 
-    // Apply product filter
-    if (_selectedFilter != 'All') {
-      holdings = holdings.where((holding) {
-        return holding.sPrdtAli == _selectedFilter;
-      }).toList();
+    // Apply sorting
+    if (_sortColumnIndex != null) {
+      holdings.sort((a, b) {
+        int comparison = 0;
+
+        switch (_sortColumnIndex) {
+          case 0: // Instrument
+            final aExchTsym =
+                a.exchTsym?.isNotEmpty == true ? a.exchTsym![0] : null;
+            final bExchTsym =
+                b.exchTsym?.isNotEmpty == true ? b.exchTsym![0] : null;
+            final aSymbol = aExchTsym?.tsym ?? '';
+            final bSymbol = bExchTsym?.tsym ?? '';
+            comparison = aSymbol.compareTo(bSymbol);
+            break;
+          case 1: // Net Qty
+            final aQty = int.tryParse(a.currentQty?.toString() ?? '0') ?? 0;
+            final bQty = int.tryParse(b.currentQty?.toString() ?? '0') ?? 0;
+            comparison = aQty.compareTo(bQty);
+            break;
+          case 2: // Avg Price
+            final aExchTsym =
+                a.exchTsym?.isNotEmpty == true ? a.exchTsym![0] : null;
+            final bExchTsym =
+                b.exchTsym?.isNotEmpty == true ? b.exchTsym![0] : null;
+            final aPrice = double.tryParse(aExchTsym?.close ?? '0') ?? 0;
+            final bPrice = double.tryParse(bExchTsym?.close ?? '0') ?? 0;
+            comparison = aPrice.compareTo(bPrice);
+            break;
+          case 3: // LTP
+            final aExchTsym =
+                a.exchTsym?.isNotEmpty == true ? a.exchTsym![0] : null;
+            final bExchTsym =
+                b.exchTsym?.isNotEmpty == true ? b.exchTsym![0] : null;
+            final aLtp = double.tryParse(aExchTsym?.lp ?? '0') ?? 0;
+            final bLtp = double.tryParse(bExchTsym?.lp ?? '0') ?? 0;
+            comparison = aLtp.compareTo(bLtp);
+            break;
+          case 4: // Invested
+            final aInvested = double.tryParse(a.invested ?? '0') ?? 0;
+            final bInvested = double.tryParse(b.invested ?? '0') ?? 0;
+            comparison = aInvested.compareTo(bInvested);
+            break;
+          case 5: // Current Value
+            final aValue = double.tryParse(a.currentValue ?? '0') ?? 0;
+            final bValue = double.tryParse(b.currentValue ?? '0') ?? 0;
+            comparison = aValue.compareTo(bValue);
+            break;
+          case 6: // Day P&L
+            final aExchTsym =
+                a.exchTsym?.isNotEmpty == true ? a.exchTsym![0] : null;
+            final bExchTsym =
+                b.exchTsym?.isNotEmpty == true ? b.exchTsym![0] : null;
+            final aDayPnL = double.tryParse(aExchTsym?.oneDayChg ?? '0') ?? 0;
+            final bDayPnL = double.tryParse(bExchTsym?.oneDayChg ?? '0') ?? 0;
+            comparison = aDayPnL.compareTo(bDayPnL);
+            break;
+          case 7: // Day %
+            final aExchTsym =
+                a.exchTsym?.isNotEmpty == true ? a.exchTsym![0] : null;
+            final bExchTsym =
+                b.exchTsym?.isNotEmpty == true ? b.exchTsym![0] : null;
+            final aDayPercent =
+                double.tryParse(aExchTsym?.perChange ?? '0') ?? 0;
+            final bDayPercent =
+                double.tryParse(bExchTsym?.perChange ?? '0') ?? 0;
+            comparison = aDayPercent.compareTo(bDayPercent);
+            break;
+          case 8: // Overall P&L
+            final aExchTsym =
+                a.exchTsym?.isNotEmpty == true ? a.exchTsym![0] : null;
+            final bExchTsym =
+                b.exchTsym?.isNotEmpty == true ? b.exchTsym![0] : null;
+            final aOverallPnL =
+                double.tryParse(aExchTsym?.profitNloss ?? '0') ?? 0;
+            final bOverallPnL =
+                double.tryParse(bExchTsym?.profitNloss ?? '0') ?? 0;
+            comparison = aOverallPnL.compareTo(bOverallPnL);
+            break;
+          case 9: // Overall %
+            final aExchTsym =
+                a.exchTsym?.isNotEmpty == true ? a.exchTsym![0] : null;
+            final bExchTsym =
+                b.exchTsym?.isNotEmpty == true ? b.exchTsym![0] : null;
+            final aOverallPercent =
+                double.tryParse(aExchTsym?.pNlChng ?? '0') ?? 0;
+            final bOverallPercent =
+                double.tryParse(bExchTsym?.pNlChng ?? '0') ?? 0;
+            comparison = aOverallPercent.compareTo(bOverallPercent);
+            break;
+        }
+
+        return _sortAscending ? comparison : -comparison;
+      });
     }
 
     return holdings;
@@ -920,23 +1190,109 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
     } else if (numValue < 0) {
       return theme.isDarkMode ? colors.lossDark : colors.lossLight;
     } else {
-      return theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight;
+      return theme.isDarkMode
+          ? colors.textSecondaryDark
+          : colors.textSecondaryLight;
     }
+  }
+
+  String _formatValue(String? value) {
+    return (value == null || value.isEmpty) ? "0.00" : value;
+  }
+
+  int _getPositiveMutualFundsCount(MFProvider mfData) {
+    int count = 0;
+    final holdings = mfData.mfholdingnew?.data ?? [];
+    for (var holding in holdings) {
+      final pnl = double.tryParse(holding.profitLoss ?? '0') ?? 0.0;
+      if (pnl > 0) count++;
+    }
+    return count;
+  }
+
+  int _getNegativeMutualFundsCount(MFProvider mfData) {
+    int count = 0;
+    final holdings = mfData.mfholdingnew?.data ?? [];
+    for (var holding in holdings) {
+      final pnl = double.tryParse(holding.profitLoss ?? '0') ?? 0.0;
+      if (pnl < 0) count++;
+    }
+    return count;
   }
 
   Color _getQtyColor(int qty, ThemesProvider theme) {
     if (qty > 0) {
-      return Colors.green;
+      return theme.isDarkMode ? colors.profitDark : colors.profitLight;
     } else if (qty < 0) {
-      return Colors.red;
+      return theme.isDarkMode ? colors.lossDark : colors.lossLight;
     } else {
-      return theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight;
+      return theme.isDarkMode
+          ? colors.textSecondaryDark
+          : colors.textSecondaryLight;
     }
   }
 
   bool _shouldShowLockIcon(dynamic holding) {
-    // Show lock icon for specific holdings based on business logic
-    // This can be customized based on your requirements
-    return holding.currentQty != null && holding.currentQty! > 0;
+    if (holding.brkcolqty == null) return false;
+    final qty = double.tryParse(holding.brkcolqty) ?? 0.0;
+    return qty > 0;
+  }
+
+  void _showHoldingDetail(dynamic holding) {
+    final exchTsym = holding.exchTsym != null && holding.exchTsym!.isNotEmpty
+        ? holding.exchTsym![0]
+        : null;
+
+    if (exchTsym == null) return;
+
+    showDialog(
+      context: context,
+      builder: (context) => HoldingDetailScreenWeb(
+        holding: holding,
+        exchTsym: exchTsym,
+      ),
+    );
+  }
+
+  void _onSortTable(int columnIndex, bool ascending) {
+    setState(() {
+      _sortColumnIndex = columnIndex;
+      _sortAscending = ascending;
+    });
+  }
+
+  Widget _buildSortableColumnHeader(String label, ThemesProvider theme) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          label,
+          style: TextWidget.textStyle(
+            fontSize: 12,
+            color: theme.isDarkMode
+                ? colors.textSecondaryDark
+                : colors.textSecondaryLight,
+            theme: theme.isDarkMode,
+            fw: 2,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Color _getStatValueColor(String value, ThemesProvider theme) {
+    // Extract numeric value from string (remove any text like percentages)
+    final cleanValue = value.replaceAll(RegExp(r'[^\d.-]'), '');
+    final numValue = double.tryParse(cleanValue) ?? 0.0;
+
+    if (numValue > 0) {
+      return theme.isDarkMode ? colors.profitDark : colors.profitLight;
+    } else if (numValue < 0) {
+      return theme.isDarkMode ? colors.lossDark : colors.lossLight;
+    } else {
+      return theme.isDarkMode
+          ? colors.textPrimaryDark
+          : colors.textPrimaryLight;
+    }
   }
 }

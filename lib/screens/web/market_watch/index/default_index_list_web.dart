@@ -50,7 +50,7 @@ class _DefaultIndexListWebState extends ConsumerState<DefaultIndexListWeb>
     }
 
     // Width calculation for items
-    final itemWidth = 150.0;
+    final itemWidth = 160.0;
 
     // Create a unique key based on the indices to force rebuild when they change
     final indexKey =
@@ -520,7 +520,7 @@ class _LivePriceWidgetWebState extends State<_LivePriceWidgetWeb> {
                 ),
                 Row(
                   children: [
-                    Text("${_change.toString().split('.').first} ",
+                    Text("${_change.toString()} ",
                         style: _getTextStyle(
                             widget.isDarkMode ? WebDarkColors.textSecondary : WebDarkColors.textSecondary,
                             13,

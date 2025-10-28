@@ -32,6 +32,7 @@ import 'auth_provider.dart';
 import 'core/default_change_notifier.dart';
 import 'index_list_provider.dart';
 import 'market_watch_provider.dart';
+import 'notification_provider.dart';
 import 'order_input_provider.dart';
 import 'websocket_provider.dart';
 import 'portfolio_provider.dart';
@@ -550,6 +551,10 @@ class OrderProvider extends DefaultChangeNotifier {
             ? "GTT ${_gttOrderBookModel!.length}"
             : "GTT",
       ),
+      // Newly added tabs after GTT
+      const Tab(text: "MF"),
+      // const Tab(text: "IPO"),
+      // const Tab(text: "Bonds"),
       Tab(
         text: _bsktList.isNotEmpty ? "Basket ${_bsktList.length}" : "Basket",
       ),
@@ -679,12 +684,26 @@ class OrderProvider extends DefaultChangeNotifier {
         //   break;
         case 6: // Alerts
           final alertProvider = ref.read(marketWatchProvider);
+          final notificationProvider = ref.read(notificationprovider);
+          
+          // Search pending alerts
           if (alertProvider.alertPendingModel != null) {
             final searchResult = alertProvider.alertPendingModel!
                 .where((element) =>
                     element.tsym!.toUpperCase().contains(value.toUpperCase()))
                 .toList();
             alertProvider.setAlertPendingSearch(searchResult);
+          }
+          
+          // Search triggered alerts (broker messages)
+          if (notificationProvider.brokermsg != null) {
+            notificationProvider.brokermsg!
+                .where((msg) =>
+                    msg.dmsg != null &&
+                    msg.dmsg!.toUpperCase().contains(value.toUpperCase()))
+                .toList();
+            // Store triggered search results in a new property if needed
+            // For now, we'll handle this in the UI
           }
           break;
       }
@@ -1378,22 +1397,60 @@ class OrderProvider extends DefaultChangeNotifier {
     try {
       toggleLoadingOn(true);
       String input = "";
-      if (_orderBookModel != null) {
+      
+      // Only include open orders if Open Orders tab (index 0) or Executed Orders tab (index 1) is active
+      if (_orderBookModel != null && (_selectedTab == 0 || _selectedTab == 1)) {
         if (_orderBookModel!.isNotEmpty &&
             _orderBookModel![0].stat != "Not_Ok") {
           input = _orderBookModel!
               .map((e) => "${e.exch}|${e.token}")
               .toSet()
               .join("#");
-          print("Regular orders input: $input");
+          print("Regular orders input: $input (Active tab: $_selectedTab)");
+        }
+      }
+      
+      // Only include executed orders if Executed Orders tab (index 1) is active
+      if (_executedOrder != null && _selectedTab == 1 && _executedOrder!.isNotEmpty) {
+        final executedTokens = _executedOrder!
+            .where((e) => e.token != null && e.token!.isNotEmpty)
+            .map((e) => "${e.exch}|${e.token}")
+            .toSet()
+            .join("#");
+        if (executedTokens.isNotEmpty) {
+          if (input.isNotEmpty) {
+            input += "#$executedTokens";
+          } else {
+            input = executedTokens;
+          }
+          print("Executed orders input: $executedTokens");
+        }
+      }
+      
+      // Only include trade book if Trade Book tab (index 2) is active
+      if (_tradeBook != null && _selectedTab == 2 && _tradeBook!.isNotEmpty) {
+        final tradeTokens = _tradeBook!
+            .where((e) => e.token != null && e.token!.isNotEmpty)
+            .map((e) => "${e.exch}|${e.token}")
+            .toSet()
+            .join("#");
+        if (tradeTokens.isNotEmpty) {
+          if (input.isNotEmpty) {
+            input += "#$tradeTokens";
+          } else {
+            input = tradeTokens;
+          }
+          print("Trade book input: $tradeTokens");
         }
       }
 
-      if (_gttOrderBookModel!.isNotEmpty) {
+      // Only include GTT orders if GTT tab (index 3) is active
+      if (_gttOrderBookModel!.isNotEmpty && _selectedTab == 3) {
         // Debug: Print GTT order tokens before subscription
         print("=== GTT ORDER SOCKET SUBSCRIPTION ===");
         print("GTT Orders count: ${_gttOrderBookModel!.length}");
         print("Subscribe mode: ${isSubscribe ? 'SUBSCRIBE' : 'UNSUBSCRIBE'}");
+        print("Active tab: $_selectedTab (GTT tab is active)");
 
         final gttTokens = _gttOrderBookModel!
             .map((e) => "${e.exch}|${e.token}")
@@ -1417,6 +1474,8 @@ class OrderProvider extends DefaultChangeNotifier {
         print(
             "First 100 chars: ${input.substring(0, input.length > 100 ? 100 : input.length)}");
         print("=====================================");
+      } else if (_gttOrderBookModel!.isNotEmpty && _selectedTab != 3) {
+        print("GTT orders available but not subscribing (Active tab: $_selectedTab, GTT tab: 3)");
       }
 
       if (input.isNotEmpty) {

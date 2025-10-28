@@ -221,7 +221,7 @@ mixin ProfileAllDetailsApi on ApiCore {
       } else {
         final decryptedData = decryptionFunction(json["str"]);
         //  log("client Data------------ ${jsonDecode(jsonEncode(decryptedData))}}");
-        print("decryptedData------------ ${jsonDecode(decryptedData)}");
+        // print("decryptedData------------ ${jsonDecode(decryptedData)}");
         return ProfileAllDetails.fromJson(jsonDecode(decryptedData));
       }
     } catch (e) {

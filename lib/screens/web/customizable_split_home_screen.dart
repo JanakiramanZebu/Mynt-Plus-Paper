@@ -9,6 +9,8 @@ import 'package:flutter_svg/svg.dart';
 import 'package:mynt_plus/models/marketwatch_model/market_watch_scrip_model.dart';
 import 'package:mynt_plus/provider/auth_provider.dart';
 import 'package:mynt_plus/provider/bonds_provider.dart';
+import 'package:mynt_plus/screens/web/ordersbook/order_book_screen_web.dart';
+import 'package:mynt_plus/screens/web/funds/secure_fund_web.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../locator/constant.dart';
 import '../../../provider/index_list_provider.dart';
@@ -147,6 +149,13 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
     ref.read(networkStateProvider).networkStream();
     ref.read(marketWatchProvider).fToast.init(context);
     ref.read(versionProvider).checkVersion(context);
+    
+    // Initialize websocket connection early to ensure real-time data is available
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (mounted && ref.read(networkStateProvider).connectionStatus != ConnectivityResult.none) {
+        _handleWebSocketConnections();
+      }
+    });
   }
 
   @override
@@ -207,26 +216,9 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
 
 
   Future<void> _loadSavedLayout() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final layoutJson = prefs.getString('custom_split_layout');
-      if (layoutJson != null) {
-        final layoutData = jsonDecode(layoutJson) as Map<String, dynamic>;
-        setState(() {
-          _panelCount = layoutData['panelCount'] ?? 4;
-          _panels = (layoutData['panels'] as List)
-              .map((p) => PanelConfig.fromJson(p))
-              .toList();
-        });
-      } else {
-        // Initialize with default layout if no saved layout exists
-        _initializeDefaultPanels();
-      }
-    } catch (e) {
-      print('Error loading split layout: $e');
-      // Fallback to default layout on error
-      _initializeDefaultPanels();
-    }
+    // Always initialize with default panels and show positions screen
+    // This ensures the app always starts with positions screen, not the saved state
+    _initializeDefaultPanels();
   }
 
   Future<void> _saveLayout() async {
@@ -244,6 +236,19 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) async {
+    // Helper function to check if portfolio screens are active
+    bool hasPortfolioScreen() {
+      for (var panel in _panels) {
+        if (panel.screenType == ScreenType.positions ||
+            panel.screenType == ScreenType.holdings ||
+            panel.screenType == ScreenType.orderBook ||
+            panel.screenType == ScreenType.funds) {
+          return true;
+        }
+      }
+      return false;
+    }
+    
     switch (state) {
       case AppLifecycleState.resumed:
         Future.microtask(() async {
@@ -276,26 +281,26 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
         }
         break;
       case AppLifecycleState.inactive:
-        if (ref.read(indexListProvider).selectedBtmIndx == 2) {
+        if (hasPortfolioScreen()) {
           ref.read(portfolioProvider).cancelTimer();
         }
         final userProfile = ref.read(userProfileProvider);
         userProfile.setonloadChartdialog(false);
         break;
       case AppLifecycleState.paused:
-        if (ref.read(indexListProvider).selectedBtmIndx == 2) {
+        if (hasPortfolioScreen()) {
           ref.read(portfolioProvider).cancelTimer();
         }
         break;
       case AppLifecycleState.detached:
-        if (ref.read(indexListProvider).selectedBtmIndx == 2) {
+        if (hasPortfolioScreen()) {
           ref.read(portfolioProvider).cancelTimer();
         }
         final userProfile = ref.read(userProfileProvider);
         userProfile.setonloadChartdialog(false);
         break;
       case AppLifecycleState.hidden:
-        if (ref.read(indexListProvider).selectedBtmIndx == 2) {
+        if (hasPortfolioScreen()) {
           ref.read(portfolioProvider).cancelTimer();
         }
     }
@@ -581,12 +586,7 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
       color: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
       child: DragTarget<Object>(
         onAccept: (draggedData) {
-          print('=== DRAG TARGET ACCEPT ===');
-          print('Dragged data: $draggedData');
-          print('Panel ID: ${panel.id}');
           if (draggedData is ScreenType) {
-            print('Accepting ScreenType: ${draggedData.name}');
-            print('Setting panel screen type to: ${draggedData.name}');
             setState(() {
               panel.screenType = draggedData;
               if (panel.screens.isEmpty) {
@@ -596,25 +596,18 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
                 panel.screens[panel.activeScreenIndex] = draggedData;
               }
             });
-            print('Panel screen type after setState: ${panel.screenType?.name ?? 'null'}');
             _saveLayout();
           } else if (draggedData is PanelConfig && draggedData.id != panel.id) {
-            print('Accepting PanelConfig swap');
             _swapPanels(draggedData, panel);
             _saveLayout();
           }
-          print('=== DRAG TARGET ACCEPT COMPLETE ===');
         },
         onWillAccept: (data) {
-          print('DragTarget onWillAccept called with: $data');
           if (data is ScreenType) {
-            print('Will accept ScreenType: ${data.name}');
             return true;
           } else if (data is PanelConfig && data.id != panel.id) {
-            print('Will accept PanelConfig swap');
             return true;
           }
-          print('Will NOT accept data');
           return false;
         },
         builder: (context, candidateData, rejectedData) {
@@ -748,7 +741,16 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
               bottomLeft: Radius.circular(12),
               bottomRight: Radius.circular(12),
             ),
-            child: activeScreen != null ? _getScreenForType(activeScreen) : const SizedBox.shrink(),
+            child: panel.screens.isNotEmpty
+                ? IndexedStack(
+                    index: panel.activeScreenIndex >= 0 && panel.activeScreenIndex < panel.screens.length
+                        ? panel.activeScreenIndex
+                        : 0,
+                    children: panel.screens.map((screenType) {
+                      return _getScreenForType(screenType);
+                    }).toList(),
+                  )
+                : (activeScreen != null ? _getScreenForType(activeScreen) : const SizedBox.shrink()),
           ),
         ),
         
@@ -762,10 +764,8 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
             data: panel,
             dragAnchorStrategy: pointerDragAnchorStrategy,
             onDragStarted: () {
-              print('Drag started for PanelConfig: ${panel.id}');
             },
             onDragEnd: (details) {
-              print('Drag ended for PanelConfig: ${panel.id}');
             },
             feedback: Material(
               elevation: 8,
@@ -850,9 +850,20 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
                                   constraints: const BoxConstraints(minWidth: 80),
                                   child: GestureDetector(
                                   onTap: () {
+                                    // Manage websockets when switching between screens
+                                    final previousScreenIndex = panel.activeScreenIndex;
+                                    final previousScreenType = previousScreenIndex >= 0 && previousScreenIndex < panel.screens.length
+                                        ? panel.screens[previousScreenIndex]
+                                        : null;
+                                    final newScreenType = panel.screens[index];
+                                    
                                     setState(() {
                                       panel.activeScreenIndex = index;
                                     });
+                                    
+                                    // Handle websocket subscriptions for screen switching
+                                    _handleScreenSwitch(previousScreenType, newScreenType);
+                                    
                                     _saveLayout();
                                   },
                                   child: Container(
@@ -973,6 +984,11 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
                     IconButton(
                       icon: Icon(Icons.close, color: WebDarkColors.textPrimary, size: 16),
                       onPressed: () {
+                        // Clean up websockets and cache for the current screen
+                        if (activeScreen != null) {
+                          _cleanupScreenResources(activeScreen);
+                        }
+                        
                         setState(() {
                           panel.screenType = null;
                           panel.screens.clear();
@@ -1094,14 +1110,14 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
                     ),
                   ],
                   // Add screen button (only show if there are screens available to add)
-                  if (activeScreen != ScreenType.watchlist && _hasAvailableScreensToAdd(panel))
-                    IconButton(
-                      icon: Icon(Icons.add, color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary, size: 18),
-                      tooltip: 'Add Screen Tab',
-                      onPressed: () {
-                        _showAddScreenToPanelDialog(panel);
-                      },
-                    ),
+                  // if (activeScreen != ScreenType.watchlist && _hasAvailableScreensToAdd(panel))
+                  //   IconButton(
+                  //     icon: Icon(Icons.add, color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary, size: 18),
+                  //     tooltip: 'Add Screen Tab',
+                  //     onPressed: () {
+                  //       _showAddScreenToPanelDialog(panel);
+                  //     },
+                  //   ),
                   // Screen selector
                   PopupMenuButton<ScreenType>(
                     icon: Icon(Icons.swap_horiz, color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary, size: 18),
@@ -1146,6 +1162,9 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
                         panel.screens.clear();
                         panel.activeScreenIndex = 0;
                       });
+                       if (activeScreen != null) {
+                          _cleanupScreenResources(activeScreen);
+                        }
                       _saveLayout();
                     },
                   ),
@@ -1265,9 +1284,9 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
           },
         );
       case ScreenType.orderBook:
-        return const OrderBookScreen();
+        return const OrderBookScreenWeb();
       case ScreenType.funds:
-        return const SecureFund();
+        return const SecureFundWeb();
       case ScreenType.mutualFund:
         return const MfmainScreen();
       case ScreenType.ipo:
@@ -1695,6 +1714,116 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
     await ref.read(orderProvider).requestWSOrderBook(context: context, isSubscribe: false);
   }
 
+ 
+  // Clean up websocket subscriptions and cache for a specific screen
+  void _cleanupScreenResources(ScreenType? screenType) {
+    if (screenType == null) return;
+    
+    // Check if widget is still mounted before cleanup
+    if (!mounted) {
+      return;
+    }
+    
+    try {
+      switch (screenType) {
+        case ScreenType.holdings:
+          if (mounted) {
+            ref.read(portfolioProvider).requestWSHoldings(context: context, isSubscribe: false);
+          }
+          _clearScreenCache(screenType);
+          break;
+          
+        case ScreenType.positions:
+          if (mounted) {
+            ref.read(portfolioProvider).requestWSPosition(context: context, isSubscribe: false);
+          }
+          _clearScreenCache(screenType);
+          break;
+          
+        case ScreenType.orderBook:
+          if (mounted) {
+            ref.read(orderProvider).requestWSOrderBook(context: context, isSubscribe: false);
+          }
+          _clearScreenCache(screenType);
+          break;
+          
+        case ScreenType.funds:
+          _clearScreenCache(screenType);
+          break;
+          
+        case ScreenType.scripDepthInfo:
+          _clearScreenCache(screenType);
+          break;
+          
+        case ScreenType.optionChain:
+         
+          _clearScreenCache(screenType);
+          break;
+          
+        default:
+          _clearScreenCache(screenType);
+          break;
+      }
+      
+    } catch (e) {
+    }
+  }
+
+  // Clear cache for a specific screen type
+  void _clearScreenCache(ScreenType? screenType) {
+    if (screenType == null) return;
+    
+    try {
+      final websocket = ref.read(websocketProvider);
+      int removedCount = 0;
+      
+      // Get tokens/data specific to this screen type and clear them
+      switch (screenType) {
+        case ScreenType.holdings:
+          final holdingsModel = ref.read(portfolioProvider).holdingsModel;
+          if (holdingsModel != null) {
+            for (var holding in holdingsModel) {
+              // Get tokens from ExchTsym list within each holding
+              for (var exchTsym in holding.exchTsym ?? []) {
+                if (exchTsym.token != null && exchTsym.token!.isNotEmpty) {
+                  // Remove the token data from socket cache
+                  if (websocket.socketDatas.containsKey(exchTsym.token)) {
+                    websocket.socketDatas.remove(exchTsym.token);
+                    removedCount++;
+                  }
+                }
+              }
+            }
+          }
+          break;
+          
+        case ScreenType.positions:
+          final positionsList = ref.read(portfolioProvider).allPostionList;
+          for (var position in positionsList) {
+            if (position.token != null && position.token!.isNotEmpty) {
+              // Remove the token data from socket cache
+              if (websocket.socketDatas.containsKey(position.token)) {
+                websocket.socketDatas.remove(position.token);
+                removedCount++;
+              }
+            }
+          }
+          break;
+          
+        case ScreenType.orderBook:
+          break;
+          
+        default:
+          break;
+      }
+      
+      if (removedCount > 0) {
+      } else {
+      }
+    } catch (e) {
+    }
+  }
+
   // Show ScripDepthInfo in a panel
   void showScripDepthInfoInPanel(dynamic watchListData) {
     // Check if scrip details already exist in any panel
@@ -1870,24 +1999,8 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
   // Initialize default screen data after initial load
   void _initializeDefaultScreenData() {
     if (_panels.length >= 2) {
-      // Initialize watchlist (left panel)
-      if (_panels[0].screenType == ScreenType.watchlist) {
-        _handleWatchlistTap();
-      }
-      
-      // Initialize portfolio screens (left panel only - right panel is reserved for watchlist)
-      if (_panels[0].screenType == ScreenType.holdings) {
-        _handleHoldingsTap();
-      } else if (_panels[0].screenType == ScreenType.positions) {
-        _handlePositionsTap();
-      } else if (_panels[0].screenType == ScreenType.orderBook) {
-        _handleOrderBookTap();
-      } else if (_panels[0].screenType == ScreenType.funds) {
-        _handleFundsTap();
-      }
-      
       // Right panel should only have watchlist - move any other screens to left panel
-      if (_panels.length > 1 && _panels[1].screenType != null && _panels[1].screenType != ScreenType.watchlist) {
+      if (_panels[1].screenType != null && _panels[1].screenType != ScreenType.watchlist) {
         // Move the screen from right panel to left panel
         _panels[0].screenType = _panels[1].screenType;
         _panels[0].screens = List<ScreenType>.from(_panels[1].screens);
@@ -1897,6 +2010,31 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
         _panels[1].screenType = ScreenType.watchlist;
         _panels[1].screens = [ScreenType.watchlist];
         _panels[1].activeScreenIndex = 0;
+      }
+      
+      // Initialize the screen on the left panel (which is now the primary content panel)
+      if (_panels[0].screenType != null) {
+        if (_panels[0].screenType == ScreenType.watchlist) {
+          _handleWatchlistTap();
+        } else if (_panels[0].screenType == ScreenType.holdings) {
+          _handleHoldingsTap();
+        } else if (_panels[0].screenType == ScreenType.positions) {
+          _handlePositionsTap();
+        } else if (_panels[0].screenType == ScreenType.orderBook) {
+          _handleOrderBookTap();
+        } else if (_panels[0].screenType == ScreenType.funds) {
+          _handleFundsTap();
+        }
+      }
+      
+      // Initialize watchlist on right panel if it exists
+      if (_panels[1].screenType == ScreenType.watchlist) {
+        _handleWatchlistTap();
+      }
+      
+      // Ensure websocket connections are established for real-time data
+      if (mounted && ref.read(networkStateProvider).connectionStatus != ConnectivityResult.none) {
+        _handleWebSocketConnections();
       }
     }
   }
@@ -1929,7 +2067,36 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
         .isNotEmpty;
   }
 
-  // Add screen as a panel tab
+  // Replace screen in panel (don't add as tab)
+  void _replaceScreenInPanel(ScreenType screenType) {
+    // Find the panel that doesn't have watchlist (prefer left panel for non-watchlist screens)
+    int targetPanelIndex = -1;
+    for (int i = 0; i < _panels.length; i++) {
+      final panel = _panels[i];
+      bool hasWatchlist = panel.screenType == ScreenType.watchlist ||
+          (panel.screens.isNotEmpty && panel.screens.contains(ScreenType.watchlist));
+      
+      if (!hasWatchlist) {
+        targetPanelIndex = i;
+        break;
+      }
+    }
+    
+    // If no panel without watchlist found, use the left panel (index 0)
+    if (targetPanelIndex == -1) {
+      targetPanelIndex = 0;
+    }
+    
+    setState(() {
+      _panels[targetPanelIndex].screenType = screenType;
+      _panels[targetPanelIndex].screens = [screenType];
+      _panels[targetPanelIndex].activeScreenIndex = 0;
+    });
+    
+    _saveLayout();
+  }
+
+  // Add screen as a panel tab (only for profile screens)
   void _addScreenAsPanelTab(ScreenType screenType) {
     // Find the first available panel (preferably left panel)
     for (int i = 0; i < _panels.length; i++) {
@@ -1961,8 +2128,8 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
   }
 
   void _handleOrderBookTap() async {
-    // Add order book as a panel tab
-    _addScreenAsPanelTab(ScreenType.orderBook);
+    // Replace screen instead of adding as tab
+    _replaceScreenInPanel(ScreenType.orderBook);
     
     final portfolio = ref.read(portfolioProvider);
     final orderProviderRef = ref.read(orderProvider);
@@ -2028,8 +2195,8 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
 
   // New handler methods for separate portfolio screens
   void _handleHoldingsTap() async {
-    // Add holdings as a panel tab
-    _addScreenAsPanelTab(ScreenType.holdings);
+    // Replace screen instead of adding as tab
+    _replaceScreenInPanel(ScreenType.holdings);
     
     final portfolio = ref.read(portfolioProvider);
     final orderProviderRef = ref.read(orderProvider);
@@ -2052,8 +2219,8 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
   }
 
   void _handlePositionsTap() async {
-    // Add positions as a panel tab
-    _addScreenAsPanelTab(ScreenType.positions);
+    // Replace screen instead of adding as tab
+    _replaceScreenInPanel(ScreenType.positions);
     
     final portfolio = ref.read(portfolioProvider);
     final orderProviderRef = ref.read(orderProvider);
@@ -2064,21 +2231,19 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
     await orderProviderRef.requestWSOrderBook(context: context, isSubscribe: false);
     await portfolio.requestWSHoldings(context: context, isSubscribe: false);
     
-    // Subscribe to positions data
+    // Fetch positions data first to ensure we have tokens to subscribe to
+    await portfolio.fetchPositionBook(context, false);
+    
+    // Subscribe to positions data after fetching (now we have tokens)
     await portfolio.requestWSPosition(context: context, isSubscribe: true);
-
-    // Fetch positions data in the background
-    Future.microtask(() {
-      if (mounted) {
-        portfolio.fetchPositionBook(context, false);
-        portfolio.timerfunc(); // Start position update timer
-      }
-    });
+    
+    // Start position update timer
+    portfolio.timerfunc();
   }
 
   void _handleFundsTap() async {
-    // Add funds as a panel tab
-    _addScreenAsPanelTab(ScreenType.funds);
+    // Replace screen instead of adding as tab
+    _replaceScreenInPanel(ScreenType.funds);
     
     final portfolio = ref.read(portfolioProvider);
     final orderProviderRef = ref.read(orderProvider);
@@ -2472,31 +2637,25 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
 
   // Add default screens to empty panels
   void _addDefaultScreens() {
-    // Only add default screens if all panels are empty (first time setup)
-    bool hasAnyScreens = _panels.any((panel) => panel.screenType != null || panel.screens.isNotEmpty);
-    
-    if (hasAnyScreens) {
-      return; // Don't add defaults if there are already screens
-    }
-    
-    // Set up default panels: empty left panel, watchlist on right panel
+    // Always set up default panels: position screen on left panel, watchlist on right panel
     if (_panels.length >= 2) {
       // Right panel - watchlist only (fixed, cannot be replaced)
-      if (_panels[1].screenType == null && _panels[1].screens.isEmpty) {
-        _panels[1] = _panels[1].copyWith(
-          screenType: ScreenType.watchlist,
-          screens: [ScreenType.watchlist],
-          activeScreenIndex: 0,
-        );
-      }
+      _panels[1] = _panels[1].copyWith(
+        screenType: ScreenType.watchlist,
+        screens: [ScreenType.watchlist],
+        activeScreenIndex: 0,
+      );
       
-      // Left panel - keep empty initially
-      // User can add screens by tapping on the empty panel
+      // Left panel - always set position screen as default
+      _panels[0] = _panels[0].copyWith(
+        screenType: ScreenType.positions,
+        screens: [ScreenType.positions],
+        activeScreenIndex: 0,
+      );
     }
     
     if (mounted) {
       setState(() {});
-      _saveLayout();
     }
   }
 
@@ -2508,6 +2667,12 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
     // Prevent removing watchlist screens
     if (index >= 0 && index < panel.screens.length && panel.screens[index] == ScreenType.watchlist) {
       return; // Don't remove watchlist screens
+    }
+    
+    // Get the screen type being removed
+    ScreenType? screenTypeToRemove;
+    if (index >= 0 && index < panel.screens.length) {
+      screenTypeToRemove = panel.screens[index];
     }
     
     setState(() {
@@ -2525,6 +2690,12 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
         panel.screenType = null;
       }
     });
+    
+    // Clean up resources for the removed screen
+    if (screenTypeToRemove != null) {
+      _cleanupScreenResources(screenTypeToRemove);
+    }
+    
     _saveLayout();
   }
 
@@ -2927,8 +3098,8 @@ class PanelConfig {
       'isVisible': isVisible,
       'minWidth': minWidth,
       'minHeight': minHeight,
-      'maxWidth': maxWidth,
-      'maxHeight': maxHeight,
+      'maxWidth': maxWidth.isFinite ? maxWidth : 999999.0, // Convert infinity to a large number
+      'maxHeight': maxHeight.isFinite ? maxHeight : 999999.0, // Convert infinity to a large number
       'currentWidth': currentWidth,
       'currentHeight': currentHeight,
       'enableHorizontalResize': enableHorizontalResize,
@@ -2951,8 +3122,8 @@ class PanelConfig {
       isVisible: json['isVisible'] ?? true,
       minWidth: json['minWidth']?.toDouble() ?? 150.0,
       minHeight: json['minHeight']?.toDouble() ?? 150.0,
-      maxWidth: json['maxWidth']?.toDouble() ?? double.infinity,
-      maxHeight: json['maxHeight']?.toDouble() ?? double.infinity,
+      maxWidth: (json['maxWidth']?.toDouble() ?? 999999.0) >= 999999.0 ? double.infinity : json['maxWidth']?.toDouble() ?? double.infinity,
+      maxHeight: (json['maxHeight']?.toDouble() ?? 999999.0) >= 999999.0 ? double.infinity : json['maxHeight']?.toDouble() ?? double.infinity,
       currentWidth: json['currentWidth']?.toDouble() ?? 0.0,
       currentHeight: json['currentHeight']?.toDouble() ?? 0.0,
       enableHorizontalResize: json['enableHorizontalResize'] ?? true,
@@ -2996,30 +3167,22 @@ class _HoverableNavItem extends StatefulWidget {
 }
 
 class _HoverableNavItemState extends State<_HoverableNavItem> {
-  bool _isHovered = false;
-
   @override
   Widget build(BuildContext context) {
-    return MouseRegion(
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      child: InkWell(
-        onTap: widget.onTap,
-        borderRadius: BorderRadius.circular(6),
-        splashColor: Colors.transparent,
-        highlightColor: Colors.transparent,
-        hoverColor: Colors.transparent,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          child: Text(
-            widget.title,
-            style: WebTextStyles.sub(
-              isDarkTheme: true,
-              color: WebDarkColors.textPrimary,
-              //  (widget.isActive || _isHovered)
-                  // ? WebDarkColors.textSecondary :
-              fontWeight: widget.isActive ? WebFonts.bold : WebFonts.semiBold,
-            ),
+    return InkWell(
+      onTap: widget.onTap,
+      borderRadius: BorderRadius.circular(6),
+      splashColor: Colors.transparent,
+      highlightColor: Colors.transparent,
+      hoverColor: Colors.transparent,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        child: Text(
+          widget.title,
+          style: WebTextStyles.sub(
+            isDarkTheme: true,
+            color: WebDarkColors.textPrimary,
+            fontWeight: widget.isActive ? WebFonts.bold : WebFonts.semiBold,
           ),
         ),
       ),

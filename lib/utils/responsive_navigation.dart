@@ -29,7 +29,7 @@ class ResponsiveNavigation {
               child: PlaceOrderScreen(
                 orderArg: arguments['orderArg'],
                 scripInfo: arguments['scripInfo'],
-                isBasket: arguments['isBskt'] ?? false,
+                isBasket: arguments['isBskt']?.toString() ?? "",
               ),
             ),
           );

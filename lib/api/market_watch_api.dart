@@ -107,7 +107,7 @@ print("res.body: ${res.body}");
           headers: defaultHeaders,
           body:
               '''jData={"uid":"${prefs.clientId}","wlname":"$wlname"}&jKey=${prefs.clientSession}''');
-      print("Market WatchScrip => ${res.body}");
+      // print("Market WatchScrip => ${res.body}");
       final json = jsonDecode(res.body);
 
       return MarketWatchScrip.fromJson(json as Map<String, dynamic>);

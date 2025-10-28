@@ -162,7 +162,6 @@ class MutualFundList {
       this.oneYearData});
 
   MutualFundList.fromJson(Map<String, dynamic> json) {
-    print("xxxxxx:: $json");
     uniqueNo = json['Unique_No'];
     schemeCode = json['Scheme_Code'];
     rTASchemeCode = json['RTA_Scheme_Code'];

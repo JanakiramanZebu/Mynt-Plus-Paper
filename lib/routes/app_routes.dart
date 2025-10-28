@@ -1,4 +1,5 @@
 import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/models/order_book_model/place_order_model.dart';
@@ -14,6 +15,7 @@ import 'package:mynt_plus/screens/Mobile/mutual_fund/order_single_page.dart';
 import 'package:mynt_plus/screens/Mobile/mutual_fund/redeem_new_bottomsheet.dart';
 import 'package:mynt_plus/screens/Mobile/order_screen/order_confirmation_screen.dart';
 import 'package:mynt_plus/screens/Mobile/profile_screen/app_webview/ipo_webview.dart';
+import 'package:mynt_plus/screens/web/ordersbook/pending_alert_detail_screen_web.dart';
 // import 'package:mynt_plus/screens/web/grid_dashboard_web.dart';
 import '../main.dart'; // Import for FirebaseHelper
 import '../screens/Mobile/authentication/login/login_banner_screen.dart';
@@ -762,10 +764,18 @@ class AppRoutes {
         );
 
       case Routes.pendingalertdetails:
-        return _createRoute(
-          pageBuilder: (_, __, ___) => PendingAlertDetails(alert: args),
-          beginOffset: const Offset(0.0, 1.0),
-        );
+        // Check if running on web or kIsWeb
+        if (kIsWeb) {
+          return _createRoute(
+            pageBuilder: (_, __, ___) => PendingAlertDetailScreenWeb(alert: args),
+            beginOffset: const Offset(0.0, 1.0),
+          );
+        } else {
+          return _createRoute(
+            pageBuilder: (_, __, ___) => PendingAlertDetails(alert: args),
+            beginOffset: const Offset(0.0, 1.0),
+          );
+        }
 
       case Routes.qrscanner:
         return _createRoute(

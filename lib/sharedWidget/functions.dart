@@ -249,10 +249,10 @@ Map spilitTsym({required String value}) {
 String sipformatDateTime({required String value}) {
   String formatedDate = '';
   String inputDateString = value;
-  if (value.length == 8) {
+  if (value.length == 10) {
     int day = int.parse(inputDateString.substring(0, 2));
-    int month = int.parse(inputDateString.substring(2, 4));
-    int year = int.parse(inputDateString.substring(4));
+    int month = int.parse(inputDateString.substring(3, 5));
+    int year = int.parse(inputDateString.substring(6));
 
     DateTime inputDate = DateTime(year, month, day);
     // Format the datetime in the desired format

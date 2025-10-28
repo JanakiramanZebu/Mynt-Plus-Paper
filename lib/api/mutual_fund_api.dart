@@ -73,7 +73,7 @@ mixin MutualFundApi on ApiCore {
 
       final json = jsonDecode((res.body));
 
-      log("NFO data ==>$json");
+      // log("NFO data ==>$json");
 
       return MutualFundModel.fromJson(json);
     } catch (e) {
@@ -89,7 +89,7 @@ mixin MutualFundApi on ApiCore {
 
       final json = jsonDecode((res.body));
 
-      print("MF Master ==>$json");
+      // print("MF Master ==>$json");
 
       return mf_sip_reject_res.fromJson(json);
     } catch (e) {
@@ -139,7 +139,7 @@ mixin MutualFundApi on ApiCore {
       final mfsearch = jsonDecode(res.body);
       final json = convertValuesToString(mfsearch['data']);
 
-      log("MF Master ==>$json");
+      // log("MF Master ==>$json");
 
       return SearchMFmodel.fromJson({'data': json});
     } catch (e) {
@@ -676,7 +676,7 @@ mixin MutualFundApi on ApiCore {
           headers: defaultHeaders, body: jsonEncode(payload));
       log("DDDDDDDDD ${res.body}");
       final json = jsonDecode((res.body));
-      print("watchlist${json}");
+      // print("watchlist${json}");
 
       return MFWatchlistModel.fromJson(json as Map<String, dynamic>);
     } catch (e) {
@@ -702,7 +702,7 @@ mixin MutualFundApi on ApiCore {
 
       ///log("DDDDDDDDD ${res.body}");
       final json = jsonDecode((res.body));
-      print("watchlist${json}");
+      // print("watchlist${json}");
 
       return MFWatchlistModel.fromJson(json as Map<String, dynamic>);
     } catch (e) {

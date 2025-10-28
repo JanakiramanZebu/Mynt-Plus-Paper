@@ -159,6 +159,10 @@ class _WatchListScreenState extends State<WatchListScreen>
     _pageController.dispose();
     _swipeController.dispose();
     _searchController.dispose();
+    
+    // Close WebSocket connection when screen is disposed
+    ProviderScope.containerOf(context).read(websocketProvider).closeSocket(false);
+    
     super.dispose();
   }
 

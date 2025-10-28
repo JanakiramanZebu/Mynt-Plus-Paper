@@ -35,9 +35,18 @@ class _WatchlistCardState extends ConsumerState<WatchlistCard> {
   Widget build(BuildContext context) {
     final theme = ref.read(themeProvider);
     final marketWatch = ref.read(marketWatchProvider);
-    final depthData = ref.watch(marketWatchProvider).getQuotes!;
-
-    return Material(
+    final websocket = ref.watch(websocketProvider);
+    
+    // Get the specific token's data from socket or use watchlist data as fallback
+    final token = widget.watchListData['token']?.toString() ?? "";
+    final socketData = websocket.socketDatas[token];
+    
+    // Create depthData from socket data or watchlist data
+    final depthData = socketData != null 
+        ? GetQuotes.fromJson(socketData)
+        : GetQuotes.fromJson(widget.watchListData);
+      
+      return Material(
       color: Colors.transparent,
       child: MouseRegion(
         onEnter: (_) => setState(() => _isHovered = true),
