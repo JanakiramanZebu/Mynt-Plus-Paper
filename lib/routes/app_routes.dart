@@ -43,6 +43,7 @@ import '../screens/Mobile/desk_reports/position_screen.dart';
 import '../screens/Mobile/desk_reports/profitnloss_screen.dart';
 import '../screens/Mobile/desk_reports/tax_pnl_screen.dart';
 import '../screens/Mobile/desk_reports/tradebook_screen.dart';
+import '../screens/Mobile/market_watch/new_fundamental_screen.dart';
 import '../screens/home_screen.dart';
 import '../screens/web/main_screen_control_web.dart';
 import '../screens/Mobile/ipo/ipo_main_screen.dart';
@@ -272,6 +273,17 @@ class AppRoutes {
           ),
           beginOffset: const Offset(1.0, 0.0),
         );
+
+         case Routes.newFundamental:
+        return _createRoute(
+          pageBuilder: (_, __, ___) => NewFundamentalScreen(
+            wlValue: args['wlValue'],
+            depthData: args['depthData'],
+          ),
+          beginOffset: const Offset(1.0, 0.0),
+        );
+
+        
 
       case Routes.setAlertScreen:
         return _createRoute(

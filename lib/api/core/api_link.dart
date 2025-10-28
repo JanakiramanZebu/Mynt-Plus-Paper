@@ -59,6 +59,7 @@ class ApiLinks {
   String get technicalData => '$goMyntURL/GetTechnicals';
   String get watchListrename => '$goMyntURL/RenameMW';
   String get spanCalc => 'https://go.mynt.in/NorenWClient/SpanCalc';
+  String get eodchartdata => '$goMyntURL/EODChartData';
 
   // Cams
   String get goCamsURL => "https://rekycbe.mynt.in/portfolio";

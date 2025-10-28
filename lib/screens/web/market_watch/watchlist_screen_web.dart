@@ -661,9 +661,9 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
     color: Colors.transparent,
     child: InkWell(
       onTap: onPressed,
-      customBorder: const CircleBorder(), // ensures ripple stays circular
+      customBorder: const CircleBorder(), 
       child: Ink(
-        width: 22, // size of circular button
+        width: 22,
         height: 22,
         decoration: BoxDecoration(
           color: theme.isDarkMode 
@@ -836,6 +836,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
             key: ValueKey('${scrips.length}_$sortBy'),
             itemCount: scrips.length,
             cacheExtent: 500,
+            padding: const EdgeInsets.only(right: 12.0, bottom: 8.0), // Add right padding to prevent scrollbar from hiding content
             separatorBuilder: (_, __) => const ListDivider(),
             itemBuilder: (_, i) => RepaintBoundary(
                 child: WatchlistCardWeb(watchListData: scrips[i])),

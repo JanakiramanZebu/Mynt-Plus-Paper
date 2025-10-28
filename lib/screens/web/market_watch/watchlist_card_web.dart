@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter/foundation.dart';
 import 'package:mynt_plus/provider/user_profile_provider.dart';
+import 'package:percent_indicator/percent_indicator.dart';
 import '../../../models/marketwatch_model/get_quotes.dart';
 import '../../../models/order_book_model/order_book_model.dart';
 import '../../../provider/market_watch_provider.dart';
@@ -16,6 +17,21 @@ import '../../../sharedWidget/snack_bar.dart';
 import '../../../utils/responsive_navigation.dart';
 import '../../../utils/responsive_snackbar.dart';
 import '../../Mobile/market_watch/edit_scrip.dart';
+import '../../Mobile/market_watch/futures/future_screen.dart';
+import '../../Mobile/market_watch/new_fundamental_screen.dart';
+
+// Provider to manage expanded watchlist item
+final expandedWatchlistItemProvider = StateNotifierProvider<ExpandedWatchlistItemNotifier, String?>((ref) {
+  return ExpandedWatchlistItemNotifier();
+});
+
+class ExpandedWatchlistItemNotifier extends StateNotifier<String?> {
+  ExpandedWatchlistItemNotifier() : super(null);
+
+  void setExpandedToken(String? token) {
+    state = token;
+  }
+}
 
 class WatchlistCardWeb extends ConsumerStatefulWidget {
   final dynamic watchListData;
@@ -29,19 +45,26 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
   // Add navigation lock to prevent multiple navigation events
   bool _isNavigating = false;
   bool _isHovered = false;
+  bool _isExpanded = false;
 
   @override
   Widget build(BuildContext context) {
     final theme = ref.read(themeProvider);
     final marketWatch = ref.read(marketWatchProvider);
     final depthData = ref.watch(marketWatchProvider).getQuotes!;
+    final expandedToken = ref.watch(expandedWatchlistItemProvider);
+
+    // Check if this card is expanded
+    _isExpanded = expandedToken == widget.watchListData['token']?.toString();
 
     return Material(
       color: Colors.transparent,
-      child: MouseRegion(
-        onEnter: (_) => setState(() => _isHovered = true),
-        onExit: (_) => setState(() => _isHovered = false),
-        child: InkWell(
+      child: Column(
+        children: [
+          MouseRegion(
+            onEnter: (_) => setState(() => _isHovered = true),
+            onExit: (_) => setState(() => _isHovered = false),
+            child: InkWell(
           borderRadius: BorderRadius.circular(8), // Increased border radius for web
           splashColor: theme.isDarkMode
               ? Colors.white.withOpacity(0.15)
@@ -65,39 +88,49 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
             }
           },
           onTap: () async {
-            // Prevent multiple navigation events on rapid clicks
-            if (_isNavigating) return;
+            // Toggle expansion
+            final currentToken = widget.watchListData['token']?.toString();
+            if (_isExpanded) {
+              // If this is expanded, collapse it
+              ref.read(expandedWatchlistItemProvider.notifier).setExpandedToken(null);
+            } else {
+              // Expand this item
+              ref.read(expandedWatchlistItemProvider.notifier).setExpandedToken(currentToken);
+            }
 
-            try {
-              setState(() {
-                _isNavigating = true;
-              });
-
-              // Create proper DepthInputArgs object like in StocksScreen
-              DepthInputArgs depthArgs = DepthInputArgs(
-                  exch: widget.watchListData["exch"].toString(),
-                  token: widget.watchListData["token"].toString(),
-                  tsym: widget.watchListData["tsym"].toString(),
-                  instname: widget.watchListData["symbol"].toString(),
-                  symbol: widget.watchListData["symbol"].toString(),
-                  expDate: widget.watchListData["expDate"]?.toString() ?? "",
-                  option: widget.watchListData["option"]?.toString() ?? "");
-
-              // Use the existing calldepthApis method which handles both web and mobile
-              marketWatch.scripdepthsize(false);
-              await marketWatch.calldepthApis(context, depthArgs, "");
-            } catch (e) {
-              // Handle any errors
-            } finally {
-              // Reset navigation lock after some delay to prevent immediate re-clicks
-              if (mounted) {
-                Future.delayed(const Duration(milliseconds: 500), () {
-                  if (mounted) {
-                    setState(() {
-                      _isNavigating = false;
-                    });
-                  }
+            // For full details navigation, only call APIs if not just expanding
+            if (!_isExpanded) {
+              try {
+                setState(() {
+                  _isNavigating = true;
                 });
+
+                // Create proper DepthInputArgs object like in StocksScreen
+                DepthInputArgs depthArgs = DepthInputArgs(
+                    exch: widget.watchListData["exch"].toString(),
+                    token: widget.watchListData["token"].toString(),
+                    tsym: widget.watchListData["tsym"].toString(),
+                    instname: widget.watchListData["instname"]?.toString() ?? widget.watchListData["symbol"].toString(),
+                    symbol: widget.watchListData["symbol"].toString(),
+                    expDate: widget.watchListData["expDate"]?.toString() ?? "",
+                    option: widget.watchListData["option"]?.toString() ?? "");
+
+                // Only call depth APIs for full navigation, not for expansion
+                marketWatch.scripdepthsize(false);
+                await marketWatch.calldepthApis(context, depthArgs, "");
+              } catch (e) {
+                // Handle any errors
+              } finally {
+                // Reset navigation lock after some delay to prevent immediate re-clicks
+                if (mounted) {
+                  Future.delayed(const Duration(milliseconds: 500), () {
+                    if (mounted) {
+                      setState(() {
+                        _isNavigating = false;
+                      });
+                    }
+                  });
+                }
               }
             }
           },
@@ -217,64 +250,96 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                   children: [
                     // Action buttons (shown on hover)
                     if (_isHovered)
-                      Container(
-                        width: 200, // Increased width for web
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            _buildHoverButton(
-                              label: _isNavigating ? 'Wait...' : 'Buy',
-                              color: theme.isDarkMode
-                                  ? WebDarkColors.success
-                                  : WebColors.success,
-                              onPressed: _isNavigating ? null : () async {
-                                try {
-                                  await _placeOrderInput(context, depthData, true);
-                                } catch (e) {
-                                  // Additional safety catch at button level
-                                  print('Buy button error: $e');
-                                }
-                              },
+                      Builder(
+                        builder: (context) {
+                          // Check if this is an index or commodity
+                          final instname = widget.watchListData["instname"]?.toString() ?? "";
+                          final isIndexOrCommodity = instname == "UNDIND" || instname == "COM";
+                          
+                          // Get exchange and token for futures/fundamentals check
+                          final exch = widget.watchListData["exch"]?.toString() ?? "";
+                          final token = widget.watchListData["token"]?.toString() ?? "";
+                          
+                          // Check if futures available (same condition as scrip_depth_info_web)
+                          final hasFutures = marketWatch.getOptionawait(exch, token);
+                          
+                          // Check if fundamentals available (not for indices or commodities)
+                          final hasFundamentals = instname != "UNDIND" && instname != "COM";
+                          
+                          return Container(
+                            width: 200, // Increased width for web
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // Only show Buy/Sell buttons if not index or commodity
+                                if (!isIndexOrCommodity) ...[
+                                  _buildHoverButton(
+                                    label: _isNavigating ? 'Wait...' : 'B',
+                                    color: theme.isDarkMode
+                                        ? WebDarkColors.success
+                                        : WebColors.success,
+                                    onPressed: _isNavigating ? null : () async {
+                                      try {
+                                        await _placeOrderInput(context, depthData, true);
+                                      } catch (e) {
+                                        // Additional safety catch at button level
+                                        print('Buy button error: $e');
+                                      }
+                                    },
+                                  ),
+                                  _buildHoverButton(
+                                    label: _isNavigating ? 'Wait...' : 'S',
+                                    color: theme.isDarkMode
+                                        ? WebDarkColors.loss
+                                        : WebColors.loss,
+                                    onPressed: _isNavigating ? null : () async {
+                                      try {
+                                        await _placeOrderInput(context, depthData, false);
+                                      } catch (e) {
+                                        // Additional safety catch at button level
+                                        print('Sell button error: $e');
+                                      }
+                                    },
+                                  ),
+                                ],
+                                // Chart button always shows (icon only)
+                                _buildHoverButton(
+                                  icon: Icons.bar_chart,
+                                  color: theme.isDarkMode
+                                      ? WebDarkColors.textSecondary
+                                      : WebColors.textSecondary,
+                                  onPressed: () {
+                                    // Navigate to chart screen
+                                    ref.read(marketWatchProvider).singlePageloader(true);
+                                    ref.read(marketWatchProvider)
+                                        .chngDephBtn("Chart");
+                                    ref.read(userProfileProvider)
+                                        .setChartdialog(true);
+                                    
+                                    ref.read(marketWatchProvider).setChartScript(
+                                        widget.watchListData["exch"].toString(),
+                                        widget.watchListData["token"].toString(),
+                                        widget.watchListData["tsym"].toString());
+                                    
+                                    ref.read(marketWatchProvider)
+                                        .singlePageloader(false);
+                                  },
+                                ),
+                                // Three dots menu (only if has futures or fundamentals)
+                                if (hasFutures || hasFundamentals)
+                                  _buildThreeDotsMenu(
+                                    theme: theme,
+                                    hasFutures: hasFutures,
+                                    hasFundamentals: hasFundamentals,
+                                    exch: exch,
+                                    token: token,
+                                    depthData: depthData,
+                                  ),
+                              ],
                             ),
-                            _buildHoverButton(
-                              label: _isNavigating ? 'Wait...' : 'Sell',
-                              color: theme.isDarkMode
-                                  ? WebDarkColors.loss
-                                  : WebColors.loss,
-                              onPressed: _isNavigating ? null : () async {
-                                try {
-                                  await _placeOrderInput(context, depthData, false);
-                                } catch (e) {
-                                  // Additional safety catch at button level
-                                  print('Sell button error: $e');
-                                }
-                              },
-                            ),
-                            _buildHoverButton(
-                              label: 'Chart',
-                              color: theme.isDarkMode
-                                  ? WebDarkColors.textSecondary
-                                  : WebColors.textSecondary,
-                              onPressed: () {
-                                // Navigate to chart screen
-                                ref.read(marketWatchProvider).singlePageloader(true);
-                                ref.read(marketWatchProvider)
-                                    .chngDephBtn("Chart");
-                                ref.read(userProfileProvider)
-                                    .setChartdialog(true);
-                                
-                                ref.read(marketWatchProvider).setChartScript(
-                                    widget.watchListData["exch"].toString(),
-                                    widget.watchListData["token"].toString(),
-                                    widget.watchListData["tsym"].toString());
-                                
-                                ref.read(marketWatchProvider)
-                                    .singlePageloader(false);
-                              },
-                            ),
-                          ],
-                        ),
+                          );
+                        },
                       )
                     else
                       const SizedBox(),
@@ -291,45 +356,1029 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
             ),
           ),
         ),
+          ),
+        // Expandable content section
+          if (_isExpanded)
+            AnimatedSize(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+              child: Container(
+                width: double.infinity,
+                // color: theme.isDarkMode ? WebDarkColors.surfaceVariant : WebColors.surfaceVariant,
+                padding: const EdgeInsets.fromLTRB(16, 16, 28, 16), // Extra right padding to prevent scrollbar overlap
+                child: _buildExpandedContent(depthData, theme),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildExpandedContent(GetQuotes depthData, ThemesProvider theme) {
+    // Get current token for this specific card
+    final currentToken = widget.watchListData['token']?.toString() ?? "";
+    
+    return StreamBuilder<dynamic>(
+      stream: ref.watch(websocketProvider).socketDataStream,
+      builder: (context, snapshot) {
+        // 🔥 CRITICAL FIX: Pre-load from existing socket data like mobile does!
+        Map<String, dynamic> socketData;
+        
+        if (snapshot.hasData) {
+          // Use stream data if available
+          final socketDatas = Map<String, dynamic>.from(snapshot.data as Map);
+          socketData = socketDatas.containsKey(currentToken) 
+              ? Map<String, dynamic>.from(socketDatas[currentToken] as Map? ?? {})
+              : <String, dynamic>{};
+        } else {
+          // 🚀 Pre-load from existing socket data on first render (like mobile)
+          final existingSocketData = ref.read(websocketProvider).socketDatas;
+          socketData = existingSocketData.containsKey(currentToken)
+              ? Map<String, dynamic>.from(existingSocketData[currentToken] ?? {})
+              : <String, dynamic>{};
+        }
+        
+        // Priority: Socket data → Watchlist data → Default  
+        final open = socketData['o']?.toString() ?? widget.watchListData['open']?.toString() ?? '0.00';
+        final high = socketData['h']?.toString() ?? widget.watchListData['high']?.toString() ?? '0.00';
+        final low = socketData['l']?.toString() ?? widget.watchListData['low']?.toString() ?? '0.00';
+        final close = socketData['c']?.toString() ?? widget.watchListData['close']?.toString() ?? '0.00';
+        final volume = socketData['v']?.toString() ?? widget.watchListData['volume']?.toString() ?? '0';
+        final avgPrice = socketData['ap']?.toString() ?? '0.00';
+        
+        return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Open, High, Low, Prev Close in grid format (always shown)
+        Column(
+          children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildInfoItem(theme, "Open", open),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildInfoItem(theme, "High", high),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildInfoItem(theme, "Low", low),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildInfoItem(theme, "Prev Close", close),
+                  ),
+                ],
+              ),
+          ],
+        ),
+        // Market Depth Section (only for non-index/non-commodity)
+        if (widget.watchListData['instname']?.toString() != "UNDIND" &&
+            widget.watchListData['instname']?.toString() != "COM") ...[
+          const SizedBox(height: 16),
+          _buildMarketDepthSection(socketData, theme),
+          const SizedBox(height: 16),
+        ],
+        
+        // Trading Info Section
+        const SizedBox(height: 16),
+        Column(
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: _buildInfoItem(theme, "Avg Price", avgPrice),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: _buildInfoItem(theme, "Volume", volume),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildInfoItem(theme, "LTQ", 
+                      socketData['ltq']?.toString() ?? widget.watchListData['ltq']?.toString() ?? "0"),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: _buildInfoItem(theme, "LTT", 
+                      socketData['ltt']?.toString() ?? widget.watchListData['ltt']?.toString() ?? "--"),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            
+            // Open Interest (only for futures/options, not equity)
+            if (widget.watchListData['instname']?.toString() != "EQT") ...[
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildInfoItem(theme, "Open Interest", 
+                        socketData['oi']?.toString() ?? widget.watchListData['oi']?.toString() ?? "0"),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildInfoItem(theme, "Change in OI", 
+                        socketData['poi']?.toString() ?? widget.watchListData['poi']?.toString() ?? "0"),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+            ],
+            
+            // 52 Week High-Low
+            _buildInfoItem(theme, "52 Weeks High-Low", 
+                "${socketData['52h']?.toString() ?? widget.watchListData['52h']?.toString() ?? "0.00"} - ${socketData['52l']?.toString() ?? widget.watchListData['52l']?.toString() ?? "0.00"}"),
+            const SizedBox(height: 12),
+            
+            // Daily Price Range (DPR)
+            _buildInfoItem(theme, "DPR", 
+                "${socketData['uc']?.toString() ?? widget.watchListData['uc']?.toString() ?? "0.00"} - ${socketData['lc']?.toString() ?? widget.watchListData['lc']?.toString() ?? "0.00"}"),
+          ],
+        ),
+      ],
+    );
+      },
+    );
+  }
+
+  // Market Depth Section with Bid/Ask data
+  Widget _buildMarketDepthSection(Map<String, dynamic> socketData, ThemesProvider theme) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Market Depth Header
+        Text(
+          "Market Depth",
+          style: WebTextStyles.title(
+            isDarkTheme: theme.isDarkMode,
+            color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+            fontWeight: WebFonts.medium,
+          ),
+        ),
+        const SizedBox(height: 12),
+        
+        Row(
+          children: [
+            // Bid Side
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                    Text(
+                      "Quantity",
+                      style: WebTextStyles.para(
+                        isDarkTheme: theme.isDarkMode,
+                        color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
+                        fontWeight: WebFonts.regular,
+                      ),
+                    ),
+                    Text(
+                      "Bid",
+                      style: WebTextStyles.para(
+                        isDarkTheme: theme.isDarkMode,
+                        color: WebDarkColors.secondary,
+                        fontWeight: WebFonts.regular,
+                      ),
+                    )
+                  ]),
+                  const SizedBox(height: 8),
+                  _buildDepthRow(socketData['bq1']?.toString() ?? "0", socketData['bp1']?.toString() ?? "0.00", theme),
+                  _buildDepthRow(socketData['bq2']?.toString() ?? "0", socketData['bp2']?.toString() ?? "0.00", theme),
+                  _buildDepthRow(socketData['bq3']?.toString() ?? "0", socketData['bp3']?.toString() ?? "0.00", theme),
+                  _buildDepthRow(socketData['bq4']?.toString() ?? "0", socketData['bp4']?.toString() ?? "0.00", theme),
+                  _buildDepthRow(socketData['bq5']?.toString() ?? "0", socketData['bp5']?.toString() ?? "0.00", theme),
+                ],
+              ),
+            ),
+            const SizedBox(width: 20),
+            
+            // Ask Side
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                    Text(
+                      "Ask",
+                      style: WebTextStyles.para(
+                        isDarkTheme: theme.isDarkMode,
+                        color: theme.isDarkMode ? WebDarkColors.loss : WebColors.loss,
+                        fontWeight: WebFonts.regular,
+                      ),
+                    ),
+                    Text(
+                      "Quantity",
+                      style: WebTextStyles.para(
+                        isDarkTheme: theme.isDarkMode,
+                        color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
+                        fontWeight: WebFonts.regular,
+                      ),
+                    )
+                  ]),
+                  const SizedBox(height: 8),
+                  _buildDepthRow(socketData['sp1']?.toString() ?? "0.00", socketData['sq1']?.toString() ?? "0", theme, isAsk: true),
+                  _buildDepthRow(socketData['sp2']?.toString() ?? "0.00", socketData['sq2']?.toString() ?? "0", theme, isAsk: true),
+                  _buildDepthRow(socketData['sp3']?.toString() ?? "0.00", socketData['sq3']?.toString() ?? "0", theme, isAsk: true),
+                  _buildDepthRow(socketData['sp4']?.toString() ?? "0.00", socketData['sq4']?.toString() ?? "0", theme, isAsk: true),
+                  _buildDepthRow(socketData['sp5']?.toString() ?? "0.00", socketData['sq5']?.toString() ?? "0", theme, isAsk: true),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        
+        // Total Quantities
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              "${socketData['tbq']?.toString() ?? "0"} (Buy Total)",
+              style: WebTextStyles.para(
+                isDarkTheme: theme.isDarkMode,
+                color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
+                fontWeight: WebFonts.regular,
+              ),
+            ),
+            Text(
+              "(Sell Total) ${socketData['tsq']?.toString() ?? "0"}",
+              style: WebTextStyles.para(
+                isDarkTheme: theme.isDarkMode,
+                color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
+                fontWeight: WebFonts.regular,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+  
+  // Helper to build market depth rows
+  Widget _buildDepthRow(String value1, String value2, ThemesProvider theme, {bool isAsk = false}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            isAsk ? value1 : value1, // Price for ask, Qty for bid
+            style: WebTextStyles.para(
+              isDarkTheme: theme.isDarkMode,
+              color: isAsk 
+                  ? (theme.isDarkMode ? WebDarkColors.loss : WebColors.loss)
+                  : (theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary),
+              fontWeight: WebFonts.regular,
+            ),
+          ),
+          Text(
+            isAsk ? value2 : value2, // Qty for ask, Price for bid  
+            style: WebTextStyles.para(
+              isDarkTheme: theme.isDarkMode,
+              color: isAsk
+                  ? (theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary)
+                  : (theme.isDarkMode ? WebDarkColors.secondary : WebColors.secondary),
+              fontWeight: WebFonts.regular,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMarketDepth(ThemesProvider theme, MarketWatchProvider scripInfo, GetQuotes depthData) {
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                    Text(
+                      "Quantity",
+                      style: WebTextStyles.para(
+                        isDarkTheme: theme.isDarkMode,
+                        color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
+                        fontWeight: WebFonts.regular,
+                      ),
+                    ),
+                    Text(
+                      "Bid",
+                      style: WebTextStyles.para(
+                        isDarkTheme: theme.isDarkMode,
+                        color: WebDarkColors.secondary,
+                        fontWeight: WebFonts.regular,
+                      ),
+                    )
+                  ]),
+                  const SizedBox(height: 6),
+                  _buildBidDepthRow("${depthData.bq1 ?? 0}", "${depthData.bp1 ?? 0.00}", theme),
+                  const SizedBox(height: 4),
+                  _buildBidDepthRow("${depthData.bq2 ?? 0}", "${depthData.bp2 ?? 0.00}", theme),
+                  const SizedBox(height: 4),
+                  _buildBidDepthRow("${depthData.bq3 ?? 0}", "${depthData.bp3 ?? 0.00}", theme),
+                  const SizedBox(height: 4),
+                  _buildBidDepthRow("${depthData.bq4 ?? 0}", "${depthData.bp4 ?? 0.00}", theme),
+                  const SizedBox(height: 4),
+                  _buildBidDepthRow("${depthData.bq5 ?? 0}", "${depthData.bp5 ?? 0.00}", theme)
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                    Text(
+                      "Ask",
+                      style: WebTextStyles.para(
+                        isDarkTheme: theme.isDarkMode,
+                        color: theme.isDarkMode ? WebDarkColors.error : WebColors.error,
+                        fontWeight: WebFonts.regular,
+                        letterSpacing: 0.0,
+                      ),
+                    ),
+                    Text(
+                      "Quantity",
+                      style: WebTextStyles.para(
+                        isDarkTheme: theme.isDarkMode,
+                        color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
+                        fontWeight: WebFonts.regular,
+                        letterSpacing: 0.0,
+                      ),
+                    )
+                  ]),
+                  const SizedBox(height: 6),
+                  _buildAskDepthRow("${depthData.sp1 ?? 0.00}", "${depthData.sq1 ?? 0}", theme),
+                  const SizedBox(height: 4),
+                  _buildAskDepthRow("${depthData.sp2 ?? 0.00}", "${depthData.sq2 ?? 0}", theme),
+                  const SizedBox(height: 4),
+                  _buildAskDepthRow("${depthData.sp3 ?? 0.00}", "${depthData.sq3 ?? 0}", theme),
+                  const SizedBox(height: 4),
+                  _buildAskDepthRow("${depthData.sp4 ?? 0.00}", "${depthData.sq4 ?? 0}", theme),
+                  const SizedBox(height: 4),
+                  _buildAskDepthRow("${depthData.sp5 ?? 0.00}", "${depthData.sq5 ?? 0}", theme)
+                ],
+              ),
+            ),
+          ],
+        ),
+
+          const SizedBox(
+                                                                      height:
+                                                                          16),
+                                                                  Row(
+                                                                      mainAxisAlignment:
+                                                                          MainAxisAlignment
+                                                                              .spaceBetween,
+                                                                      children: [
+                                                                        Row(
+                                                                          children: [
+                                                                            Text(
+                                                                              "${depthData.tbq != "null" ? depthData.tbq ?? 0 : '0'}",
+                                                                              style: WebTextStyles.para(
+                                                                                isDarkTheme: theme.isDarkMode,
+                                                                                color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
+                                                                                fontWeight: WebFonts.regular,
+                                                                              ),
+                                                                            ),
+                                                                            const SizedBox(
+                                                                              width: 4,
+                                                                            ),
+                                                                            Text(
+                                                                              "(${scripInfo.totBuyQtyPer.toStringAsFixed(2)}%)",
+                                                                              style: WebTextStyles.para(
+                                                                                isDarkTheme: theme.isDarkMode,
+                                                                                color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
+                                                                                fontWeight: WebFonts.regular,
+                                                                              ),
+                                                                            ),
+                                                                          ],
+                                                                        ),
+                                                                        Row(
+                                                                          children: [
+                                                                            Text(
+                                                                              "(${scripInfo.totSellQtyPer.toStringAsFixed(2)}%)",
+                                                                              style: WebTextStyles.para(
+                                                                                isDarkTheme: theme.isDarkMode,
+                                                                                color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
+                                                                                fontWeight: WebFonts.regular,
+                                                                                letterSpacing: 0.0,
+                                                                              ),
+                                                                            ),
+                                                                            SizedBox(
+                                                                              width: 4,
+                                                                            ),
+                                                                            Text(
+                                                                              "${depthData.tsq != "null" ? depthData.tsq ?? 0 : '0'}",
+                                                                              style: WebTextStyles.para(
+                                                                                isDarkTheme: theme.isDarkMode,
+                                                                                color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
+                                                                                fontWeight: WebFonts.regular,
+                                                                                letterSpacing: 0.0,
+                                                                              ),
+                                                                            ),
+                                                                          ],
+                                                                        )
+                                                                      ]),
+
+           (scripInfo.totBuyQtyPer.toStringAsFixed(2) ==
+                                                                              "0.00" &&
+                                                                          scripInfo.totSellQtyPer.toStringAsFixed(2) ==
+                                                                              "0.00")
+                                                                      ? const SizedBox()
+                                                                      : Column(
+                                                                          children: [
+                                                                            const SizedBox(height: 10),
+                                                                            LinearPercentIndicator(
+
+                                                                                // leading: Text(
+                                                                                //     "${scripInfo.totBuyQtyPer.toStringAsFixed(2)}%",
+                                                                                //     style: textStyle(
+                                                                                //         theme.isDarkMode
+                                                                                //             ? colors
+                                                                                //                 .colorWhite
+                                                                                //             : colors
+                                                                                //                 .colorBlack,
+                                                                                //         14,
+                                                                                //         FontWeight
+                                                                                //             .w500)),
+                                                                                // trailing: Text(
+                                                                                //     "${scripInfo.totSellQtyPer.toStringAsFixed(2)}%",
+                                                                                //     style: textStyle(
+                                                                                //         theme.isDarkMode
+                                                                                //             ? colors
+                                                                                //                 .colorWhite
+                                                                                //             : colors
+                                                                                //                 .colorBlack,
+                                                                                //         14,
+                                                                                //         FontWeight
+                                                                                //             .w500)),
+                                                                                lineHeight: 5.0,
+                                                                                barRadius: const Radius.circular(4.0), // Half of lineHeight for capsule shape
+                                                                                backgroundColor: (scripInfo.totBuyQtyPer.toStringAsFixed(2) == "0.00" && scripInfo.totSellQtyPer.toStringAsFixed(2) == "0.00")
+                                                                                    ? theme.isDarkMode
+                                                                                        ? WebDarkColors.textSecondary
+                                                                                        : WebColors.textSecondary
+                                                                                    : theme.isDarkMode
+                                                                                        ? WebDarkColors.error
+                                                                                        : WebColors.error,
+                                                                                percent: scripInfo.totBuyQtyPerChng,
+                                                                                padding: const EdgeInsets.symmetric(horizontal: 0),
+                                                                                progressColor: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary),
+                                                                            const SizedBox(height: 16),
+                                                                          ],
+                                                                        ),
+      ],
+    );
+  }
+
+  Widget _buildBidDepthRow(String qty, String price, ThemesProvider theme) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          " ${qty != "null" ? qty : '0'} ",
+          style: WebTextStyles.custom(
+            fontSize: 12,
+            isDarkTheme: theme.isDarkMode,
+            color: theme.isDarkMode
+                ? WebDarkColors.textSecondary
+                : WebColors.textSecondary,
+            fontWeight: WebFonts.medium,
+            letterSpacing: 0.0,
+          ),
+        ),
+        Text(
+          " ${price != "null" ? price : '0.00'} ",
+          style: WebTextStyles.custom(
+            fontSize: 12,
+            isDarkTheme: theme.isDarkMode,
+            color: theme.isDarkMode
+                ? WebDarkColors.secondary
+                : WebColors.secondary,
+            fontWeight: WebFonts.medium,
+            letterSpacing: 0.0,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAskDepthRow(String price, String qty, ThemesProvider theme) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          " ${price != "null" ? price : '0.00'} ",
+          style: WebTextStyles.custom(
+            fontSize: 12,
+            isDarkTheme: theme.isDarkMode,
+            color: theme.isDarkMode ? WebDarkColors.error : WebColors.error,
+            fontWeight: WebFonts.medium,
+          ),
+        ),
+        Text(
+          " ${qty != "null" ? qty : '0'} ",
+          style: WebTextStyles.custom(
+            fontSize: 12,
+            isDarkTheme: theme.isDarkMode,
+            color: theme.isDarkMode
+                ? WebDarkColors.textSecondary
+                : WebColors.textSecondary,
+            fontWeight: WebFonts.medium,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildInfoItem(ThemesProvider theme, String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: WebTextStyles.custom(
+              fontSize: 12,
+              isDarkTheme: theme.isDarkMode,
+              color: theme.isDarkMode
+                  ? WebDarkColors.textSecondary
+                  : WebColors.textSecondary,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          Text(
+            value,
+            style: WebTextStyles.custom(
+              fontSize: 12,
+              isDarkTheme: theme.isDarkMode,
+              color: theme.isDarkMode
+                  ? WebDarkColors.textPrimary
+                  : WebColors.textPrimary,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildHoverButton({
-    required String label,
+    String? label,
+    IconData? icon,
     required Color color,
     required VoidCallback? onPressed,
   }) {
     final theme = ref.read(themeProvider);
     return SizedBox(
-      width: 55, // Increased width for web
-      height: 32, // Increased height for web
+      width: 32, // Smaller for icons
+      height: 32,
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(6), // Increased border radius for web
+          borderRadius: BorderRadius.circular(6),
           splashColor: color.withOpacity(0.15),
           highlightColor: color.withOpacity(0.08),
           onTap: onPressed,
           child: Container(
             decoration: BoxDecoration(
-              border: Border.all(color: color, width: 1.5), // Slightly thicker border for web
+              border: Border.all(color: color, width: 1.5),
               borderRadius: BorderRadius.circular(6),
             ),
             child: Center(
-              child: Text(
-                label,
-                style: WebTextStyles.para(
-                  isDarkTheme: theme.isDarkMode,
-                  color: color,
-                  fontWeight: FontWeight.w600,
-                ),
+              child: icon != null
+                  ? Icon(
+                      icon,
+                      size: 18,
+                      color: color,
+                    )
+                  : Text(
+                      label ?? "",
+                      style: WebTextStyles.para(
+                        isDarkTheme: theme.isDarkMode,
+                        color: color,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildThreeDotsMenu({
+    required ThemesProvider theme,
+    required bool hasFutures,
+    required bool hasFundamentals,
+    required String exch,
+    required String token,
+    required GetQuotes depthData,
+  }) {
+    return SizedBox(
+      width: 32,
+      height: 32,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(6),
+          splashColor: theme.isDarkMode
+              ? Colors.white.withOpacity(0.15)
+              : Colors.black.withOpacity(0.15),
+          highlightColor: theme.isDarkMode
+              ? Colors.white.withOpacity(0.08)
+              : Colors.black.withOpacity(0.08),
+          onTap: () {
+            // Show popup menu
+            final RenderBox button = context.findRenderObject() as RenderBox;
+            final RenderBox overlay =
+                Overlay.of(context).context.findRenderObject() as RenderBox;
+            final RelativeRect position = RelativeRect.fromRect(
+              Rect.fromPoints(
+                button.localToGlobal(Offset.zero, ancestor: overlay),
+                button.localToGlobal(button.size.bottomRight(Offset.zero),
+                    ancestor: overlay),
+              ),
+              Offset.zero & overlay.size,
+            );
+
+            showMenu<String>(
+              context: context,
+              position: position,
+              color: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
+              elevation: 8,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              items: [
+                if (hasFutures)
+                  PopupMenuItem<String>(
+                    value: 'futures',
+                    child: Row(
+                      children: [                       
+                        Text(
+                          'Futures',
+                          style: WebTextStyles.sub(
+                            isDarkTheme: theme.isDarkMode,
+                            color: theme.isDarkMode
+                                ? WebDarkColors.textPrimary
+                                : WebColors.textPrimary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                if (hasFundamentals)
+                  PopupMenuItem<String>(
+                    value: 'fundamentals',
+                    child: Row(
+                      children: [
+                          // Icon(
+                          //   Icons.info_outline,
+                          //   size: 18,
+                          //   color: theme.isDarkMode
+                          //       ? WebDarkColors.iconSecondary
+                          //       : WebColors.iconSecondary,
+                          // ),
+                          // const SizedBox(width: 12),
+                        Text(
+                          'Fundamentals',
+                          style: WebTextStyles.sub(
+                            isDarkTheme: theme.isDarkMode,
+                            color: theme.isDarkMode
+                                ? WebDarkColors.textPrimary
+                                : WebColors.textPrimary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
+            ).then((value) {
+              if (value != null) {
+                _handleMenuAction(value, depthData, exch, token);
+              }
+            });
+          },
+          child: Container(
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: theme.isDarkMode
+                    ? WebDarkColors.border
+                    : WebColors.border,
+                width: 1.5,
+              ),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Center(
+              child: Icon(
+                Icons.more_horiz,
+                size: 18,
+                color: theme.isDarkMode
+                    ? WebDarkColors.iconSecondary
+                    : WebColors.iconSecondary,
               ),
             ),
           ),
         ),
       ),
     );
+  }
+
+  Future<void> _handleMenuAction(String action, GetQuotes depthData, String exch, String token) async {
+    if (_isNavigating) return;
+    
+    final marketWatch = ref.read(marketWatchProvider);
+    final theme = ref.read(themeProvider);
+    
+    try {
+      setState(() {
+        _isNavigating = true;
+      });
+
+      if (action == 'futures') {
+        // Load futures data first
+        marketWatch.singlePageloader(true);
+        
+        try {
+          // Fetch linked scripts (this loads futures data)
+          await marketWatch.fetchScripQuoteIndex(token, exch, context);
+          if (marketWatch.getOptionawait(exch, token)) {
+            await marketWatch.fetchLinkeScrip(token, exch, context);
+            // Request futures WebSocket data
+            await marketWatch.requestWSFut(context: context, isSubscribe: true);
+          }
+
+          if (!mounted) return;
+
+          // Open only futures screen in a dialog
+          showDialog(
+            context: context,
+            barrierDismissible: true,
+            builder: (BuildContext dialogContext) {
+              return Dialog(
+                backgroundColor: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Container(
+                  width: 600,
+                  constraints: const BoxConstraints(maxHeight: 600),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Header
+                      Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Futures',
+                              style: WebTextStyles.title(
+                                isDarkTheme: theme.isDarkMode,
+                                color: theme.isDarkMode
+                                    ? WebDarkColors.textPrimary
+                                    : WebColors.textPrimary,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            Material(
+                              color: Colors.transparent,
+                              shape: const CircleBorder(),
+                              child: InkWell(
+                                customBorder: const CircleBorder(),
+                                splashColor: theme.isDarkMode
+                                    ? Colors.white.withOpacity(.15)
+                                    : Colors.black.withOpacity(.15),
+                                highlightColor: theme.isDarkMode
+                                    ? Colors.white.withOpacity(.08)
+                                    : Colors.black.withOpacity(.08),
+                                onTap: () {
+                                  // Unsubscribe from futures WebSocket
+                                  marketWatch.requestWSFut(context: context, isSubscribe: false);
+                                  Navigator.of(context).pop();
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8),
+                                  child: Icon(
+                                    Icons.close,
+                                    size: 20,
+                                    color: theme.isDarkMode
+                                        ? WebDarkColors.iconSecondary
+                                        : WebColors.iconSecondary,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      // Info message
+                      Container(
+                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                        decoration: BoxDecoration(
+                          color: theme.isDarkMode
+                              ? WebDarkColors.primary.withOpacity(0.1)
+                              : WebColors.primary.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.info_outline,
+                              size: 16,
+                              color: theme.isDarkMode
+                                  ? WebDarkColors.primary
+                                  : WebColors.primary,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Long press to add ${marketWatch.wlName}\'s Watchlist',
+                              style: WebTextStyles.para(
+                                isDarkTheme: theme.isDarkMode,
+                                color: theme.isDarkMode
+                                    ? WebDarkColors.primary
+                                    : WebColors.primary,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      // Futures content
+                      Expanded(
+                        child: Consumer(
+                          builder: (context, ref, _) {
+                            return const FutureScreen();
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          );
+        } finally {
+          if (mounted) {
+            marketWatch.singlePageloader(false);
+          }
+        }
+      } else if (action == 'fundamentals') {
+        // Open fundamentals in a dialog
+        marketWatch.singlePageloader(true);
+        
+        try {
+          // Always fetch fresh fundamental data for the current scrip
+          await marketWatch.fetchFundamentalData(
+            tradeSym: "$exch:${widget.watchListData["tsym"]?.toString() ?? ""}",
+          );
+
+          if (!mounted) return;
+
+          if (marketWatch.fundamentalData != null &&
+              marketWatch.fundamentalData?.msg != "no data found") {
+            // Create DepthInputArgs for the new screen
+            DepthInputArgs depthArgs = DepthInputArgs(
+              exch: widget.watchListData["exch"].toString(),
+              token: widget.watchListData["token"].toString(),
+              tsym: widget.watchListData["tsym"].toString(),
+              instname: widget.watchListData["instname"]?.toString() ?? widget.watchListData["symbol"].toString(),
+              symbol: widget.watchListData["symbol"].toString(),
+              expDate: widget.watchListData["expDate"]?.toString() ?? "",
+              option: widget.watchListData["option"]?.toString() ?? "",
+            );
+            
+            // Get depth data from provider
+            final depthData = marketWatch.getQuotes!;
+            
+            // Show as dialog
+            if (mounted) {
+              showDialog(
+                context: context,
+                barrierDismissible: true,
+                builder: (BuildContext dialogContext) {
+                  return Dialog(
+                    backgroundColor: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Container(
+                      width: 700,
+                      constraints: const BoxConstraints(maxHeight: 800, minHeight: 400),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Header
+                          Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  '${depthArgs.symbol.replaceAll("-EQ", "").toUpperCase()}${depthArgs.expDate} ${depthArgs.option} Stock Report',
+                                  style: WebTextStyles.title(
+                                    isDarkTheme: theme.isDarkMode,
+                                    color: theme.isDarkMode
+                                        ? WebDarkColors.textPrimary
+                                        : WebColors.textPrimary,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                Material(
+                                  color: Colors.transparent,
+                                  shape: const CircleBorder(),
+                                  child: InkWell(
+                                    customBorder: const CircleBorder(),
+                                    splashColor: theme.isDarkMode
+                                        ? Colors.white.withOpacity(.15)
+                                        : Colors.black.withOpacity(.15),
+                                    highlightColor: theme.isDarkMode
+                                        ? Colors.white.withOpacity(.08)
+                                        : Colors.black.withOpacity(.08),
+                                    onTap: () => Navigator.of(context).pop(),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(8),
+                                      child: Icon(
+                                        Icons.close,
+                                        size: 20,
+                                        color: theme.isDarkMode
+                                            ? WebDarkColors.iconSecondary
+                                            : WebColors.iconSecondary,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          // Content without AppBar
+                          Expanded(
+                            child: ClipRRect(
+                              borderRadius: const BorderRadius.vertical(
+                                bottom: Radius.circular(12),
+                              ),
+                              child: MediaQuery.removePadding(
+                                context: context,
+                                removeTop: true,
+                                child: NewFundamentalScreen(
+                                  wlValue: depthArgs,
+                                  depthData: depthData,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              );
+            }
+          }
+        } finally {
+          if (mounted) {
+            marketWatch.singlePageloader(false);
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('Menu action error: $e');
+    } finally {
+      if (mounted) {
+        Future.delayed(const Duration(milliseconds: 500), () {
+          if (mounted) {
+            setState(() {
+              _isNavigating = false;
+            });
+          }
+        });
+      }
+    }
   }
 
   // Helper method to safely parse numeric values
@@ -504,15 +1553,20 @@ class _PriceDataWidgetWebState extends ConsumerState<_PriceDataWidgetWeb> {
 
   void _setupSubscription() {
     // Using a more efficient approach to listen to only the relevant token's data
-    _subscription = ref.read(websocketProvider).socketDataStream.listen((data) {
+    _subscription = ref.read(websocketProvider).socketDataStream.listen((rawData) {
       // Skip processing if widget is in the process of disposal
       if (!mounted) return;
+
+      // Safely cast the data to handle LinkedMap type
+      final data = Map<String, dynamic>.from(rawData as Map? ?? {});
 
       // Only process if data contains our token
       if (!data.containsKey(widget.token)) return;
 
-      final newData = data[widget.token];
-      if (newData == null) return;
+      final rawNewData = data[widget.token];
+      if (rawNewData == null) return;
+      
+      final newData = Map<String, dynamic>.from(rawNewData as Map);
 
       // Only update state if values actually changed
       bool valueChanged = false;
@@ -592,7 +1646,7 @@ class _PriceDataWidgetWebState extends ConsumerState<_PriceDataWidgetWeb> {
           Text(
             displayLtp,
             style: WebTextStyles.custom(
-              fontSize: 13,
+              fontSize: 14,
               isDarkTheme: theme.isDarkMode,
              color: theme.isDarkMode
                   ? WebDarkColors.textPrimary
@@ -602,7 +1656,7 @@ class _PriceDataWidgetWebState extends ConsumerState<_PriceDataWidgetWeb> {
               // letterSpacing: 0.0,
             ),
           ),
-          const SizedBox(height: 3), // Adjusted spacing to match Vue project
+          const SizedBox(height: 8), // Adjusted spacing to match Vue project
           Text(
             "$displayChange ($displayPerChange%)",
             style: WebTextStyles.custom(

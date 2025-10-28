@@ -14,6 +14,7 @@ import '../api/core/api_export.dart';
 import '../locator/constant.dart';
 import '../locator/locator.dart';
 import '../locator/preference.dart';
+import '../models/marketwatch_model/scrip_overview/eodchartdata_model.dart';
 import '../utils/custom_navigator.dart';
 import '../screens/web/market_watch/scrip_tabs_manager.dart';
 import '../models/marketwatch_model/add_delete_scrip_model.dart';
@@ -768,8 +769,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   StockData? _fundamentalData;
   StockData? get fundamentalData => _fundamentalData;
 
-  // List<EodChartData> _eodChartData = [];
-  // List<EodChartData> get eodChartData => _eodChartData;
+  List<EodChartData> _eodChartData = [];
+  List<EodChartData> get eodChartData => _eodChartData;
 
   List<String> _exarr = [];
   List<String> get exarr => _exarr;
@@ -2672,11 +2673,12 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   }
 
   // Method to clear chart data
-  // void clearChartData() {
-  //   _eodChartData = [];
-  //   _chartDataLoading = false;
-  //   notifyListeners();
-  // }
+  
+  void clearChartData() {
+    _eodChartData = [];
+    _chartDataLoading = false;
+    notifyListeners();
+  }
 
   // Method to clear fundamental data
   void clearFundamentalData() {
@@ -2692,26 +2694,26 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
-  // Future<void> fetchEODChartData(String tsym, String exch, {String timeframe = "1Y"}) async {
-  //   try {
-  //     // Clear old data and set loading state
-  //     _eodChartData = [];
-  //     _chartDataLoading = true;
-  //     notifyListeners();
+  Future<void> fetchEODChartData(String tsym, String exch, {String timeframe = "1Y"}) async {
+    try {
+      // Clear old data and set loading state
+      _eodChartData = [];
+      _chartDataLoading = true;
+      notifyListeners();
 
-  //     _eodChartData = await api.getEODChartData(tsym, exch, timeframe: timeframe);
-  //     print("EOD Chart Data fetched successfully for $timeframe = ${_eodChartData.length} items");
+      _eodChartData = await api.getEODChartData(tsym, exch, timeframe: timeframe);
+      print("EOD Chart Data fetched successfully for $timeframe = ${_eodChartData.length} items");
 
-  //     _chartDataLoading = false;
-  //     notifyListeners();
-  //   } catch (e) {
-  //     _chartDataLoading = false;
-  //     print("PROVIDER: EOD CHART DATA ERROR ::: ${e.toString()}");
-  //     print("PROVIDER: Error Type: ${e.runtimeType}");
-  //     notifyListeners();
-  //     rethrow;
-  //   }
-  // }
+      _chartDataLoading = false;
+      notifyListeners();
+    } catch (e) {
+      _chartDataLoading = false;
+      print("PROVIDER: EOD CHART DATA ERROR ::: ${e.toString()}");
+      print("PROVIDER: Error Type: ${e.runtimeType}");
+      notifyListeners();
+      rethrow;
+    }
+  }
 
 
 // Scrip returns data(Year/Month/Week/Day)
