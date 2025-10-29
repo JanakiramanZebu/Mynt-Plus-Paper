@@ -6,7 +6,8 @@ import '../../../models/marketwatch_model/get_quotes.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../provider/websocket_provider.dart';
-import '../../../res/global_state_text.dart';
+import '../../../res/global_font_web.dart';
+import '../../../res/web_colors.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/cust_text_formfield.dart';
 
@@ -109,449 +110,491 @@ class _SetAlertWebState extends State<SetAlertWeb> {
 
       return Material(
         color: Colors.transparent,
-        child: Column(
-          children: [
-          Expanded(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: EdgeInsets.fromLTRB(
-                    16, 0, 16, MediaQuery.of(context).viewInsets.bottom),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const SizedBox(height: 16),
+        child: Padding(
+          padding: EdgeInsets.only(left: 16, right: 16, top: 0, bottom: 16),
+          
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // const SizedBox(height: 16),
 
-                     StreamBuilder<Map>(
-                        stream: ref.watch(websocketProvider).socketDataStream,
-                        builder: (context, snapshot) {
-                          final socketDatas = snapshot.data ?? {};
-                  
-                          // Update depth data with WebSocket data if available
-                          if (socketDatas.containsKey(widget.wlvalue.token)) {
-                            _processDepthData(socketDatas[widget.wlvalue.token]);
-                          }
-                  
-                          return Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Row(
-                                children: [
-                                  TextWidget.titleText(
-                                    text: widget.wlvalue.symbol.toUpperCase(),
-                                    color: theme.isDarkMode
-                                        ? colors.textPrimaryDark
-                                        : colors.textPrimaryLight,
-                                    theme: theme.isDarkMode,
-                                  ),
-                                  const SizedBox(width: 4),
-                                  TextWidget.titleText(
-                                    text: widget.wlvalue.option,
-                                    color: theme.isDarkMode
-                                        ? colors.textPrimaryDark
-                                        : colors.textPrimaryLight,
-                                    theme: theme.isDarkMode,
-                                  ),
-                                ],
-                              ),
-                              Column(
-                                children: [
-                                  TextWidget.titleText(
-                                    text:
-                                        "${depthdata.lp != "null" ? depthdata.lp ?? depthdata.c ?? 0.00 : '0.00'}",
-                                    color: (depthdata.chng == "null" ||
-                                            depthdata.chng == null) ||
-                                        depthdata.chng == "0.00"
-                                        ? theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight
-                                        : depthdata.chng!.startsWith("-") ||
-                                            depthdata.pc!.startsWith("-")
-                                            ? theme.isDarkMode ? colors.lossDark : colors.lossLight
-                                            : theme.isDarkMode ? colors.profitDark : colors.profitLight,
-                                    theme: theme.isDarkMode,
-                                  ),
-                                  const SizedBox(height: 8),
-                                  TextWidget.paraText(
-                                    text:
-                                        "${(double.tryParse(depthdata.chng ?? '0.00') ?? 0.00).toStringAsFixed(2)} (${(double.tryParse(depthdata.pc ?? '0.00') ?? 0.00).toStringAsFixed(2)}%)",
-                                    color: theme.isDarkMode
-                                        ? colors.textSecondaryDark
-                                        : colors.textSecondaryLight,
-                                    theme: theme.isDarkMode,
-                                  ),
-                                ],
-                              ),
-                            ],
-                          );
-                        },
+               StreamBuilder<Map>(
+                  stream: ref.watch(websocketProvider).socketDataStream,
+                  builder: (context, snapshot) {
+                    final socketDatas = snapshot.data ?? {};
+            
+                    // Update depth data with WebSocket data if available
+                    if (socketDatas.containsKey(widget.wlvalue.token)) {
+                      _processDepthData(socketDatas[widget.wlvalue.token]);
+                    }
+            
+                    return Container(
+                      padding: const EdgeInsets.all(8),
+                      margin: const EdgeInsets.only(bottom: 8),
+                      decoration: BoxDecoration(
+                        color: theme.isDarkMode
+                            ? WebDarkColors.backgroundTertiary
+                            : WebColors.backgroundTertiary,
+                        // borderRadius: BorderRadius.circular(10),
                       ),
-
-              
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
                             children: [
-                              TextWidget.subText(
-                                  text: 'webType',
+                              Text(
+                                widget.wlvalue.symbol.toUpperCase(),
+                                style: WebTextStyles.custom(
+                                  fontSize: 13,
+                                  isDarkTheme: theme.isDarkMode,
                                   color: theme.isDarkMode
-                                      ? colors.textPrimaryDark
-                                      : colors.textPrimaryLight,
-                                  theme: theme.isDarkMode,
-                                  fw: 0),
-                              const SizedBox(height: 8),
-                              SizedBox(
-                                height: 45,
-                                child: DropdownButtonHideUnderline(
-                                                                     child: DropdownButton2(
-                                     dropdownStyleData: DropdownStyleData(
-                                         decoration: BoxDecoration(
-                                             borderRadius:
-                                                 BorderRadius.circular(10),
-                                             color: theme.isDarkMode
-                                                 ? colors.colorBlack
-                                                 : colors.colorWhite,
-                                             border: Border.all(
-                                                 color: theme.isDarkMode
-                                                     ? colors.darkColorDivider
-                                                     : colors.colorDivider,
-                                             ),
-                                         )),
-                                     buttonStyleData: ButtonStyleData(
-                                        height: 44,
-                                        decoration: BoxDecoration(
-                                            color: theme.isDarkMode
-                                                ? colors.darkGrey
-                                                : const Color(0xffF1F3F8),
-                                            border: Border.all(
-                                                color: colors.primary),
-                                            borderRadius:
-                                                const BorderRadius.all(
-                                                    Radius.circular(5)))),
-                                    isExpanded: true,
-                                    style: TextWidget.textStyle(
-                                        fontSize: 14,
-                                        color: theme.isDarkMode
-                                            ? colors.textPrimaryDark
-                                            : colors.textPrimaryLight,
-                                        theme: theme.isDarkMode,
-                                        fw: 0),
-                                    hint: TextWidget.subText(
-                                        text: alertTypeVal,
-                                        
-                                        textOverflow: TextOverflow.ellipsis,
-                                        theme: theme.isDarkMode,
-                                        fw: 0),
-                                    items: alertType
-                                        .map((String item) =>
-                                            DropdownMenuItem<String>(
-                                              value: item,
-                                              child: Padding(
-                                                padding: const EdgeInsets.only(
-                                                    left: 8),
-                                                child: TextWidget.subText(
-                                                    text: item,
-                                                    textOverflow:
-                                                        TextOverflow.ellipsis,
-                                                    color: theme.isDarkMode
-                                                        ? colors.textPrimaryDark
-                                                        : colors.textPrimaryLight,
-                                                    theme: theme.isDarkMode,
-                                                    fw: 0),
-                                              ),
-                                            ))
-                                        .toList(),
-                                    value: alertTypeVal,
-                                    onChanged: (value) {
-                                      setState(() {
-                                        alertTypeVal = value!;
-                                        valueCtrl.clear();
-                                      });
-                                      validatesetalret(value);
-                                    },
-                                  ),
+                                      ? WebDarkColors.textPrimary
+                                      : WebColors.textPrimary,
+                                      fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                widget.wlvalue.option,
+                                style: WebTextStyles.custom(
+                                  fontSize: 13,
+                                  isDarkTheme: theme.isDarkMode,
+                                  color: theme.isDarkMode
+                                      ? WebDarkColors.textPrimary
+                                      : WebColors.textPrimary,
+                                      fontWeight: FontWeight.w700,
                                 ),
                               ),
                             ],
                           ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
-                              TextWidget.subText(
-                                  text: 'Alert me',
-                                  color: theme.isDarkMode
-                                      ? colors.textPrimaryDark
-                                      : colors.textPrimaryLight,
-                                  theme: theme.isDarkMode,
-                                  fw: 0),
+                              Text(
+                                "${depthdata.lp != "null" ? depthdata.lp ?? depthdata.c ?? 0.00 : '0.00'}",
+                                style: WebTextStyles.custom(
+                                  fontSize: 13,
+                                  isDarkTheme: theme.isDarkMode,
+                                  color: (depthdata.chng == "null" ||
+                                          depthdata.chng == null) ||
+                                      depthdata.chng == "0.00"
+                                      ? theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary
+                                      : depthdata.chng!.startsWith("-") ||
+                                          depthdata.pc!.startsWith("-")
+                                          ? theme.isDarkMode ? WebDarkColors.loss : WebColors.loss
+                                          : theme.isDarkMode ? WebDarkColors.profit : WebColors.profit,
+                                      fontWeight: FontWeight.w700,
+                                ),
+                              ),
                               const SizedBox(height: 8),
-                              SizedBox(
-                                height: 45,
-                                child: DropdownButtonHideUnderline(
-                                                                     child: DropdownButton2<String>(
-                                     dropdownStyleData: DropdownStyleData(
-                                         decoration: BoxDecoration(
-                                             borderRadius:
-                                                 BorderRadius.circular(10),
-                                             color: theme.isDarkMode
-                                                 ? colors.colorBlack
-                                                 : colors.colorWhite,
-                                             border: Border.all(
-                                                 color: theme.isDarkMode
-                                                     ? colors.darkColorDivider
-                                                     : colors.colorDivider,
-                                             ),
-                                         )),
-                                     buttonStyleData: ButtonStyleData(
-                                        height: 45,
-                                        decoration: BoxDecoration(
-                                            color: theme.isDarkMode
-                                                ? colors.darkGrey
-                                                : const Color(0xffF1F3F8),
-                                            border: Border.all(
-                                                color: colors.primary),
-                                            borderRadius:
-                                                const BorderRadius.all(
-                                                    Radius.circular(5)))),
-                                    isExpanded: true,
-                                    style: TextWidget.textStyle(
-                                        fontSize: 14,
-                                        color: theme.isDarkMode
-                                            ? colors.textPrimaryDark
-                                            : colors.textPrimaryLight,
-                                        theme: theme.isDarkMode,
-                                        fw: 0),
-                                    hint: TextWidget.subText(
-                                        text: alertValue,
-                                        color: theme.isDarkMode
-                                            ? colors.textSecondaryDark
-                                            : colors.textSecondaryLight,
-                                        textOverflow: TextOverflow.ellipsis,
-                                        theme: theme.isDarkMode,
-                                        fw: 0),
-                                    items: alterItems
-                                        .map((String item) =>
-                                            DropdownMenuItem<String>(
-                                              value: item,
-                                              child: Padding(
-                                                padding: const EdgeInsets.only(
-                                                    left: 8),
-                                                child: TextWidget.subText(
-                                                    text: item,
-                                                    textOverflow:
-                                                        TextOverflow.ellipsis,
-                                                    theme: theme.isDarkMode,
-                                                    fw: 0),
-                                              ),
-                                            ))
-                                        .toList(),
-                                    value: alertValue,
-                                    onChanged: (value) {
-                                      setState(() {
-                                        alertValue = value!;
-                                      });
-                                      validatesetalret(value);
-                                    },
-                                  ),
+                              Text(
+                                "${(double.tryParse(depthdata.chng ?? '0.00') ?? 0.00).toStringAsFixed(2)} (${(double.tryParse(depthdata.pc ?? '0.00') ?? 0.00).toStringAsFixed(2)}%)",
+                                style: WebTextStyles.custom(
+                                  fontSize: 13,
+                                  isDarkTheme: theme.isDarkMode,
+                                  color: theme.isDarkMode
+                                      ? WebDarkColors.textSecondary
+                                      : WebColors.textSecondary,
+                                      fontWeight: FontWeight.w700,
                                 ),
                               ),
                             ],
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+
+          
+              Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Type',
+                          style: WebTextStyles.custom(
+                            fontSize: 13,
+                            isDarkTheme: theme.isDarkMode,
+                            color: theme.isDarkMode
+                                ? WebDarkColors.textPrimary
+                                : WebColors.textPrimary,
+                                fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        SizedBox(
+                          height: 40,
+                          child: DropdownButtonHideUnderline(
+                                                               child: DropdownButton2(
+                               dropdownStyleData: DropdownStyleData(
+                                   decoration: BoxDecoration(
+                                       borderRadius:
+                                           BorderRadius.circular(10),
+                                       color: theme.isDarkMode
+                                           ? WebDarkColors.surface
+                                           : WebColors.surface,
+                                       border: Border.all(
+                                           color: theme.isDarkMode
+                                               ? WebDarkColors.divider
+                                               : WebColors.divider,
+                                       ),
+                                   )),
+                               buttonStyleData: ButtonStyleData(
+                                  height: 40,
+                                  decoration: BoxDecoration(
+                                      color: theme.isDarkMode
+                                          ? WebDarkColors.backgroundTertiary
+                                          : WebColors.backgroundTertiary,
+                                      border: Border.all(
+                                          color: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary),
+                                      borderRadius:
+                                          const BorderRadius.all(
+                                              Radius.circular(5)))),
+                              isExpanded: true,
+                              style: WebTextStyles.custom(
+                                fontSize: 13,
+                                isDarkTheme: theme.isDarkMode,
+                                color: theme.isDarkMode
+                                    ? WebDarkColors.textPrimary
+                                    : WebColors.textPrimary,
+                                    fontWeight: FontWeight.w600,
+                              ),
+                              hint: Text(
+                                alertTypeVal,
+                                style: WebTextStyles.custom(
+                                  fontSize: 13,
+                                  isDarkTheme: theme.isDarkMode,
+                                  color: theme.isDarkMode
+                                      ? WebDarkColors.textSecondary
+                                      : WebColors.textSecondary,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              items: alertType
+                                  .map((String item) =>
+                                      DropdownMenuItem<String>(
+                                        value: item,
+                                        child: Padding(
+                                          padding: const EdgeInsets.only(
+                                              left: 8),
+                                          child: Text(
+                                            item,
+                                            style: WebTextStyles.custom(
+                                              fontSize: 13,
+                                              isDarkTheme: theme.isDarkMode,
+                                              color: theme.isDarkMode
+                                                  ? WebDarkColors.textPrimary
+                                                  : WebColors.textPrimary,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ))
+                                  .toList(),
+                              value: alertTypeVal,
+                              onChanged: (value) {
+                                setState(() {
+                                  alertTypeVal = value!;
+                                  valueCtrl.clear();
+                                });
+                                validatesetalret(value);
+                              },
+                            ),
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
-                    // ENTER VALUE FIELD
-                    TextWidget.subText(
-                        text: 'Enter Value',
-                        color: theme.isDarkMode
-                            ? colors.textPrimaryDark
-                            : colors.textPrimaryLight,
-                        theme: theme.isDarkMode,
-                        fw: 0),
-                    const SizedBox(height: 8),
-                    SizedBox(
-                      height: 45,
-                      child: CustomTextFormField(
-                        fillColor: theme.isDarkMode
-                            ? colors.darkGrey
-                            : const Color(0xffF1F3F8),
-                        onChanged: (value) {
-                          Future.microtask(() {
-                            if (mounted) {
-                              setState(() {
-                                validatesetalret(value);
-                              });
-                            }
-                          });
-                        },
-                        hintText: "0",
-                        hintStyle: TextWidget.textStyle(
-                            fontSize: 14,
-                            theme: theme.isDarkMode,
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Alert me',
+                          style: WebTextStyles.custom(
+                            fontSize: 13,
+                            isDarkTheme: theme.isDarkMode,
                             color: theme.isDarkMode
-                                ? colors.textSecondaryDark
-                                : colors.textSecondaryLight,
+                                ? WebDarkColors.textPrimary
+                                : WebColors.textPrimary,
+                                fontWeight: FontWeight.w700,
+                          ),
                         ),
-                        keyboardType: TextInputType.number,
-                        style: TextWidget.textStyle(
-                            fontSize: 16,
-                            color: theme.isDarkMode
-                                ? colors.textPrimaryDark
-                                : colors.textPrimaryLight,
-                            theme: theme.isDarkMode,
+                        const SizedBox(height: 8),
+                        SizedBox(
+                          height: 40,
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(5),
+                              splashColor: (theme.isDarkMode ? WebDarkColors.primary : WebColors.primary).withOpacity(0.1),
+                              highlightColor: (theme.isDarkMode ? WebDarkColors.primary : WebColors.primary).withOpacity(0.05),
+                              onTap: () {
+                                setState(() {
+                                  alertValue = alertValue == "Above" ? "Below" : "Above";
+                                });
+                                validatesetalret(valueCtrl.text);
+                              },
+                              child: Container(
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  color: theme.isDarkMode
+                                      ? WebDarkColors.backgroundTertiary
+                                      : WebColors.backgroundTertiary,
+                                  border: Border.all(color: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary),
+                                  borderRadius: BorderRadius.circular(5),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.only(left: 12),
+                                      child: Text(
+                                        alertValue,
+                                        style: WebTextStyles.custom(
+                                          fontSize: 13,
+                                          isDarkTheme: theme.isDarkMode,
+                                          color: theme.isDarkMode
+                                              ? WebDarkColors.textPrimary
+                                              : WebColors.textPrimary,
+                                              fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.only(right: 12),
+                                      child: Row(
+                                        children: [
+                                          Icon(
+                                            Icons.code,
+                                            color: theme.isDarkMode
+                                                ? WebDarkColors.textSecondary
+                                                : WebColors.textSecondary,
+                                            size: 18,
+                                          ),                                               
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
                         ),
-                        textCtrl: valueCtrl,
-                        textAlign: TextAlign.start,
-                        prefixIcon: SvgPicture.asset(assets.ruppeIcon,
-                            fit: BoxFit.scaleDown,
-                            color: theme.isDarkMode
-                                ? colors.textSecondaryDark
-                                : colors.textSecondaryLight),
-                      ),
+                      ],
                     ),
-                    if (errorText.isNotEmpty) ...[
-                      const SizedBox(height: 4),
-                      TextWidget.captionText(
-                          text: errorText,
-                          color: theme.isDarkMode ? colors.errorDark : colors.errorLight,
-                          theme: theme.isDarkMode,
-                          fw: 0),
-                    ],
-                    const SizedBox(height: 16),
-                    // REMARK FIELD
-                    TextWidget.subText(
-                        text: 'Remark', theme: theme.isDarkMode, fw: 0),
-                    const SizedBox(height: 8),
-                    SizedBox(
-                      height: 70,
-                      child: CustomTextFormField(
-                        fillColor: theme.isDarkMode
-                            ? colors.darkGrey
-                            : const Color(0xffF1F3F8),
-                        hintText: "Remark",
-                        hintStyle: TextWidget.textStyle(
-                          fontSize: 14,
-                          theme: theme.isDarkMode,
-                          color: theme.isDarkMode
-                              ? colors.textSecondaryDark
-                              : colors.textSecondaryLight,
-                        ),
-                        style: TextWidget.textStyle(
-                            fontSize: 16,
-                            color: theme.isDarkMode
-                                ? colors.textPrimaryDark
-                                : colors.textPrimaryLight,
-                            theme: theme.isDarkMode,
-                        ),
-                        textCtrl: remark,
-                        textAlign: TextAlign.start,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                  ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              // ENTER VALUE FIELD
+              Text(
+                'Enter Value',
+                style: WebTextStyles.custom(
+                  fontSize: 13,
+                  isDarkTheme: theme.isDarkMode,
+                  color: theme.isDarkMode
+                      ? WebDarkColors.textPrimary
+                      : WebColors.textPrimary,
+                      fontWeight: FontWeight.w700,
                 ),
               ),
-            ),
-          ),
-          // BOTTOM BUTTON - STAYS AT BOTTOM
-          Padding(
-            padding: EdgeInsets.fromLTRB(
-                24, 10, 24, MediaQuery.of(context).viewInsets.bottom + 10),
-            child: SizedBox(
-              width: MediaQuery.of(context).size.width,
-              height: 45,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  elevation: 0,
-                  backgroundColor: errorText.isNotEmpty
-                      ? theme.isDarkMode
-                          ? colors.primaryDark.withOpacity(0.5)
-                          : colors.primaryLight.withOpacity(0.5)
-                      : (theme.isDarkMode
-                          ? colors.primaryDark
-                          : colors.primaryLight),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(5)),
-                ),
-                onPressed: _handlesetalert ||
-                        valueCtrl.text.isEmpty ||
-                        valueCtrl.text == "0" ||
-                        errorText.isNotEmpty
-                    ? () {}
-                    : () async {
+              const SizedBox(height: 8),
+              SizedBox(
+                height: 40,
+                child: CustomTextFormField(
+                  fillColor: theme.isDarkMode
+                      ? WebDarkColors.backgroundTertiary
+                      : WebColors.backgroundTertiary,
+                  onChanged: (value) {
+                    Future.microtask(() {
+                      if (mounted) {
                         setState(() {
-                          _handlesetalert = true;
+                          validatesetalret(value);
                         });
+                      }
+                    });
+                  },
+                  hintText: "0",
+                  hintStyle: WebTextStyles.custom(
+                    fontSize: 13,
+                    isDarkTheme: theme.isDarkMode,
+                    color: theme.isDarkMode
+                        ? WebDarkColors.textSecondary
+                        : WebColors.textSecondary,
+                        fontWeight: FontWeight.w600,
+                  ),
+                  keyboardType: TextInputType.number,
+                  style: WebTextStyles.custom(
+                    fontSize: 13,
+                    isDarkTheme: theme.isDarkMode,
+                    color: theme.isDarkMode
+                        ? WebDarkColors.textPrimary
+                        : WebColors.textPrimary,
+                        fontWeight: FontWeight.w600,
+                  ),
+                  textCtrl: valueCtrl,
+                  textAlign: TextAlign.start,
+                  prefixIcon: SvgPicture.asset(assets.ruppeIcon,
+                      fit: BoxFit.scaleDown,
+                      color: theme.isDarkMode
+                          ? WebDarkColors.textSecondary
+                          : WebColors.textSecondary),
+                ),
+              ),
+              if (errorText.isNotEmpty) ...[
+                const SizedBox(height: 4),
+                Text(
+                  errorText,
+                  style: WebTextStyles.custom(
+                    fontSize: 12,
+                    isDarkTheme: theme.isDarkMode,
+                    color: theme.isDarkMode ? WebDarkColors.error : WebColors.error,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+              const SizedBox(height: 16),
+              // REMARK FIELD
+              Text(
+                'Remark',
+                style: WebTextStyles.custom(
+                  fontSize: 13,
+                  isDarkTheme: theme.isDarkMode,
+                  color: theme.isDarkMode
+                      ? WebDarkColors.textPrimary
+                      : WebColors.textPrimary,
+                      fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 8),
+              SizedBox(
+                height: 80,
+                child: CustomTextFormField(
+                  fillColor: theme.isDarkMode
+                      ? WebDarkColors.backgroundTertiary
+                      : WebColors.backgroundTertiary,
+                  hintText: "Remark",
+                  hintStyle: WebTextStyles.custom(
+                    fontSize: 13,
+                    isDarkTheme: theme.isDarkMode,
+                    color: theme.isDarkMode
+                        ? WebDarkColors.textSecondary
+                        : WebColors.textSecondary,  
+                        fontWeight: FontWeight.w600,
+                  ),
+                  style: WebTextStyles.custom(
+                    fontSize: 13,
+                    isDarkTheme: theme.isDarkMode,
+                    color: theme.isDarkMode
+                        ? WebDarkColors.textPrimary
+                        : WebColors.textPrimary,
+                        fontWeight: FontWeight.w600,
+                  ),
+                  textCtrl: remark,
+                  textAlign: TextAlign.start,
+                ),
+              ),
+              const SizedBox(height: 20),
 
-                        if (valueCtrl.text.isEmpty) {
+              SizedBox(
+                width: MediaQuery.of(context).size.width,
+                height: 40,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    elevation: 0,
+                    backgroundColor: errorText.isNotEmpty
+                        ? theme.isDarkMode
+                            ? WebDarkColors.primary.withOpacity(0.5)
+                            : WebColors.primary.withOpacity(0.5)
+                        : (theme.isDarkMode
+                            ? WebDarkColors.primary
+                            : WebColors.primary),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(5)),
+                  ),
+                  onPressed: _handlesetalert ||
+                          valueCtrl.text.isEmpty ||
+                          valueCtrl.text == "0" ||
+                          errorText.isNotEmpty
+                      ? () {}
+                      : () async {
                           setState(() {
-                            errorText = "Value cannot be empty";
-                            _handlesetalert = false;
+                            _handlesetalert = true;
                           });
-                          return;
-                        }
-
-                        if (valueCtrl.text == "0") {
-                          setState(() {
-                            errorText = "Value cannot be 0";
-                            _handlesetalert = false;
-                          });
-                          return;
-                        }
-
-                        errorText = "";
-
-                        try {
-                          await ref.read(marketWatchProvider).fetchSetAlertWeb(
-                                widget.wlvalue.exch,
-                                widget.wlvalue.tsym,
-                                valueCtrl.text,
-                                alertValue == "Above" && alertTypeVal == "LTP"
-                                    ? "LTP_A"
-                                    : alertValue == "Below" &&
-                                            alertTypeVal == "LTP"
-                                        ? "LTP_B"
-                                        : "LTP_B", // fallback
-                                context,
-                                scripInfo.alertPendingModel!.length,
-                                "${depthdata.lp}",
-                                remark.text,
-                              );
-                        } finally {
-                          if (mounted) {
+              
+                          if (valueCtrl.text.isEmpty) {
                             setState(() {
+                              errorText = "Value cannot be empty";
                               _handlesetalert = false;
                             });
+                            return;
                           }
-                        }
-                      },
-                child: _handlesetalert || scripInfo.loading
-                    ? SizedBox(
-                        width: 18,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                            strokeWidth: 2, color: colors.colorWhite),
-                      )
-                    : TextWidget.subText(
-                        text: 'Set alert',
-                        color: !theme.isDarkMode
-                            ? errorText.isNotEmpty
-                                ? colors.colorWhite.withOpacity(0.5)
-                                : colors.colorWhite
-                            : errorText.isNotEmpty
-                                ? colors.colorWhite.withOpacity(0.5)
-                                : colors.colorWhite,
-                        theme: theme.isDarkMode,
-                        fw: 2),
+              
+                          if (valueCtrl.text == "0") {
+                            setState(() {
+                              errorText = "Value cannot be 0";
+                              _handlesetalert = false;
+                            });
+                            return;
+                          }
+              
+                          errorText = "";
+              
+                          try {
+                            await ref.read(marketWatchProvider).fetchSetAlertWeb(
+                                  widget.wlvalue.exch,
+                                  widget.wlvalue.tsym,
+                                  valueCtrl.text,
+                                  alertValue == "Above" && alertTypeVal == "LTP"
+                                      ? "LTP_A"
+                                      : alertValue == "Below" &&
+                                              alertTypeVal == "LTP"
+                                          ? "LTP_B"
+                                          : "LTP_B", // fallback
+                                  context,
+                                  scripInfo.alertPendingModel!.length,
+                                  "${depthdata.lp}",
+                                  remark.text,
+                                );
+                          } finally {
+                            if (mounted) {
+                              setState(() {
+                                _handlesetalert = false;
+                              });
+                            }
+                          }
+                        },
+                  child: _handlesetalert || scripInfo.loading
+                      ? const SizedBox(
+                          width: 18,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2, color: Colors.white),
+                        )
+                    : Text(
+                        'Set alert',
+                        style: WebTextStyles.custom(
+                          fontSize: 13,
+                          isDarkTheme: theme.isDarkMode,
+                          color: errorText.isNotEmpty
+                              ? Colors.white.withOpacity(0.5)
+                              : Colors.white,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                ),
               ),
-            ),
+            ],
           ),
-        ],
         ),
       );
     });

@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter/foundation.dart';
 import 'package:mynt_plus/provider/user_profile_provider.dart';
-import 'package:mynt_plus/routes/app_routes.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import '../../../routes/route_names.dart';
 import '../../../utils/custom_navigator.dart';
@@ -20,8 +19,8 @@ import '../../../sharedWidget/snack_bar.dart';
 import '../../../utils/responsive_navigation.dart';
 import '../../../utils/responsive_snackbar.dart';
 import '../../Mobile/market_watch/edit_scrip.dart';
-import '../../Mobile/market_watch/futures/future_screen.dart';
 import '../../Mobile/market_watch/new_fundamental_screen.dart';
+import 'futures/future_screen_web.dart';
 import 'set_alert_web.dart';
 
 // Provider to manage expanded watchlist item
@@ -275,7 +274,7 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                           final hasOptions = marketWatch.getOptionawait(exch, token);
                           
                           return Container(
-                            width: 200, // Increased width for web
+                            width: 170, // Width adjusted for smaller buttons
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.start,
                               mainAxisSize: MainAxisSize.min,
@@ -284,9 +283,10 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                                 if (!isIndexOrCommodity) ...[
                                   _buildHoverButton(
                                     label: 'B',
-                                    color: theme.isDarkMode
-                                        ? WebDarkColors.success
-                                        : WebColors.success,
+                                    color: Colors.white,
+                                    backgroundColor: theme.isDarkMode
+                                        ? WebDarkColors.primary
+                                        : WebColors.primary,
                                     onPressed: () async {
                                       try {
                                         await _placeOrderInput(context, depthData, true);
@@ -296,12 +296,13 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                                       }
                                     },
                                   ),
-                                  const SizedBox(width: 8),
+                                  const SizedBox(width: 6),
                                   _buildHoverButton(
                                     label: 'S',
-                                    color: theme.isDarkMode
-                                        ? WebDarkColors.loss
-                                        : WebColors.loss,
+                                    color: Colors.white,
+                                    backgroundColor: theme.isDarkMode
+                                        ? WebDarkColors.tertiary
+                                        : WebColors.tertiary,
                                     onPressed: () async {
                                       try {
                                         await _placeOrderInput(context, depthData, false);
@@ -311,15 +312,16 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                                       }
                                     },
                                   ),
-                                  const SizedBox(width: 8),
+                                  const SizedBox(width: 6),
 
                                 ],
                                 // Chart button always shows (icon only)
                                 _buildHoverButton(
                                   icon: Icons.bar_chart,
-                                  color: theme.isDarkMode
-                                      ? WebDarkColors.textSecondary
-                                      : WebColors.textSecondary,
+                                  color: Colors.white,
+                                  backgroundColor: theme.isDarkMode
+                                      ? WebDarkColors.textSecondary.withOpacity(0.5)
+                                      : WebColors.textSecondary.withOpacity(0.5),
                                   onPressed: () {
                                     // Navigate to chart screen
                                     ref.read(marketWatchProvider).singlePageloader(true);
@@ -337,7 +339,7 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                                         .singlePageloader(false);
                                   },
                                 ),
-                                  const SizedBox(width: 8),
+                                  const SizedBox(width: 6),
                                 // Three dots menu (only if has futures, fundamentals or options)
                                 if (hasFutures || hasFundamentals || hasOptions)
                                   _buildThreeDotsMenu(
@@ -1027,34 +1029,36 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
     String? label,
     IconData? icon,
     required Color color,
+    Color? backgroundColor,
     required VoidCallback? onPressed,
   }) {
     final theme = ref.read(themeProvider);
     return SizedBox(
-      width: 32, // Smaller for icons
-      height: 32,
+      width: 28,
+      height: 28,
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: BorderRadius.circular(5),
           splashColor: color.withOpacity(0.15),
           highlightColor: color.withOpacity(0.08),
           onTap: onPressed,
           child: Container(
             decoration: BoxDecoration(
-              border: Border.all(color: color, width: 1.5),
-              borderRadius: BorderRadius.circular(6),
+              color: backgroundColor ?? Colors.transparent,
+              borderRadius: BorderRadius.circular(5),
             ),
             child: Center(
               child: icon != null
                   ? Icon(
                       icon,
-                      size: 18,
+                      size: 14,
                       color: color,
                     )
                   : Text(
                       label ?? "",
-                      style: WebTextStyles.para(
+                      style: WebTextStyles.custom(
+                        fontSize: 11,
                         isDarkTheme: theme.isDarkMode,
                         color: color,
                         fontWeight: FontWeight.w600,
@@ -1077,12 +1081,12 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
     required GetQuotes depthData,
   }) {
     return SizedBox(
-      width: 32,
-      height: 32,
+      width: 28,
+      height: 28,
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: BorderRadius.circular(5),
           splashColor: theme.isDarkMode
               ? Colors.white.withOpacity(0.15)
               : Colors.black.withOpacity(0.15),
@@ -1090,111 +1094,84 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
               ? Colors.white.withOpacity(0.08)
               : Colors.black.withOpacity(0.08),
           onTap: () {
-            // Set menu as open
             setState(() {
               _isMenuOpen = true;
             });
             
-            // Show popup menu
             final RenderBox button = context.findRenderObject() as RenderBox;
             final RenderBox overlay =
                 Overlay.of(context).context.findRenderObject() as RenderBox;
-            final RelativeRect position = RelativeRect.fromRect(
-              Rect.fromPoints(
-                button.localToGlobal(Offset.zero, ancestor: overlay),
-                button.localToGlobal(button.size.bottomRight(Offset.zero),
-                    ancestor: overlay),
-              ),
-              Offset.zero & overlay.size,
+            final RelativeRect position = RelativeRect.fromLTRB(
+              button.localToGlobal(Offset.zero, ancestor: overlay).dx,
+              button.localToGlobal(button.size.bottomRight(Offset.zero), ancestor: overlay).dy,
+              overlay.size.width - button.localToGlobal(button.size.bottomRight(Offset.zero), ancestor: overlay).dx,
+              overlay.size.height - button.localToGlobal(button.size.bottomRight(Offset.zero), ancestor: overlay).dy,
             );
 
             showMenu<String>(
               context: context,
               position: position,
-              color: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
+              color: Colors.white,
               elevation: 8,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+                // borderRadius: BorderRadius.circular(),
               ),
               items: [
                 if (hasFutures)
                   PopupMenuItem<String>(
                     value: 'futures',
-                    child: Row(
-                      children: [                       
-                        Text(
-                          'Futures',
-                          style: WebTextStyles.sub(
-                            isDarkTheme: theme.isDarkMode,
-                            color: theme.isDarkMode
-                                ? WebDarkColors.textPrimary
-                                : WebColors.textPrimary,
-                          ),
-                        ),
-                      ],
+                    child: Text(
+                      'Futures',
+                      style: WebTextStyles.custom(
+                        fontSize: 13,
+                        isDarkTheme: false,
+                        color: WebColors.textPrimary,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
                 if (hasFundamentals)
                   PopupMenuItem<String>(
                     value: 'fundamentals',
-                    child: Row(
-                      children: [
-                          // Icon(
-                          //   Icons.info_outline,
-                          //   size: 18,
-                          //   color: theme.isDarkMode
-                          //       ? WebDarkColors.iconSecondary
-                          //       : WebColors.iconSecondary,
-                          // ),
-                          // const SizedBox(width: 12),
-                        Text(
-                          'Fundamentals',
-                          style: WebTextStyles.sub(
-                            isDarkTheme: theme.isDarkMode,
-                            color: theme.isDarkMode
-                                ? WebDarkColors.textPrimary
-                                : WebColors.textPrimary,
-                          ),
-                        ),
-                      ],
+                    child: Text(
+                      'Fundamentals',
+                      style: WebTextStyles.custom(
+                        fontSize: 13,
+                        isDarkTheme: false,
+                        color: WebColors.textPrimary,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
                 if (hasOptions)
                   PopupMenuItem<String>(
                     value: 'options',
-                    child: Row(
-                      children: [                       
-                        Text(
-                          'Options Chain',
-                          style: WebTextStyles.sub(
-                            isDarkTheme: theme.isDarkMode,
-                            color: theme.isDarkMode
-                                ? WebDarkColors.textPrimary
-                                : WebColors.textPrimary,
-                          ),
-                        ),
-                      ],
+                    child: Text(
+                      'Options Chain',
+                      style: WebTextStyles.custom(
+                        fontSize: 13,
+                        isDarkTheme: false,
+                        color: WebColors.textPrimary,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
                 PopupMenuItem<String>(
                   value: 'setAlert',
-                  child: Row(
-                    children: [
-                      Text(
-                        'Set Alert',
-                        style: WebTextStyles.sub(
-                          isDarkTheme: theme.isDarkMode,
-                          color: theme.isDarkMode
-                              ? WebDarkColors.textPrimary
-                              : WebColors.textPrimary,
-                        ),
-                      ),
-                    ],
+                  child: Text(
+                    'Set Alert',
+                    style: WebTextStyles.custom(
+                      fontSize: 13,
+                      isDarkTheme: theme.isDarkMode,
+                      color: theme.isDarkMode
+                          ? WebDarkColors.textPrimary
+                          : WebColors.textPrimary,
+                          fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
               ],
             ).then((value) {
-              // Reset menu state when menu closes
               setState(() {
                 _isMenuOpen = false;
               });
@@ -1209,14 +1186,14 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                 color: theme.isDarkMode
                     ? WebDarkColors.border
                     : WebColors.border,
-                width: 1.5,
+                width: 1,
               ),
-              borderRadius: BorderRadius.circular(6),
+              borderRadius: BorderRadius.circular(5),
             ),
             child: Center(
               child: Icon(
                 Icons.more_horiz,
-                size: 18,
+                size: 14,
                 color: theme.isDarkMode
                     ? WebDarkColors.iconSecondary
                     : WebColors.iconSecondary,
@@ -1266,13 +1243,15 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                 ),
                 child: Container(
                   width: 600,
-                  constraints: const BoxConstraints(maxHeight: 600),
+                  constraints: BoxConstraints(
+                    maxHeight: MediaQuery.of(context).size.height * 0.4,
+                  ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       // Header
                       Padding(
-                        padding: const EdgeInsets.all(16),
+                        padding: const EdgeInsets.only(left: 16, right: 16, top: 10, bottom: 8),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -1303,10 +1282,10 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                                   Navigator.of(context).pop();
                                 },
                                 child: Padding(
-                                  padding: const EdgeInsets.all(8),
+                                  padding: const EdgeInsets.all(6),
                                   child: Icon(
                                     Icons.close,
-                                    size: 20,
+                                    size: 18,
                                     color: theme.isDarkMode
                                         ? WebDarkColors.iconSecondary
                                         : WebColors.iconSecondary,
@@ -1318,46 +1297,44 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                         ),
                       ),
                       // Info message
-                      Container(
-                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                        decoration: BoxDecoration(
-                          color: theme.isDarkMode
-                              ? WebDarkColors.primary.withOpacity(0.1)
-                              : WebColors.primary.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.info_outline,
-                              size: 16,
-                              color: theme.isDarkMode
-                                  ? WebDarkColors.primary
-                                  : WebColors.primary,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Long press to add ${marketWatch.wlName}\'s Watchlist',
-                              style: WebTextStyles.para(
-                                isDarkTheme: theme.isDarkMode,
-                                color: theme.isDarkMode
-                                    ? WebDarkColors.primary
-                                    : WebColors.primary,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      // Futures content
-                      Expanded(
-                        child: Consumer(
-                          builder: (context, ref, _) {
-                            return const FutureScreen();
-                          },
-                        ),
+                      // Container(
+                      //   padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                      //   decoration: BoxDecoration(
+                      //     color: theme.isDarkMode
+                      //         ? WebDarkColors.primary.withOpacity(0.1)
+                      //         : WebColors.primary.withOpacity(0.1),
+                      //     borderRadius: BorderRadius.circular(6),
+                      //   ),
+                      //   child: Row(
+                      //     mainAxisAlignment: MainAxisAlignment.center,
+                      //     children: [
+                      //       Icon(
+                      //         Icons.info_outline,
+                      //         size: 16,
+                      //         color: theme.isDarkMode
+                      //             ? WebDarkColors.primary
+                      //             : WebColors.primary,
+                      //       ),
+                      //       const SizedBox(width: 8),
+                      //       Text(
+                      //         'Long press to add ${marketWatch.wlName}\'s Watchlist',
+                      //         style: WebTextStyles.para(
+                      //           isDarkTheme: theme.isDarkMode,
+                      //           color: theme.isDarkMode
+                      //               ? WebDarkColors.primary
+                      //               : WebColors.primary,
+                      //           fontWeight: FontWeight.w500,
+                      //         ),
+                      //       ),
+                      //     ],
+                      //   ),
+                      // ),
+                      // const SizedBox(height: 8),
+                      // Futures content - Use IntrinsicHeight to size to content
+                      Consumer(
+                        builder: (context, ref, _) {
+                          return const FutureScreenWeb();
+                        },
                       ),
                     ],
                   ),
@@ -1571,20 +1548,30 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
             borderRadius: BorderRadius.circular(12),
           ),
           child: Container(
-            width: 600,
-            constraints: const BoxConstraints(maxHeight: 700),
+            width: 500,
+            constraints: const BoxConstraints(maxHeight: 500),           
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 // Header
-                Padding(
-                  padding: const EdgeInsets.all(16),
+                Container(
+                  padding: const EdgeInsets.symmetric( horizontal: 16, vertical: 8),
+                  margin: const EdgeInsets.only(bottom: 8),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(
+                        color: theme.isDarkMode
+                            ? WebDarkColors.divider
+                            : WebColors.divider,
+                      ),
+                    ),
+                  ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
                         'Set Alert',
-                        style: WebTextStyles.title(
+                        style: WebTextStyles.sub(
                           isDarkTheme: theme.isDarkMode,
                           color: theme.isDarkMode
                               ? WebDarkColors.textPrimary
@@ -1605,7 +1592,7 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                               : Colors.black.withOpacity(.08),
                           onTap: () => Navigator.of(context).pop(),
                           child: Padding(
-                            padding: const EdgeInsets.all(8),
+                            padding: const EdgeInsets.all(6),
                             child: Icon(
                               Icons.close,
                               size: 20,
@@ -1619,11 +1606,9 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                     ],
                   ),
                 ),
-                Expanded(
-                  child: SetAlertWeb(
-                    depthdata: depthData,
-                    wlvalue: depthArgs,
-                  ),
+                SetAlertWeb(
+                  depthdata: depthData,
+                  wlvalue: depthArgs,
                 ),
               ],
             ),

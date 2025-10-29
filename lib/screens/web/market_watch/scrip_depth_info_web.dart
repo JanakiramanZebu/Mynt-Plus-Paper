@@ -2314,11 +2314,9 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                     ],
                   ),
                 ),
-                Expanded(
-                  child: SetAlertWeb(
-                    depthdata: depthData,
-                    wlvalue: widget.wlValue,
-                  ),
+                SetAlertWeb(
+                  depthdata: depthData,
+                  wlvalue: widget.wlValue,
                 ),
               ],
             ),
