@@ -1399,7 +1399,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     String orderValue = '0.00';
     
     try {
-      double price = double.tryParse(item.prc ?? "0") ?? 0.0;
+      double price = double.tryParse(item.avgprc ?? "0") ?? 0.0;
       int qty = int.tryParse(item.qty.toString()) ?? 0;
       orderValue = (price * qty).toStringAsFixed(2);
     } catch (e) {
@@ -1736,15 +1736,6 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     // This should NOT be updated by WebSocket data
     if (isValidPrice(item.prc)) {
       return item.prc!;
-    }
-    
-    // Fallback to other price fields if prc is not available
-    if (isValidPrice(item.avgprc)) {
-      return item.avgprc!;
-    } else if (isValidPrice(item.c)) {
-      return item.c!;
-    } else if (isValidPrice(item.close)) {
-      return item.close!;
     }
     
     return "0.00";

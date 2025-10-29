@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:mynt_plus/provider/thems.dart';
@@ -842,8 +843,10 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     
     // Check if running on web platform
     if (kIsWeb) {
-      // For web, use the panel system instead of bottom sheet
+      // For web, open the scrip in the panel and switch to Chart view
+      chngDephBtn("Chart");
       openScripInWebPanel(context, depthArgs, basket);
+      setChartScript(depthArgs.exch, depthArgs.token, depthArgs.tsym);
     } else {
       // For mobile, use bottom sheet
       showModalBottomSheet(
@@ -1277,10 +1280,21 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
-  void setChartScript(String exch, String token, String tsym) async {
-    await ConstantName.chartwebViewController?.evaluateJavascript(
-        source:
-            "window.changeScript([{exch: '$exch', token: '$token', tsym: '$tsym'}], '${ref.read(themeProvider).isDarkMode}')");
+   void setChartScript(String exch, String token, String tsym) async {
+    if (kIsWeb) {
+      // On Flutter Web, JS injection into a cross-origin iframe is blocked.
+      // Reload the chart with the desired symbol via URL parameters instead.
+      final isDark = ref.read(themeProvider).isDarkMode;
+      final url =
+          "https://mynt.zebuetrade.com/tv?src=app&symbol=$tsym&user=${pref.clientId}&usession=${pref.clientSession}&token=$token&exch=$exch&dark=$isDark";
+      await ConstantName.chartwebViewController?.loadUrl(
+        urlRequest: URLRequest(url: WebUri(url)),
+      );
+    } else {
+      await ConstantName.chartwebViewController!.evaluateJavascript(
+          source:
+              "window.changeScript([{exch: '$exch', token: '$token', tsym: '$tsym'}], '${ref.read(themeProvider).isDarkMode}')");
+    }
     if (_chartTabs.length == 5 &&
         (_chartTabs.any((t) => t.token == token)) != true) {
       removeChartTab(_chartTabs.last, false);

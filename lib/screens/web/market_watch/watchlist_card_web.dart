@@ -24,7 +24,8 @@ import 'futures/future_screen_web.dart';
 import 'set_alert_web.dart';
 
 // Provider to manage expanded watchlist item
-final expandedWatchlistItemProvider = StateNotifierProvider<ExpandedWatchlistItemNotifier, String?>((ref) {
+final expandedWatchlistItemProvider =
+    StateNotifierProvider<ExpandedWatchlistItemNotifier, String?>((ref) {
   return ExpandedWatchlistItemNotifier();
 });
 
@@ -69,55 +70,64 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
             onEnter: (_) => setState(() => _isHovered = true),
             onExit: (_) => setState(() => _isHovered = false),
             child: InkWell(
-          borderRadius: BorderRadius.circular(8), // Increased border radius for web
-          splashColor: theme.isDarkMode
-              ? Colors.white.withOpacity(0.15)
-              : Colors.black.withOpacity(0.15),
-          highlightColor: theme.isDarkMode
-              ? Colors.white.withOpacity(0.08)
-              : Colors.black.withOpacity(0.08),
-          onLongPress: () {
-            if (marketWatch.isPreDefWLs == "Yes") {
-              showResponsiveWarningMessage(context,
-                  "This is a pre-defined watchlist that cannot be edited!");
-            } else {
-              ref
-                  .read(marketWatchProvider)
-                  .requestMWScrip(context: context, isSubscribe: false);
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) =>
-                          EditScrip(wlName: marketWatch.wlName)));
-            }
-          },
-          onTap: () async {
-            // Toggle expansion
-            final currentToken = widget.watchListData['token']?.toString();
-            if (_isExpanded) {
-              // If this is expanded, collapse it
-              ref.read(expandedWatchlistItemProvider.notifier).setExpandedToken(null);
-            } else {
-              // Expand this item
-              ref.read(expandedWatchlistItemProvider.notifier).setExpandedToken(currentToken);
-            }
+              borderRadius:
+                  BorderRadius.circular(8), // Increased border radius for web
+              splashColor: theme.isDarkMode
+                  ? Colors.white.withOpacity(0.15)
+                  : Colors.black.withOpacity(0.15),
+              highlightColor: theme.isDarkMode
+                  ? Colors.white.withOpacity(0.08)
+                  : Colors.black.withOpacity(0.08),
+              onLongPress: () {
+                if (marketWatch.isPreDefWLs == "Yes") {
+                  showResponsiveWarningMessage(context,
+                      "This is a pre-defined watchlist that cannot be edited!");
+                } else {
+                  ref
+                      .read(marketWatchProvider)
+                      .requestMWScrip(context: context, isSubscribe: false);
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) =>
+                              EditScrip(wlName: marketWatch.wlName)));
+                }
+              },
+              onTap: () async {
+                // Toggle expansion
+                final currentToken = widget.watchListData['token']?.toString();
+                if (_isExpanded) {
+                  // If this is expanded, collapse it
+                  ref
+                      .read(expandedWatchlistItemProvider.notifier)
+                      .setExpandedToken(null);
+                } else {
+                  // Expand this item
+                  ref
+                      .read(expandedWatchlistItemProvider.notifier)
+                      .setExpandedToken(currentToken);
+                }
 
-            // For full details navigation, only call APIs if not just expanding
-            if (!_isExpanded) {
-              try {
-                setState(() {
-                  _isNavigating = true;
-                });
+                // For full details navigation, only call APIs if not just expanding
+                if (!_isExpanded) {
+                  try {
+                    setState(() {
+                      _isNavigating = true;
+                    });
 
-                // Create proper DepthInputArgs object like in StocksScreen
-                DepthInputArgs depthArgs = DepthInputArgs(
-                    exch: widget.watchListData["exch"].toString(),
-                    token: widget.watchListData["token"].toString(),
-                    tsym: widget.watchListData["tsym"].toString(),
-                    instname: widget.watchListData["instname"]?.toString() ?? widget.watchListData["symbol"].toString(),
-                    symbol: widget.watchListData["symbol"].toString(),
-                    expDate: widget.watchListData["expDate"]?.toString() ?? "",
-                    option: widget.watchListData["option"]?.toString() ?? "");
+                    // Create proper DepthInputArgs object like in StocksScreen
+                    DepthInputArgs depthArgs = DepthInputArgs(
+                        exch: widget.watchListData["exch"].toString(),
+                        token: widget.watchListData["token"].toString(),
+                        tsym: widget.watchListData["tsym"].toString(),
+                        instname:
+                            widget.watchListData["instname"]?.toString() ??
+                                widget.watchListData["symbol"].toString(),
+                        symbol: widget.watchListData["symbol"].toString(),
+                        expDate:
+                            widget.watchListData["expDate"]?.toString() ?? "",
+                        option:
+                            widget.watchListData["option"]?.toString() ?? "");
 
                 // Only call depth APIs for full navigation, not for expansion
                 marketWatch.scripdepthsize(false);
@@ -318,25 +328,38 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                                 // Chart button always shows (icon only)
                                 _buildHoverButton(
                                   icon: Icons.bar_chart,
-                                  color: Colors.white,
-                                  backgroundColor: theme.isDarkMode
-                                      ? WebDarkColors.textSecondary.withOpacity(0.5)
-                                      : WebColors.textSecondary.withOpacity(0.5),
-                                  onPressed: () {
-                                    // Navigate to chart screen
-                                    ref.read(marketWatchProvider).singlePageloader(true);
-                                    ref.read(marketWatchProvider)
-                                        .chngDephBtn("Chart");
-                                    ref.read(userProfileProvider)
-                                        .setChartdialog(true);
-                                    
-                                    ref.read(marketWatchProvider).setChartScript(
-                                        widget.watchListData["exch"].toString(),
-                                        widget.watchListData["token"].toString(),
-                                        widget.watchListData["tsym"].toString());
-                                    
-                                    ref.read(marketWatchProvider)
-                                        .singlePageloader(false);
+                                  color: theme.isDarkMode
+                                      ? WebDarkColors.textSecondary
+                                      : WebColors.textSecondary,
+                                  onPressed: () async {
+                                   DepthInputArgs depthArgs = DepthInputArgs(
+                                            exch: widget.watchListData["exch"]
+                                                .toString(),
+                                            token: widget.watchListData["token"]
+                                                .toString(),
+                                            tsym: widget.watchListData["tsym"]
+                                                .toString(),
+                                            instname: widget
+                                                    .watchListData["instname"]
+                                                    ?.toString() ??
+                                                widget.watchListData["symbol"]
+                                                    .toString(),
+                                            symbol: widget
+                                                .watchListData["symbol"]
+                                                .toString(),
+                                            expDate: widget
+                                                    .watchListData["expDate"]
+                                                    ?.toString() ??
+                                                "",
+                                            option: widget
+                                                    .watchListData["option"]
+                                                    ?.toString() ??
+                                                "");
+
+                                        // Only call depth APIs for full navigation, not for expansion
+                                        marketWatch.scripdepthsize(false);
+                                        await marketWatch.calldepthApis(
+                                            context, depthArgs, "");
                                   },
                                 ),
                                   const SizedBox(width: 6),
@@ -372,7 +395,7 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
           ),
         ),
           ),
-        // Expandable content section
+          // Expandable content section
           if (_isExpanded)
             AnimatedSize(
               duration: const Duration(milliseconds: 300),
@@ -380,7 +403,8 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
               child: Container(
                 width: double.infinity,
                 // color: theme.isDarkMode ? WebDarkColors.surfaceVariant : WebColors.surfaceVariant,
-                padding: const EdgeInsets.fromLTRB(16, 16, 28, 16), // Extra right padding to prevent scrollbar overlap
+                padding: const EdgeInsets.fromLTRB(16, 16, 28,
+                    16), // Extra right padding to prevent scrollbar overlap
                 child: _buildExpandedContent(depthData, theme),
               ),
             ),
@@ -392,32 +416,44 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
   Widget _buildExpandedContent(GetQuotes depthData, ThemesProvider theme) {
     // Get current token for this specific card
     final currentToken = widget.watchListData['token']?.toString() ?? "";
-    
+
     return StreamBuilder<dynamic>(
       stream: ref.watch(websocketProvider).socketDataStream,
       builder: (context, snapshot) {
         Map<String, dynamic> socketData;
-        
+
         if (snapshot.hasData) {
           final socketDatas = Map<String, dynamic>.from(snapshot.data as Map);
-          socketData = socketDatas.containsKey(currentToken) 
-              ? Map<String, dynamic>.from(socketDatas[currentToken] as Map? ?? {})
+          socketData = socketDatas.containsKey(currentToken)
+              ? Map<String, dynamic>.from(
+                  socketDatas[currentToken] as Map? ?? {})
               : <String, dynamic>{};
         } else {
           final existingSocketData = ref.read(websocketProvider).socketDatas;
           socketData = existingSocketData.containsKey(currentToken)
-              ? Map<String, dynamic>.from(existingSocketData[currentToken] ?? {})
+              ? Map<String, dynamic>.from(
+                  existingSocketData[currentToken] ?? {})
               : <String, dynamic>{};
         }
-        
-        // Priority: Socket data → Watchlist data → Default  
-        final open = socketData['o']?.toString() ?? widget.watchListData['open']?.toString() ?? '0.00';
-        final high = socketData['h']?.toString() ?? widget.watchListData['high']?.toString() ?? '0.00';
-        final low = socketData['l']?.toString() ?? widget.watchListData['low']?.toString() ?? '0.00';
-        final close = socketData['c']?.toString() ?? widget.watchListData['close']?.toString() ?? '0.00';
-        final volume = socketData['v']?.toString() ?? widget.watchListData['volume']?.toString() ?? '0';
+
+        // Priority: Socket data → Watchlist data → Default
+        final open = socketData['o']?.toString() ??
+            widget.watchListData['open']?.toString() ??
+            '0.00';
+        final high = socketData['h']?.toString() ??
+            widget.watchListData['high']?.toString() ??
+            '0.00';
+        final low = socketData['l']?.toString() ??
+            widget.watchListData['low']?.toString() ??
+            '0.00';
+        final close = socketData['c']?.toString() ??
+            widget.watchListData['close']?.toString() ??
+            '0.00';
+        final volume = socketData['v']?.toString() ??
+            widget.watchListData['volume']?.toString() ??
+            '0';
         final avgPrice = socketData['ap']?.toString() ?? '0.00';
-        
+
         return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -523,7 +559,8 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
   }
 
   // Market Depth Section with Bid/Ask data
-  Widget _buildMarketDepthSection(Map<String, dynamic> socketData, ThemesProvider theme) {
+  Widget _buildMarketDepthSection(
+      Map<String, dynamic> socketData, ThemesProvider theme) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -545,71 +582,96 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                    Text(
-                      "Quantity",
-                      style: WebTextStyles.para(
-                        isDarkTheme: theme.isDarkMode,
-                        color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
-                        fontWeight: WebFonts.regular,
-                      ),
-                    ),
-                    Text(
-                      "Bid",
-                      style: WebTextStyles.para(
-                        isDarkTheme: theme.isDarkMode,
-                        color: WebDarkColors.secondary,
-                        fontWeight: WebFonts.regular,
-                      ),
-                    )
-                  ]),
+                  Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "Quantity",
+                          style: WebTextStyles.para(
+                            isDarkTheme: theme.isDarkMode,
+                            color: theme.isDarkMode
+                                ? WebDarkColors.textSecondary
+                                : WebColors.textSecondary,
+                            fontWeight: WebFonts.regular,
+                          ),
+                        ),
+                        Text(
+                          "Bid",
+                          style: WebTextStyles.para(
+                            isDarkTheme: theme.isDarkMode,
+                            color: WebDarkColors.secondary,
+                            fontWeight: WebFonts.regular,
+                          ),
+                        )
+                      ]),
                   const SizedBox(height: 8),
-                  _buildDepthRow(socketData['bq1']?.toString() ?? "0", socketData['bp1']?.toString() ?? "0.00", theme),
-                  _buildDepthRow(socketData['bq2']?.toString() ?? "0", socketData['bp2']?.toString() ?? "0.00", theme),
-                  _buildDepthRow(socketData['bq3']?.toString() ?? "0", socketData['bp3']?.toString() ?? "0.00", theme),
-                  _buildDepthRow(socketData['bq4']?.toString() ?? "0", socketData['bp4']?.toString() ?? "0.00", theme),
-                  _buildDepthRow(socketData['bq5']?.toString() ?? "0", socketData['bp5']?.toString() ?? "0.00", theme),
+                  _buildDepthRow(socketData['bq1']?.toString() ?? "0",
+                      socketData['bp1']?.toString() ?? "0.00", theme),
+                  _buildDepthRow(socketData['bq2']?.toString() ?? "0",
+                      socketData['bp2']?.toString() ?? "0.00", theme),
+                  _buildDepthRow(socketData['bq3']?.toString() ?? "0",
+                      socketData['bp3']?.toString() ?? "0.00", theme),
+                  _buildDepthRow(socketData['bq4']?.toString() ?? "0",
+                      socketData['bp4']?.toString() ?? "0.00", theme),
+                  _buildDepthRow(socketData['bq5']?.toString() ?? "0",
+                      socketData['bp5']?.toString() ?? "0.00", theme),
                 ],
               ),
             ),
             const SizedBox(width: 20),
-            
+
             // Ask Side
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                    Text(
-                      "Ask",
-                      style: WebTextStyles.para(
-                        isDarkTheme: theme.isDarkMode,
-                        color: theme.isDarkMode ? WebDarkColors.loss : WebColors.loss,
-                        fontWeight: WebFonts.regular,
-                      ),
-                    ),
-                    Text(
-                      "Quantity",
-                      style: WebTextStyles.para(
-                        isDarkTheme: theme.isDarkMode,
-                        color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
-                        fontWeight: WebFonts.regular,
-                      ),
-                    )
-                  ]),
+                  Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "Ask",
+                          style: WebTextStyles.para(
+                            isDarkTheme: theme.isDarkMode,
+                            color: theme.isDarkMode
+                                ? WebDarkColors.loss
+                                : WebColors.loss,
+                            fontWeight: WebFonts.regular,
+                          ),
+                        ),
+                        Text(
+                          "Quantity",
+                          style: WebTextStyles.para(
+                            isDarkTheme: theme.isDarkMode,
+                            color: theme.isDarkMode
+                                ? WebDarkColors.textSecondary
+                                : WebColors.textSecondary,
+                            fontWeight: WebFonts.regular,
+                          ),
+                        )
+                      ]),
                   const SizedBox(height: 8),
-                  _buildDepthRow(socketData['sp1']?.toString() ?? "0.00", socketData['sq1']?.toString() ?? "0", theme, isAsk: true),
-                  _buildDepthRow(socketData['sp2']?.toString() ?? "0.00", socketData['sq2']?.toString() ?? "0", theme, isAsk: true),
-                  _buildDepthRow(socketData['sp3']?.toString() ?? "0.00", socketData['sq3']?.toString() ?? "0", theme, isAsk: true),
-                  _buildDepthRow(socketData['sp4']?.toString() ?? "0.00", socketData['sq4']?.toString() ?? "0", theme, isAsk: true),
-                  _buildDepthRow(socketData['sp5']?.toString() ?? "0.00", socketData['sq5']?.toString() ?? "0", theme, isAsk: true),
+                  _buildDepthRow(socketData['sp1']?.toString() ?? "0.00",
+                      socketData['sq1']?.toString() ?? "0", theme,
+                      isAsk: true),
+                  _buildDepthRow(socketData['sp2']?.toString() ?? "0.00",
+                      socketData['sq2']?.toString() ?? "0", theme,
+                      isAsk: true),
+                  _buildDepthRow(socketData['sp3']?.toString() ?? "0.00",
+                      socketData['sq3']?.toString() ?? "0", theme,
+                      isAsk: true),
+                  _buildDepthRow(socketData['sp4']?.toString() ?? "0.00",
+                      socketData['sq4']?.toString() ?? "0", theme,
+                      isAsk: true),
+                  _buildDepthRow(socketData['sp5']?.toString() ?? "0.00",
+                      socketData['sq5']?.toString() ?? "0", theme,
+                      isAsk: true),
                 ],
               ),
             ),
           ],
         ),
         const SizedBox(height: 12),
-        
+
         // Total Quantities
         _buildTotalQuantities(socketData, theme),
       ],
@@ -697,9 +759,10 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
       ],
     );
   }
-  
+
   // Helper to build market depth rows
-  Widget _buildDepthRow(String value1, String value2, ThemesProvider theme, {bool isAsk = false}) {
+  Widget _buildDepthRow(String value1, String value2, ThemesProvider theme,
+      {bool isAsk = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Row(
@@ -709,19 +772,25 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
             isAsk ? value1 : value1, // Price for ask, Qty for bid
             style: WebTextStyles.para(
               isDarkTheme: theme.isDarkMode,
-              color: isAsk 
+              color: isAsk
                   ? (theme.isDarkMode ? WebDarkColors.loss : WebColors.loss)
-                  : (theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary),
+                  : (theme.isDarkMode
+                      ? WebDarkColors.textSecondary
+                      : WebColors.textSecondary),
               fontWeight: WebFonts.regular,
             ),
           ),
           Text(
-            isAsk ? value2 : value2, // Qty for ask, Price for bid  
+            isAsk ? value2 : value2, // Qty for ask, Price for bid
             style: WebTextStyles.para(
               isDarkTheme: theme.isDarkMode,
               color: isAsk
-                  ? (theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary)
-                  : (theme.isDarkMode ? WebDarkColors.secondary : WebColors.secondary),
+                  ? (theme.isDarkMode
+                      ? WebDarkColors.textSecondary
+                      : WebColors.textSecondary)
+                  : (theme.isDarkMode
+                      ? WebDarkColors.secondary
+                      : WebColors.secondary),
               fontWeight: WebFonts.regular,
             ),
           ),
@@ -730,8 +799,8 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
     );
   }
 
-  Widget _buildMarketDepth(ThemesProvider theme, MarketWatchProvider scripInfo, GetQuotes depthData) {
-    
+  Widget _buildMarketDepth(ThemesProvider theme, MarketWatchProvider scripInfo,
+      GetQuotes depthData) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -743,34 +812,43 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                    Text(
-                      "Quantity",
-                      style: WebTextStyles.para(
-                        isDarkTheme: theme.isDarkMode,
-                        color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
-                        fontWeight: WebFonts.regular,
-                      ),
-                    ),
-                    Text(
-                      "Bid",
-                      style: WebTextStyles.para(
-                        isDarkTheme: theme.isDarkMode,
-                        color: WebDarkColors.secondary,
-                        fontWeight: WebFonts.regular,
-                      ),
-                    )
-                  ]),
+                  Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "Quantity",
+                          style: WebTextStyles.para(
+                            isDarkTheme: theme.isDarkMode,
+                            color: theme.isDarkMode
+                                ? WebDarkColors.textSecondary
+                                : WebColors.textSecondary,
+                            fontWeight: WebFonts.regular,
+                          ),
+                        ),
+                        Text(
+                          "Bid",
+                          style: WebTextStyles.para(
+                            isDarkTheme: theme.isDarkMode,
+                            color: WebDarkColors.secondary,
+                            fontWeight: WebFonts.regular,
+                          ),
+                        )
+                      ]),
                   const SizedBox(height: 6),
-                  _buildBidDepthRow("${depthData.bq1 ?? 0}", "${depthData.bp1 ?? 0.00}", theme),
+                  _buildBidDepthRow("${depthData.bq1 ?? 0}",
+                      "${depthData.bp1 ?? 0.00}", theme),
                   const SizedBox(height: 4),
-                  _buildBidDepthRow("${depthData.bq2 ?? 0}", "${depthData.bp2 ?? 0.00}", theme),
+                  _buildBidDepthRow("${depthData.bq2 ?? 0}",
+                      "${depthData.bp2 ?? 0.00}", theme),
                   const SizedBox(height: 4),
-                  _buildBidDepthRow("${depthData.bq3 ?? 0}", "${depthData.bp3 ?? 0.00}", theme),
+                  _buildBidDepthRow("${depthData.bq3 ?? 0}",
+                      "${depthData.bp3 ?? 0.00}", theme),
                   const SizedBox(height: 4),
-                  _buildBidDepthRow("${depthData.bq4 ?? 0}", "${depthData.bp4 ?? 0.00}", theme),
+                  _buildBidDepthRow("${depthData.bq4 ?? 0}",
+                      "${depthData.bp4 ?? 0.00}", theme),
                   const SizedBox(height: 4),
-                  _buildBidDepthRow("${depthData.bq5 ?? 0}", "${depthData.bp5 ?? 0.00}", theme)
+                  _buildBidDepthRow("${depthData.bq5 ?? 0}",
+                      "${depthData.bp5 ?? 0.00}", theme)
                 ],
               ),
             ),
@@ -780,147 +858,163 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                    Text(
-                      "Ask",
-                      style: WebTextStyles.para(
-                        isDarkTheme: theme.isDarkMode,
-                        color: theme.isDarkMode ? WebDarkColors.error : WebColors.error,
-                        fontWeight: WebFonts.regular,
-                        letterSpacing: 0.0,
-                      ),
-                    ),
-                    Text(
-                      "Quantity",
-                      style: WebTextStyles.para(
-                        isDarkTheme: theme.isDarkMode,
-                        color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
-                        fontWeight: WebFonts.regular,
-                        letterSpacing: 0.0,
-                      ),
-                    )
-                  ]),
+                  Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "Ask",
+                          style: WebTextStyles.para(
+                            isDarkTheme: theme.isDarkMode,
+                            color: theme.isDarkMode
+                                ? WebDarkColors.error
+                                : WebColors.error,
+                            fontWeight: WebFonts.regular,
+                            letterSpacing: 0.0,
+                          ),
+                        ),
+                        Text(
+                          "Quantity",
+                          style: WebTextStyles.para(
+                            isDarkTheme: theme.isDarkMode,
+                            color: theme.isDarkMode
+                                ? WebDarkColors.textSecondary
+                                : WebColors.textSecondary,
+                            fontWeight: WebFonts.regular,
+                            letterSpacing: 0.0,
+                          ),
+                        )
+                      ]),
                   const SizedBox(height: 6),
-                  _buildAskDepthRow("${depthData.sp1 ?? 0.00}", "${depthData.sq1 ?? 0}", theme),
+                  _buildAskDepthRow("${depthData.sp1 ?? 0.00}",
+                      "${depthData.sq1 ?? 0}", theme),
                   const SizedBox(height: 4),
-                  _buildAskDepthRow("${depthData.sp2 ?? 0.00}", "${depthData.sq2 ?? 0}", theme),
+                  _buildAskDepthRow("${depthData.sp2 ?? 0.00}",
+                      "${depthData.sq2 ?? 0}", theme),
                   const SizedBox(height: 4),
-                  _buildAskDepthRow("${depthData.sp3 ?? 0.00}", "${depthData.sq3 ?? 0}", theme),
+                  _buildAskDepthRow("${depthData.sp3 ?? 0.00}",
+                      "${depthData.sq3 ?? 0}", theme),
                   const SizedBox(height: 4),
-                  _buildAskDepthRow("${depthData.sp4 ?? 0.00}", "${depthData.sq4 ?? 0}", theme),
+                  _buildAskDepthRow("${depthData.sp4 ?? 0.00}",
+                      "${depthData.sq4 ?? 0}", theme),
                   const SizedBox(height: 4),
-                  _buildAskDepthRow("${depthData.sp5 ?? 0.00}", "${depthData.sq5 ?? 0}", theme)
+                  _buildAskDepthRow("${depthData.sp5 ?? 0.00}",
+                      "${depthData.sq5 ?? 0}", theme)
                 ],
               ),
             ),
           ],
         ),
+        const SizedBox(height: 16),
+        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+          Row(
+            children: [
+              Text(
+                "${depthData.tbq != "null" ? depthData.tbq ?? 0 : '0'}",
+                style: WebTextStyles.para(
+                  isDarkTheme: theme.isDarkMode,
+                  color: theme.isDarkMode
+                      ? WebDarkColors.textSecondary
+                      : WebColors.textSecondary,
+                  fontWeight: WebFonts.regular,
+                ),
+              ),
+              const SizedBox(
+                width: 4,
+              ),
+              Text(
+                "(${scripInfo.totBuyQtyPer.toStringAsFixed(2)}%)",
+                style: WebTextStyles.para(
+                  isDarkTheme: theme.isDarkMode,
+                  color: theme.isDarkMode
+                      ? WebDarkColors.textSecondary
+                      : WebColors.textSecondary,
+                  fontWeight: WebFonts.regular,
+                ),
+              ),
+            ],
+          ),
+          Row(
+            children: [
+              Text(
+                "(${scripInfo.totSellQtyPer.toStringAsFixed(2)}%)",
+                style: WebTextStyles.para(
+                  isDarkTheme: theme.isDarkMode,
+                  color: theme.isDarkMode
+                      ? WebDarkColors.textSecondary
+                      : WebColors.textSecondary,
+                  fontWeight: WebFonts.regular,
+                  letterSpacing: 0.0,
+                ),
+              ),
+              SizedBox(
+                width: 4,
+              ),
+              Text(
+                "${depthData.tsq != "null" ? depthData.tsq ?? 0 : '0'}",
+                style: WebTextStyles.para(
+                  isDarkTheme: theme.isDarkMode,
+                  color: theme.isDarkMode
+                      ? WebDarkColors.textSecondary
+                      : WebColors.textSecondary,
+                  fontWeight: WebFonts.regular,
+                  letterSpacing: 0.0,
+                ),
+              ),
+            ],
+          )
+        ]),
+        (scripInfo.totBuyQtyPer.toStringAsFixed(2) == "0.00" &&
+                scripInfo.totSellQtyPer.toStringAsFixed(2) == "0.00")
+            ? const SizedBox()
+            : Column(
+                children: [
+                  const SizedBox(height: 10),
+                  LinearPercentIndicator(
 
-          const SizedBox(
-                                                                      height:
-                                                                          16),
-                                                                  Row(
-                                                                      mainAxisAlignment:
-                                                                          MainAxisAlignment
-                                                                              .spaceBetween,
-                                                                      children: [
-                                                                        Row(
-                                                                          children: [
-                                                                            Text(
-                                                                              "${depthData.tbq != "null" ? depthData.tbq ?? 0 : '0'}",
-                                                                              style: WebTextStyles.para(
-                                                                                isDarkTheme: theme.isDarkMode,
-                                                                                color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
-                                                                                fontWeight: WebFonts.regular,
-                                                                              ),
-                                                                            ),
-                                                                            const SizedBox(
-                                                                              width: 4,
-                                                                            ),
-                                                                            Text(
-                                                                              "(${scripInfo.totBuyQtyPer.toStringAsFixed(2)}%)",
-                                                                              style: WebTextStyles.para(
-                                                                                isDarkTheme: theme.isDarkMode,
-                                                                                color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
-                                                                                fontWeight: WebFonts.regular,
-                                                                              ),
-                                                                            ),
-                                                                          ],
-                                                                        ),
-                                                                        Row(
-                                                                          children: [
-                                                                            Text(
-                                                                              "(${scripInfo.totSellQtyPer.toStringAsFixed(2)}%)",
-                                                                              style: WebTextStyles.para(
-                                                                                isDarkTheme: theme.isDarkMode,
-                                                                                color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
-                                                                                fontWeight: WebFonts.regular,
-                                                                                letterSpacing: 0.0,
-                                                                              ),
-                                                                            ),
-                                                                            SizedBox(
-                                                                              width: 4,
-                                                                            ),
-                                                                            Text(
-                                                                              "${depthData.tsq != "null" ? depthData.tsq ?? 0 : '0'}",
-                                                                              style: WebTextStyles.para(
-                                                                                isDarkTheme: theme.isDarkMode,
-                                                                                color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
-                                                                                fontWeight: WebFonts.regular,
-                                                                                letterSpacing: 0.0,
-                                                                              ),
-                                                                            ),
-                                                                          ],
-                                                                        )
-                                                                      ]),
-
-           (scripInfo.totBuyQtyPer.toStringAsFixed(2) ==
-                                                                              "0.00" &&
-                                                                          scripInfo.totSellQtyPer.toStringAsFixed(2) ==
-                                                                              "0.00")
-                                                                      ? const SizedBox()
-                                                                      : Column(
-                                                                          children: [
-                                                                            const SizedBox(height: 10),
-                                                                            LinearPercentIndicator(
-
-                                                                                // leading: Text(
-                                                                                //     "${scripInfo.totBuyQtyPer.toStringAsFixed(2)}%",
-                                                                                //     style: textStyle(
-                                                                                //         theme.isDarkMode
-                                                                                //             ? colors
-                                                                                //                 .colorWhite
-                                                                                //             : colors
-                                                                                //                 .colorBlack,
-                                                                                //         14,
-                                                                                //         FontWeight
-                                                                                //             .w500)),
-                                                                                // trailing: Text(
-                                                                                //     "${scripInfo.totSellQtyPer.toStringAsFixed(2)}%",
-                                                                                //     style: textStyle(
-                                                                                //         theme.isDarkMode
-                                                                                //             ? colors
-                                                                                //                 .colorWhite
-                                                                                //             : colors
-                                                                                //                 .colorBlack,
-                                                                                //         14,
-                                                                                //         FontWeight
-                                                                                //             .w500)),
-                                                                                lineHeight: 5.0,
-                                                                                barRadius: const Radius.circular(4.0), // Half of lineHeight for capsule shape
-                                                                                backgroundColor: (scripInfo.totBuyQtyPer.toStringAsFixed(2) == "0.00" && scripInfo.totSellQtyPer.toStringAsFixed(2) == "0.00")
-                                                                                    ? theme.isDarkMode
-                                                                                        ? WebDarkColors.textSecondary
-                                                                                        : WebColors.textSecondary
-                                                                                    : theme.isDarkMode
-                                                                                        ? WebDarkColors.error
-                                                                                        : WebColors.error,
-                                                                                percent: scripInfo.totBuyQtyPerChng,
-                                                                                padding: const EdgeInsets.symmetric(horizontal: 0),
-                                                                                progressColor: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary),
-                                                                            const SizedBox(height: 16),
-                                                                          ],
-                                                                        ),
+                      // leading: Text(
+                      //     "${scripInfo.totBuyQtyPer.toStringAsFixed(2)}%",
+                      //     style: textStyle(
+                      //         theme.isDarkMode
+                      //             ? colors
+                      //                 .colorWhite
+                      //             : colors
+                      //                 .colorBlack,
+                      //         14,
+                      //         FontWeight
+                      //             .w500)),
+                      // trailing: Text(
+                      //     "${scripInfo.totSellQtyPer.toStringAsFixed(2)}%",
+                      //     style: textStyle(
+                      //         theme.isDarkMode
+                      //             ? colors
+                      //                 .colorWhite
+                      //             : colors
+                      //                 .colorBlack,
+                      //         14,
+                      //         FontWeight
+                      //             .w500)),
+                      lineHeight: 5.0,
+                      barRadius: const Radius.circular(
+                          4.0), // Half of lineHeight for capsule shape
+                      backgroundColor:
+                          (scripInfo.totBuyQtyPer.toStringAsFixed(2) ==
+                                      "0.00" &&
+                                  scripInfo.totSellQtyPer.toStringAsFixed(2) ==
+                                      "0.00")
+                              ? theme.isDarkMode
+                                  ? WebDarkColors.textSecondary
+                                  : WebColors.textSecondary
+                              : theme.isDarkMode
+                                  ? WebDarkColors.error
+                                  : WebColors.error,
+                      percent: scripInfo.totBuyQtyPerChng,
+                      padding: const EdgeInsets.symmetric(horizontal: 0),
+                      progressColor: theme.isDarkMode
+                          ? WebDarkColors.primary
+                          : WebColors.primary),
+                  const SizedBox(height: 16),
+                ],
+              ),
       ],
     );
   }
@@ -1111,7 +1205,8 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
             showMenu<String>(
               context: context,
               position: position,
-              color: Colors.white,
+              color:
+                  theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
               elevation: 8,
               shape: RoundedRectangleBorder(
                 // borderRadius: BorderRadius.circular(),
@@ -1120,14 +1215,18 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                 if (hasFutures)
                   PopupMenuItem<String>(
                     value: 'futures',
-                    child: Text(
-                      'Futures',
-                      style: WebTextStyles.custom(
-                        fontSize: 13,
-                        isDarkTheme: false,
-                        color: WebColors.textPrimary,
-                        fontWeight: FontWeight.w700,
-                      ),
+                    child: Row(
+                      children: [
+                        Text(
+                          'Futures',
+                          style: WebTextStyles.sub(
+                            isDarkTheme: theme.isDarkMode,
+                            color: theme.isDarkMode
+                                ? WebDarkColors.textPrimary
+                                : WebColors.textPrimary,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 if (hasFundamentals)
@@ -1205,12 +1304,13 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
     );
   }
 
-  Future<void> _handleMenuAction(String action, GetQuotes depthData, String exch, String token) async {
+  Future<void> _handleMenuAction(
+      String action, GetQuotes depthData, String exch, String token) async {
     if (_isNavigating) return;
-    
+
     final marketWatch = ref.read(marketWatchProvider);
     final theme = ref.read(themeProvider);
-    
+
     try {
       setState(() {
         _isNavigating = true;
@@ -1219,7 +1319,7 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
       if (action == 'futures') {
         // Load futures data first
         marketWatch.singlePageloader(true);
-        
+
         try {
           // Fetch linked scripts (this loads futures data)
           await marketWatch.fetchScripQuoteIndex(token, exch, context);
@@ -1237,7 +1337,9 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
             barrierDismissible: true,
             builder: (BuildContext dialogContext) {
               return Dialog(
-                backgroundColor: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
+                backgroundColor: theme.isDarkMode
+                    ? WebDarkColors.surface
+                    : WebColors.surface,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -1278,7 +1380,8 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                                     : Colors.black.withOpacity(.08),
                                 onTap: () {
                                   // Unsubscribe from futures WebSocket
-                                  marketWatch.requestWSFut(context: context, isSubscribe: false);
+                                  marketWatch.requestWSFut(
+                                      context: context, isSubscribe: false);
                                   Navigator.of(context).pop();
                                 },
                                 child: Padding(
@@ -1350,7 +1453,7 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
       } else if (action == 'fundamentals') {
         // Open fundamentals in a dialog
         marketWatch.singlePageloader(true);
-        
+
         try {
           // Always fetch fresh fundamental data for the current scrip
           await marketWatch.fetchFundamentalData(
@@ -1364,7 +1467,7 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
             // Create DepthInputArgs and get depth data
             DepthInputArgs depthArgs = _createDepthArgs();
             final depthData = marketWatch.getQuotes!;
-            
+
             // Show as dialog
             if (mounted) {
               showDialog(
@@ -1372,13 +1475,16 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                 barrierDismissible: true,
                 builder: (BuildContext dialogContext) {
                   return Dialog(
-                    backgroundColor: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
+                    backgroundColor: theme.isDarkMode
+                        ? WebDarkColors.surface
+                        : WebColors.surface,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Container(
                       width: 700,
-                      constraints: const BoxConstraints(maxHeight: 800, minHeight: 400),
+                      constraints:
+                          const BoxConstraints(maxHeight: 800, minHeight: 400),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -1621,19 +1727,19 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
   // Helper method to safely parse numeric values
   String _safeParseNumeric(dynamic value, String defaultValue) {
     if (value == null) return defaultValue;
-    
+
     String stringValue = value.toString().trim();
-    
+
     // Handle common invalid values
-    if (stringValue.isEmpty || 
-        stringValue == 'null' || 
-        stringValue == '0.0' || 
+    if (stringValue.isEmpty ||
+        stringValue == 'null' ||
+        stringValue == '0.0' ||
         stringValue == '0' ||
         stringValue == 'NaN' ||
         stringValue == 'Infinity') {
       return defaultValue;
     }
-    
+
     // Try to parse as double first, then int
     try {
       double.parse(stringValue);
@@ -1649,36 +1755,38 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
   }
 
   // Helper method to safely parse lot size
-  String _safeParseLotSize(dynamic scripInfoLs, dynamic depthDataLs, String defaultValue) {
+  String _safeParseLotSize(
+      dynamic scripInfoLs, dynamic depthDataLs, String defaultValue) {
     // Try scripInfo first
     String scripInfoValue = _safeParseNumeric(scripInfoLs, "");
     if (scripInfoValue.isNotEmpty && scripInfoValue != defaultValue) {
       return scripInfoValue;
     }
-    
+
     // Try depthData
     String depthDataValue = _safeParseNumeric(depthDataLs, "");
     if (depthDataValue.isNotEmpty && depthDataValue != defaultValue) {
       return depthDataValue;
     }
-    
+
     return defaultValue;
   }
 
-  Future<void> _placeOrderInput(BuildContext ctx, GetQuotes depthData, bool transType) async {
+  Future<void> _placeOrderInput(
+      BuildContext ctx, GetQuotes depthData, bool transType) async {
     try {
       // Prevent multiple simultaneous calls
       if (_isNavigating) return;
-      
+
       setState(() {
         _isNavigating = true;
       });
 
       // Fetch scrip info first, exactly like reference implementation
       await ref.read(marketWatchProvider).fetchScripInfo(
-          widget.watchListData['token']?.toString() ?? "", 
-          widget.watchListData['exch']?.toString() ?? "", 
-          context, 
+          widget.watchListData['token']?.toString() ?? "",
+          widget.watchListData['exch']?.toString() ?? "",
+          context,
           true);
 
       // Ensure scripInfo is loaded before proceeding
@@ -1710,10 +1818,10 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
           holdQty: '',
           isModify: false,
           raw: {});
-      
+
       // Add small delay to ensure state is properly set
       await Future.delayed(const Duration(milliseconds: 150));
-      
+
       ResponsiveNavigation.toPlaceOrderScreen(
         context: context,
         arguments: {
@@ -1729,9 +1837,7 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
       // Show error to user
       if (mounted) {
         ResponsiveSnackBar.showError(
-          context, 
-          'Error placing order: ${e.toString()}'
-        );
+            context, 'Error placing order: ${e.toString()}');
       }
     } finally {
       // Reset navigation state after a delay
@@ -1758,7 +1864,8 @@ class _PriceDataWidgetWeb extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<_PriceDataWidgetWeb> createState() => _PriceDataWidgetWebState();
+  ConsumerState<_PriceDataWidgetWeb> createState() =>
+      _PriceDataWidgetWebState();
 }
 
 class _PriceDataWidgetWebState extends ConsumerState<_PriceDataWidgetWeb> {
@@ -1790,7 +1897,8 @@ class _PriceDataWidgetWebState extends ConsumerState<_PriceDataWidgetWeb> {
 
   void _setupSubscription() {
     // Using a more efficient approach to listen to only the relevant token's data
-    _subscription = ref.read(websocketProvider).socketDataStream.listen((rawData) {
+    _subscription =
+        ref.read(websocketProvider).socketDataStream.listen((rawData) {
       // Skip processing if widget is in the process of disposal
       if (!mounted) return;
 
@@ -1802,7 +1910,7 @@ class _PriceDataWidgetWebState extends ConsumerState<_PriceDataWidgetWeb> {
 
       final rawNewData = data[widget.token];
       if (rawNewData == null) return;
-      
+
       final newData = Map<String, dynamic>.from(rawNewData as Map);
 
       // Only update state if values actually changed
@@ -1812,17 +1920,27 @@ class _PriceDataWidgetWebState extends ConsumerState<_PriceDataWidgetWeb> {
       final newChange = newData['chng']?.toString();
       final newPerChange = newData['pc']?.toString();
 
-      if (newLtp != null && newLtp != ltp && newLtp != '0.00' && newLtp != '0.0' && newLtp != 'null') {
+      if (newLtp != null &&
+          newLtp != ltp &&
+          newLtp != '0.00' &&
+          newLtp != '0.0' &&
+          newLtp != 'null') {
         ltp = newLtp;
         valueChanged = true;
       }
 
-      if (newChange != null && newChange != change && newChange != '0.0' && newChange != 'null') {
+      if (newChange != null &&
+          newChange != change &&
+          newChange != '0.0' &&
+          newChange != 'null') {
         change = newChange;
         valueChanged = true;
       }
 
-      if (newPerChange != null && newPerChange != perChange && newPerChange != '0.0' && newPerChange != 'null') {
+      if (newPerChange != null &&
+          newPerChange != perChange &&
+          newPerChange != '0.0' &&
+          newPerChange != 'null') {
         perChange = newPerChange;
         valueChanged = true;
       }
@@ -1846,7 +1964,11 @@ class _PriceDataWidgetWebState extends ConsumerState<_PriceDataWidgetWeb> {
 
   // Helper method to safely format price values
   String _safeFormatPrice(String value) {
-    if (value == 'null' || value.isEmpty || value == '0.0' || value == 'NaN' || value == 'Infinity') {
+    if (value == 'null' ||
+        value.isEmpty ||
+        value == '0.0' ||
+        value == 'NaN' ||
+        value == 'Infinity') {
       return '0.00';
     }
     return value;
@@ -1885,9 +2007,9 @@ class _PriceDataWidgetWebState extends ConsumerState<_PriceDataWidgetWeb> {
             style: WebTextStyles.custom(
               fontSize: 14,
               isDarkTheme: theme.isDarkMode,
-             color: theme.isDarkMode
+              color: theme.isDarkMode
                   ? WebDarkColors.textPrimary
-                  :  WebColors.textPrimary,
+                  : WebColors.textPrimary,
               fontWeight: FontWeight.w700,
               // height: 1.2,
               // letterSpacing: 0.0,
@@ -1899,7 +2021,7 @@ class _PriceDataWidgetWebState extends ConsumerState<_PriceDataWidgetWeb> {
             style: WebTextStyles.custom(
               fontSize: 13,
               isDarkTheme: theme.isDarkMode,
-               color: changeColor,
+              color: changeColor,
               fontWeight: FontWeight.w700,
             ),
           ),

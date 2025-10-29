@@ -331,7 +331,7 @@ class OrderProvider extends DefaultChangeNotifier {
       requestWSOrderBook(isSubscribe: true, context: context);
     }
 
-    if (index == 4) {
+    if (kIsWeb ? index == 5 : index == 4) {
       print("=== TAB SWITCH TO BASKET ===");
       print("Calling getBasketName()...");
       getBasketName();

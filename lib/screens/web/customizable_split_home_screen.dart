@@ -9,6 +9,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:mynt_plus/models/marketwatch_model/market_watch_scrip_model.dart';
 import 'package:mynt_plus/provider/auth_provider.dart';
 import 'package:mynt_plus/provider/bonds_provider.dart';
+import 'package:mynt_plus/screens/web/market_watch/tv_chart/webview_chart.dart';
 import 'package:mynt_plus/screens/web/ordersbook/order_book_screen_web.dart';
 import 'package:mynt_plus/screens/web/funds/secure_fund_web.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -36,14 +37,11 @@ import 'market_watch/index/default_index_list_web.dart';
 import 'splitter_widget.dart';
 import '../Mobile/market_watch/tv_chart/webview_chart.dart';
 import 'market_watch/watchlist_screen_web.dart';
-import 'market_watch/scrip_tabs_manager.dart';
 import 'holdings/holding_screen_web.dart';
 import 'position/position_screen_web.dart';
-import '../Mobile/order_book/order_book_screen.dart';
 import '../Mobile/market_watch/option_chain/option_chain_ss.dart';
 import '../Mobile/desk_reports/pledge_unpledge_screen.dart';
 // Removed CA Event and CP Action from panel screens
-import '../Mobile/profile_screen/fund_screen/secure_fund.dart';
 import '../Mobile/mutual_fund/mf_main_screen.dart';
 import '../Mobile/profile_screen/profile_main_screen.dart';
 import '../Mobile/ipo/ipo_main_screen.dart';
@@ -1294,7 +1292,13 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
       case ScreenType.bond:
         return const BondsScreen(isBonds: true);
       case ScreenType.scripDepthInfo:
-        return const ScripTabsManager();
+        return Consumer(
+          builder: (context, ref, _) {
+            final mw = ref.watch(marketWatchProvider);
+            final args = mw.activeTab ?? ChartArgs(exch: 'ABC', tsym: 'ABCD', token: '0123');
+            return ChartScreenWebViews(chartArgs: args);
+          },
+        );
       case ScreenType.optionChain:
         if (_optionChainArgs != null) {
           return OptionChainSS(wlValue: _optionChainArgs!);
@@ -1708,7 +1712,6 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
     portfolio.cancelTimer();
 
     // Unsubscribe from other real-time data
-    await ref.read(marketWatchProvider).requestMWScrip(context: context, isSubscribe: false);
     await portfolio.requestWSHoldings(context: context, isSubscribe: false);
     await portfolio.requestWSPosition(context: context, isSubscribe: false);
     await ref.read(orderProvider).requestWSOrderBook(context: context, isSubscribe: false);
@@ -1845,33 +1848,19 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
       }
     }
     
-    // Find the best panel to add scrip tab to
+    // Find the best panel to replace with scrip depth (prefer non-watchlist panels)
     int targetPanelIndex = -1;
     
-    // First, look for a panel that already has multiple tabs (like Holdings, Order Book)
+    // Find any non-watchlist panel to replace
     for (int i = 0; i < _panels.length; i++) {
       final panel = _panels[i];
       bool hasWatchlist = panel.screenType == ScreenType.watchlist ||
           (panel.screens.isNotEmpty && panel.screens.contains(ScreenType.watchlist));
       
-      // Skip watchlist panels, but prefer panels with existing tabs
-      if (!hasWatchlist && panel.screens.length > 0) {
+      // Use first non-watchlist panel
+      if (!hasWatchlist) {
         targetPanelIndex = i;
         break;
-      }
-    }
-    
-    // If no panel with existing tabs, find any non-watchlist panel
-    if (targetPanelIndex == -1) {
-      for (int i = 0; i < _panels.length; i++) {
-        final panel = _panels[i];
-        bool hasWatchlist = panel.screenType == ScreenType.watchlist ||
-            (panel.screens.isNotEmpty && panel.screens.contains(ScreenType.watchlist));
-        
-        if (!hasWatchlist) {
-          targetPanelIndex = i;
-          break;
-        }
       }
     }
     
@@ -1880,21 +1869,20 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
       targetPanelIndex = 0;
     }
     
-    // Add ScripDepthInfo as a new tab (don't replace existing tabs)
+    // Replace the screen with ScripDepthInfo (don't add as tab)
     setState(() {
-      if (_panels[targetPanelIndex].screens.isEmpty) {
-        // If panel is empty, initialize with ScripDepthInfo
-        _panels[targetPanelIndex].screens = [ScreenType.scripDepthInfo];
-        _panels[targetPanelIndex].activeScreenIndex = 0;
-      } else {
-        // Add to existing tabs
-        if (!_panels[targetPanelIndex].screens.contains(ScreenType.scripDepthInfo)) {
-          _panels[targetPanelIndex].screens.add(ScreenType.scripDepthInfo);
-        }
-        _panels[targetPanelIndex].activeScreenIndex = _panels[targetPanelIndex].screens.indexOf(ScreenType.scripDepthInfo);
-      }
-      // Update screenType for backward compatibility
+      // Store the previous screen type for cleanup if needed
+      ScreenType? previousScreenType = _panels[targetPanelIndex].screenType;
+      
+      // Replace the entire screen with scrip depth info
+      _panels[targetPanelIndex].screens = [ScreenType.scripDepthInfo];
+      _panels[targetPanelIndex].activeScreenIndex = 0;
       _panels[targetPanelIndex].screenType = ScreenType.scripDepthInfo;
+      
+      // Clean up resources from the replaced screen
+      if (previousScreenType != null && previousScreenType != ScreenType.scripDepthInfo) {
+        _cleanupScreenResources(previousScreenType);
+      }
     });
     
     _saveLayout();
@@ -2206,16 +2194,15 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
     // Unsubscribe from other real-time data
     await orderProviderRef.requestWSOrderBook(context: context, isSubscribe: false);
     await portfolio.requestWSPosition(context: context, isSubscribe: false);
-    
-    // Subscribe to holdings data
     await portfolio.requestWSHoldings(context: context, isSubscribe: true);
-
-    // Fetch holdings data in the background
+    
     Future.microtask(() {
       if (mounted) {
         portfolio.fetchHoldings(context, "");
       }
     });
+    // Subscribe to holdings data
+
   }
 
   void _handlePositionsTap() async {
@@ -2726,7 +2713,7 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  ChartScreenWebView(
+                  ChartScreenWebViews(
                       chartArgs:  ChartArgs(exch: 'ABC', tsym: 'ABCD', token: '0123')),
                 ],
               ),
