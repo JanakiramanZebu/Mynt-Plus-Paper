@@ -463,7 +463,9 @@ class BalanceSheetTable extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Data rows with colored circles
+          // Header row with years
+          _buildHeaderRow(sortedData),
+          // Data rows with names
           ..._buildMetricRows(sortedData),
           // Legend below table
           _buildLegend(),
@@ -472,11 +474,50 @@ class BalanceSheetTable extends StatelessWidget {
     );
   }
 
+  Widget _buildHeaderRow(List<BalanceSheet> sortedData) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 0),
+      child: Row(
+        children: [
+          // Empty space for the name column
+          Expanded(
+            flex: 1,
+            child: TextWidget.custmText(
+              text: "",
+              fs: 12,
+              theme: themes.isDarkMode,
+              color: themes.isDarkMode
+                  ? colors.textSecondaryDark
+                  : colors.textSecondaryLight,
+              fw: 1,
+              align: TextAlign.left,
+            ),
+          ),
+          // Year headers
+          ...sortedData
+              .map((item) => Expanded(
+                    child: TextWidget.custmText(
+                      text: _formatDate(item.yearEndDate ?? item.convDate),
+                      fs: 12,
+                      theme: themes.isDarkMode,
+                      color: themes.isDarkMode
+                          ? colors.textSecondaryDark
+                          : colors.textSecondaryLight,
+                      fw: 0,
+                      align: TextAlign.right,
+                    ),
+                  ))
+              .toList(),
+        ],
+      ),
+    );
+  }
+
   List<Widget> _buildMetricRows(List<BalanceSheet> sortedData) {
     final metrics = [
-      {"name": "", "getValue": (item) => item.totalCurrentAssets, "color": const Color(0xFF00BCD4)}, // Bright Cyan
-      {"name": "", "getValue": (item) => item.totalNonCurrentAssets, "color": const Color(0xFF3F51B5)}, // Indigo
-      {"name": "", "getValue": (item) => item.totalCurrentLiabilities, "color": const Color(0xFFE91E63)}, // Bright Pink
+      {"name": "Current Assets", "getValue": (item) => item.totalCurrentAssets, "color": const Color(0xFF00BCD4)}, // Bright Cyan
+      {"name": "Non Current Assets", "getValue": (item) => item.totalNonCurrentAssets, "color": const Color(0xFF3F51B5)}, // Indigo
+      {"name": "Current Liabilities", "getValue": (item) => item.totalCurrentLiabilities, "color": const Color(0xFFE91E63)}, // Bright Pink
     ];
 
     return metrics.map((metric) => Container(
@@ -484,16 +525,16 @@ class BalanceSheetTable extends StatelessWidget {
       child: Row(
         children: [
           Expanded(
-            flex: 0,
-            child: Center(
-              child: Container(
-                width: 8,
-                height: 8,
-                decoration: BoxDecoration(
-                  color: metric["color"] as Color,
-                  shape: BoxShape.circle,
-                ),
-              ),
+            flex: 1,
+            child: TextWidget.custmText(
+              text: metric["name"] as String,
+              fs: 10,
+              theme: themes.isDarkMode,
+              color: themes.isDarkMode
+                  ? colors.textPrimaryDark
+                  : colors.textPrimaryLight,
+              fw: 0,
+              align: TextAlign.left,
             ),
           ),
           ...sortedData.map((item) => Expanded(
@@ -515,7 +556,6 @@ class BalanceSheetTable extends StatelessWidget {
     final legendItems = [
       {"name": "Current Assets", "color": const Color(0xFF00BCD4)}, // Bright Cyan
       {"name": "Non Current Assets", "color": const Color(0xFF3F51B5)}, // Indigo
-      {"name": "Current Liabilities", "color": const Color(0xFFE91E63)}, // Bright Pink
     ];
 
     return Container(
@@ -651,28 +691,8 @@ class IncomeStatementTable extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header row with years
-          // Container(
-          //   padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 0),
-          //   child: Row(
-          //     children: [
-               
-          //       // ...sortedData.map((item) => Expanded(
-          //       //   child: Center(
-          //       //     child: TextWidget.subText(
-          //       //       // text: _formatDate(item.convDate),
-          //       //       text:'',
-          //       //       theme: themes.isDarkMode,
-          //       //       color: themes.isDarkMode
-          //       //           ? colors.textSecondaryDark
-          //       //           : colors.textSecondaryLight,
-          //       //       fw: 1,
-          //       //     ),
-          //       //   ),
-          //       // )).toList(),
-          //     ],
-          //   ),
-          // ),
-          // Data rows with colored circles
+          _buildHeaderRow(sortedData),
+          // Data rows with names
           ..._buildMetricRows(sortedData),
           // Legend below table
           _buildLegend(),
@@ -681,14 +701,53 @@ class IncomeStatementTable extends StatelessWidget {
     );
   }
 
+  Widget _buildHeaderRow(List<IncomeSheet> sortedData) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 0),
+      child: Row(
+        children: [
+          // Empty space for the name column
+          Expanded(
+            flex: 1,
+            child: TextWidget.custmText(
+              text: "",
+              fs: 12,
+              theme: themes.isDarkMode,
+              color: themes.isDarkMode
+                  ? colors.textSecondaryDark
+                  : colors.textSecondaryLight,
+              fw: 1,
+              align: TextAlign.left,
+            ),
+          ),
+          // Year headers
+          ...sortedData
+              .map((item) => Expanded(
+                    child: TextWidget.custmText(
+                      text: _formatDate(item.yearEndDate ?? item.convDate),
+                      fs: 12,
+                      theme: themes.isDarkMode,
+                      color: themes.isDarkMode
+                          ? colors.textSecondaryDark
+                          : colors.textSecondaryLight,
+                      fw: 0,
+                      align: TextAlign.right,
+                    ),
+                  ))
+              .toList(),
+        ],
+      ),
+    );
+  }
+
   List<Widget> _buildMetricRows(List<IncomeSheet> sortedData) {
     final metrics = [
-      {"name": "", "getValue": (item) => item.revenue, "color": const Color(0xFF2196F3)}, // Bright Blue
-      {"name": "", "getValue": (item) => item.expenditure, "color": const Color(0xFFF44336)}, // Bright Red
-      {"name": "", "getValue": (item) => item.operatingProfit, "color": const Color(0xFF4CAF50)}, // Bright Green
-      {"name": "", "getValue": (item) => item.profitBeforeTax, "color": const Color(0xFF9C27B0)}, // Purple
-      {"name": "", "getValue": (item) => item.tax, "color": const Color(0xFFFF9800)}, // Orange
-      {"name": "", "getValue": (item) => item.profitAfterTax, "color": const Color(0xFFFFC107)}, // Amber
+      {"name": "Revenue", "getValue": (item) => item.revenue, "color": const Color(0xFF2196F3)}, // Bright Blue
+      {"name": "Expenditure", "getValue": (item) => item.expenditure, "color": const Color(0xFFF44336)}, // Bright Red
+      {"name": "Operating Profit", "getValue": (item) => item.operatingProfit, "color": const Color(0xFF4CAF50)}, // Bright Green
+      {"name": "Profit Before Tax", "getValue": (item) => item.profitBeforeTax, "color": const Color(0xFF9C27B0)}, // Purple
+      {"name": "Tax", "getValue": (item) => item.tax, "color": const Color(0xFFFF9800)}, // Orange
+      {"name": "Profit After Tax", "getValue": (item) => item.profitAfterTax, "color": const Color(0xFFFFC107)}, // Amber
     ];
 
     return metrics.map((metric) => Container(
@@ -696,16 +755,16 @@ class IncomeStatementTable extends StatelessWidget {
       child: Row(
         children: [
           Expanded(
-            flex: 0,
-            child: Center(
-              child: Container(
-                width: 8,
-                height: 8,
-                decoration: BoxDecoration(
-                  color: metric["color"] as Color,
-                  shape: BoxShape.circle,
-                ),
-              ),
+            flex: 1,
+            child: TextWidget.custmText(
+              text: metric["name"] as String,
+              fs: 10,
+              theme: themes.isDarkMode,
+              color: themes.isDarkMode
+                  ? colors.textPrimaryDark
+                  : colors.textPrimaryLight,
+              fw: 0,
+              align: TextAlign.left,
             ),
           ),
           ...sortedData.map((item) => Expanded(
@@ -713,7 +772,7 @@ class IncomeStatementTable extends StatelessWidget {
               text: _formatValue((metric["getValue"] as Function)(item)),
               fs: 12,
               theme: themes.isDarkMode,
-              color: colors.textPrimaryLight,
+              color: themes.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
               fw: 0,
               align: TextAlign.right,
             ),
@@ -727,9 +786,6 @@ class IncomeStatementTable extends StatelessWidget {
     final legendItems = [
       {"name": "Revenue", "color": const Color(0xFF2196F3)}, // Bright Blue
       {"name": "Expenditure", "color": const Color(0xFFF44336)}, // Bright Red
-      {"name": "Operating Profit", "color": const Color(0xFF4CAF50)}, // Bright Green
-      {"name": "Profit Before Tax", "color": const Color(0xFF9C27B0)}, // Purple
-      {"name": "Tax", "color": const Color(0xFFFF9800)}, // Orange
       {"name": "Profit After Tax", "color": const Color(0xFFFFC107)}, // Amber
     ];
 
@@ -862,7 +918,9 @@ class CashFlowTable extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Data rows with colored circles
+          // Header row with years
+          _buildHeaderRow(sortedData),
+          // Data rows with names
           ..._buildMetricRows(sortedData),
           // Legend below table
           _buildLegend(),
@@ -871,11 +929,50 @@ class CashFlowTable extends StatelessWidget {
     );
   }
 
+  Widget _buildHeaderRow(List<CashflowSheet> sortedData) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 0),
+      child: Row(
+        children: [
+          // Empty space for the name column
+          Expanded(
+            flex: 1,
+            child: TextWidget.custmText(
+              text: "",
+              fs: 12,
+              theme: themes.isDarkMode,
+              color: themes.isDarkMode
+                  ? colors.textSecondaryDark
+                  : colors.textSecondaryLight,
+              fw: 1,
+              align: TextAlign.left,
+            ),
+          ),
+          // Year headers
+          ...sortedData
+              .map((item) => Expanded(
+                    child: TextWidget.custmText(
+                      text: _formatDate(item.yearEndDate ?? item.convDate),
+                      fs: 12,
+                      theme: themes.isDarkMode,
+                      color: themes.isDarkMode
+                          ? colors.textSecondaryDark
+                          : colors.textSecondaryLight,
+                      fw: 0,
+                      align: TextAlign.right,
+                    ),
+                  ))
+              .toList(),
+        ],
+      ),
+    );
+  }
+
   List<Widget> _buildMetricRows(List<CashflowSheet> sortedData) {
     final metrics = [
-      {"name": "", "getValue": (item) => item.cashFromOperatingActivities, "color": const Color(0xFF03A9F4)}, // Bright Light Blue
-      {"name": "", "getValue": (item) => item.cashFlowFromInvestingActivities, "color": const Color(0xFFFF6B35)}, // Bright Orange
-      {"name": "", "getValue": (item) => item.cashFromFinancingActivities, "color": const Color(0xFFE91E63)}, // Bright Pink
+      {"name": "Cash From Operating Activities", "getValue": (item) => item.cashFromOperatingActivities, "color": const Color(0xFF03A9F4)}, // Bright Light Blue
+      {"name": "Cash Flow From Investing Activities", "getValue": (item) => item.cashFlowFromInvestingActivities, "color": const Color(0xFFFF6B35)}, // Bright Orange
+      {"name": "Cash From Financing Activities", "getValue": (item) => item.cashFromFinancingActivities, "color": const Color(0xFFE91E63)}, // Bright Pink
     ];
 
     return metrics.map((metric) => Container(
@@ -883,16 +980,16 @@ class CashFlowTable extends StatelessWidget {
       child: Row(
         children: [
           Expanded(
-            flex: 0,
-            child: Center(
-              child: Container(
-                width: 8,
-                height: 8,
-                decoration: BoxDecoration(
-                  color: metric["color"] as Color,
-                  shape: BoxShape.circle,
-                ),
-              ),
+            flex: 1,
+            child: TextWidget.custmText(
+              text: metric["name"] as String,
+              fs: 10,
+              theme: themes.isDarkMode,
+              color: themes.isDarkMode
+                  ? colors.textPrimaryDark
+                  : colors.textPrimaryLight,
+              fw: 0,
+              align: TextAlign.left,
             ),
           ),
           ...sortedData.map((item) => Expanded(

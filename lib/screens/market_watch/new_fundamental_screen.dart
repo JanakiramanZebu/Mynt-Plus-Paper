@@ -1540,15 +1540,15 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
   Color _getHoldTypeColor(String holdType) {
     switch (holdType) {
       case "Promoter Holding":
-        return const Color(0xFF2196F3); // Blue
+        return const Color(0xFF7C3AED); // Modern Purple
       case "Foriegn Institution":
-        return const Color(0xFF4CAF50); // Green
+        return const Color(0xFF2563EB); // Modern Blue
       case "Other Domestic Institution":
-        return const Color(0xFFFF9800); // Orange
+        return const Color(0xFF059669); // Modern Green
       case "Retail and Others":
-        return const Color(0xFF9C27B0); // Purple
+        return const Color.fromARGB(255, 20, 132, 197); // Modern Teal
       case "Mutual Funds":
-        return const Color(0xFFE91E63); // Pink
+        return const Color(0xFFDC2626); // Modern Red
       default:
         return const Color(0xFF607D8B); // Blue Grey
     }
@@ -2554,7 +2554,7 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
       {
         'name': 'Others',
         'value': double.tryParse(data.retailAndOthers ?? '0') ?? 0.0,
-        'color': const Color(0xFFEA580C), // Modern Orange
+        'color': const Color.fromARGB(255, 20, 132, 197), // Modern Blue
       },
     ];
 
@@ -2671,10 +2671,19 @@ class HoldingsTable extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 0),
       child: Row(
         children: [
-          // Empty space for the colored circle column
+          // Empty space for the name column
           Expanded(
-            flex: 0,
-            child: Container(width: 8), // Same width as the colored circles
+            flex: 1,
+            child: TextWidget.custmText(
+              text: "",
+              fs: 12,
+              theme: themes.isDarkMode,
+              color: themes.isDarkMode
+                  ? colors.textSecondaryDark
+                  : colors.textSecondaryLight,
+              fw: 1,
+              align: TextAlign.left,
+            ),
           ),
           // Year headers
           ...data
@@ -2699,27 +2708,27 @@ class HoldingsTable extends StatelessWidget {
   List<Widget> _buildMetricRows(List<Shareholdings> sortedData) {
     final metrics = [
       {
-        "name": "",
+        "name": "Promoter Holding",
         "getValue": (item) => item.promoters,
         "color": const Color(0xFF7C3AED)
       }, // Modern Purple (Insiders)
       {
-        "name": "",
+        "name": "Foreign Institution",
         "getValue": (item) => item.fiiFpi,
         "color": const Color(0xFF2563EB)
       }, // Modern Blue (Institutions)
       {
-        "name": "",
+        "name": "Other Domestic Institution",
         "getValue": (item) => item.dii,
         "color": const Color(0xFF059669)
       }, // Modern Green (Holding Company)
       {
-        "name": "",
+        "name": "Retail and Others",
         "getValue": (item) => item.retailAndOthers,
-        "color": const Color(0xFFEA580C)
-      }, // Modern Orange (Others)
+        "color": const Color.fromARGB(255, 20, 132, 197)
+      }, // Modern Teal (Others)
       {
-        "name": "",
+        "name": "Mutual Funds",
         "getValue": (item) => item.mutualFunds,
         "color": const Color(0xFFDC2626)
       }, // Modern Red (Corporation)
@@ -2731,16 +2740,16 @@ class HoldingsTable extends StatelessWidget {
               child: Row(
                 children: [
                   Expanded(
-                    flex: 0,
-                    child: Center(
-                      child: Container(
-                        width: 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          color: metric["color"] as Color,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
+                    flex: 1,
+                    child: TextWidget.custmText(
+                      text: metric["name"] as String,
+                      fs: 10,
+                      theme: themes.isDarkMode,
+                      color: themes.isDarkMode
+                          ? colors.textPrimaryDark
+                          : colors.textPrimaryLight,
+                      fw: 0,
+                      align: TextAlign.left,
                     ),
                   ),
                   ...sortedData
@@ -2775,7 +2784,7 @@ class HoldingsTable extends StatelessWidget {
         "name": "Other Domestic Institution",
         "color": const Color(0xFF059669)
       }, // Modern Green
-      {"name": "Retail and Others", "color": const Color(0xFFEA580C)}, // Modern Orange
+      {"name": "Retail and Others", "color": const Color.fromARGB(255, 20, 132, 197)}, // Modern   Teal
       {
         "name": "Mutual Funds",
         "color": const Color(0xFFDC2626)
