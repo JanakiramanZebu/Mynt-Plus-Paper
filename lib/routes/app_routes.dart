@@ -126,6 +126,7 @@ import '../screens/Mobile/stocks/explore/stocks/portfolio_analysis.dart';
 import '../screens/Mobile/stocks/explore/stocks/stock_screens.dart';
 import '../screens/Mobile/stocks/explore/stocks/trade_action/all_trade.dart';
 import '../screens/Mobile/stocks/explore/stocks/trade_action/sector_themeatic_details.dart';
+import '../screens/web/market_watch/options/option_chain_ss_web.dart';
 import '../screens/web/market_watch/set_alert_web.dart';
 import '../sharedWidget/internet_widget.dart';
 import '../provider/version_provider.dart';
@@ -348,6 +349,11 @@ class AppRoutes {
       case Routes.optionChain:
         return _createRoute(
           pageBuilder: (_, __, ___) => OptionChainSS(wlValue: args),
+          beginOffset: const Offset(0.0, 1.0),
+        );
+      case Routes.optionChainWeb:
+        return _createRoute(
+          pageBuilder: (_, __, ___) => OptionChainSSWeb(wlValue: args),
           beginOffset: const Offset(0.0, 1.0),
         );
 

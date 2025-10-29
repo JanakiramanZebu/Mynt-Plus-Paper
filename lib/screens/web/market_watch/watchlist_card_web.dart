@@ -1577,7 +1577,7 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
           if (kIsWeb && WebNavigationHelper.isAvailable) {
             WebNavigationHelper.navigateTo("optionChain", arguments: wlValue);
           } else {
-            await Navigator.pushNamed(context, Routes.optionChain, arguments: wlValue);
+            await Navigator.pushNamed(context, Routes.optionChainWeb, arguments: wlValue);
           }
         } catch (e) {
           if (mounted) {

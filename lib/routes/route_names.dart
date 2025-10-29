@@ -14,6 +14,7 @@ class Routes {
   static const String mainControlerScreenForWeb = 'MainControlerScreenForWeb';
 
   static const String optionChain = 'OptionChain';
+  static const String optionChainWeb = 'OptionChainWeb';
 
   static const String watchlistScreen = 'WatchlistScreen';
   static const String searchScrip = 'searchScrip';

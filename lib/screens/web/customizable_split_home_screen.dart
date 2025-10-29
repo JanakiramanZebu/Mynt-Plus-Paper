@@ -39,7 +39,8 @@ import '../Mobile/market_watch/tv_chart/webview_chart.dart';
 import 'market_watch/watchlist_screen_web.dart';
 import 'holdings/holding_screen_web.dart';
 import 'position/position_screen_web.dart';
-import '../Mobile/market_watch/option_chain/option_chain_ss.dart';
+import '../Mobile/order_book/order_book_screen.dart';
+import 'market_watch/options/option_chain_ss_web.dart';
 import '../Mobile/desk_reports/pledge_unpledge_screen.dart';
 // Removed CA Event and CP Action from panel screens
 import '../Mobile/mutual_fund/mf_main_screen.dart';
@@ -1301,7 +1302,7 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
         );
       case ScreenType.optionChain:
         if (_optionChainArgs != null) {
-          return OptionChainSS(wlValue: _optionChainArgs!);
+          return OptionChainSSWeb(wlValue: _optionChainArgs!);
         }
         return const SizedBox.shrink();
       case ScreenType.pledgeUnpledge:

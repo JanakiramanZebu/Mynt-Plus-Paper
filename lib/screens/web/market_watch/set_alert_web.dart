@@ -230,11 +230,11 @@ class _SetAlertWebState extends State<SetAlertWeb> {
                         SizedBox(
                           height: 40,
                           child: DropdownButtonHideUnderline(
-                                                               child: DropdownButton2(
-                               dropdownStyleData: DropdownStyleData(
+                              child: DropdownButton2(
+                              dropdownStyleData: DropdownStyleData(
                                    decoration: BoxDecoration(
                                        borderRadius:
-                                           BorderRadius.circular(10),
+                                           BorderRadius.circular(5),
                                        color: theme.isDarkMode
                                            ? WebDarkColors.surface
                                            : WebColors.surface,
@@ -256,6 +256,11 @@ class _SetAlertWebState extends State<SetAlertWeb> {
                                           const BorderRadius.all(
                                               Radius.circular(5)))),
                               isExpanded: true,
+                              menuItemStyleData: const MenuItemStyleData(
+                                height: 32,
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 0),
+                              ),
                               style: WebTextStyles.custom(
                                 fontSize: 13,
                                 isDarkTheme: theme.isDarkMode,
@@ -282,7 +287,7 @@ class _SetAlertWebState extends State<SetAlertWeb> {
                                         value: item,
                                         child: Padding(
                                           padding: const EdgeInsets.only(
-                                              left: 8),
+                                              left: 6),
                                           child: Text(
                                             item,
                                             style: WebTextStyles.custom(
@@ -465,7 +470,7 @@ class _SetAlertWebState extends State<SetAlertWeb> {
               const SizedBox(height: 16),
               // REMARK FIELD
               Text(
-                'Remark',
+                'Remarks',
                 style: WebTextStyles.custom(
                   fontSize: 13,
                   isDarkTheme: theme.isDarkMode,
@@ -482,7 +487,7 @@ class _SetAlertWebState extends State<SetAlertWeb> {
                   fillColor: theme.isDarkMode
                       ? WebDarkColors.backgroundTertiary
                       : WebColors.backgroundTertiary,
-                  hintText: "Remark",
+                  hintText: "Remarks",
                   hintStyle: WebTextStyles.custom(
                     fontSize: 13,
                     isDarkTheme: theme.isDarkMode,
