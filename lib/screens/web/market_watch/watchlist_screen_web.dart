@@ -20,6 +20,21 @@ import '../../../sharedWidget/list_divider.dart';
 import '../../Mobile/market_watch/my_stocks/stocks_screen.dart';
 import 'watchlist_card_web.dart';
 import 'search_dialog_web.dart';
+import 'edit_scrip_web.dart';
+
+// Provider to manage delete mode state
+final deleteModeProvider =
+    StateNotifierProvider<DeleteModeNotifier, bool>((ref) {
+  return DeleteModeNotifier();
+});
+
+class DeleteModeNotifier extends StateNotifier<bool> {
+  DeleteModeNotifier() : super(false);
+
+  void setDeleteMode(bool isActive) {
+    state = isActive;
+  }
+}
 
 class MockMarketWatchlist {
   final List<String> values;
@@ -339,6 +354,9 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
         );
       }
 
+      // Watch delete mode state from provider
+      final showDeleteMode = ref.watch(deleteModeProvider);
+      
       return SafeArea(
         child: Container(
           color: theme.isDarkMode
@@ -351,7 +369,12 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                   context, ref, theme, wlName, isPreDef, watchList?.values?.length ?? 0),
               _buildPinnedTabs(ref, theme, watchList, wlName),
             ],
-            body: _buildPageView(ref, theme, watchList, sortBy),
+            body: showDeleteMode
+                ? EditScripWeb(
+                    wlName: wlName,
+                    showInDialog: false,
+                  )
+                : _buildPageView(ref, theme, watchList, sortBy),
           ),
         ),
       );
@@ -570,29 +593,40 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
   }
 
   // WEB VERSION
-  SliverToBoxAdapter _buildPinnedTabs(
+  Widget _buildPinnedTabs(
     WidgetRef ref,
     ThemesProvider theme,
     dynamic watchList,
     String wlName,
   ) {
-    return SliverToBoxAdapter(
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-        decoration: BoxDecoration(
-          color: theme.isDarkMode
-              ? WebDarkColors.navBackground
-              : WebColors.navBackground,
-          border: Border(
-            bottom: BorderSide(
-              color: theme.isDarkMode
-                  ? WebDarkColors.navDivider
-                  : WebColors.navDivider,
-              width: 1,
-            ),
+    final tabContent = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: theme.isDarkMode
+            ? WebDarkColors.navBackground
+            : WebColors.navBackground,
+        border: Border(
+          bottom: BorderSide(
+            color: theme.isDarkMode
+                ? WebDarkColors.navDivider
+                : WebColors.navDivider,
+            width: 1,
           ),
         ),
-        child: _buildWatchlistTabs(ref, wlName, watchList, theme),
+      ),
+      child: _buildWatchlistTabs(ref, wlName, watchList, theme),
+    );
+
+    // Calculate total height: padding (8 top + 8 bottom) + content (45) = 61
+    const double tabsHeight = 61.0;
+
+    return SliverPersistentHeader(
+      pinned: true, // This keeps the tabs fixed at the top
+      delegate: _SliverTabsDelegate(
+        child: tabContent,
+        height: tabsHeight,
+        selectedWatchlistName: wlName,
+        watchlistNames: watchList?.values?.cast<String>(),
       ),
     );
   }

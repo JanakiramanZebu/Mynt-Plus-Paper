@@ -19,9 +19,11 @@ import '../../../sharedWidget/snack_bar.dart';
 import '../../../utils/responsive_navigation.dart';
 import '../../../utils/responsive_snackbar.dart';
 import '../../Mobile/market_watch/edit_scrip.dart';
+import 'edit_scrip_web.dart';
 import '../../Mobile/market_watch/new_fundamental_screen.dart';
 import 'futures/future_screen_web.dart';
 import 'set_alert_web.dart';
+import 'watchlist_screen_web.dart' show deleteModeProvider;
 
 // Provider to manage expanded watchlist item
 final expandedWatchlistItemProvider =
@@ -51,6 +53,7 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
   bool _isHovered = false;
   bool _isExpanded = false;
   bool _isMenuOpen = false;
+  final GlobalKey _menuButtonKey = GlobalKey();
 
   @override
   Widget build(BuildContext context) {
@@ -78,76 +81,68 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
               highlightColor: theme.isDarkMode
                   ? Colors.white.withOpacity(0.08)
                   : Colors.black.withOpacity(0.08),
-              onLongPress: () {
-                if (marketWatch.isPreDefWLs == "Yes") {
-                  showResponsiveWarningMessage(context,
-                      "This is a pre-defined watchlist that cannot be edited!");
-                } else {
-                  ref
-                      .read(marketWatchProvider)
-                      .requestMWScrip(context: context, isSubscribe: false);
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) =>
-                              EditScrip(wlName: marketWatch.wlName)));
+              // onLongPress: () {
+              //   if (marketWatch.isPreDefWLs == "Yes") {
+              //     showResponsiveWarningMessage(context,
+              //         "This is a pre-defined watchlist that cannot be edited!");
+              //   } else {
+              //     ref
+              //         .read(marketWatchProvider)
+              //         .requestMWScrip(context: context, isSubscribe: false);
+              //     Navigator.push(
+              //         context,
+              //         MaterialPageRoute(
+              //             builder: (context) =>
+              //                 EditScrip(wlName: marketWatch.wlName)));
+              //   }
+              // },
+              onTap: () async {
+                // Clicking the list item opens the chart
+                if (_isNavigating) return;
+                
+                // Close any previously expanded item
+                ref
+                    .read(expandedWatchlistItemProvider.notifier)
+                    .setExpandedToken(null);
+                
+                try {
+                  setState(() {
+                    _isNavigating = true;
+                  });
+
+                  // Create proper DepthInputArgs object like in StocksScreen
+                  DepthInputArgs depthArgs = DepthInputArgs(
+                      exch: widget.watchListData["exch"].toString(),
+                      token: widget.watchListData["token"].toString(),
+                      tsym: widget.watchListData["tsym"].toString(),
+                      instname:
+                          widget.watchListData["instname"]?.toString() ??
+                              widget.watchListData["symbol"].toString(),
+                      symbol: widget.watchListData["symbol"].toString(),
+                      expDate:
+                          widget.watchListData["expDate"]?.toString() ?? "",
+                      option:
+                          widget.watchListData["option"]?.toString() ?? "");
+
+                  // Call depth APIs for chart navigation
+                  marketWatch.scripdepthsize(false);
+                  await marketWatch.calldepthApis(context, depthArgs, "");
+                } catch (e) {
+                  // Handle any errors
+                  debugPrint('Error opening chart: $e');
+                } finally {
+                  // Reset navigation lock after some delay to prevent immediate re-clicks
+                  if (mounted) {
+                    Future.delayed(const Duration(milliseconds: 500), () {
+                      if (mounted) {
+                        setState(() {
+                          _isNavigating = false;
+                        });
+                      }
+                    });
+                  }
                 }
               },
-              onTap: () async {
-                // Toggle expansion
-                final currentToken = widget.watchListData['token']?.toString();
-                if (_isExpanded) {
-                  // If this is expanded, collapse it
-                  ref
-                      .read(expandedWatchlistItemProvider.notifier)
-                      .setExpandedToken(null);
-                } else {
-                  // Expand this item
-                  ref
-                      .read(expandedWatchlistItemProvider.notifier)
-                      .setExpandedToken(currentToken);
-                }
-
-                // For full details navigation, only call APIs if not just expanding
-                if (!_isExpanded) {
-                  try {
-                    setState(() {
-                      _isNavigating = true;
-                    });
-
-                    // Create proper DepthInputArgs object like in StocksScreen
-                    DepthInputArgs depthArgs = DepthInputArgs(
-                        exch: widget.watchListData["exch"].toString(),
-                        token: widget.watchListData["token"].toString(),
-                        tsym: widget.watchListData["tsym"].toString(),
-                        instname:
-                            widget.watchListData["instname"]?.toString() ??
-                                widget.watchListData["symbol"].toString(),
-                        symbol: widget.watchListData["symbol"].toString(),
-                        expDate:
-                            widget.watchListData["expDate"]?.toString() ?? "",
-                        option:
-                            widget.watchListData["option"]?.toString() ?? "");
-
-                // Only call depth APIs for full navigation, not for expansion
-                marketWatch.scripdepthsize(false);
-                await marketWatch.calldepthApis(context, depthArgs, "");
-              } catch (e) {
-                // Handle any errors
-              } finally {
-                // Reset navigation lock after some delay to prevent immediate re-clicks
-                if (mounted) {
-                  Future.delayed(const Duration(milliseconds: 500), () {
-                    if (mounted) {
-                      setState(() {
-                        _isNavigating = false;
-                      });
-                    }
-                  });
-                }
-              }
-            }
-          },
           child: Container(
             color: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10), // Increased padding for web
@@ -262,8 +257,8 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Action buttons (shown on hover or when menu is open)
-                    if (_isHovered || _isMenuOpen)
+                    // Action buttons (shown on hover, when menu is open, or when expanded)
+                    if (_isHovered || _isMenuOpen || _isExpanded)
                       Builder(
                         builder: (context) {
                           // Check if this is an index or commodity
@@ -327,10 +322,14 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                                 ],
                                 // Chart button always shows (icon only)
                                 _buildHoverButton(
-                                  icon: Icons.bar_chart,
+                                  iconAsset: assets.chart,
                                   color: theme.isDarkMode
                                       ? WebDarkColors.textSecondary
                                       : WebColors.textSecondary,
+                                  backgroundColor: Colors.transparent,
+                                  borderColor: theme.isDarkMode
+                                      ? WebDarkColors.border
+                                      : WebColors.border,
                                   onPressed: () async {
                                    DepthInputArgs depthArgs = DepthInputArgs(
                                             exch: widget.watchListData["exch"]
@@ -361,6 +360,66 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                                         await marketWatch.calldepthApis(
                                             context, depthArgs, "");
                                   },
+                                ),
+                                  const SizedBox(width: 6),
+                                // Expand/Collapse button
+                                SizedBox(
+                                  width: 28,
+                                  height: 28,
+                                  child: Material(
+                                    color: Colors.transparent,
+                                    child: InkWell(
+                                      borderRadius: BorderRadius.circular(5),
+                                      splashColor: theme.isDarkMode
+                                          ? Colors.white.withOpacity(0.15)
+                                          : Colors.black.withOpacity(0.15),
+                                      highlightColor: theme.isDarkMode
+                                          ? Colors.white.withOpacity(0.08)
+                                          : Colors.black.withOpacity(0.08),
+                                      onTap: () {
+                                        final currentToken = widget.watchListData['token']?.toString();
+                                        if (_isExpanded) {
+                                          // Collapse - just toggle the state
+                                          ref
+                                              .read(expandedWatchlistItemProvider.notifier)
+                                              .setExpandedToken(null);
+                                        } else {
+                                          // Expand - just toggle the state (data will load when expanded content renders)
+                                          ref
+                                              .read(expandedWatchlistItemProvider.notifier)
+                                              .setExpandedToken(currentToken);
+                                        }
+                                      },
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          color: Colors.transparent,
+                                          borderRadius: BorderRadius.circular(5),
+                                          border: Border.all(
+                                            color: theme.isDarkMode
+                                                ? WebDarkColors.border
+                                                : WebColors.border,
+                                            width: 1,
+                                          ),
+                                        ),
+                                        child: Center(
+                                          child: Transform.rotate(
+                                            angle: _isExpanded ? 3.14159 : 0, // 180 degrees for up, 0 for down
+                                            child: SvgPicture.asset(
+                                              assets.downArrow,
+                                              width: 8,
+                                              height: 8,
+                                              colorFilter: ColorFilter.mode(
+                                                theme.isDarkMode
+                                                    ? WebDarkColors.textSecondary
+                                                    : WebColors.textSecondary,
+                                                BlendMode.srcIn,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
                                 ),
                                   const SizedBox(width: 6),
                                 // Three dots menu (only if has futures, fundamentals or options)
@@ -1122,8 +1181,10 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
   Widget _buildHoverButton({
     String? label,
     IconData? icon,
+    String? iconAsset,
     required Color color,
     Color? backgroundColor,
+    Color? borderColor,
     required VoidCallback? onPressed,
   }) {
     final theme = ref.read(themeProvider);
@@ -1141,23 +1202,39 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
             decoration: BoxDecoration(
               color: backgroundColor ?? Colors.transparent,
               borderRadius: BorderRadius.circular(5),
+              border: borderColor != null
+                  ? Border.all(
+                      color: borderColor,
+                      width: 1,
+                    )
+                  : null,
             ),
             child: Center(
-              child: icon != null
-                  ? Icon(
-                      icon,
-                      size: 14,
-                      color: color,
-                    )
-                  : Text(
-                      label ?? "",
-                      style: WebTextStyles.custom(
-                        fontSize: 11,
-                        isDarkTheme: theme.isDarkMode,
-                        color: color,
-                        fontWeight: FontWeight.w600,
+              child: iconAsset != null
+                  ? SvgPicture.asset(
+                      iconAsset,
+                      width: 14,
+                      height: 14,
+                      colorFilter: ColorFilter.mode(
+                        color,
+                        BlendMode.srcIn,
                       ),
-                    ),
+                    )
+                  : icon != null
+                      ? Icon(
+                          icon,
+                          size: 14,
+                          color: color,
+                        )
+                      : Text(
+                          label ?? "",
+                          style: WebTextStyles.custom(
+                            fontSize: 11,
+                            isDarkTheme: theme.isDarkMode,
+                            color: color,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
             ),
           ),
         ),
@@ -1178,6 +1255,7 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
       width: 28,
       height: 28,
       child: Material(
+        key: _menuButtonKey,
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(5),
@@ -1192,14 +1270,31 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
               _isMenuOpen = true;
             });
             
-            final RenderBox button = context.findRenderObject() as RenderBox;
+            // Use GlobalKey to get the correct render box position
+            final RenderBox? button = _menuButtonKey.currentContext?.findRenderObject() as RenderBox?;
+            if (button == null || !button.attached) return;
+            
             final RenderBox overlay =
                 Overlay.of(context).context.findRenderObject() as RenderBox;
+            
+            // Get the button's position in overlay coordinates
+            final Offset buttonTopLeft = button.localToGlobal(
+              Offset.zero,
+              ancestor: overlay,
+            );
+            final Offset buttonBottomRight = button.localToGlobal(
+              button.size.bottomRight(Offset.zero),
+              ancestor: overlay,
+            );
+            
+            // Position menu below the button, with menu's top-right aligned to button's bottom-right
+            // Calculate with a small offset for spacing
+            const double menuSpacing = 4.0; // Small gap between button and menu
             final RelativeRect position = RelativeRect.fromLTRB(
-              button.localToGlobal(Offset.zero, ancestor: overlay).dx,
-              button.localToGlobal(button.size.bottomRight(Offset.zero), ancestor: overlay).dy,
-              overlay.size.width - button.localToGlobal(button.size.bottomRight(Offset.zero), ancestor: overlay).dx,
-              overlay.size.height - button.localToGlobal(button.size.bottomRight(Offset.zero), ancestor: overlay).dy,
+              buttonTopLeft.dx,                                 // Left edge starts from button left (menu can extend left)
+              buttonBottomRight.dy + menuSpacing,                // Menu top is below button bottom with spacing
+              overlay.size.width - buttonBottomRight.dx,         // Menu right edge aligns with button right edge
+              overlay.size.height - buttonBottomRight.dy - 200,  // Leave room for menu height
             );
 
             showMenu<String>(
@@ -1219,11 +1314,13 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                       children: [
                         Text(
                           'Futures',
-                          style: WebTextStyles.sub(
+                          style: WebTextStyles.custom(
+                            fontSize: 13,
                             isDarkTheme: theme.isDarkMode,
                             color: theme.isDarkMode
                                 ? WebDarkColors.textPrimary
                                 : WebColors.textPrimary,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
                       ],
@@ -1269,6 +1366,20 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                     ),
                   ),
                 ),
+                PopupMenuItem<String>(
+                  value: 'deleteMultiple',
+                  child: Text(
+                    'Delete Multiple',
+                    style: WebTextStyles.custom(
+                      fontSize: 13,
+                      isDarkTheme: theme.isDarkMode,
+                      color: theme.isDarkMode
+                          ? WebDarkColors.textPrimary
+                          : WebColors.textPrimary,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
               ],
             ).then((value) {
               setState(() {
@@ -1290,12 +1401,19 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
               borderRadius: BorderRadius.circular(5),
             ),
             child: Center(
-              child: Icon(
-                Icons.more_horiz,
-                size: 14,
-                color: theme.isDarkMode
-                    ? WebDarkColors.iconSecondary
-                    : WebColors.iconSecondary,
+              child: Transform.rotate(
+                angle: 1.5708, // 90 degrees in radians (π/2)
+                child: SvgPicture.asset(
+                  assets.threedots,
+                  width: 14,
+                  height: 14,
+                  colorFilter: ColorFilter.mode(
+                    theme.isDarkMode
+                        ? WebDarkColors.iconSecondary
+                        : WebColors.iconSecondary,
+                    BlendMode.srcIn,
+                  ),
+                ),
               ),
             ),
           ),
@@ -1607,6 +1725,18 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
             showResponsiveError(
               context,
               'Failed to open Set Alert screen',
+            );
+          }
+        }
+      } else if (action == 'deleteMultiple') {
+        try {
+          // Enable delete mode in the watchlist screen
+          ref.read(deleteModeProvider.notifier).setDeleteMode(true);
+        } catch (e) {
+          if (mounted) {
+            showResponsiveError(
+              context,
+              'Failed to open Delete Multiple screen',
             );
           }
         }
