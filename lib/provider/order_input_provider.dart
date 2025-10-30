@@ -223,6 +223,38 @@ class OrderInputProvider extends DefaultChangeNotifier {
 
   // GTT ORDER INPUT
 
+  bool _GTTPriceTypeIsMarket = false;
+  bool get GTTPriceTypeIsMarket => _GTTPriceTypeIsMarket;
+
+  setGTTPriceTypeIsMarket(bool value) {
+    _GTTPriceTypeIsMarket = value;
+    notifyListeners();
+  }
+
+  bool _GTTOCOPriceTypeIsMarket = false;
+  bool get GTTOCOPriceTypeIsMarket => _GTTOCOPriceTypeIsMarket;
+
+  setGTTOCOPriceTypeIsMarket(bool value) {
+    _GTTOCOPriceTypeIsMarket = value;
+    notifyListeners();
+  }
+
+  bool _GTTPriceTypeOrderIsMarket = false;
+  bool get GTTPriceTypeOrderIsMarket => _GTTPriceTypeOrderIsMarket;
+
+  setGTTPriceTypeOrderIsMarket(bool value) {
+    _GTTPriceTypeOrderIsMarket = value;
+    notifyListeners();
+  }
+
+  bool _GTTOCOPriceTypeOrderIsMarket = false;
+  bool get GTTOCOPriceTypeOrderIsMarket => _GTTOCOPriceTypeOrderIsMarket;
+
+  setGTTOCOPriceTypeOrderIsMarket(bool value) {
+    _GTTOCOPriceTypeOrderIsMarket = value;
+    notifyListeners();
+  }
+
   String _ait = "LTP_B_O";
   String get ait => _ait;
 
@@ -390,6 +422,10 @@ class OrderInputProvider extends DefaultChangeNotifier {
     _qtyCtrl.clear();
     _ocoPriceCtrl.clear();
     _priceCtrl.clear();
+    _GTTPriceTypeOrderIsMarket = false;
+    _GTTOCOPriceTypeOrderIsMarket = false;
+    _GTTPriceTypeIsMarket = false;
+    _GTTOCOPriceTypeIsMarket = false;
     notifyListeners();
   }
 
@@ -489,7 +525,14 @@ class OrderInputProvider extends DefaultChangeNotifier {
         _ordType = "M";
         _investType = InvestType.carryForward;
       }
-      _priceCtrl.text = "${gttOrderBook.placeOrderParams!.prc}";
+      if(gttOrderBook.placeOrderParams!.prctyp == "MKT") {
+        _priceCtrl.text = "Market";
+        _GTTPriceTypeIsMarket = true;
+      } else {
+        _priceCtrl.text = "${gttOrderBook.placeOrderParams!.prc}";
+        _GTTPriceTypeIsMarket = false;
+      }
+      // _priceCtrl.text = "${gttOrderBook.placeOrderParams!.prc}";
       _qtyCtrl.text = "${gttOrderBook.placeOrderParams!.qty}";
       _trgPrcCtrl.text = "${gttOrderBook.placeOrderParams!.trgprc}";
     }
@@ -515,8 +558,14 @@ class OrderInputProvider extends DefaultChangeNotifier {
         _ocoOrdType = "M";
         _ocoInvestType = InvestType.carryForward;
       }
-
-      _ocoPriceCtrl.text = "${gttOrderBook.placeOrderParamsLeg2!.prc}";
+      if (gttOrderBook.placeOrderParamsLeg2!.prctyp == "MKT") {
+        _ocoPriceCtrl.text = "Market";
+        _GTTOCOPriceTypeIsMarket = true;
+      } else {
+        _ocoPriceCtrl.text = "${gttOrderBook.placeOrderParamsLeg2!.prc}";
+        _GTTOCOPriceTypeIsMarket = false;
+      }
+      // _ocoPriceCtrl.text = "${gttOrderBook.placeOrderParamsLeg2!.prc}";
       _ocoQtyCtrl.text = "${gttOrderBook.placeOrderParamsLeg2!.qty}";
       _ocoTrgPrcCtrl.text = "${gttOrderBook.placeOrderParamsLeg2!.trgprc}";
     } else {

@@ -24,6 +24,7 @@ import '../../../res/global_font_web.dart';
 import '../../../res/web_colors.dart';
 import '../../../routes/route_names.dart';
 import '../../../utils/responsive_navigation.dart';
+import '../../web/order/quick_order_screen_web.dart';
 import '../../../sharedWidget/no_data_found.dart';
 import '../../Mobile/market_watch/futures/future_screen.dart';
 import '../../Mobile/market_watch/over_view/funtamental_data_widget.dart';
@@ -532,1377 +533,1411 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                               : WebColors.background,                        
 
                         ),
-                        child: SingleChildScrollView(
-                          padding: EdgeInsets.zero,
-                          child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: [
-                                
-                                        Container(),
-                                        /*
-                                Symbol and price section (temporarily commented)
-                                Container(
-                                    decoration: BoxDecoration(
-                                      borderRadius: const BorderRadius.only(
-                                        topLeft: Radius.circular(16),
-                                        topRight: Radius.circular(16),
+                        child: Column(
+                          children: [
+                            SizedBox(
+                              height: MediaQuery.of(context).size.height * 0.6,
+                              child: SingleChildScrollView(
+                                padding: EdgeInsets.zero,
+                                child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: [
+                                      
+                                              Container(),
+                                              /*
+                                      Symbol and price section (temporarily commented)
+                                      Container(
+                                          decoration: BoxDecoration(
+                                            borderRadius: const BorderRadius.only(
+                                              topLeft: Radius.circular(16),
+                                              topRight: Radius.circular(16),
+                                            ),
+                                            color: theme.isDarkMode
+                                                ? WebDarkColors.background
+                                                : WebColors.background,
+                                            boxShadow: _hasScrolled
+                                                ? [
+                                                    BoxShadow(
+                                                      color: Colors.black
+                                                          .withOpacity(0.1),
+                                                      blurRadius: 4,
+                                                      offset: const Offset(0, 2),
+                                                    )
+                                                  ]
+                                                : [],
+                                          ),
+                                          child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.start,
+                                              children: <Widget>[
+                                                Padding(
+                                                    padding:
+                                                        const EdgeInsets.symmetric(
+                                                            horizontal: 14),
+                                                    child: Column(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment.start,
+                                                        children: [
+                                                          // ... symbol, info icon, ltp, change ...
+                                                        ])),
+                                      */
+                              
+                                              const Padding(
+                                                padding: EdgeInsets.symmetric(
+                                                    horizontal: 16),
+                                                child: Column(children: [
+                                                  // Row(
+                                                  //     mainAxisAlignment:
+                                                  //         MainAxisAlignment
+                                                  //             .spaceBetween,
+                                                  //     children: [
+                                                  //       Row(children: [
+                                                  //         // CustomExchBadge(
+                                                  //         //     exch: widget
+                                                  //         //         .wlValue
+                                                  //         //         .exch),
+                                                  //         // Text(
+                                                  //         //     "  ${widget.wlValue.expDate}",
+                                                  //         //     style: textStyle(
+                                                  //         //         !theme.isDarkMode
+                                                  //         //             ? colors
+                                                  //         //                 .colorBlack
+                                                  //         //             : colors
+                                                  //         //                 .colorWhite,
+                                                  //         //         12,
+                                                  //         //         FontWeight
+                                                  //         //             .w600)),
+                                                  //         // SizedBox(
+                                                  //         //   width: 4,
+                                                  //         // ),
+                                                  //         TextWidget.paraText(
+                                                  //             text: "${(double.tryParse(depthData.chng ?? '0.00') ?? 0.00).toStringAsFixed(2)} (${(double.tryParse(depthData.pc ?? '0.00') ?? 0.00).toStringAsFixed(2)}%)",
+                                                  //             color:  !theme.isDarkMode
+                                                  //                     ? colors
+                                                  //                         .colorBlack
+                                                  //                     : colors
+                                                  //                         .colorWhite,
+                                                  //             theme: theme.isDarkMode,
+                                                  //             fw: 3)
+                                                  //       ]),
+                                                  //     ]),
+                                                  /*
+                                                    if (!scripInfo.scripDepthloader &&
+                                                        widget.wlValue.instname !=
+                                                            "UNDIND" &&
+                                                        widget.wlValue.instname !=
+                                                            "COM")
+                                                      scripInfo.actDeptBtn ==
+                                                              "Set Alert"
+                                                          ? Container()
+                                                          : Container(
+                                                              padding:
+                                                                  const EdgeInsets
+                                                                      .symmetric(
+                                                                      horizontal: 0,
+                                                                      vertical: 16),
+                                                              child: Row(
+                                                                  mainAxisAlignment:
+                                                                      MainAxisAlignment
+                                                                          .spaceBetween,
+                                                                  children: [
+                                                                    Expanded(
+                                                                        child:
+                                                                            InkWell(
+                                                                      onTap:
+                                                                          () async {
+                                                                        await placeOrderInput(
+                                                                            scripInfo,
+                                                                            context,
+                                                                            depthData,
+                                                                            true);
+                                                                      },
+                                                                      child:
+                                                                          Container(
+                                                                        height: 45,
+                                                                        decoration: BoxDecoration(
+                                                                            color: theme.isDarkMode
+                                                                                ? WebDarkColors
+                                                                                    .primary
+                                                                                : WebColors
+                                                                                    .primary,
+                                                                            borderRadius:
+                                                                                BorderRadius.circular(
+                                                                                    5)),
+                                                                        child: Center(
+                                                                            child: Text(
+                                                                                "Buy",
+                                                                                style: WebTextStyles.sub(
+                                                                                    isDarkTheme: theme.isDarkMode,
+                                                                                    color: WebDarkColors.textPrimary,
+                                                                                    fontWeight: WebFonts.semiBold,
+                                                                                    letterSpacing: 0.0))),
+                                                                      ),
+                                                                    )),
+                                                                    const SizedBox(
+                                                                        width: 16),
+                                                                    Expanded(
+                                                                      child: InkWell(
+                                                                          onTap:
+                                                                              () async {
+                                                                            await placeOrderInput(
+                                                                                scripInfo,
+                                                                                context,
+                                                                                depthData,
+                                                                                false);
+                                                                          },
+                                                                          child: Container(
+                                                                              height:
+                                                                                  45,
+                                                                              decoration: BoxDecoration(
+                                                                                  color: WebDarkColors
+                                                                                      .error,
+                                                                                  borderRadius: BorderRadius.circular(
+                                                                                      5)),
+                                                                              child: Center(
+                                                                                  child:
+                                                                                      Text("Sell", style: WebTextStyles.sub(isDarkTheme: theme.isDarkMode, color: WebDarkColors.textPrimary, fontWeight: WebFonts.semiBold, letterSpacing: 0.0))))),
+                                                                    ),
+                                                                  ])),
+                              
+                                                    if (!scripInfo.scripDepthloader &&
+                                                        widget.wlValue.instname !=
+                                                            "UNDIND" &&
+                                                        widget.wlValue.instname !=
+                                                            "COM")
+                                                      const ListDivider(),
+                                                    if (!scripInfo.scripDepthloader &&
+                                                        widget.wlValue.instname !=
+                                                            "UNDIND" &&
+                                                        widget.wlValue.instname !=
+                                                            "COM")
+                                                      const ListDivider(),
+                                                    */
+                                                  // Chart button above tabs - Now in Column layout
+                                                  // Container(
+                                                  //     padding: const EdgeInsets
+                                                  //         .symmetric(
+                                                  //         horizontal: 14,
+                                                  //         vertical: 8),
+                                                  //     child: Column(
+                                                  //         crossAxisAlignment:
+                                                  //             CrossAxisAlignment
+                                                  //                 .stretch,
+                                                  //         children: [
+                              
+                                                  //           if (scripInfo
+                                                  //               .getOptionawait(
+                                                  //                   widget.wlValue
+                                                  //                       .exch,
+                                                  //                   widget.wlValue
+                                                  //                       .token))
+                                                  //             const SizedBox(
+                                                  //                 height: 8),
+                              
+                                                  //           // Future Button (conditional)
+                                                  //           if (scripInfo
+                                                  //               .getOptionawait(
+                                                  //                   widget.wlValue
+                                                  //                       .exch,
+                                                  //                   widget.wlValue
+                                                  //                       .token))
+                                                  //             InkWell(
+                                                  //               onTap: () async {
+                                                  //                 scripInfo
+                                                  //                     .singlePageloader(
+                                                  //                         true);
+                              
+                                                  //                 await scripInfo.requestWSFut(
+                                                  //                     context:
+                                                  //                         context,
+                                                  //                     isSubscribe:
+                                                  //                         true);
+                              
+                                                  //                 if (mounted) {
+                                                  //                   await Navigator
+                                                  //                       .pushNamed(
+                                                  //                           context,
+                                                  //                           Routes
+                                                  //                               .futureScreen,
+                                                  //                           arguments: {
+                                                  //                         "depthdata":
+                                                  //                             depthData,
+                                                  //                         "wlvalue":
+                                                  //                             widget
+                                                  //                                 .wlValue
+                                                  //                       });
+                                                  //                 }
+                              
+                                                  //                 scripInfo
+                                                  //                     .singlePageloader(
+                                                  //                         false);
+                                                  //               },
+                                                  //               child: Container(
+                                                  //                 height: 36,
+                                                  //                 decoration: BoxDecoration(
+                                                  //                     color: theme
+                                                  //                             .isDarkMode
+                                                  //                         ? const Color(
+                                                  //                                 0xffB5C0CF)
+                                                  //                             .withOpacity(
+                                                  //                                 .15)
+                                                  //                         : const Color(
+                                                  //                             0xffF1F3F8),
+                                                  //                     borderRadius:
+                                                  //                         BorderRadius
+                                                  //                             .circular(
+                                                  //                                 8)),
+                                                  //                 child: Row(
+                                                  //                   mainAxisAlignment:
+                                                  //                       MainAxisAlignment
+                                                  //                           .center,
+                                                  //                   children: [
+                                                  //                     SvgPicture
+                                                  //                         .asset(
+                                                  //                       assets
+                                                  //                           .optChainIcon,
+                                                  //                       color: theme.isDarkMode
+                                                  //                           ? colors
+                                                  //                               .colorWhite
+                                                  //                           : colors
+                                                  //                               .colorBlack,
+                                                  //                       width: 16,
+                                                  //                       height: 16,
+                                                  //                     ),
+                                                  //                     const SizedBox(
+                                                  //                         width: 6),
+                                                  //                     Text(
+                                                  //                       "Future",
+                                                  //                       style: textStyle(
+                                                  //                           theme.isDarkMode
+                                                  //                               ? colors
+                                                  //                                   .colorWhite
+                                                  //                               : colors
+                                                  //                                   .colorBlack,
+                                                  //                           13,
+                                                  //                           FontWeight
+                                                  //                               .w500),
+                                                  //                     ),
+                                                  //                   ],
+                                                  //                 ),
+                                                  //               ),
+                                                  //             ),
+                              
+                                                  //           if (scripInfo
+                                                  //               .getOptionawait(
+                                                  //                   widget.wlValue
+                                                  //                       .exch,
+                                                  //                   widget.wlValue
+                                                  //                       .token))
+                                                  //             const SizedBox(
+                                                  //                 height: 8),
+                              
+                                                  //           // Fundamental Button (conditional)
+                                                  //           if (widget.wlValue
+                                                  //                       .exch ==
+                                                  //                   'NSE' ||
+                                                  //               widget.wlValue
+                                                  //                       .exch ==
+                                                  //                   'BSE')
+                                                  //             InkWell(
+                                                  //               onTap: () async {
+                                                  //                 if (_isDisposed)
+                                                  //                   return;
+                              
+                                                  //                 scripInfo
+                                                  //                     .singlePageloader(
+                                                  //                         true);
+                              
+                                                  //                 try {
+                                                  //                   // Pre-fetch data before navigation
+                                                  //                   if (scripInfo
+                                                  //                               .fundamentalData ==
+                                                  //                           null ||
+                                                  //                       scripInfo
+                                                  //                               .fundamentalData
+                                                  //                               ?.msg ==
+                                                  //                           "no data found") {
+                                                  //                     await scripInfo
+                                                  //                         .fetchFundamentalData(
+                                                  //                             tradeSym:
+                                                  //                                 "${widget.wlValue.exch}:${widget.wlValue.tsym}");
+                                                  //                   }
+                              
+                                                  //                   if (!mounted)
+                                                  //                     return;
+                              
+                                                  //                   if (scripInfo
+                                                  //                               .fundamentalData !=
+                                                  //                           null &&
+                                                  //                       scripInfo
+                                                  //                               .fundamentalData
+                                                  //                               ?.msg !=
+                                                  //                           "no data found") {
+                                                  //                     // Reset state before navigation
+                                                  //                     await scripInfo
+                                                  //                         .chngDephBtn(
+                                                  //                             "Overview");
+                              
+                                                  //                     await Navigator
+                                                  //                         .pushNamed(
+                                                  //                       context,
+                                                  //                       Routes
+                                                  //                           .fundamentalDetail,
+                                                  //                       arguments: {
+                                                  //                         "wlValue":
+                                                  //                             widget
+                                                  //                                 .wlValue,
+                                                  //                         "depthData":
+                                                  //                             depthData,
+                                                  //                       },
+                                                  //                     );
+                              
+                                                  //                     // Reset state after navigation
+                                                  //                     if (mounted &&
+                                                  //                         !_isDisposed) {
+                                                  //                       await scripInfo
+                                                  //                           .chngDephBtn(
+                                                  //                               "Overview");
+                                                  //                     }
+                                                  //                   } else {
+                                                  //                     if (!mounted)
+                                                  //                       return;
+                                                  //                     ScaffoldMessenger.of(
+                                                  //                             context)
+                                                  //                         .showSnackBar(
+                                                  //                       const SnackBar(
+                                                  //                         content: Text(
+                                                  //                             'No fundamental data available'),
+                                                  //                         duration: Duration(
+                                                  //                             seconds:
+                                                  //                                 2),
+                                                  //                       ),
+                                                  //                     );
+                                                  //                   }
+                                                  //                 } finally {
+                                                  //                   if (mounted &&
+                                                  //                       !_isDisposed) {
+                                                  //                     scripInfo
+                                                  //                         .singlePageloader(
+                                                  //                             false);
+                                                  //                   }
+                                                  //                 }
+                                                  //               },
+                                                  //               child: Container(
+                                                  //                 height: 36,
+                                                  //                 decoration: BoxDecoration(
+                                                  //                     color: theme
+                                                  //                             .isDarkMode
+                                                  //                         ? const Color(
+                                                  //                                 0xffB5C0CF)
+                                                  //                             .withOpacity(
+                                                  //                                 .15)
+                                                  //                         : const Color(
+                                                  //                             0xffF1F3F8),
+                                                  //                     borderRadius:
+                                                  //                         BorderRadius
+                                                  //                             .circular(
+                                                  //                                 8)),
+                                                  //                 child: Row(
+                                                  //                   mainAxisAlignment:
+                                                  //                       MainAxisAlignment
+                                                  //                           .center,
+                                                  //                   children: [
+                                                  //                     SvgPicture
+                                                  //                         .asset(
+                                                  //                       assets
+                                                  //                           .dInfo,
+                                                  //                       color: theme.isDarkMode
+                                                  //                           ? colors
+                                                  //                               .colorWhite
+                                                  //                           : colors
+                                                  //                               .colorBlack,
+                                                  //                       width: 16,
+                                                  //                       height: 16,
+                                                  //                     ),
+                                                  //                     const SizedBox(
+                                                  //                         width: 6),
+                                                  //                     Text(
+                                                  //                       "Fundamental",
+                                                  //                       style: textStyle(
+                                                  //                           theme.isDarkMode
+                                                  //                               ? colors
+                                                  //                                   .colorWhite
+                                                  //                               : colors
+                                                  //                                   .colorBlack,
+                                                  //                           13,
+                                                  //                           FontWeight
+                                                  //                               .w500),
+                                                  //                     ),
+                                                  //                   ],
+                                                  //                 ),
+                                                  //               ),
+                                                  //             ),
+                              
+                                                  //           if (widget.wlValue
+                                                  //                       .exch ==
+                                                  //                   'NSE' ||
+                                                  //               widget.wlValue
+                                                  //                       .exch ==
+                                                  //                   'BSE')
+                                                  //             const SizedBox(
+                                                  //                 height: 8),
+                              
+                                                  //           // Set Alert Button
+                                                  //         ])),
+                              
+                                                  // const SizedBox(height: 8),
+                                                  // Container(
+                                                  //     padding: const EdgeInsets.only(
+                                                  //         left: 14, top: 8, bottom: 8),
+                                                  //     height: 52,
+                                                  //     decoration: BoxDecoration(
+                                                  //         border: Border(
+                                                  //             bottom: BorderSide(
+                                                  //                 color: theme.isDarkMode
+                                                  //                     ? colors
+                                                  //                         .darkColorDivider
+                                                  //                     : colors.colorDivider,
+                                                  //                 width: 0),
+                                                  //             top: BorderSide(
+                                                  //                 color: theme.isDarkMode
+                                                  //                     ? colors
+                                                  //                         .darkColorDivider
+                                                  //                     : colors.colorDivider,
+                                                  //                 width: 0))),
+                                                  //     child: ListView.separated(
+                                                  //         scrollDirection: Axis.horizontal,
+                                                  //         itemCount:
+                                                  //             scripInfo.depthBtns.length,
+                                                  //         itemBuilder: (BuildContext context,
+                                                  //             int index) {
+                                                  //           return ElevatedButton(
+                                                  //               onPressed: () async {
+                                                  //                 scripInfo
+                                                  //                     .singlePageloader(true);
+                              
+                                                  //                 setState(() {
+                                                  //                   initSize =
+                                                  //                       scripInfo.depthBtns[
+                                                  //                               index]
+                                                  //                           [
+                                                  //                           'btnName'] ==
+                                                  //                       "Chart"
+                                                  //                   ? .40
+                                                  //                   : .99;
+                              
+                                                  //                   scripInfo.chngDephBtn(
+                                                  //                       scripInfo.depthBtns[
+                                                  //                               index]
+                                                  //                           [
+                                                  //                           'btnName']);
+                                                  //                 });
+                              
+                                                  //                 if (scripInfo.depthBtns[
+                                                  //                         index]['btnName'] ==
+                                                  //                     "Chart") {
+                                                  //                   Navigator.pop(context);
+                              
+                                                  //                   if (currentRouteName ==
+                                                  //                       Routes.searchScrip) {
+                                                  //                     scripInfo
+                                                  //                         .requestMWScrip(
+                                                  //                             context:
+                                                  //                                 context,
+                                                  //                             isSubscribe:
+                                                  //                                 true);
+                                                  //                     scripInfo.searchClear();
+                                                  //                     scripInfo
+                                                  //                         .setpageName("");
+                                                  //                     Navigator.pop(context);
+                                                  //                     currentRouteName =
+                                                  //                         'homeScreen';
+                                                  //                   }
+                              
+                                                  //                   userProfile
+                                                  //                       .setChartdialog(true);
+                              
+                                                  //                   scripInfo.setChartScript(
+                                                  //                       widget.wlValue.exch,
+                                                  //                       widget.wlValue.token,
+                                                  //                       widget.wlValue.tsym);
+                                                  //                 } else if (scripInfo
+                                                  //                             .depthBtns[
+                                                  //                         index]['btnName'] ==
+                                                  //                     "Option") {
+                                                  //                   scripInfo
+                                                  //                       .singlePageloader(
+                                                  //                           true);
+                              
+                                                  //                   // First set up the option script data
+                                                  //                   scripInfo.setOptionScript(
+                                                  //                       context,
+                                                  //                       widget.wlValue.exch,
+                                                  //                       widget.wlValue.token,
+                                                  //                       widget.wlValue.tsym);
+                              
+                                                  //                   // Wait a small amount of time to ensure data is processed
+                                                  //                   await Future.delayed(const Duration(milliseconds: 100));
+                              
+                                                  //                   // Then navigate to the option chain screen
+                                                  //                   if (mounted) {
+                                                  //                   Navigator.pop(context);
+                                                  //                   Navigator.pushNamed(
+                                                  //                       context,
+                                                  //                       Routes.optionChain,
+                                                  //                       arguments:
+                                                  //                           widget.wlValue);
+                                                  //                   }
+                                                  //                 } else if (scripInfo
+                                                  //                             .depthBtns[
+                                                  //                         index]['btnName'] ==
+                                                  //                     "Future") {
+                                                  //                   await scripInfo
+                                                  //                       .requestWSFut(
+                                                  //                           context: context,
+                                                  //                           isSubscribe:
+                                                  //                               true);
+                                                  //                 } else if (scripInfo
+                                                  //                         .actDeptBtn ==
+                                                  //                     "Overview") {
+                                                  //                   await ref.watch(
+                                                  //                           websocketProvider)
+                                                  //                       .establishConnection(
+                                                  //                           channelInput:
+                                                  //                               "${depthData.exch}|${depthData.token}",
+                                                  //                           task: "d",
+                                                  //                           context: context);
+                                                  //                 } else if (scripInfo
+                                                  //                         .actDeptBtn ==
+                                                  //                     "Fundamental") {
+                                                  //                   scripInfo.chngshareHold(
+                                                  //                       "Promoter Holding");
+                                                  //                 }
+                              
+                                                  //                 scripInfo.singlePageloader(
+                                                  //                     false);
+                                                  //               },
+                                                  //               style:
+                                                  //                   ElevatedButton.styleFrom(
+                                                  //                       elevation: 0,
+                                                  //                       padding: const EdgeInsets.symmetric(
+                                                  //                           horizontal: 12,
+                                                  //                           vertical: 0),
+                                                  //                       backgroundColor: theme
+                                                  //                               .isDarkMode
+                                                  //                           ? scripInfo.actDeptBtn ==
+                                                  //                                   scripInfo.depthBtns[index][
+                                                  //                                       'btnName']
+                                                  //                               ? colors
+                                                  //                                   .colorbluegrey
+                                                  //                               : const Color(
+                                                  //                                       0xffB5C0CF)
+                                                  //                                   .withOpacity(
+                                                  //                                       .15)
+                                                  //                           : scripInfo.actDeptBtn ==
+                                                  //                                   scripInfo.depthBtns[index]
+                                                  //                                       [
+                                                  //                                       'btnName']
+                                                  //                               ? const Color(
+                                                  //                                   0xff000000)
+                                                  //                               : const Color(
+                                                  //                                   0xffF1F3F8),
+                                                  //                       shape:
+                                                  //                           const StadiumBorder()),
+                                                  //               child: Row(children: [
+                                                  //                 SvgPicture.asset(
+                                                  //                   "${scripInfo.depthBtns[index]['imgPath']}",
+                                                  //                   color: theme.isDarkMode
+                                                  //                       ? Color(scripInfo
+                                                  //                                   .actDeptBtn ==
+                                                  //                               scripInfo.depthBtns[index]
+                                                  //                                   [
+                                                  //                                   'btnName']
+                                                  //                           ? 0xff000000
+                                                  //                           : 0xffffffff)
+                                                  //                       : Color(scripInfo
+                                                  //                                   .actDeptBtn ==
+                                                  //                               scripInfo.depthBtns[index]
+                                                  //                                   [
+                                                  //                                   'btnName']
+                                                  //                           ? 0xffffffff
+                                                  //                           : 0xff000000),
+                                                  //                 ),
+                                                  //                 const SizedBox(width: 8),
+                                                  //                 TextWidget.paraText(
+                                                  //                     text: "${scripInfo.depthBtns[index]['btnName']}",
+                                                  //                     color: theme.isDarkMode
+                                                  //                             ? Color(scripInfo.actDeptBtn == scripInfo.depthBtns[index]['btnName']
+                                                  //                                 ? 0xff000000
+                                                  //                                 : 0xffffffff)
+                                                  //                             : Color(scripInfo.actDeptBtn == scripInfo.depthBtns[index]['btnName']
+                                                  //                                 ? 0xffffffff
+                                                  //                                 : 0xff000000),
+                                                  //                     theme: theme.isDarkMode,
+                                                  //                     fw: 1)
+                                                  //               ]));
+                                                  //         },
+                                                  //         separatorBuilder:
+                                                  //             (BuildContext context,
+                                                  //                 int index) {
+                                                  //           return const SizedBox(width: 10);
+                                                  //         })),
+                                                ]),
+                                              ),
+                                            
+                                    if (scripInfo.scripDepthloader)
+                                      const Center(
+                                        child: Padding(
+                                          padding: EdgeInsets.only(top: 120),
+                                          child: CircularProgressIndicator(),
+                                        ),
                                       ),
-                                      color: theme.isDarkMode
-                                          ? WebDarkColors.background
-                                          : WebColors.background,
-                                      boxShadow: _hasScrolled
-                                          ? [
-                                              BoxShadow(
-                                                color: Colors.black
-                                                    .withOpacity(0.1),
-                                                blurRadius: 4,
-                                                offset: const Offset(0, 2),
-                                              )
-                                            ]
-                                          : [],
-                                    ),
-                                    child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.start,
-                                        children: <Widget>[
-                                          Padding(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      horizontal: 14),
-                                              child: Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    // ... symbol, info icon, ltp, change ...
-                                                  ])),
-                                */
-
-                                        const Padding(
-                                          padding: EdgeInsets.symmetric(
-                                              horizontal: 16),
-                                          child: Column(children: [
-                                            // Row(
-                                            //     mainAxisAlignment:
-                                            //         MainAxisAlignment
-                                            //             .spaceBetween,
-                                            //     children: [
-                                            //       Row(children: [
-                                            //         // CustomExchBadge(
-                                            //         //     exch: widget
-                                            //         //         .wlValue
-                                            //         //         .exch),
-                                            //         // Text(
-                                            //         //     "  ${widget.wlValue.expDate}",
-                                            //         //     style: textStyle(
-                                            //         //         !theme.isDarkMode
-                                            //         //             ? colors
-                                            //         //                 .colorBlack
-                                            //         //             : colors
-                                            //         //                 .colorWhite,
-                                            //         //         12,
-                                            //         //         FontWeight
-                                            //         //             .w600)),
-                                            //         // SizedBox(
-                                            //         //   width: 4,
-                                            //         // ),
-                                            //         TextWidget.paraText(
-                                            //             text: "${(double.tryParse(depthData.chng ?? '0.00') ?? 0.00).toStringAsFixed(2)} (${(double.tryParse(depthData.pc ?? '0.00') ?? 0.00).toStringAsFixed(2)}%)",
-                                            //             color:  !theme.isDarkMode
-                                            //                     ? colors
-                                            //                         .colorBlack
-                                            //                     : colors
-                                            //                         .colorWhite,
-                                            //             theme: theme.isDarkMode,
-                                            //             fw: 3)
-                                            //       ]),
-                                            //     ]),
-                                            /*
-                                              if (!scripInfo.scripDepthloader &&
-                                                  widget.wlValue.instname !=
-                                                      "UNDIND" &&
-                                                  widget.wlValue.instname !=
-                                                      "COM")
-                                                scripInfo.actDeptBtn ==
-                                                        "Set Alert"
-                                                    ? Container()
-                                                    : Container(
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .symmetric(
-                                                                horizontal: 0,
-                                                                vertical: 16),
-                                                        child: Row(
+                                    SizedBox.shrink(),
+                                    /*
+                                      Chart and Options buttons row (temporarily commented)
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                            top: 8, bottom: 16),
+                                        child: Row(
+                                          children: [
+                                            // Chart button ...
+                                            // Options button ...
+                                          ],
+                                        ),
+                                      ),
+                                      */
+                                    if (scripInfo.actDeptBtn == "Overview") ...[
+                                      Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 16, vertical: 2),
+                                          child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                const SizedBox(height: 4),
+                              
+                                                // Old 2-column layout - commented out
+                                                // _buildInfoRow(
+                                                //     "Open",
+                                                //     "${depthData.o != "null" ? depthData.o ?? 0.00 : '0.00'}",
+                                                //     "Close",
+                                                //     "${depthData.c != "null" ? depthData.c ?? 0.00 : '0.00'}",
+                                                //     theme),
+                              
+                                                // New 4-column layout
+                                                _buildInfoRow1(
+                                                    "Open",
+                                                    "${depthData.o != "null" ? depthData.o ?? 0.00 : '0.00'}",
+                                                    "High",
+                                                    "${depthData.h != "null" ? depthData.h ?? 0.00 : '0.00'}",
+                                                    "Low",
+                                                    "${depthData.l != "null" ? depthData.l ?? 0.00 : '0.00'}",
+                                                    "P.Close",
+                                                    "${depthData.c != "null" ? depthData.c ?? 0.00 : '0.00'}",
+                                                    theme),
+                                                const SizedBox(height: 4),
+                                                // Low-High section commented out since now included in 4-column layout above
+                                                // if (depthData.l != "null" &&
+                                                //     depthData.h !=
+                                                //         "null" &&
+                                                //     double.parse(depthData
+                                                //             .h
+                                                //             .toString()) >
+                                                //         0 &&
+                                                //     depthData.l !=
+                                                //         depthData
+                                                //             .h) ...[
+                                                //   Text("Low - High",
+                                                //       style: textStyle(
+                                                //           const Color(
+                                                //               0xff666666),
+                                                //           12,
+                                                //           FontWeight
+                                                //               .w500)),
+                                                //   const SizedBox(
+                                                //       height: 4),
+                                                //   lowHighBar(
+                                                //       "${depthData.l ?? 0.00}",
+                                                //       "${depthData.h ?? 0.00}",
+                                                //       "${depthData.lp ?? depthData.c ?? 0.00}",
+                                                //       theme),
+                                                //   const SizedBox(
+                                                //       height: 2),
+                                                //   Divider(
+                                                //       color: theme.isDarkMode
+                                                //           ? colors
+                                                //               .darkColorDivider
+                                                //           : colors
+                                                //               .colorDivider),
+                                                // ] else ...[
+                                                //   _buildInfoRow(
+                                                //       "Low",
+                                                //       "${depthData.l}",
+                                                //       "High",
+                                                //       "${depthData.h}",
+                                                //       theme),
+                                                // ],
+                              
+                                                // Keep the Low-High bar for visual representation
+                                                // if (depthData.l != "null" &&
+                                                //     depthData.h !=
+                                                //         "null" &&
+                                                //     double.parse(depthData
+                                                //             .h
+                                                //             .toString()) >
+                                                //         0 &&
+                                                //     depthData.l !=
+                                                //         depthData
+                                                //             .h) ...[
+                                                //   Text("Low - High",
+                                                //       style: textStyle(
+                                                //           const Color(
+                                                //               0xff666666),
+                                                //           12,
+                                                //           FontWeight
+                                                //               .w500)),
+                                                //   const SizedBox(
+                                                //       height: 4),
+                                                //   lowHighBar(
+                                                //       "${depthData.l ?? 0.00}",
+                                                //       "${depthData.h ?? 0.00}",
+                                                //       "${depthData.lp ?? depthData.c ?? 0.00}",
+                                                //       theme),
+                                                //   const SizedBox(
+                                                //       height: 2),
+                                                //   Divider(
+                                                //       color: theme.isDarkMode
+                                                //           ? colors
+                                                //               .darkColorDivider
+                                                //           : colors
+                                                //               .colorDivider),
+                                                // ],
+                                                // Removed old 52 WEEKS HIGH-LOW and DAILY PRICE RANGE section since it's now above
+                                                if (widget.wlValue.instname !=
+                                                        "UNDIND" &&
+                                                    widget.wlValue.instname !=
+                                                        "COM") ...[
+                                                  // Center(
+                                                  //   child: TextWidget.titleText(
+                                                  //       text:
+                                                  //           "Market Depth",
+                                                  //       theme: theme
+                                                  //           .isDarkMode,
+                                                  //       fw: 1),
+                                                  // ),
+                                                  // const SizedBox(
+                                                  //     height:
+                                                  //         10),
+                                                  Row(children: [
+                                                    Expanded(
+                                                        child: Column(
+                                                            crossAxisAlignment:
+                                                                CrossAxisAlignment
+                                                                    .start,
                                                             mainAxisAlignment:
                                                                 MainAxisAlignment
                                                                     .spaceBetween,
                                                             children: [
-                                                              Expanded(
-                                                                  child:
-                                                                      InkWell(
-                                                                onTap:
-                                                                    () async {
-                                                                  await placeOrderInput(
-                                                                      scripInfo,
-                                                                      context,
-                                                                      depthData,
-                                                                      true);
-                                                                },
-                                                                child:
-                                                                    Container(
-                                                                  height: 45,
-                                                                  decoration: BoxDecoration(
-                                                                      color: theme.isDarkMode
-                                                                          ? WebDarkColors
-                                                                              .primary
-                                                                          : WebColors
-                                                                              .primary,
-                                                                      borderRadius:
-                                                                          BorderRadius.circular(
-                                                                              5)),
-                                                                  child: Center(
-                                                                      child: Text(
-                                                                          "Buy",
-                                                                          style: WebTextStyles.sub(
-                                                                              isDarkTheme: theme.isDarkMode,
-                                                                              color: WebDarkColors.textPrimary,
-                                                                              fontWeight: WebFonts.semiBold,
-                                                                              letterSpacing: 0.0))),
+                                                          Row(
+                                                              mainAxisAlignment:
+                                                                  MainAxisAlignment
+                                                                      .spaceBetween,
+                                                              children: [
+                                                                Text(
+                                                                  "Quantity",
+                                                                  style: WebTextStyles
+                                                                      .para(
+                                                                    isDarkTheme: theme
+                                                                        .isDarkMode,
+                                                                    color: theme
+                                                                            .isDarkMode
+                                                                        ? WebDarkColors
+                                                                            .textSecondary
+                                                                        : WebColors
+                                                                            .textSecondary,
+                                                                    fontWeight:
+                                                                        WebFonts
+                                                                            .regular,
+                                                                    letterSpacing:
+                                                                        0.0,
+                                                                  ),
                                                                 ),
-                                                              )),
-                                                              const SizedBox(
-                                                                  width: 16),
-                                                              Expanded(
-                                                                child: InkWell(
-                                                                    onTap:
-                                                                        () async {
-                                                                      await placeOrderInput(
-                                                                          scripInfo,
-                                                                          context,
-                                                                          depthData,
-                                                                          false);
-                                                                    },
-                                                                    child: Container(
-                                                                        height:
-                                                                            45,
-                                                                        decoration: BoxDecoration(
-                                                                            color: WebDarkColors
-                                                                                .error,
-                                                                            borderRadius: BorderRadius.circular(
-                                                                                5)),
-                                                                        child: Center(
-                                                                            child:
-                                                                                Text("Sell", style: WebTextStyles.sub(isDarkTheme: theme.isDarkMode, color: WebDarkColors.textPrimary, fontWeight: WebFonts.semiBold, letterSpacing: 0.0))))),
-                                                              ),
-                                                            ])),
-
-                                              if (!scripInfo.scripDepthloader &&
-                                                  widget.wlValue.instname !=
-                                                      "UNDIND" &&
-                                                  widget.wlValue.instname !=
-                                                      "COM")
-                                                const ListDivider(),
-                                              if (!scripInfo.scripDepthloader &&
-                                                  widget.wlValue.instname !=
-                                                      "UNDIND" &&
-                                                  widget.wlValue.instname !=
-                                                      "COM")
-                                                const ListDivider(),
-                                              */
-                                            // Chart button above tabs - Now in Column layout
-                                            // Container(
-                                            //     padding: const EdgeInsets
-                                            //         .symmetric(
-                                            //         horizontal: 14,
-                                            //         vertical: 8),
-                                            //     child: Column(
-                                            //         crossAxisAlignment:
-                                            //             CrossAxisAlignment
-                                            //                 .stretch,
-                                            //         children: [
-
-                                            //           if (scripInfo
-                                            //               .getOptionawait(
-                                            //                   widget.wlValue
-                                            //                       .exch,
-                                            //                   widget.wlValue
-                                            //                       .token))
-                                            //             const SizedBox(
-                                            //                 height: 8),
-
-                                            //           // Future Button (conditional)
-                                            //           if (scripInfo
-                                            //               .getOptionawait(
-                                            //                   widget.wlValue
-                                            //                       .exch,
-                                            //                   widget.wlValue
-                                            //                       .token))
-                                            //             InkWell(
-                                            //               onTap: () async {
-                                            //                 scripInfo
-                                            //                     .singlePageloader(
-                                            //                         true);
-
-                                            //                 await scripInfo.requestWSFut(
-                                            //                     context:
-                                            //                         context,
-                                            //                     isSubscribe:
-                                            //                         true);
-
-                                            //                 if (mounted) {
-                                            //                   await Navigator
-                                            //                       .pushNamed(
-                                            //                           context,
-                                            //                           Routes
-                                            //                               .futureScreen,
-                                            //                           arguments: {
-                                            //                         "depthdata":
-                                            //                             depthData,
-                                            //                         "wlvalue":
-                                            //                             widget
-                                            //                                 .wlValue
-                                            //                       });
-                                            //                 }
-
-                                            //                 scripInfo
-                                            //                     .singlePageloader(
-                                            //                         false);
-                                            //               },
-                                            //               child: Container(
-                                            //                 height: 36,
-                                            //                 decoration: BoxDecoration(
-                                            //                     color: theme
-                                            //                             .isDarkMode
-                                            //                         ? const Color(
-                                            //                                 0xffB5C0CF)
-                                            //                             .withOpacity(
-                                            //                                 .15)
-                                            //                         : const Color(
-                                            //                             0xffF1F3F8),
-                                            //                     borderRadius:
-                                            //                         BorderRadius
-                                            //                             .circular(
-                                            //                                 8)),
-                                            //                 child: Row(
-                                            //                   mainAxisAlignment:
-                                            //                       MainAxisAlignment
-                                            //                           .center,
-                                            //                   children: [
-                                            //                     SvgPicture
-                                            //                         .asset(
-                                            //                       assets
-                                            //                           .optChainIcon,
-                                            //                       color: theme.isDarkMode
-                                            //                           ? colors
-                                            //                               .colorWhite
-                                            //                           : colors
-                                            //                               .colorBlack,
-                                            //                       width: 16,
-                                            //                       height: 16,
-                                            //                     ),
-                                            //                     const SizedBox(
-                                            //                         width: 6),
-                                            //                     Text(
-                                            //                       "Future",
-                                            //                       style: textStyle(
-                                            //                           theme.isDarkMode
-                                            //                               ? colors
-                                            //                                   .colorWhite
-                                            //                               : colors
-                                            //                                   .colorBlack,
-                                            //                           13,
-                                            //                           FontWeight
-                                            //                               .w500),
-                                            //                     ),
-                                            //                   ],
-                                            //                 ),
-                                            //               ),
-                                            //             ),
-
-                                            //           if (scripInfo
-                                            //               .getOptionawait(
-                                            //                   widget.wlValue
-                                            //                       .exch,
-                                            //                   widget.wlValue
-                                            //                       .token))
-                                            //             const SizedBox(
-                                            //                 height: 8),
-
-                                            //           // Fundamental Button (conditional)
-                                            //           if (widget.wlValue
-                                            //                       .exch ==
-                                            //                   'NSE' ||
-                                            //               widget.wlValue
-                                            //                       .exch ==
-                                            //                   'BSE')
-                                            //             InkWell(
-                                            //               onTap: () async {
-                                            //                 if (_isDisposed)
-                                            //                   return;
-
-                                            //                 scripInfo
-                                            //                     .singlePageloader(
-                                            //                         true);
-
-                                            //                 try {
-                                            //                   // Pre-fetch data before navigation
-                                            //                   if (scripInfo
-                                            //                               .fundamentalData ==
-                                            //                           null ||
-                                            //                       scripInfo
-                                            //                               .fundamentalData
-                                            //                               ?.msg ==
-                                            //                           "no data found") {
-                                            //                     await scripInfo
-                                            //                         .fetchFundamentalData(
-                                            //                             tradeSym:
-                                            //                                 "${widget.wlValue.exch}:${widget.wlValue.tsym}");
-                                            //                   }
-
-                                            //                   if (!mounted)
-                                            //                     return;
-
-                                            //                   if (scripInfo
-                                            //                               .fundamentalData !=
-                                            //                           null &&
-                                            //                       scripInfo
-                                            //                               .fundamentalData
-                                            //                               ?.msg !=
-                                            //                           "no data found") {
-                                            //                     // Reset state before navigation
-                                            //                     await scripInfo
-                                            //                         .chngDephBtn(
-                                            //                             "Overview");
-
-                                            //                     await Navigator
-                                            //                         .pushNamed(
-                                            //                       context,
-                                            //                       Routes
-                                            //                           .fundamentalDetail,
-                                            //                       arguments: {
-                                            //                         "wlValue":
-                                            //                             widget
-                                            //                                 .wlValue,
-                                            //                         "depthData":
-                                            //                             depthData,
-                                            //                       },
-                                            //                     );
-
-                                            //                     // Reset state after navigation
-                                            //                     if (mounted &&
-                                            //                         !_isDisposed) {
-                                            //                       await scripInfo
-                                            //                           .chngDephBtn(
-                                            //                               "Overview");
-                                            //                     }
-                                            //                   } else {
-                                            //                     if (!mounted)
-                                            //                       return;
-                                            //                     ScaffoldMessenger.of(
-                                            //                             context)
-                                            //                         .showSnackBar(
-                                            //                       const SnackBar(
-                                            //                         content: Text(
-                                            //                             'No fundamental data available'),
-                                            //                         duration: Duration(
-                                            //                             seconds:
-                                            //                                 2),
-                                            //                       ),
-                                            //                     );
-                                            //                   }
-                                            //                 } finally {
-                                            //                   if (mounted &&
-                                            //                       !_isDisposed) {
-                                            //                     scripInfo
-                                            //                         .singlePageloader(
-                                            //                             false);
-                                            //                   }
-                                            //                 }
-                                            //               },
-                                            //               child: Container(
-                                            //                 height: 36,
-                                            //                 decoration: BoxDecoration(
-                                            //                     color: theme
-                                            //                             .isDarkMode
-                                            //                         ? const Color(
-                                            //                                 0xffB5C0CF)
-                                            //                             .withOpacity(
-                                            //                                 .15)
-                                            //                         : const Color(
-                                            //                             0xffF1F3F8),
-                                            //                     borderRadius:
-                                            //                         BorderRadius
-                                            //                             .circular(
-                                            //                                 8)),
-                                            //                 child: Row(
-                                            //                   mainAxisAlignment:
-                                            //                       MainAxisAlignment
-                                            //                           .center,
-                                            //                   children: [
-                                            //                     SvgPicture
-                                            //                         .asset(
-                                            //                       assets
-                                            //                           .dInfo,
-                                            //                       color: theme.isDarkMode
-                                            //                           ? colors
-                                            //                               .colorWhite
-                                            //                           : colors
-                                            //                               .colorBlack,
-                                            //                       width: 16,
-                                            //                       height: 16,
-                                            //                     ),
-                                            //                     const SizedBox(
-                                            //                         width: 6),
-                                            //                     Text(
-                                            //                       "Fundamental",
-                                            //                       style: textStyle(
-                                            //                           theme.isDarkMode
-                                            //                               ? colors
-                                            //                                   .colorWhite
-                                            //                               : colors
-                                            //                                   .colorBlack,
-                                            //                           13,
-                                            //                           FontWeight
-                                            //                               .w500),
-                                            //                     ),
-                                            //                   ],
-                                            //                 ),
-                                            //               ),
-                                            //             ),
-
-                                            //           if (widget.wlValue
-                                            //                       .exch ==
-                                            //                   'NSE' ||
-                                            //               widget.wlValue
-                                            //                       .exch ==
-                                            //                   'BSE')
-                                            //             const SizedBox(
-                                            //                 height: 8),
-
-                                            //           // Set Alert Button
-                                            //         ])),
-
-                                            // const SizedBox(height: 8),
-                                            // Container(
-                                            //     padding: const EdgeInsets.only(
-                                            //         left: 14, top: 8, bottom: 8),
-                                            //     height: 52,
-                                            //     decoration: BoxDecoration(
-                                            //         border: Border(
-                                            //             bottom: BorderSide(
-                                            //                 color: theme.isDarkMode
-                                            //                     ? colors
-                                            //                         .darkColorDivider
-                                            //                     : colors.colorDivider,
-                                            //                 width: 0),
-                                            //             top: BorderSide(
-                                            //                 color: theme.isDarkMode
-                                            //                     ? colors
-                                            //                         .darkColorDivider
-                                            //                     : colors.colorDivider,
-                                            //                 width: 0))),
-                                            //     child: ListView.separated(
-                                            //         scrollDirection: Axis.horizontal,
-                                            //         itemCount:
-                                            //             scripInfo.depthBtns.length,
-                                            //         itemBuilder: (BuildContext context,
-                                            //             int index) {
-                                            //           return ElevatedButton(
-                                            //               onPressed: () async {
-                                            //                 scripInfo
-                                            //                     .singlePageloader(true);
-
-                                            //                 setState(() {
-                                            //                   initSize =
-                                            //                       scripInfo.depthBtns[
-                                            //                               index]
-                                            //                           [
-                                            //                           'btnName'] ==
-                                            //                       "Chart"
-                                            //                   ? .40
-                                            //                   : .99;
-
-                                            //                   scripInfo.chngDephBtn(
-                                            //                       scripInfo.depthBtns[
-                                            //                               index]
-                                            //                           [
-                                            //                           'btnName']);
-                                            //                 });
-
-                                            //                 if (scripInfo.depthBtns[
-                                            //                         index]['btnName'] ==
-                                            //                     "Chart") {
-                                            //                   Navigator.pop(context);
-
-                                            //                   if (currentRouteName ==
-                                            //                       Routes.searchScrip) {
-                                            //                     scripInfo
-                                            //                         .requestMWScrip(
-                                            //                             context:
-                                            //                                 context,
-                                            //                             isSubscribe:
-                                            //                                 true);
-                                            //                     scripInfo.searchClear();
-                                            //                     scripInfo
-                                            //                         .setpageName("");
-                                            //                     Navigator.pop(context);
-                                            //                     currentRouteName =
-                                            //                         'homeScreen';
-                                            //                   }
-
-                                            //                   userProfile
-                                            //                       .setChartdialog(true);
-
-                                            //                   scripInfo.setChartScript(
-                                            //                       widget.wlValue.exch,
-                                            //                       widget.wlValue.token,
-                                            //                       widget.wlValue.tsym);
-                                            //                 } else if (scripInfo
-                                            //                             .depthBtns[
-                                            //                         index]['btnName'] ==
-                                            //                     "Option") {
-                                            //                   scripInfo
-                                            //                       .singlePageloader(
-                                            //                           true);
-
-                                            //                   // First set up the option script data
-                                            //                   scripInfo.setOptionScript(
-                                            //                       context,
-                                            //                       widget.wlValue.exch,
-                                            //                       widget.wlValue.token,
-                                            //                       widget.wlValue.tsym);
-
-                                            //                   // Wait a small amount of time to ensure data is processed
-                                            //                   await Future.delayed(const Duration(milliseconds: 100));
-
-                                            //                   // Then navigate to the option chain screen
-                                            //                   if (mounted) {
-                                            //                   Navigator.pop(context);
-                                            //                   Navigator.pushNamed(
-                                            //                       context,
-                                            //                       Routes.optionChain,
-                                            //                       arguments:
-                                            //                           widget.wlValue);
-                                            //                   }
-                                            //                 } else if (scripInfo
-                                            //                             .depthBtns[
-                                            //                         index]['btnName'] ==
-                                            //                     "Future") {
-                                            //                   await scripInfo
-                                            //                       .requestWSFut(
-                                            //                           context: context,
-                                            //                           isSubscribe:
-                                            //                               true);
-                                            //                 } else if (scripInfo
-                                            //                         .actDeptBtn ==
-                                            //                     "Overview") {
-                                            //                   await ref.watch(
-                                            //                           websocketProvider)
-                                            //                       .establishConnection(
-                                            //                           channelInput:
-                                            //                               "${depthData.exch}|${depthData.token}",
-                                            //                           task: "d",
-                                            //                           context: context);
-                                            //                 } else if (scripInfo
-                                            //                         .actDeptBtn ==
-                                            //                     "Fundamental") {
-                                            //                   scripInfo.chngshareHold(
-                                            //                       "Promoter Holding");
-                                            //                 }
-
-                                            //                 scripInfo.singlePageloader(
-                                            //                     false);
-                                            //               },
-                                            //               style:
-                                            //                   ElevatedButton.styleFrom(
-                                            //                       elevation: 0,
-                                            //                       padding: const EdgeInsets.symmetric(
-                                            //                           horizontal: 12,
-                                            //                           vertical: 0),
-                                            //                       backgroundColor: theme
-                                            //                               .isDarkMode
-                                            //                           ? scripInfo.actDeptBtn ==
-                                            //                                   scripInfo.depthBtns[index][
-                                            //                                       'btnName']
-                                            //                               ? colors
-                                            //                                   .colorbluegrey
-                                            //                               : const Color(
-                                            //                                       0xffB5C0CF)
-                                            //                                   .withOpacity(
-                                            //                                       .15)
-                                            //                           : scripInfo.actDeptBtn ==
-                                            //                                   scripInfo.depthBtns[index]
-                                            //                                       [
-                                            //                                       'btnName']
-                                            //                               ? const Color(
-                                            //                                   0xff000000)
-                                            //                               : const Color(
-                                            //                                   0xffF1F3F8),
-                                            //                       shape:
-                                            //                           const StadiumBorder()),
-                                            //               child: Row(children: [
-                                            //                 SvgPicture.asset(
-                                            //                   "${scripInfo.depthBtns[index]['imgPath']}",
-                                            //                   color: theme.isDarkMode
-                                            //                       ? Color(scripInfo
-                                            //                                   .actDeptBtn ==
-                                            //                               scripInfo.depthBtns[index]
-                                            //                                   [
-                                            //                                   'btnName']
-                                            //                           ? 0xff000000
-                                            //                           : 0xffffffff)
-                                            //                       : Color(scripInfo
-                                            //                                   .actDeptBtn ==
-                                            //                               scripInfo.depthBtns[index]
-                                            //                                   [
-                                            //                                   'btnName']
-                                            //                           ? 0xffffffff
-                                            //                           : 0xff000000),
-                                            //                 ),
-                                            //                 const SizedBox(width: 8),
-                                            //                 TextWidget.paraText(
-                                            //                     text: "${scripInfo.depthBtns[index]['btnName']}",
-                                            //                     color: theme.isDarkMode
-                                            //                             ? Color(scripInfo.actDeptBtn == scripInfo.depthBtns[index]['btnName']
-                                            //                                 ? 0xff000000
-                                            //                                 : 0xffffffff)
-                                            //                             : Color(scripInfo.actDeptBtn == scripInfo.depthBtns[index]['btnName']
-                                            //                                 ? 0xffffffff
-                                            //                                 : 0xff000000),
-                                            //                     theme: theme.isDarkMode,
-                                            //                     fw: 1)
-                                            //               ]));
-                                            //         },
-                                            //         separatorBuilder:
-                                            //             (BuildContext context,
-                                            //                 int index) {
-                                            //           return const SizedBox(width: 10);
-                                            //         })),
-                                          ]),
-                                        ),
-                                      
-                              if (scripInfo.scripDepthloader)
-                                const Center(
-                                  child: Padding(
-                                    padding: EdgeInsets.only(top: 120),
-                                    child: CircularProgressIndicator(),
-                                  ),
-                                ),
-                              SizedBox.shrink(),
-                              /*
-                                Chart and Options buttons row (temporarily commented)
-                                Padding(
-                                  padding: const EdgeInsets.only(
-                                      top: 8, bottom: 16),
-                                  child: Row(
-                                    children: [
-                                      // Chart button ...
-                                      // Options button ...
-                                    ],
-                                  ),
-                                ),
-                                */
-                              if (scripInfo.actDeptBtn == "Overview") ...[
-                                Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 16, vertical: 2),
-                                    child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          const SizedBox(height: 4),
-
-                                          // Old 2-column layout - commented out
-                                          // _buildInfoRow(
-                                          //     "Open",
-                                          //     "${depthData.o != "null" ? depthData.o ?? 0.00 : '0.00'}",
-                                          //     "Close",
-                                          //     "${depthData.c != "null" ? depthData.c ?? 0.00 : '0.00'}",
-                                          //     theme),
-
-                                          // New 4-column layout
-                                          _buildInfoRow1(
-                                              "Open",
-                                              "${depthData.o != "null" ? depthData.o ?? 0.00 : '0.00'}",
-                                              "High",
-                                              "${depthData.h != "null" ? depthData.h ?? 0.00 : '0.00'}",
-                                              "Low",
-                                              "${depthData.l != "null" ? depthData.l ?? 0.00 : '0.00'}",
-                                              "P.Close",
-                                              "${depthData.c != "null" ? depthData.c ?? 0.00 : '0.00'}",
-                                              theme),
-                                          const SizedBox(height: 4),
-                                          // Low-High section commented out since now included in 4-column layout above
-                                          // if (depthData.l != "null" &&
-                                          //     depthData.h !=
-                                          //         "null" &&
-                                          //     double.parse(depthData
-                                          //             .h
-                                          //             .toString()) >
-                                          //         0 &&
-                                          //     depthData.l !=
-                                          //         depthData
-                                          //             .h) ...[
-                                          //   Text("Low - High",
-                                          //       style: textStyle(
-                                          //           const Color(
-                                          //               0xff666666),
-                                          //           12,
-                                          //           FontWeight
-                                          //               .w500)),
-                                          //   const SizedBox(
-                                          //       height: 4),
-                                          //   lowHighBar(
-                                          //       "${depthData.l ?? 0.00}",
-                                          //       "${depthData.h ?? 0.00}",
-                                          //       "${depthData.lp ?? depthData.c ?? 0.00}",
-                                          //       theme),
-                                          //   const SizedBox(
-                                          //       height: 2),
-                                          //   Divider(
-                                          //       color: theme.isDarkMode
-                                          //           ? colors
-                                          //               .darkColorDivider
-                                          //           : colors
-                                          //               .colorDivider),
-                                          // ] else ...[
-                                          //   _buildInfoRow(
-                                          //       "Low",
-                                          //       "${depthData.l}",
-                                          //       "High",
-                                          //       "${depthData.h}",
-                                          //       theme),
-                                          // ],
-
-                                          // Keep the Low-High bar for visual representation
-                                          // if (depthData.l != "null" &&
-                                          //     depthData.h !=
-                                          //         "null" &&
-                                          //     double.parse(depthData
-                                          //             .h
-                                          //             .toString()) >
-                                          //         0 &&
-                                          //     depthData.l !=
-                                          //         depthData
-                                          //             .h) ...[
-                                          //   Text("Low - High",
-                                          //       style: textStyle(
-                                          //           const Color(
-                                          //               0xff666666),
-                                          //           12,
-                                          //           FontWeight
-                                          //               .w500)),
-                                          //   const SizedBox(
-                                          //       height: 4),
-                                          //   lowHighBar(
-                                          //       "${depthData.l ?? 0.00}",
-                                          //       "${depthData.h ?? 0.00}",
-                                          //       "${depthData.lp ?? depthData.c ?? 0.00}",
-                                          //       theme),
-                                          //   const SizedBox(
-                                          //       height: 2),
-                                          //   Divider(
-                                          //       color: theme.isDarkMode
-                                          //           ? colors
-                                          //               .darkColorDivider
-                                          //           : colors
-                                          //               .colorDivider),
-                                          // ],
-                                          // Removed old 52 WEEKS HIGH-LOW and DAILY PRICE RANGE section since it's now above
-                                          if (widget.wlValue.instname !=
-                                                  "UNDIND" &&
-                                              widget.wlValue.instname !=
-                                                  "COM") ...[
-                                            // Center(
-                                            //   child: TextWidget.titleText(
-                                            //       text:
-                                            //           "Market Depth",
-                                            //       theme: theme
-                                            //           .isDarkMode,
-                                            //       fw: 1),
-                                            // ),
-                                            // const SizedBox(
-                                            //     height:
-                                            //         10),
-                                            Row(children: [
-                                              Expanded(
-                                                  child: Column(
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .start,
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .spaceBetween,
-                                                      children: [
-                                                    Row(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .spaceBetween,
-                                                        children: [
-                                                          Text(
-                                                            "Quantity",
-                                                            style: WebTextStyles
-                                                                .para(
-                                                              isDarkTheme: theme
-                                                                  .isDarkMode,
-                                                              color: theme
-                                                                      .isDarkMode
-                                                                  ? WebDarkColors
-                                                                      .textSecondary
-                                                                  : WebColors
-                                                                      .textSecondary,
-                                                              fontWeight:
-                                                                  WebFonts
-                                                                      .regular,
-                                                              letterSpacing:
-                                                                  0.0,
-                                                            ),
-                                                          ),
-                                                          Text(
-                                                            "Bid",
-                                                            style: WebTextStyles
-                                                                .para(
-                                                              isDarkTheme: theme
-                                                                  .isDarkMode,
-                                                              color:
-                                                                  WebDarkColors
-                                                                      .secondary,
-                                                              fontWeight:
-                                                                  WebFonts
-                                                                      .regular,
-                                                              letterSpacing:
-                                                                  0.0,
-                                                            ),
-                                                          )
-                                                        ]),
-                                                    const SizedBox(height: 10),
-                                                    _buildBidDepthPercentage(
-                                                        "${depthData.bq1 ?? 0}",
-                                                        "${depthData.bp1 ?? 0.00}",
-                                                        scripInfo,
-                                                        theme),
-                                                    const SizedBox(height: 6),
-                                                    _buildBidDepthPercentage(
-                                                        "${depthData.bq2 ?? 0}",
-                                                        "${depthData.bp2 ?? 0.00}",
-                                                        scripInfo,
-                                                        theme),
-                                                    const SizedBox(height: 6),
-                                                    _buildBidDepthPercentage(
-                                                        "${depthData.bq3 ?? 0}",
-                                                        "${depthData.bp3 ?? 0.00}",
-                                                        scripInfo,
-                                                        theme),
-                                                    const SizedBox(height: 6),
-                                                    _buildBidDepthPercentage(
-                                                        "${depthData.bq4 ?? 0}",
-                                                        "${depthData.bp4 ?? 0.00}",
-                                                        scripInfo,
-                                                        theme),
-                                                    const SizedBox(height: 6),
-                                                    _buildBidDepthPercentage(
-                                                        "${depthData.bq5 ?? 0}",
-                                                        "${depthData.bp5 ?? 0.00}",
-                                                        scripInfo,
-                                                        theme)
-                                                  ])),
-                                              const SizedBox(width: 20),
-                                              Expanded(
-                                                  child: Column(
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .start,
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .spaceBetween,
-                                                      children: [
-                                                    Row(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .spaceBetween,
-                                                        children: [
-                                                          Text(
-                                                            "Ask",
-                                                            style: WebTextStyles
-                                                                .para(
-                                                              isDarkTheme: theme
-                                                                  .isDarkMode,
-                                                              color: theme
-                                                                      .isDarkMode
-                                                                  ? WebDarkColors
-                                                                      .error
-                                                                  : WebColors
-                                                                      .error,
-                                                              fontWeight:
-                                                                  WebFonts
-                                                                      .regular,
-                                                              letterSpacing:
-                                                                  0.0,
-                                                            ),
-                                                          ),
-                                                          Text(
-                                                            "Quantity",
-                                                            style: WebTextStyles
-                                                                .para(
-                                                              isDarkTheme: theme
-                                                                  .isDarkMode,
-                                                              color: theme
-                                                                      .isDarkMode
-                                                                  ? WebDarkColors
-                                                                      .textSecondary
-                                                                  : WebColors
-                                                                      .textSecondary,
-                                                              fontWeight:
-                                                                  WebFonts
-                                                                      .regular,
-                                                              letterSpacing:
-                                                                  0.0,
-                                                            ),
-                                                          )
-                                                        ]),
-                                                    const SizedBox(height: 10),
-                                                    _buildAskDepthPercentage(
-                                                        "${depthData.sp1 ?? 0.00}",
-                                                        "${depthData.sq1 ?? 0}",
-                                                        scripInfo,
-                                                        theme),
-                                                    const SizedBox(height: 6),
-                                                    _buildAskDepthPercentage(
-                                                        "${depthData.sp2 ?? 0.00}",
-                                                        "${depthData.sq2 ?? 0}",
-                                                        scripInfo,
-                                                        theme),
-                                                    const SizedBox(height: 6),
-                                                    _buildAskDepthPercentage(
-                                                        "${depthData.sp3 ?? 0.00}",
-                                                        "${depthData.sq3 ?? 0}",
-                                                        scripInfo,
-                                                        theme),
-                                                    const SizedBox(height: 6),
-                                                    _buildAskDepthPercentage(
-                                                        "${depthData.sp4 ?? 0.00}",
-                                                        "${depthData.sq4 ?? 0}",
-                                                        scripInfo,
-                                                        theme),
-                                                    const SizedBox(height: 6),
-                                                    _buildAskDepthPercentage(
-                                                        "${depthData.sp5 ?? 0.00}",
-                                                        "${depthData.sq5 ?? 0}",
-                                                        scripInfo,
-                                                        theme)
-                                                  ]))
-                                            ]),
-                                            const SizedBox(height: 16),
-                                            Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceBetween,
-                                                children: [
-                                                  Row(
-                                                    children: [
-                                                      Text(
-                                                        "${depthData.tbq != "null" ? depthData.tbq ?? 0 : '0'}",
-                                                        style:
-                                                            WebTextStyles.sub(
-                                                          isDarkTheme:
-                                                              theme.isDarkMode,
-                                                          color: theme
-                                                                  .isDarkMode
-                                                              ? WebDarkColors
-                                                                  .textSecondary
-                                                              : WebColors
-                                                                  .textSecondary,
-                                                          fontWeight:
-                                                              WebFonts.regular,
-                                                          letterSpacing: 0.0,
-                                                        ),
-                                                      ),
-                                                      const SizedBox(
-                                                        width: 4,
-                                                      ),
-                                                      Text(
-                                                        "(${scripInfo.totBuyQtyPer.toStringAsFixed(2)}%)",
-                                                        style:
-                                                            WebTextStyles.para(
-                                                          isDarkTheme:
-                                                              theme.isDarkMode,
-                                                          color: theme
-                                                                  .isDarkMode
-                                                              ? WebDarkColors
-                                                                  .textSecondary
-                                                              : WebColors
-                                                                  .textSecondary,
-                                                          fontWeight:
-                                                              WebFonts.regular,
-                                                          letterSpacing: 0.0,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  Row(
-                                                    children: [
-                                                      Text(
-                                                        "(${scripInfo.totSellQtyPer.toStringAsFixed(2)}%)",
-                                                        style:
-                                                            WebTextStyles.para(
-                                                          isDarkTheme:
-                                                              theme.isDarkMode,
-                                                          color: theme
-                                                                  .isDarkMode
-                                                              ? WebDarkColors
-                                                                  .textSecondary
-                                                              : WebColors
-                                                                  .textSecondary,
-                                                          fontWeight:
-                                                              WebFonts.regular,
-                                                          letterSpacing: 0.0,
-                                                        ),
-                                                      ),
-                                                      SizedBox(
-                                                        width: 4,
-                                                      ),
-                                                      Text(
-                                                        "${depthData.tsq != "null" ? depthData.tsq ?? 0 : '0'}",
-                                                        style:
-                                                            WebTextStyles.sub(
-                                                          isDarkTheme:
-                                                              theme.isDarkMode,
-                                                          color: theme
-                                                                  .isDarkMode
-                                                              ? WebDarkColors
-                                                                  .textSecondary
-                                                              : WebColors
-                                                                  .textSecondary,
-                                                          fontWeight:
-                                                              WebFonts.regular,
-                                                          letterSpacing: 0.0,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  )
-                                                ]),
-
-                                            (scripInfo.totBuyQtyPer
-                                                            .toStringAsFixed(
-                                                                2) ==
-                                                        "0.00" &&
-                                                    scripInfo.totSellQtyPer
-                                                            .toStringAsFixed(
-                                                                2) ==
-                                                        "0.00")
-                                                ? const SizedBox()
-                                                : Column(
-                                                    children: [
-                                                      const SizedBox(
-                                                          height: 10),
-                                                      LinearPercentIndicator(
-
-                                                          // leading: Text(
-                                                          //     "${scripInfo.totBuyQtyPer.toStringAsFixed(2)}%",
-                                                          //     style: textStyle(
-                                                          //         theme.isDarkMode
-                                                          //             ? colors
-                                                          //                 .colorWhite
-                                                          //             : colors
-                                                          //                 .colorBlack,
-                                                          //         14,
-                                                          //         FontWeight
-                                                          //             .w500)),
-                                                          // trailing: Text(
-                                                          //     "${scripInfo.totSellQtyPer.toStringAsFixed(2)}%",
-                                                          //     style: textStyle(
-                                                          //         theme.isDarkMode
-                                                          //             ? colors
-                                                          //                 .colorWhite
-                                                          //             : colors
-                                                          //                 .colorBlack,
-                                                          //         14,
-                                                          //         FontWeight
-                                                          //             .w500)),
-                                                          lineHeight: 5.0,
-                                                          barRadius: const Radius
-                                                              .circular(
-                                                              4.0), // Half of lineHeight for capsule shape
-                                                          backgroundColor: (scripInfo
-                                                                          .totBuyQtyPer
-                                                                          .toStringAsFixed(
-                                                                              2) ==
-                                                                      "0.00" &&
-                                                                  scripInfo
-                                                                          .totSellQtyPer
-                                                                          .toStringAsFixed(
-                                                                              2) ==
-                                                                      "0.00")
-                                                              ? theme.isDarkMode
-                                                                  ? WebDarkColors
-                                                                      .textSecondary
-                                                                  : WebColors
-                                                                      .textSecondary
-                                                              : theme.isDarkMode
-                                                                  ? WebDarkColors
-                                                                      .error
-                                                                  : WebColors
-                                                                      .error,
-                                                          percent: scripInfo
-                                                              .totBuyQtyPerChng,
-                                                          padding: const EdgeInsets
-                                                              .symmetric(
-                                                              horizontal: 0),
-                                                          progressColor: theme
-                                                                  .isDarkMode
-                                                              ? WebDarkColors
-                                                                  .primary
-                                                              : WebColors.primary),
-                                                      const SizedBox(
-                                                          height: 16),
-                                                    ],
-                                                  ),
-                                          ],
-                                          const SizedBox(height: 4),
-                                          if ((widget.wlValue.instname !=
-                                                  "UNDIND" &&
-                                              widget.wlValue.instname !=
-                                                  "COM")) ...[
-                                            // 52 Weeks and Daily Price Range section
-
-                                            // Original Avg Price, Volume and Circuit sections
-                                            data(
-                                                "Avg Price",
-                                                "${depthData.ap ?? 0.00}",
-                                                theme),
-                                            data(
-                                                "Volume",
-                                                "${depthData.v != "null" ? depthData.v ?? 0.00 : '0'}",
-                                                theme),
-                                            if (depthData.seg != "EQT") ...[
-                                              data(
-                                                  "Open Interest - OI",
-                                                  "${depthData.oi != "null" ? depthData.oi ?? 0.00 : '0'}",
-                                                  theme),
-                                              data(
-                                                  "Change in OI",
-                                                  "${depthData.poi != "null" ? depthData.poi ?? 0.00 : '0'}",
-                                                  theme),
-                                            ],
-                                            data(
-                                                "LTQ",
-                                                "${depthData.ltq != "null" ? depthData.ltq ?? 0.00 : '0'}",
-                                                theme),
-                                            data(
-                                                "LTT",
-                                                depthData.ltt != "null"
-                                                    ? depthData.ltt ?? "--"
-                                                    : "--",
-                                                theme),
-                                            data(
-                                                "52 Weeks High-Low",
-                                                "${(depthData.wk52H != "null" && depthData.wk52H != null) ? depthData.wk52H : 0.00} - ${(depthData.wk52L != "null" && depthData.wk52L != null) ? depthData.wk52L : 0.00}",
-                                                theme),
-                                            data(
-                                                "DPR",
-                                                "${depthData.uc != "null" ? depthData.uc ?? 0.00 : '0.00'} - ${depthData.lc != "null" ? depthData.lc ?? 0.00 : '0.00'}",
-                                                theme),
-                                            // if (depthData
-                                            //         .seg !=
-                                            //     "EQT") ...[
-                                            //   _buildInfoRow(
-                                            //       "Open Interest (OI)",
-                                            //       "${depthData.oi != "null" ? depthData.oi ?? 0.00 : '0'}",
-                                            //       "Change in OI",
-                                            //       "${depthData.poi != "null" ? depthData.poi ?? 0.00 : '0'}",
-                                            //       theme),
-                                            //   const SizedBox(
-                                            //       height:
-                                            //           4),
-                                            // ],
-                                            if (scripInfo.returnsGridview
-                                                .isNotEmpty) ...[
-                                              // TextWidget.titleText(
-                                              //     text:
-                                              //         "Returns",
-                                              //     theme: theme
-                                              //         .isDarkMode,
-                                              //     fw: 1),
-                                              const SizedBox(height: 16),
-                                              GridView.count(
-                                                  crossAxisCount: 3,
-                                                  physics:
-                                                      const NeverScrollableScrollPhysics(),
-                                                  shrinkWrap: true,
-                                                  crossAxisSpacing: 12,
-                                                  mainAxisSpacing: 10,
-                                                  childAspectRatio: 1.8,
-                                                  children: List.generate(
-                                                      scripInfo.returnsGridview
-                                                          .length, (index) {
-                                                    return Container(
-                                                        width: 120,
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .symmetric(
-                                                                vertical: 7,
-                                                                horizontal: 8),
-                                                        decoration: BoxDecoration(
-                                                            color: theme
-                                                                    .isDarkMode
-                                                                ? WebDarkColors
-                                                                    .surfaceVariant
-                                                                : WebColors
-                                                                    .surfaceVariant,
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        5)),
+                                                                Text(
+                                                                  "Bid",
+                                                                  style: WebTextStyles
+                                                                      .para(
+                                                                    isDarkTheme: theme
+                                                                        .isDarkMode,
+                                                                    color:
+                                                                        WebDarkColors
+                                                                            .secondary,
+                                                                    fontWeight:
+                                                                        WebFonts
+                                                                            .regular,
+                                                                    letterSpacing:
+                                                                        0.0,
+                                                                  ),
+                                                                )
+                                                              ]),
+                                                          const SizedBox(height: 10),
+                                                          _buildBidDepthPercentage(
+                                                              "${depthData.bq1 ?? 0}",
+                                                              "${depthData.bp1 ?? 0.00}",
+                                                              scripInfo,
+                                                              theme),
+                                                          const SizedBox(height: 6),
+                                                          _buildBidDepthPercentage(
+                                                              "${depthData.bq2 ?? 0}",
+                                                              "${depthData.bp2 ?? 0.00}",
+                                                              scripInfo,
+                                                              theme),
+                                                          const SizedBox(height: 6),
+                                                          _buildBidDepthPercentage(
+                                                              "${depthData.bq3 ?? 0}",
+                                                              "${depthData.bp3 ?? 0.00}",
+                                                              scripInfo,
+                                                              theme),
+                                                          const SizedBox(height: 6),
+                                                          _buildBidDepthPercentage(
+                                                              "${depthData.bq4 ?? 0}",
+                                                              "${depthData.bp4 ?? 0.00}",
+                                                              scripInfo,
+                                                              theme),
+                                                          const SizedBox(height: 6),
+                                                          _buildBidDepthPercentage(
+                                                              "${depthData.bq5 ?? 0}",
+                                                              "${depthData.bp5 ?? 0.00}",
+                                                              scripInfo,
+                                                              theme)
+                                                        ])),
+                                                    const SizedBox(width: 20),
+                                                    Expanded(
                                                         child: Column(
+                                                            crossAxisAlignment:
+                                                                CrossAxisAlignment
+                                                                    .start,
                                                             mainAxisAlignment:
                                                                 MainAxisAlignment
-                                                                    .center,
+                                                                    .spaceBetween,
                                                             children: [
-                                                              Text(
-                                                                "${scripInfo.returnsGridview[index]['percent']}%",
-                                                                style:
-                                                                    WebTextStyles
-                                                                        .sub(
-                                                                  isDarkTheme: theme
-                                                                      .isDarkMode,
-                                                                  color: scripInfo
-                                                                          .returnsGridview[
-                                                                              index]
-                                                                              [
-                                                                              'percent']
-                                                                          .toString()
-                                                                          .startsWith(
-                                                                              "-")
-                                                                      ? theme
-                                                                              .isDarkMode
-                                                                          ? WebDarkColors
-                                                                              .error
-                                                                          : WebColors
-                                                                              .error
-                                                                      : theme
-                                                                              .isDarkMode
-                                                                          ? WebDarkColors
-                                                                              .success
-                                                                          : WebColors
-                                                                              .success,
-                                                                  fontWeight:
-                                                                      WebFonts
-                                                                          .regular,
-                                                                  letterSpacing:
-                                                                      0.0,
+                                                          Row(
+                                                              mainAxisAlignment:
+                                                                  MainAxisAlignment
+                                                                      .spaceBetween,
+                                                              children: [
+                                                                Text(
+                                                                  "Ask",
+                                                                  style: WebTextStyles
+                                                                      .para(
+                                                                    isDarkTheme: theme
+                                                                        .isDarkMode,
+                                                                    color: theme
+                                                                            .isDarkMode
+                                                                        ? WebDarkColors
+                                                                            .error
+                                                                        : WebColors
+                                                                            .error,
+                                                                    fontWeight:
+                                                                        WebFonts
+                                                                            .regular,
+                                                                    letterSpacing:
+                                                                        0.0,
+                                                                  ),
                                                                 ),
+                                                                Text(
+                                                                  "Quantity",
+                                                                  style: WebTextStyles
+                                                                      .para(
+                                                                    isDarkTheme: theme
+                                                                        .isDarkMode,
+                                                                    color: theme
+                                                                            .isDarkMode
+                                                                        ? WebDarkColors
+                                                                            .textSecondary
+                                                                        : WebColors
+                                                                            .textSecondary,
+                                                                    fontWeight:
+                                                                        WebFonts
+                                                                            .regular,
+                                                                    letterSpacing:
+                                                                        0.0,
+                                                                  ),
+                                                                )
+                                                              ]),
+                                                          const SizedBox(height: 10),
+                                                          _buildAskDepthPercentage(
+                                                              "${depthData.sp1 ?? 0.00}",
+                                                              "${depthData.sq1 ?? 0}",
+                                                              scripInfo,
+                                                              theme),
+                                                          const SizedBox(height: 6),
+                                                          _buildAskDepthPercentage(
+                                                              "${depthData.sp2 ?? 0.00}",
+                                                              "${depthData.sq2 ?? 0}",
+                                                              scripInfo,
+                                                              theme),
+                                                          const SizedBox(height: 6),
+                                                          _buildAskDepthPercentage(
+                                                              "${depthData.sp3 ?? 0.00}",
+                                                              "${depthData.sq3 ?? 0}",
+                                                              scripInfo,
+                                                              theme),
+                                                          const SizedBox(height: 6),
+                                                          _buildAskDepthPercentage(
+                                                              "${depthData.sp4 ?? 0.00}",
+                                                              "${depthData.sq4 ?? 0}",
+                                                              scripInfo,
+                                                              theme),
+                                                          const SizedBox(height: 6),
+                                                          _buildAskDepthPercentage(
+                                                              "${depthData.sp5 ?? 0.00}",
+                                                              "${depthData.sq5 ?? 0}",
+                                                              scripInfo,
+                                                              theme)
+                                                        ]))
+                                                  ]),
+                                                  const SizedBox(height: 16),
+                                                  Row(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .spaceBetween,
+                                                      children: [
+                                                        Row(
+                                                          children: [
+                                                            Text(
+                                                              "${depthData.tbq != "null" ? depthData.tbq ?? 0 : '0'}",
+                                                              style:
+                                                                  WebTextStyles.sub(
+                                                                isDarkTheme:
+                                                                    theme.isDarkMode,
+                                                                color: theme
+                                                                        .isDarkMode
+                                                                    ? WebDarkColors
+                                                                        .textSecondary
+                                                                    : WebColors
+                                                                        .textSecondary,
+                                                                fontWeight:
+                                                                    WebFonts.regular,
+                                                                letterSpacing: 0.0,
                                                               ),
-                                                              const SizedBox(
-                                                                  height: 4),
-                                                              Center(
-                                                                  child: Text(
-                                                                "${scripInfo.returnsGridview[index]['duration']}",
-                                                                textAlign:
-                                                                    TextAlign
-                                                                        .center,
-                                                                style:
-                                                                    WebTextStyles
-                                                                        .para(
-                                                                  isDarkTheme: theme
-                                                                      .isDarkMode,
+                                                            ),
+                                                            const SizedBox(
+                                                              width: 4,
+                                                            ),
+                                                            Text(
+                                                              "(${scripInfo.totBuyQtyPer.toStringAsFixed(2)}%)",
+                                                              style:
+                                                                  WebTextStyles.para(
+                                                                isDarkTheme:
+                                                                    theme.isDarkMode,
+                                                                color: theme
+                                                                        .isDarkMode
+                                                                    ? WebDarkColors
+                                                                        .textSecondary
+                                                                    : WebColors
+                                                                        .textSecondary,
+                                                                fontWeight:
+                                                                    WebFonts.regular,
+                                                                letterSpacing: 0.0,
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                        Row(
+                                                          children: [
+                                                            Text(
+                                                              "(${scripInfo.totSellQtyPer.toStringAsFixed(2)}%)",
+                                                              style:
+                                                                  WebTextStyles.para(
+                                                                isDarkTheme:
+                                                                    theme.isDarkMode,
+                                                                color: theme
+                                                                        .isDarkMode
+                                                                    ? WebDarkColors
+                                                                        .textSecondary
+                                                                    : WebColors
+                                                                        .textSecondary,
+                                                                fontWeight:
+                                                                    WebFonts.regular,
+                                                                letterSpacing: 0.0,
+                                                              ),
+                                                            ),
+                                                            SizedBox(
+                                                              width: 4,
+                                                            ),
+                                                            Text(
+                                                              "${depthData.tsq != "null" ? depthData.tsq ?? 0 : '0'}",
+                                                              style:
+                                                                  WebTextStyles.sub(
+                                                                isDarkTheme:
+                                                                    theme.isDarkMode,
+                                                                color: theme
+                                                                        .isDarkMode
+                                                                    ? WebDarkColors
+                                                                        .textSecondary
+                                                                    : WebColors
+                                                                        .textSecondary,
+                                                                fontWeight:
+                                                                    WebFonts.regular,
+                                                                letterSpacing: 0.0,
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        )
+                                                      ]),
+                              
+                                                  (scripInfo.totBuyQtyPer
+                                                                  .toStringAsFixed(
+                                                                      2) ==
+                                                              "0.00" &&
+                                                          scripInfo.totSellQtyPer
+                                                                  .toStringAsFixed(
+                                                                      2) ==
+                                                              "0.00")
+                                                      ? const SizedBox()
+                                                      : Column(
+                                                          children: [
+                                                            const SizedBox(
+                                                                height: 10),
+                                                            LinearPercentIndicator(
+                              
+                                                                // leading: Text(
+                                                                //     "${scripInfo.totBuyQtyPer.toStringAsFixed(2)}%",
+                                                                //     style: textStyle(
+                                                                //         theme.isDarkMode
+                                                                //             ? colors
+                                                                //                 .colorWhite
+                                                                //             : colors
+                                                                //                 .colorBlack,
+                                                                //         14,
+                                                                //         FontWeight
+                                                                //             .w500)),
+                                                                // trailing: Text(
+                                                                //     "${scripInfo.totSellQtyPer.toStringAsFixed(2)}%",
+                                                                //     style: textStyle(
+                                                                //         theme.isDarkMode
+                                                                //             ? colors
+                                                                //                 .colorWhite
+                                                                //             : colors
+                                                                //                 .colorBlack,
+                                                                //         14,
+                                                                //         FontWeight
+                                                                //             .w500)),
+                                                                lineHeight: 5.0,
+                                                                barRadius: const Radius
+                                                                    .circular(
+                                                                    4.0), // Half of lineHeight for capsule shape
+                                                                backgroundColor: (scripInfo
+                                                                                .totBuyQtyPer
+                                                                                .toStringAsFixed(
+                                                                                    2) ==
+                                                                            "0.00" &&
+                                                                        scripInfo
+                                                                                .totSellQtyPer
+                                                                                .toStringAsFixed(
+                                                                                    2) ==
+                                                                            "0.00")
+                                                                    ? theme.isDarkMode
+                                                                        ? WebDarkColors
+                                                                            .textSecondary
+                                                                        : WebColors
+                                                                            .textSecondary
+                                                                    : theme.isDarkMode
+                                                                        ? WebDarkColors
+                                                                            .error
+                                                                        : WebColors
+                                                                            .error,
+                                                                percent: scripInfo
+                                                                    .totBuyQtyPerChng,
+                                                                padding: const EdgeInsets
+                                                                    .symmetric(
+                                                                    horizontal: 0),
+                                                                progressColor: theme
+                                                                        .isDarkMode
+                                                                    ? WebDarkColors
+                                                                        .primary
+                                                                    : WebColors.primary),
+                                                            const SizedBox(
+                                                                height: 16),
+                                                          ],
+                                                        ),
+                                                ],
+                                                const SizedBox(height: 4),
+                                                if ((widget.wlValue.instname !=
+                                                        "UNDIND" &&
+                                                    widget.wlValue.instname !=
+                                                        "COM")) ...[
+                                                  // 52 Weeks and Daily Price Range section
+                              
+                                                  // Original Avg Price, Volume and Circuit sections
+                                                  data(
+                                                      "Avg Price",
+                                                      "${depthData.ap ?? 0.00}",
+                                                      theme),
+                                                  data(
+                                                      "Volume",
+                                                      "${depthData.v != "null" ? depthData.v ?? 0.00 : '0'}",
+                                                      theme),
+                                                  if (depthData.seg != "EQT") ...[
+                                                    data(
+                                                        "Open Interest - OI",
+                                                        "${depthData.oi != "null" ? depthData.oi ?? 0.00 : '0'}",
+                                                        theme),
+                                                    data(
+                                                        "Change in OI",
+                                                        "${depthData.poi != "null" ? depthData.poi ?? 0.00 : '0'}",
+                                                        theme),
+                                                  ],
+                                                  data(
+                                                      "LTQ",
+                                                      "${depthData.ltq != "null" ? depthData.ltq ?? 0.00 : '0'}",
+                                                      theme),
+                                                  data(
+                                                      "LTT",
+                                                      depthData.ltt != "null"
+                                                          ? depthData.ltt ?? "--"
+                                                          : "--",
+                                                      theme),
+                                                  data(
+                                                      "52 Weeks High-Low",
+                                                      "${(depthData.wk52H != "null" && depthData.wk52H != null) ? depthData.wk52H : 0.00} - ${(depthData.wk52L != "null" && depthData.wk52L != null) ? depthData.wk52L : 0.00}",
+                                                      theme),
+                                                  data(
+                                                      "DPR",
+                                                      "${depthData.uc != "null" ? depthData.uc ?? 0.00 : '0.00'} - ${depthData.lc != "null" ? depthData.lc ?? 0.00 : '0.00'}",
+                                                      theme),
+                                                  // if (depthData
+                                                  //         .seg !=
+                                                  //     "EQT") ...[
+                                                  //   _buildInfoRow(
+                                                  //       "Open Interest (OI)",
+                                                  //       "${depthData.oi != "null" ? depthData.oi ?? 0.00 : '0'}",
+                                                  //       "Change in OI",
+                                                  //       "${depthData.poi != "null" ? depthData.poi ?? 0.00 : '0'}",
+                                                  //       theme),
+                                                  //   const SizedBox(
+                                                  //       height:
+                                                  //           4),
+                                                  // ],
+                                                  if (scripInfo.returnsGridview
+                                                      .isNotEmpty) ...[
+                                                    // TextWidget.titleText(
+                                                    //     text:
+                                                    //         "Returns",
+                                                    //     theme: theme
+                                                    //         .isDarkMode,
+                                                    //     fw: 1),
+                                                    const SizedBox(height: 16),
+                                                    GridView.count(
+                                                        crossAxisCount: 3,
+                                                        physics:
+                                                            const NeverScrollableScrollPhysics(),
+                                                        shrinkWrap: true,
+                                                        crossAxisSpacing: 12,
+                                                        mainAxisSpacing: 10,
+                                                        childAspectRatio: 1.8,
+                                                        children: List.generate(
+                                                            scripInfo.returnsGridview
+                                                                .length, (index) {
+                                                          return Container(
+                                                              width: 120,
+                                                              padding:
+                                                                  const EdgeInsets
+                                                                      .symmetric(
+                                                                      vertical: 7,
+                                                                      horizontal: 8),
+                                                              decoration: BoxDecoration(
                                                                   color: theme
                                                                           .isDarkMode
                                                                       ? WebDarkColors
-                                                                          .textSecondary
+                                                                          .surfaceVariant
                                                                       : WebColors
-                                                                          .textSecondary,
-                                                                  fontWeight:
-                                                                      WebFonts
-                                                                          .regular,
-                                                                  letterSpacing:
-                                                                      0.0,
-                                                                ),
-                                                              ))
-                                                            ]));
-                                                  })),
-                                              const SizedBox(height: 12),
-                                            ]
-                                          ],
-
-                                          // Add spacing before the new sections
-                                          // const SizedBox(
-                                          //     height: 16),
-
-                                          // Futures Section (conditional)
-                                          if (scripInfo.getOptionawait(
-                                              widget.wlValue.exch,
-                                              widget.wlValue.token))
-                                            _buildFuturesSection(
-                                                scripInfo, theme, depthData),
-
-                                          // Fundamentals Section (conditional)
-                                          if (scripInfo.fundamentalData !=
-                                                  null &&
-                                              scripInfo.fundamentalData?.msg !=
-                                                  "no data found") ...[
-                                            _buildFundamentalsSection(
-                                                theme, depthData),
-                                          ] else ...[
-                                            const SizedBox(),
-                                          ]
-                                        ]))
-                              ] else if (scripInfo.actDeptBtn ==
-                                  "Fundamental") ...[
-                                if (ref
-                                            .read(marketWatchProvider)
-                                            .fundamentalData !=
-                                        null &&
-                                    ref
-                                            .read(marketWatchProvider)
-                                            .fundamentalData!
-                                            .msg
-                                            .toString() !=
-                                        "no data found") ...[
-                                  const SizedBox(height: 10),
-                                  const FundamentalDataWidget(),
-                                ] else ...[
-                                  const NoDataFound()
-                                ]
-                              ] else if (scripInfo.actDeptBtn == "Chart") ...[
-                                // ChartScreenWebView(
-                                //     chartArgs: chartArgs!, cHeight: 1.48)
-                              ] else if (scripInfo.actDeptBtn == "Future") ...[
-                                Container(
-                                    padding:
-                                        const EdgeInsets.symmetric(vertical: 3),
-                                    decoration: BoxDecoration(
-                                        color: const Color(0xffe3f2fd),
-                                        borderRadius: BorderRadius.circular(6)),
-                                    child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          SvgPicture.asset(assets.dInfo,
-                                              color: WebDarkColors.primary),
-                                          Text(
-                                            " Long press to add ${scripInfo.wlName}'s Watchlist",
-                                            style: WebTextStyles.para(
-                                              isDarkTheme: theme.isDarkMode,
-                                              color: theme.isDarkMode
-                                                  ? WebDarkColors.iconSecondary
-                                                  : WebColors.iconSecondary,
-                                              fontWeight: WebFonts.regular,
-                                              letterSpacing: 0.0,
-                                            ),
-                                          )
-                                        ])),
-                                const FutureScreen()
-                              ] else if (scripInfo.actDeptBtn ==
-                                  "Set Alert") ...[
-                                // Set Alert is now shown as a dialog
-                                const SizedBox.shrink()
-                              ],
-                              if (!scripInfo.scripDepthloader)
-                                const SizedBox(height: 18),
-                            ]),
-                          ),
+                                                                          .surfaceVariant,
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .circular(
+                                                                              5)),
+                                                              child: Column(
+                                                                  mainAxisAlignment:
+                                                                      MainAxisAlignment
+                                                                          .center,
+                                                                  children: [
+                                                                    Text(
+                                                                      "${scripInfo.returnsGridview[index]['percent']}%",
+                                                                      style:
+                                                                          WebTextStyles
+                                                                              .sub(
+                                                                        isDarkTheme: theme
+                                                                            .isDarkMode,
+                                                                        color: scripInfo
+                                                                                .returnsGridview[
+                                                                                    index]
+                                                                                    [
+                                                                                    'percent']
+                                                                                .toString()
+                                                                                .startsWith(
+                                                                                    "-")
+                                                                            ? theme
+                                                                                    .isDarkMode
+                                                                                ? WebDarkColors
+                                                                                    .error
+                                                                                : WebColors
+                                                                                    .error
+                                                                            : theme
+                                                                                    .isDarkMode
+                                                                                ? WebDarkColors
+                                                                                    .success
+                                                                                : WebColors
+                                                                                    .success,
+                                                                        fontWeight:
+                                                                            WebFonts
+                                                                                .regular,
+                                                                        letterSpacing:
+                                                                            0.0,
+                                                                      ),
+                                                                    ),
+                                                                    const SizedBox(
+                                                                        height: 4),
+                                                                    Center(
+                                                                        child: Text(
+                                                                      "${scripInfo.returnsGridview[index]['duration']}",
+                                                                      textAlign:
+                                                                          TextAlign
+                                                                              .center,
+                                                                      style:
+                                                                          WebTextStyles
+                                                                              .para(
+                                                                        isDarkTheme: theme
+                                                                            .isDarkMode,
+                                                                        color: theme
+                                                                                .isDarkMode
+                                                                            ? WebDarkColors
+                                                                                .textSecondary
+                                                                            : WebColors
+                                                                                .textSecondary,
+                                                                        fontWeight:
+                                                                            WebFonts
+                                                                                .regular,
+                                                                        letterSpacing:
+                                                                            0.0,
+                                                                      ),
+                                                                    ))
+                                                                  ]));
+                                                        })),
+                                                    const SizedBox(height: 12),
+                                                  ]
+                                                ],
+                              
+                                                // Add spacing before the new sections
+                                                // const SizedBox(
+                                                //     height: 16),
+                              
+                                                // Futures Section (conditional)
+                                                if (scripInfo.getOptionawait(
+                                                    widget.wlValue.exch,
+                                                    widget.wlValue.token))
+                                                  _buildFuturesSection(
+                                                      scripInfo, theme, depthData),
+                              
+                                                // Fundamentals Section (conditional)
+                                                if (scripInfo.fundamentalData !=
+                                                        null &&
+                                                    scripInfo.fundamentalData?.msg !=
+                                                        "no data found") ...[
+                                                  _buildFundamentalsSection(
+                                                      theme, depthData),
+                                                ] else ...[
+                                                  const SizedBox(),
+                                                ]
+                                              ]))
+                                    ] else if (scripInfo.actDeptBtn ==
+                                        "Fundamental") ...[
+                                      if (ref
+                                                  .read(marketWatchProvider)
+                                                  .fundamentalData !=
+                                              null &&
+                                          ref
+                                                  .read(marketWatchProvider)
+                                                  .fundamentalData!
+                                                  .msg
+                                                  .toString() !=
+                                              "no data found") ...[
+                                        const SizedBox(height: 10),
+                                        const FundamentalDataWidget(),
+                                      ] else ...[
+                                        const NoDataFound()
+                                      ]
+                                    ] else if (scripInfo.actDeptBtn == "Chart") ...[
+                                      // ChartScreenWebView(
+                                      //     chartArgs: chartArgs!, cHeight: 1.48)
+                                    ] else if (scripInfo.actDeptBtn == "Future") ...[
+                                      Container(
+                                          padding:
+                                              const EdgeInsets.symmetric(vertical: 3),
+                                          decoration: BoxDecoration(
+                                              color: const Color(0xffe3f2fd),
+                                              borderRadius: BorderRadius.circular(6)),
+                                          child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                SvgPicture.asset(assets.dInfo,
+                                                    color: WebDarkColors.primary),
+                                                Text(
+                                                  " Long press to add ${scripInfo.wlName}'s Watchlist",
+                                                  style: WebTextStyles.para(
+                                                    isDarkTheme: theme.isDarkMode,
+                                                    color: theme.isDarkMode
+                                                        ? WebDarkColors.iconSecondary
+                                                        : WebColors.iconSecondary,
+                                                    fontWeight: WebFonts.regular,
+                                                    letterSpacing: 0.0,
+                                                  ),
+                                                )
+                                              ])),
+                                      const FutureScreen()
+                                    ] else if (scripInfo.actDeptBtn ==
+                                        "Set Alert") ...[
+                                      // Set Alert is now shown as a dialog
+                                      const SizedBox.shrink()
+                                    ],
+                                    if (!scripInfo.scripDepthloader)
+                                      const SizedBox(height: 18),
+                                  ]),
+                                ),
+                            ),
+                            // Quick Order embedded below scrip info
+                                      if (ref.read(marketWatchProvider).scripInfoModel != null)
+                                        Expanded(
+                                          flex: 1,
+                                          child: Builder(builder: (context) {
+                                            final lotSize = (ref.read(marketWatchProvider).scripInfoModel?.ls?.toString() ?? depthData.ls ?? "1");
+                                            final orderArgs = OrderScreenArgs(
+                                              exchange: widget.wlValue.exch,
+                                              tSym: widget.wlValue.tsym,
+                                              isExit: false,
+                                              token: widget.wlValue.token,
+                                              transType: true,
+                                              lotSize: lotSize,
+                                              ltp: "${depthData.lp ?? depthData.c ?? 0.00}",
+                                              perChange: depthData.pc ?? "0.00",
+                                              orderTpye: '',
+                                              holdQty: '',
+                                              isModify: false,
+                                              raw: {},
+                                            );
+                                            return QuickOrderScreenWeb(
+                                              orderArg: orderArgs,
+                                              scripInfo: ref.read(marketWatchProvider).scripInfoModel!,
+                                              embedded: true,
+                                            );
+                                          }),
+                                        ),
+                          ],
+                        ),
                       ),
                     );
                   });

@@ -139,6 +139,7 @@ flutter:
     - assets/explore/
     - assets/icon/dashboard/
     - shorebird.yaml
+    - assets/icon/MYNT_App_Logo_v2.svg
    
     # - assets/gif/
     # - assets/gif/diwali_wish.gif

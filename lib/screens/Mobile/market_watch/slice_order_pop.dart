@@ -30,6 +30,7 @@ class SliceOrderSheet extends StatefulWidget {
   final TextEditingController discQtyCtrl;
   final TextEditingController triggerPriceCtrl;
   final TextEditingController mktProtCtrl;
+  final int lotSize;
   final bool isBracketOrderEnabled;
 
   const SliceOrderSheet({
@@ -49,6 +50,7 @@ class SliceOrderSheet extends StatefulWidget {
     required this.discQtyCtrl,
     required this.triggerPriceCtrl,
     required this.mktProtCtrl,
+    required this.lotSize,
     required this.isBracketOrderEnabled,
   });
 
@@ -76,65 +78,69 @@ class _SliceOrderSheetState extends State<SliceOrderSheet> {
           child: GestureDetector(
               onVerticalDragDown: orders.orderloader ? (_) {} : null, // Blocks swipe down
               behavior: HitTestBehavior.opaque,
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
-                  color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Color(0xff999999),
-                      blurRadius: 4.0,
-                      offset: Offset(2.0, 0.0),
+                child: SafeArea(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Color(0xff999999),
+                          blurRadius: 4.0,
+                          offset: Offset(2.0, 0.0),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const CustomDragHandler(),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: TextWidget.subText(
-                        text: "Slice Order",
-                        theme: theme.isDarkMode,
-                        fw: 1,
-                      ),
-                    ),
-                    Divider(
-                      color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          _buildScripInfo(theme),
-                          Row(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const CustomDragHandler(),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          child: TextWidget.subText(
+                            text: "Slice Order",
+                            theme: theme.isDarkMode,
+                            fw: 1,
+                          ),
+                        ),
+                        Divider(
+                          color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              TextWidget.subText(
-                                text: "Qty: ${widget.frezQty} ",
-                                color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                                theme: theme.isDarkMode,
-                                fw: 1,
-                              ),
-                              TextWidget.captionText(
-                                text: " X ${widget.quantity >= orders.frezQtyOrderSliceMaxLimit ? orders.frezQtyOrderSliceMaxLimit : widget.quantity}",
-                                color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                                theme: theme.isDarkMode,
-                                fw: 0,
-                              ),
+                              _buildScripInfo(theme),
+                              Row(
+                                children: [
+                                  TextWidget.subText(
+                                    text: "Qty: ${widget.frezQty} ",
+                                    color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                                    theme: theme.isDarkMode,
+                                    fw: 1,
+                                  ),
+                                  TextWidget.captionText(
+                                    text: " X ${widget.quantity >= orders.frezQtyOrderSliceMaxLimit ? orders.frezQtyOrderSliceMaxLimit : widget.quantity}",
+                                    color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                                    theme: theme.isDarkMode,
+                                    fw: 0,
+                                  ),
+                                ],
+                              )
                             ],
-                          )
-                        ],
-                      ),
+                          ),
+                        ),
+                        if (widget.reminder != 0) _buildReminderSection(theme),
+                      
+                      const SizedBox(height: 10),
+                        _buildActionButton(theme, orders, orderInput, widget.isBracketOrderEnabled, indexpro, portfoliopro),
+                      const SizedBox(height: 10),
+                      ],
                     ),
-                    if (widget.reminder != 0) _buildReminderSection(theme),
-                    _buildActionButton(theme, orders, orderInput, widget.isBracketOrderEnabled, indexpro, portfoliopro),
-                    const SizedBox(height: 10),
-                  ],
-                ),
-              )));
+                                ),
+                )));
     });
   }
 
@@ -228,7 +234,7 @@ class _SliceOrderSheetState extends State<SliceOrderSheet> {
               placeOrderInputs.add(_buildOrderInput(orderInput, isBracketOrderEnabled));
 
               if (widget.reminder != 0) {
-                placeOrderInputs.add(_buildOrderInput(orderInput, isBracketOrderEnabled, qtyOverride: widget.reminder.toString()));
+                placeOrderInputs.add(_buildOrderInput(orderInput, isBracketOrderEnabled, qtyOverride: widget.reminder));
               }
 
               // Use the new slice order with confirmation function
@@ -236,14 +242,14 @@ class _SliceOrderSheetState extends State<SliceOrderSheet> {
 
             } catch (e) {
               // Handle any unexpected errors
-              showResponsiveErrorMessage(context, "Error: ${e.toString()}");
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: ${e.toString()}")));
             } finally {
               orders.setOrderloader(false);
             }
           }
         },
         style: ElevatedButton.styleFrom(
-          padding: const EdgeInsets.symmetric(vertical: 10),
+          padding: const EdgeInsets.symmetric(vertical: 15),
           backgroundColor: widget.isBuy ? colors.primary : colors.tertiary,
           // shape: const StadiumBorder(),
         ),
@@ -263,7 +269,7 @@ class _SliceOrderSheetState extends State<SliceOrderSheet> {
     );
   }
 
-  PlaceOrderInput _buildOrderInput(orderInput, bool isBracketOrderEnabled, {String? qtyOverride}) {
+  PlaceOrderInput _buildOrderInput(orderInput, bool isBracketOrderEnabled, {int? qtyOverride}) {
     return PlaceOrderInput(
       amo: widget.isAmo ? "Yes" : "",
       blprc: widget.orderType == "CO - BO" ? widget.stopLossCtrl.text : '',
@@ -273,7 +279,7 @@ class _SliceOrderSheetState extends State<SliceOrderSheet> {
       prc: widget.ordPrice,
       prctype: orderInput.prcType,
       prd: orderInput.orderType,
-      qty: qtyOverride ?? "${widget.frezQty}",
+      qty: widget.scripInfo.exch! == "MCX" ?   (qtyOverride !=null ? qtyOverride * widget.lotSize : null)?.toString() ?? (widget.frezQty * widget.lotSize).toString()  : qtyOverride?.toString() ?? widget.frezQty.toString(),
       ret: widget.validityType,
       trailprc: '',
       trantype: widget.isBuy ? 'B' : 'S',

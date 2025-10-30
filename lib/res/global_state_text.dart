@@ -17,43 +17,22 @@ class TextWidget {
       maxLines: maxLines,
       overflow: textOverflow,
       textAlign: align,
-      style: kIsWeb
-          ? TextStyle(
-              fontFamily: 'tenon',
-              fontSize: 20,
-              color: (color != null)
-                  ? color
-                  : theme
-                      ? colors.colorWhite
-                      : colors.colorBlack,
-              fontWeight: fw == 2
-                  ? FontWeight.bold
-                  : fw == 1
-                      ? FontWeight.w600
-                      : fw == 0
-                          ? FontWeight.w500
-                          : fw == 3
-                              ? FontWeight.w400
-                              : FontWeight.normal,
-            )
-          : GoogleFonts.inter(
-              textStyle: TextStyle(
-                fontSize: 20,
-                color: (color != null)
-                    ? color
-                    : theme
-                        ? colors.colorWhite
-                        : colors.colorBlack,
-                fontWeight: fw == 2
-                    ? FontWeight.bold
-                    : fw == 1
-                        ? FontWeight.w600
-                        : fw == 0
-                            ? FontWeight.w500
-                            : fw == 3
-                                ? FontWeight.w400
-                                : FontWeight.normal,
-              )),
+      style: GoogleFonts.inter(
+          textStyle: TextStyle(
+        fontSize: 20,
+        color: (color != null)
+            ? color
+            : theme
+                ? colors.colorWhite
+                : colors.colorBlack,
+        fontWeight: fw == 2
+            ? FontWeight.bold
+            : fw == 1
+                ? FontWeight.w600
+                : fw == 0
+                    ? FontWeight.w500
+                    : FontWeight.normal,
+      )),
     );
   }
 
@@ -70,43 +49,22 @@ class TextWidget {
       maxLines: maxLines,
       overflow: textOverflow,
       textAlign: align,
-      style: kIsWeb
-          ? TextStyle(
-              fontFamily: 'tenon',
-              fontSize: 18,
-              color: (color != null)
-                  ? color
-                  : theme
-                      ? colors.colorWhite
-                      : colors.colorBlack,
-              fontWeight: fw == 2
-                  ? FontWeight.bold
-                  : fw == 1
-                      ? FontWeight.w600
-                      : fw == 0
-                          ? FontWeight.w500
-                          : fw == 3
-                              ? FontWeight.w400
-                              : FontWeight.normal,
-            )
-          : GoogleFonts.inter(
-              textStyle: TextStyle(
-                fontSize: 18,
-                color: (color != null)
-                    ? color
-                    : theme
-                        ? colors.colorWhite
-                        : colors.colorBlack,
-                fontWeight: fw == 2
-                    ? FontWeight.bold
-                    : fw == 1
-                        ? FontWeight.w600
-                        : fw == 0
-                            ? FontWeight.w500
-                            : fw == 3
-                                ? FontWeight.w400
-                                : FontWeight.normal,
-              )),
+      style: GoogleFonts.inter(
+          textStyle: TextStyle(
+        fontSize: 18,
+        color: (color != null)
+            ? color
+            : theme
+                ? colors.colorWhite
+                : colors.colorBlack,
+        fontWeight: fw == 2
+            ? FontWeight.bold
+            : fw == 1
+                ? FontWeight.w600
+                : fw == 0
+                    ? FontWeight.w500
+                    : FontWeight.normal,
+      )),
     );
   }
 
@@ -123,43 +81,22 @@ class TextWidget {
       maxLines: maxLines,
       overflow: textOverflow,
       textAlign: align,
-      style: kIsWeb
-          ? TextStyle(
-              fontFamily: 'tenon',
-              fontSize: 16,
-              color: (color != null)
-                  ? color
-                  : theme
-                      ? colors.colorWhite
-                      : colors.colorBlack,
-              fontWeight: fw == 2
-                  ? FontWeight.bold
-                  : fw == 1
-                      ? FontWeight.w600
-                      : fw == 0
-                          ? FontWeight.w500
-                          : fw == 3
-                              ? FontWeight.w400
-                              : FontWeight.normal,
-            )
-          : GoogleFonts.inter(
-              textStyle: TextStyle(
-                fontSize: 16,
-                color: (color != null)
-                    ? color
-                    : theme
-                        ? colors.colorWhite
-                        : colors.colorBlack,
-                fontWeight: fw == 2
-                    ? FontWeight.bold
-                    : fw == 1
-                        ? FontWeight.w600
-                        : fw == 0
-                            ? FontWeight.w500
-                            : fw == 3
-                                ? FontWeight.w400
-                                : FontWeight.normal,
-              )),
+      style: GoogleFonts.inter(
+          textStyle: TextStyle(
+        fontSize: 16,
+        color: (color != null)
+            ? color
+            : theme
+                ? colors.colorWhite
+                : colors.colorBlack,
+        fontWeight: fw == 2
+            ? FontWeight.bold
+            : fw == 1
+                ? FontWeight.w600
+                : fw == 0
+                    ? FontWeight.w500
+                    : FontWeight.normal,
+      )),
     );
   }
 
@@ -174,6 +111,8 @@ class TextWidget {
     double? letterSpacing,
     double? lineHeight,
     bool? softWrap,
+    TextDecoration? decoration,
+    Key? key,
   }) {
     return Text(
       text,
@@ -181,114 +120,75 @@ class TextWidget {
       overflow: textOverflow,
       textAlign: align,
       softWrap: softWrap,
-      style: kIsWeb
-          ? TextStyle(
-              fontFamily: 'tenon',
-              fontSize: 14,
-              color: (color != null)
-                  ? color
-                  : theme
-                      ? colors.colorWhite
-                      : colors.colorBlack,
-              fontWeight: fw == 2
-                  ? FontWeight.bold
-                  : fw == 1
-                      ? FontWeight.w600
-                      : fw == 0
-                          ? FontWeight.w500
-                          : fw == 3
+      style: GoogleFonts.inter(
+        textStyle: TextStyle(
+          fontSize: 14,
+          color: (color != null)
+              ? color
+              : theme
+                  ? colors.colorWhite
+                  : colors.colorBlack,
+          fontWeight: fw == 2
+              ? FontWeight.bold
+              : fw == 1
+                  ? FontWeight.w600
+                  : fw == 0
+                      ? FontWeight.w500
+                      : fw == 3
+                          ? FontWeight.w400
+                          : fw == 00
                               ? FontWeight.w400
-                              : fw == 00
-                                  ? FontWeight.w400
-                                  : FontWeight.normal,
-              letterSpacing: letterSpacing ?? 0.5,
-              height: lineHeight,
-            )
-          : GoogleFonts.inter(
-              textStyle: TextStyle(
-                fontSize: 14,
-                color: (color != null)
-                    ? color
-                    : theme
-                        ? colors.colorWhite
-                        : colors.colorBlack,
-                fontWeight: fw == 2
-                    ? FontWeight.bold
-                    : fw == 1
-                        ? FontWeight.w600
-                        : fw == 0
-                            ? FontWeight.w500
-                            : fw == 3
-                                ? FontWeight.w400
-                                : fw == 00
-                                    ? FontWeight.w400
-                                    : FontWeight.normal,
-                letterSpacing: letterSpacing ?? 0.5,
-                height: lineHeight,
-              ),
-            ),
+                              : FontWeight.normal,
+          letterSpacing: letterSpacing ?? 0.5,
+          height: lineHeight,
+          decoration: decoration,
+        ),
+      ),
     );
   }
 
-  static Widget paraText({
-    required String text,
-    required bool theme,
-    Color? color,
-    int? fw,
-    int? maxLines,
-    double? height,
-    TextAlign? align,
-    TextOverflow? textOverflow,
-    double? letterSpacing,
-  }) {
-    return Text(
-      text,
-      maxLines: maxLines,
-      overflow: textOverflow,
-      textAlign: align,
-      style: kIsWeb
-          ? TextStyle(
-              fontFamily: 'tenon',
-              fontSize: 12,
-              color: (color != null)
-                  ? color
-                  : theme
-                      ? colors.colorWhite
-                      : colors.colorBlack,
-              height: height,
-              fontWeight: fw == 2
-                  ? FontWeight.bold
-                  : fw == 1
-                      ? FontWeight.w600
-                      : fw == 0
-                          ? FontWeight.w500
-                          : fw == 3
-                              ? FontWeight.w400
-                              : FontWeight.normal,
-              letterSpacing: letterSpacing ?? 0.5,
-            )
-          : GoogleFonts.inter(
-              textStyle: TextStyle(
-                fontSize: 12,
-                color: (color != null)
-                    ? color
-                    : theme
-                        ? colors.colorWhite
-                        : colors.colorBlack,
-                height: height,
-                fontWeight: fw == 2
-                    ? FontWeight.bold
-                    : fw == 1
-                        ? FontWeight.w600
-                        : fw == 0
-                            ? FontWeight.w500
-                            : fw == 3
-                                ? FontWeight.w400
-                                : FontWeight.normal,
-                letterSpacing: letterSpacing ?? 0.5,
-              )),
-    );
-  }
+ static Widget paraText({
+  required String text,
+  required bool theme,
+  Color? color,
+  int? fw,
+  int? maxLines,
+  double? height,
+  TextAlign? align,
+  TextOverflow? textOverflow,
+  double? letterSpacing,
+  TextDecoration? decoration, // ✅ added
+}) {
+  return Text(
+    text,
+    maxLines: maxLines,
+    overflow: textOverflow,
+    textAlign: align,
+    style: GoogleFonts.inter(
+      textStyle: TextStyle(
+        fontSize: 12,
+        color: (color != null)
+            ? color
+            : theme
+                ? colors.colorWhite
+                : colors.colorBlack,
+        height: height,
+        fontWeight: fw == 2
+            ? FontWeight.bold
+            : fw == 1
+                ? FontWeight.w600
+                : fw == 0
+                    ? FontWeight.w500
+                    : fw == 3
+                        ? FontWeight.w400
+                        : FontWeight.normal,
+        letterSpacing: letterSpacing ?? 0.5,
+        decoration: decoration, // ✅ apply optional decoration
+      ),
+    ),
+  );
+}
+
 
   static Widget captionText(
       {required String text,
@@ -303,43 +203,22 @@ class TextWidget {
       maxLines: maxLines,
       overflow: textOverflow,
       textAlign: align,
-      style: kIsWeb
-          ? TextStyle(
-              fontFamily: 'tenon',
-              fontSize: 10,
-              color: (color != null)
-                  ? color
-                  : theme
-                      ? colors.colorWhite
-                      : colors.colorBlack,
-              fontWeight: fw == 2
-                  ? FontWeight.bold
-                  : fw == 1
-                      ? FontWeight.w600
-                      : fw == 0
-                          ? FontWeight.w500
-                          : fw == 3
-                              ? FontWeight.w400
-                              : FontWeight.normal,
-            )
-          : GoogleFonts.inter(
-              textStyle: TextStyle(
-                fontSize: 10,
-                color: (color != null)
-                    ? color
-                    : theme
-                        ? colors.colorWhite
-                        : colors.colorBlack,
-                fontWeight: fw == 2
-                    ? FontWeight.bold
-                    : fw == 1
-                        ? FontWeight.w600
-                        : fw == 0
-                            ? FontWeight.w500
-                            : fw == 3
-                                ? FontWeight.w400
-                                : FontWeight.normal,
-              )),
+      style: GoogleFonts.inter(
+          textStyle: TextStyle(
+        fontSize: 10,
+        color: (color != null)
+            ? color
+            : theme
+                ? colors.colorWhite
+                : colors.colorBlack,
+        fontWeight: fw == 2
+            ? FontWeight.bold
+            : fw == 1
+                ? FontWeight.w600
+                : fw == 0
+                    ? FontWeight.w500
+                    : FontWeight.normal,
+      )),
     );
   }
 
@@ -356,43 +235,22 @@ class TextWidget {
       maxLines: maxLines,
       overflow: textOverflow,
       textAlign: align,
-      style: kIsWeb
-          ? TextStyle(
-              fontFamily: 'tenon',
-              fontSize: 8,
-              color: (color != null)
-                  ? color
-                  : theme
-                      ? colors.colorWhite
-                      : colors.colorBlack,
-              fontWeight: fw == 2
-                  ? FontWeight.bold
-                  : fw == 1
-                      ? FontWeight.w600
-                      : fw == 0
-                          ? FontWeight.w500
-                          : fw == 3
-                              ? FontWeight.w400
-                              : FontWeight.normal,
-            )
-          : GoogleFonts.inter(
-              textStyle: TextStyle(
-                fontSize: 8,
-                color: (color != null)
-                    ? color
-                    : theme
-                        ? colors.colorWhite
-                        : colors.colorBlack,
-                fontWeight: fw == 2
-                    ? FontWeight.bold
-                    : fw == 1
-                        ? FontWeight.w600
-                        : fw == 0
-                            ? FontWeight.w500
-                            : fw == 3
-                                ? FontWeight.w400
-                                : FontWeight.normal,
-              )),
+      style: GoogleFonts.inter(
+          textStyle: TextStyle(
+        fontSize: 8,
+        color: (color != null)
+            ? color
+            : theme
+                ? colors.colorWhite
+                : colors.colorBlack,
+        fontWeight: fw == 2
+            ? FontWeight.bold
+            : fw == 1
+                ? FontWeight.w600
+                : fw == 0
+                    ? FontWeight.w500
+                    : FontWeight.normal,
+      )),
     );
   }
 
@@ -412,45 +270,23 @@ class TextWidget {
       maxLines: maxLines,
       overflow: textOverflow,
       textAlign: align,
-      style: kIsWeb
-          ? TextStyle(
-              fontFamily: 'tenon',
-              fontSize: fs.toDouble(),
-              color: (color != null)
-                  ? color
-                  : theme
-                      ? colors.colorWhite
-                      : colors.colorBlack,
-              fontWeight: fw == 2
-                  ? FontWeight.bold
-                  : fw == 1
-                      ? FontWeight.w600
-                      : fw == 0
-                          ? FontWeight.w500
-                          : fw == 3
-                              ? FontWeight.w400
-                              : FontWeight.normal,
-              letterSpacing: letterSpacing ?? 0.5,
-            )
-          : GoogleFonts.inter(
-              textStyle: TextStyle(
-                fontSize: fs.toDouble(),
-                color: (color != null)
-                    ? color
-                    : theme
-                        ? colors.colorWhite
-                        : colors.colorBlack,
-                fontWeight: fw == 2
-                    ? FontWeight.bold
-                    : fw == 1
-                        ? FontWeight.w600
-                        : fw == 0
-                            ? FontWeight.w500
-                            : fw == 3
-                                ? FontWeight.w400
-                                : FontWeight.normal,
-                letterSpacing: letterSpacing ?? 0.5,
-              )),
+      style: GoogleFonts.inter(
+          textStyle: TextStyle(
+        fontSize: fs.toDouble(),
+        color: (color != null)
+            ? color
+            : theme
+                ? colors.colorWhite
+                : colors.colorBlack,
+        fontWeight: fw == 2
+            ? FontWeight.bold
+            : fw == 1
+                ? FontWeight.w600
+                : fw == 0
+                    ? FontWeight.w500
+                    : FontWeight.normal,
+        letterSpacing: letterSpacing ?? 0.5,
+      )),
     );
   }
 
@@ -463,10 +299,8 @@ class TextWidget {
     double? letterSpacing,
     TextDecoration? decoration,
   }) {
-    // Use Tenon font for web, Inter for other platforms
-    if (kIsWeb) {
-      return TextStyle(
-        fontFamily: 'tenon',
+    return GoogleFonts.inter(
+      textStyle: TextStyle(
         fontSize: fontSize,
         color: color ?? (theme ? colors.colorWhite : colors.colorBlack),
         fontWeight: fw == 2
@@ -483,28 +317,7 @@ class TextWidget {
         height: height,
         letterSpacing: letterSpacing ?? 0.5,
         decoration: decoration,
-      );
-    } else {
-      return GoogleFonts.inter(
-        textStyle: TextStyle(
-          fontSize: fontSize,
-          color: color ?? (theme ? colors.colorWhite : colors.colorBlack),
-          fontWeight: fw == 2
-              ? FontWeight.bold
-              : fw == 1
-                  ? FontWeight.w600
-                  : fw == 0
-                      ? FontWeight.w500
-                      : fw == 00
-                          ? FontWeight.w400
-                          : fw == 3
-                              ? FontWeight.w400
-                              : FontWeight.normal,
-          height: height,
-          letterSpacing: letterSpacing ?? 0.5,
-          decoration: decoration,
-        ),
-      );
-    }
+      ),
+    );
   }
 }

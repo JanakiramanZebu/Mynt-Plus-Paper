@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mynt_plus/models/marketwatch_model/market_watch_scrip_model.dart';
 import 'package:mynt_plus/screens/Mobile/order_screen/place_order_screen.dart';
+import 'package:mynt_plus/screens/web/order/quick_order_screen_web.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // Web-only imports
@@ -228,9 +229,9 @@ class _ChartScreenWebViewsState extends State<ChartScreenWebViews> {
             //   ),
             // ),
             const Spacer(),
-            //  if (transbtn) ...[
-            //     _buildTransactionButtons(tvChart, theme, userProfile, context),
-            //   ],
+             if (transbtn) ...[
+                _buildTransactionButtons(tvChart, theme, userProfile, context),
+              ],
             Material(
               color: Colors.transparent,
               child: InkWell(
