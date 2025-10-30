@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../../provider/market_watch_provider.dart';
 import '../../../../provider/websocket_provider.dart';
 import '../../../../res/global_state_text.dart';
@@ -50,7 +49,7 @@ class CurStrkprice extends ConsumerWidget {
                     
                     
                      TextWidget.subText(
-                      text:"₹$price (${double.parse(pc).toStringAsFixed(2)}%)" ,
+                      text:"₹$price (${(double.tryParse(pc) ?? 0).toStringAsFixed(2)}%)" ,
                       color:Color(0xffffffff) ,
                       theme: false,
                       fw: 3),

@@ -1353,7 +1353,7 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
       case ScreenType.bond:
         return 'Bonds';
       case ScreenType.scripDepthInfo:
-        return 'Scrip Details';
+        return 'Chart View';
       case ScreenType.optionChain:
         return 'Option Chain';
       case ScreenType.pledgeUnpledge:

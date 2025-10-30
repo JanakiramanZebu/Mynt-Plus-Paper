@@ -14,6 +14,11 @@ import '../../../../res/res.dart';
 import '../../../../res/web_colors.dart';
 import '../../../../res/global_font_web.dart';
 import '../../../../sharedWidget/no_data_found.dart';
+import '../../../../provider/market_watch_provider.dart';
+import '../../../../sharedWidget/snack_bar.dart';
+import '../../../../models/marketwatch_model/get_quotes.dart';
+import '../../../../models/order_book_model/order_book_model.dart';
+import '../../../../utils/responsive_navigation.dart';
 
 class PositionScreenWeb extends ConsumerStatefulWidget {
   final List<PositionBookModel> listofPosition;
@@ -30,6 +35,10 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
   String _selectedFilter = 'All';
   int? _sortColumnIndex;
   bool _sortAscending = true;
+  String? _hoveredRowToken; // Track which row is being hovered
+  // Approximate heights used to map pointer position to row index
+  static const double _headerRowHeight = 56.0;
+  static const double _dataRowHeight = 52.0;
 
   @override
   void initState() {
@@ -471,7 +480,14 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      child: DataTable(
+      child: MouseRegion(
+        onExit: (_) {
+          if (_hoveredRowToken != null) setState(() => _hoveredRowToken = null);
+        },
+        child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          DataTable(
         showCheckboxColumn: false,
         sortColumnIndex: _sortColumnIndex,
         sortAscending: _sortAscending,
@@ -572,6 +588,8 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
         ],
         rows: filteredPositions.map((position) {
           final isClosed = _isPositionClosed(position);
+          final positionToken = position.token ?? '';
+          
           return DataRow(
             onSelectChanged: (bool? selected) {
               _showPositionDetail(position);
@@ -612,7 +630,7 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
               ),
               DataCell(
                 Text(
-                  '${position.symbol ?? ''} ${position.exch ?? ''}',
+                  '${position.symbol ?? ''} ${position.exch ?? ''} ${position.expDate ?? ''} ${position.option ?? ''}',
                   style: TextWidget.textStyle(
                     fontSize: 12,
                     color: _getPositionTextColor(position, theme),
@@ -621,6 +639,7 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                   ),
                 ),
               ),
+             
               DataCell(
                 Container(
                   padding:
@@ -645,7 +664,7 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                 ),
               ),
               DataCell(
-                Text(
+               (_hoveredRowToken != positionToken) ? Text(
                   position.avgPrc ?? '0.00',
                   style: TextWidget.textStyle(
                     fontSize: 12,
@@ -653,7 +672,60 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                     theme: theme.isDarkMode,
                     fw: 2,
                   ),
+                ):
+                MouseRegion(
+                onEnter: (_) => setState(() => _hoveredRowToken = positionToken),
+                onExit: (_) {
+                  Future.delayed(const Duration(milliseconds: 200), () {
+                    if (mounted && _hoveredRowToken == positionToken) {
+                      setState(() => _hoveredRowToken = null);
+                    }
+                  });
+                },
+                child: AnimatedOpacity(
+                  opacity: _hoveredRowToken == positionToken ? 1.0 : 0.0,
+                  duration: const Duration(milliseconds: 120),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _buildHoverButton(
+                        label: 'B',
+                        color: Colors.white,
+                        backgroundColor: theme.isDarkMode
+                            ? WebDarkColors.primary
+                            : WebColors.primary,
+                        onPressed: () async {
+                          await _handlePlaceOrder(context, position, true);
+                        },
+                        theme: theme,
+                      ),
+                      const SizedBox(width: 6),
+                      _buildHoverButton(
+                        label: 'S',
+                        color: Colors.white,
+                        backgroundColor: theme.isDarkMode
+                            ? WebDarkColors.tertiary
+                            : WebColors.tertiary,
+                        onPressed: () async {
+                          await _handlePlaceOrder(context, position, false);
+                        },
+                        theme: theme,
+                      ),
+                      const SizedBox(width: 6),
+                      _buildHoverButton(
+                        icon: Icons.bar_chart,
+                        color: theme.isDarkMode
+                            ? WebDarkColors.textSecondary
+                            : WebColors.textSecondary,
+                        onPressed: () async {
+                          await _handleChartTap(context, position);
+                        },
+                        theme: theme,
+                      ),
+                    ],
+                  ),
                 ),
+              ),
               ),
               DataCell(
                 Text(
@@ -747,11 +819,47 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                   ),
                 ),
               ),
+            // Actions cell shown only when row is hovered
+            
             ],
           );
         }).toList(),
+          ),
+          // Transparent overlay to detect hover anywhere per row
+          Positioned.fill(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return Listener(
+                  behavior: HitTestBehavior.translucent,
+                  onPointerHover: (event) {
+                    final dy = event.localPosition.dy;
+                    final yAfterHeader = dy - _headerRowHeight;
+                    if (yAfterHeader < 0) {
+                      if (_hoveredRowToken != null) {
+                        setState(() => _hoveredRowToken = null);
+                      }
+                      return;
+                    }
+                    final index = (yAfterHeader / _dataRowHeight).floor();
+                    if (index >= 0 && index < filteredPositions.length) {
+                      final token = filteredPositions[index].token ?? '';
+                      if (_hoveredRowToken != token) {
+                        setState(() => _hoveredRowToken = token);
+                      }
+                    } else {
+                      if (_hoveredRowToken != null) {
+                        setState(() => _hoveredRowToken = null);
+                      }
+                    }
+                  },
+                  child: const SizedBox.expand(),
+                );
+              },
+            ),
+          ),
+        ],
       ),
-    );
+    ));
   }
 
   Widget _buildSortableColumnHeader(String label, ThemesProvider theme) {
@@ -1007,5 +1115,136 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
         );
       },
     );
+  }
+
+  Widget _buildHoverButton({
+    String? label,
+    IconData? icon,
+    required Color color,
+    Color? backgroundColor,
+    required VoidCallback? onPressed,
+    required ThemesProvider theme,
+  }) {
+    return SizedBox(
+      width: 28,
+      height: 28,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(5),
+          splashColor: color.withOpacity(0.15),
+          highlightColor: color.withOpacity(0.08),
+          onTap: onPressed,
+          child: Container(
+            decoration: BoxDecoration(
+              color: backgroundColor ?? Colors.transparent,
+              borderRadius: BorderRadius.circular(5),
+            ),
+            child: Center(
+              child: icon != null
+                  ? Icon(
+                      icon,
+                      size: 14,
+                      color: color,
+                    )
+                  : Text(
+                      label ?? "",
+                      style: WebTextStyles.custom(
+                        fontSize: 11,
+                        isDarkTheme: theme.isDarkMode,
+                        color: color,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  bool _isInWatchlist(PositionBookModel position, ThemesProvider theme) {
+    try {
+      final scripData = ref.read(marketWatchProvider);
+      final scrips = scripData.scrips;
+      final scripToken = "${position.exch ?? ''}|${position.token ?? ''}";
+      return scrips.any((scrip) => 
+        "${scrip['exch']}|${scrip['token']}" == scripToken
+      );
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<void> _handleChartTap(BuildContext context, PositionBookModel position) async {
+    final scripData = ref.read(marketWatchProvider);
+    
+    await scripData.fetchScripQuoteIndex(
+      position.token ?? "",
+      position.exch ?? "",
+      context,
+    );
+    final quots = scripData.getQuotes;
+    if (quots != null) {
+      DepthInputArgs depthArgs = DepthInputArgs(
+        exch: quots.exch?.toString() ?? "",
+        token: quots.token?.toString() ?? "",
+        tsym: quots.tsym?.toString() ?? "",
+        instname: quots.instname?.toString() ?? "",
+        symbol: quots.symbol?.toString() ?? "",
+        expDate: quots.expDate?.toString() ?? "",
+        option: quots.option?.toString() ?? "",
+      );
+      scripData.scripdepthsize(false);
+      await scripData.calldepthApis(context, depthArgs, "");
+    }
+  }
+
+  Future<void> _handlePlaceOrder(BuildContext context, PositionBookModel position, bool isBuy) async {
+    try {
+      final scripData = ref.read(marketWatchProvider);
+      
+      // Fetch scrip info first
+      await scripData.fetchScripInfo(
+        position.token ?? "",
+        position.exch ?? "",
+        context,
+        true,
+      );
+      
+      if (scripData.scripInfoModel == null) {
+        showResponsiveWarningMessage(context, "Unable to fetch scrip information");
+        return;
+      }
+      
+      final scripInfo = scripData.scripInfoModel!;
+      final lotSize = scripInfo.ls?.toString() ?? "1";
+      
+      OrderScreenArgs orderArgs = OrderScreenArgs(
+        exchange: position.exch ?? "",
+        tSym: position.tsym ?? position.symbol ?? "",
+        isExit: false,
+        token: position.token ?? "",
+        transType: isBuy,
+        lotSize: lotSize,
+        ltp: position.lp ?? "0.00",
+        perChange: position.perChange ?? "0.00",
+        orderTpye: '',
+        holdQty: position.netqty ?? '',
+        isModify: false,
+        raw: {},
+      );
+      
+      ResponsiveNavigation.toPlaceOrderScreen(
+        context: context,
+        arguments: {
+          "orderArg": orderArgs,
+          "scripInfo": scripInfo,
+          "isBskt": "",
+        },
+      );
+    } catch (e) {
+      showResponsiveWarningMessage(context, "Error placing order: ${e.toString()}");
+    }
   }
 }

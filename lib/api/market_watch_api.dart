@@ -220,9 +220,9 @@ print("res.body: ${res.body}");
               '''jData={"uid":"${prefs.clientId}","stext":"${searchText.replaceAll("&", "%26")}","cat":"$categ","fil":${exchs.toList()},"opt":"${opt.toString()}"}&jKey=${prefs.clientSession}''');
 
        print('''jData={"uid":"${prefs.clientId}","stext":"${searchText.replaceAll("&", "%26")}","cat":"$categ","fil":${exchs.toList()},"opt":"$opt"}&jKey=${prefs.clientSession}''');
-       print("Search Scrip => ${res.body}");
+      //  print("Search Scrip => ${res.body}");
       final json = jsonDecode(res.body);
-       print("Search Scrip => ${json['values'].length}");
+      //  print("Search Scrip => ${json['values'].length}");
       return SearchScripNewModel.fromJson(json as Map<String, dynamic>);
     } catch (e) {
       rethrow;

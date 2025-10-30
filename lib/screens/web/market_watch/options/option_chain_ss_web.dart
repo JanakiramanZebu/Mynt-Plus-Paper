@@ -23,13 +23,13 @@ import '../../../../provider/portfolio_provider.dart';
 import '../../../../provider/thems.dart';
 import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
+import '../../../../res/web_colors.dart';
+import '../../../../res/global_font_web.dart';
 import '../../../../routes/route_names.dart';
 import '../../../../sharedWidget/custom_drag_handler.dart';
 import '../../../../utils/responsive_navigation.dart';
 import '../../../../sharedWidget/list_divider.dart';
-import '../../../../sharedWidget/custom_exch_badge.dart';
 import '../../../../sharedWidget/functions.dart';
-import '../../../../sharedWidget/no_data_found.dart';
 import '../../../../sharedWidget/snack_bar.dart';
 
 class OptionChainSSWeb extends ConsumerStatefulWidget {
@@ -243,7 +243,7 @@ class _OptionChainSSState extends ConsumerState<OptionChainSSWeb> {
                   ),
 
                   // Pre-defined watchlist info banner (conditional)
-                  _PreDefinedWatchlistBanner(),
+                  // _PreDefinedWatchlistBanner(),
 
                   // Option chain data - main content
                   Expanded(
@@ -661,113 +661,258 @@ class _ColumnHeaders extends ConsumerWidget {
 
     return RepaintBoundary(
       child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10),
-          height: 36,
-          color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-          child: Row(
-            children: [
-              // Call Price column
-              Expanded(
-                child: Center(
-                  child: TextWidget.subText(
-                    text: "Call Price",
-                    color: theme.isDarkMode
-                        ? colors.textSecondaryDark
-                        : colors.textSecondaryLight,
-                    theme: theme.isDarkMode,
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+        child: Column(
+          children: [
+            // Main header row
+            Row(
+              children: [
+                // CALLS header
+                Expanded(
+                  flex: 6,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        "CALLS",
+                        style: WebTextStyles.custom(
+                          fontSize: 14,
+                          isDarkTheme: theme.isDarkMode,
+                          color: theme.isDarkMode
+                              ? WebDarkColors.textPrimary
+                              : WebColors.textPrimary,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-              
-              // Call OI column
-              Expanded(
-                child: Center(
-                  child: TextWidget.subText(
-                    text: "Call OI",
-                    color: theme.isDarkMode
-                        ? colors.textSecondaryDark
-                        : colors.textSecondaryLight,
-                    theme: theme.isDarkMode,
-                  ),
-                ),
-              ),
-
-              // Strike Price column
-              SizedBox(
-                width: 150,
-                child: Material(
-                  color: Colors.transparent,
-                  shape: const CircleBorder(),
-                  child: InkWell(
-                    onTap: () {
-                      _showStrikeCountSelector(
-                          context, ref, scripInfo, theme, scrollToStrikePrice);
+                // STRIKES header
+                SizedBox(
+                  width: 150,
+                  child: PopupMenuButton<String>(
+                    tooltip: 'Select number of strikes',
+                    color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                    elevation: 12,
+                    surfaceTintColor: Colors.transparent,
+                    shadowColor: theme.isDarkMode ? WebDarkColors.shadowMedium : const Color(0x33000000),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      side: BorderSide(color: theme.isDarkMode ? WebDarkColors.border : WebColors.borderLight),
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    constraints: const BoxConstraints(minWidth: 180),
+                    position: PopupMenuPosition.under,
+                    offset: const Offset(0, 8),
+                    onSelected: (value) async {
+                      scripInfo.selecNumStrike(value);
+                      await ref
+                          .read(marketWatchProvider)
+                          .fetchOPtionChain(
+                              context: context,
+                              exchange: scripInfo.optionExch!,
+                              numofStrike: value,
+                              strPrc: scripInfo.optionStrPrc,
+                              tradeSym: scripInfo.selectedTradeSym!);
+                      Future.delayed(const Duration(milliseconds: 500), () {
+                        if (context.mounted) {
+                          scrollToStrikePrice();
+                        }
+                      });
                     },
-                    borderRadius: BorderRadius.circular(5),
-                    splashColor: theme.isDarkMode
-                        ? colors.splashColorDark
-                        : colors.splashColorLight,
-                    highlightColor: theme.isDarkMode
-                        ? colors.splashColorDark
-                        : colors.splashColorLight,
+                    itemBuilder: (ctx) => [
+                      for (final value in scripInfo.numStrikes)
+                        PopupMenuItem<String>(
+                          value: value,
+                          height: 40,
+                          padding: const EdgeInsets.symmetric(vertical: 2),
+                          child: Container(
+                            decoration: scripInfo.numStrike == value
+                                ? BoxDecoration(
+                                    color: theme.isDarkMode
+                                        ? WebDarkColors.surfaceContainer
+                                        : WebColors.surfaceVariant,
+                                    borderRadius: BorderRadius.circular(8),
+                                  )
+                                : null,
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  value,
+                                  style: WebTextStyles.custom(
+                                    fontSize: 14,
+                                    isDarkTheme: theme.isDarkMode,
+                                    color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+                                    fontWeight: scripInfo.numStrike == value ? FontWeight.w700 : FontWeight.w500,
+                                  ),
+                                ),
+                                if (scripInfo.numStrike == value)
+                                  Icon(Icons.check, size: 18, color: theme.isDarkMode ? colors.colorLightBlue : colors.colorBlue),
+                              ],
+                            ),
+                          ),
+                        ),
+                    ],
                     child: Padding(
-                        padding: const EdgeInsets.all(6.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            TextWidget.subText(
-                              text: "${scripInfo.numStrike} ",
+                      padding: const EdgeInsets.all(6.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            "STRIKES",
+                            style: WebTextStyles.custom(
+                              fontSize: 14,
+                              isDarkTheme: theme.isDarkMode,
                               color: theme.isDarkMode
-                                  ? colors.textSecondaryDark
-                                  : colors.textSecondaryLight,
-                              theme: theme.isDarkMode,
+                                  ? WebDarkColors.textPrimary
+                                  : WebColors.textPrimary,
+                              fontWeight: FontWeight.w700,
                             ),
-                            TextWidget.subText(
-                              text: "Strike",
-                              color: theme.isDarkMode
-                                  ? colors.textSecondaryDark
-                                  : colors.textSecondaryLight,
-                              theme: theme.isDarkMode,
-                            ),
-                            Icon(Icons.arrow_drop_down,
-                                color: theme.isDarkMode
-                                    ? colors.textSecondaryDark
-                                    : colors.textSecondaryLight,
-                                size: 20)
-                          ]
-                        )
+                          ),
+                          const SizedBox(width: 6),
+                          Icon(Icons.arrow_drop_down, color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-
-              // Put OI column
-              Expanded(
-                child: Center(
-                  child: TextWidget.subText(
-                    text: "Put OI",
-                    color: theme.isDarkMode
-                        ? colors.textSecondaryDark
-                        : colors.textSecondaryLight,
-                    theme: theme.isDarkMode,
+                // PUTS header
+                Expanded(
+                  flex: 6,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        "PUTS",
+                        style: WebTextStyles.custom(
+                          fontSize: 14,
+                          isDarkTheme: theme.isDarkMode,
+                          color: theme.isDarkMode
+                              ? WebDarkColors.textPrimary
+                              : WebColors.textPrimary,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-
-              // Put Price column
-              Expanded(
-                child: Center(
-                  child: TextWidget.subText(
-                    text: "Put Price",
-                    color: theme.isDarkMode
-                        ? colors.textSecondaryDark
-                        : colors.textSecondaryLight,
-                    theme: theme.isDarkMode,
+              ],
+            ),
+            const SizedBox(height: 8),
+            // Sub-header row for Price and OI
+            // Row(
+            //   children: [
+            //     Expanded(
+            //       flex: 6,
+            //       child: Padding(
+            //         padding: const EdgeInsets.symmetric(horizontal: 8),
+            //         child: Row(
+            //           mainAxisAlignment: MainAxisAlignment.spaceAround,
+            //           children: [
+            //             _buildSubHeader(context, ref, "Price", theme),
+            //             _buildSubHeader(context, ref, "OI", theme),
+            //           ],
+            //         ),
+            //       ),
+            //     ),
+            //     const SizedBox(width: 150),
+            //     Expanded(
+            //       flex: 6,
+            //       child: Padding(
+            //         padding: const EdgeInsets.symmetric(horizontal: 8),
+            //         child: Row(
+            //           mainAxisAlignment: MainAxisAlignment.spaceAround,
+            //           children: [
+            //             _buildSubHeader(context, ref, "Price", theme),
+            //             _buildSubHeader(context, ref, "OI", theme),
+            //           ],
+            //         ),
+            //       ),
+            //     ),
+            //   ],
+            // ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                // CALLS sub-headers: match row structure (Price group + OI group)
+                Expanded(
+                  // flex: 6,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Row(
+                          children: [
+                            SizedBox(width: 20),
+                            _buildSubHeader(context, ref, "LTP", theme),
+                            Expanded(child: _buildSubHeader(context, ref, "Per. Chg", theme)),
+                          ],
+                        ),
+                      ),
+                      Expanded(
+                        child: Row(
+                          children: [
+                            SizedBox(width: 15),
+                            _buildSubHeader(context, ref, "OI", theme),
+                            Expanded(child: _buildSubHeader(context, ref, "OI Per. Chg", theme)),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-            ],
-          ),
+                const SizedBox(width: 150),
+                // PUTS sub-headers: same layout
+                Expanded(
+                  // flex: 6,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Expanded(
+                        child: Row(
+                          children: [
+                            SizedBox(width: 15),
+                            Expanded(child: _buildSubHeader(context, ref, "LTP", theme)),
+                            _buildSubHeader(context, ref, "Per. Chg", theme),
+                          ],
+                        ),
+                      ),
+                      Expanded(
+                        child: Row(
+                          children: [
+                            SizedBox(width: 15),
+                            Expanded(child: _buildSubHeader(context, ref, "OI", theme)),
+                            _buildSubHeader(context, ref, "OI Per. Chg", theme),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSubHeader(BuildContext context, WidgetRef ref, String text, ThemesProvider theme) {
+    return Center(
+      child: Text(
+        text,
+        style: WebTextStyles.custom(
+          fontSize: 13,
+          isDarkTheme: theme.isDarkMode,
+          color: theme.isDarkMode
+              ? WebDarkColors.textSecondary
+              : WebColors.textSecondary,
+          fontWeight: FontWeight.w700,
+        ),
+        textAlign: TextAlign.center,
       ),
     );
   }
@@ -898,57 +1043,35 @@ class _OptionChainContent extends ConsumerWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                // Call Price column
+                // CALLS column - shows all data
                 Expanded(
+                  flex: 6,
                   child: Align(
                     alignment: Alignment.centerLeft,
                     child: OptChainCallList(
                       swipe: swipecontroller,
                       callData: scripInfo.optChainCallUP,
                       isCallUp: false,
-                      showPriceView: true, // Always show price in first column
+                      showPriceView: true,
                       isBasketMode: isBasketMode,
                     ),
                   ),
                 ),
-                // Call OI column
-                Expanded(
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: OptChainCallList(
-                      swipe: swipecontroller,
-                      callData: scripInfo.optChainCallUP,
-                      isCallUp: false,
-                      showPriceView: false, // Always show OI in second column
-                      isBasketMode: isBasketMode,
-                    ),
-                  ),
-                ),
+                // STRIKES column
                 SizedBox(
                   width: 150,
                   child: StrikePriceListCard(
                       strike: scripInfo.optChainCallUP, isCallUp: false),
                 ),
-                // Put OI column
+                // PUTS column - shows all data
                 Expanded(
+                  flex: 6,
                   child: Align(
                     alignment: Alignment.centerRight,
                     child: OptChainPutList(
                       putData: scripInfo.optChainPutUp,
                       isPutUp: false,
-                      showPriceView: false, // Always show OI in fourth column
-                      isBasketMode: isBasketMode,
-                    ),
-                  ),
-                ),
-                // Put Price column
-                Expanded(
-                  child: Align(
-                    alignment: Alignment.centerRight,
-                    child: OptChainPutList(
-                      putData: scripInfo.optChainPutUp,
-                      isPutUp: false,
-                      showPriceView: true, // Always show price in fifth column
+                      showPriceView: true,
                       isBasketMode: isBasketMode,
                     ),
                   ),
@@ -968,23 +1091,14 @@ class _OptionChainContent extends ConsumerWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 0),
             child: Row(
               children: <Widget>[
-                // Call Price column
-                Flexible(
+                // CALLS column - shows all data
+                Expanded(
+                  flex: 6,
                   child: OptChainCallList(
                     swipe: swipecontroller,
                     callData: scripInfo.optChainCallDown,
                     isCallUp: false,
-                    showPriceView: true, // Always show price in first column
-                    isBasketMode: isBasketMode,
-                  ),
-                ),
-                // Call OI column
-                Flexible(
-                  child: OptChainCallList(
-                    swipe: swipecontroller,
-                    callData: scripInfo.optChainCallDown,
-                    isCallUp: false,
-                    showPriceView: false, // Always show OI in second column
+                    showPriceView: true,
                     isBasketMode: isBasketMode,
                   ),
                 ),
@@ -993,24 +1107,16 @@ class _OptionChainContent extends ConsumerWidget {
                   child: StrikePriceListCard(
                       strike: scripInfo.optChainCallDown, isCallUp: false),
                 ),
-                // Put OI column
-                Flexible(
+                // PUTS column - shows all data
+                Expanded(
+                  flex: 6,
                   child: OptChainPutList(
                     putData: scripInfo.optChainPutDown,
                     isPutUp: false,
-                    showPriceView: false, // Always show OI in fourth column
+                    showPriceView: true,
                     isBasketMode: isBasketMode,
                   ),
                 ),
-                // Put Price column
-                Flexible(
-                  child: OptChainPutList(
-                    putData: scripInfo.optChainPutDown,
-                    isPutUp: false,
-                    showPriceView: true, // Always show price in fifth column
-                    isBasketMode: isBasketMode,
-                  ),
-                )
               ],
             ),
           ),

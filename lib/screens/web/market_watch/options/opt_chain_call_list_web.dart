@@ -15,7 +15,8 @@ import '../../../../provider/thems.dart';
 import '../../../../provider/websocket_provider.dart';
 import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
-import '../../../../routes/route_names.dart';
+import '../../../../res/web_colors.dart';
+import '../../../../res/global_font_web.dart';
 import '../../../../sharedWidget/list_divider.dart';
 import '../../../../utils/responsive_navigation.dart';
 import '../../../../sharedWidget/snack_bar.dart';
@@ -87,6 +88,8 @@ class _OptionChainCallRowState extends State<_OptionChainCallRow> {
   late String _oiLack;
   late String _oiPerChng;
   late double _currentOI;
+  bool _isHovered = false;
+  bool _isInWatchlist = false;
   StreamSubscription? _subscription;
 
   // Static variable to track global maximum OI across all CALL options
@@ -116,7 +119,8 @@ class _OptionChainCallRowState extends State<_OptionChainCallRow> {
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    // Check if current option is in the basket
+    // Check if current option is in watchlist
+    _checkIfInWatchlist();
 
     // Now context is available - check for existing websocket data and update if needed
     try {
@@ -277,6 +281,21 @@ class _OptionChainCallRowState extends State<_OptionChainCallRow> {
     final scripData =
         ProviderScope.containerOf(context).read(marketWatchProvider);
     final theme = ProviderScope.containerOf(context).read(themeProvider);
+    
+    // Check watchlist status on every build to react to changes
+    final scripToken = "${widget.option.exch}|${widget.option.token}";
+    final isCurrentlyInWatchlist = scripData.scrips.any((scrip) => 
+      "${scrip['exch']}|${scrip['token']}" == scripToken
+    );
+    if (_isInWatchlist != isCurrentlyInWatchlist) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          setState(() {
+            _isInWatchlist = isCurrentlyInWatchlist;
+          });
+        }
+      });
+    }
 
     return RepaintBoundary(
       child: SwipeActionCell(
@@ -309,6 +328,9 @@ class _OptionChainCallRowState extends State<_OptionChainCallRow> {
             },
           ),
         ],
+        child: MouseRegion(
+          onEnter: (_) => setState(() => _isHovered = true),
+          onExit: (_) => setState(() => _isHovered = false),
         child: InkWell(
           onLongPress: () => {
             widget.option.tsym!.contains("|||")
@@ -323,15 +345,331 @@ class _OptionChainCallRowState extends State<_OptionChainCallRow> {
                   : _handleTap(context, widget.option)
           },
           child: Container(
-            height: 65,
-            padding: const EdgeInsets.symmetric(vertical: 10),
-            child: widget.showPriceView
-                ? _buildPriceData(theme)
-                : _buildOIData(theme),
+            height: 40,
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+              child: _buildCompleteDataRow(theme, scripData),
+            ),
           ),
         ),
       ),
     );
+  }
+
+  Widget _buildCompleteDataRow(ThemesProvider theme, MarketWatchProvider scripData) {
+    final changeColor = _perChange.startsWith("-")
+        ? (theme.isDarkMode ? WebDarkColors.loss : WebColors.loss)
+        : (_perChange == "0.00" || _perChange == "0.0"
+            ? (theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary)
+            : (theme.isDarkMode ? WebDarkColors.profit : WebColors.profit));
+
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        // Price column - shows LTP, Change, Percentage Change
+        Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                _lp,
+                                style: WebTextStyles.custom(
+                                  fontSize: 13,
+                                  isDarkTheme: theme.isDarkMode,
+                                  color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                            // Hover buttons
+                        Expanded(
+                          child: Text(
+                            "${_perChange}%",
+                            style: WebTextStyles.custom(
+                              fontSize: 13,
+                              isDarkTheme: theme.isDarkMode,
+                              color: changeColor,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                            
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  // OI column
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                _oiLack,
+                                style: WebTextStyles.custom(
+                                  fontSize: 13,
+                                  isDarkTheme: theme.isDarkMode,
+                                  color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: Text(
+                                "${_oiPerChng == "NaN" ? "0.00" : _oiPerChng}%",
+                                style: WebTextStyles.custom(
+                                  fontSize: 13,
+                                  isDarkTheme: theme.isDarkMode,
+                                  color: (_oiPerChng.startsWith("-"))
+                                      ? (theme.isDarkMode ? WebDarkColors.loss : WebColors.loss)
+                                      : (theme.isDarkMode ? WebDarkColors.profit : WebColors.profit),
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        // const SizedBox(height: 2),
+                        // // Green bar for call OI
+                        // Align(
+                        //   alignment: Alignment.centerLeft,
+                        //   child: Container(
+                        //     height: 2,
+                        //     width: MediaQuery.of(context).size.width * 0.12 * 
+                        //         (_currentOI > 0 && _globalMaxOI > 0 
+                        //             ? (_currentOI / _globalMaxOI).clamp(0.0, 1.0) 
+                        //             : 0.0),
+                        //     decoration: BoxDecoration(
+                        //       color: theme.isDarkMode ? WebDarkColors.profit : WebColors.profit,
+                        //       borderRadius: BorderRadius.circular(1),
+                        //     ),
+                        //   ),
+                        // ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+        // Buttons positioned on top
+        if (_isHovered)
+          Positioned(
+            top: 0,
+            right: -10,
+            child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildHoverButton(
+                    label: 'B',
+                    color: Colors.white,
+                    backgroundColor: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
+                    onPressed: () async {
+                      await placeOrderInput(scripData, context, widget.option, true);
+                    },
+                    theme: theme,
+                  ),
+                  const SizedBox(width: 4),
+                  _buildHoverButton(
+                    label: 'S',
+                    color: Colors.white,
+                    backgroundColor: theme.isDarkMode ? WebDarkColors.tertiary : WebColors.tertiary,
+                    onPressed: () async {
+                      await placeOrderInput(scripData, context, widget.option, false);
+                    },
+                    theme: theme,
+                  ),
+                  const SizedBox(width: 4),
+                  _buildHoverButton(
+                    icon: Icons.bar_chart,
+                    color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
+                    onPressed: () async {
+                      await _handleChartTap(context, widget.option);
+                    },
+                    theme: theme,
+                  ),
+                  const SizedBox(width: 4),
+                  _buildHoverButton(
+                    icon: _isInWatchlist ? Icons.bookmark : Icons.bookmark_border,
+                    color: _isInWatchlist 
+                        ? (theme.isDarkMode ? WebDarkColors.primary : WebColors.primary)
+                        : (theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary),
+                    onPressed: () async {
+                      await _handleSaveToWatchlist(context, widget.option);
+                    },
+                    theme: theme,
+                  ),
+                ],
+              ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildDataCell(String value, ThemesProvider theme, {bool isPrimary = false, bool isSecondary = false, Color? color}) {
+    final displayValue = value == "0.00" || value == "0" ? "0.00" : value;
+    final textColor = color ?? (isPrimary 
+        ? (theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary)
+        : (theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary));
+
+    return Text(
+      displayValue,
+      style: WebTextStyles.custom(
+        fontSize: isPrimary ? 13 : 12,
+        isDarkTheme: theme.isDarkMode,
+        color: textColor,
+        fontWeight: isPrimary ? FontWeight.w700 : FontWeight.w500,
+      ),
+      textAlign: TextAlign.start,
+    );
+  }
+
+  Widget _buildHoverButton({
+    String? label,
+    IconData? icon,
+    required Color color,
+    Color? backgroundColor,
+    required VoidCallback? onPressed,
+    required ThemesProvider theme,
+  }) {
+    return SizedBox(
+      width: 24,
+      height: 24,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(4),
+          splashColor: color.withOpacity(0.15),
+          highlightColor: color.withOpacity(0.08),
+          onTap: onPressed,
+          child: Container(
+            decoration: BoxDecoration(
+              color: backgroundColor ?? Colors.transparent,
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Center(
+              child: icon != null
+                  ? Icon(
+                      icon,
+                      size: 14,
+                      color: color,
+                    )
+                  : Text(
+                      label ?? "",
+                      style: WebTextStyles.custom(
+                        fontSize: 10,
+                        isDarkTheme: theme.isDarkMode,
+                        color: color,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _handleChartTap(BuildContext context, OptionValues option) async {
+    final scripData = ProviderScope.containerOf(context).read(marketWatchProvider);
+    
+    await scripData.fetchScripQuoteIndex(
+      "${option.token}",
+      "${option.exch}",
+      context,
+    );
+    final quots = scripData.getQuotes;
+    if (quots != null) {
+      DepthInputArgs depthArgs = DepthInputArgs(
+        exch: quots.exch.toString(),
+        token: quots.token.toString(),
+        tsym: quots.tsym.toString(),
+        instname: quots.instname.toString(),
+        symbol: quots.symbol.toString(),
+        expDate: quots.expDate.toString(),
+        option: quots.option.toString(),
+      );
+      scripData.scripdepthsize(false);
+      await scripData.calldepthApis(context, depthArgs, "");
+    }
+  }
+
+  void _checkIfInWatchlist() {
+    try {
+      final scripData = ProviderScope.containerOf(context).read(marketWatchProvider);
+      final scrips = scripData.scrips;
+      
+      // Check if this option's token exists in the current watchlist
+      final scripToken = "${widget.option.exch}|${widget.option.token}";
+      _isInWatchlist = scrips.any((scrip) => 
+        "${scrip['exch']}|${scrip['token']}" == scripToken
+      );
+      
+      if (mounted) {
+        setState(() {});
+      }
+    } catch (e) {
+      _isInWatchlist = false;
+    }
+  }
+
+  Future<void> _handleSaveToWatchlist(BuildContext context, OptionValues option) async {
+    final provider = ProviderScope.containerOf(context);
+    final scripData = provider.read(marketWatchProvider);
+
+    if (scripData.isPreDefWLs == "Yes") {
+      showResponsiveWarningMessage(context, "This is a pre-defined watchlist that cannot be edited!");
+      return;
+    }
+
+    final scripToken = "${option.exch}|${option.token}";
+    final isCurrentlyInWatchlist = scripData.scrips.any((scrip) => 
+      "${scrip['exch']}|${scrip['token']}" == scripToken
+    );
+
+    if (isCurrentlyInWatchlist) {
+      // Delete from watchlist
+      scripData.addDelMarketScrip(
+        scripData.wlName,
+        scripToken,
+        context,
+        false, // delete
+        true,
+        false,
+        true,
+      );
+    } else {
+      // Add to watchlist
+      provider.read(websocketProvider).establishConnection(
+        channelInput: scripToken,
+        task: "t",
+        context: context,
+      );
+      
+      scripData.addDelMarketScrip(
+        scripData.wlName,
+        scripToken,
+        context,
+        true, // add
+        true,
+        false,
+        true,
+      );
+    }
+    
+    // Update watchlist status after a brief delay to allow for API response
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (mounted) {
+        _checkIfInWatchlist();
+      }
+    });
   }
 
 Widget _buildOIData(ThemesProvider theme) {
@@ -522,8 +860,6 @@ Widget _buildPriceData(ThemesProvider theme) {
   }
 
   static final Map<Color, TextStyle> _actionStyleCache = {};
-  static final Map<Color, TextStyle> _textStyleCache = {};
-  static final Map<String, TextStyle> _percentageStyleCache = {};
 
   static TextStyle _getActionStyle(Color color) {
     return _actionStyleCache.putIfAbsent(
@@ -534,22 +870,16 @@ Widget _buildPriceData(ThemesProvider theme) {
   }
 
   static TextStyle _getTextStyle(Color color, String perChange, ThemesProvider theme) {
-    // return _textStyleCache.putIfAbsent(
-    //   color,
-      // () {
-      Color color =  theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight;
-        if (perChange != null && perChange != "0.00") {
-          color = perChange.startsWith("-") ?  theme.isDarkMode ? colors.lossDark : colors.lossLight : theme.isDarkMode ? colors.profitDark : colors.profitLight;
-        }
-          return TextWidget.textStyle(fontSize: 14, color: color, theme: false, );
-    
+    Color textColor = theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight;
+    if (perChange != "0.00" && perChange.isNotEmpty) {
+      textColor = perChange.startsWith("-") 
+          ? (theme.isDarkMode ? colors.lossDark : colors.lossLight) 
+          : (theme.isDarkMode ? colors.profitDark : colors.profitLight);
+    }
+    return TextWidget.textStyle(fontSize: 14, color: textColor, theme: false);
   }
 
   static TextStyle _getPercentageStyle(String? value, ThemesProvider theme) {
-    final key = value ?? "0.00";
-    // return _percentageStyleCache.putIfAbsent(
-    //   key,
-    //   () {
         Color color = theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight;
         // if (value != null && value != "0.00") {
         //   color = value.startsWith("-") ? colors.darkred : colors.ltpgreen;

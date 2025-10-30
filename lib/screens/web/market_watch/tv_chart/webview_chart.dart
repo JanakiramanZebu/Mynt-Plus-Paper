@@ -44,6 +44,11 @@ class _ChartScreenWebViewsState extends State<ChartScreenWebViews> {
   late String webViewType;
   bool isWebViewRegistered = false;
   
+  // Flutter-side overlay to block pointer events over the iframe
+  bool _blockIframe = false;
+  // Track hover state to control overlay when cursor leaves without exit events
+  bool _isHovering = false;
+  
   // Store reference to iframe element
   html.IFrameElement? _iframeElement;
   String? _currentToken;
@@ -69,7 +74,9 @@ class _ChartScreenWebViewsState extends State<ChartScreenWebViews> {
             ..style.height = '100%'
             ..style.width = '100%'
             ..allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'
-            ..src = chartUrl;
+            ..src = chartUrl
+            // default to disabled; MouseRegion will toggle on hover
+            ..style.pointerEvents = 'none';
           
           return _iframeElement!;
         },
@@ -139,6 +146,10 @@ class _ChartScreenWebViewsState extends State<ChartScreenWebViews> {
           );
           _iframeElement!.src = newUrl;
           _currentToken = newToken;
+          // Ensure disabled when not hovering after src change
+          if (!_isHovering) {
+            _iframeElement!.style.pointerEvents = 'none';
+          }
         }
 
         return SafeArea(
@@ -262,14 +273,28 @@ class _ChartScreenWebViewsState extends State<ChartScreenWebViews> {
                     ? colors.highlightDark
                     : colors.highlightLight,
                 onTap: () async {
+                  // Block iframe immediately before navigation
+                  if (mounted) {
+                    setState(() {
+                      _blockIframe = true;
+                    });
+                  }
+                  _disableIframeInteraction();
                   ref
                       .read(marketWatchProvider)
                       .requestMWScrip(context: context, isSubscribe: false);
-                  Navigator.pushNamed(
+                  await Navigator.pushNamed(
                     context,
                     Routes.searchScrip,
                     arguments: "Chart||Is",
                   );
+                  // Unblock after returning
+                  _enableIframeInteraction();
+                  if (mounted) {
+                    setState(() {
+                      _blockIframe = false;
+                    });
+                  }
                 },
                 child: Padding(
                   padding: const EdgeInsets.all(8),
@@ -304,22 +329,41 @@ class _ChartScreenWebViewsState extends State<ChartScreenWebViews> {
     
     return MouseRegion(
       onEnter: (_) {
-        // Immediately enable iframe interaction - query DOM directly if needed
-        if (_iframeElement != null) {
-          _iframeElement!.style.pointerEvents = 'auto';
+        if (mounted && !_isHovering) {
+          setState(() {
+            _isHovering = true;
+          });
         }
-        // Also update all iframes as fallback
-        final iframes = html.document.querySelectorAll('iframe');
-        for (var iframe in iframes) {
-          if (iframe is html.IFrameElement && iframe.id.contains('chart-iframe')) {
-            iframe.style.pointerEvents = 'auto';
+        // Enable only if not blocked by overlay/dialog
+        if (!_blockIframe) {
+          if (_iframeElement != null) {
+            _iframeElement!.style.pointerEvents = 'auto';
           }
+          // Also update all iframes as fallback
+          final iframes = html.document.querySelectorAll('iframe');
+          for (var iframe in iframes) {
+            if (iframe is html.IFrameElement && iframe.id.contains('chart-iframe')) {
+              iframe.style.pointerEvents = 'auto';
+            }
+          }
+        }
+      },
+      onHover: (_) {
+        if (mounted && !_isHovering) {
+          setState(() {
+            _isHovering = true;
+          });
         }
       },
       onExit: (_) {
         // Immediately disable iframe interaction - query DOM directly if needed
         if (_iframeElement != null) {
           _iframeElement!.style.pointerEvents = 'none';
+        }
+        if (mounted && _isHovering) {
+          setState(() {
+            _isHovering = false;
+          });
         }
         // Also update all iframes as fallback
         final iframes = html.document.querySelectorAll('iframe');
@@ -331,9 +375,22 @@ class _ChartScreenWebViewsState extends State<ChartScreenWebViews> {
       },
       child: SizedBox(
         height: (MediaQuery.of(context).size.height - 205),
-        child: HtmlElementView(
-          key: ValueKey(webViewType),
-          viewType: webViewType,
+        child: Stack(
+          children: [
+            HtmlElementView(
+              key: ValueKey(webViewType),
+              viewType: webViewType,
+            ),
+            // Show overlay whenever blocked or not hovering
+            if (_blockIframe || !_isHovering)
+              Positioned.fill(
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () {},
+                  child: Container(color: Colors.transparent),
+                ),
+              ),
+          ],
         ),
       ),
     );
@@ -410,6 +467,11 @@ class _ChartScreenWebViewsState extends State<ChartScreenWebViews> {
     
     // Disable pointer events on iframe before showing dialog
     _disableIframeInteraction();
+    if (mounted) {
+      setState(() {
+        _blockIframe = true;
+      });
+    }
     
     final raw = ref.read(marketWatchProvider).getQuotes;
     await ref.read(marketWatchProvider).fetchScripInfo(
@@ -450,5 +512,10 @@ class _ChartScreenWebViewsState extends State<ChartScreenWebViews> {
     
     // Re-enable pointer events on iframe after dialog closes
     _enableIframeInteraction();
+    if (mounted) {
+      setState(() {
+        _blockIframe = false;
+      });
+    }
   }
 }
