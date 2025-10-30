@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter/foundation.dart';
-import 'package:mynt_plus/provider/user_profile_provider.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import '../../../routes/route_names.dart';
 import '../../../utils/custom_navigator.dart';
@@ -18,8 +17,8 @@ import '../../../res/global_font_web.dart';
 import '../../../sharedWidget/snack_bar.dart';
 import '../../../utils/responsive_navigation.dart';
 import '../../../utils/responsive_snackbar.dart';
-import '../../Mobile/market_watch/edit_scrip.dart';
-import 'edit_scrip_web.dart';
+// import '../../Mobile/market_watch/edit_scrip.dart';
+// import 'edit_scrip_web.dart';
 import '../../Mobile/market_watch/new_fundamental_screen.dart';
 import 'futures/future_screen_web.dart';
 import 'set_alert_web.dart';
@@ -127,6 +126,9 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                   // Call depth APIs for chart navigation
                   marketWatch.scripdepthsize(false);
                   await marketWatch.calldepthApis(context, depthArgs, "");
+
+                  // Open in 80% panel as split Chart + Depth via tabs manager
+                  ref.read(marketWatchProvider).openScripInWebPanel(context, depthArgs, "Watchlist");
                 } catch (e) {
                   // Handle any errors
                   debugPrint('Error opening chart: $e');
@@ -278,8 +280,9 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                           // Check if options available (same condition as futures)
                           final hasOptions = marketWatch.getOptionawait(exch, token);
                           
+                          final bool isPredefined = marketWatch.isPreDefWLs == "Yes";
                           return Container(
-                            width: 170, // Width adjusted for smaller buttons
+                            width: 200, // Adjusted to accommodate delete icon
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.start,
                               mainAxisSize: MainAxisSize.min,
@@ -359,59 +362,139 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                                         marketWatch.scripdepthsize(false);
                                         await marketWatch.calldepthApis(
                                             context, depthArgs, "");
+
+                                        // Open split view in 80% panel
+                                        ref.read(marketWatchProvider).openScripInWebPanel(context, depthArgs, "Watchlist");
                                   },
                                 ),
                                   const SizedBox(width: 6),
                                 // Expand/Collapse button
-                                SizedBox(
-                                  width: 28,
-                                  height: 28,
-                                  child: Material(
-                                    color: Colors.transparent,
-                                    child: InkWell(
-                                      borderRadius: BorderRadius.circular(5),
-                                      splashColor: theme.isDarkMode
-                                          ? Colors.white.withOpacity(0.15)
-                                          : Colors.black.withOpacity(0.15),
-                                      highlightColor: theme.isDarkMode
-                                          ? Colors.white.withOpacity(0.08)
-                                          : Colors.black.withOpacity(0.08),
-                                      onTap: () {
-                                        final currentToken = widget.watchListData['token']?.toString();
-                                        if (_isExpanded) {
-                                          // Collapse - just toggle the state
-                                          ref
-                                              .read(expandedWatchlistItemProvider.notifier)
-                                              .setExpandedToken(null);
-                                        } else {
-                                          // Expand - just toggle the state (data will load when expanded content renders)
-                                          ref
-                                              .read(expandedWatchlistItemProvider.notifier)
-                                              .setExpandedToken(currentToken);
-                                        }
-                                      },
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                          color: Colors.transparent,
-                                          borderRadius: BorderRadius.circular(5),
-                                          border: Border.all(
-                                            color: theme.isDarkMode
-                                                ? WebDarkColors.border
-                                                : WebColors.border,
-                                            width: 1,
+                                // SizedBox(
+                                //   width: 28,
+                                //   height: 28,
+                                //   child: Material(
+                                //     color: Colors.transparent,
+                                //     child: InkWell(
+                                //       borderRadius: BorderRadius.circular(5),
+                                //       splashColor: theme.isDarkMode
+                                //           ? Colors.white.withOpacity(0.15)
+                                //           : Colors.black.withOpacity(0.15),
+                                //       highlightColor: theme.isDarkMode
+                                //           ? Colors.white.withOpacity(0.08)
+                                //           : Colors.black.withOpacity(0.08),
+                                //       onTap: () {
+                                //         final currentToken = widget.watchListData['token']?.toString();
+                                //         if (_isExpanded) {
+                                //           // Collapse - just toggle the state
+                                //           ref
+                                //               .read(expandedWatchlistItemProvider.notifier)
+                                //               .setExpandedToken(null);
+                                //         } else {
+                                //           // Expand - just toggle the state (data will load when expanded content renders)
+                                //           ref
+                                //               .read(expandedWatchlistItemProvider.notifier)
+                                //               .setExpandedToken(currentToken);
+                                //         }
+                                //       },
+                                //       child: Container(
+                                //         decoration: BoxDecoration(
+                                //           color: Colors.transparent,
+                                //           borderRadius: BorderRadius.circular(5),
+                                //           border: Border.all(
+                                //             color: theme.isDarkMode
+                                //                 ? WebDarkColors.border
+                                //                 : WebColors.border,
+                                //             width: 1,
+                                //           ),
+                                //         ),
+                                //         child: Center(
+                                //           child: Transform.rotate(
+                                //             angle: _isExpanded ? 3.14159 : 0, // 180 degrees for up, 0 for down
+                                //             child: SvgPicture.asset(
+                                //               assets.downArrow,
+                                //               width: 8,
+                                //               height: 8,
+                                //               colorFilter: ColorFilter.mode(
+                                //                 theme.isDarkMode
+                                //                     ? WebDarkColors.textSecondary
+                                //                     : WebColors.textSecondary,
+                                //                 BlendMode.srcIn,
+                                //               ),
+                                //             ),
+                                //           ),
+                                //         ),
+                                //       ),
+                                //     ),
+                                //   ),
+                                // ),
+                                  const SizedBox(width: 6),
+                                // Delete-one button (only for non-predefined watchlists)
+                                if (!isPredefined)
+                                  SizedBox(
+                                    width: 28,
+                                    height: 28,
+                                    child: Material(
+                                      color: Colors.transparent,
+                                      child: InkWell(
+                                        borderRadius: BorderRadius.circular(5),
+                                        splashColor: theme.isDarkMode
+                                            ? Colors.white.withOpacity(0.15)
+                                            : Colors.black.withOpacity(0.15),
+                                        highlightColor: theme.isDarkMode
+                                            ? Colors.white.withOpacity(0.08)
+                                            : Colors.black.withOpacity(0.08),
+                                        onTap: () async {
+                                          try {
+                                            // Build single scrip token input: exch|token#
+                                            final String exch = widget.watchListData["exch"]?.toString() ?? "";
+                                            final String token = widget.watchListData["token"]?.toString() ?? "";
+                                            final String input = "$exch|$token#";
+
+                                            // Prevent multiple operations
+                                            if (_isNavigating) return;
+                                            setState(() { _isNavigating = true; });
+
+                                            // Call delete single scrip API
+                                            await ref
+                                                .read(marketWatchProvider)
+                                                .addDelMarketScrip(marketWatch.wlName, input, context, false, false, false, false);
+                                            if (mounted) {
+                                              showResponsiveSuccess(context, 'Scrip removed from watchlist');
+                                            }
+                                          } catch (e) {
+                                            if (mounted) {
+                                              showResponsiveError(context, 'Failed to delete scrip');
+                                            }
+                                          } finally {
+                                            if (mounted) {
+                                              Future.delayed(const Duration(milliseconds: 400), () {
+                                                if (mounted) {
+                                                  setState(() { _isNavigating = false; });
+                                                }
+                                              });
+                                            }
+                                          }
+                                        },
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            color: Colors.transparent,
+                                            borderRadius: BorderRadius.circular(5),
+                                            border: Border.all(
+                                              color: theme.isDarkMode
+                                                  ? WebDarkColors.border
+                                                  : WebColors.border,
+                                              width: 1,
+                                            ),
                                           ),
-                                        ),
-                                        child: Center(
-                                          child: Transform.rotate(
-                                            angle: _isExpanded ? 3.14159 : 0, // 180 degrees for up, 0 for down
+                                          child: Center(
                                             child: SvgPicture.asset(
-                                              assets.downArrow,
-                                              width: 8,
-                                              height: 8,
+                                              assets.trash,
+                                              width: 14,
+                                              height: 14,
                                               colorFilter: ColorFilter.mode(
                                                 theme.isDarkMode
-                                                    ? WebDarkColors.textSecondary
-                                                    : WebColors.textSecondary,
+                                                    ? WebDarkColors.iconSecondary
+                                                    : WebColors.iconSecondary,
                                                 BlendMode.srcIn,
                                               ),
                                             ),
@@ -420,19 +503,18 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                                       ),
                                     ),
                                   ),
-                                ),
-                                  const SizedBox(width: 6),
+                                if (!isPredefined) const SizedBox(width: 6),
                                 // Three dots menu (only if has futures, fundamentals or options)
-                                if (hasFutures || hasFundamentals || hasOptions)
-                                  _buildThreeDotsMenu(
-                                    theme: theme,
-                                    hasFutures: hasFutures,
-                                    hasFundamentals: hasFundamentals,
-                                    hasOptions: hasOptions,
-                                    exch: exch,
-                                    token: token,
-                                    depthData: depthData,
-                                  ),
+                                // if (hasFutures || hasFundamentals || hasOptions)
+                                //   _buildThreeDotsMenu(
+                                //     theme: theme,
+                                //     hasFutures: hasFutures,
+                                //     hasFundamentals: hasFundamentals,
+                                //     hasOptions: hasOptions,
+                                //     exch: exch,
+                                //     token: token,
+                                //     depthData: depthData,
+                                //   ),
                               ],
                             ),
                           );
@@ -1307,79 +1389,79 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                 // borderRadius: BorderRadius.circular(),
               ),
               items: [
-                if (hasFutures)
-                  PopupMenuItem<String>(
-                    value: 'futures',
-                    child: Row(
-                      children: [
-                        Text(
-                          'Futures',
-                          style: WebTextStyles.custom(
-                            fontSize: 13,
-                            isDarkTheme: theme.isDarkMode,
-                            color: theme.isDarkMode
-                                ? WebDarkColors.textPrimary
-                                : WebColors.textPrimary,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                if (hasFundamentals)
-                  PopupMenuItem<String>(
-                    value: 'fundamentals',
-                    child: Text(
-                      'Fundamentals',
-                      style: WebTextStyles.custom(
-                        fontSize: 13,
-                        isDarkTheme: false,
-                        color: WebColors.textPrimary,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                if (hasOptions)
-                  PopupMenuItem<String>(
-                    value: 'options',
-                    child: Text(
-                      'Options Chain',
-                      style: WebTextStyles.custom(
-                        fontSize: 13,
-                        isDarkTheme: false,
-                        color: WebColors.textPrimary,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                PopupMenuItem<String>(
-                  value: 'setAlert',
-                  child: Text(
-                    'Set Alert',
-                    style: WebTextStyles.custom(
-                      fontSize: 13,
-                      isDarkTheme: theme.isDarkMode,
-                      color: theme.isDarkMode
-                          ? WebDarkColors.textPrimary
-                          : WebColors.textPrimary,
-                          fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-                PopupMenuItem<String>(
-                  value: 'deleteMultiple',
-                  child: Text(
-                    'Delete Multiple',
-                    style: WebTextStyles.custom(
-                      fontSize: 13,
-                      isDarkTheme: theme.isDarkMode,
-                      color: theme.isDarkMode
-                          ? WebDarkColors.textPrimary
-                          : WebColors.textPrimary,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
+                // if (hasFutures)
+                //   PopupMenuItem<String>(
+                //     value: 'futures',
+                //     child: Row(
+                //       children: [
+                //         Text(
+                //           'Futures',
+                //           style: WebTextStyles.custom(
+                //             fontSize: 13,
+                //             isDarkTheme: theme.isDarkMode,
+                //             color: theme.isDarkMode
+                //                 ? WebDarkColors.textPrimary
+                //                 : WebColors.textPrimary,
+                //             fontWeight: FontWeight.w700,
+                //           ),
+                //         ),
+                //       ],
+                //     ),
+                //   ),
+                // if (hasFundamentals)
+                //   PopupMenuItem<String>(
+                //     value: 'fundamentals',
+                //     child: Text(
+                //       'Fundamentals',
+                //       style: WebTextStyles.custom(
+                //         fontSize: 13,
+                //         isDarkTheme: false,
+                //         color: WebColors.textPrimary,
+                //         fontWeight: FontWeight.w700,
+                //       ),
+                //     ),
+                //   ),
+                // if (hasOptions)
+                //   PopupMenuItem<String>(
+                //     value: 'options',
+                //     child: Text(
+                //       'Options Chain',
+                //       style: WebTextStyles.custom(
+                //         fontSize: 13,
+                //         isDarkTheme: false,
+                //         color: WebColors.textPrimary,
+                //         fontWeight: FontWeight.w700,
+                //       ),
+                //     ),
+                //   ),
+                // PopupMenuItem<String>(
+                //   value: 'setAlert',
+                //   child: Text(
+                //     'Set Alert',
+                //     style: WebTextStyles.custom(
+                //       fontSize: 13,
+                //       isDarkTheme: theme.isDarkMode,
+                //       color: theme.isDarkMode
+                //           ? WebDarkColors.textPrimary
+                //           : WebColors.textPrimary,
+                //           fontWeight: FontWeight.w700,
+                //     ),
+                //   ),
+                // ),
+                // PopupMenuItem<String>(
+                //   value: 'deleteMultiple',
+                //   child: Text(
+                //     'Delete Multiple',
+                //     style: WebTextStyles.custom(
+                //       fontSize: 13,
+                //       isDarkTheme: theme.isDarkMode,
+                //       color: theme.isDarkMode
+                //           ? WebDarkColors.textPrimary
+                //           : WebColors.textPrimary,
+                //       fontWeight: FontWeight.w700,
+                //     ),
+                //   ),
+                // ),
               ],
             ).then((value) {
               setState(() {

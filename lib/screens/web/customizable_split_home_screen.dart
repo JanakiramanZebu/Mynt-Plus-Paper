@@ -35,11 +35,11 @@ import '../../../sharedWidget/functions.dart';
 import '../../../sharedWidget/internet_widget.dart';
 import 'market_watch/index/default_index_list_web.dart';
 import 'splitter_widget.dart';
-import '../Mobile/market_watch/tv_chart/webview_chart.dart';
+// import '../Mobile/market_watch/tv_chart/webview_chart.dart';
 import 'market_watch/watchlist_screen_web.dart';
 import 'holdings/holding_screen_web.dart';
 import 'position/position_screen_web.dart';
-import '../Mobile/order_book/order_book_screen.dart';
+// import '../Mobile/order_book/order_book_screen.dart';
 import 'market_watch/options/option_chain_ss_web.dart';
 import '../Mobile/desk_reports/pledge_unpledge_screen.dart';
 // Removed CA Event and CP Action from panel screens
@@ -49,6 +49,8 @@ import '../Mobile/ipo/ipo_main_screen.dart';
 import '../Mobile/bonds/bonds_main_screen.dart';
 import '../../../utils/custom_navigator.dart';
 import '../../models/marketwatch_model/get_quotes.dart';
+import 'market_watch/chart_with_depth_web.dart';
+// import 'market_watch/scrip_tabs_manager.dart';
 
 class CustomizableSplitHomeScreen extends ConsumerStatefulWidget {
   const CustomizableSplitHomeScreen({super.key});
@@ -65,6 +67,7 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
   List<PanelConfig> _panels = [];
   // Arguments storage for panel-specific screens that require constructor params
   DepthInputArgs? _optionChainArgs;
+  DepthInputArgs? _currentDepthArgs;
   int _panelCount = 2; // Fixed to 2 panels
   bool _isInitialLoad = true; // Track if this is the initial load
   
@@ -510,11 +513,11 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
     
     if (hasWatchlistInFirstPanel) {
       // Watchlist is in left panel, give it 25% width (same as when it was on right)
-      splitRatio = 0.25; // Watchlist gets 25%, other panel gets 75%
+      splitRatio = 0.20; // Watchlist gets 25%, other panel gets 75%
       enableResize = false; // Disable resize to maintain fixed ratio
     } else if (hasWatchlistInSecondPanel) {
       // Watchlist is in right panel, give other panel 75% width
-      splitRatio = 0.75; // First panel gets 75%, watchlist gets 25%
+      splitRatio = 0.80; // First panel gets 75%, watchlist gets 25%
       enableResize = false; // Disable resize to maintain fixed ratio
     }
     
@@ -1295,9 +1298,23 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
       case ScreenType.scripDepthInfo:
         return Consumer(
           builder: (context, ref, _) {
-            final mw = ref.watch(marketWatchProvider);
-            final args = mw.activeTab ?? ChartArgs(exch: 'ABC', tsym: 'ABCD', token: '0123');
-            return ChartScreenWebViews(chartArgs: args);
+            final args = _currentDepthArgs;
+            if (args == null) {
+              final mw = ref.watch(marketWatchProvider);
+              final fallback = ChartArgs(exch: 'ABC', tsym: 'ABCD', token: '0123');
+              return ChartWithDepthWeb(
+                wlValue: DepthInputArgs(
+                  exch: mw.getQuotes?.exch ?? fallback.exch,
+                  token: mw.getQuotes?.token?.toString() ?? fallback.token,
+                  tsym: mw.getQuotes?.tsym ?? fallback.tsym,
+                  instname: mw.getQuotes?.instname ?? '',
+                  symbol: mw.getQuotes?.symbol ?? '',
+                  expDate: mw.getQuotes?.expDate ?? '',
+                  option: mw.getQuotes?.option ?? '',
+                ),
+              );
+            }
+            return ChartWithDepthWeb(wlValue: args);
           },
         );
       case ScreenType.optionChain:
@@ -1830,6 +1847,10 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
 
   // Show ScripDepthInfo in a panel
   void showScripDepthInfoInPanel(dynamic watchListData) {
+    // Accept DepthInputArgs and store as current selection
+    if (watchListData is DepthInputArgs) {
+      _currentDepthArgs = watchListData;
+    }
     // Check if scrip details already exist in any panel
     for (int i = 0; i < _panels.length; i++) {
       final panel = _panels[i];

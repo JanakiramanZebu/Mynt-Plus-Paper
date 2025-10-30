@@ -163,7 +163,7 @@ class _ChartScreenWebViewsState extends State<ChartScreenWebViews> {
   }
 
   Widget _buildTopBar(
-      MarketWatchProvider tvChart, theme, userProfile, chartUpdate) {
+       MarketWatchProvider tvChart, theme, userProfile, chartUpdate) {
         bool transbtn = tvChart.getQuotes?.instname != "UNDIND" &&
             tvChart.getQuotes?.instname != "COM";
     return Align(
@@ -217,9 +217,9 @@ class _ChartScreenWebViewsState extends State<ChartScreenWebViews> {
             //   ),
             // ),
             const Spacer(),
-             if (transbtn) ...[
-                _buildTransactionButtons(tvChart, theme, userProfile, context),
-              ],
+            //  if (transbtn) ...[
+            //     _buildTransactionButtons(tvChart, theme, userProfile, context),
+            //   ],
             Material(
               color: Colors.transparent,
               child: InkWell(
@@ -330,7 +330,7 @@ class _ChartScreenWebViewsState extends State<ChartScreenWebViews> {
         }
       },
       child: SizedBox(
-        height: (MediaQuery.of(context).size.height - 150),
+        height: (MediaQuery.of(context).size.height - 205),
         child: HtmlElementView(
           key: ValueKey(webViewType),
           viewType: webViewType,

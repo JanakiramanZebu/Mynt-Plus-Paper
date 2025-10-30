@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/models/marketwatch_model/get_quotes.dart';
-import 'scrip_depth_info_web.dart';
+// import 'scrip_depth_info_web.dart';
+import 'chart_with_depth_web.dart';
 import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/res/global_state_text.dart';
 import 'package:mynt_plus/res/web_colors.dart';
@@ -240,7 +241,7 @@ class _ScripTabsManagerState extends ConsumerState<ScripTabsManager>
           child: TabBarView(
             controller: _tabController,
             children: scripTabsState.openScrips.map((scrip) {
-              return ScripDepthInfoWeb(
+              return ChartWithDepthWeb(
                 wlValue: scrip,
                 isBasket: '',
               );
