@@ -13,8 +13,8 @@ class WebColors {
   static const Color tertiary = Color(0xFFC40024);
   
   // === TEXT COLORS ===
-  static const Color textPrimary = Color(0xFF121212);
-  static const Color textSecondary = Color(0xFF4A4A4A);
+  static const Color textPrimary = Color(0xFF121212); 
+  static const Color textSecondary = Color(0xFFa3a3a3);
   static const Color textTertiary = Color(0xFF434343);
   static const Color textDisabled = Color(0xFFBDBDBD);
   static const Color textHint = Color(0xFF999999);

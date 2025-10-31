@@ -229,9 +229,9 @@ class _ChartScreenWebViewsState extends State<ChartScreenWebViews> {
             //   ),
             // ),
             const Spacer(),
-             if (transbtn) ...[
-                _buildTransactionButtons(tvChart, theme, userProfile, context),
-              ],
+            //  if (transbtn) ...[
+            //     _buildTransactionButtons(tvChart, theme, userProfile, context),
+            //   ],
             Material(
               color: Colors.transparent,
               child: InkWell(

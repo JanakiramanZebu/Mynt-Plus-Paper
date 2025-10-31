@@ -340,6 +340,7 @@ class DepthInputArgs {
   String symbol;
   String expDate;
   String option;
+  bool showDepthInitially;
 
   DepthInputArgs(
       {required this.exch,
@@ -348,5 +349,6 @@ class DepthInputArgs {
       required this.instname,
       required this.symbol,
       required this.expDate,
-      required this.option});
+      required this.option,
+      this.showDepthInitially = false});
 }

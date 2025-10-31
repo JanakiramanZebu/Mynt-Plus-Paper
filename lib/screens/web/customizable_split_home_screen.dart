@@ -1015,7 +1015,7 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
             child: Container(
               height: 40,
               decoration: BoxDecoration(
-                color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary.withOpacity(0.1),
+                color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary.withOpacity(0.2),
                
               ),
               child: Row(

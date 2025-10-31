@@ -9,6 +9,7 @@ import 'package:mynt_plus/res/global_font_web.dart';
 import 'package:mynt_plus/screens/web/market_watch/scrip_depth_info_web.dart';
 import 'package:mynt_plus/screens/web/market_watch/tv_chart/webview_chart.dart';
 import 'package:mynt_plus/screens/web/market_watch/options/option_chain_ss_web.dart';
+import '../../../../provider/websocket_provider.dart';
 
 class ChartWithDepthWeb extends ConsumerStatefulWidget {
   final DepthInputArgs wlValue;
@@ -23,6 +24,7 @@ class ChartWithDepthWeb extends ConsumerStatefulWidget {
 class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with TickerProviderStateMixin {
   String? _loadedToken;
   TabController? _tabController;
+  bool _isDepthVisible = false; // Controlled by wlValue.showDepthInitially
 
   @override
   void initState() {
@@ -31,6 +33,7 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
     Future.microtask(() async {
       await _ensureDataLoaded();
     });
+    _isDepthVisible = widget.wlValue.showDepthInitially;
   }
 
   @override
@@ -38,6 +41,11 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
     super.didUpdateWidget(oldWidget);
     if (oldWidget.wlValue.token != widget.wlValue.token ||
         oldWidget.wlValue.exch != widget.wlValue.exch) {
+      // Reset depth visibility based on incoming args when scrip changes
+      setState(() {
+        _isDepthVisible = widget.wlValue.showDepthInitially;
+      });
+      
       Future.microtask(() async {
         await _ensureDataLoaded(force: true);
 
@@ -95,6 +103,7 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
     final theme = ref.watch(themeProvider);
     final mw = ref.watch(marketWatchProvider);
     final hasOptions = mw.getOptionawait(widget.wlValue.exch, widget.wlValue.token);
+    final depthData = mw.getQuotes;
     _setupTabControllerIfNeeded(hasOptions: hasOptions);
 
     return Container(
@@ -102,9 +111,9 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Chart area - 75%
+          // Chart area - 100% when depth hidden, 75% when visible
           Expanded(
-            flex: 3,
+            flex: _isDepthVisible ? 3 : 1,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -123,27 +132,130 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
                   child: Row(
                     children: [
                       Expanded(
-                        child: Text(
-                          "${widget.wlValue.symbol.replaceAll('-EQ', '').toUpperCase()}${widget.wlValue.expDate} ${widget.wlValue.option} ${widget.wlValue.exch}",
-                          overflow: TextOverflow.ellipsis,
-                          style: WebTextStyles.title(
-                            isDarkTheme: theme.isDarkMode,
-                            color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
-                            fontWeight: WebFonts.semiBold,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              "${widget.wlValue.symbol.replaceAll('-EQ', '').toUpperCase()}${widget.wlValue.expDate} ${widget.wlValue.option} ${widget.wlValue.exch}",
+                              overflow: TextOverflow.ellipsis,
+                              style: WebTextStyles.title(
+                                isDarkTheme: theme.isDarkMode,
+                                color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+                                fontWeight: WebFonts.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            StreamBuilder<Map>(
+                              stream: ref.watch(websocketProvider).socketDataStream,
+                              builder: (context, snapshot) {
+                                final socketDatas = snapshot.data ?? {};
+                                String ltp = depthData?.lp ?? depthData?.c ?? '0.00';
+                                String ch = depthData?.chng ?? '0.00';
+                                String pc = depthData?.pc ?? '0.00';
+                                if (socketDatas.containsKey(widget.wlValue.token)) {
+                                  final s = socketDatas[widget.wlValue.token];
+                                  ltp = "${s['lp'] ?? s['c'] ?? ltp}";
+                                  ch = "${s['chng'] ?? ch}";
+                                  pc = "${s['pc'] ?? pc}";
+                                }
+                                final ltpStr = (double.tryParse("$ltp") ?? 0).toStringAsFixed(2);
+                                final chVal = double.tryParse("$ch") ?? 0;
+                                final pcVal = double.tryParse("$pc") ?? 0;
+                                final chStr = chVal.toStringAsFixed(2);
+                                final pcStr = pcVal.toStringAsFixed(2);
+                                final isUp = pcVal >= 0;
+
+                                return Row(
+                                  children: [
+                                    Text(
+                                      ltpStr,
+                                      style: WebTextStyles.sub(
+                                        isDarkTheme: theme.isDarkMode,
+                                        color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+                                        fontWeight: WebFonts.bold,
+                                        letterSpacing: 0.0,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      "$chStr (${pcStr}%)",
+                                      style: WebTextStyles.para(
+                                        isDarkTheme: theme.isDarkMode,
+                                        color: isUp
+                                            ? (theme.isDarkMode ? WebDarkColors.success : WebColors.success)
+                                            : (theme.isDarkMode ? WebDarkColors.error : WebColors.error),
+                                        fontWeight: WebFonts.bold,
+                                        letterSpacing: 0.0,
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                      // Depth toggle icon
+                      Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          customBorder: const CircleBorder(),
+                          splashColor: (theme.isDarkMode ? Colors.white : Colors.black).withOpacity(.15),
+                          highlightColor: (theme.isDarkMode ? Colors.white : Colors.black).withOpacity(.08),
+                          onTap: () {
+                            setState(() => _isDepthVisible = !_isDepthVisible);
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Icon(
+                              _isDepthVisible ? Icons.view_sidebar : Icons.view_sidebar_outlined,
+                              size: 18,
+                              color: _isDepthVisible
+                                  ? (theme.isDarkMode ? WebDarkColors.primary : WebColors.primary)
+                                  : (theme.isDarkMode ? WebDarkColors.iconSecondary : WebColors.iconSecondary),
+                            ),
                           ),
                         ),
                       ),
+
+
+                      const SizedBox(width: 12),        
                       if (hasOptions)
-                        SizedBox(
+                        Container(
                           width: 260,
-                          height: 30,
+                          height: 45,
+                          padding: const EdgeInsets.all(2),
+                          decoration: BoxDecoration(
+                            color: theme.isDarkMode
+                                ? WebDarkColors.navBackground
+                                : WebColors.navBackground,
+                            borderRadius: BorderRadius.circular(24),
+                          ),
                           child: TabBar(
                             controller: _tabController,
-                            labelColor: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
-                            unselectedLabelColor: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
-                            indicatorColor: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
-                            indicatorWeight: 2,
-                            labelPadding: const EdgeInsets.symmetric(horizontal: 10),
+                            isScrollable: false,
+                            labelColor:  WebDarkColors.textPrimary,
+                            labelStyle: const TextStyle(
+                              fontWeight: WebFonts.bold,
+                              fontSize: WebFonts.subSize,
+                            ),
+                            unselectedLabelColor: theme.isDarkMode
+                                ? WebDarkColors.textSecondary
+                                : WebColors.textSecondary,
+                            unselectedLabelStyle: const TextStyle(
+                              fontWeight: WebFonts.bold,
+                              fontSize: WebFonts.subSize,
+                            ),
+                            indicator: BoxDecoration(
+                              color: WebColors.primary,
+                              borderRadius: BorderRadius.circular(5),
+                            ),
+                            indicatorPadding:
+                                const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
+                            indicatorSize: TabBarIndicatorSize.tab,
+                            labelPadding:
+                                const EdgeInsets.symmetric(horizontal: 10),
                             tabs: const [
                               Tab(text: 'Chart'),
                               Tab(text: 'Options'),
@@ -180,19 +292,26 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
               ],
             ),
           ),
-          // Divider between chart and depth
-          Container(
-            width: 1,
-            color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
-          ),
-          // Depth/Overview area - 25%
-          Expanded(
-            flex: 1,
-            child: ScripDepthInfoWeb(
-              wlValue: widget.wlValue,
-              isBasket: widget.isBasket,
+          // Divider between chart and depth (only when depth is visible)
+          if (_isDepthVisible)
+            Container(
+              width: 1,
+              color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
             ),
-          ),
+          // Depth/Overview area - 25% (only when visible)
+          if (_isDepthVisible)
+            Expanded(
+              flex: 1,
+              child: ScripDepthInfoWeb(
+                wlValue: widget.wlValue,
+                isBasket: widget.isBasket,
+                onClose: () {
+                  setState(() {
+                    _isDepthVisible = false;
+                  });
+                },
+              ),
+            ),
         ],
       ),
     );

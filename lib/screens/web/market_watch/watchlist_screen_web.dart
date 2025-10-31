@@ -731,45 +731,24 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
       child: InkWell(
         onTap: () => _handleTabTap(name, ref.read(marketWatchProvider).marketWatchlist?.values?.toList().indexOf(name) ?? 0, ref),
         child: Container(
-          // Full clickable area with proper padding
-          padding: const EdgeInsets.symmetric(
-            horizontal: 10,
-            vertical: 6, // Adjusted for better spacing
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                _formatTabName(name),
-                overflow: TextOverflow.ellipsis,
-                style: WebTextStyles.para(
-                  isDarkTheme: theme.isDarkMode,
-                  color: name == wlName
-                      ? (theme.isDarkMode
-                          ? WebDarkColors.navItemActive
-                          : WebColors.navItemActive)
-                      : (theme.isDarkMode
-                          ? WebDarkColors.navItem
-                          : WebColors.navItem),
-                  fontWeight: name == wlName
-                      ? FontWeight.w600
-                      : FontWeight.w500,
-                ),
-              ),
-              const SizedBox(height: 6), // Increased spacing between text and indicator
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 250),
-                curve: Curves.easeInOut,
-                height: 2,
-                width: name == wlName ? 60 : 0,
-                decoration: BoxDecoration(
-                  color: theme.isDarkMode
-                      ? WebDarkColors.primary
-                      : WebColors.primary,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ],
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: name == wlName
+              ? BoxDecoration(
+                  color:
+                      theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
+                  borderRadius: BorderRadius.circular(5),
+                )
+              : null,
+          child: Text(
+            _formatTabName(name),
+            overflow: TextOverflow.ellipsis,
+            style: WebTextStyles.para(
+              isDarkTheme: theme.isDarkMode,
+              color: name == wlName
+                  ? (theme.isDarkMode ? WebDarkColors.surface : WebColors.surface)
+                  : (theme.isDarkMode ? WebDarkColors.navItem : WebColors.navItem),
+              fontWeight: name == wlName ? FontWeight.w700 : FontWeight.w700,
+            ),
           ),
         ),
       ),

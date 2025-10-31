@@ -121,7 +121,8 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                       expDate:
                           widget.watchListData["expDate"]?.toString() ?? "",
                       option:
-                          widget.watchListData["option"]?.toString() ?? "");
+                          widget.watchListData["option"]?.toString() ?? "",
+                      showDepthInitially: false);
 
                   // Call depth APIs for chart navigation
                   marketWatch.scripdepthsize(false);
@@ -268,19 +269,14 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                           final isIndexOrCommodity = instname == "UNDIND" || instname == "COM";
                           
                           // Get exchange and token for futures/fundamentals/options check
-                          final exch = widget.watchListData["exch"]?.toString() ?? "";
-                          final token = widget.watchListData["token"]?.toString() ?? "";
+                          // final exch = widget.watchListData["exch"]?.toString() ?? "";
+                          // final token = widget.watchListData["token"]?.toString() ?? "";
                           
                           // Check if futures available (same condition as scrip_depth_info_web)
-                          final hasFutures = marketWatch.getOptionawait(exch, token);
-                          
-                          // Check if fundamentals available (not for indices or commodities)
-                          final hasFundamentals = instname != "UNDIND" && instname != "COM";
-                          
-                          // Check if options available (same condition as futures)
-                          final hasOptions = marketWatch.getOptionawait(exch, token);
+                          // Pre-computed flags (reserved for future conditional buttons)
                           
                           final bool isPredefined = marketWatch.isPreDefWLs == "Yes";
+                          // hasFutures/hasFundamentals/hasOptions currently unused but kept for future conditional buttons
                           return Container(
                             width: 200, // Adjusted to accommodate delete icon
                             child: Row(
@@ -324,50 +320,53 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
 
                                 ],
                                 // Chart button always shows (icon only)
-                                _buildHoverButton(
-                                  iconAsset: assets.chart,
-                                  color: theme.isDarkMode
-                                      ? WebDarkColors.textSecondary
-                                      : WebColors.textSecondary,
-                                  backgroundColor: Colors.transparent,
-                                  borderColor: theme.isDarkMode
-                                      ? WebDarkColors.border
-                                      : WebColors.border,
-                                  onPressed: () async {
-                                   DepthInputArgs depthArgs = DepthInputArgs(
-                                            exch: widget.watchListData["exch"]
-                                                .toString(),
-                                            token: widget.watchListData["token"]
-                                                .toString(),
-                                            tsym: widget.watchListData["tsym"]
-                                                .toString(),
-                                            instname: widget
-                                                    .watchListData["instname"]
-                                                    ?.toString() ??
-                                                widget.watchListData["symbol"]
-                                                    .toString(),
-                                            symbol: widget
-                                                .watchListData["symbol"]
-                                                .toString(),
-                                            expDate: widget
-                                                    .watchListData["expDate"]
-                                                    ?.toString() ??
-                                                "",
-                                            option: widget
-                                                    .watchListData["option"]
-                                                    ?.toString() ??
-                                                "");
+                                // _buildHoverButton(
+                                //   iconAsset: assets.chart,
+                                //   color: theme.isDarkMode
+                                //       ? WebDarkColors.textSecondary
+                                //       : WebColors.textSecondary,
+                                //   backgroundColor: Colors.transparent,
+                                //   borderColor: theme.isDarkMode
+                                //       ? WebDarkColors.border
+                                //       : WebColors.border,
+                                //   onPressed: () async {
+                                //    DepthInputArgs depthArgs = DepthInputArgs(
+                                //             exch: widget.watchListData["exch"]
+                                //                 .toString(),
+                                //             token: widget.watchListData["token"]
+                                //                 .toString(),
+                                //             tsym: widget.watchListData["tsym"]
+                                //                 .toString(),
+                                //             instname: widget
+                                //                     .watchListData["instname"]
+                                //                     ?.toString() ??
+                                //                 widget.watchListData["symbol"]
+                                //                     .toString(),
+                                //             symbol: widget
+                                //                 .watchListData["symbol"]
+                                //                 .toString(),
+                                //             expDate: widget
+                                //                     .watchListData["expDate"]
+                                //                     ?.toString() ??
+                                //                 "",
+                                //             option: widget
+                                //                     .watchListData["option"]
+                                //                     ?.toString() ??
+                                //                 "",
+                                //             showDepthInitially: false);
 
-                                        // Only call depth APIs for full navigation, not for expansion
-                                        marketWatch.scripdepthsize(false);
-                                        await marketWatch.calldepthApis(
-                                            context, depthArgs, "");
+                                //         // Only call depth APIs for full navigation, not for expansion
+                                //         marketWatch.scripdepthsize(false);
+                                //         await marketWatch.calldepthApis(
+                                //             context, depthArgs, "");
 
-                                        // Open split view in 80% panel
-                                        ref.read(marketWatchProvider).openScripInWebPanel(context, depthArgs, "Watchlist");
-                                  },
-                                ),
-                                  const SizedBox(width: 6),
+                                //         // Open split view in 80% panel
+                                //         ref.read(marketWatchProvider).openScripInWebPanel(context, depthArgs, "Watchlist");
+                                //   },
+                                // ),
+                                // const SizedBox(width: 6),
+                                // Depth toggle button (opens with depth visible)
+                              
                                 // Expand/Collapse button
                                 // SizedBox(
                                 //   width: 28,
