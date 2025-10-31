@@ -129,7 +129,6 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                   await marketWatch.calldepthApis(context, depthArgs, "");
 
                   // Open in 80% panel as split Chart + Depth via tabs manager
-                  ref.read(marketWatchProvider).openScripInWebPanel(context, depthArgs, "Watchlist");
                 } catch (e) {
                   // Handle any errors
                   debugPrint('Error opening chart: $e');
@@ -521,7 +520,7 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                       )
                     else
                       const SizedBox(),
-                    const SizedBox(width: 16), // Increased spacing for web
+                    // const SizedBox(width: 16), // Increased spacing for web
                     // Price data
                     RepaintBoundary(
                       child: _PriceDataWidgetWeb(
@@ -1521,12 +1520,14 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
 
         try {
           // Fetch linked scripts (this loads futures data)
-          await marketWatch.fetchScripQuoteIndex(token, exch, context);
+        // await marketWatch.fetchScripQuote(token, exch, context);
+          // await marketWatch.fetchScripQuoteIndex(token, exch, context);
           if (marketWatch.getOptionawait(exch, token)) {
+        await marketWatch.fetchScripInfo(token, exch, context);
             await marketWatch.fetchLinkeScrip(token, exch, context);
             // Request futures WebSocket data
-            await marketWatch.requestWSFut(context: context, isSubscribe: true);
           }
+            await marketWatch.requestWSFut(context: context, isSubscribe: true);
 
           if (!mounted) return;
 

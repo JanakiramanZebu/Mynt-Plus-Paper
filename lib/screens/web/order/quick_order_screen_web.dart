@@ -59,22 +59,21 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
   double tik = 0.0;
   bool _surveillanceConfirmed = false;
 
-  @override
-  void initState() {
-    super.initState();
+  void _initializeFromProps() {
     isBuy = widget.orderArg.transType;
     tik = double.tryParse(widget.scripInfo.ti?.toString() ?? "0") ?? 0.0;
     lotSize = int.tryParse(widget.scripInfo.ls?.toString() ?? '1') ?? 1;
     final sfq = int.tryParse(widget.scripInfo.frzqty?.toString() ?? '1') ?? 1;
     frezQty = sfq > 1 ? (sfq / lotSize).floor() * lotSize : lotSize;
 
-    // Default order type from args if available
     if ((widget.orderArg.prd ?? '').isNotEmpty) {
       orderType = {
             'C': 'Delivery',
             'I': 'Intraday',
           }[widget.orderArg.prd] ??
           'Delivery';
+    } else {
+      orderType = 'Delivery';
     }
 
     qtyCtrl.text = widget.orderArg.isExit
@@ -89,13 +88,32 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
     priceCtrl.text = ordPrice;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      // Initialize provider state similar to PlaceOrderScreen
       ref.read(ordInputProvider).chngInvesType(
           widget.scripInfo.seg == "EQT" ? InvestType.delivery : InvestType.carryForward,
           "PlcOrder");
       ref.read(ordInputProvider).chngPriceType(priceType, widget.orderArg.exchange);
       _marginUpdate();
     });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeFromProps();
+  }
+
+  @override
+  void didUpdateWidget(covariant QuickOrderScreenWeb oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final bool tokenChanged = oldWidget.scripInfo.token != widget.scripInfo.token;
+    final bool exchChanged = oldWidget.orderArg.exchange != widget.orderArg.exchange;
+    final bool prdChanged = (oldWidget.orderArg.prd ?? '') != (widget.orderArg.prd ?? '');
+    final bool transChanged = oldWidget.orderArg.transType != widget.orderArg.transType;
+    if (tokenChanged || exchChanged || prdChanged || transChanged) {
+      setState(() {
+        _initializeFromProps();
+      });
+    }
   }
 
   @override
@@ -718,37 +736,14 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
   }
 
   Future<void> _showSurveillanceBottomSheet(ThemesProvider theme, Future<void> Function() onContinue) async {
-    await showModalBottomSheet(
+    await showDialog(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (BuildContext context) {
-        return SafeArea(
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(16),
-                topRight: Radius.circular(16),
-              ),
-              color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
+      builder: (BuildContext context) => AlertDialog(
+          content: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Center(
-                    child: Container(
-                      width: 40,
-                      height: 4,
-                      margin: const EdgeInsets.only(bottom: 20),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[300],
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                  ),
+                  
                   Row(children: [
                     const Icon(Icons.warning_outlined,
                         color: Color.fromARGB(190, 255, 170, 0), size: 24),
@@ -797,11 +792,8 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
                   SizedBox(height: MediaQuery.of(context).viewInsets.bottom),
                 ],
               ),
-            ),
           ),
         );
-      },
-    );
   }
 }
 

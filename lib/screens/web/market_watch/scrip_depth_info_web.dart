@@ -495,6 +495,8 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
               final depthData = ref.watch(marketWatchProvider).getQuotes!;
               final scripInfo = ref.watch(marketWatchProvider);
               final theme = ref.read(themeProvider);
+              final instname = widget.wlValue.instname?.toString() ?? "";
+              final isIndexOrCommodity = instname == "UNDIND" || instname == "COM";
 
               return StreamBuilder<Map>(
                   stream: ref.watch(websocketProvider).socketDataStream,
@@ -2004,42 +2006,31 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                             ),
                             ),
                             // Quick Order embedded below scrip info
-                            if (ref.read(marketWatchProvider).scripInfoModel !=
-                                null)
-                              Expanded(
-                                flex: 1,
-                                child: Builder(builder: (context) {
-                                  final lotSize = (ref
-                                          .read(marketWatchProvider)
-                                          .scripInfoModel
-                                          ?.ls
-                                          ?.toString() ??
-                                      depthData.ls ??
-                                      "1");
-                                  final orderArgs = OrderScreenArgs(
-                                    exchange: widget.wlValue.exch,
-                                    tSym: widget.wlValue.tsym,
-                                    isExit: false,
-                                    token: widget.wlValue.token,
-                                    transType: true,
-                                    lotSize: lotSize,
-                                    ltp:
-                                        "${depthData.lp ?? depthData.c ?? 0.00}",
-                                    perChange: depthData.pc ?? "0.00",
-                                    orderTpye: '',
-                                    holdQty: '',
-                                    isModify: false,
-                                    raw: {},
-                                  );
-                                  return QuickOrderScreenWeb(
-                                    orderArg: orderArgs,
-                                    scripInfo: ref
-                                        .read(marketWatchProvider)
-                                        .scripInfoModel!,
-                                    embedded: true,
-                                  );
-                                }),
-                              ),
+                            if (!isIndexOrCommodity)
+                                        Builder(builder: (context) {
+                                          final lotSize = _safeParseLotSize(ref.read(marketWatchProvider).scripInfoModel?.ls, depthData.ls, "1");
+                                          final orderArgs = OrderScreenArgs(
+                                            exchange: widget.wlValue.exch,
+                                            tSym: widget.wlValue.tsym,
+                                            isExit: false,
+                                            token: widget.wlValue.token,
+                                            transType: true,
+                                            lotSize: lotSize,
+                                            ltp: "${depthData.lp ?? depthData.c ?? 0.00}",
+                                            perChange: depthData.pc ?? "0.00",
+                                            orderTpye: '',
+                                            holdQty: '',
+                                            isModify: false,
+                                            raw: {},
+                                          );
+                                          return QuickOrderScreenWeb(
+                                            key: ValueKey("${orderArgs.exchange}|${orderArgs.token}"),
+                                            orderArg: orderArgs,
+                                            scripInfo: ref.read(marketWatchProvider).scripInfoModel!,
+                                            embedded: true,
+                                          );
+                                        }),
+                              
                           ],
                         ),
                       ),
@@ -2049,7 +2040,51 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
           )),
     );
   }
+   String _safeParseLotSize(
+      dynamic scripInfoLs, dynamic depthDataLs, String defaultValue) {
+    // Try scripInfo first
+    String scripInfoValue = _safeParseNumeric(scripInfoLs, "");
+    if (scripInfoValue.isNotEmpty && scripInfoValue != defaultValue) {
+      return scripInfoValue;
+    }
 
+    // Try depthData
+    String depthDataValue = _safeParseNumeric(depthDataLs, "");
+    if (depthDataValue.isNotEmpty && depthDataValue != defaultValue) {
+      return depthDataValue;
+    }
+
+    return defaultValue;
+  }
+
+ String _safeParseNumeric(dynamic value, String defaultValue) {
+    if (value == null) return defaultValue;
+
+    String stringValue = value.toString().trim();
+
+    // Handle common invalid values
+    if (stringValue.isEmpty ||
+        stringValue == 'null' ||
+        stringValue == '0.0' ||
+        stringValue == '0' ||
+        stringValue == 'NaN' ||
+        stringValue == 'Infinity') {
+      return defaultValue;
+    }
+
+    // Try to parse as double first, then int
+    try {
+      double.parse(stringValue);
+      return stringValue;
+    } catch (e) {
+      try {
+        int.parse(stringValue);
+        return stringValue;
+      } catch (e) {
+        return defaultValue;
+      }
+    }
+  }
   void _showSetAlertDialog(BuildContext context, GetQuotes depthData) {
     final theme = ref.read(themeProvider);
 

@@ -841,10 +841,29 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         expDate: '${flow ? raw['expDate'] : raw.expDate}',
         option: '${flow ? raw['option'] : raw.option}');
     
+    // Guard: if the same scrip is already being opened/loaded on web, just focus it
+    if (kIsWeb) {
+      final String incomingToken = depthArgs.token;
+      final String incomingExch = depthArgs.exch;
+      final bool isSameAsActive = (activeTab?.token == incomingToken);
+      if (_scripDepthloader && isSameAsActive) {
+        // Ensure panel/charts are focused without re-triggering data fetches
+        openScripInWebPanel(context, depthArgs, basket);
+        setChartScript(incomingExch, incomingToken, depthArgs.tsym);
+        singlePageloader(false);
+        return;
+      }
+    }
+
     // Check if running on web platform
     if (kIsWeb) {
       // For web, open the scrip in the panel and switch to Chart view
       chngDephBtn("Chart");
+      await fetchScripInfo(
+          depthArgs.token,
+          depthArgs.exch,
+          context,
+          true);
       openScripInWebPanel(context, depthArgs, basket);
       setChartScript(depthArgs.exch, depthArgs.token, depthArgs.tsym);
     } else {

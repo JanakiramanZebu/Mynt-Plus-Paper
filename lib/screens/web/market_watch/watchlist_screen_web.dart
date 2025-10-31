@@ -517,11 +517,11 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                       child: GestureDetector(
                         behavior: HitTestBehavior.translucent,
                         onTap: () {
-                          final mw = ref.read(marketWatchProvider);
-                          WidgetsBinding.instance.addPostFrameCallback((_) async {
-                            await mw.requestMWScrip(
-                                context: context, isSubscribe: false);
-                          });
+                          // final mw = ref.read(marketWatchProvider);
+                          // WidgetsBinding.instance.addPostFrameCallback((_) async {
+                          //   await mw.requestMWScrip(
+                          //       context: context, isSubscribe: false);
+                          // });
                           _showSearchDialog(context, ref, wlName);
                         },
                         child: Row(
