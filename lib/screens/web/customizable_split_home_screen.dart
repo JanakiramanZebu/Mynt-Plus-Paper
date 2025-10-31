@@ -1100,7 +1100,7 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
                         children: [
                           Text(
                             _getScreenTitleNullable(activeScreen),
-                            style: WebTextStyles.sub(
+                            style: WebTextStyles.title(
                               isDarkTheme: true,
                               color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
                               fontWeight: WebFonts.bold,
@@ -1121,54 +1121,65 @@ class _CustomizableSplitHomeScreenState extends ConsumerState<CustomizableSplitH
                   //     },
                   //   ),
                   // Screen selector
-                  PopupMenuButton<ScreenType>(
-                    icon: Icon(Icons.swap_horiz, color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary, size: 18),
-                    tooltip: 'Replace Screen',
-                    onSelected: (ScreenType newType) {
-                      setState(() {
-                        if (panel.screens.isNotEmpty) {
-                          panel.screens[panel.activeScreenIndex] = newType;
-                          panel.screenType = newType;
-                        } else {
-                          panel.screenType = newType;
-                          panel.screens = [newType];
-                        }
-                      });
-                      _saveLayout();
-                      _handleScreenTypeChange(newType);
-                    },
-                    itemBuilder: (context) => ScreenType.values
-                        .where((type) => _shouldShowScreenOption(type, panel))
-                        .map((type) {
-                      return PopupMenuItem(
-                        value: type,
-                        child: Row(
-                          children: [
-                            Icon(
-                              _getIconForScreenType(type), 
-                              size: 16,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(_getScreenTitle(type)),
-                          ],
-                        ),
-                      );
-                    }).toList(),
-                  ),
+                  // PopupMenuButton<ScreenType>(
+                  //   icon: Icon(Icons.swap_horiz, color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary, size: 18),
+                  //   tooltip: 'Replace Screen',
+                  //   onSelected: (ScreenType newType) {
+                  //     setState(() {
+                  //       if (panel.screens.isNotEmpty) {
+                  //         panel.screens[panel.activeScreenIndex] = newType;
+                  //         panel.screenType = newType;
+                  //       } else {
+                  //         panel.screenType = newType;
+                  //         panel.screens = [newType];
+                  //       }
+                  //     });
+                  //     _saveLayout();
+                  //     _handleScreenTypeChange(newType);
+                  //   },
+                  //   itemBuilder: (context) => ScreenType.values
+                  //       .where((type) => _shouldShowScreenOption(type, panel))
+                  //       .map((type) {
+                  //     return PopupMenuItem(
+                  //       value: type,
+                  //       child: Row(
+                  //         children: [
+                  //           Icon(
+                  //             _getIconForScreenType(type), 
+                  //             size: 16,
+                  //           ),
+                  //           const SizedBox(width: 8),
+                  //           Text(_getScreenTitle(type)),
+                  //         ],
+                  //       ),
+                  //     );
+                  //   }).toList(),
+                  // ),
                   // Remove button
-                  IconButton(
-                    icon: Icon(Icons.close, color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary, size: 18),
-                    onPressed: () {
-                      setState(() {
-                        panel.screenType = null;
-                        panel.screens.clear();
-                        panel.activeScreenIndex = 0;
-                      });
-                       if (activeScreen != null) {
-                          _cleanupScreenResources(activeScreen);
-                        }
-                      _saveLayout();
-                    },
+                  Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () {
+                        setState(() {
+                          panel.screenType = null;
+                          panel.screens.clear();
+                          panel.activeScreenIndex = 0;
+                        });
+                         if (activeScreen != null) {
+                            _cleanupScreenResources(activeScreen);
+                          }
+                        _saveLayout();
+                      },
+                      borderRadius: BorderRadius.circular(18),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Icon(
+                          Icons.close,
+                          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+                          size: 18,
+                        ),
+                      ),
+                    ),
                   ),
                 ],
               ),
