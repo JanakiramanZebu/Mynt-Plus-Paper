@@ -805,6 +805,13 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   bool _isFuturesExpanded = false;
   bool get isFuturesExpanded => _isFuturesExpanded;
 
+  bool _isDepthVisible = false;
+  bool get isDepthVisible => _isDepthVisible;
+  setIsDepthVisibleWeb(bool value) {
+    _isDepthVisible = value;
+    notifyListeners();
+  }
+
   Map<String, Map<String, dynamic>> storeQuotes = {};
 
   singlePageloader(bool value) {

@@ -49,12 +49,17 @@ class _MFSipdetScreenWebState extends ConsumerState<MFSipdetScreenWeb> {
               ),
             )
           : SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Align(
-                alignment: Alignment.topLeft,
-                child: SizedBox(
-                  width: MediaQuery.of(context).size.width * 0.7,
-                  child: DataTable(
+              scrollDirection: Axis.vertical,
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minWidth: MediaQuery.of(context).size.width * 0.7,
+                  ),
+                  child: IntrinsicWidth(
+                    child: DataTable(
                     showCheckboxColumn: false,
                     sortColumnIndex: _sipSortColumnIndex,
                     sortAscending: _sipSortAscending,
@@ -147,11 +152,12 @@ class _MFSipdetScreenWebState extends ConsumerState<MFSipdetScreenWeb> {
                         ],
                       );
                     }).toList(),
+                      ),
+                    ),
                   ),
                 ),
               ),
-            ),
-    );
+            );
   }
 
   TextStyle _cellStyle(ThemesProvider theme) => TextWidget.textStyle(

@@ -549,10 +549,10 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                 ),
                                 child: Row(
                                   mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
+                                      MainAxisAlignment.start,
                                   children: [
                                     Text(
-                                      "scrip info",
+                                      "   scrip info",
                                       style: WebTextStyles.title(
                                         isDarkTheme: theme.isDarkMode,
                                         color: theme.isDarkMode
@@ -561,30 +561,30 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                         fontWeight: WebFonts.semiBold,
                                       ),
                                     ),
-                                    if (widget.onClose != null)
-                                      Material(
-                                        color: Colors.transparent,
-                                        shape: const CircleBorder(),
-                                        child: InkWell(
-                                          customBorder: const CircleBorder(),
-                                          splashColor: theme.isDarkMode
-                                              ? Colors.white.withOpacity(0.15)
-                                              : Colors.black
-                                                  .withOpacity(0.15),
-                                          highlightColor: theme.isDarkMode
-                                              ? Colors.white.withOpacity(0.08)
-                                              : Colors.black
-                                                  .withOpacity(0.08),
-                                          onTap: widget.onClose,
-                                          child: const Padding(
-                                            padding: EdgeInsets.all(4),
-                                            child: Icon(
-                                              Icons.close,
-                                              size: 18,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
+                                    // if (widget.onClose != null)
+                                    //   Material(
+                                    //     color: Colors.transparent,
+                                    //     shape: const CircleBorder(),
+                                    //     child: InkWell(
+                                    //       customBorder: const CircleBorder(),
+                                    //       splashColor: theme.isDarkMode
+                                    //           ? Colors.white.withOpacity(0.15)
+                                    //           : Colors.black
+                                    //               .withOpacity(0.15),
+                                    //       highlightColor: theme.isDarkMode
+                                    //           ? Colors.white.withOpacity(0.08)
+                                    //           : Colors.black
+                                    //               .withOpacity(0.08),
+                                    //       onTap: widget.onClose,
+                                    //       child: const Padding(
+                                    //         padding: EdgeInsets.all(4),
+                                    //         child: Icon(
+                                    //           Icons.close,
+                                    //           size: 18,
+                                    //         ),
+                                    //       ),
+                                    //     ),
+                                    //   ),
                                   ],
                                 ),
                               ),

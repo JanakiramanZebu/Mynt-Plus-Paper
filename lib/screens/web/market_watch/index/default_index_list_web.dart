@@ -12,7 +12,7 @@ import '../../../../provider/websocket_provider.dart';
 
 import '../../../../res/web_colors.dart';
 import '../../../../res/global_font_web.dart';
-import '../../../Mobile/market_watch/index/index_bottom_sheet.dart';
+import 'index_bottom_sheet_web.dart';
 
 class DefaultIndexListWeb extends ConsumerStatefulWidget {
   final bool src;
@@ -335,21 +335,20 @@ class OptimizedIndexItemWeb extends ConsumerWidget {
         await indexProvider.fetchIndexList("NSE", context);
 
         // Pass the indexPosition directly - no conversion needed
-        await showModalBottomSheet(
-            context: context,
-            isScrollControlled: true,
-            useSafeArea: true,
-            isDismissible: true,
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(10),
-                topRight: Radius.circular(10),
+        showDialog(
+          context: context,
+          barrierDismissible: true,
+          builder: (BuildContext context) {
+            return Dialog(
+              backgroundColor: Colors.transparent,
+              child: IndexBottomSheetWeb(
+                defaultIndex: indexItem,
+                indexPosition: indexPosition, // Pass the index position
               ),
-            ),
-            builder: (_) => IndexBottomSheet(
-                  defaultIndex: indexItem,
-                  indexPosition: indexPosition, // Pass the index position
-                ));
+            );
+          },
+        );
+       
 
         await indexProvider.fetchIndexList("exit", context);
         await marketWatch.requestMWScrip(context: context, isSubscribe: true);

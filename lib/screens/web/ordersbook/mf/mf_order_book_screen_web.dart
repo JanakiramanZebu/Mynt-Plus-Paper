@@ -57,11 +57,17 @@ class _MfOrderBookScreenWebState extends ConsumerState<MfOrderBookScreenWeb> {
               ),
             )
           : SingleChildScrollView(
-              child: Align(
-                alignment: Alignment.topLeft,
-                child: SizedBox(
-                  width: MediaQuery.of(context).size.width * 0.7,
-                  child: DataTable(
+              scrollDirection: Axis.vertical,
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minWidth: MediaQuery.of(context).size.width * 0.7,
+                  ),
+                  child: IntrinsicWidth(
+                    child: DataTable(
                     showCheckboxColumn: false,
                     sortColumnIndex: _mfSortColumnIndex,
                     sortAscending: _mfSortAscending,
@@ -200,11 +206,12 @@ class _MfOrderBookScreenWebState extends ConsumerState<MfOrderBookScreenWeb> {
                         ],
                       );
                     }).toList(),
+                      ),
+                    ),
                   ),
                 ),
               ),
-            ),
-    );
+            );
   }
 
   Widget _buildSortableColumnHeader(String label, ThemesProvider theme,

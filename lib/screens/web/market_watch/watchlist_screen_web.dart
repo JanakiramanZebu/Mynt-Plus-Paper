@@ -1030,193 +1030,213 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
           child: Container(
             width: 620,
             constraints: const BoxConstraints(maxHeight: 600),
-            padding: const EdgeInsets.all(20),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Header with close icon
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Select Watchlist',
-                      style: WebTextStyles.title(
-                        isDarkTheme: theme.isDarkMode,
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(
                         color: theme.isDarkMode
-                            ? WebDarkColors.textPrimary
-                            : WebColors.textPrimary,
-                        fontWeight: FontWeight.w700,
+                            ? WebDarkColors.divider
+                            : WebColors.divider,
                       ),
                     ),
-                    Material(
-                      color: Colors.transparent,
-                      shape: const CircleBorder(),
-                      child: InkWell(
-                        customBorder: const CircleBorder(),
-                        splashColor: theme.isDarkMode
-                            ? Colors.white.withOpacity(.15)
-                            : Colors.black.withOpacity(.15),
-                        highlightColor: theme.isDarkMode
-                            ? Colors.white.withOpacity(.08)
-                            : Colors.black.withOpacity(.08),
-                        onTap: () => Navigator.of(context).pop(),
-                        child: Padding(
-                          padding: const EdgeInsets.all(8),
-                          child: Icon(
-                            Icons.close,
-                            size: 20,
-                            color: theme.isDarkMode
-                                ? WebDarkColors.iconSecondary
-                                : WebColors.iconSecondary,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-
-                // Watchlist items with radio buttons
-                Flexible(
-                  child: ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: watchlist.length,
-                    itemBuilder: (context, index) {
-                      final watchlistName = watchlist[index];
-                      final isPredefined = preDefWl.contains(watchlistName);
-                      return InkWell(
-                        onTap: () async {
-                          Navigator.of(context).pop();
-                          if (watchlistName != currentWLName) {
-                            await _handleWatchlistSelection(watchlistName, ref);
-                          }
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 10, horizontal: 8),
-                          child: Row(
-                            children: [
-                              // Radio button
-                              Radio<String>(
-                                value: watchlistName,
-                                groupValue: currentWLName,
-                                onChanged: (value) async {
-                                  Navigator.of(context).pop();
-                                  if (value != null && value != currentWLName) {
-                                    await _handleWatchlistSelection(value, ref);
-                                  }
-                                },
-                                activeColor: theme.isDarkMode
-                                    ? WebDarkColors.primary
-                                    : WebColors.primary,
-                              ),
-                              const SizedBox(width: 8),
-
-                              // Watchlist name
-                              Expanded(
-                                child: Text(
-                                  _formatWatchlistName(watchlistName),
-                                  style: WebTextStyles.para(
-                                    isDarkTheme: theme.isDarkMode,
-                                    color: theme.isDarkMode
-                                        ? WebDarkColors.textPrimary
-                                        : WebColors.textPrimary,
-                                  ),
-                                ),
-                              ),
-
-                              // Edit and Delete buttons for custom watchlists
-                              if (!isPredefined) ...[
-                                Material(
-                                  color: Colors.transparent,
-                                  shape: const CircleBorder(),
-                                  child: InkWell(
-                                    customBorder: const CircleBorder(),
-                                    splashColor: theme.isDarkMode
-                                        ? Colors.white.withOpacity(.15)
-                                        : Colors.black.withOpacity(.15),
-                                    highlightColor: theme.isDarkMode
-                                        ? Colors.white.withOpacity(.08)
-                                        : Colors.black.withOpacity(.08),
-                                    onTap: () => _showEditWatchlistDialog(
-                                        context, ref, watchlistName),
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(6),
-                                      child: Icon(
-                                        Icons.edit,
-                                        size: 18,
-                                        color: theme.isDarkMode
-                                            ? WebDarkColors.iconSecondary
-                                            : WebColors.iconSecondary,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                Material(
-                                  color: Colors.transparent,
-                                  shape: const CircleBorder(),
-                                  child: InkWell(
-                                    customBorder: const CircleBorder(),
-                                    splashColor: theme.isDarkMode
-                                        ? Colors.white.withOpacity(.15)
-                                        : Colors.black.withOpacity(.15),
-                                    highlightColor: theme.isDarkMode
-                                        ? Colors.white.withOpacity(.08)
-                                        : Colors.black.withOpacity(.08),
-                                    onTap: () => _showDeleteWatchlistDialog(
-                                        context, ref, watchlistName),
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(6),
-                                      child: Icon(
-                                        Icons.delete,
-                                        size: 18,
-                                        color: theme.isDarkMode
-                                            ? WebDarkColors.iconSecondary
-                                            : WebColors.iconSecondary,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ],
-                          ),
-                        ),
-                      );
-                    },
                   ),
-                ),
-
-                const SizedBox(height: 16),
-
-                // Create new watchlist button - only show if user has less than 10 custom watchlists
-                 if (watchlist.length - preDefWl.length < 10) // 4 predefined watchlists: My Stocks, Nifty50, Niftybank, Sensex
-                  SizedBox(
-                    width: double.infinity,
-                    height: 40,
-                    child: ElevatedButton(
-                      onPressed: () => _showCreateWatchlistDialog(context, ref),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: theme.isDarkMode
-                            ? WebDarkColors.primary
-                            : WebColors.primary,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                      ),
-                      child: Text(
-                        'Create New Watchlist',
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Select Watchlist',
                         style: WebTextStyles.sub(
                           isDarkTheme: theme.isDarkMode,
                           color: theme.isDarkMode
-                              ? WebDarkColors.surface
-                              : WebColors.surface,
+                              ? WebDarkColors.textPrimary
+                              : WebColors.textPrimary,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
-                    ),
+                      Material(
+                        color: Colors.transparent,
+                        shape: const CircleBorder(),
+                        child: InkWell(
+                          customBorder: const CircleBorder(),
+                          splashColor: theme.isDarkMode
+                              ? Colors.white.withOpacity(.15)
+                              : Colors.black.withOpacity(.15),
+                          highlightColor: theme.isDarkMode
+                              ? Colors.white.withOpacity(.08)
+                              : Colors.black.withOpacity(.08),
+                          onTap: () => Navigator.of(context).pop(),
+                          child: Padding(
+                            padding: const EdgeInsets.all(6),
+                            child: Icon(
+                              Icons.close,
+                              size: 20,
+                              color: theme.isDarkMode
+                                  ? WebDarkColors.iconSecondary
+                                  : WebColors.iconSecondary,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
+                ),
+
+                // Content area with padding
+                Padding(
+                  padding: const EdgeInsets.only(left: 16, right: 16, top: 0, bottom: 16),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Watchlist items with radio buttons
+                      Flexible(
+                        child: ListView.builder(
+                          shrinkWrap: true,
+                          itemCount: watchlist.length,
+                          itemBuilder: (context, index) {
+                            final watchlistName = watchlist[index];
+                            final isPredefined = preDefWl.contains(watchlistName);
+                            return InkWell(
+                              onTap: () async {
+                                Navigator.of(context).pop();
+                                if (watchlistName != currentWLName) {
+                                  await _handleWatchlistSelection(watchlistName, ref);
+                                }
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 10, horizontal: 8),
+                                child: Row(
+                                  children: [
+                                    // Radio button
+                                    Radio<String>(
+                                      value: watchlistName,
+                                      groupValue: currentWLName,
+                                      onChanged: (value) async {
+                                        Navigator.of(context).pop();
+                                        if (value != null && value != currentWLName) {
+                                          await _handleWatchlistSelection(value, ref);
+                                        }
+                                      },
+                                      activeColor: theme.isDarkMode
+                                          ? WebDarkColors.primary
+                                          : WebColors.primary,
+                                    ),
+                                    const SizedBox(width: 8),
+
+                                    // Watchlist name
+                                    Expanded(
+                                      child: Text(
+                                        _formatWatchlistName(watchlistName),
+                                        style: WebTextStyles.para(
+                                          isDarkTheme: theme.isDarkMode,
+                                          color: theme.isDarkMode
+                                              ? WebDarkColors.textPrimary
+                                              : WebColors.textPrimary,
+                                        ),
+                                      ),
+                                    ),
+
+                                    // Edit and Delete buttons for custom watchlists
+                                    if (!isPredefined) ...[
+                                      Material(
+                                        color: Colors.transparent,
+                                        shape: const CircleBorder(),
+                                        child: InkWell(
+                                          customBorder: const CircleBorder(),
+                                          splashColor: theme.isDarkMode
+                                              ? Colors.white.withOpacity(.15)
+                                              : Colors.black.withOpacity(.15),
+                                          highlightColor: theme.isDarkMode
+                                              ? Colors.white.withOpacity(.08)
+                                              : Colors.black.withOpacity(.08),
+                                          onTap: () => _showEditWatchlistDialog(
+                                              context, ref, watchlistName),
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(6),
+                                            child: Icon(
+                                              Icons.edit,
+                                              size: 18,
+                                              color: theme.isDarkMode
+                                                  ? WebDarkColors.iconSecondary
+                                                  : WebColors.iconSecondary,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      Material(
+                                        color: Colors.transparent,
+                                        shape: const CircleBorder(),
+                                        child: InkWell(
+                                          customBorder: const CircleBorder(),
+                                          splashColor: theme.isDarkMode
+                                              ? Colors.white.withOpacity(.15)
+                                              : Colors.black.withOpacity(.15),
+                                          highlightColor: theme.isDarkMode
+                                              ? Colors.white.withOpacity(.08)
+                                              : Colors.black.withOpacity(.08),
+                                          onTap: () => _showDeleteWatchlistDialog(
+                                              context, ref, watchlistName),
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(6),
+                                            child: Icon(
+                                              Icons.delete,
+                                              size: 18,
+                                              color: theme.isDarkMode
+                                                  ? WebDarkColors.iconSecondary
+                                                  : WebColors.iconSecondary,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      // Create new watchlist button - only show if user has less than 10 custom watchlists
+                      if (watchlist.length - preDefWl.length < 10) // 4 predefined watchlists: My Stocks, Nifty50, Niftybank, Sensex
+                        SizedBox(
+                          width: double.infinity,
+                          height: 40,
+                          child: ElevatedButton(
+                            onPressed: () => _showCreateWatchlistDialog(context, ref),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: theme.isDarkMode
+                                  ? WebDarkColors.primary
+                                  : WebColors.primary,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(5),
+                              ),
+                            ),
+                            child: Text(
+                              'Create New Watchlist',
+                              style: WebTextStyles.sub(
+                                isDarkTheme: theme.isDarkMode,
+                                color: theme.isDarkMode
+                                    ? WebDarkColors.surface
+                                    : WebColors.surface,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),

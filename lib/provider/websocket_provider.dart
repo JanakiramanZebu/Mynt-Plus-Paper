@@ -9,6 +9,8 @@ import 'package:mynt_plus/provider/fund_provider.dart';
 import 'package:mynt_plus/provider/network_state_provider.dart';
 import 'package:mynt_plus/provider/order_provider.dart';
 import 'package:mynt_plus/provider/portfolio_provider.dart';
+import 'package:mynt_plus/routes/app_routes.dart';
+import 'package:mynt_plus/routes/route_names.dart';
 import 'package:mynt_plus/sharedWidget/snack_bar.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
@@ -742,7 +744,9 @@ class WebSocketProvider extends ChangeNotifier {
 
       // Make sure we only try to refresh data once per reconnection attempt
       if (!_wsConnected) {
+       if (currentRouteName != Routes.loginScreen){
         _refreshData(context);
+        }
       }
 
       // First establish a base connection if needed

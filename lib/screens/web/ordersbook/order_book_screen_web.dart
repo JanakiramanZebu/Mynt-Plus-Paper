@@ -745,13 +745,21 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     }
 
     return SingleChildScrollView(
+      scrollDirection: Axis.vertical,
+      physics: const AlwaysScrollableScrollPhysics(),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
+        physics: const AlwaysScrollableScrollPhysics(),
         child: GestureDetector(
           onTap: () {
             // Handle tap on empty space if needed
           },
-          child: DataTable(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minWidth: MediaQuery.of(context).size.width * 0.7,
+            ),
+            child: IntrinsicWidth(
+              child: DataTable(
             showCheckboxColumn: false,
             sortColumnIndex: _orderSortColumnIndex,
             sortAscending: _orderSortAscending,
@@ -851,6 +859,8 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                 ],
               );
             }).toList(),
+              ),
+            ),
           ),
         ),
       ),
@@ -872,9 +882,17 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     }
 
     return SingleChildScrollView(
-      child: SizedBox(
-        width: MediaQuery.of(context).size.width * 0.7,
-        child: DataTable(
+      scrollDirection: Axis.vertical,
+      physics: const AlwaysScrollableScrollPhysics(),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            minWidth: MediaQuery.of(context).size.width * 0.7,
+          ),
+          child: IntrinsicWidth(
+            child: DataTable(
           showCheckboxColumn: false,
           sortColumnIndex: _tradeSortColumnIndex,
           sortAscending: _tradeSortAscending,
@@ -956,6 +974,8 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
             ],
           );
         }).toList(),
+          ),
+          ),
         ),
       ),
     );
@@ -976,9 +996,17 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     }
 
     return SingleChildScrollView(
-      child: SizedBox(
-        width: MediaQuery.of(context).size.width * 0.7,
-        child: DataTable(
+      scrollDirection: Axis.vertical,
+      physics: const AlwaysScrollableScrollPhysics(),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            minWidth: MediaQuery.of(context).size.width * 0.7,
+          ),
+          child: IntrinsicWidth(
+            child: DataTable(
           showCheckboxColumn: false,
           sortColumnIndex: _gttSortColumnIndex,
           sortAscending: _gttSortAscending,
@@ -1060,6 +1088,8 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
               ],
             );
           }).toList(),
+          ),
+          ),
         ),
       ),
     );

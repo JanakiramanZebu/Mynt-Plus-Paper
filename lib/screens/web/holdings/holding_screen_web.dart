@@ -600,100 +600,109 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
     }
 
     return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: SizedBox(
-        width: MediaQuery.of(context).size.width * 0.7,
-        child: DataTable(
-          showCheckboxColumn: false,
-          sortColumnIndex: _sortColumnIndex,
-          sortAscending: _sortAscending,
-          headingRowColor: WidgetStateProperty.all(
-            theme.isDarkMode
-                ? colors.kColorLightGreyDarkTheme
-                : colors.kColorLightGrey,
+      scrollDirection: Axis.vertical,
+      physics: const AlwaysScrollableScrollPhysics(),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            minWidth: MediaQuery.of(context).size.width * 0.7,
           ),
-          dataRowColor: WidgetStateProperty.resolveWith<Color?>(
-            (Set<WidgetState> states) {
-              if (states.contains(WidgetState.selected)) {
-                return (theme.isDarkMode
-                        ? colors.primaryDark
-                        : colors.primaryLight)
-                    .withOpacity(0.1);
-              }
-              return null;
-            },
-          ),
-          columns: [
-            DataColumn(
-              label: _buildSortableColumnHeader('Instrument', theme),
-              onSort: (columnIndex, ascending) =>
-                  _onSortTable(columnIndex, ascending),
+          child: IntrinsicWidth(
+            child: DataTable(
+            showCheckboxColumn: false,
+            sortColumnIndex: _sortColumnIndex,
+            sortAscending: _sortAscending,
+            headingRowColor: WidgetStateProperty.all(
+              theme.isDarkMode
+                  ? colors.kColorLightGreyDarkTheme
+                  : colors.kColorLightGrey,
             ),
-            DataColumn(
-              label: _buildSortableColumnHeader('Net Qty', theme),
-              onSort: (columnIndex, ascending) =>
-                  _onSortTable(columnIndex, ascending),
-            ),
-            DataColumn(
-              label: _buildSortableColumnHeader('Avg Price', theme),
-              onSort: (columnIndex, ascending) =>
-                  _onSortTable(columnIndex, ascending),
-            ),
-            DataColumn(
-              label: _buildSortableColumnHeader('LTP', theme),
-              onSort: (columnIndex, ascending) =>
-                  _onSortTable(columnIndex, ascending),
-            ),
-            DataColumn(
-              label: _buildSortableColumnHeader('Invested', theme),
-              onSort: (columnIndex, ascending) =>
-                  _onSortTable(columnIndex, ascending),
-            ),
-            DataColumn(
-              label: _buildSortableColumnHeader('Current Value', theme),
-              onSort: (columnIndex, ascending) =>
-                  _onSortTable(columnIndex, ascending),
-            ),
-            DataColumn(
-              label: _buildSortableColumnHeader('Day P&L', theme),
-              onSort: (columnIndex, ascending) =>
-                  _onSortTable(columnIndex, ascending),
-            ),
-            DataColumn(
-              label: _buildSortableColumnHeader('Day %', theme),
-              onSort: (columnIndex, ascending) =>
-                  _onSortTable(columnIndex, ascending),
-            ),
-            DataColumn(
-              label: _buildSortableColumnHeader('Overall P&L', theme),
-              onSort: (columnIndex, ascending) =>
-                  _onSortTable(columnIndex, ascending),
-            ),
-            DataColumn(
-              label: _buildSortableColumnHeader('Overall %', theme),
-              onSort: (columnIndex, ascending) =>
-                  _onSortTable(columnIndex, ascending),
-            ),
-          ],
-          rows: filteredHoldings.map((holding) {
-            return DataRow(
-              onSelectChanged: (bool? selected) {
-                _showHoldingDetail(holding);
+            dataRowColor: WidgetStateProperty.resolveWith<Color?>(
+              (Set<WidgetState> states) {
+                if (states.contains(WidgetState.selected)) {
+                  return (theme.isDarkMode
+                          ? colors.primaryDark
+                          : colors.primaryLight)
+                      .withOpacity(0.1);
+                }
+                return null;
               },
-              cells: [
-                _buildInstrumentCell(holding, theme),
-                _buildNetQtyCell(holding, theme),
-                _buildAvgPriceCell(holding, theme),
-                _buildLTPCell(holding, theme),
-                _buildInvestedCell(holding, theme),
-                _buildCurrentValueCell(holding, theme),
-                _buildDayPnLCell(holding, theme),
-                _buildDayPercentCell(holding, theme),
-                _buildOverallPnLCell(holding, theme),
-                _buildOverallPercentCell(holding, theme),
-              ],
-            );
-          }).toList(),
+            ),
+            columns: [
+              DataColumn(
+                label: _buildSortableColumnHeader('Instrument', theme),
+                onSort: (columnIndex, ascending) =>
+                    _onSortTable(columnIndex, ascending),
+              ),
+              DataColumn(
+                label: _buildSortableColumnHeader('Net Qty', theme),
+                onSort: (columnIndex, ascending) =>
+                    _onSortTable(columnIndex, ascending),
+              ),
+              DataColumn(
+                label: _buildSortableColumnHeader('Avg Price', theme),
+                onSort: (columnIndex, ascending) =>
+                    _onSortTable(columnIndex, ascending),
+              ),
+              DataColumn(
+                label: _buildSortableColumnHeader('LTP', theme),
+                onSort: (columnIndex, ascending) =>
+                    _onSortTable(columnIndex, ascending),
+              ),
+              DataColumn(
+                label: _buildSortableColumnHeader('Invested', theme),
+                onSort: (columnIndex, ascending) =>
+                    _onSortTable(columnIndex, ascending),
+              ),
+              DataColumn(
+                label: _buildSortableColumnHeader('Current Value', theme),
+                onSort: (columnIndex, ascending) =>
+                    _onSortTable(columnIndex, ascending),
+              ),
+              DataColumn(
+                label: _buildSortableColumnHeader('Day P&L', theme),
+                onSort: (columnIndex, ascending) =>
+                    _onSortTable(columnIndex, ascending),
+              ),
+              DataColumn(
+                label: _buildSortableColumnHeader('Day %', theme),
+                onSort: (columnIndex, ascending) =>
+                    _onSortTable(columnIndex, ascending),
+              ),
+              DataColumn(
+                label: _buildSortableColumnHeader('Overall P&L', theme),
+                onSort: (columnIndex, ascending) =>
+                    _onSortTable(columnIndex, ascending),
+              ),
+              DataColumn(
+                label: _buildSortableColumnHeader('Overall %', theme),
+                onSort: (columnIndex, ascending) =>
+                    _onSortTable(columnIndex, ascending),
+              ),
+            ],
+            rows: filteredHoldings.map((holding) {
+              return DataRow(
+                onSelectChanged: (bool? selected) {
+                  _showHoldingDetail(holding);
+                },
+                cells: [
+                  _buildInstrumentCell(holding, theme),
+                  _buildNetQtyCell(holding, theme),
+                  _buildAvgPriceCell(holding, theme),
+                  _buildLTPCell(holding, theme),
+                  _buildInvestedCell(holding, theme),
+                  _buildCurrentValueCell(holding, theme),
+                  _buildDayPnLCell(holding, theme),
+                  _buildDayPercentCell(holding, theme),
+                  _buildOverallPnLCell(holding, theme),
+                  _buildOverallPercentCell(holding, theme),
+                ],
+              );
+            }).toList(),
+          ),
+          ),
         ),
       ),
     );

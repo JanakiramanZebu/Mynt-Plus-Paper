@@ -24,7 +24,7 @@ class ChartWithDepthWeb extends ConsumerStatefulWidget {
 class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with TickerProviderStateMixin {
   String? _loadedToken;
   TabController? _tabController;
-  bool _isDepthVisible = false; // Controlled by wlValue.showDepthInitially
+  // bool _isDepthVisible = false; // Controlled by wlValue.showDepthInitially
 
   @override
   void initState() {
@@ -33,7 +33,7 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
     Future.microtask(() async {
       await _ensureDataLoaded();
     });
-    _isDepthVisible = widget.wlValue.showDepthInitially;
+    ref.read(marketWatchProvider).setIsDepthVisibleWeb(ref.read(marketWatchProvider).isDepthVisible);
   }
 
   @override
@@ -42,9 +42,7 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
     if (oldWidget.wlValue.token != widget.wlValue.token ||
         oldWidget.wlValue.exch != widget.wlValue.exch) {
       // Reset depth visibility based on incoming args when scrip changes
-      setState(() {
-        _isDepthVisible = widget.wlValue.showDepthInitially;
-      });
+     ref.read(marketWatchProvider).setIsDepthVisibleWeb(ref.read(marketWatchProvider).isDepthVisible);
       
       Future.microtask(() async {
         await _ensureDataLoaded(force: true);
@@ -108,210 +106,216 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
 
     return Container(
       color: theme.isDarkMode ? WebDarkColors.background : WebColors.background,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+      child: Stack(
         children: [
-          // Chart area - 100% when depth hidden, 75% when visible
-          Expanded(
-            flex: _isDepthVisible ? 3 : 1,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Header: Left 50% scrip title, Right 50% tabs (when available)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: theme.isDarkMode ? WebDarkColors.navBackground : WebColors.navBackground,
-                    border: Border(
-                      bottom: BorderSide(
-                        color: theme.isDarkMode ? WebDarkColors.navDivider : WebColors.navDivider,
-                        width: 1,
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Chart area - 100% when depth hidden, 75% when visible
+              Expanded(
+                flex: mw.isDepthVisible ? 3 : 1,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Header: Left 50% scrip title, Right 50% tabs (when available)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: theme.isDarkMode ? WebDarkColors.navBackground : WebColors.navBackground,
+                        border: Border(
+                          bottom: BorderSide(
+                            color: theme.isDarkMode ? WebDarkColors.navDivider : WebColors.navDivider,
+                            width: 1,
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              "${widget.wlValue.symbol.replaceAll('-EQ', '').toUpperCase()}${widget.wlValue.expDate} ${widget.wlValue.option} ${widget.wlValue.exch}",
-                              overflow: TextOverflow.ellipsis,
-                              style: WebTextStyles.title(
-                                isDarkTheme: theme.isDarkMode,
-                                color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
-                                fontWeight: WebFonts.bold,
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  "${widget.wlValue.symbol.replaceAll('-EQ', '').toUpperCase()}${widget.wlValue.expDate} ${widget.wlValue.option} ${widget.wlValue.exch}",
+                                  overflow: TextOverflow.ellipsis,
+                                  style: WebTextStyles.title(
+                                    isDarkTheme: theme.isDarkMode,
+                                    color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+                                    fontWeight: WebFonts.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                StreamBuilder<Map>(
+                                  stream: ref.watch(websocketProvider).socketDataStream,
+                                  builder: (context, snapshot) {
+                                    final socketDatas = snapshot.data ?? {};
+                                    String ltp = depthData?.lp ?? depthData?.c ?? '0.00';
+                                    String ch = depthData?.chng ?? '0.00';
+                                    String pc = depthData?.pc ?? '0.00';
+                                    if (socketDatas.containsKey(widget.wlValue.token)) {
+                                      final s = socketDatas[widget.wlValue.token];
+                                      ltp = "${s['lp'] ?? s['c'] ?? ltp}";
+                                      ch = "${s['chng'] ?? ch}";
+                                      pc = "${s['pc'] ?? pc}";
+                                    }
+                                    final ltpStr = (double.tryParse("$ltp") ?? 0).toStringAsFixed(2);
+                                    final chVal = double.tryParse("$ch") ?? 0;
+                                    final pcVal = double.tryParse("$pc") ?? 0;
+                                    final chStr = chVal.toStringAsFixed(2);
+                                    final pcStr = pcVal.toStringAsFixed(2);
+                                    final isUp = pcVal >= 0;
+          
+                                    return Row(
+                                      children: [
+                                        Text(
+                                          ltpStr,
+                                          style: WebTextStyles.sub(
+                                            isDarkTheme: theme.isDarkMode,
+                                            color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+                                            fontWeight: WebFonts.bold,
+                                            letterSpacing: 0.0,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          "$chStr (${pcStr}%)",
+                                          style: WebTextStyles.para(
+                                            isDarkTheme: theme.isDarkMode,
+                                            color: isUp
+                                                ? (theme.isDarkMode ? WebDarkColors.success : WebColors.success)
+                                                : (theme.isDarkMode ? WebDarkColors.error : WebColors.error),
+                                            fontWeight: WebFonts.bold,
+                                            letterSpacing: 0.0,
+                                          ),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                          // Depth toggle icon
+                          const SizedBox(width: 12),        
+                          if (hasOptions)
+                            Container(
+                              width: 260,
+                              height: 45,
+                              padding: const EdgeInsets.all(2),
+                              decoration: BoxDecoration(
+                                color: theme.isDarkMode
+                                    ? WebDarkColors.navBackground
+                                    : WebColors.navBackground,
+                                borderRadius: BorderRadius.circular(24),
+                              ),
+                              child: TabBar(
+                                controller: _tabController,
+                                isScrollable: false,
+                                labelColor:  WebDarkColors.textPrimary,
+                                labelStyle: const TextStyle(
+                                  fontWeight: WebFonts.bold,
+                                  fontSize: WebFonts.subSize,
+                                ),
+                                unselectedLabelColor: theme.isDarkMode
+                                    ? WebDarkColors.textSecondary
+                                    : WebColors.textSecondary,
+                                unselectedLabelStyle: const TextStyle(
+                                  fontWeight: WebFonts.bold,
+                                  fontSize: WebFonts.subSize,
+                                ),
+                                indicator: BoxDecoration(
+                                  color: WebColors.primary,
+                                  borderRadius: BorderRadius.circular(5),
+                                ),
+                                indicatorPadding:
+                                    const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
+                                indicatorSize: TabBarIndicatorSize.tab,
+                                labelPadding:
+                                    const EdgeInsets.symmetric(horizontal: 10),
+                                tabs: const [
+                                  Tab(text: 'Chart'),
+                                  Tab(text: 'Options'),
+                                ],
                               ),
                             ),
-                            const SizedBox(height: 4),
-                            StreamBuilder<Map>(
-                              stream: ref.watch(websocketProvider).socketDataStream,
-                              builder: (context, snapshot) {
-                                final socketDatas = snapshot.data ?? {};
-                                String ltp = depthData?.lp ?? depthData?.c ?? '0.00';
-                                String ch = depthData?.chng ?? '0.00';
-                                String pc = depthData?.pc ?? '0.00';
-                                if (socketDatas.containsKey(widget.wlValue.token)) {
-                                  final s = socketDatas[widget.wlValue.token];
-                                  ltp = "${s['lp'] ?? s['c'] ?? ltp}";
-                                  ch = "${s['chng'] ?? ch}";
-                                  pc = "${s['pc'] ?? pc}";
-                                }
-                                final ltpStr = (double.tryParse("$ltp") ?? 0).toStringAsFixed(2);
-                                final chVal = double.tryParse("$ch") ?? 0;
-                                final pcVal = double.tryParse("$pc") ?? 0;
-                                final chStr = chVal.toStringAsFixed(2);
-                                final pcStr = pcVal.toStringAsFixed(2);
-                                final isUp = pcVal >= 0;
-
-                                return Row(
-                                  children: [
-                                    Text(
-                                      ltpStr,
-                                      style: WebTextStyles.sub(
-                                        isDarkTheme: theme.isDarkMode,
-                                        color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
-                                        fontWeight: WebFonts.bold,
-                                        letterSpacing: 0.0,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      "$chStr (${pcStr}%)",
-                                      style: WebTextStyles.para(
-                                        isDarkTheme: theme.isDarkMode,
-                                        color: isUp
-                                            ? (theme.isDarkMode ? WebDarkColors.success : WebColors.success)
-                                            : (theme.isDarkMode ? WebDarkColors.error : WebColors.error),
-                                        fontWeight: WebFonts.bold,
-                                        letterSpacing: 0.0,
-                                      ),
-                                    ),
-                                  ],
-                                );
-                              },
-                            ),
-                          ],
-                        ),
+                        ],
                       ),
-                      // Depth toggle icon
-                      Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          customBorder: const CircleBorder(),
-                          splashColor: (theme.isDarkMode ? Colors.white : Colors.black).withOpacity(.15),
-                          highlightColor: (theme.isDarkMode ? Colors.white : Colors.black).withOpacity(.08),
-                          onTap: () {
-                            setState(() => _isDepthVisible = !_isDepthVisible);
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Icon(
-                              _isDepthVisible ? Icons.view_sidebar : Icons.view_sidebar_outlined,
-                              size: 18,
-                              color: _isDepthVisible
-                                  ? (theme.isDarkMode ? WebDarkColors.primary : WebColors.primary)
-                                  : (theme.isDarkMode ? WebDarkColors.iconSecondary : WebColors.iconSecondary),
-                            ),
-                          ),
-                        ),
-                      ),
-
-
-                      const SizedBox(width: 12),        
-                      if (hasOptions)
-                        Container(
-                          width: 260,
-                          height: 45,
-                          padding: const EdgeInsets.all(2),
-                          decoration: BoxDecoration(
-                            color: theme.isDarkMode
-                                ? WebDarkColors.navBackground
-                                : WebColors.navBackground,
-                            borderRadius: BorderRadius.circular(24),
-                          ),
-                          child: TabBar(
-                            controller: _tabController,
-                            isScrollable: false,
-                            labelColor:  WebDarkColors.textPrimary,
-                            labelStyle: const TextStyle(
-                              fontWeight: WebFonts.bold,
-                              fontSize: WebFonts.subSize,
-                            ),
-                            unselectedLabelColor: theme.isDarkMode
-                                ? WebDarkColors.textSecondary
-                                : WebColors.textSecondary,
-                            unselectedLabelStyle: const TextStyle(
-                              fontWeight: WebFonts.bold,
-                              fontSize: WebFonts.subSize,
-                            ),
-                            indicator: BoxDecoration(
-                              color: WebColors.primary,
-                              borderRadius: BorderRadius.circular(5),
-                            ),
-                            indicatorPadding:
-                                const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
-                            indicatorSize: TabBarIndicatorSize.tab,
-                            labelPadding:
-                                const EdgeInsets.symmetric(horizontal: 10),
-                            tabs: const [
-                              Tab(text: 'Chart'),
-                              Tab(text: 'Options'),
-                            ],
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-                // Content area
-                Expanded(
-                  child: hasOptions && _tabController != null
-                      ? TabBarView(
-                          controller: _tabController,
-                          children: [
-                            ChartScreenWebViews(
+                    ),
+                    // Content area
+                    Expanded(
+                      child: hasOptions && _tabController != null
+                          ? TabBarView(
+                              controller: _tabController,
+                              children: [
+                                ChartScreenWebViews(
+                                  chartArgs: ChartArgs(
+                                    exch: widget.wlValue.exch,
+                                    tsym: widget.wlValue.tsym,
+                                    token: widget.wlValue.token,
+                                  ),
+                                ),
+                                OptionChainSSWeb(wlValue: widget.wlValue),
+                              ],
+                            )
+                          : ChartScreenWebViews(
                               chartArgs: ChartArgs(
                                 exch: widget.wlValue.exch,
                                 tsym: widget.wlValue.tsym,
                                 token: widget.wlValue.token,
                               ),
                             ),
-                            OptionChainSSWeb(wlValue: widget.wlValue),
-                          ],
-                        )
-                      : ChartScreenWebViews(
-                          chartArgs: ChartArgs(
-                            exch: widget.wlValue.exch,
-                            tsym: widget.wlValue.tsym,
-                            token: widget.wlValue.token,
-                          ),
-                        ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          ),
-          // Divider between chart and depth (only when depth is visible)
-          if (_isDepthVisible)
-            Container(
-              width: 1,
-              color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
-            ),
-          // Depth/Overview area - 25% (only when visible)
-          if (_isDepthVisible)
-            Expanded(
-              flex: 1,
-              child: ScripDepthInfoWeb(
-                wlValue: widget.wlValue,
-                isBasket: widget.isBasket,
-                onClose: () {
-                  setState(() {
-                    _isDepthVisible = false;
-                  });
-                },
               ),
-            ),
+              // Divider between chart and depth (only when depth is visible)
+              if (mw.isDepthVisible)
+                Container(
+                  width: 1,
+                  color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
+                ),
+              // Depth/Overview area - 25% (only when visible)
+              if (mw.isDepthVisible)
+                Expanded(
+                  flex: 1,
+                  child: ScripDepthInfoWeb(
+                    wlValue: widget.wlValue,
+                    isBasket: widget.isBasket,
+                    onClose: () {
+                      mw.setIsDepthVisibleWeb(false);
+                    },
+                  ),
+                ),
+            ],
+          ),
+          Positioned(
+                   top: 3,
+                   right: !mw.isDepthVisible ? 0 : 375,
+                   child: InkWell(
+                     customBorder: const RoundedRectangleBorder(
+                       borderRadius: BorderRadius.only(
+                         topLeft: Radius.circular(0),
+                         bottomLeft: Radius.circular(0),
+                       ),
+                     ),
+                     // splashColor: mw.isDepthVisible ? (theme.isDarkMode ? Colors.white : Colors.black).withOpacity(.15) : null,
+                     // highlightColor: mw.isDepthVisible ? (theme.isDarkMode ? Colors.white : Colors.black).withOpacity(.08) : null,
+                     onTap: () {
+                       ref.read(marketWatchProvider).setIsDepthVisibleWeb(!mw.isDepthVisible);
+                     },
+                     child: Padding(
+                       padding: const EdgeInsets.all(8.0),
+                       child: Icon(
+                         mw.isDepthVisible ? Icons.chevron_right : Icons.chevron_left,
+                         size:30,
+                         color: mw.isDepthVisible
+                             ? (theme.isDarkMode ? WebDarkColors.primary : WebColors.primary)
+                             : (theme.isDarkMode ? WebDarkColors.iconSecondary : WebColors.iconSecondary),
+                       ),
+                     ),
+                   ),
+                 ),
         ],
       ),
     );
