@@ -4,8 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mynt_plus/models/marketwatch_model/market_watch_scrip_model.dart';
-import 'package:mynt_plus/screens/Mobile/order_screen/place_order_screen.dart';
-import 'package:mynt_plus/screens/web/order/quick_order_screen_web.dart';
+import 'package:mynt_plus/screens/web/order/place_order_screen_web.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // Web-only imports
@@ -501,7 +500,7 @@ class _ChartScreenWebViewsState extends State<ChartScreenWebViews> {
           ),
           child: SizedBox(
             width: MediaQuery.of(context).size.width * 0.3,
-            child: PlaceOrderScreen(
+            child: PlaceOrderScreenWeb(
               orderArg: orderArgs,
               scripInfo: ref.read(marketWatchProvider).scripInfoModel!,
               isBasket: "",

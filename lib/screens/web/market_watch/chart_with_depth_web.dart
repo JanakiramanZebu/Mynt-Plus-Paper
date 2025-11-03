@@ -203,6 +203,7 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
                               width: 260,
                               height: 45,
                               padding: const EdgeInsets.all(2),
+                              margin: const EdgeInsets.only(right: 16),
                               decoration: BoxDecoration(
                                 color: theme.isDarkMode
                                     ? WebDarkColors.navBackground

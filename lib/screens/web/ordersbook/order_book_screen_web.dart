@@ -889,7 +889,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
         physics: const AlwaysScrollableScrollPhysics(),
         child: ConstrainedBox(
           constraints: BoxConstraints(
-            minWidth: MediaQuery.of(context).size.width * 0.7,
+            minWidth: MediaQuery.of(context).size.width * 0.8,
           ),
           child: IntrinsicWidth(
             child: DataTable(

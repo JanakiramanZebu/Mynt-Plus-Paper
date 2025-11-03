@@ -112,6 +112,7 @@ class Routes {
   static const String setAlertWeb = 'setAlertWeb';
 
   static const String placeOrderScreen = 'PlaceOrderScreen';
+  static const String placeOrderScreenWeb = 'PlaceOrderScreenWeb';
   static const String orderConfirmation = 'OrderConfirmation';
   // static const String gttOrderScreen = 'GTTOrderScreen';
   static const String modifyOrder = 'ModifyOrder';

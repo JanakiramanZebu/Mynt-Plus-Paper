@@ -1,0 +1,292 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mynt_plus/provider/fund_provider.dart';
+import 'package:mynt_plus/provider/order_provider.dart';
+import 'package:mynt_plus/provider/thems.dart';
+import 'package:mynt_plus/res/global_font_web.dart';
+import 'package:mynt_plus/res/web_colors.dart';
+
+class MarginDetailsDialogWeb extends ConsumerWidget {
+  const MarginDetailsDialogWeb({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.watch(themeProvider);
+    final orderMargin = ref.watch(orderProvider).orderMarginModel;
+    final orderBrokerage = ref.watch(orderProvider).getBrokerageModel;
+    final clientFundDetail = ref.watch(fundProvider).fundDetailModel;
+
+    return Dialog(
+      backgroundColor:
+          theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 520),
+        child: Container(
+          width: 520,
+          padding: const EdgeInsets.only(bottom: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Header
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(
+                      color: theme.isDarkMode
+                          ? WebDarkColors.divider
+                          : WebColors.divider,
+                    ),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Order Margin',
+                      style: WebTextStyles.custom(
+                        fontSize: 13,
+                        isDarkTheme: theme.isDarkMode,
+                        color: theme.isDarkMode
+                            ? WebDarkColors.textPrimary
+                            : WebColors.textPrimary,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    Material(
+                      color: Colors.transparent,
+                      shape: const CircleBorder(),
+                      child: InkWell(
+                        customBorder: const CircleBorder(),
+                        onTap: () => Navigator.of(context).pop(),
+                        child: Padding(
+                          padding: const EdgeInsets.all(6),
+                          child: Icon(
+                            Icons.close,
+                            size: 20,
+                            color: theme.isDarkMode
+                                ? WebDarkColors.iconSecondary
+                                : WebColors.iconSecondary,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Content
+              Flexible(
+                child: SingleChildScrollView(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _sectionCard(
+                        context: context,
+                        theme: theme,
+                        title: 'Summary',
+                        child: Column(
+                          children: [
+                            _kvRow(
+                              theme,
+                              'Required',
+                              '${orderMargin?.ordermargin ?? 0.00}',
+                            ),
+                            const SizedBox(height: 12),
+                            _kvRow(
+                              theme,
+                              'Balance',
+                              '${clientFundDetail?.avlMrg ?? 0.00}',
+                            ),
+                            if (orderMargin?.remarks == 'Insufficient Balance')
+                              Padding(
+                                padding: const EdgeInsets.only(top: 12),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      'Remarks',
+                                      style: WebTextStyles.custom(
+                                        fontSize: 13,
+                                        isDarkTheme: theme.isDarkMode,
+                                        color: theme.isDarkMode
+                                            ? WebDarkColors.textSecondary
+                                            : WebColors.textSecondary,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    Flexible(
+                                      child: Text(
+                                        orderMargin?.remarks ?? '',
+                                        textAlign: TextAlign.right,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: WebTextStyles.custom(
+                                          fontSize: 13,
+                                          isDarkTheme: theme.isDarkMode,
+                                          color: theme.isDarkMode
+                                              ? WebDarkColors.error
+                                              : WebColors.error,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      if (orderBrokerage != null &&
+                          orderBrokerage.emsg !=
+                              'Error Occurred : Invalid order details/brokerage plan not set')
+                        _sectionCard(
+                          context: context,
+                          theme: theme,
+                          title: 'Approx Charges',
+                          child: Column(
+                            children: [
+                              _kvRow(theme, 'Brokerage Amt',
+                                  '${orderBrokerage.brkageAmt}'),
+                              const Divider(height: 20),
+                              _kvRow(theme, 'STT total',
+                                  '${orderBrokerage.sttAmt}'),
+                              const Divider(height: 20),
+                              _kvRow(theme, 'Exchange charges',
+                                  '${orderBrokerage.exchChrg}'),
+                              const Divider(height: 20),
+                              _kvRow(theme, 'SEBI charges',
+                                  '${orderBrokerage.sebiChrg}'),
+                              const Divider(height: 20),
+                              _kvRow(theme, 'Stamp duty',
+                                  '${orderBrokerage.stampDuty}'),
+                              const Divider(height: 20),
+                              _kvRow(theme, 'Clearing charges',
+                                  '${orderBrokerage.clrChrg}'),
+                              const Divider(height: 20),
+                              _kvRow(theme, 'GST', '${orderBrokerage.gst}'),
+                              const SizedBox(height: 12),
+                              Text(
+                                'View exact charges in contract note at the end of the day',
+                                textAlign: TextAlign.center,
+                                style: WebTextStyles.custom(
+                                  fontSize: 12,
+                                  isDarkTheme: theme.isDarkMode,
+                                  color: theme.isDarkMode
+                                      ? WebDarkColors.textSecondary
+                                      : WebColors.textSecondary,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      else
+                        _sectionCard(
+                          context: context,
+                          theme: theme,
+                          title: 'Approx Charges',
+                          child: Text(
+                            'Get your brokerage details updated. Reach out to our support.',
+                            style: WebTextStyles.custom(
+                              fontSize: 12,
+                              isDarkTheme: theme.isDarkMode,
+                              color: theme.isDarkMode
+                                  ? WebDarkColors.textSecondary
+                                  : WebColors.textSecondary,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _sectionCard({
+    required BuildContext context,
+    required ThemesProvider theme,
+    required String title,
+    required Widget child,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: theme.isDarkMode
+            ? WebDarkColors.backgroundTertiary
+            : WebColors.backgroundTertiary,
+        borderRadius: BorderRadius.circular(5),
+        border: Border.all(
+          color:
+              theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: WebTextStyles.custom(
+              fontSize: 13,
+              isDarkTheme: theme.isDarkMode,
+              color: theme.isDarkMode
+                  ? WebDarkColors.textPrimary
+                  : WebColors.textPrimary,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 12),
+          child,
+        ],
+      ),
+    );
+  }
+
+  Widget _kvRow(ThemesProvider theme, String k, String v) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          k,
+          style: WebTextStyles.custom(
+            fontSize: 13,
+            isDarkTheme: theme.isDarkMode,
+            color: theme.isDarkMode
+                ? WebDarkColors.textSecondary
+                : WebColors.textSecondary,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        Text(
+          v,
+          textAlign: TextAlign.right,
+          style: WebTextStyles.custom(
+            fontSize: 13,
+            isDarkTheme: theme.isDarkMode,
+            color: theme.isDarkMode
+                ? WebDarkColors.textPrimary
+                : WebColors.textPrimary,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+

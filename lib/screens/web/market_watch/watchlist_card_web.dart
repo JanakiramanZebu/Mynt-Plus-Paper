@@ -2004,6 +2004,7 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
           widget.watchListData['exch']?.toString() ?? "",
           context,
           true);
+      await ref.read(marketWatchProvider).fetchScripQuote(widget.watchListData['token']?.toString() ?? "", widget.watchListData['exch']?.toString() ?? "", context);
 
       // Ensure scripInfo is loaded before proceeding
       final scripInfo = ref.read(marketWatchProvider).scripInfoModel;

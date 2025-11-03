@@ -15,6 +15,7 @@ import 'package:mynt_plus/screens/Mobile/mutual_fund/order_single_page.dart';
 import 'package:mynt_plus/screens/Mobile/mutual_fund/redeem_new_bottomsheet.dart';
 import 'package:mynt_plus/screens/Mobile/order_screen/order_confirmation_screen.dart';
 import 'package:mynt_plus/screens/Mobile/profile_screen/app_webview/ipo_webview.dart';
+import 'package:mynt_plus/screens/web/order/place_order_screen_web.dart';
 import 'package:mynt_plus/screens/web/ordersbook/pending_alert_detail_screen_web.dart';
 // import 'package:mynt_plus/screens/web/grid_dashboard_web.dart';
 import '../main.dart'; // Import for FirebaseHelper
@@ -331,6 +332,15 @@ class AppRoutes {
       case Routes.placeOrderScreen:
         return _createRoute(
           pageBuilder: (_, __, ___) => PlaceOrderScreen(
+            orderArg: args['orderArg'],
+            scripInfo: args['scripInfo'],
+            isBasket: args["isBskt"],
+          ),
+          beginOffset: const Offset(0.0, 1.0),
+        );
+      case Routes.placeOrderScreenWeb:
+        return _createRoute(
+          pageBuilder: (_, __, ___) => PlaceOrderScreenWeb(
             orderArg: args['orderArg'],
             scripInfo: args['scripInfo'],
             isBasket: args["isBskt"],

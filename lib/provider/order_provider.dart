@@ -6,6 +6,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:mynt_plus/provider/thems.dart';
+import 'package:mynt_plus/res/web_colors.dart';
+import 'package:mynt_plus/screens/web/order/order_confirmation_screen_web.dart';
+import 'package:mynt_plus/utils/custom_navigator.dart';
 import 'package:public_ip_address/public_ip_address.dart';
 import '../api/core/api_export.dart';
 import '../locator/constant.dart';
@@ -787,7 +791,7 @@ class OrderProvider extends DefaultChangeNotifier {
   }
 
   Future fetchPlaceOrder(BuildContext context, PlaceOrderInput placeOrderInput,
-      bool isExit) async {
+      bool isExit, {bool quickOrder = false}) async {
     try {
       placeOrderInput.channel = defaultTargetPlatform == TargetPlatform.android
           ? '${ref.read(authProvider).deviceInfo["brand"]}'
@@ -825,13 +829,20 @@ class OrderProvider extends DefaultChangeNotifier {
 
         // }
 
+        if (!quickOrder) {
         Navigator.pop(context);
-
+        }
+        if(kIsWeb) {
+          showDialog(
+      context: context,
+      builder: (BuildContext context) => OrderConfirmationScreenWeb(orderData: [_placeOrderModel!]),
+          );
+        }else{
         // Navigate to order confirmation screen
         Navigator.pushNamed(context, Routes.orderConfirmation, arguments: {
           'orderData': [_placeOrderModel!],
         });
-
+        }
         HapticFeedback.heavyImpact();
         SystemSound.play(SystemSoundType.click);
       } else {
@@ -942,9 +953,17 @@ class OrderProvider extends DefaultChangeNotifier {
 
         // Navigate to order confirmation screen with all sliced orders
         if (context.mounted) {
-          Navigator.pushNamed(context, Routes.orderConfirmation, arguments: {
-            'orderData': _sliceOrderResults,
-          });
+         if(kIsWeb) {
+          showDialog(
+      context: context,
+        builder: (BuildContext context) => OrderConfirmationScreenWeb(orderData: _sliceOrderResults),
+          );
+        }else{
+        // Navigate to order confirmation screen
+        Navigator.pushNamed(context, Routes.orderConfirmation, arguments: {
+          'orderData': _sliceOrderResults,
+        });
+        }
         }
       } else {
         // Show error if no orders were successful
@@ -1324,9 +1343,16 @@ class OrderProvider extends DefaultChangeNotifier {
         //     .showSnackBar(successMessage(context, 'Order Modified'));
         // Navigator.pop(context);
 
+        if(kIsWeb) {
+          showDialog(
+      context: context,
+        builder: (BuildContext context) => OrderConfirmationScreenWeb(orderData: [modifyOrderData]),
+          );
+        }else{
         Navigator.pushNamed(context, Routes.orderConfirmation, arguments: {
           'orderData': [modifyOrderData],
         });
+        }
       } else {
         if (_modifyOrderModel!.emsg ==
             "Session Expired :  Invalid Session Key") {

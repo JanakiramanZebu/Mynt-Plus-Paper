@@ -14,6 +14,7 @@ import 'package:mynt_plus/provider/network_state_provider.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/provider/fund_provider.dart';
 import 'package:mynt_plus/provider/websocket_provider.dart';
+import 'package:mynt_plus/provider/market_watch_provider.dart';
 import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/res/global_font_web.dart';
 import 'package:mynt_plus/sharedWidget/cust_text_formfield.dart';
@@ -21,12 +22,11 @@ import 'package:mynt_plus/sharedWidget/custom_widget_button.dart';
 import 'package:mynt_plus/sharedWidget/snack_bar.dart';
 import 'package:mynt_plus/sharedWidget/enums.dart';
 import 'package:mynt_plus/sharedWidget/custom_exch_badge.dart';
-import 'package:mynt_plus/screens/Mobile/order_screen/margin_charges_bottom_sheet.dart';
-import 'package:mynt_plus/screens/Mobile/market_watch/slice_order_pop.dart';
 import 'package:mynt_plus/utils/responsive_navigation.dart';
 
 import '../../../res/web_colors.dart';
 import 'margin_charges_sheet_web.dart';
+import 'slice_order_sheet_web.dart';
 
 class QuickOrderScreenWeb extends ConsumerStatefulWidget {
   final OrderScreenArgs orderArg;
@@ -967,6 +967,10 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
       return;
     }
 
+    // Check if quote is available (similar to place_order_screen_web.dart)
+    // Only show surveillance if quote exists (quote != null)
+    final quote = ref.read(marketWatchProvider).getQuotes?.ordMsg;
+
     // Slice order flow if qty exceeds freeze quantity
     final frezQtyOrderSliceMaxLimit = orderProv.frezQtyOrderSliceMaxLimit;
     int slices = 0;
@@ -981,7 +985,7 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
         return;
       }
       // Confirm surveillance before showing slice sheet
-      if (!_surveillanceConfirmed) {
+      if (quote != null && !_surveillanceConfirmed) {
         await _showSurveillanceBottomSheet(theme, () async {
           _surveillanceConfirmed = true;
           await _openSliceSheet(theme, enteredQty, slices, remainder);
@@ -993,7 +997,7 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
     }
 
     // Surveillance confirmation (one-time)
-    if (!_surveillanceConfirmed) {
+    if (quote != null && !_surveillanceConfirmed) {
       await _showSurveillanceBottomSheet(theme, () async {
         _surveillanceConfirmed = true;
         await _placeOrder(theme); // re-enter after confirmation
@@ -1066,7 +1070,7 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
     );
     await ref
         .read(orderProvider)
-        .fetchPlaceOrder(context, input, widget.orderArg.isExit);
+        .fetchPlaceOrder(context, input, widget.orderArg.isExit, quickOrder: true);
     ref.read(orderProvider).setOrderloader(false);
     if (mounted) Navigator.of(context).maybePop();
   }
@@ -1086,14 +1090,9 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
 
   Future<void> _openSliceSheet(
       ThemesProvider theme, int enteredQty, int slices, int remainder) async {
-    await showModalBottomSheet(
-      isScrollControlled: true,
-      useSafeArea: true,
-      isDismissible: true,
-      shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+    await showDialog(
       context: context,
-      builder: (context) => SliceOrderSheet(
+      builder: (context) => SliceOrderSheetWeb(
         scripInfo: widget.scripInfo,
         isBuy: isBuy ?? true,
         quantity: slices,
