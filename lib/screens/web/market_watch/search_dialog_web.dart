@@ -32,15 +32,16 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
   int _tabCount = 5;
   final TextEditingController _textController = TextEditingController();
   final ScrollController _tabScrollController = ScrollController();
+  final ScrollController _scrollController = ScrollController();
   final double _tabWidth = 75.0;
   Preferences pref = Preferences();
   late bool scripisAscending;
   late bool pricepisAscending;
   late bool perchangisAscending;
   
-  // Dragging state
-  Offset? _position;
-  bool _isDragging = false;
+  // Dragging state - COMMENTED OUT (draggable functionality disabled)
+  // Offset? _position;
+  // bool _isDragging = false;
 
   @override
   void initState() {
@@ -71,6 +72,7 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
   @override
   void dispose() {
     _tabScrollController.dispose();
+    _scrollController.dispose();
     _tabController.dispose();
     _textController.dispose();
     super.dispose();
@@ -107,15 +109,15 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
     final searchScrip = ref.watch(marketWatchProvider);
     
     // Set initial position to center if not set
-    if (_position == null) {
-      final screenSize = MediaQuery.of(context).size;
-      const dialogWidth = 800.0;
-      const dialogHeight = 600.0;
-      _position = Offset(
-        (screenSize.width - dialogWidth) / 2,
-        (screenSize.height - dialogHeight) / 2,
-      );
-    }
+    // if (_position == null) {
+    //   final screenSize = MediaQuery.of(context).size;
+    //   const dialogWidth = 800.0;
+    //   const dialogHeight = 600.0;
+    //   _position = Offset(
+    //     (screenSize.width - dialogWidth) / 2,
+    //     (screenSize.height - dialogHeight) / 2,
+    //   );
+    // }
     
     return Material(
       color: Colors.transparent,
@@ -134,117 +136,126 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
             ),
           ),
           
-          // Draggable Dialog
-          Positioned(
-            left: _position!.dx,
-            top: _position!.dy,
-            child: GestureDetector(
-              onPanStart: (details) {
-                setState(() {
-                  _isDragging = true;
-                });
-              },
-              onPanUpdate: (details) {
-                setState(() {
-                  final newX = _position!.dx + details.delta.dx;
-                  final newY = _position!.dy + details.delta.dy;
-                  
-                  // Get screen size
-                  final screenSize = MediaQuery.of(context).size;
-                  const dialogWidth = 800.0;
-                  const dialogHeight = 600.0;
-                  
-                  // Constrain position to stay within screen bounds
-                  _position = Offset(
-                    newX.clamp(0.0, screenSize.width - dialogWidth),
-                    newY.clamp(0.0, screenSize.height - dialogHeight),
-                  );
-                });
-              },
-              onPanEnd: (details) {
-                setState(() {
-                  _isDragging = false;
-                });
-              },
-              child: Container(
-                width: 800,
-                height: 600,
-                decoration: BoxDecoration(
-                  color: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
-                      blurRadius: _isDragging ? 30 : 20,
-                      offset: const Offset(0, 10),
-                    ),
-                  ],
-                  border: _isDragging ? Border.all(
-                    color: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
-                    width: 2,
-                  ) : null,
-                ),
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              // Dialog Header
-              Container(
-                padding: const EdgeInsets.only(bottom: 16),
-                decoration: BoxDecoration(
+          // Draggable Dialog - COMMENTED OUT
+          // Positioned(
+          //   left: _position!.dx,
+          //   top: _position!.dy,
+          //   child: GestureDetector(
+          //     onPanStart: (details) {
+          //       setState(() {
+          //         _isDragging = true;
+          //       });
+          //     },
+          //     onPanUpdate: (details) {
+          //       setState(() {
+          //         final newX = _position!.dx + details.delta.dx;
+          //         final newY = _position!.dy + details.delta.dy;
+          //         
+          //         // Get screen size
+          //         final screenSize = MediaQuery.of(context).size;
+          //         const dialogWidth = 800.0;
+          //         const dialogHeight = 600.0;
+          //         
+          //         // Constrain position to stay within screen bounds
+          //         _position = Offset(
+          //           newX.clamp(0.0, screenSize.width - dialogWidth),
+          //           newY.clamp(0.0, screenSize.height - dialogHeight),
+          //         );
+          //       });
+          //     },
+          //     onPanEnd: (details) {
+          //       setState(() {
+          //         _isDragging = false;
+          //       });
+          //     },
+          //     child: Container(
+          //       width: 500,
+          //       height: 600,
+          //       decoration: BoxDecoration(
+          //         color: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
+          //         borderRadius: BorderRadius.circular(5),
+          //         border: _isDragging ? Border.all(
+          //           color: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
+          //           width: 2,
+          //         ) : null,
+          //       ),
+          //       child: Container(
+          //         child: Column(
+          //           mainAxisSize: MainAxisSize.min,
+          //           crossAxisAlignment: CrossAxisAlignment.start,
+          //           children: [
+          // Fixed Centered Dialog
+          Center(
+            child: Container(
+              width: 560,
+              height: 600,
+              decoration: BoxDecoration(
                 color: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(12),
-                  topRight: Radius.circular(12),
-                ),
+                borderRadius: BorderRadius.circular(5),
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Search & Add Scrips',
-                    style: WebTextStyles.title(
-                      isDarkTheme: theme.isDarkMode,
-                      color: theme.isDarkMode 
-                          ? WebDarkColors.textPrimary 
-                          : WebColors.textPrimary,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  Material(
-                    color: Colors.transparent,
-                    shape: const CircleBorder(),
-                    child: InkWell(
-                      customBorder: const CircleBorder(),
-                      splashColor: theme.isDarkMode
-                          ? Colors.white.withOpacity(.15)
-                          : Colors.black.withOpacity(.15),
-                      highlightColor: theme.isDarkMode
-                          ? Colors.white.withOpacity(.08)
-                          : Colors.black.withOpacity(.08),
-                      onTap: () {
-                        ref.read(marketWatchProvider).searchClear();
-                        Navigator.of(context).pop();
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.all(8),
-                        child: Icon(
-                          Icons.close,
-                          size: 20,
-                          color: theme.isDarkMode
-                              ? WebDarkColors.iconSecondary
-                              : WebColors.iconSecondary,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+        child: Container(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Container(
+              //   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              //   decoration: BoxDecoration(
+              //     border: Border(
+              //       bottom: BorderSide(
+              //         color: theme.isDarkMode
+              //             ? WebDarkColors.divider
+              //             : WebColors.divider,
+              //       ),
+              //     ),
+              //   ),
+              //   child: Row(
+              //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              //     children: [
+              //       Text(
+              //         'Stock Search',
+              //         style: WebTextStyles.sub(
+              //           isDarkTheme: theme.isDarkMode,
+              //           color: theme.isDarkMode 
+              //               ? WebDarkColors.textPrimary 
+              //               : WebColors.textPrimary,
+              //           fontWeight: FontWeight.w700,
+              //         ),
+              //       ),
+              //       Material(
+              //         color: Colors.transparent,
+              //         shape: const CircleBorder(),
+              //         child: InkWell(
+              //           customBorder: const CircleBorder(),
+              //           splashColor: theme.isDarkMode
+              //               ? Colors.white.withOpacity(.15)
+              //               : Colors.black.withOpacity(.15),
+              //           highlightColor: theme.isDarkMode
+              //               ? Colors.white.withOpacity(.08)
+              //               : Colors.black.withOpacity(.08),
+              //           onTap: () {
+              //             ref.read(marketWatchProvider).searchClear();
+              //             Navigator.of(context).pop();
+              //           },
+              //           child: Padding(
+              //             padding: const EdgeInsets.all(5),
+              //             child: Icon(
+              //               Icons.close,
+              //               size: 18,
+              //               color: theme.isDarkMode
+              //                   ? WebDarkColors.iconSecondary
+              //                   : WebColors.iconSecondary,
+              //             ),
+              //           ),
+              //         ),
+              //       ),
+              //     ],
+              //   ),
+              // ),
             
             // Search Bar Section
             Container(
-              padding: const EdgeInsets.only(bottom: 16),
+              padding: const EdgeInsets.all(10),
               child: Container(
                 height: 40,
                 decoration: BoxDecoration(
@@ -272,12 +283,14 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
                       child: TextFormField(
                         controller: _textController,
                         autofocus: true,
-                        style: WebTextStyles.para(
-                          isDarkTheme: theme.isDarkMode,
-                          color: theme.isDarkMode 
-                              ? WebDarkColors.textPrimary 
-                              : WebColors.textPrimary,
-                        ),
+                        style: WebTextStyles.custom(
+                                fontSize: 13,
+                                isDarkTheme: theme.isDarkMode,
+                                color: theme.isDarkMode
+                                    ? WebDarkColors.textPrimary
+                                    : WebColors.textPrimary,
+                                    fontWeight: FontWeight.w600,
+                              ),
                         textCapitalization: TextCapitalization.characters,
                         inputFormatters: [
                           UpperCaseTextFormatter(),
@@ -290,12 +303,14 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
                           enabledBorder: InputBorder.none,
                           focusedBorder: InputBorder.none,
                           hintText: "Search stocks, indices, options...",
-                          hintStyle: WebTextStyles.sub(
-                            isDarkTheme: theme.isDarkMode,
-                            color: theme.isDarkMode 
-                                ? WebDarkColors.textSecondary 
-                                : WebColors.textSecondary,
-                          ),
+                          hintStyle: WebTextStyles.custom(
+                    fontSize: 13,
+                    isDarkTheme: theme.isDarkMode,
+                    color: theme.isDarkMode
+                        ? WebDarkColors.textSecondary
+                        : WebColors.textSecondary,
+                        fontWeight: FontWeight.w600,
+                  ),
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: 0, 
                             vertical: 12
@@ -318,7 +333,7 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
                     ),
                     if (_textController.text.isNotEmpty)
                       Padding(
-                        padding: const EdgeInsets.only(right: 12),
+                        padding: const EdgeInsets.only(right: 8),
                         child: Material(
                           color: Colors.transparent,
                           shape: const CircleBorder(),
@@ -329,10 +344,10 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
                               await searchScrip.searchClear();
                             },
                             child: Padding(
-                              padding: const EdgeInsets.all(8.0),
+                              padding: const EdgeInsets.all(4.0),
                               child: Icon(
                                 Icons.close,
-                                size: 18,
+                                size: 16,
                                 color: theme.isDarkMode
                                     ? WebDarkColors.iconSecondary
                                     : WebColors.iconSecondary,
@@ -370,9 +385,10 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
             ],
           ),
         ),
-      ),
-    )),
-    ]));
+            ),
+          ),
+          ],
+        ));
   }
 
   Widget _buildSearchTabs(WidgetRef ref, ThemesProvider theme) {
@@ -422,7 +438,7 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
                             : theme.isDarkMode
                                 ? WebDarkColors.navItem
                                 : WebColors.navItem,
-                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                        fontWeight: FontWeight.w700,
                       ),
                       overflow: TextOverflow.ellipsis,
                       maxLines: 1,
@@ -467,6 +483,7 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
     }
 
     return Container(
+      padding: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
         color: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
         borderRadius: const BorderRadius.only(
@@ -474,16 +491,29 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
           bottomRight: Radius.circular(12),
         ),
       ),
-      child: ListView.separated(
-        physics: const BouncingScrollPhysics(),
-        itemCount: searchScrip.allSearchScrip!.length,
-        separatorBuilder: (context, index) => Divider(
-          height: 1,
-          color: theme.isDarkMode 
-              ? WebDarkColors.inputBorder 
-              : WebColors.inputBorder,
-        ),
-        itemBuilder: (BuildContext context, int index) {
+      child: ScrollConfiguration(
+        behavior: const MaterialScrollBehavior()
+            .copyWith(scrollbars: false),
+        child: RawScrollbar(
+          controller: _scrollController,
+          thumbVisibility: true,
+          thickness: 6,
+          radius: const Radius.circular(0),
+          thumbColor: theme.isDarkMode
+              ? WebDarkColors.textSecondary
+                  .withOpacity(0.5)
+              : WebColors.textSecondary.withOpacity(0.5),
+          child: ListView.separated(
+            controller: _scrollController,
+            physics: const BouncingScrollPhysics(),
+            itemCount: searchScrip.allSearchScrip!.length,
+            separatorBuilder: (context, index) => Divider(
+              height: 1,
+              color: theme.isDarkMode 
+                  ? WebDarkColors.inputBorder 
+                  : WebColors.inputBorder,
+            ),
+            itemBuilder: (BuildContext context, int index) {
           final scrip = searchScrip.allSearchScrip![index];
           
           return Material(
@@ -543,12 +573,13 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
                             children: [
                               Text(
                                 "${scrip.symbol?.isNotEmpty == true ? scrip.symbol : scrip.tsym}".replaceAll("-EQ", "").toUpperCase(),
-                                style: WebTextStyles.para(
+                                style: WebTextStyles.custom(
+                                  fontSize: 13,
                                   isDarkTheme: theme.isDarkMode,
                                   color: theme.isDarkMode
                                       ? WebDarkColors.textPrimary
                                       : WebColors.textPrimary,
-                                  fontWeight: FontWeight.w500,
+                                  fontWeight: FontWeight.w700,
                                 ),
                               ),
                               if (scrip.option != null && scrip.option.toString().isNotEmpty)
@@ -556,12 +587,13 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
                                   padding: const EdgeInsets.only(left: 4),
                                   child: Text(
                                     "${scrip.option}",
-                                    style: WebTextStyles.para(
+                                    style: WebTextStyles.custom(
+                                      fontSize: 13,
                                       isDarkTheme: theme.isDarkMode,
                                       color: theme.isDarkMode
                                           ? WebDarkColors.textPrimary
                                           : WebColors.textPrimary,
-                                      fontWeight: FontWeight.w500,
+                                      fontWeight: FontWeight.w700,
                                     ),
                                   ),
                                 ),
@@ -579,7 +611,7 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
                                   color: theme.isDarkMode
                                       ? WebDarkColors.textSecondary
                                       : WebColors.textSecondary,
-                                  fontWeight: FontWeight.w500,
+                                  fontWeight: FontWeight.w700,
                                 ),
                               ),
                               if (scrip.expDate != null && scrip.expDate.toString().isNotEmpty)
@@ -587,12 +619,12 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
                                   padding: const EdgeInsets.only(left: 8),
                                   child: Text(
                                     " ${scrip.expDate}",
-                                    style: WebTextStyles.para(
+                                    style: WebTextStyles.caption(
                                       isDarkTheme: theme.isDarkMode,
                                       color: theme.isDarkMode
                                           ? WebDarkColors.textSecondary
                                           : WebColors.textSecondary,
-                                      fontWeight: FontWeight.w500,
+                                      fontWeight: FontWeight.w700,
                                     ),
                                   ),
                                 ),
@@ -601,12 +633,13 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
                                   padding: const EdgeInsets.only(left: 8),
                                   child: Text(
                                     "${scrip.cname}",
-                                    style: WebTextStyles.para(
+                                    style: WebTextStyles.custom(
+                                      fontSize: 10,
                                       isDarkTheme: theme.isDarkMode,
                                       color: theme.isDarkMode
                                           ? WebDarkColors.textSecondary
                                           : WebColors.textSecondary,
-                                      fontWeight: FontWeight.w500,
+                                      fontWeight: FontWeight.w700,
                                     ),
                                     overflow: TextOverflow.ellipsis,
                                   ),
@@ -685,12 +718,12 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
                             }
                           },
                           child: Padding(
-                            padding: const EdgeInsets.all(12),
+                            padding: const EdgeInsets.all(8),
                             child: !searchScrip.exarr.contains('"${scrip.exch}"') ?
                             SvgPicture.asset(assets.dInfo,
                               color: Colors.red,
-                              height: 20,
-                              width: 20,
+                              height: 18,
+                              width: 18,
                             ) :
                             SvgPicture.asset(
                               searchScrip.isAdded![index]
@@ -702,8 +735,8 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
                                   : searchScrip.isAdded![index]
                                       ? WebColors.primary
                                       : WebDarkColors.textSecondary,
-                              height: 20,
-                              width: 20,
+                              height: 18,
+                              width: 18,
                             ),
                           ),
                         ),
@@ -714,6 +747,8 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
             ),
           );
         },
+          ),
+        ),
       ),
     );
   }

@@ -108,18 +108,36 @@ class _SetAlertWebState extends State<SetAlertWeb> {
       final scripInfo = ref.watch(marketWatchProvider);
       final theme = ref.read(themeProvider);
 
-      return Material(
-        color: Colors.transparent,
-        child: Padding(
-          padding: EdgeInsets.only(left: 16, right: 16, top: 0, bottom: 16),
-          
+      return Dialog(
+        backgroundColor: theme.isDarkMode 
+            ? WebDarkColors.surface 
+            : WebColors.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(5),
+        ),
+        child: Container(
+          width: 300,
+          constraints: const BoxConstraints(maxHeight: 500),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              // const SizedBox(height: 16),
-
-               StreamBuilder<Map>(
+              // Header
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                margin: const EdgeInsets.only(bottom: 8),
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(
+                      color: theme.isDarkMode
+                          ? WebDarkColors.divider
+                          : WebColors.divider,
+                    ),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    StreamBuilder<Map>(
                   stream: ref.watch(websocketProvider).socketDataStream,
                   builder: (context, snapshot) {
                     final socketDatas = snapshot.data ?? {};
@@ -129,272 +147,292 @@ class _SetAlertWebState extends State<SetAlertWeb> {
                       _processDepthData(socketDatas[widget.wlvalue.token]);
                     }
             
-                    return Container(
-                      padding: const EdgeInsets.all(8),
-                      margin: const EdgeInsets.only(bottom: 8),
-                      decoration: BoxDecoration(
-                        color: theme.isDarkMode
-                            ? WebDarkColors.backgroundTertiary
-                            : WebColors.backgroundTertiary,
-                        // borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
-                            children: [
-                              Text(
-                                widget.wlvalue.symbol.toUpperCase(),
-                                style: WebTextStyles.custom(
-                                  fontSize: 13,
-                                  isDarkTheme: theme.isDarkMode,
-                                  color: theme.isDarkMode
-                                      ? WebDarkColors.textPrimary
-                                      : WebColors.textPrimary,
-                                      fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                widget.wlvalue.option,
-                                style: WebTextStyles.custom(
-                                  fontSize: 13,
-                                  isDarkTheme: theme.isDarkMode,
-                                  color: theme.isDarkMode
-                                      ? WebDarkColors.textPrimary
-                                      : WebColors.textPrimary,
-                                      fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ],
-                          ),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Text(
-                                "${depthdata.lp != "null" ? depthdata.lp ?? depthdata.c ?? 0.00 : '0.00'}",
-                                style: WebTextStyles.custom(
-                                  fontSize: 13,
-                                  isDarkTheme: theme.isDarkMode,
-                                  color: (depthdata.chng == "null" ||
-                                          depthdata.chng == null) ||
-                                      depthdata.chng == "0.00"
-                                      ? theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary
-                                      : depthdata.chng!.startsWith("-") ||
-                                          depthdata.pc!.startsWith("-")
-                                          ? theme.isDarkMode ? WebDarkColors.loss : WebColors.loss
-                                          : theme.isDarkMode ? WebDarkColors.profit : WebColors.profit,
-                                      fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                "${(double.tryParse(depthdata.chng ?? '0.00') ?? 0.00).toStringAsFixed(2)} (${(double.tryParse(depthdata.pc ?? '0.00') ?? 0.00).toStringAsFixed(2)}%)",
-                                style: WebTextStyles.custom(
-                                  fontSize: 13,
-                                  isDarkTheme: theme.isDarkMode,
-                                  color: theme.isDarkMode
-                                      ? WebDarkColors.textSecondary
-                                      : WebColors.textSecondary,
-                                      fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-
-          
-              Row(
-                children: [
-                  Expanded(
-                    child: Column(
+                    return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'Type',
-                          style: WebTextStyles.custom(
-                            fontSize: 13,
-                            isDarkTheme: theme.isDarkMode,
-                            color: theme.isDarkMode
-                                ? WebDarkColors.textPrimary
-                                : WebColors.textPrimary,
-                                fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        SizedBox(
-                          height: 40,
-                          child: DropdownButtonHideUnderline(
-                              child: DropdownButton2(
-                              dropdownStyleData: DropdownStyleData(
-                                   decoration: BoxDecoration(
-                                       borderRadius:
-                                           BorderRadius.circular(5),
-                                       color: theme.isDarkMode
-                                           ? WebDarkColors.surface
-                                           : WebColors.surface,
-                                       border: Border.all(
-                                           color: theme.isDarkMode
-                                               ? WebDarkColors.divider
-                                               : WebColors.divider,
-                                       ),
-                                   )),
-                               buttonStyleData: ButtonStyleData(
-                                  height: 40,
-                                  decoration: BoxDecoration(
-                                      color: theme.isDarkMode
-                                          ? WebDarkColors.backgroundTertiary
-                                          : WebColors.backgroundTertiary,
-                                      border: Border.all(
-                                          color: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary),
-                                      borderRadius:
-                                          const BorderRadius.all(
-                                              Radius.circular(5)))),
-                              isExpanded: true,
-                              menuItemStyleData: const MenuItemStyleData(
-                                height: 32,
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 0),
-                              ),
+                        Row(
+                          children: [
+                            Text(
+                              widget.wlvalue.symbol.toUpperCase(),
                               style: WebTextStyles.custom(
                                 fontSize: 13,
                                 isDarkTheme: theme.isDarkMode,
                                 color: theme.isDarkMode
                                     ? WebDarkColors.textPrimary
                                     : WebColors.textPrimary,
-                                    fontWeight: FontWeight.w600,
+                                    fontWeight: FontWeight.w700,
                               ),
-                              hint: Text(
-                                alertTypeVal,
-                                style: WebTextStyles.custom(
-                                  fontSize: 13,
-                                  isDarkTheme: theme.isDarkMode,
-                                  color: theme.isDarkMode
-                                      ? WebDarkColors.textSecondary
-                                      : WebColors.textSecondary,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              items: alertType
-                                  .map((String item) =>
-                                      DropdownMenuItem<String>(
-                                        value: item,
-                                        child: Padding(
-                                          padding: const EdgeInsets.only(
-                                              left: 6),
-                                          child: Text(
-                                            item,
-                                            style: WebTextStyles.custom(
-                                              fontSize: 13,
-                                              isDarkTheme: theme.isDarkMode,
-                                              color: theme.isDarkMode
-                                                  ? WebDarkColors.textPrimary
-                                                  : WebColors.textPrimary,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                      ))
-                                  .toList(),
-                              value: alertTypeVal,
-                              onChanged: (value) {
-                                setState(() {
-                                  alertTypeVal = value!;
-                                  valueCtrl.clear();
-                                });
-                                validatesetalret(value);
-                              },
                             ),
-                          ),
+                            const SizedBox(width: 4),
+                            Text(
+                              widget.wlvalue.option,
+                              style: WebTextStyles.custom(
+                                fontSize: 13,
+                                isDarkTheme: theme.isDarkMode,
+                                color: theme.isDarkMode
+                                    ? WebDarkColors.textPrimary
+                                    : WebColors.textPrimary,
+                                    fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Text(
+                              "${depthdata.lp != "null" ? depthdata.lp ?? depthdata.c ?? 0.00 : '0.00'}",
+                              style: WebTextStyles.custom(
+                                fontSize: 13,
+                                isDarkTheme: theme.isDarkMode,
+                                 color: theme.isDarkMode
+                                    ? WebDarkColors.textPrimary
+                                    : WebColors.textPrimary,
+                               
+                                    fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              "${(double.tryParse(depthdata.chng ?? '0.00') ?? 0.00).toStringAsFixed(2)} (${(double.tryParse(depthdata.pc ?? '0.00') ?? 0.00).toStringAsFixed(2)}%)",
+                              style: WebTextStyles.custom(
+                                fontSize: 13,
+                                isDarkTheme: theme.isDarkMode,
+                                 color: (depthdata.chng == "null" ||
+                                        depthdata.chng == null) ||
+                                    depthdata.chng == "0.00"
+                                    ? theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary
+                                    : depthdata.chng!.startsWith("-") ||
+                                        depthdata.pc!.startsWith("-")
+                                        ? theme.isDarkMode ? WebDarkColors.loss : WebColors.loss
+                                        : theme.isDarkMode ? WebDarkColors.profit : WebColors.profit,
+                               
+                                    fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
+                    );
+                  },
+                ),
+                    Material(
+                      color: Colors.transparent,
+                      shape: const CircleBorder(),
+                      child: InkWell(
+                        customBorder: const CircleBorder(),
+                        splashColor: theme.isDarkMode
+                            ? Colors.white.withOpacity(.15)
+                            : Colors.black.withOpacity(.15),
+                        highlightColor: theme.isDarkMode
+                            ? Colors.white.withOpacity(.08)
+                            : Colors.black.withOpacity(.08),
+                        onTap: () => Navigator.of(context).pop(),
+                        child: Padding(
+                          padding: const EdgeInsets.all(6),
+                          child: Icon(
+                            Icons.close,
+                            size: 20,
+                            color: theme.isDarkMode
+                                ? WebDarkColors.iconSecondary
+                                : WebColors.iconSecondary,
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
+                  ],
+                ),
+              ),
+              // Content
+              Flexible(
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Alert me',
+                      mainAxisSize: MainAxisSize.min,
+                      children: [         
+          
+              // Type Field
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Type',
+                    style: WebTextStyles.custom(
+                      fontSize: 13,
+                      isDarkTheme: theme.isDarkMode,
+                      color: theme.isDarkMode
+                          ? WebDarkColors.textPrimary
+                          : WebColors.textPrimary,
+                          fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    height: 40,
+                    child: DropdownButtonHideUnderline(
+                        child: DropdownButton2(
+                        dropdownStyleData: DropdownStyleData(
+                             decoration: BoxDecoration(
+                                 borderRadius:
+                                     BorderRadius.circular(5),
+                                 color: theme.isDarkMode
+                                     ? WebDarkColors.surface
+                                     : WebColors.surface,
+                                 border: Border.all(
+                                     color: theme.isDarkMode
+                                         ? WebDarkColors.divider
+                                         : WebColors.divider,
+                                 ),
+                             )),
+                         buttonStyleData: ButtonStyleData(
+                            height: 40,
+                            decoration: BoxDecoration(
+                                color: theme.isDarkMode
+                                    ? WebDarkColors.backgroundTertiary
+                                    : WebColors.backgroundTertiary,
+                                border: Border.all(
+                                    color: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary),
+                                borderRadius:
+                                    const BorderRadius.all(
+                                        Radius.circular(5)))),
+                        isExpanded: true,
+                        menuItemStyleData: const MenuItemStyleData(
+                          height: 32,
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 0),
+                        ),
+                        style: WebTextStyles.custom(
+                          fontSize: 13,
+                          isDarkTheme: theme.isDarkMode,
+                          color: theme.isDarkMode
+                              ? WebDarkColors.textPrimary
+                              : WebColors.textPrimary,
+                              fontWeight: FontWeight.w600,
+                        ),
+                        hint: Text(
+                          alertTypeVal,
                           style: WebTextStyles.custom(
                             fontSize: 13,
                             isDarkTheme: theme.isDarkMode,
                             color: theme.isDarkMode
-                                ? WebDarkColors.textPrimary
-                                : WebColors.textPrimary,
-                                fontWeight: FontWeight.w700,
+                                ? WebDarkColors.textSecondary
+                                : WebColors.textSecondary,
+                            fontWeight: FontWeight.w600,
                           ),
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 8),
-                        SizedBox(
+                        items: alertType
+                            .map((String item) =>
+                                DropdownMenuItem<String>(
+                                  value: item,
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(
+                                        left: 6),
+                                    child: Text(
+                                      item,
+                                      style: WebTextStyles.custom(
+                                        fontSize: 13,
+                                        isDarkTheme: theme.isDarkMode,
+                                        color: theme.isDarkMode
+                                            ? WebDarkColors.textPrimary
+                                            : WebColors.textPrimary,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ))
+                            .toList(),
+                        value: alertTypeVal,
+                        onChanged: (value) {
+                          setState(() {
+                            alertTypeVal = value!;
+                            valueCtrl.clear();
+                          });
+                          validatesetalret(value);
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              // Alert me Field
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Alert me',
+                    style: WebTextStyles.custom(
+                      fontSize: 13,
+                      isDarkTheme: theme.isDarkMode,
+                      color: theme.isDarkMode
+                          ? WebDarkColors.textPrimary
+                          : WebColors.textPrimary,
+                          fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    height: 40,
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(5),
+                        splashColor: (theme.isDarkMode ? WebDarkColors.primary : WebColors.primary).withOpacity(0.1),
+                        highlightColor: (theme.isDarkMode ? WebDarkColors.primary : WebColors.primary).withOpacity(0.05),
+                        onTap: () {
+                          setState(() {
+                            alertValue = alertValue == "Above" ? "Below" : "Above";
+                          });
+                          validatesetalret(valueCtrl.text);
+                        },
+                        child: Container(
                           height: 40,
-                          child: Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              borderRadius: BorderRadius.circular(5),
-                              splashColor: (theme.isDarkMode ? WebDarkColors.primary : WebColors.primary).withOpacity(0.1),
-                              highlightColor: (theme.isDarkMode ? WebDarkColors.primary : WebColors.primary).withOpacity(0.05),
-                              onTap: () {
-                                setState(() {
-                                  alertValue = alertValue == "Above" ? "Below" : "Above";
-                                });
-                                validatesetalret(valueCtrl.text);
-                              },
-                              child: Container(
-                                height: 40,
-                                decoration: BoxDecoration(
-                                  color: theme.isDarkMode
-                                      ? WebDarkColors.backgroundTertiary
-                                      : WebColors.backgroundTertiary,
-                                  border: Border.all(color: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary),
-                                  borderRadius: BorderRadius.circular(5),
+                          decoration: BoxDecoration(
+                            color: theme.isDarkMode
+                                ? WebDarkColors.backgroundTertiary
+                                : WebColors.backgroundTertiary,
+                            border: Border.all(color: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary),
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(left: 12),
+                                child: Text(
+                                  alertValue,
+                                  style: WebTextStyles.custom(
+                                    fontSize: 13,
+                                    isDarkTheme: theme.isDarkMode,
+                                    color: theme.isDarkMode
+                                        ? WebDarkColors.textPrimary
+                                        : WebColors.textPrimary,
+                                        fontWeight: FontWeight.w600,
+                                  ),
                                 ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(right: 12),
                                 child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Padding(
-                                      padding: const EdgeInsets.only(left: 12),
-                                      child: Text(
-                                        alertValue,
-                                        style: WebTextStyles.custom(
-                                          fontSize: 13,
-                                          isDarkTheme: theme.isDarkMode,
-                                          color: theme.isDarkMode
-                                              ? WebDarkColors.textPrimary
-                                              : WebColors.textPrimary,
-                                              fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.only(right: 12),
-                                      child: Row(
-                                        children: [
-                                          Icon(
-                                            Icons.code,
-                                            color: theme.isDarkMode
-                                                ? WebDarkColors.textSecondary
-                                                : WebColors.textSecondary,
-                                            size: 18,
-                                          ),                                               
-                                        ],
-                                      ),
-                                    ),
+                                    Icon(
+                                      Icons.code,
+                                      color: theme.isDarkMode
+                                          ? WebDarkColors.textSecondary
+                                          : WebColors.textSecondary,
+                                      size: 18,
+                                    ),                                               
                                   ],
                                 ),
                               ),
-                            ),
+                            ],
                           ),
                         ),
-                      ],
+                      ),
                     ),
                   ),
                 ],
@@ -508,7 +546,7 @@ class _SetAlertWebState extends State<SetAlertWeb> {
                   textAlign: TextAlign.start,
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 10),
 
               SizedBox(
                 width: MediaQuery.of(context).size.width,
@@ -588,7 +626,7 @@ class _SetAlertWebState extends State<SetAlertWeb> {
                     : Text(
                         'Set alert',
                         style: WebTextStyles.custom(
-                          fontSize: 13,
+                          fontSize: 14,
                           isDarkTheme: theme.isDarkMode,
                           color: errorText.isNotEmpty
                               ? Colors.white.withOpacity(0.5)
@@ -596,6 +634,11 @@ class _SetAlertWebState extends State<SetAlertWeb> {
                           fontWeight: FontWeight.w700,
                         ),
                       ),
+                ),
+              ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ],

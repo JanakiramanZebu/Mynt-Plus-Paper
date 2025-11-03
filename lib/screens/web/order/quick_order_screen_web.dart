@@ -25,14 +25,22 @@ import 'package:mynt_plus/screens/Mobile/order_screen/margin_charges_bottom_shee
 import 'package:mynt_plus/screens/Mobile/market_watch/slice_order_pop.dart';
 import 'package:mynt_plus/utils/responsive_navigation.dart';
 
+import '../../../res/web_colors.dart';
+import 'margin_charges_sheet_web.dart';
+
 class QuickOrderScreenWeb extends ConsumerStatefulWidget {
   final OrderScreenArgs orderArg;
   final ScripInfoModel scripInfo;
   final bool embedded; // if true, render without Scaffold/AppBar for inline use
-  const QuickOrderScreenWeb({super.key, required this.orderArg, required this.scripInfo, this.embedded = false});
+  const QuickOrderScreenWeb(
+      {super.key,
+      required this.orderArg,
+      required this.scripInfo,
+      this.embedded = false});
 
   @override
-  ConsumerState<QuickOrderScreenWeb> createState() => _QuickOrderScreenWebState();
+  ConsumerState<QuickOrderScreenWeb> createState() =>
+      _QuickOrderScreenWebState();
 }
 
 class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
@@ -58,6 +66,8 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
   int frezQty = 0;
   double tik = 0.0;
   bool _surveillanceConfirmed = false;
+  bool _showSurveillanceDialog = false;
+  Future<void> Function()? _pendingSurveillanceAction;
 
   void _initializeFromProps() {
     isBuy = widget.orderArg.transType;
@@ -80,8 +90,12 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
         ? (widget.orderArg.holdQty ?? '1').replaceAll('-', '')
         : (widget.orderArg.lotSize ?? '1').replaceAll('-', '');
 
-    if (ref.read(websocketProvider).socketDatas.containsKey(widget.scripInfo.token)) {
-      ordPrice = "${ref.read(websocketProvider).socketDatas["${widget.scripInfo.token}"]['lp']}";
+    if (ref
+        .read(websocketProvider)
+        .socketDatas
+        .containsKey(widget.scripInfo.token)) {
+      ordPrice =
+          "${ref.read(websocketProvider).socketDatas["${widget.scripInfo.token}"]['lp']}";
     } else {
       ordPrice = widget.orderArg.ltp ?? "0.00";
     }
@@ -89,9 +103,13 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(ordInputProvider).chngInvesType(
-          widget.scripInfo.seg == "EQT" ? InvestType.delivery : InvestType.carryForward,
+          widget.scripInfo.seg == "EQT"
+              ? InvestType.delivery
+              : InvestType.carryForward,
           "PlcOrder");
-      ref.read(ordInputProvider).chngPriceType(priceType, widget.orderArg.exchange);
+      ref
+          .read(ordInputProvider)
+          .chngPriceType(priceType, widget.orderArg.exchange);
       _marginUpdate();
     });
   }
@@ -105,10 +123,14 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
   @override
   void didUpdateWidget(covariant QuickOrderScreenWeb oldWidget) {
     super.didUpdateWidget(oldWidget);
-    final bool tokenChanged = oldWidget.scripInfo.token != widget.scripInfo.token;
-    final bool exchChanged = oldWidget.orderArg.exchange != widget.orderArg.exchange;
-    final bool prdChanged = (oldWidget.orderArg.prd ?? '') != (widget.orderArg.prd ?? '');
-    final bool transChanged = oldWidget.orderArg.transType != widget.orderArg.transType;
+    final bool tokenChanged =
+        oldWidget.scripInfo.token != widget.scripInfo.token;
+    final bool exchChanged =
+        oldWidget.orderArg.exchange != widget.orderArg.exchange;
+    final bool prdChanged =
+        (oldWidget.orderArg.prd ?? '') != (widget.orderArg.prd ?? '');
+    final bool transChanged =
+        oldWidget.orderArg.transType != widget.orderArg.transType;
     if (tokenChanged || exchChanged || prdChanged || transChanged) {
       setState(() {
         _initializeFromProps();
@@ -122,103 +144,267 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
     final internet = ref.watch(networkStateProvider);
     final orderProvide = ref.watch(orderProvider);
 
-    final content = Padding(
-      padding: const EdgeInsets.only(left: 12, right: 12, top: 20, bottom:12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (!widget.embedded) _instrumentHeader(theme),
-          if (!widget.embedded) const SizedBox(height: 12),
-          Row(children: [
-            Expanded(child: _orderTypeTabs(theme)),           
-          ]),
-          const SizedBox(height: 12),
-          _qtyAndPrice(theme),
-          const SizedBox(height: 12),
+    final content = Stack(
+      children: [
+        Padding(
+          padding:
+              const EdgeInsets.only(left: 12, right: 12, top: 20, bottom: 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (!widget.embedded) _instrumentHeader(theme),
+              if (!widget.embedded) const SizedBox(height: 12),
+              Row(children: [
+                Expanded(child: _orderTypeTabs(theme)),
+              ]),
+              const SizedBox(height: 12),
+              _qtyAndPrice(theme),
+              const SizedBox(height: 12),
 
-           Padding(
-             padding: const EdgeInsets.symmetric(vertical: 4),
-             child: Row(
-               mainAxisAlignment: MainAxisAlignment.center,
-               children: [
-                 TextButton(
-                    onPressed: _openAdvance,
-                    child: Text(
-                      "Advance",
-                      style: WebTextStyles.para(
-                        isDarkTheme: theme.isDarkMode,
-                        color: theme.isDarkMode ? colors.colorLightBlue : colors.colorBlue,
-                        fontWeight: WebFonts.semiBold,
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    TextButton(
+                      onPressed: _openAdvance,
+                      child: Text(
+                        "Advance",
+                        style: WebTextStyles.para(
+                          isDarkTheme: theme.isDarkMode,
+                          color: theme.isDarkMode
+                              ? colors.colorLightBlue
+                              : colors.colorBlue,
+                          fontWeight: WebFonts.semiBold,
+                        ),
                       ),
                     ),
-                  ),
-               ],
-             ),
-           ),
-          // Quick mode intentionally omits Stoploss/AMO/Validity sections
-          if (internet.connectionStatus != ConnectivityResult.none)
-            _marginAndBalance(theme),
-          const SizedBox(height: 8),
+                  ],
+                ),
+              ),
+              // Quick mode intentionally omits Stoploss/AMO/Validity sections
+              if (internet.connectionStatus != ConnectivityResult.none)
+                _marginAndBalance(theme),
+              const SizedBox(height: 8),
 
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 0),
-            child: Row(children: [
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: internet.connectionStatus == ConnectivityResult.none
-                      ? null
-                      : () async {
-                          isBuy = true;
-                          await _placeOrder(theme);
-                        },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: colors.primary,
-                    minimumSize: const Size(0, 45),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 0),
+                child: Row(children: [
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed:
+                          internet.connectionStatus == ConnectivityResult.none
+                              ? null
+                              : () async {
+                                  isBuy = true;
+                                  await _placeOrder(theme);
+                                },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: colors.primary,
+                        minimumSize: const Size(0, 45),
+                      ),
+                      child: orderProvide.orderloader
+                          ? const SizedBox(
+                              width: 18,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                  strokeWidth: 2, color: Color(0xffffffff)))
+                          : Text(
+                              'Buy',
+                              style: WebTextStyles.sub(
+                                isDarkTheme: theme.isDarkMode,
+                                color: colors.colorWhite,
+                                fontWeight: WebFonts.bold,
+                              ),
+                            ),
+                    ),
                   ),
-                  child: orderProvide.orderloader
-                      ? const SizedBox(width: 18, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xffffffff)))
-                      : Text(
-                          'Buy',
-                          style: WebTextStyles.sub(
-                            isDarkTheme: theme.isDarkMode,
-                            color: colors.colorWhite,
-                            fontWeight: WebFonts.bold,
-                            
-                          ),
-                        ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: internet.connectionStatus == ConnectivityResult.none
-                      ? null
-                      : () async {
-                          isBuy = false;
-                          await _placeOrder(theme);
-                        },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: colors.tertiary,
-                    minimumSize: const Size(0, 45),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed:
+                          internet.connectionStatus == ConnectivityResult.none
+                              ? null
+                              : () async {
+                                  isBuy = false;
+                                  await _placeOrder(theme);
+                                },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: colors.tertiary,
+                        minimumSize: const Size(0, 45),
+                      ),
+                      child: orderProvide.orderloader
+                          ? const SizedBox(
+                              width: 18,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                  strokeWidth: 2, color: Color(0xffffffff)))
+                          : Text(
+                              'Sell',
+                              style: WebTextStyles.sub(
+                                isDarkTheme: theme.isDarkMode,
+                                color: colors.colorWhite,
+                                fontWeight: WebFonts.bold,
+                              ),
+                            ),
+                    ),
                   ),
-                  child: orderProvide.orderloader
-                      ? const SizedBox(width: 18, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xffffffff)))
-                      : Text(
-                          'Sell',
-                          style: WebTextStyles.sub(
-                            isDarkTheme: theme.isDarkMode,
-                            color: colors.colorWhite,
-                            fontWeight: WebFonts.bold,
-                            
-                          ),
-                        ),
-                ),
+                ]),
               ),
-            ]),
+            ],
           ),
-        ],
-      ),
+        ),
+        // Surveillance dialog overlay - constrained to widget bounds
+        if (_showSurveillanceDialog)
+          Positioned.fill(
+            child: Container(
+              color: Colors.black.withOpacity(0.5),
+              child: Center(
+                child: Container(
+                  constraints: const BoxConstraints(maxWidth: 400),
+                  margin: const EdgeInsets.symmetric(horizontal: 16),
+                  decoration: BoxDecoration(
+                    color: theme.isDarkMode
+                        ? WebDarkColors.surface
+                        : WebColors.surface,
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 8),
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(
+                            color: theme.isDarkMode
+                                ? WebDarkColors.divider
+                                : WebColors.divider,
+                          ),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              const Icon(Icons.warning_outlined,
+                                  color: Color.fromARGB(190, 255, 170, 0),
+                                  size: 20),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Exchange surveillance active',
+                                style: WebTextStyles.sub(
+                                  isDarkTheme: theme.isDarkMode,
+                                  color: theme.isDarkMode
+                                      ? WebDarkColors.textPrimary
+                                      : WebColors.textPrimary,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Material(
+                            color: Colors.transparent,
+                            shape: const CircleBorder(),
+                            child: InkWell(
+                              customBorder: const CircleBorder(),
+                              splashColor: theme.isDarkMode
+                                  ? Colors.white.withOpacity(.15)
+                                  : Colors.black.withOpacity(.15),
+                              highlightColor: theme.isDarkMode
+                                  ? Colors.white.withOpacity(.08)
+                                  : Colors.black.withOpacity(.08),
+                              onTap: () {
+                                setState(() {
+                                  _showSurveillanceDialog = false;
+                                  _pendingSurveillanceAction = null;
+                                });
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.all(5),
+                                child: Icon(
+                                  Icons.close,
+                                  size: 18,
+                                  color: theme.isDarkMode
+                                      ? WebDarkColors.iconSecondary
+                                      : WebColors.iconSecondary,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                'Please confirm to proceed with your order.',
+                                style: WebTextStyles.custom(
+                                  fontSize: 13,
+                                  isDarkTheme: theme.isDarkMode,
+                                  color: theme.isDarkMode
+                                      ? WebDarkColors.textPrimary
+                                      : WebColors.textPrimary,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          SizedBox(
+                            width: double.infinity,
+                            height: 40,
+                            child: ElevatedButton(
+                              onPressed: () async {
+                                setState(() {
+                                  _showSurveillanceDialog = false;
+                                });
+                                final action = _pendingSurveillanceAction;
+                                _pendingSurveillanceAction = null;
+                                if (action != null) {
+                                  await action();
+                                }
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: theme.isDarkMode
+                                    ? WebDarkColors.primary
+                                    : WebColors.primary,
+                                minimumSize: const Size(0, 40),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(5),
+                                ),
+                              ),
+                              child: Text(
+                                'Continue',
+                                style: WebTextStyles.custom(
+                                  fontSize: 13,
+                                  isDarkTheme: theme.isDarkMode,
+                                  color: WebColors.surface,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
 
     if (widget.embedded) {
@@ -234,7 +420,6 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
           style: WebTextStyles.sub(
             isDarkTheme: theme.isDarkMode,
             fontWeight: WebFonts.semiBold,
-            
           ),
         ),
       ),
@@ -254,7 +439,6 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
                 style: WebTextStyles.sub(
                   isDarkTheme: theme.isDarkMode,
                   fontWeight: WebFonts.bold,
-                  
                 ),
                 overflow: TextOverflow.ellipsis,
                 maxLines: 1,
@@ -268,9 +452,10 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
                     "LTP: ${widget.orderArg.ltp ?? ordPrice}",
                     style: WebTextStyles.para(
                       isDarkTheme: theme.isDarkMode,
-                      color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                      color: theme.isDarkMode
+                          ? colors.textSecondaryDark
+                          : colors.textSecondaryLight,
                       fontWeight: WebFonts.regular,
-                      
                     ),
                   ),
                 ],
@@ -288,7 +473,10 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
   }
 
   Widget _orderTypeTabs(ThemesProvider theme) {
-    final tabs = const ["Delivery", "Intraday"]; // keep scope same as quick order
+    final tabs = const [
+      "Delivery",
+      "Intraday"
+    ]; // keep scope same as quick order
     return SizedBox(
       height: 30,
       child: ListView.separated(
@@ -301,7 +489,8 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
               setState(() {
                 orderType = t;
                 ref.read(ordInputProvider).chngInvesType(
-                    t == "Intraday" ? InvestType.intraday : InvestType.delivery, "PlcOrder");
+                    t == "Intraday" ? InvestType.intraday : InvestType.delivery,
+                    "PlcOrder");
                 _onOrderTypeChanged();
                 _marginUpdate();
               });
@@ -309,8 +498,11 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
             },
             style: TextButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
-              backgroundColor:
-                  isSelected ? (theme.isDarkMode ? colors.primaryDark : colors.primaryLight) : colors.colorWhite,
+              backgroundColor: isSelected
+                  ? (theme.isDarkMode
+                      ? colors.primaryDark
+                      : colors.primaryLight)
+                  : colors.colorWhite,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(4),
                 side: isSelected
@@ -326,7 +518,9 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
                 isDarkTheme: theme.isDarkMode,
                 color: isSelected
                     ? colors.colorWhite
-                    : (theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight),
+                    : (theme.isDarkMode
+                        ? colors.textPrimaryDark
+                        : colors.textPrimaryLight),
                 fontWeight: WebFonts.bold,
               ),
             ),
@@ -343,7 +537,8 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(
               _isQtyToAmount ? "Amount" : "Qty",
               style: WebTextStyles.para(
@@ -355,7 +550,9 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
             SizedBox(
               height: 38,
               child: CustomTextFormField(
-                fillColor: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
+                fillColor: theme.isDarkMode
+                    ? colors.darkGrey
+                    : const Color(0xffF1F3F8),
                 hintText: "0",
                 inputFormate: [FilteringTextInputFormatter.digitsOnly],
                 keyboardType: TextInputType.number,
@@ -364,9 +561,10 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
                 style: WebTextStyles.custom(
                   fontSize: 13,
                   isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                  color: theme.isDarkMode
+                      ? colors.textPrimaryDark
+                      : colors.textPrimaryLight,
                   fontWeight: WebFonts.semiBold,
-                  
                 ),
                 suffixIcon: widget.scripInfo.instname == "EQ"
                     ? IconButton(
@@ -374,7 +572,8 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
                           _isQtyToAmount = !_isQtyToAmount;
                           _marginUpdate();
                         }),
-                        icon: SvgPicture.asset(assets.switchIcon, fit: BoxFit.scaleDown),
+                        icon: SvgPicture.asset(assets.switchIcon,
+                            fit: BoxFit.scaleDown),
                       )
                     : null,
                 onChanged: (_) => _marginUpdate(),
@@ -384,7 +583,8 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
         ),
         const SizedBox(width: 12),
         Expanded(
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Row(children: [
               Text(
                 "Price",
@@ -398,7 +598,9 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
                 priceType,
                 style: WebTextStyles.para(
                   isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                  color: theme.isDarkMode
+                      ? colors.textPrimaryDark
+                      : colors.textPrimaryLight,
                   fontWeight: WebFonts.semiBold,
                 ),
               ),
@@ -407,34 +609,45 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
             SizedBox(
               height: 38,
               child: CustomTextFormField(
-                fillColor: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
+                fillColor: theme.isDarkMode
+                    ? colors.darkGrey
+                    : const Color(0xffF1F3F8),
                 hintText: widget.orderArg.ltp ?? ordPrice,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
                 textCtrl: priceCtrl,
                 textAlign: TextAlign.start,
-                isReadable: priceType == "Limit" || priceType == "SL Limit" ? false : true,
+                isReadable: priceType == "Limit" || priceType == "SL Limit"
+                    ? false
+                    : true,
                 style: WebTextStyles.custom(
                   fontSize: 13,
                   isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                  color: theme.isDarkMode
+                      ? colors.textPrimaryDark
+                      : colors.textPrimaryLight,
                   fontWeight: WebFonts.semiBold,
-                  
                 ),
                 suffixIcon: IconButton(
                   onPressed: () {
                     setState(() {
                       _isMarketOrder = !_isMarketOrder;
                       _updatePriceType();
-                      ref.read(ordInputProvider).chngPriceType(priceType, widget.orderArg.exchange);
+                      ref
+                          .read(ordInputProvider)
+                          .chngPriceType(priceType, widget.orderArg.exchange);
                       _marginUpdate();
                     });
                   },
-                  icon: SvgPicture.asset(assets.switchIcon, fit: BoxFit.scaleDown),
+                  icon: SvgPicture.asset(assets.switchIcon,
+                      fit: BoxFit.scaleDown),
                 ),
                 onChanged: (v) {
                   final val = double.tryParse(v) ?? 0;
                   if (v.isEmpty || val <= 0) {
-                    ScaffoldMessenger.of(context).showSnackBar(warningMessage(context, "Price can not be ${val <= 0 ? 'zero' : 'empty'}"));
+                    ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+                        context,
+                        "Price can not be ${val <= 0 ? 'zero' : 'empty'}"));
                   } else {
                     setState(() => ordPrice = v);
                     _marginUpdate();
@@ -455,21 +668,22 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
         style: WebTextStyles.sub(
           isDarkTheme: theme.isDarkMode,
           fontWeight: WebFonts.regular,
-          
         ),
       ),
       const SizedBox(height: 6),
       SizedBox(
         height: 44,
         child: CustomTextFormField(
-          fillColor: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
+          fillColor:
+              theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
           hintText: "0.00",
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
           textCtrl: trgCtrl,
           textAlign: TextAlign.start,
           onChanged: (value) {
             if (value.isEmpty) {
-              ScaffoldMessenger.of(context).showSnackBar(warningMessage(context, "Trigger can not be empty"));
+              ScaffoldMessenger.of(context).showSnackBar(
+                  warningMessage(context, "Trigger can not be empty"));
             } else {
               _marginUpdate();
             }
@@ -477,9 +691,10 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
           style: WebTextStyles.custom(
             fontSize: 16,
             isDarkTheme: theme.isDarkMode,
-            color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+            color: theme.isDarkMode
+                ? colors.textPrimaryDark
+                : colors.textPrimaryLight,
             fontWeight: WebFonts.regular,
-            
           ),
         ),
       )
@@ -495,7 +710,6 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
           style: WebTextStyles.sub(
             isDarkTheme: theme.isDarkMode,
             fontWeight: WebFonts.bold,
-            
           ),
         ),
         trailing: Switch(
@@ -504,7 +718,9 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
             setState(() {
               _isStoplossOrder = v;
               _updatePriceType();
-              ref.read(ordInputProvider).chngPriceType(priceType, widget.orderArg.exchange);
+              ref
+                  .read(ordInputProvider)
+                  .chngPriceType(priceType, widget.orderArg.exchange);
               _marginUpdate();
             });
           },
@@ -517,7 +733,6 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
           style: WebTextStyles.sub(
             isDarkTheme: theme.isDarkMode,
             fontWeight: WebFonts.bold,
-            
           ),
         ),
         trailing: Switch(
@@ -532,7 +747,6 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
           style: WebTextStyles.sub(
             isDarkTheme: theme.isDarkMode,
             fontWeight: WebFonts.bold,
-            
           ),
         ),
         trailing: Switch(
@@ -544,7 +758,8 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
         Row(children: [
           DropdownButton<String>(
             value: validityType,
-            items: (widget.orderArg.exchange == "BSE" || widget.orderArg.exchange == "BFO"
+            items: (widget.orderArg.exchange == "BSE" ||
+                        widget.orderArg.exchange == "BFO"
                     ? const ["DAY", "IOC", "EOS"]
                     : const ["DAY", "IOC"]) // web quick scope
                 .map((e) => DropdownMenuItem(value: e, child: Text(e)))
@@ -556,7 +771,9 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
             child: SizedBox(
               height: 44,
               child: CustomTextFormField(
-                fillColor: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
+                fillColor: theme.isDarkMode
+                    ? colors.darkGrey
+                    : const Color(0xffF1F3F8),
                 hintText: "Disclosed Qty",
                 inputFormate: [FilteringTextInputFormatter.digitsOnly],
                 keyboardType: TextInputType.number,
@@ -584,20 +801,19 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
               trantype: isBuy! ? "B" : "S",
               tsym: "${widget.scripInfo.tsym}");
           ref.read(orderProvider).fetchGetBrokerage(bInput, context);
-          showModalBottomSheet(
+          showDialog(
               context: context,
-              isScrollControlled: true,
-              shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
-              builder: (ctx) => const MarginDetailsBottomsheet());
+              builder: (ctx) => const MarginDetailsSheetWeb());
         },
         widget: Row(children: [
           Text(
             "Required ",
             style: WebTextStyles.caption(
               isDarkTheme: theme.isDarkMode,
-              color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+              color: theme.isDarkMode
+                  ? colors.textSecondaryDark
+                  : colors.textSecondaryLight,
               fontWeight: WebFonts.medium,
-              
             ),
           ),
           Text(
@@ -605,11 +821,13 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
             style: WebTextStyles.caption(
               isDarkTheme: theme.isDarkMode,
               fontWeight: WebFonts.semiBold,
-              color: !theme.isDarkMode ? colors.colorBlue : colors.colorLightBlue,
-              
+              color:
+                  !theme.isDarkMode ? colors.colorBlue : colors.colorLightBlue,
             ),
           ),
-          Icon(Icons.arrow_drop_down, color: !theme.isDarkMode ? colors.colorBlue : colors.colorLightBlue)
+          Icon(Icons.arrow_drop_down,
+              color:
+                  !theme.isDarkMode ? colors.colorBlue : colors.colorLightBlue)
         ]),
       ),
       const SizedBox(width: 12),
@@ -617,13 +835,15 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
         "Balance ${clientFundDetail?.avlMrg ?? ''}",
         style: WebTextStyles.caption(
           isDarkTheme: theme.isDarkMode,
-          color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+          color: theme.isDarkMode
+              ? colors.textPrimaryDark
+              : colors.textPrimaryLight,
           fontWeight: WebFonts.medium,
-          
         ),
       ),
       const Spacer(),
-      IconButton(onPressed: _marginUpdate, icon: SvgPicture.asset(assets.reloadIcon))
+      IconButton(
+          onPressed: _marginUpdate, icon: SvgPicture.asset(assets.reloadIcon))
     ]);
   }
 
@@ -645,14 +865,19 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
     if (priceType == "Market" || priceType == "SL MKT") {
       priceCtrl.text = "Market";
       final ltp = double.tryParse(widget.orderArg.ltp ?? "0") ?? 0.0;
-      final prot = double.tryParse(mktProtCtrl.text.isEmpty ? "0" : mktProtCtrl.text) ?? 0.0;
+      final prot =
+          double.tryParse(mktProtCtrl.text.isEmpty ? "0" : mktProtCtrl.text) ??
+              0.0;
       double px = isBuy! ? ltp + (ltp * prot / 100) : ltp - (ltp * prot / 100);
-      double result = px + (double.tryParse(widget.scripInfo.ti?.toString() ?? '0') ?? 0) / 2;
-      final step = double.tryParse(widget.scripInfo.ti?.toString() ?? '0') ?? 0.0;
+      double result = px +
+          (double.tryParse(widget.scripInfo.ti?.toString() ?? '0') ?? 0) / 2;
+      final step =
+          double.tryParse(widget.scripInfo.ti?.toString() ?? '0') ?? 0.0;
       if (step > 0) {
         result -= result % step;
       }
-      final uc = double.tryParse(widget.scripInfo.uc?.toString() ?? '0') ?? double.infinity;
+      final uc = double.tryParse(widget.scripInfo.uc?.toString() ?? '0') ??
+          double.infinity;
       final lc = double.tryParse(widget.scripInfo.lc?.toString() ?? '0') ?? 0.0;
       if (result >= uc) {
         ordPrice = "${widget.scripInfo.uc ?? 0.00}";
@@ -681,7 +906,10 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
         prctyp: ref.read(ordInputProvider).prcType,
         prd: ref.read(ordInputProvider).orderType,
         qty: widget.scripInfo.exch == 'MCX'
-            ? ((double.tryParse(_convertQtyOrAmtValue(qtyCtrl.text))?.toInt() ?? 0) * lotSize).toString()
+            ? ((double.tryParse(_convertQtyOrAmtValue(qtyCtrl.text))?.toInt() ??
+                        0) *
+                    lotSize)
+                .toString()
             : _convertQtyOrAmtValue(qtyCtrl.text),
         rorgprc: '0',
         rorgqty: '0',
@@ -689,7 +917,9 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
         tsym: "${widget.scripInfo.tsym}",
         blprc: '',
         bpprc: '',
-        trgprc: (priceType == "SL Limit" || priceType == "SL MKT") ? trgCtrl.text : "");
+        trgprc: (priceType == "SL Limit" || priceType == "SL MKT")
+            ? trgCtrl.text
+            : "");
     ref.read(orderProvider).fetchOrderMargin(input, context);
 
     BrokerageInput bInput = BrokerageInput(
@@ -697,7 +927,10 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
         prc: (priceType == "Market" || priceType == "SL MKT") ? "0" : ordPrice,
         prd: ref.read(ordInputProvider).orderType,
         qty: widget.scripInfo.exch == 'MCX'
-            ? ((double.tryParse(_convertQtyOrAmtValue(qtyCtrl.text))?.toInt() ?? 0) * lotSize).toString()
+            ? ((double.tryParse(_convertQtyOrAmtValue(qtyCtrl.text))?.toInt() ??
+                        0) *
+                    lotSize)
+                .toString()
             : _convertQtyOrAmtValue(qtyCtrl.text),
         trantype: isBuy! ? "B" : "S",
         tsym: "${widget.scripInfo.tsym}");
@@ -709,13 +942,19 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
     // Required fields
     if (_convertQtyOrAmtValue(qtyCtrl.text).trim().isEmpty ||
         priceCtrl.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(warningMessage(context,
-          _convertQtyOrAmtValue(qtyCtrl.text).isEmpty ? "Quantity can not be empty" : "Price can not be empty"));
+      ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+          context,
+          _convertQtyOrAmtValue(qtyCtrl.text).isEmpty
+              ? "Quantity can not be empty"
+              : "Price can not be empty"));
       return;
     }
     if (_convertQtyOrAmtValue(qtyCtrl.text) == '0' || priceCtrl.text == '0') {
-      ScaffoldMessenger.of(context).showSnackBar(warningMessage(context,
-          _convertQtyOrAmtValue(qtyCtrl.text) == '0' ? "Quantity can not be 0" : "Price can not be 0"));
+      ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+          context,
+          _convertQtyOrAmtValue(qtyCtrl.text) == '0'
+              ? "Quantity can not be 0"
+              : "Price can not be 0"));
       return;
     }
 
@@ -723,8 +962,8 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
     final enteredQty = int.tryParse(_convertQtyOrAmtValue(qtyCtrl.text)) ?? 0;
     final qRounded = ((enteredQty / lotSize).round() * lotSize);
     if (enteredQty != qRounded && widget.scripInfo.exch != 'MCX') {
-      ScaffoldMessenger.of(context).showSnackBar(
-          warningMessage(context, "Quantity should be multiple of lot size $lotSize => $qRounded"));
+      ScaffoldMessenger.of(context).showSnackBar(warningMessage(context,
+          "Quantity should be multiple of lot size $lotSize => $qRounded"));
       return;
     }
 
@@ -737,9 +976,8 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
       remainder = enteredQty % frezQty;
       final totalOrders = slices + (remainder > 0 ? 1 : 0);
       if (totalOrders > frezQtyOrderSliceMaxLimit) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            warningMessage(context,
-                "Quantity can only be split into a maximum of $frezQtyOrderSliceMaxLimit slice. (Ex: $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQty * frezQtyOrderSliceMaxLimit})"));
+        ScaffoldMessenger.of(context).showSnackBar(warningMessage(context,
+            "Quantity can only be split into a maximum of $frezQtyOrderSliceMaxLimit slice. (Ex: $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQty * frezQtyOrderSliceMaxLimit})"));
         return;
       }
       // Confirm surveillance before showing slice sheet
@@ -765,20 +1003,22 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
 
     // Tick validations (only for Limit)
     if (priceType == "Limit") {
-      final r = _roundOffWithInterval(double.tryParse(priceCtrl.text) ?? 0, tik).toStringAsFixed(2);
+      final r = _roundOffWithInterval(double.tryParse(priceCtrl.text) ?? 0, tik)
+          .toStringAsFixed(2);
       if ((double.tryParse(priceCtrl.text) ?? 0) != double.parse(r)) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            warningMessage(context, "Price should be multiple of tick size $tik => $r"));
+        ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+            context, "Price should be multiple of tick size $tik => $r"));
         return;
       }
     }
 
     // Market protection for market orders
     if ((priceType == "Market" || priceType == "SL MKT")) {
-      final prot = int.tryParse(mktProtCtrl.text.isEmpty ? '0' : mktProtCtrl.text) ?? 0;
+      final prot =
+          int.tryParse(mktProtCtrl.text.isEmpty ? '0' : mktProtCtrl.text) ?? 0;
       if (prot > 20 || prot < 1) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(warningMessage(context, "Market Protection between 1% to 20%"));
+        ScaffoldMessenger.of(context).showSnackBar(
+            warningMessage(context, "Market Protection between 1% to 20%"));
         return;
       }
     }
@@ -786,7 +1026,8 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
     // Circuit validations for non-market
     if (priceType == "Limit") {
       final lc = double.tryParse("${widget.scripInfo.lc ?? 0.00}") ?? 0.0;
-      final uc = double.tryParse("${widget.scripInfo.uc ?? 0.00}") ?? double.infinity;
+      final uc =
+          double.tryParse("${widget.scripInfo.uc ?? 0.00}") ?? double.infinity;
       final px = double.tryParse(ordPrice) ?? 0.0;
       if (px < lc || px > uc) {
         ScaffoldMessenger.of(context).showSnackBar(warningMessage(
@@ -810,17 +1051,22 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
       prctype: ref.read(ordInputProvider).prcType,
       prd: ref.read(ordInputProvider).orderType,
       qty: widget.scripInfo.exch == 'MCX'
-          ? ((int.tryParse(_convertQtyOrAmtValue(qtyCtrl.text)) ?? 0) * lotSize).toString()
+          ? ((int.tryParse(_convertQtyOrAmtValue(qtyCtrl.text)) ?? 0) * lotSize)
+              .toString()
           : _convertQtyOrAmtValue(qtyCtrl.text),
       ret: validityType,
       trailprc: '',
       trantype: isBuy! ? 'B' : 'S',
       trgprc: "",
       tsym: widget.scripInfo.tsym!,
-      mktProt: (priceType == "Market" || priceType == "SL MKT") ? mktProtCtrl.text : '',
+      mktProt: (priceType == "Market" || priceType == "SL MKT")
+          ? mktProtCtrl.text
+          : '',
       channel: '',
     );
-    await ref.read(orderProvider).fetchPlaceOrder(context, input, widget.orderArg.isExit);
+    await ref
+        .read(orderProvider)
+        .fetchPlaceOrder(context, input, widget.orderArg.isExit);
     ref.read(orderProvider).setOrderloader(false);
     if (mounted) Navigator.of(context).maybePop();
   }
@@ -838,7 +1084,8 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
     });
   }
 
-  Future<void> _openSliceSheet(ThemesProvider theme, int enteredQty, int slices, int remainder) async {
+  Future<void> _openSliceSheet(
+      ThemesProvider theme, int enteredQty, int slices, int remainder) async {
     await showModalBottomSheet(
       isScrollControlled: true,
       useSafeArea: true,
@@ -868,76 +1115,11 @@ class _QuickOrderScreenWebState extends ConsumerState<QuickOrderScreenWeb> {
     );
   }
 
-  Future<void> _showSurveillanceBottomSheet(ThemesProvider theme, Future<void> Function() onContinue) async {
-    await showDialog(
-      context: context,
-      builder: (BuildContext context) => AlertDialog(
-          content: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  
-                  Row(children: [
-                    const Icon(Icons.warning_outlined,
-                        color: Color.fromARGB(190, 255, 170, 0), size: 24),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        " Exchange surveillance active",
-                        style: WebTextStyles.title(
-                          isDarkTheme: theme.isDarkMode,
-                          fontWeight: WebFonts.medium,
-                          
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ]),
-                  const SizedBox(height: 10),
-                  Text(
-                    "Please confirm to proceed with your order.",
-                    style: WebTextStyles.sub(
-                      isDarkTheme: theme.isDarkMode,
-                      fontWeight: WebFonts.regular,
-                      
-                      height: 1.6,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 45,
-                    child: ElevatedButton(
-                      onPressed: () async {
-                        Navigator.pop(context);
-                        await onContinue();
-                      },
-                      style: ElevatedButton.styleFrom(
-                        elevation: 0,
-                        backgroundColor:
-                            theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
-                        minimumSize: const Size(double.infinity, 45),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                      ),
-                      child: Text(
-                        "Continue",
-                        style: WebTextStyles.sub(
-                          isDarkTheme: theme.isDarkMode,
-                          color: colors.colorWhite,
-                          fontWeight: WebFonts.semiBold,
-                          
-                        ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: MediaQuery.of(context).viewInsets.bottom),
-                ],
-              ),
-          ),
-        );
+  Future<void> _showSurveillanceBottomSheet(
+      ThemesProvider theme, Future<void> Function() onContinue) async {
+    setState(() {
+      _showSurveillanceDialog = true;
+      _pendingSurveillanceAction = onContinue;
+    });
   }
 }
-
-

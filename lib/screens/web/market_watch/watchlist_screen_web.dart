@@ -17,6 +17,7 @@ import '../../../res/global_font_web.dart';
 import '../../../routes/route_names.dart';
 import '../../../sharedWidget/custom_text_btn_web.dart';
 import '../../../sharedWidget/list_divider.dart';
+import '../../../sharedWidget/cust_text_formfield.dart';
 import '../../Mobile/market_watch/my_stocks/stocks_screen.dart';
 import 'watchlist_card_web.dart';
 import 'search_dialog_web.dart';
@@ -666,7 +667,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                   children: [
                     for (final name in tabs)
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        padding: const EdgeInsets.symmetric(horizontal: 6),
                         child: _buildTabItem(name, wlName, theme, ref),
                       ),
                   ],
@@ -726,28 +727,47 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
 }
 
   Widget _buildTabItem(String name, String wlName, ThemesProvider theme, WidgetRef ref) {
+    final isActive = name == wlName;
+    
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       child: InkWell(
         onTap: () => _handleTabTap(name, ref.read(marketWatchProvider).marketWatchlist?.values?.toList().indexOf(name) ?? 0, ref),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          decoration: name == wlName
-              ? BoxDecoration(
-                  color:
-                      theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
-                  borderRadius: BorderRadius.circular(5),
-                )
-              : null,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+          decoration: BoxDecoration(
+            color: isActive
+                ? (theme.isDarkMode
+                    ? WebDarkColors.backgroundTertiary
+                    : WebColors.backgroundTertiary)
+                : (theme.isDarkMode
+                    ? WebDarkColors.surface
+                    : WebColors.surface),
+            border: Border.all(
+              color: isActive
+                  ? (theme.isDarkMode
+                      ? WebDarkColors.primary
+                      : WebColors.primary)
+                  : (theme.isDarkMode
+                      ? WebDarkColors.textSecondary
+                      : WebColors.textSecondary),
+              width: 1,
+            ),
+            borderRadius: BorderRadius.circular(30),
+          ),
           child: Text(
             _formatTabName(name),
             overflow: TextOverflow.ellipsis,
             style: WebTextStyles.para(
               isDarkTheme: theme.isDarkMode,
-              color: name == wlName
-                  ? (theme.isDarkMode ? WebDarkColors.surface : WebColors.surface)
-                  : (theme.isDarkMode ? WebDarkColors.navItem : WebColors.navItem),
-              fontWeight: name == wlName ? FontWeight.w700 : FontWeight.w700,
+              color: isActive
+                  ? (theme.isDarkMode
+                      ? WebDarkColors.textPrimary
+                      : WebColors.textPrimary)
+                  : (theme.isDarkMode
+                      ? WebDarkColors.navItem
+                      : WebColors.navItem),
+              fontWeight: FontWeight.w700,
             ),
           ),
         ),
@@ -907,7 +927,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
       color: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
       elevation: 8,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.zero,
       ),
       items: [
         _buildFilterMenuItem('Scrip Name', 'scrip', theme, currentSort),
@@ -941,35 +961,54 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
     return PopupMenuItem<String>(
       value: value,
       padding: EdgeInsets.zero,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        child: Row(
-          children: [
-            if (isActive) ...[
-              Icon(
-                isAscending ? Icons.arrow_upward : Icons.arrow_downward,
-                size: 16,
-                color: theme.isDarkMode
-                    ? WebDarkColors.primary
-                    : WebColors.primary,
+      child: SizedBox(
+        width: 150, // Fixed width to prevent resizing
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Row(
+            children: [
+              // Text on the left
+              Expanded(
+                child: Text(
+                  title,
+                  style: WebTextStyles.custom(
+                    fontSize: 13,
+                    isDarkTheme: theme.isDarkMode,
+                    color: isActive
+                        ? (theme.isDarkMode
+                            ? WebDarkColors.primary
+                            : WebColors.primary)
+                        : (theme.isDarkMode
+                            ? WebDarkColors.textPrimary
+                            : WebColors.textPrimary),
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ),
-              const SizedBox(width: 8),
+              // Reserve space for icon on the right (always 18px + 8px spacing)
+              SizedBox(
+                width: 26, // 18px icon + 8px spacing
+                child: isActive
+                    ? Row(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          const SizedBox(width: 8),
+                          Icon(
+                            isAscending
+                                ? Icons.arrow_upward
+                                : Icons.arrow_downward,
+                            size: 18,
+                            color: theme.isDarkMode
+                                ? WebDarkColors.primary
+                                : WebColors.primary,
+                          ),
+                        ],
+                      )
+                    : const SizedBox.shrink(),
+              ),
             ],
-            Text(
-              title,
-              style: WebTextStyles.sub(
-                isDarkTheme: theme.isDarkMode,
-                color: isActive
-                    ? (theme.isDarkMode
-                        ? WebDarkColors.primary
-                        : WebColors.primary)
-                    : (theme.isDarkMode
-                        ? WebDarkColors.textPrimary
-                        : WebColors.textPrimary),
-                fontWeight: isActive ? WebFonts.semiBold : WebFonts.regular,
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -1025,10 +1064,10 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
           backgroundColor:
               theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(5),
           ),
           child: Container(
-            width: 620,
+            width: 500,
             constraints: const BoxConstraints(maxHeight: 600),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -1036,7 +1075,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
               children: [
                 // Header with close icon
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                   decoration: BoxDecoration(
                     border: Border(
                       bottom: BorderSide(
@@ -1072,10 +1111,10 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                               : Colors.black.withOpacity(.08),
                           onTap: () => Navigator.of(context).pop(),
                           child: Padding(
-                            padding: const EdgeInsets.all(6),
+                            padding: const EdgeInsets.all(5),
                             child: Icon(
                               Icons.close,
-                              size: 20,
+                              size: 18,
                               color: theme.isDarkMode
                                   ? WebDarkColors.iconSecondary
                                   : WebColors.iconSecondary,
@@ -1089,12 +1128,47 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
 
                 // Content area with padding
                 Padding(
-                  padding: const EdgeInsets.only(left: 16, right: 16, top: 0, bottom: 16),
+                  padding: const EdgeInsets.only(left: 16, right: 16, top: 6, bottom: 16),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Watchlist items with radio buttons
+
+                        if (watchlist.length - preDefWl.length < 10) // 4 predefined watchlists: My Stocks, Nifty50, Niftybank, Sensex
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Material(
+                              color: Colors.transparent,                          
+                              child: InkWell(
+                                onTap: () => _showCreateWatchlistDialog(context, ref),
+                                customBorder: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(5),
+                                ),
+                                splashColor: theme.isDarkMode
+                                    ? Colors.white.withOpacity(.15)
+                                    : Colors.black.withOpacity(.15),
+                                highlightColor: theme.isDarkMode
+                                    ? Colors.white.withOpacity(.08)
+                                    : Colors.black.withOpacity(.08),
+                                child: Container(
+                                  padding: const EdgeInsets.all(6),
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                    '+ Create New Watchlist',
+                                    style: WebTextStyles.custom(
+                                      fontSize: 13,
+                                      isDarkTheme: theme.isDarkMode,
+                                      color: WebColors.primary,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       Flexible(
                         child: ListView.builder(
                           shrinkWrap: true,
@@ -1111,7 +1185,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                               },
                               child: Container(
                                 padding: const EdgeInsets.symmetric(
-                                    vertical: 10, horizontal: 8),
+                                    vertical: 4, horizontal: 2),
                                 child: Row(
                                   children: [
                                     // Radio button
@@ -1128,17 +1202,19 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                                           ? WebDarkColors.primary
                                           : WebColors.primary,
                                     ),
-                                    const SizedBox(width: 8),
+                                    const SizedBox(width: 6),
 
                                     // Watchlist name
                                     Expanded(
                                       child: Text(
                                         _formatWatchlistName(watchlistName),
-                                        style: WebTextStyles.para(
+                                        style: WebTextStyles.custom(
+                                          fontSize: 13,
                                           isDarkTheme: theme.isDarkMode,
                                           color: theme.isDarkMode
                                               ? WebDarkColors.textPrimary
                                               : WebColors.textPrimary,
+                                          fontWeight: FontWeight.w700,
                                         ),
                                       ),
                                     ),
@@ -1161,7 +1237,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                                           child: Padding(
                                             padding: const EdgeInsets.all(6),
                                             child: Icon(
-                                              Icons.edit,
+                                              Icons.edit_outlined,
                                               size: 18,
                                               color: theme.isDarkMode
                                                   ? WebDarkColors.iconSecondary
@@ -1186,15 +1262,16 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                                           child: Padding(
                                             padding: const EdgeInsets.all(6),
                                             child: Icon(
-                                              Icons.delete,
+                                              Icons.delete_outline_outlined,
                                               size: 18,
                                               color: theme.isDarkMode
-                                                  ? WebDarkColors.iconSecondary
-                                                  : WebColors.iconSecondary,
+                                                  ? WebDarkColors.tertiary
+                                                  : WebColors.tertiary,
                                             ),
                                           ),
                                         ),
                                       ),
+                                      const SizedBox(width: 4),
                                     ],
                                   ],
                                 ),
@@ -1202,38 +1279,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                             );
                           },
                         ),
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      // Create new watchlist button - only show if user has less than 10 custom watchlists
-                      if (watchlist.length - preDefWl.length < 10) // 4 predefined watchlists: My Stocks, Nifty50, Niftybank, Sensex
-                        SizedBox(
-                          width: double.infinity,
-                          height: 40,
-                          child: ElevatedButton(
-                            onPressed: () => _showCreateWatchlistDialog(context, ref),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: theme.isDarkMode
-                                  ? WebDarkColors.primary
-                                  : WebColors.primary,
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(5),
-                              ),
-                            ),
-                            child: Text(
-                              'Create New Watchlist',
-                              style: WebTextStyles.sub(
-                                isDarkTheme: theme.isDarkMode,
-                                color: theme.isDarkMode
-                                    ? WebDarkColors.surface
-                                    : WebColors.surface,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ),
-                        ),
+                      ),                    
                     ],
                   ),
                 ),
@@ -1307,110 +1353,141 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
           backgroundColor:
               theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(5),
           ),
           child: Container(
             width: 400,
-            padding: const EdgeInsets.all(16),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Edit Watchlist',
-                      style: WebTextStyles.title(
-                        isDarkTheme: theme.isDarkMode,
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(
                         color: theme.isDarkMode
-                            ? WebDarkColors.textPrimary
-                            : WebColors.textPrimary,
-                        fontWeight: FontWeight.w700,
+                            ? WebDarkColors.divider
+                            : WebColors.divider,
                       ),
                     ),
-                    Material(
-                      color: Colors.transparent,
-                      shape: const CircleBorder(),
-                      child: InkWell(
-                        customBorder: const CircleBorder(),
-                        splashColor: theme.isDarkMode
-                            ? Colors.white.withOpacity(.15)
-                            : Colors.black.withOpacity(.15),
-                        highlightColor: theme.isDarkMode
-                            ? Colors.white.withOpacity(.08)
-                            : Colors.black.withOpacity(.08),
-                        onTap: () => Navigator.of(context).pop(),
-                        child: Padding(
-                          padding: const EdgeInsets.all(8),
-                          child: Icon(
-                            Icons.close,
-                            size: 20,
-                            color: theme.isDarkMode
-                                ? WebDarkColors.iconSecondary
-                                : WebColors.iconSecondary,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Edit Watchlist',
+                        style: WebTextStyles.sub(
+                          isDarkTheme: theme.isDarkMode,
+                          color: theme.isDarkMode
+                              ? WebDarkColors.textPrimary
+                              : WebColors.textPrimary,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      Material(
+                        color: Colors.transparent,
+                        shape: const CircleBorder(),
+                        child: InkWell(
+                          customBorder: const CircleBorder(),
+                          splashColor: theme.isDarkMode
+                              ? Colors.white.withOpacity(.15)
+                              : Colors.black.withOpacity(.15),
+                          highlightColor: theme.isDarkMode
+                              ? Colors.white.withOpacity(.08)
+                              : Colors.black.withOpacity(.08),
+                          onTap: () => Navigator.of(context).pop(),
+                          child: Padding(
+                            padding: const EdgeInsets.all(5),
+                            child: Icon(
+                              Icons.close,
+                              size: 18,
+                              color: theme.isDarkMode
+                                  ? WebDarkColors.iconSecondary
+                                  : WebColors.iconSecondary,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: controller,
-                  decoration: InputDecoration(
-                    labelText: 'Watchlist Name',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide(
-                        color: theme.isDarkMode
-                            ? WebDarkColors.primary
-                            : WebColors.primary,
-                      ),
-                    ),
-                  ),
-                  style: WebTextStyles.sub(
-                    isDarkTheme: theme.isDarkMode,
-                    color: theme.isDarkMode
-                        ? WebDarkColors.textPrimary
-                        : WebColors.textPrimary,
+                    ],
                   ),
                 ),
-                const SizedBox(height: 24),
-                SizedBox(
-                  width: double.infinity,
-                  height: 40,
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      final newName = controller.text.trim();
-                      if (newName.isNotEmpty && newName != watchlistName) {
-                        // Let the provider method handle dialog closing and notifications
-                        await _handleWatchlistRename(
-                            watchlistName, newName, ref, context);
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: theme.isDarkMode
-                          ? WebDarkColors.primary
-                          : WebColors.primary,
-                      minimumSize: const Size(0, 40),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(5),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(
+                        height: 40,
+                        child: CustomTextFormField(
+                          fillColor: theme.isDarkMode
+                              ? WebDarkColors.backgroundTertiary
+                              : WebColors.backgroundTertiary,
+                          onChanged: (value) {
+                            // Handle change if needed
+                          },
+                          hintText: "Enter watchlist name",
+                          hintStyle: WebTextStyles.custom(
+                            fontSize: 13,
+                            isDarkTheme: theme.isDarkMode,
+                            color: theme.isDarkMode
+                                ? WebDarkColors.textSecondary
+                                : WebColors.textSecondary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          keyboardType: TextInputType.text,
+                          style: WebTextStyles.custom(
+                            fontSize: 13,
+                            isDarkTheme: theme.isDarkMode,
+                            color: theme.isDarkMode
+                                ? WebDarkColors.textPrimary
+                                : WebColors.textPrimary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          textCtrl: controller,
+                          textAlign: TextAlign.start,
+                          autofocus: true,
+                          inputFormate: [
+                            FilteringTextInputFormatter.allow(
+                              RegExp(r'[a-zA-Z0-9 ]'),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    child: Text(
-                      'Save',
-                      style: WebTextStyles.sub(
-                        isDarkTheme: theme.isDarkMode,
-                        color: theme.isDarkMode
-                            ? WebDarkColors.surface
-                            : WebColors.surface,
-                        fontWeight: FontWeight.w700,
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 40,
+                        child: ElevatedButton(
+                          onPressed: () async {
+                            final newName = controller.text.trim();
+                            if (newName.isNotEmpty && newName != watchlistName) {
+                              // Let the provider method handle dialog closing and notifications
+                              await _handleWatchlistRename(
+                                  watchlistName, newName, ref, context);
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: theme.isDarkMode
+                                ? WebDarkColors.primary
+                                : WebColors.primary,
+                            minimumSize: const Size(0, 40),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(5),
+                            ),
+                          ),
+                          child: Text(
+                            'Save',
+                            style: WebTextStyles.custom(
+                              fontSize: 13,
+                              isDarkTheme: theme.isDarkMode,
+                              color: WebColors.surface,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
+                    ],
                   ),
                 ),
               ],
@@ -1433,95 +1510,121 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
           backgroundColor:
               theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(5),
           ),
           child: Container(
             width: 400,
-            padding: const EdgeInsets.all(20),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Delete Watchlist',
-                      style: WebTextStyles.title(
-                        isDarkTheme: theme.isDarkMode,
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(
                         color: theme.isDarkMode
-                            ? WebDarkColors.textPrimary
-                            : WebColors.textPrimary,
-                        fontWeight: FontWeight.w700,
+                            ? WebDarkColors.divider
+                            : WebColors.divider,
                       ),
                     ),
-                    Material(
-                      color: Colors.transparent,
-                      shape: const CircleBorder(),
-                      child: InkWell(
-                        customBorder: const CircleBorder(),
-                        splashColor: theme.isDarkMode
-                            ? Colors.white.withOpacity(.15)
-                            : Colors.black.withOpacity(.15),
-                        highlightColor: theme.isDarkMode
-                            ? Colors.white.withOpacity(.08)
-                            : Colors.black.withOpacity(.08),
-                        onTap: () => Navigator.of(context).pop(),
-                        child: Padding(
-                          padding: const EdgeInsets.all(8),
-                          child: Icon(
-                            Icons.close,
-                            size: 20,
-                            color: theme.isDarkMode
-                                ? WebDarkColors.iconSecondary
-                                : WebColors.iconSecondary,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Delete Watchlist',
+                        style: WebTextStyles.sub(
+                          isDarkTheme: theme.isDarkMode,
+                          color: theme.isDarkMode
+                              ? WebDarkColors.textPrimary
+                              : WebColors.textPrimary,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      Material(
+                        color: Colors.transparent,
+                        shape: const CircleBorder(),
+                        child: InkWell(
+                          customBorder: const CircleBorder(),
+                          splashColor: theme.isDarkMode
+                              ? Colors.white.withOpacity(.15)
+                              : Colors.black.withOpacity(.15),
+                          highlightColor: theme.isDarkMode
+                              ? Colors.white.withOpacity(.08)
+                              : Colors.black.withOpacity(.08),
+                          onTap: () => Navigator.of(context).pop(),
+                          child: Padding(
+                            padding: const EdgeInsets.all(5),
+                            child: Icon(
+                              Icons.close,
+                              size: 18,
+                              color: theme.isDarkMode
+                                  ? WebDarkColors.iconSecondary
+                                  : WebColors.iconSecondary,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'Are you sure you want to delete "${_formatWatchlistName(watchlistName)}"?',
-                  style: WebTextStyles.sub(
-                    isDarkTheme: theme.isDarkMode,
-                    color: theme.isDarkMode
-                        ? WebDarkColors.textPrimary
-                        : WebColors.textPrimary,
+                    ],
                   ),
                 ),
-                const SizedBox(height: 24),
-                SizedBox(
-                  width: double.infinity,
-                  height: 40,
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      Navigator.of(deleteDialogContext)
-                          .pop(); // Close delete confirmation dialog
-                      await _handleWatchlistDelete(watchlistName, ref);
-                      // Small delay to ensure deletion completes
-                      await Future.delayed(const Duration(milliseconds: 200));
-                      // Close main dialog after successful deletion
-                      Navigator.of(mainDialogContext).pop();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: theme.isDarkMode
-                          ? WebDarkColors.primary
-                          : WebColors.primary,
-                      minimumSize: const Size(0, 40),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(5),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            'Are you sure you want to delete "${_formatWatchlistName(watchlistName)}"?',
+                            style: WebTextStyles.custom(
+                              fontSize: 13,
+                              isDarkTheme: theme.isDarkMode,
+                              color: theme.isDarkMode
+                                  ? WebDarkColors.textPrimary
+                                  : WebColors.textPrimary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                    child: Text(
-                      'Delete',
-                      style: WebTextStyles.sub(
-                        isDarkTheme: false,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w700,
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 40,
+                        child: ElevatedButton(
+                          onPressed: () async {
+                            Navigator.of(deleteDialogContext)
+                                .pop(); // Close delete confirmation dialog
+                            await _handleWatchlistDelete(watchlistName, ref);
+                            // Small delay to ensure deletion completes
+                            await Future.delayed(const Duration(milliseconds: 200));
+                            // Close main dialog after successful deletion
+                            Navigator.of(mainDialogContext).pop();
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: theme.isDarkMode
+                                ? WebDarkColors.primary
+                                : WebColors.primary,
+                            minimumSize: const Size(0, 40),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(5),
+                            ),
+                          ),
+                          child: Text(
+                            'Delete',
+                            style: WebTextStyles.custom(
+                              fontSize: 13,
+                              isDarkTheme: theme.isDarkMode,
+                              color: WebColors.surface,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
+                    ],
                   ),
                 ),
               ],
@@ -1544,116 +1647,146 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
           backgroundColor:
               theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(5),
           ),
           child: Container(
             width: 400,
-            padding: const EdgeInsets.all(16),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Create New Watchlist',
-                      style: WebTextStyles.title(
-                        isDarkTheme: theme.isDarkMode,
+              children: [                
+                Container(
+                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(
                         color: theme.isDarkMode
-                            ? WebDarkColors.textPrimary
-                            : WebColors.textPrimary,
-                        fontWeight: FontWeight.w700,
+                            ? WebDarkColors.divider
+                            : WebColors.divider,
                       ),
                     ),
-                    Material(
-                      color: Colors.transparent,
-                      shape: const CircleBorder(),
-                      child: InkWell(
-                        customBorder: const CircleBorder(),
-                        splashColor: theme.isDarkMode
-                            ? Colors.white.withOpacity(.15)
-                            : Colors.black.withOpacity(.15),
-                        highlightColor: theme.isDarkMode
-                            ? Colors.white.withOpacity(.08)
-                            : Colors.black.withOpacity(.08),
-                        onTap: () => Navigator.of(context).pop(),
-                        child: Padding(
-                          padding: const EdgeInsets.all(8),
-                          child: Icon(
-                            Icons.close,
-                            size: 20,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'New Watchlist',
+                        style: WebTextStyles.sub(
+                          isDarkTheme: theme.isDarkMode,
+                          color: theme.isDarkMode
+                              ? WebDarkColors.textPrimary
+                              : WebColors.textPrimary,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      Material(
+                        color: Colors.transparent,
+                        shape: const CircleBorder(),
+                        child: InkWell(
+                          customBorder: const CircleBorder(),
+                          splashColor: theme.isDarkMode
+                              ? Colors.white.withOpacity(.15)
+                              : Colors.black.withOpacity(.15),
+                          highlightColor: theme.isDarkMode
+                              ? Colors.white.withOpacity(.08)
+                              : Colors.black.withOpacity(.08),
+                          onTap: () => Navigator.of(context).pop(),
+                          child: Padding(
+                            padding: const EdgeInsets.all(5),
+                            child: Icon(
+                              Icons.close,
+                              size: 18,
+                              color: theme.isDarkMode
+                                  ? WebDarkColors.iconSecondary
+                                  : WebColors.iconSecondary,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(
+                        height: 40,
+                        child: CustomTextFormField(
+                          fillColor: theme.isDarkMode
+                              ? WebDarkColors.backgroundTertiary
+                              : WebColors.backgroundTertiary,
+                          onChanged: (value) {
+                            // Handle change if needed
+                          },
+                          hintText: "Enter watchlist name",
+                          hintStyle: WebTextStyles.custom(
+                            fontSize: 13,
+                            isDarkTheme: theme.isDarkMode,
                             color: theme.isDarkMode
-                                ? WebDarkColors.iconSecondary
-                                : WebColors.iconSecondary,
+                                ? WebDarkColors.textSecondary
+                                : WebColors.textSecondary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          keyboardType: TextInputType.text,
+                          style: WebTextStyles.custom(
+                            fontSize: 13,
+                            isDarkTheme: theme.isDarkMode,
+                            color: theme.isDarkMode
+                                ? WebDarkColors.textPrimary
+                                : WebColors.textPrimary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          textCtrl: controller,
+                          textAlign: TextAlign.start,
+                          autofocus: true,
+                          inputFormate: [
+                            FilteringTextInputFormatter.allow(
+                              RegExp(r'[a-zA-Z0-9 ]'),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 40,
+                        child: ElevatedButton(
+                          onPressed: () async {
+                            final name = controller.text.trim();
+                            if (name.isNotEmpty) {
+                              Navigator.of(createDialogContext)
+                                  .pop(); // Close create dialog
+                              await _handleWatchlistCreate(name, ref);
+                              // Small delay to ensure creation completes
+                              await Future.delayed(
+                                  const Duration(milliseconds: 200));
+                              // Close main dialog after successful creation
+                              Navigator.of(mainDialogContext).pop();
+                            }
+                          },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: theme.isDarkMode
+                              ? WebDarkColors.primary
+                              : WebColors.primary,
+                          minimumSize: const Size(0, 40),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                        ),
+                        child: Text(
+                          'Create',
+                          style: WebTextStyles.custom(
+                            fontSize: 13,
+                            isDarkTheme: theme.isDarkMode,
+                            color: WebColors.surface,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
                       ),
                     ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: controller,
-                  decoration: InputDecoration(
-                    labelText: 'Watchlist Name',
-                    hintText: 'Enter watchlist name',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide(
-                        color: theme.isDarkMode
-                            ? WebDarkColors.primary
-                            : WebColors.primary,
-                      ),
-                    ),
-                  ),
-                  style: WebTextStyles.sub(
-                    isDarkTheme: theme.isDarkMode,
-                    color: theme.isDarkMode
-                        ? WebDarkColors.textPrimary
-                        : WebColors.textPrimary,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                SizedBox(
-                  width: double.infinity,
-                  height: 40,
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      final name = controller.text.trim();
-                      if (name.isNotEmpty) {
-                        Navigator.of(createDialogContext)
-                            .pop(); // Close create dialog
-                        await _handleWatchlistCreate(name, ref);
-                        // Small delay to ensure creation completes
-                        await Future.delayed(
-                            const Duration(milliseconds: 200));
-                        // Close main dialog after successful creation
-                        Navigator.of(mainDialogContext).pop();
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: theme.isDarkMode
-                          ? WebDarkColors.primary
-                          : WebColors.primary,
-                      minimumSize: const Size(0, 40),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                    ),
-                    child: Text(
-                      'Create',
-                      style: WebTextStyles.sub(
-                        isDarkTheme: theme.isDarkMode,
-                        color: theme.isDarkMode
-                            ? WebDarkColors.surface
-                            : WebColors.surface,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
+                    ],
                   ),
                 ),
               ],

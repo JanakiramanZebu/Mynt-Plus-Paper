@@ -11,7 +11,6 @@ import '../../../../provider/websocket_provider.dart';
 import '../../../../res/res.dart';
 import '../../../../res/web_colors.dart';
 import '../../../../res/global_font_web.dart';
-import '../../../../sharedWidget/custom_exch_badge.dart';
 import '../../../../sharedWidget/list_divider.dart';
 
 class IndexBottomSheetWeb extends ConsumerStatefulWidget {
@@ -28,6 +27,7 @@ class _IndexBottomSheetWebState extends ConsumerState<IndexBottomSheetWeb> {
   late PageController _pageController;
   final List<String> _exchanges = ["NSE", "BSE", "MCX"];
   int _currentPageIndex = 0;
+  final Map<int, ScrollController> _scrollControllers = {};
 
   @override
   void initState() {
@@ -39,11 +39,21 @@ class _IndexBottomSheetWebState extends ConsumerState<IndexBottomSheetWeb> {
     if (_currentPageIndex == -1) _currentPageIndex = 0;
 
     _pageController = PageController(initialPage: _currentPageIndex);
+    
+    // Initialize scroll controllers for each exchange/page
+    for (int i = 0; i < _exchanges.length; i++) {
+      _scrollControllers[i] = ScrollController();
+    }
   }
 
   @override
   void dispose() {
     _pageController.dispose();
+    // Dispose all scroll controllers
+    for (var controller in _scrollControllers.values) {
+      controller.dispose();
+    }
+    _scrollControllers.clear();
     super.dispose();
   }
 
@@ -54,47 +64,64 @@ class _IndexBottomSheetWebState extends ConsumerState<IndexBottomSheetWeb> {
     final marketWatch = ref.watch(marketWatchProvider);
 
     return Container(
-      width: 600,
+      width: 400,
       height: 600,
       decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: theme.isDarkMode
-                ? WebDarkColors.border
-                : WebColors.border,
-          ),
-          color: theme.isDarkMode
-              ? WebDarkColors.background
-              : WebColors.background,
+          borderRadius: BorderRadius.circular(5),
+          color: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Header with close button
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+            Container(
+               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(
+                        color: theme.isDarkMode
+                            ? WebDarkColors.divider
+                            : WebColors.divider,
+                      ),
+                    ),
+                  ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
                     "Indices",
-                    style: WebTextStyles.title(
-                      isDarkTheme: theme.isDarkMode,
-                      color: theme.isDarkMode
-                          ? WebDarkColors.textPrimary
-                          : WebColors.textPrimary,
-                      fontWeight: WebFonts.bold,
-                    ),
+                    style: WebTextStyles.sub(
+                          isDarkTheme: theme.isDarkMode,
+                          color: theme.isDarkMode
+                              ? WebDarkColors.textPrimary
+                              : WebColors.textPrimary,
+                          fontWeight: FontWeight.w700,
+                        ),
                   ),
-                  IconButton(
-                    icon: Icon(
-                      Icons.close,
-                      color: theme.isDarkMode
-                          ? WebDarkColors.textSecondary
-                          : WebColors.textSecondary,
-                    ),
-                    onPressed: () => Navigator.of(context).pop(),
-                  ),
+                 Material(
+                        color: Colors.transparent,
+                        shape: const CircleBorder(),
+                        child: InkWell(
+                          customBorder: const CircleBorder(),
+                          splashColor: theme.isDarkMode
+                              ? Colors.white.withOpacity(.15)
+                              : Colors.black.withOpacity(.15),
+                          highlightColor: theme.isDarkMode
+                              ? Colors.white.withOpacity(.08)
+                              : Colors.black.withOpacity(.08),
+                          onTap: () => Navigator.of(context).pop(),
+                          child: Padding(
+                            padding: const EdgeInsets.all(5),
+                            child: Icon(
+                              Icons.close,
+                              size: 18,
+                              color: theme.isDarkMode
+                                  ? WebDarkColors.iconSecondary
+                                  : WebColors.iconSecondary,
+                            ),
+                          ),
+                        ),
+                      ),
                 ],
               ),
             ),
@@ -146,7 +173,8 @@ class _IndexBottomSheetWebState extends ConsumerState<IndexBottomSheetWeb> {
                                           horizontal: 10, vertical: 6),
                                       child: Text(
                                         exchange,
-                                        style: WebTextStyles.sub(
+                                        style: WebTextStyles.custom(
+                                          fontSize: 13,
                                           isDarkTheme: theme.isDarkMode,
                                           color: isSelected
                                               ? theme.isDarkMode
@@ -155,9 +183,7 @@ class _IndexBottomSheetWebState extends ConsumerState<IndexBottomSheetWeb> {
                                               : theme.isDarkMode
                                                   ? WebDarkColors.textSecondary
                                                   : WebColors.textSecondary,
-                                          fontWeight: isSelected
-                                              ? WebFonts.bold
-                                              : WebFonts.regular,
+                                          fontWeight: FontWeight.w700,
                                         ),
                                         overflow: TextOverflow.ellipsis,
                                         maxLines: 1,
@@ -188,14 +214,14 @@ class _IndexBottomSheetWebState extends ConsumerState<IndexBottomSheetWeb> {
               ),
             ),
 
-            Divider(
-                color: theme.isDarkMode
-                    ? WebDarkColors.divider
-                    : WebColors.divider),
+            // Divider(
+            //     color: theme.isDarkMode
+            //         ? WebDarkColors.divider
+            //         : WebColors.divider),
 
             // Info text
             Container(
-              padding: const EdgeInsets.symmetric(vertical: 8),
+              padding: const EdgeInsets.symmetric(vertical: 4),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -207,14 +233,15 @@ class _IndexBottomSheetWebState extends ConsumerState<IndexBottomSheetWeb> {
                     width: 16,
                     height: 16,
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 4),
                   Text(
                     "Click icon to replace symbol in Slot ${widget.indexPosition + 1}",
-                    style: WebTextStyles.para(
+                    style: WebTextStyles.caption(
                       isDarkTheme: theme.isDarkMode,
                       color: theme.isDarkMode
                           ? WebDarkColors.primary
                           : WebColors.primary,
+                          fontWeight: FontWeight.w700,
                     ),
                   ),
                 ],
@@ -235,40 +262,57 @@ class _IndexBottomSheetWebState extends ConsumerState<IndexBottomSheetWeb> {
                       _exchanges[index], context);
                 },
                 itemBuilder: (context, pageIndex) {
+                  final scrollController = _scrollControllers[pageIndex]!;
+                  
                   return indexProvide.isLoad
                       ? const Center(child: CircularProgressIndicator())
                       : indexProvide.indValuesList.isNotEmpty
-                          ? ListView.builder(
-                              shrinkWrap: false,
-                              physics: const BouncingScrollPhysics(
-                                  parent: AlwaysScrollableScrollPhysics()),
-                              itemCount: indexProvide.indValuesList.length * 2 - 1,
-                              itemBuilder: (BuildContext context, idx) {
-                                // For odd indices, show divider
-                                if (idx.isOdd) {
-                                  return ListDivider();
-                                }
+                          ? ScrollConfiguration(
+                              behavior: const MaterialScrollBehavior()
+                                  .copyWith(scrollbars: false),
+                              child: RawScrollbar(
+                                controller: scrollController,
+                                thumbVisibility: true,
+                                thickness: 6,
+                                radius: const Radius.circular(0),
+                                thumbColor: theme.isDarkMode
+                                    ? WebDarkColors.textSecondary
+                                        .withOpacity(0.5)
+                                    : WebColors.textSecondary.withOpacity(0.5),
+                                child: ListView.builder(
+                                  controller: scrollController,
+                                  shrinkWrap: false,
+                                  physics: const BouncingScrollPhysics(
+                                      parent: AlwaysScrollableScrollPhysics()),
+                                  itemCount: indexProvide.indValuesList.length * 2 - 1,
+                                  itemBuilder: (BuildContext context, idx) {
+                                    // For odd indices, show divider
+                                    if (idx.isOdd) {
+                                      return ListDivider();
+                                    }
 
-                                int index = idx ~/ 2;
-                                // Get the current index data
-                                var itemData = indexProvide.indValuesList[index];
+                                    int index = idx ~/ 2;
+                                    // Get the current index data
+                                    var itemData = indexProvide.indValuesList[index];
 
-                                // Determine if the index is checked
-                                bool ischeck = indexProvide.defaultIndexList!
-                                    .indValues!
-                                    .any((element) =>
-                                        element.token == itemData.token);
+                                    // Determine if the index is checked
+                                    bool ischeck = indexProvide.defaultIndexList!
+                                        .indValues!
+                                        .any((element) =>
+                                            element.token == itemData.token);
 
-                                return IndexListItemWithStreamWeb(
-                                  key: ValueKey('index-item-${itemData.token}'),
-                                  itemData: itemData,
-                                  indexProvider: indexProvide,
-                                  marketWatch: marketWatch,
-                                  ischeck: ischeck,
-                                  isDarkMode: theme.isDarkMode,
-                                  indexPosition: widget.indexPosition,
-                                );
-                              })
+                                    return IndexListItemWithStreamWeb(
+                                      key: ValueKey('index-item-${itemData.token}'),
+                                      itemData: itemData,
+                                      indexProvider: indexProvide,
+                                      marketWatch: marketWatch,
+                                      ischeck: ischeck,
+                                      isDarkMode: theme.isDarkMode,
+                                      indexPosition: widget.indexPosition,
+                                    );
+                                  }),
+                              ),
+                            )
                           : Center(
                               child: Text(
                                 "No Data found",
@@ -510,7 +554,7 @@ class _IndexListItemWithStreamWebState
     return InkWell(
       onTap: () => _handleTap(context),
       child: Container(
-        padding: const EdgeInsets.only(left: 16, right: 16, top: 8, bottom: 16),
+        padding: const EdgeInsets.only(left: 10, right: 10, top: 10, bottom: 10),
         color: widget.ischeck
             ? (widget.isDarkMode
                 ? WebDarkColors.surfaceVariant
@@ -625,16 +669,28 @@ class _StaticIndexContentWeb extends StatelessWidget {
             itemData.idxname!.toUpperCase(),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: WebTextStyles.sub(
+            style: WebTextStyles.custom(
+              fontSize: 13,
               isDarkTheme: isDarkMode,
               color: isDarkMode
                   ? WebDarkColors.textPrimary
                   : WebColors.textPrimary,
-              fontWeight: WebFonts.regular,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ),
-        CustomExchBadge(exch: exch ?? ""),
+
+         Text(
+           exch ?? "",
+            style: WebTextStyles.custom(
+              fontSize: 10,
+              isDarkTheme: isDarkMode,
+              color: isDarkMode
+                  ? WebDarkColors.textPrimary
+                  : WebColors.textPrimary,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
       ],
     );
   }
@@ -705,15 +761,15 @@ class _DynamicPriceContentWeb extends StatelessWidget {
     // Pre-calculate all styles at once to avoid repeated calculations
     final priceStyle = _getCachedStyle(
       isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
-      12,
-      WebFonts.regular,
+      13,
+      FontWeight.w700,
     );
 
     final changeColor = _getCachedChangeColor(ch, chp);
     final changeStyle = _getCachedStyle(
       changeColor,
-      16,
-      WebFonts.regular,
+      13,
+      FontWeight.w700,
     );
 
     // Create the price text once with proper formatting
@@ -796,8 +852,8 @@ class _ActionButtonWeb extends StatelessWidget {
                       : (isDarkMode
                           ? WebDarkColors.icon
                           : WebColors.icon),
-              width: 20,
-              height: 20,
+              width: 18,
+              height: 18,
             ),
           ),
         ),

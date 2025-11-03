@@ -578,16 +578,16 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                                       ),
                                     if (!isPredefined) const SizedBox(width: 6),
                                     // Three dots menu (only if has futures, fundamentals or options)
-                                    if (hasFutures || hasFundamentals || hasOptions)
-                                      _buildThreeDotsMenu(
-                                        theme: theme,
-                                        hasFutures: hasFutures,
-                                        hasFundamentals: hasFundamentals,
-                                        hasOptions: hasOptions,
-                                        exch: exch,
-                                        token: token,
-                                        depthData: depthData,
-                                      ),
+                                    // if (hasFutures || hasFundamentals || hasOptions)
+                                    //   _buildThreeDotsMenu(
+                                    //     theme: theme,
+                                    //     hasFutures: hasFutures,
+                                    //     hasFundamentals: hasFundamentals,
+                                    //     hasOptions: hasOptions,
+                                    //     exch: exch,
+                                    //     token: token,
+                                    //     depthData: depthData,
+                                    //   ),
                                   ],
                                 );
                               },
@@ -1928,85 +1928,13 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
   }
 
   void _showSetAlertDialog(BuildContext context, GetQuotes depthData, DepthInputArgs depthArgs) {
-    final theme = ref.read(themeProvider);
-    
     showDialog(
       context: context,
       barrierDismissible: true,
       builder: (BuildContext dialogContext) {
-        return Dialog(
-          backgroundColor: theme.isDarkMode 
-              ? WebDarkColors.surface 
-              : WebColors.surface,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Container(
-            width: 500,
-            constraints: const BoxConstraints(maxHeight: 500),           
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Header
-                Container(
-                  padding: const EdgeInsets.symmetric( horizontal: 16, vertical: 8),
-                  margin: const EdgeInsets.only(bottom: 8),
-                  decoration: BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(
-                        color: theme.isDarkMode
-                            ? WebDarkColors.divider
-                            : WebColors.divider,
-                      ),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Set Alert',
-                        style: WebTextStyles.sub(
-                          isDarkTheme: theme.isDarkMode,
-                          color: theme.isDarkMode
-                              ? WebDarkColors.textPrimary
-                              : WebColors.textPrimary,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      Material(
-                        color: Colors.transparent,
-                        shape: const CircleBorder(),
-                        child: InkWell(
-                          customBorder: const CircleBorder(),
-                          splashColor: theme.isDarkMode
-                              ? Colors.white.withOpacity(.15)
-                              : Colors.black.withOpacity(.15),
-                          highlightColor: theme.isDarkMode
-                              ? Colors.white.withOpacity(.08)
-                              : Colors.black.withOpacity(.08),
-                          onTap: () => Navigator.of(context).pop(),
-                          child: Padding(
-                            padding: const EdgeInsets.all(6),
-                            child: Icon(
-                              Icons.close,
-                              size: 20,
-                              color: theme.isDarkMode
-                                  ? WebDarkColors.iconSecondary
-                                  : WebColors.iconSecondary,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                SetAlertWeb(
+        return SetAlertWeb(
                   depthdata: depthData,
                   wlvalue: depthArgs,
-                ),
-              ],
-            ),
-          ),
         );
       },
     );

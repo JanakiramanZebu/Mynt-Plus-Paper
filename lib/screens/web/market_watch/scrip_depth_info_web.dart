@@ -544,19 +544,18 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 12, vertical: 8),
                                 decoration: BoxDecoration(
-                                  color:
-                                      const Color(0xffa3a3a3).withOpacity(0.2),
-                                  border: Border.all(
-                                      color: theme.isDarkMode
-                                          ? WebDarkColors.divider
-                                          : WebColors.divider),
-                                ),
+                                    // color:
+                                    //     const Color(0xffa3a3a3).withOpacity(0.2),
+                                    // border: Border.all(
+                                    //     color: theme.isDarkMode
+                                    //         ? WebDarkColors.divider
+                                    //         : WebColors.divider),
+                                    ),
                                 child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.start,
                                   children: [
                                     Text(
-                                      "   scrip info",
+                                      "Scrip info",
                                       style: WebTextStyles.title(
                                         isDarkTheme: theme.isDarkMode,
                                         color: theme.isDarkMode
@@ -600,13 +599,13 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                 child: RawScrollbar(
                                   controller: _scrollController,
                                   thumbVisibility: true,
-                                  thickness: 5,
+                                  thickness: 6,
                                   radius: const Radius.circular(0),
                                   thumbColor: theme.isDarkMode
                                       ? WebDarkColors.textSecondary
                                           .withOpacity(0.5)
                                       : WebColors.textSecondary
-                                          .withOpacity(0.2),
+                                          .withOpacity(0.5),
                                   child: SingleChildScrollView(
                                     controller: _scrollController,
                                     padding: EdgeInsets.zero,
@@ -2029,7 +2028,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                                           shape:
                                                                               RoundedRectangleBorder(
                                                                             borderRadius:
-                                                                                BorderRadius.circular(12),
+                                                                                BorderRadius.circular(5),
                                                                           ),
                                                                           child:
                                                                               Container(
@@ -2044,18 +2043,27 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                                               mainAxisSize: MainAxisSize.min,
                                                                               children: [
                                                                                 // Header
-                                                                                Padding(
-                                                                                  padding: const EdgeInsets.only(left: 16, right: 16, top: 10, bottom: 8),
+                                                                                Container(
+                                                                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                                                                  decoration: BoxDecoration(
+                                                                                    border: Border(
+                                                                                      bottom: BorderSide(
+                                                                                        color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
+                                                                                      ),
+                                                                                    ),
+                                                                                  ),
                                                                                   child: Row(
                                                                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                                                                     children: [
                                                                                       Text(
                                                                                         'Futures',
-                                                                                        style: WebTextStyles.title(
-                                                                                          isDarkTheme: theme.isDarkMode,
-                                                                                          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
-                                                                                          fontWeight: FontWeight.w700,
-                                                                                        ),
+                                                                                        style: WebTextStyles.sub(
+                          isDarkTheme: theme.isDarkMode,
+                          color: theme.isDarkMode
+                              ? WebDarkColors.textPrimary
+                              : WebColors.textPrimary,
+                          fontWeight: FontWeight.w700,
+                        ),
                                                                                       ),
                                                                                       Material(
                                                                                         color: Colors.transparent,
@@ -2070,7 +2078,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                                                             Navigator.of(context).pop();
                                                                                           },
                                                                                           child: Padding(
-                                                                                            padding: const EdgeInsets.all(6),
+                                                                                            padding: const EdgeInsets.all(5),
                                                                                             child: Icon(
                                                                                               Icons.close,
                                                                                               size: 18,
@@ -2149,9 +2157,21 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                               label:
                                                                   "Set Alert",
                                                               onTap: () =>
-                                                                  _showSetAlertDialog(
-                                                                      context,
-                                                                      depthData),
+                                                              Navigator.of(context).push(
+                                                                MaterialPageRoute(
+                                                                  builder: (BuildContext dialogContext) => Dialog(
+                                                                      // backgroundColor: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
+                                                                      backgroundColor: Colors.transparent,
+                                                                      shape: RoundedRectangleBorder(
+                                                                        borderRadius: BorderRadius.circular(5),
+                                                                      ),
+                                                                      child: SetAlertWeb(
+                                                                      depthdata: depthData,
+                                                                      wlvalue: widget.wlValue,
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                              ),
                                                             ),
                                                           ),
                                                           const SizedBox(
@@ -2171,110 +2191,109 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                                     "Fundamentals",
                                                                 onTap:
                                                                     () async {
-                                                                 try {
-          // Always fetch fresh fundamental data for the current scrip
-          await scripInfo.fetchFundamentalData(
-            tradeSym: "${widget.wlValue.exch}:${widget.wlValue.tsym}",
-          );
+                                                                  try {
+                                                                    // Always fetch fresh fundamental data for the current scrip
+                                                                    await scripInfo
+                                                                        .fetchFundamentalData(
+                                                                      tradeSym:
+                                                                          "${widget.wlValue.exch}:${widget.wlValue.tsym}",
+                                                                    );
 
-          if (!mounted) return;
+                                                                    if (!mounted)
+                                                                      return;
 
-          if (scripInfo.fundamentalData != null &&
-              scripInfo.fundamentalData?.msg != "no data found") {
-            // Create DepthInputArgs and get depth data
-            DepthInputArgs depthArgs = _createDepthArgs();
-            final depthData = scripInfo.getQuotes!;
+                                                                    if (scripInfo.fundamentalData !=
+                                                                            null &&
+                                                                        scripInfo.fundamentalData?.msg !=
+                                                                            "no data found") {
+                                                                      // Create DepthInputArgs and get depth data
+                                                                      DepthInputArgs
+                                                                          depthArgs =
+                                                                          _createDepthArgs();
+                                                                      final depthData =
+                                                                          scripInfo
+                                                                              .getQuotes!;
 
-            // Show as dialog
-            if (mounted) {
-              showDialog(
-                context: context,
-                barrierDismissible: true,
-                builder: (BuildContext dialogContext) {
-                  return Dialog(
-                    backgroundColor: theme.isDarkMode
-                        ? WebDarkColors.surface
-                        : WebColors.surface,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Container(
-                      width: 700,
-                      constraints:
-                          const BoxConstraints(maxHeight: 800, minHeight: 400),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          // Header
-                          Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  '${depthArgs.symbol.replaceAll("-EQ", "").toUpperCase()}${depthArgs.expDate} ${depthArgs.option} Stock Report',
-                                  style: WebTextStyles.title(
-                                    isDarkTheme: theme.isDarkMode,
-                                    color: theme.isDarkMode
-                                        ? WebDarkColors.textPrimary
-                                        : WebColors.textPrimary,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                                Material(
-                                  color: Colors.transparent,
-                                  shape: const CircleBorder(),
-                                  child: InkWell(
-                                    customBorder: const CircleBorder(),
-                                    splashColor: theme.isDarkMode
-                                        ? Colors.white.withOpacity(.15)
-                                        : Colors.black.withOpacity(.15),
-                                    highlightColor: theme.isDarkMode
-                                        ? Colors.white.withOpacity(.08)
-                                        : Colors.black.withOpacity(.08),
-                                    onTap: () => Navigator.of(context).pop(),
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(8),
-                                      child: Icon(
-                                        Icons.close,
-                                        size: 20,
-                                        color: theme.isDarkMode
-                                            ? WebDarkColors.iconSecondary
-                                            : WebColors.iconSecondary,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          // Content without AppBar
-                          Expanded(
-                            child: ClipRRect(
-                              borderRadius: const BorderRadius.vertical(
-                                bottom: Radius.circular(12),
-                              ),
-                              child: MediaQuery.removePadding(
-                                context: context,
-                                removeTop: true,
-                                child: NewFundamentalScreen(
-                                  wlValue: depthArgs,
-                                  depthData: depthData,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              );
-            }
-          }
-        } finally {
-         
-        }
+                                                                      // Show as dialog
+                                                                      if (mounted) {
+                                                                        showDialog(
+                                                                          context:
+                                                                              context,
+                                                                          barrierDismissible:
+                                                                              true,
+                                                                          builder:
+                                                                              (BuildContext dialogContext) {
+                                                                            return Dialog(
+                                                                              backgroundColor: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
+                                                                              shape: RoundedRectangleBorder(
+                                                                                borderRadius: BorderRadius.circular(12),
+                                                                              ),
+                                                                              child: Container(
+                                                                                width: 700,
+                                                                                constraints: const BoxConstraints(maxHeight: 800, minHeight: 400),
+                                                                                child: Column(
+                                                                                  mainAxisSize: MainAxisSize.min,
+                                                                                  children: [
+                                                                                    // Header
+                                                                                    Padding(
+                                                                                      padding: const EdgeInsets.all(16),
+                                                                                      child: Row(
+                                                                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                                                        children: [
+                                                                                          Text(
+                                                                                            '${depthArgs.symbol.replaceAll("-EQ", "").toUpperCase()}${depthArgs.expDate} ${depthArgs.option} Stock Report',
+                                                                                            style: WebTextStyles.title(
+                                                                                              isDarkTheme: theme.isDarkMode,
+                                                                                              color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+                                                                                              fontWeight: FontWeight.w700,
+                                                                                            ),
+                                                                                          ),
+                                                                                          Material(
+                                                                                            color: Colors.transparent,
+                                                                                            shape: const CircleBorder(),
+                                                                                            child: InkWell(
+                                                                                              customBorder: const CircleBorder(),
+                                                                                              splashColor: theme.isDarkMode ? Colors.white.withOpacity(.15) : Colors.black.withOpacity(.15),
+                                                                                              highlightColor: theme.isDarkMode ? Colors.white.withOpacity(.08) : Colors.black.withOpacity(.08),
+                                                                                              onTap: () => Navigator.of(context).pop(),
+                                                                                              child: Padding(
+                                                                                                padding: const EdgeInsets.all(8),
+                                                                                                child: Icon(
+                                                                                                  Icons.close,
+                                                                                                  size: 20,
+                                                                                                  color: theme.isDarkMode ? WebDarkColors.iconSecondary : WebColors.iconSecondary,
+                                                                                                ),
+                                                                                              ),
+                                                                                            ),
+                                                                                          ),
+                                                                                        ],
+                                                                                      ),
+                                                                                    ),
+                                                                                    // Content without AppBar
+                                                                                    Expanded(
+                                                                                      child: ClipRRect(
+                                                                                        borderRadius: const BorderRadius.vertical(
+                                                                                          bottom: Radius.circular(12),
+                                                                                        ),
+                                                                                        child: MediaQuery.removePadding(
+                                                                                          context: context,
+                                                                                          removeTop: true,
+                                                                                          child: NewFundamentalScreen(
+                                                                                            wlValue: depthArgs,
+                                                                                            depthData: depthData,
+                                                                                          ),
+                                                                                        ),
+                                                                                      ),
+                                                                                    ),
+                                                                                  ],
+                                                                                ),
+                                                                              ),
+                                                                            );
+                                                                          },
+                                                                        );
+                                                                      }
+                                                                    }
+                                                                  } finally {}
                                                                 },
                                                               ),
                                                             )
@@ -2371,38 +2390,41 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                             ),
                             // Quick Order embedded below scrip info
                             if (!isIndexOrCommodity)
-                              Builder(builder: (context) {
-                                final lotSize = _safeParseLotSize(
-                                    ref
+                              Expanded(
+                                child: Builder(builder: (context) {
+                                  final lotSize = _safeParseLotSize(
+                                      ref
+                                          .read(marketWatchProvider)
+                                          .scripInfoModel
+                                          ?.ls,
+                                      depthData.ls,
+                                      "1");
+                                  final orderArgs = OrderScreenArgs(
+                                    exchange: widget.wlValue.exch,
+                                    tSym: widget.wlValue.tsym,
+                                    isExit: false,
+                                    token: widget.wlValue.token,
+                                    transType: true,
+                                    lotSize: lotSize,
+                                    ltp:
+                                        "${depthData.lp ?? depthData.c ?? 0.00}",
+                                    perChange: depthData.pc ?? "0.00",
+                                    orderTpye: '',
+                                    holdQty: '',
+                                    isModify: false,
+                                    raw: {},
+                                  );
+                                  return QuickOrderScreenWeb(
+                                    key: ValueKey(
+                                        "${orderArgs.exchange}|${orderArgs.token}"),
+                                    orderArg: orderArgs,
+                                    scripInfo: ref
                                         .read(marketWatchProvider)
-                                        .scripInfoModel
-                                        ?.ls,
-                                    depthData.ls,
-                                    "1");
-                                final orderArgs = OrderScreenArgs(
-                                  exchange: widget.wlValue.exch,
-                                  tSym: widget.wlValue.tsym,
-                                  isExit: false,
-                                  token: widget.wlValue.token,
-                                  transType: true,
-                                  lotSize: lotSize,
-                                  ltp: "${depthData.lp ?? depthData.c ?? 0.00}",
-                                  perChange: depthData.pc ?? "0.00",
-                                  orderTpye: '',
-                                  holdQty: '',
-                                  isModify: false,
-                                  raw: {},
-                                );
-                                return QuickOrderScreenWeb(
-                                  key: ValueKey(
-                                      "${orderArgs.exchange}|${orderArgs.token}"),
-                                  orderArg: orderArgs,
-                                  scripInfo: ref
-                                      .read(marketWatchProvider)
-                                      .scripInfoModel!,
-                                  embedded: true,
-                                );
-                              }),
+                                        .scripInfoModel!,
+                                    embedded: true,
+                                  );
+                                }),
+                              ),
                           ],
                         ),
                       ),
@@ -2459,92 +2481,20 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
     }
   }
 
-
-   DepthInputArgs _createDepthArgs() {
+  DepthInputArgs _createDepthArgs() {
     return DepthInputArgs(
       exch: widget.wlValue.exch.toString(),
       token: widget.wlValue.token.toString(),
       tsym: widget.wlValue.tsym.toString(),
-      instname: widget.wlValue.instname?.toString() ?? widget.wlValue.symbol.toString(),
+      instname: widget.wlValue.instname?.toString() ??
+          widget.wlValue.symbol.toString(),
       symbol: widget.wlValue.symbol.toString(),
       expDate: widget.wlValue.expDate?.toString() ?? "",
       option: widget.wlValue.option?.toString() ?? "",
     );
   }
 
-  void _showSetAlertDialog(BuildContext context, GetQuotes depthData) {
-    final theme = ref.read(themeProvider);
-
-    showDialog(
-      context: context,
-      barrierDismissible: true,
-      builder: (BuildContext dialogContext) {
-        return Dialog(
-          backgroundColor:
-              theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Container(
-            width: 600,
-            constraints: const BoxConstraints(maxHeight: 700),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Header
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Set Alert',
-                        style: WebTextStyles.title(
-                          isDarkTheme: theme.isDarkMode,
-                          color: theme.isDarkMode
-                              ? WebDarkColors.textPrimary
-                              : WebColors.textPrimary,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      Material(
-                        color: Colors.transparent,
-                        shape: const CircleBorder(),
-                        child: InkWell(
-                          customBorder: const CircleBorder(),
-                          splashColor: theme.isDarkMode
-                              ? Colors.white.withOpacity(.15)
-                              : Colors.black.withOpacity(.15),
-                          highlightColor: theme.isDarkMode
-                              ? Colors.white.withOpacity(.08)
-                              : Colors.black.withOpacity(.08),
-                          onTap: () => Navigator.of(context).pop(),
-                          child: Padding(
-                            padding: const EdgeInsets.all(8),
-                            child: Icon(
-                              Icons.close,
-                              size: 20,
-                              color: theme.isDarkMode
-                                  ? WebDarkColors.iconSecondary
-                                  : WebColors.iconSecondary,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                SetAlertWeb(
-                  depthdata: depthData,
-                  wlvalue: widget.wlValue,
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
+ 
 
   Future<void> placeOrderInput(MarketWatchProvider scripInfo, BuildContext ctx,
       GetQuotes depthData, bool transType) async {
