@@ -2156,22 +2156,18 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                               theme: theme,
                                                               label:
                                                                   "Set Alert",
-                                                              onTap: () =>
-                                                              Navigator.of(context).push(
-                                                                MaterialPageRoute(
-                                                                  builder: (BuildContext dialogContext) => Dialog(
-                                                                      // backgroundColor: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
-                                                                      backgroundColor: Colors.transparent,
-                                                                      shape: RoundedRectangleBorder(
-                                                                        borderRadius: BorderRadius.circular(5),
-                                                                      ),
-                                                                      child: SetAlertWeb(
+                                                              onTap: () {
+                                                                showDialog(
+                                                                  context: context,
+                                                                  barrierDismissible: true,
+                                                                  builder: (BuildContext dialogContext) {
+                                                                    return SetAlertWeb(
                                                                       depthdata: depthData,
                                                                       wlvalue: widget.wlValue,
-                                                                    ),
-                                                                  ),
-                                                                ),
-                                                              ),
+                                                                    );
+                                                                  },
+                                                                );
+                                                              },
                                                             ),
                                                           ),
                                                           const SizedBox(

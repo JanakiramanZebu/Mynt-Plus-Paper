@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:mynt_plus/res/web_colors.dart';
+ 
+import 'package:google_fonts/google_fonts.dart';
 
 import 'res.dart';
 
@@ -7,7 +8,7 @@ import 'res.dart';
 /// This file handles all typography for web platform using Tenon font
 class WebFonts {
   // Font Family
-  static const String fontFamily = 'tenon';
+  static const String fontFamily = 'inter';
   
   // Font Sizes
   static const double heroSize = 20;
@@ -43,8 +44,7 @@ class WebTextStyles {
     double? height,
     TextDecoration? decoration,
   }) {
-    return TextStyle(
-      fontFamily: WebFonts.fontFamily,
+    final base = TextStyle(
       fontSize: fontSize,
       color: color ?? (isDarkTheme ? colors.colorWhite : colors.colorBlack),
       fontWeight: fontWeight ?? WebFonts.regular,
@@ -52,6 +52,7 @@ class WebTextStyles {
       height: height,
       decoration: decoration,
     );
+    return GoogleFonts.inter(textStyle: base);
   }
 
   /// Hero text style (20px)

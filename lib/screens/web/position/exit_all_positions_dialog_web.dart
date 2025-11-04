@@ -4,8 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../models/portfolio_model/position_book_model.dart';
 import '../../../provider/portfolio_provider.dart';
 import '../../../provider/thems.dart';
+import '../../../res/global_font_web.dart';
 import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
+import '../../../res/web_colors.dart';
 
 class ExitAllPositionsDialogWeb extends ConsumerStatefulWidget {
   final List<PositionBookModel> selectedPositions;
@@ -32,21 +34,14 @@ class _ExitAllPositionsDialogWebState extends ConsumerState<ExitAllPositionsDial
     return Dialog(
       backgroundColor: Colors.transparent,
       child: Container(
-        width: MediaQuery.of(context).size.width * 0.6,
-        constraints: const BoxConstraints(maxWidth: 800, maxHeight: 600),
+        width: 500,
+        height: 520,
         decoration: BoxDecoration(
-          color: theme.isDarkMode ? colors.kColorLightGreyDarkTheme : colors.kColorLightGrey,
-          borderRadius: BorderRadius.circular(12),
+          color: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
+          borderRadius: BorderRadius.circular(5),
           border: Border.all(
-            color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
+            color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 2),
-            ),
-          ],
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -69,60 +64,54 @@ class _ExitAllPositionsDialogWebState extends ConsumerState<ExitAllPositionsDial
 
   Widget _buildHeader(ThemesProvider theme) {
     return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: theme.isDarkMode ? colors.kColorLightGreyDarkTheme : colors.kColorLightGrey,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(12),
-          topRight: Radius.circular(12),
-        ),
-        border: Border(
-          bottom: BorderSide(
-            color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
-            width: 1,
-          ),
-        ),
-      ),
+     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                margin: const EdgeInsets.only(bottom: 8),
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(
+                      color: theme.isDarkMode
+                          ? WebDarkColors.divider
+                          : WebColors.divider,
+                    ),
+                  ),
+                ),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: const Color(0xFFEF4444).withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(
-              Icons.exit_to_app,
-              color: const Color(0xFFEF4444),
-              size: 20,
+         
+          Text(
+            widget.selectedPositions.length > 1 ? 'Exit All Positions' : 'Exit Position',
+            style: WebTextStyles.custom(
+              fontSize: 14,
+              color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+              isDarkTheme: theme.isDarkMode,
+              fontWeight: WebFonts.bold,
             ),
           ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Text(
-              widget.selectedPositions.length > 1 ? 'Exit All Positions' : 'Exit Position',
-              style: TextWidget.textStyle(
-                fontSize: 20,
-                color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                theme: theme.isDarkMode,
-                fw: 3,
-              ),
-            ),
-          ),
-          IconButton(
-            onPressed: () => Navigator.of(context).pop(),
-            icon: Icon(
-              Icons.close,
-              color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-              size: 20,
-            ),
-            style: IconButton.styleFrom(
-              backgroundColor: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-          ),
+          Material(
+                      color: Colors.transparent,
+                      shape: const CircleBorder(),
+                      child: InkWell(
+                        customBorder: const CircleBorder(),
+                        splashColor: theme.isDarkMode
+                            ? Colors.white.withOpacity(.15)
+                            : Colors.black.withOpacity(.15),
+                        highlightColor: theme.isDarkMode
+                            ? Colors.white.withOpacity(.08)
+                            : Colors.black.withOpacity(.08),
+                        onTap: () => Navigator.of(context).pop(),
+                        child: Padding(
+                          padding: const EdgeInsets.all(6),
+                          child: Icon(
+                            Icons.close,
+                            size: 20,
+                            color: theme.isDarkMode
+                                ? WebDarkColors.iconSecondary
+                                : WebColors.iconSecondary,
+                          ),
+                        ),
+                      ),
+                    ),
         ],
       ),
     );
@@ -130,18 +119,18 @@ class _ExitAllPositionsDialogWebState extends ConsumerState<ExitAllPositionsDial
 
   Widget _buildContent(ThemesProvider theme) {
     return Padding(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.only(left: 16, right: 16, top: 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Warning message
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(5),
             decoration: BoxDecoration(
               color: theme.isDarkMode 
                   ? const Color(0xFF2D1B1B) 
                   : const Color(0xFFFFF3CD),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(5),
               border: Border.all(
                 color: theme.isDarkMode 
                     ? const Color(0xFF5D2D2D) 
@@ -155,21 +144,21 @@ class _ExitAllPositionsDialogWebState extends ConsumerState<ExitAllPositionsDial
                   color: theme.isDarkMode 
                       ? const Color(0xFFFF6B6B) 
                       : const Color(0xFF856404),
-                  size: 20,
+                  size: 16,
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     widget.selectedPositions.length > 1 
                         ? 'This action will place market orders to exit all selected positions. This action cannot be undone.'
                         : 'This action will place a market order to exit the selected position. This action cannot be undone.',
                     style: TextWidget.textStyle(
-                      fontSize: 14,
+                      fontSize: 10,
                       color: theme.isDarkMode 
                           ? const Color(0xFFFF6B6B) 
                           : const Color(0xFF856404),
                       theme: theme.isDarkMode,
-                      fw: 1,
+                      fw: 0,
                     ),
                   ),
                 ),
@@ -177,7 +166,7 @@ class _ExitAllPositionsDialogWebState extends ConsumerState<ExitAllPositionsDial
             ),
           ),
           
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
           
           // Selected positions count
           Text(
@@ -185,25 +174,19 @@ class _ExitAllPositionsDialogWebState extends ConsumerState<ExitAllPositionsDial
                 ? 'Selected Positions (${widget.selectedPositions.length})'
                 : 'Selected Position',
             style: TextWidget.textStyle(
-              fontSize: 16,
+              fontSize: 14,
               color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
               theme: theme.isDarkMode,
               fw: 2,
             ),
           ),
           
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
           
           // Positions list
           Expanded(
             child: Container(
-              decoration: BoxDecoration(
-                color: theme.isDarkMode ? colors.kColorLightGreyDarkTheme : colors.kColorLightGrey,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
-                ),
-              ),
+              
               child: ListView.builder(
                 itemCount: widget.selectedPositions.length,
                 itemBuilder: (context, index) {
@@ -222,14 +205,14 @@ class _ExitAllPositionsDialogWebState extends ConsumerState<ExitAllPositionsDial
     final qty = int.tryParse(position.qty ?? '0') ?? 0;
     
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(
-            color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
-            width: 0.5,
-          ),
-        ),
+        // border: Border(
+        //   bottom: BorderSide(
+        //     color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
+        //     width: 0.5,
+        //   ),
+        // ),
       ),
       child: Row(
         children: [
@@ -242,7 +225,7 @@ class _ExitAllPositionsDialogWebState extends ConsumerState<ExitAllPositionsDial
                 Text(
                   '${position.symbol ?? ''} ${position.exch ?? ''}',
                   style: TextWidget.textStyle(
-                    fontSize: 14,
+                    fontSize: 13,
                     color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
                     theme: theme.isDarkMode,
                     fw: 2,
@@ -252,10 +235,10 @@ class _ExitAllPositionsDialogWebState extends ConsumerState<ExitAllPositionsDial
                 Text(
                   position.sPrdtAli ?? 'N/A',
                   style: TextWidget.textStyle(
-                    fontSize: 12,
+                    fontSize: 13,
                     color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                     theme: theme.isDarkMode,
-                    fw: 1,
+                    fw: 2,
                   ),
                 ),
               ],
@@ -271,27 +254,20 @@ class _ExitAllPositionsDialogWebState extends ConsumerState<ExitAllPositionsDial
                 Text(
                   'Qty',
                   style: TextWidget.textStyle(
-                    fontSize: 12,
+                    fontSize: 13,
                     color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                     theme: theme.isDarkMode,
-                    fw: 1,
+                    fw: 2,
                   ),
                 ),
                 const SizedBox(height: 4),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: _getQtyColor(qty.toString(), theme).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Text(
-                    _formatQty(qty.toString()),
-                    style: TextWidget.textStyle(
-                      fontSize: 12,
-                      color: _getQtyColor(qty.toString(), theme),
-                      theme: false,
-                      fw: 2,
-                    ),
+                Text(
+                  _formatQty(qty.toString()),
+                  style: TextWidget.textStyle(
+                    fontSize: 13,
+                    color: _getQtyColor(qty.toString(), theme),
+                    theme: false,
+                    fw: 2,
                   ),
                 ),
               ],
@@ -307,17 +283,17 @@ class _ExitAllPositionsDialogWebState extends ConsumerState<ExitAllPositionsDial
                 Text(
                   'P&L',
                   style: TextWidget.textStyle(
-                    fontSize: 12,
+                    fontSize: 13,
                     color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                     theme: theme.isDarkMode,
-                    fw: 1,
+                    fw: 2,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   position.profitNloss ?? '0.00',
                   style: TextWidget.textStyle(
-                    fontSize: 12,
+                    fontSize: 13,
                     color: _getValueColor(position.profitNloss ?? '0.00', theme),
                     theme: false,
                     fw: 2,
@@ -336,17 +312,17 @@ class _ExitAllPositionsDialogWebState extends ConsumerState<ExitAllPositionsDial
                 Text(
                   'LTP',
                   style: TextWidget.textStyle(
-                    fontSize: 12,
+                    fontSize: 13,
                     color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                     theme: theme.isDarkMode,
-                    fw: 1,
+                    fw: 2,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   position.lp ?? '0.00',
                   style: TextWidget.textStyle(
-                    fontSize: 12,
+                    fontSize: 13,
                     color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
                     theme: theme.isDarkMode,
                     fw: 2,
@@ -362,53 +338,47 @@ class _ExitAllPositionsDialogWebState extends ConsumerState<ExitAllPositionsDial
 
   Widget _buildFooter(ThemesProvider theme, PortfolioProvider positionBook) {
     return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: theme.isDarkMode ? colors.kColorLightGreyDarkTheme : colors.kColorLightGrey,
+      padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16, top: 16),
+      decoration: BoxDecoration(       
         borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(12),
-          bottomRight: Radius.circular(12),
+          bottomLeft: Radius.circular(5),
+          bottomRight: Radius.circular(5),
         ),
-        border: Border(
-          top: BorderSide(
-            color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
-            width: 0.5,
-          ),
-        ),
+       
       ),
       child: Row(
         children: [
           // Cancel button
-          Expanded(
-            child: SizedBox(
-              height: 40,
-              child: OutlinedButton(
-                onPressed: _isLoading ? null : () => Navigator.of(context).pop(),
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
-                  side: BorderSide(
-                    color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
-                    width: 1,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  backgroundColor: theme.isDarkMode ? colors.kColorLightGreyDarkTheme : colors.kColorLightGrey,
-                ),
-                child: Text(
-                  'Cancel',
-                  style: TextWidget.textStyle(
-                    fontSize: 14,
-                    color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                    theme: theme.isDarkMode,
-                    fw: 2,
-                  ),
-                ),
-              ),
-            ),
-          ),
+          // Expanded(
+          //   child: SizedBox(
+          //     height: 40,
+          //     child: OutlinedButton(
+          //       onPressed: _isLoading ? null : () => Navigator.of(context).pop(),
+          //       style: OutlinedButton.styleFrom(
+          //         padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
+          //         side: BorderSide(
+          //           color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
+          //           width: 1,
+          //         ),
+          //         shape: RoundedRectangleBorder(
+          //           borderRadius: BorderRadius.circular(8),
+          //         ),
+          //         backgroundColor: theme.isDarkMode ? colors.kColorLightGreyDarkTheme : colors.kColorLightGrey,
+          //       ),
+          //       child: Text(
+          //         'Cancel',
+          //         style: TextWidget.textStyle(
+          //           fontSize: 14,
+          //           color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+          //           theme: theme.isDarkMode,
+          //           fw: 2,
+          //         ),
+          //       ),
+          //     ),
+          //   ),
+          // ),
           
-          const SizedBox(width: 16),
+          // const SizedBox(width: 16),
           
           // Exit All button
           Expanded(
@@ -427,7 +397,7 @@ class _ExitAllPositionsDialogWebState extends ConsumerState<ExitAllPositionsDial
                       : Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(5),
                   ),
                   elevation: 0,
                 ),

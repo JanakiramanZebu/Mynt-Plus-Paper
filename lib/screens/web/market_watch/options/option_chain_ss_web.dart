@@ -25,12 +25,12 @@ import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
 import '../../../../res/web_colors.dart';
 import '../../../../res/global_font_web.dart';
-import '../../../../routes/route_names.dart';
 import '../../../../sharedWidget/custom_drag_handler.dart';
 import '../../../../utils/responsive_navigation.dart';
 import '../../../../sharedWidget/list_divider.dart';
 import '../../../../sharedWidget/functions.dart';
 import '../../../../sharedWidget/snack_bar.dart';
+import '../search_dialog_web.dart';
 
 class OptionChainSSWeb extends ConsumerStatefulWidget {
   final DepthInputArgs wlValue;
@@ -311,14 +311,16 @@ class _NewAppBarTitle extends ConsumerWidget {
         // Symbol Name and Expiry Dropdown
         Row(
           children: [
-            TextWidget.subText(
-              text: wlValue.tsym.toUpperCase(),
-              theme: theme.isDarkMode,
-              color: theme.isDarkMode
-                  ? colors.textPrimaryDark
-                  : colors.textPrimaryLight,
-              maxLines: 1,
-              textOverflow: TextOverflow.ellipsis,
+            Text(
+              wlValue.tsym.toUpperCase(),
+              style: WebTextStyles.custom(
+                fontSize: 13,
+                isDarkTheme: theme.isDarkMode,
+                color: theme.isDarkMode
+                    ? WebDarkColors.textPrimary
+                    : WebColors.textPrimary,
+                fontWeight: FontWeight.w700,
+              ),
             ),
             const SizedBox(width: 8),
             Theme(
@@ -335,30 +337,35 @@ class _NewAppBarTitle extends ConsumerWidget {
                   isExpanded: false,
                   isDense: true,
                   dropdownColor: theme.isDarkMode 
-                      ? colors.colorBlack
-                      : colors.colorWhite,
+                      ? WebDarkColors.surface
+                      : WebColors.surface,
                   icon: Icon(
                     Icons.arrow_drop_down,
                     color:
-                        theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    size: 18,
+                        theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+                    size: 20,
                   ),
-                  style: TextWidget.textStyle(
-                    fontSize: 14,
+                  style: WebTextStyles.custom(
+                    fontSize: 13,
+                    isDarkTheme: theme.isDarkMode,
                     color: theme.isDarkMode
-                        ? colors.textPrimaryDark
-                        : colors.textPrimaryLight,
-                    theme: theme.isDarkMode,
+                        ? WebDarkColors.textPrimary
+                        : WebColors.textPrimary,
+                    fontWeight: FontWeight.w700,
                   ),
                   items: scripInfo.sortDate.map((String date) {
                     return DropdownMenuItem<String>(
                       value: date,
-                      child: TextWidget.subText(
-                        text: date.replaceAll("-", " "),
-                        color: theme.isDarkMode
-                            ? colors.textPrimaryDark
-                            : colors.textPrimaryLight,
-                        theme: theme.isDarkMode,
+                      child: Text(
+                        date.replaceAll("-", " "),
+                        style: WebTextStyles.custom(
+                          fontSize: 13,
+                          isDarkTheme: theme.isDarkMode,
+                          color: theme.isDarkMode
+                              ? WebDarkColors.textPrimary
+                              : WebColors.textPrimary,
+                              fontWeight: FontWeight.w700,
+                        ),
                       ),
                     );
                   }).toList(),
@@ -423,10 +430,10 @@ class _NewAppBarTitle extends ConsumerWidget {
         InkWell(
           borderRadius: BorderRadius.circular(20),
           splashColor: theme.isDarkMode
-              ? colors.splashColorDark
-              : colors.splashColorLight,
+              ? Colors.white.withOpacity(0.1)
+              : Colors.black.withOpacity(0.1),
           highlightColor:
-              theme.isDarkMode ? colors.highlightDark : colors.highlightLight,
+              theme.isDarkMode ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05),
           onTap: onToggleBasketMode,
           child: Padding(
             padding: const EdgeInsets.all(8),
@@ -436,8 +443,8 @@ class _NewAppBarTitle extends ConsumerWidget {
                   : Icons.shopping_basket_outlined,
               size: 18,
               color: isBasketMode
-                  ?  colors.primaryLight
-                  : (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight),
+                  ?  WebColors.primary
+                  : (theme.isDarkMode ? WebDarkColors.iconSecondary : WebColors.iconSecondary),
             ),
           ),
         ),
@@ -448,18 +455,22 @@ class _NewAppBarTitle extends ConsumerWidget {
         InkWell(
           borderRadius: BorderRadius.circular(20),
           splashColor: theme.isDarkMode
-              ? colors.splashColorDark
-              : colors.splashColorLight,
+              ? Colors.white.withOpacity(0.1)
+              : Colors.black.withOpacity(0.1),
           highlightColor:
-              theme.isDarkMode ? colors.highlightDark : colors.highlightLight,
+              theme.isDarkMode ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05),
           onTap: () async {
             // Add delay for visual feedback
             await Future.delayed(const Duration(milliseconds: 150));
 
-            Navigator.pushNamed(
-              context,
-              Routes.searchScrip,
-              arguments: "Option||Replace",
+            showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return SearchDialogWeb(
+                  wlName: ref.read(marketWatchProvider).wlName,
+                  isBasket: "Option||Replace",
+                );
+              },
             );
           },
           child: Padding(
@@ -496,25 +507,25 @@ void _showStrikeCountSelector(
         topLeft: Radius.circular(16),
         topRight: Radius.circular(16),
             ),
-           color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+           color: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
            border: Border(
                                     top: BorderSide(
                                       color: theme.isDarkMode
-                                          ? colors.textSecondaryDark
+                                          ? WebDarkColors.divider
                                               .withOpacity(0.5)
-                                          : colors.colorWhite,
+                                          : WebColors.surface,
                                     ),
                                     left: BorderSide(
                                       color: theme.isDarkMode
-                                          ? colors.textSecondaryDark
+                                          ? WebDarkColors.divider
                                               .withOpacity(0.5)
-                                          : colors.colorWhite,
+                                          : WebColors.surface,
                                     ),
                                     right: BorderSide(
                                       color: theme.isDarkMode
-                                          ? colors.textSecondaryDark
+                                          ? WebDarkColors.divider
                                               .withOpacity(0.5)
-                                          : colors.colorWhite,
+                                          : WebColors.surface,
                                     ),
                                   ),
         
@@ -531,11 +542,13 @@ void _showStrikeCountSelector(
                     child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        TextWidget.titleText(
-                            text: "Select Number of Strike",
-                            color :  theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                            theme: theme.isDarkMode,
-                            fw: 1),
+                        Text(
+                            "Select Number of Strike",
+                            style: WebTextStyles.title(
+                              isDarkTheme: theme.isDarkMode,
+                              color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+                              fontWeight: WebFonts.semiBold,
+                            )),
                              Material(
                             color: Colors.transparent,
                             shape: const CircleBorder(),
@@ -557,7 +570,7 @@ void _showStrikeCountSelector(
                                 child: Icon(
                                   Icons.close_rounded,
                                   size: 22,
-                                  color: colors.colorGrey,
+                                  color: theme.isDarkMode ? WebDarkColors.iconSecondary : WebColors.iconSecondary,
                                 ),
                               ),
                             ),
@@ -567,8 +580,8 @@ void _showStrikeCountSelector(
                   ),
                      Divider(
                       color: theme.isDarkMode
-                          ? colors.darkColorDivider
-                          : colors.colorDivider,
+                          ? WebDarkColors.divider
+                          : WebColors.divider,
                       height: 0,
                     ),
                   Flexible(
@@ -607,21 +620,23 @@ void _showStrikeCountSelector(
                                 contentPadding:
                                     const EdgeInsets.symmetric(horizontal: 0),
                                 dense: true,
-                                title: TextWidget.subText(
-                                    text: scripInfo.numStrikes[index],
-                                    color: scripInfo.numStrike ==
-                                                scripInfo.numStrikes[index] &&
-                                            theme.isDarkMode
-                                        ? colors.colorLightBlue
-                                        : scripInfo.numStrike ==
-                                                scripInfo.numStrikes[index]
-                                            ? colors.colorBlue
-                                            : colors.colorGrey,
-                                    theme: theme.isDarkMode,
-                                    fw: scripInfo.numStrike ==
-                                            scripInfo.numStrikes[index]
-                                        ? 1
-                                        : 0),
+                                title: Text(
+                                    scripInfo.numStrikes[index],
+                                    style: WebTextStyles.sub(
+                                      isDarkTheme: theme.isDarkMode,
+                                      color: scripInfo.numStrike ==
+                                                  scripInfo.numStrikes[index]
+                                              ? (theme.isDarkMode
+                                                  ? WebDarkColors.primary
+                                                  : WebColors.primary)
+                                              : (theme.isDarkMode
+                                                  ? WebDarkColors.iconSecondary
+                                                  : WebColors.iconSecondary),
+                                      fontWeight: scripInfo.numStrike ==
+                                              scripInfo.numStrikes[index]
+                                          ? WebFonts.semiBold
+                                          : WebFonts.regular,
+                                    )),
                                 trailing: SvgPicture.asset(theme.isDarkMode
                                     ? scripInfo.numStrike ==
                                             scripInfo.numStrikes[index]
@@ -662,7 +677,7 @@ class _ColumnHeaders extends ConsumerWidget {
     return RepaintBoundary(
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-        color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+        color: theme.isDarkMode ? WebDarkColors.background : WebColors.background,
         child: Column(
           children: [
             // Main header row
@@ -693,16 +708,15 @@ class _ColumnHeaders extends ConsumerWidget {
                   width: 150,
                   child: PopupMenuButton<String>(
                     tooltip: 'Select number of strikes',
-                    color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-                    elevation: 12,
+                    color: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
+                    elevation: 8,
                     surfaceTintColor: Colors.transparent,
                     shadowColor: theme.isDarkMode ? WebDarkColors.shadowMedium : const Color(0x33000000),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      side: BorderSide(color: theme.isDarkMode ? WebDarkColors.border : WebColors.borderLight),
+                      borderRadius: BorderRadius.zero,
                     ),
                     clipBehavior: Clip.antiAlias,
-                    constraints: const BoxConstraints(minWidth: 180),
+                    constraints: const BoxConstraints(minWidth: 150),
                     position: PopupMenuPosition.under,
                     offset: const Offset(0, 8),
                     onSelected: (value) async {
@@ -725,33 +739,53 @@ class _ColumnHeaders extends ConsumerWidget {
                       for (final value in scripInfo.numStrikes)
                         PopupMenuItem<String>(
                           value: value,
-                          height: 40,
-                          padding: const EdgeInsets.symmetric(vertical: 2),
-                          child: Container(
-                            decoration: scripInfo.numStrike == value
-                                ? BoxDecoration(
-                                    color: theme.isDarkMode
-                                        ? WebDarkColors.surfaceContainer
-                                        : WebColors.surfaceVariant,
-                                    borderRadius: BorderRadius.circular(8),
-                                  )
-                                : null,
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  value,
-                                  style: WebTextStyles.custom(
-                                    fontSize: 14,
-                                    isDarkTheme: theme.isDarkMode,
-                                    color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
-                                    fontWeight: scripInfo.numStrike == value ? FontWeight.w700 : FontWeight.w500,
+                          padding: EdgeInsets.zero,
+                          child: SizedBox(
+                            width: 100, // Fixed width to prevent resizing
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                              child: Row(
+                                children: [
+                                  // Text on the left
+                                  Expanded(
+                                    child: Text(
+                                      value,
+                                      style: WebTextStyles.custom(
+                                        fontSize: 13,
+                                        isDarkTheme: theme.isDarkMode,
+                                        color: scripInfo.numStrike == value
+                                            ? (theme.isDarkMode
+                                                ? WebDarkColors.primary
+                                                : WebColors.primary)
+                                            : (theme.isDarkMode
+                                                ? WebDarkColors.textPrimary
+                                                : WebColors.textPrimary),
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
                                   ),
-                                ),
-                                if (scripInfo.numStrike == value)
-                                  Icon(Icons.check, size: 18, color: theme.isDarkMode ? colors.colorLightBlue : colors.colorBlue),
-                              ],
+                                  // Reserve space for icon on the right (always 18px + 8px spacing)
+                                  // SizedBox(
+                                  //   width: 28, // 18px icon + 8px spacing
+                                  //   child: scripInfo.numStrike == value
+                                  //       ? Row(
+                                  //           mainAxisSize: MainAxisSize.min,
+                                  //           mainAxisAlignment: MainAxisAlignment.end,
+                                  //           children: [
+                                  //             const SizedBox(width: 8),
+                                  //             Icon(
+                                  //               Icons.check,
+                                  //               size: 20,
+                                  //               color: theme.isDarkMode
+                                  //                   ? WebDarkColors.primary
+                                  //                   : WebColors.primary,
+                                  //             ),
+                                  //           ],
+                                  //         )
+                                  //       : const SizedBox.shrink(),
+                                  // ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
@@ -848,7 +882,7 @@ class _ColumnHeaders extends ConsumerWidget {
                           children: [
                             SizedBox(width: 20),
                             _buildSubHeader(context, ref, "LTP", theme),
-                            Expanded(child: _buildSubHeader(context, ref, "Per. Chg", theme)),
+                            Expanded(child: _buildSubHeader(context, ref, "CH", theme)),
                           ],
                         ),
                       ),
@@ -857,7 +891,7 @@ class _ColumnHeaders extends ConsumerWidget {
                           children: [
                             SizedBox(width: 15),
                             _buildSubHeader(context, ref, "OI", theme),
-                            Expanded(child: _buildSubHeader(context, ref, "OI Per. Chg", theme)),
+                            Expanded(child: _buildSubHeader(context, ref, "OI(ch)", theme)),
                           ],
                         ),
                       ),
@@ -876,7 +910,7 @@ class _ColumnHeaders extends ConsumerWidget {
                           children: [
                             SizedBox(width: 15),
                             Expanded(child: _buildSubHeader(context, ref, "LTP", theme)),
-                            _buildSubHeader(context, ref, "Per. Chg", theme),
+                            _buildSubHeader(context, ref, "CH", theme),
                           ],
                         ),
                       ),
@@ -885,7 +919,7 @@ class _ColumnHeaders extends ConsumerWidget {
                           children: [
                             SizedBox(width: 15),
                             Expanded(child: _buildSubHeader(context, ref, "OI", theme)),
-                            _buildSubHeader(context, ref, "OI Per. Chg", theme),
+                            _buildSubHeader(context, ref, "OI(ch)", theme),
                           ],
                         ),
                       ),
@@ -935,14 +969,16 @@ class _PreDefinedWatchlistBanner extends ConsumerWidget {
       child: Container(
           padding: const EdgeInsets.symmetric(vertical: 6),
           decoration: BoxDecoration(
-            color: theme.isDarkMode ? colors.primaryDark.withOpacity(0.3) : colors.primaryLight.withOpacity(0.3),
+              color: theme.isDarkMode ? WebDarkColors.primary.withOpacity(0.3) : WebColors.primary.withOpacity(0.3),
           ),
           child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-            SvgPicture.asset(assets.dInfo, color: colors.colorBlue),
-            TextWidget.captionText(
-              text: " Long press to add Watchlist / Swipe to Trade",
-              color: theme.isDarkMode ? colors.secondaryDark : colors.secondaryLight,
-              theme: false,
+            SvgPicture.asset(assets.dInfo, color: WebColors.primary),
+            Text(
+              " Long press to add Watchlist / Swipe to Trade",
+              style: WebTextStyles.caption(
+                isDarkTheme: theme.isDarkMode,
+                color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
+              ),
             ),
           ])),
     );
@@ -1155,8 +1191,8 @@ class _ActionButtons extends ConsumerWidget {
               border: Border(
                   top: BorderSide(
                       color: theme.isDarkMode
-                          ? colors.darkColorDivider
-                          : colors.colorDivider))),
+                          ? WebDarkColors.divider
+                          : WebColors.divider))),
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
           child:
               Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
@@ -1168,14 +1204,16 @@ class _ActionButtons extends ConsumerWidget {
               child: Container(
                   height: 40,
                   decoration: BoxDecoration(
-                      color: colors.primary,
+                      color: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
                       borderRadius: BorderRadius.circular(5)),
                   child: Center(
-                    child: TextWidget.subText(
-                        text: "BUY",
-                        color: colors.colorWhite,
-                        theme: theme.isDarkMode,
-                        fw: 2),
+                    child: Text(
+                        "BUY",
+                        style: WebTextStyles.sub(
+                          isDarkTheme: theme.isDarkMode,
+                          color: Colors.white,
+                          fontWeight: WebFonts.semiBold,
+                        )),
                   )),
             )),
             const SizedBox(width: 18),
@@ -1188,14 +1226,16 @@ class _ActionButtons extends ConsumerWidget {
                     child: Container(
                         height: 40,
                         decoration: BoxDecoration(
-                            color: colors.tertiary,
+                            color: theme.isDarkMode ? WebDarkColors.error : WebColors.error,
                             borderRadius: BorderRadius.circular(5)),
                         child: Center(
-                          child: TextWidget.subText(
-                              text: "SELL",
-                              color: colors.colorWhite,
-                              theme: theme.isDarkMode,
-                              fw: 2),
+                          child: Text(
+                              "SELL",
+                              style: WebTextStyles.sub(
+                                isDarkTheme: theme.isDarkMode,
+                                color: Colors.white,
+                                fontWeight: WebFonts.semiBold,
+                              )),
                         ))))
           ])),
     );
@@ -1337,7 +1377,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
         duration: const Duration(milliseconds: 200),
         height: _sheetHeight,
         decoration: BoxDecoration(
-          color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+          color: theme.isDarkMode ? WebDarkColors.background : WebColors.background,
           borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(16),
             topRight: Radius.circular(16),
@@ -1345,21 +1385,21 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
            border: Border(
                                   top: BorderSide(
                                     color: theme.isDarkMode
-                                        ? colors.textSecondaryDark
+                                        ? WebDarkColors.divider
                                             .withOpacity(0.5)
-                                        : colors.colorWhite,
+                                        : WebColors.surface,
                                   ),
                                   left: BorderSide(
                                     color: theme.isDarkMode
-                                        ? colors.textSecondaryDark
+                                        ? WebDarkColors.divider
                                             .withOpacity(0.5)
-                                        : colors.colorWhite,
+                                        : WebColors.surface,
                                   ),
                                   right: BorderSide(
                                     color: theme.isDarkMode
-                                        ? colors.textSecondaryDark
+                                        ? WebDarkColors.divider
                                             .withOpacity(0.5)
-                                        : colors.colorWhite,
+                                        : WebColors.surface,
                                   ),
                                 ),
 
@@ -1409,22 +1449,26 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                TextWidget.titleText(
-                  text: orderProv.selectedBsktName.isNotEmpty
+                Text(
+                  orderProv.selectedBsktName.isNotEmpty
                       ? orderProv.selectedBsktName
                       : "No Basket Selected",
-                  theme: theme.isDarkMode,
-                  color: theme.isDarkMode
-                      ? colors.textPrimaryDark
-                      : colors.textPrimaryLight,
-                  fw: 1,
+                  style: WebTextStyles.title(
+                    isDarkTheme: theme.isDarkMode,
+                    color: theme.isDarkMode
+                        ? WebDarkColors.textPrimary
+                        : WebColors.textPrimary,
+                    fontWeight: WebFonts.semiBold,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 if (orderProv.selectedBsktName.isNotEmpty)
-                  TextWidget.subText(
-                    text: "${orderProv.bsktScripList.length} items",
-                    color: colors.colorGrey,
-                    theme: theme.isDarkMode,
+                  Text(
+                    "${orderProv.bsktScripList.length} items",
+                    style: WebTextStyles.sub(
+                      isDarkTheme: theme.isDarkMode,
+                      color: theme.isDarkMode ? WebDarkColors.iconSecondary : WebColors.iconSecondary,
+                    ),
                   ),
               ],
             ),
@@ -1443,19 +1487,19 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                     },
                     borderRadius: BorderRadius.circular(20),
                     splashColor: theme.isDarkMode
-                        ? colors.splashColorDark
-                        : colors.splashColorLight,
+                        ? Colors.white.withOpacity(0.1)
+                        : Colors.black.withOpacity(0.1),
                     highlightColor: theme.isDarkMode
-                        ? colors.splashColorDark
-                        : colors.splashColorLight,
+                        ? Colors.white.withOpacity(0.05)
+                        : Colors.black.withOpacity(0.05),
                     child: Padding(
                       padding: const EdgeInsets.all(6.0),
                       child: Icon(
                         Icons.swap_horiz,
                         size: 24,
                         color: theme.isDarkMode
-                            ? colors.textSecondaryDark
-                            : colors.textSecondaryLight,
+                            ? WebDarkColors.iconSecondary
+                            : WebColors.iconSecondary,
                       ),
                     ),
                   ),
@@ -1537,47 +1581,55 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              TextWidget.subText(
-                text: "Pre Trade Margin",
-                theme: false,
-                color: theme.isDarkMode
-                    ? colors.textSecondaryDark
-                    : colors.textSecondaryLight,
-                fw: 0,
+              Text(
+                "Pre Trade Margin",
+                style: WebTextStyles.sub(
+                  isDarkTheme: theme.isDarkMode,
+                  color: theme.isDarkMode
+                      ? WebDarkColors.textSecondary
+                      : WebColors.textSecondary,
+                  fontWeight: WebFonts.regular,
+                ),
               ),
               const SizedBox(height: 6),
-              TextWidget.subText(
-                text: orderProv.bsktScripList.isEmpty ||
+              Text(
+                orderProv.bsktScripList.isEmpty ||
                         orderProv.bsktOrderMargin == null
                     ? "0.00"
                     : "${orderProv.bsktOrderMargin!.marginusedtrade ?? 0.00}",
-                theme: theme.isDarkMode,
-                color: theme.isDarkMode
-                    ? colors.textPrimaryDark
-                    : colors.textPrimaryLight,
+                style: WebTextStyles.sub(
+                  isDarkTheme: theme.isDarkMode,
+                  color: theme.isDarkMode
+                      ? WebDarkColors.textPrimary
+                      : WebColors.textPrimary,
+                ),
               ),
             ],
           ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              TextWidget.subText(
-                text: "Post Trade Margin",
-                theme: false,
-                color: theme.isDarkMode
-                    ? colors.textSecondaryDark
-                    : colors.textSecondaryLight,
+              Text(
+                "Post Trade Margin",
+                style: WebTextStyles.sub(
+                  isDarkTheme: theme.isDarkMode,
+                  color: theme.isDarkMode
+                      ? WebDarkColors.textSecondary
+                      : WebColors.textSecondary,
+                ),
               ),
               const SizedBox(height: 6),
-              TextWidget.titleText(
-                text: orderProv.bsktScripList.isEmpty ||
+              Text(
+                orderProv.bsktScripList.isEmpty ||
                         orderProv.bsktOrderMargin == null
                     ? "0.00"
                     : "${orderProv.bsktOrderMargin!.marginused ?? 0.00}",
-                theme: theme.isDarkMode,
-                color: theme.isDarkMode
-                    ? colors.textPrimaryDark
-                    : colors.textPrimaryLight,
+                style: WebTextStyles.title(
+                  isDarkTheme: theme.isDarkMode,
+                  color: theme.isDarkMode
+                      ? WebDarkColors.textPrimary
+                      : WebColors.textPrimary,
+                ),
               ),
             ],
           ),
@@ -1587,18 +1639,21 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
   }
 
   Widget _buildMultiExchangeWarning() {
+    final theme = ref.read(themeProvider);
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
       decoration: BoxDecoration(
-        color: colors.loss,
+        color: theme.isDarkMode ? WebDarkColors.error : WebColors.error,
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          TextWidget.paraText(
-            text: "Basket should contain orders of only 1 segment",
-            theme: false,
-            color: colors.colorWhite,
+          Text(
+            "Basket should contain orders of only 1 segment",
+            style: WebTextStyles.para(
+              isDarkTheme: theme.isDarkMode,
+              color: Colors.white,
+            ),
           ),
         ],
       ),
@@ -1617,8 +1672,12 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                   color: Color(0xff777777)),
               const SizedBox(height: 2),
               Text("No Data Found",
-                  style:
-                      textStyle(const Color(0xff777777), 15, FontWeight.w500)),
+                  style: WebTextStyles.custom(
+                    fontSize: 15,
+                    isDarkTheme: theme.isDarkMode,
+                    color: theme.isDarkMode ? WebDarkColors.iconSecondary : WebColors.iconSecondary,
+                    fontWeight: WebFonts.medium,
+                  )),
               //       SizedBox(height: 16),
               // TextWidget.subText(
               //   text: "No baskets found",
@@ -1629,13 +1688,13 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
               ElevatedButton(
                 onPressed: () => _showCreateBasket(context),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: colors.primaryLight,
+                  backgroundColor: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
                   padding:
                       const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 ),
                 child: TextWidget.subText(
                   text: "Create Basket",
-                  color: colors.colorWhite,
+                  color: Colors.white,
                   theme: false,
                 ),
               ),
@@ -1671,14 +1730,14 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
               ElevatedButton(
                 onPressed: () => _showBasketSelector(context),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: colors.primaryLight,
+                  backgroundColor: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
                   minimumSize: const Size(0, 45),
                   padding:
                       const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 ),
                 child: TextWidget.subText(
                   text: "Choose Basket",
-                  color: colors.colorWhite,
+                  color: Colors.white,
                   theme: false,
                   fw: 2,
                 ),
@@ -2133,7 +2192,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                       TextWidget.subText(
                         text: "Placing...",
                         theme: false,
-                        color: colors.colorWhite,
+                        color: Colors.white,
                         fw: 2,
                       ),
                     ],
@@ -2153,20 +2212,21 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
   }
 
   Color _getStatusColor(String status) {
+    final theme = ref.read(themeProvider);
     switch (status) {
       case 'placing':
-        return colors.colorBlue;
+        return theme.isDarkMode ? WebDarkColors.primary : WebColors.primary;
       case 'placed':
       case 'completed':
-        return colors.ltpgreen;
+        return theme.isDarkMode ? WebDarkColors.success : WebColors.success;
       case 'partially_placed':
       case 'partially_completed':
       case 'partially_filled':
-        return colors.pending;
+        return theme.isDarkMode ? WebDarkColors.warning : WebColors.warning;
       case 'failed':
-        return colors.darkred;
+        return theme.isDarkMode ? WebDarkColors.error : WebColors.error;
       default:
-        return colors.colorGrey;
+        return theme.isDarkMode ? WebDarkColors.iconSecondary : WebColors.iconSecondary;
     }
   }
 
@@ -2222,21 +2282,22 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
 
   // Helper methods for individual item status indicators
   Color _getItemStatusColor(String status) {
+    final theme = ref.read(themeProvider);
     switch (status.toLowerCase()) {
       case 'placed':
-        return colors.colorBlue;
+        return theme.isDarkMode ? WebDarkColors.primary : WebColors.primary;
       case 'complete':
-        return colors.ltpgreen;
+        return theme.isDarkMode ? WebDarkColors.success : WebColors.success;
       case 'rejected':
       case 'canceled':
       case 'failed':
-        return colors.loss;
+        return theme.isDarkMode ? WebDarkColors.error : WebColors.error;
       case 'open':
       case 'partial':
       case 'trigger_pending':
-        return colors.pending;
+        return theme.isDarkMode ? WebDarkColors.warning : WebColors.warning;
       default:
-        return colors.colorGrey;
+        return theme.isDarkMode ? WebDarkColors.iconSecondary : WebColors.iconSecondary;
     }
   }
 
@@ -2472,7 +2533,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                 child: TextWidget.titleText(
                   text: "Yes",
                   theme: theme.isDarkMode,
-                  color: colors.colorWhite,
+                  color: Colors.white,
                   fw: 2,
                 ),
               ),
@@ -2524,25 +2585,25 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
             topLeft: Radius.circular(16),
             topRight: Radius.circular(16),
           ),
-          color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+          color: theme.isDarkMode ? WebDarkColors.background : WebColors.background,
           border: Border(
                                   top: BorderSide(
                                     color: theme.isDarkMode
-                                        ? colors.textSecondaryDark
+                                        ? WebDarkColors.divider
                                             .withOpacity(0.5)
-                                        : colors.colorWhite,
+                                        : WebColors.surface,
                                   ),
                                   left: BorderSide(
                                     color: theme.isDarkMode
-                                        ? colors.textSecondaryDark
+                                        ? WebDarkColors.divider
                                             .withOpacity(0.5)
-                                        : colors.colorWhite,
+                                        : WebColors.surface,
                                   ),
                                   right: BorderSide(
                                     color: theme.isDarkMode
-                                        ? colors.textSecondaryDark
+                                        ? WebDarkColors.divider
                                             .withOpacity(0.5)
-                                        : colors.colorWhite,
+                                        : WebColors.surface,
                                   ),
                                 ),
 

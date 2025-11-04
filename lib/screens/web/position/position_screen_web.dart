@@ -4,12 +4,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:mynt_plus/screens/web/position/exit_all_positions_dialog_web.dart';
 import 'package:mynt_plus/screens/web/position/position_detail_screen_web.dart';
+import 'package:mynt_plus/screens/web/position/convert_position_dialogue_web.dart';
 
 import '../../../../models/portfolio_model/position_book_model.dart';
 import '../../../../provider/portfolio_provider.dart';
 import '../../../../provider/thems.dart';
 import '../../../../provider/websocket_provider.dart';
-import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
 import '../../../../res/web_colors.dart';
 import '../../../../res/global_font_web.dart';
@@ -39,6 +39,7 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
   // Approximate heights used to map pointer position to row index
   static const double _headerRowHeight = 56.0;
   static const double _dataRowHeight = 52.0;
+  final ScrollController _horizontalScrollController = ScrollController();
 
   @override
   void initState() {
@@ -49,6 +50,7 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
   @override
   void dispose() {
     _socketSubscription?.cancel();
+    _horizontalScrollController.dispose();
     
     // Close WebSocket connection when screen is disposed
     try {
@@ -103,26 +105,31 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
       return const Center(child: CircularProgressIndicator());
     }
 
-    return GestureDetector(
-      onTap: () => FocusScope.of(context).unfocus(),
-      child: RefreshIndicator(
-        onRefresh: () async {
-          await positionBook.fetchPositionBook(context, false);
-        },
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Summary Cards Section (includes Trade Positions)
-                _buildSummaryCards(theme, positionBook),
-                const SizedBox(height: 24),
+    return SizedBox.expand(
+      child: Container(
+        color: Colors.white,
+        child: GestureDetector(
+          onTap: () => FocusScope.of(context).unfocus(),
+          child: RefreshIndicator(
+            onRefresh: () async {
+              await positionBook.fetchPositionBook(context, false);
+            },
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Summary Cards Section (includes Trade Positions)
+                    _buildSummaryCards(theme, positionBook),
+                    const SizedBox(height: 24),
 
-                // Main Content Area
-                _buildMainContent(theme, positionBook),
-              ],
+                    // Main Content Area
+                    _buildMainContent(theme, positionBook),
+                  ],
+                ),
+              ),
             ),
           ),
         ),
@@ -137,24 +144,40 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
     final closedCount = _getClosedPositionsCount(positionBook);
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        color: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
+          width: 1,
+        ),
+        // boxShadow: [
+        //   BoxShadow(
+        //     color: Colors.black.withOpacity(0.05),
+        //     blurRadius: 10,
+        //     offset: const Offset(0, 2),
+        //   ),
+        // ],
       ),
       child: Column(
         children: [
+          SizedBox(height: 8),
           // Main stats row
           Row(
+            
             children: [
+             
               Expanded(
+                child: _buildStatItem(
+                  'Profit/Loss',
+                  positionBook.totPnL,
+                  _getValueColor(positionBook.totPnL, theme),
+                  theme,
+                ),
+              ),
+              _buildDivider(theme),
+               Expanded(
                 child: _buildStatItem(
                   'MTM',
                   positionBook.totMtM,
@@ -165,18 +188,9 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
               _buildDivider(theme),
               Expanded(
                 child: _buildStatItem(
-                  'Profit/Loss',
-                  positionBook.totPnL,
-                  _getValueColor(positionBook.totPnL, theme),
-                  theme,
-                ),
-              ),
-              _buildDivider(theme),
-              Expanded(
-                child: _buildStatItem(
                   'Trade Value',
                   _calculateTradeValue(positionBook),
-                  theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                  theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
                   theme,
                 ),
               ),
@@ -198,22 +212,21 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
             children: [
               // Text(
               //   'Trade Positions',
-              //   style: TextWidget.textStyle(
-              //     fontSize: 16,
+              //   style: WebTextStyles.title(
+              //     isDarkTheme: theme.isDarkMode,
               //     color: const Color(0xFF374151), // Dark grey
-              //                   theme: false,
-              //                   fw: 2,
-              //                 ),
-              //               ),
+              //     fontWeight: WebFonts.semiBold,
+              //   ),
+              // ),
               const SizedBox(width: 20),
               _buildPositionChip(
-                  '$positiveCount Positive', theme.isDarkMode ? colors.profitDark : colors.profitLight, theme),
+                  '$positiveCount Positive', theme.isDarkMode ? WebDarkColors.success : WebColors.success, theme),
               const SizedBox(width: 12),
               _buildPositionChip(
-                  '$negativeCount Negative', theme.isDarkMode ? colors.lossDark : colors.lossLight, theme),
+                  '$negativeCount Negative', theme.isDarkMode ? WebDarkColors.error : WebColors.error, theme),
               const SizedBox(width: 12),
               _buildPositionChip(
-                  '$closedCount Closed', theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight, theme),
+                  '$closedCount Closed', theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary, theme),
             ],
           ),
         ],
@@ -226,18 +239,22 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        TextWidget.subText(
-          text: label,
-          theme: false,
-          color: const Color(0xFF6B7280), // Dark grey
-          fw: 2,
+        Text(
+          label,
+          style: WebTextStyles.sub(
+            isDarkTheme: theme.isDarkMode,
+            color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
+            fontWeight: WebFonts.bold,
+          ),
         ),
         const SizedBox(height: 8),
-        TextWidget.headText(
-          text: value,
-          theme: false,
-          color: valueColor,
-          fw: 2,
+        Text(
+          value,
+          style: WebTextStyles.head(
+            isDarkTheme: theme.isDarkMode,
+            color: valueColor,
+            fontWeight: WebFonts.bold,
+          ),
         ),
       ],
     );
@@ -248,7 +265,7 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
       height: 40,
       width: 1,
       margin: const EdgeInsets.symmetric(horizontal: 16),
-      color: const Color(0xFFE5E7EB), // Light grey divider
+      color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
     );
   }
 
@@ -256,17 +273,16 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(20),
+        // color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(5),
         border: Border.all(color: color.withOpacity(0.2)),
       ),
       child: Text(
         text,
-        style: TextWidget.textStyle(
-          fontSize: 14,
+        style: WebTextStyles.sub(
+          isDarkTheme: theme.isDarkMode,
           color: color,
-          theme: false,
-          fw: 2,
+          fontWeight: WebFonts.semiBold,
         ),
       ),
     );
@@ -277,23 +293,169 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
     return Container(
       decoration: BoxDecoration(
         color: theme.isDarkMode
-            ? colors.kColorLightGreyDarkTheme
-            : colors.kColorLightGrey,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
-        ),
+            ? WebColors.textPrimary :
+             WebDarkColors.textPrimary,
+        // borderRadius: BorderRadius.circular(8),
+        // border: Border.all(
+        //   color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
+        // ),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Tabs
-          _buildTabs(theme, positionBook),
-
-          // Action Bar
-          _buildActionBar(theme, positionBook),
-
+          // Tabs and Action Bar in same row
+          _buildTabsAndActionBar(theme, positionBook),
+          const SizedBox(height: 16),
           // Table
           _buildPositionsTable(theme, positionBook),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTabsAndActionBar(ThemesProvider theme, PortfolioProvider positionBook) {
+    final openPositionsCount = _getOpenPositionsCount(positionBook);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
+          ),
+        ),
+      ),
+      child: Row(
+        children: [
+          // Segmented Control Tabs on the left
+          _buildSegmentedControl(theme, positionBook, openPositionsCount),
+          // Spacer to push action items to the right
+          const Spacer(),
+          // Search Bar
+          SizedBox(
+            width: 400,
+            child: Container(
+              height: 40,
+              decoration: BoxDecoration(
+                color: theme.isDarkMode ? WebDarkColors.inputBackground : WebColors.inputBackground,
+                borderRadius: BorderRadius.circular(5),
+                border: Border.all(
+                  color: theme.isDarkMode ? WebDarkColors.inputBorder : WebColors.inputBorder,
+                  width: 1,
+                ),
+              ),
+              child: TextField(
+                onChanged: (value) => setState(() => _searchQuery = value),
+                style: WebTextStyles.custom(
+                  fontSize: 13,
+                  isDarkTheme: theme.isDarkMode,
+                  color: theme.isDarkMode
+                      ? WebDarkColors.textPrimary
+                      : WebColors.textPrimary,
+                      fontWeight: WebFonts.bold,
+                ),
+                decoration: InputDecoration(
+                  hintText: '',
+                  hintStyle: WebTextStyles.custom(
+                    fontSize: 13,
+                    isDarkTheme: theme.isDarkMode,
+                    color: theme.isDarkMode
+                        ? WebDarkColors.textSecondary
+                        : WebColors.textSecondary,
+                    fontWeight: WebFonts.bold,
+                  ),
+                  prefixIcon: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: SvgPicture.asset(
+                      assets.searchIcon,
+                      color: theme.isDarkMode
+                          ? WebDarkColors.iconSecondary
+                          : WebColors.iconSecondary,
+                      fit: BoxFit.scaleDown,
+                      width: 18,
+                    ),
+                  ),
+                  border: InputBorder.none,
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 16),
+          // Exit All Button
+          Builder(
+            builder: (context) {
+              final openPositions = positionBook.openPosition ?? [];
+              final nonZeroPositions = openPositions.where((p) => p.qty != "0").toList();
+              
+              // Count only selected positions
+              final selectedPositions = nonZeroPositions
+                  .where((p) => p.isExitSelection == true)
+                  .toList();
+              final selectedCount = selectedPositions.length;
+              
+              // Button should be enabled if there are positions to exit
+              final buttonEnabled = selectedCount > 0 || nonZeroPositions.isNotEmpty;
+              
+              return ElevatedButton(
+                onPressed: buttonEnabled ? () => _exitAllPositions() : null,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: buttonEnabled
+                      ? (theme.isDarkMode
+                          ? WebDarkColors.primary
+                          : WebColors.primary)
+                      : Colors.grey,
+                  foregroundColor: Colors.white,
+                  minimumSize: const Size(100, 45),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                ),
+                child: Text(
+                  selectedCount == 0
+                      ? 'Exit All'
+                      : (selectedCount == 1
+                          ? 'Exit (1)'
+                          : 'Exit ($selectedCount)'),
+                  style: WebTextStyles.sub(
+                    isDarkTheme: theme.isDarkMode,
+                    color: Colors.white,
+                    fontWeight: WebFonts.bold,
+                  ),
+                ),
+              );
+            },
+          ),
+          const SizedBox(width: 16),
+          // Refresh Button
+          Material(
+            color: Colors.transparent,
+            shape: const CircleBorder(),
+            child: InkWell(
+              customBorder: const CircleBorder(),
+              splashColor: theme.isDarkMode
+                  ? Colors.white.withOpacity(.15)
+                  : Colors.black.withOpacity(.15),
+              highlightColor: theme.isDarkMode
+                  ? Colors.white.withOpacity(.08)
+                  : Colors.black.withOpacity(.08),
+              onTap: () async {
+                await positionBook.fetchPositionBook(context, false);
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(6),
+                child: Icon(
+                  Icons.refresh,
+                  size: 20,
+                  color: theme.isDarkMode
+                      ? WebDarkColors.iconSecondary
+                      : WebColors.iconSecondary,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
         ],
       ),
     );
@@ -306,7 +468,7 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
       decoration: BoxDecoration(
         border: Border(
           bottom: BorderSide(
-            color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
+            color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
           ),
         ),
       ),
@@ -314,6 +476,80 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
         children: [
           _buildTab('Positions ($openPositionsCount)', 0, theme),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSegmentedControl(ThemesProvider theme, PortfolioProvider positionBook, int openPositionsCount) {
+    final tabs = [
+      'Positions ($openPositionsCount)',
+    ];
+
+    return Container(
+      decoration: BoxDecoration(
+        color: theme.isDarkMode 
+            ? WebDarkColors.inputBackground 
+            : WebColors.inputBackground,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: theme.isDarkMode ? WebDarkColors.inputBorder : WebColors.inputBorder,
+          width: 1,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: List.generate(tabs.length, (index) {
+          final isSelected = _selectedTabIndex == index;
+          final isLast = index == tabs.length - 1;
+          
+          return _buildSegmentedTab(
+            tabs[index],
+            index,
+            isSelected,
+            isLast,
+            theme,
+          );
+        }),
+      ),
+    );
+  }
+
+  Widget _buildSegmentedTab(
+    String title,
+    int index,
+    bool isSelected,
+    bool isLast,
+    ThemesProvider theme,
+  ) {
+    return GestureDetector(
+      onTap: () => setState(() => _selectedTabIndex = index),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? (theme.isDarkMode ? WebDarkColors.primary : WebColors.primary)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: WebTextStyles.sub(
+                isDarkTheme: theme.isDarkMode,
+                color: isSelected
+                    ? WebDarkColors.textPrimary
+                    : (theme.isDarkMode 
+                        ? WebDarkColors.textSecondary 
+                        : WebColors.textSecondary),
+                fontWeight: isSelected ? WebFonts.semiBold : WebFonts.medium,
+                letterSpacing: 0.0,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -356,43 +592,49 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
 
   Widget _buildActionBar(ThemesProvider theme, PortfolioProvider positionBook) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(8),
       child: Row(
         children: [
           // Search Bar
-          Expanded(
-            flex: 2,
+          SizedBox(
+            width: 400,
             child: Container(
               height: 40,
               decoration: BoxDecoration(
-                color: theme.isDarkMode ? colors.searchBgDark : colors.searchBg,
-                borderRadius: BorderRadius.circular(6),
+                color: theme.isDarkMode ? WebDarkColors.inputBackground : WebColors.inputBackground,
+                borderRadius: BorderRadius.circular(5),
+                border: Border.all(
+                  color: theme.isDarkMode ? WebDarkColors.inputBorder : WebColors.inputBorder,
+                  width: 1,
+                ),
               ),
               child: TextField(
                 onChanged: (value) => setState(() => _searchQuery = value),
-                style: TextWidget.textStyle(
-                  fontSize: 14,
+                style: WebTextStyles.custom(
+                  fontSize: 13,
+                  isDarkTheme: theme.isDarkMode,
                   color: theme.isDarkMode
-                      ? colors.textPrimaryDark
-                      : colors.textPrimaryLight,
-                  theme: theme.isDarkMode,
+                      ? WebDarkColors.textPrimary
+                      : WebColors.textPrimary,
+                      fontWeight: WebFonts.bold,
                 ),
                 decoration: InputDecoration(
-                  hintText: 'Search',
-                  hintStyle: TextWidget.textStyle(
-                    fontSize: 12,
+                  hintText: '',
+                  hintStyle: WebTextStyles.custom(
+                    fontSize: 13,
+                    isDarkTheme: theme.isDarkMode,
                     color: theme.isDarkMode
-                        ? colors.textSecondaryDark
-                        : colors.textSecondaryLight,
-                    theme: theme.isDarkMode,
+                        ? WebDarkColors.textSecondary
+                        : WebColors.textSecondary,
+                    fontWeight: WebFonts.bold,
                   ),
                   prefixIcon: Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: SvgPicture.asset(
                       assets.searchIcon,
                       color: theme.isDarkMode
-                          ? colors.textSecondaryDark
-                          : colors.textSecondaryLight,
+                          ? WebDarkColors.iconSecondary
+                          : WebColors.iconSecondary,
                       fit: BoxFit.scaleDown,
                       width: 18,
                     ),
@@ -426,42 +668,61 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: buttonEnabled
                       ? (theme.isDarkMode
-                          ? colors.primaryDark
-                          : colors.primaryLight)
+                          ? WebDarkColors.primary
+                          : WebColors.primary)
                       : Colors.grey,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  minimumSize: const Size(100, 45),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(6),
+                    borderRadius: BorderRadius.circular(5),
                   ),
                 ),
-                child: TextWidget.subText(
-                  text: selectedCount == 0
+                child: Text(
+                  selectedCount == 0
                       ? 'Exit All'
                       : (selectedCount == 1
                           ? 'Exit (1)'
                           : 'Exit ($selectedCount)'),
-                  theme: false,
-                  color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-                  fw: 2,
+                  style: WebTextStyles.sub(
+                    isDarkTheme: theme.isDarkMode,
+                    color: Colors.white,
+                    fontWeight: WebFonts.bold,
+                  ),
                 ),
               );
             },
           ),
           const SizedBox(width: 16),
 
-          // Refresh Button
-          IconButton(
-            onPressed: () async {
+
+           Material(
+                      color: Colors.transparent,
+                      shape: const CircleBorder(),
+                      child: InkWell(
+                        customBorder: const CircleBorder(),
+                        splashColor: theme.isDarkMode
+                            ? Colors.white.withOpacity(.15)
+                            : Colors.black.withOpacity(.15),
+                        highlightColor: theme.isDarkMode
+                            ? Colors.white.withOpacity(.08)
+                            : Colors.black.withOpacity(.08),
+                        onTap: () async {
               await positionBook.fetchPositionBook(context, false);
             },
-            icon: Icon(
-              Icons.refresh,
-              color: theme.isDarkMode
-                  ? colors.textPrimaryDark
-                  : colors.textPrimaryLight,
-            ),
-          ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(6),
+                          child: Icon(
+                            Icons.refresh,
+                            size: 20,
+                            color: theme.isDarkMode
+                                ? WebDarkColors.iconSecondary
+                                : WebColors.iconSecondary,
+                          ),
+                        ),
+                      ),
+                    ),
+
+         
         ],
       ),
     );
@@ -478,225 +739,193 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
       );
     }
 
-    return SingleChildScrollView(
-      scrollDirection: Axis.vertical,
-      physics: const AlwaysScrollableScrollPhysics(),
+    return Container(
+      // decoration: BoxDecoration(
+      //   border: Border.all(
+      //     color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
+      //   ),
+      //   borderRadius: BorderRadius.circular(8),
+      // ),
       child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
+        scrollDirection: Axis.vertical,
         physics: const AlwaysScrollableScrollPhysics(),
-        child: MouseRegion(
-          onExit: (_) {
-            if (_hoveredRowToken != null) setState(() => _hoveredRowToken = null);
-          },
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              minWidth: MediaQuery.of(context).size.width * 0.7,
-            ),
-            child: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                IntrinsicWidth(
-                  child: DataTable(
-          showCheckboxColumn: false,
-          sortColumnIndex: _sortColumnIndex,
-          sortAscending: _sortAscending,
-          headingRowColor: WidgetStateProperty.all(
-            theme.isDarkMode
-                ? colors.kColorLightGreyDarkTheme
-                : colors.kColorLightGrey,
-          ),
-          dataRowColor: WidgetStateProperty.resolveWith<Color?>(
-            (Set<WidgetState> states) {
-              if (states.contains(WidgetState.selected)) {
-                return (theme.isDarkMode
-                        ? colors.primaryDark
-                        : colors.primaryLight)
-                    .withOpacity(0.1);
-              }
-              return null;
-            },
-          ),
-          columns: [
-            DataColumn(
-              label: Builder(
-                builder: (context) {
-                  final theme = ref.read(themeProvider);
-                  return Checkbox(
-                    value: positionBook.isExitAllPosition,
-                    onChanged: filteredPositions.isNotEmpty
-                        ? (bool? value) {
-                            positionBook.selectExitAllPosition(value ?? false);
-                            setState(() {}); // Trigger rebuild to update button count
-                          }
-                        : null,
-                    activeColor: theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
-                  );
-                },
-              ),
-            ),
-            DataColumn(
-              label: _buildSortableColumnHeader('Product', theme),
-              onSort: (columnIndex, ascending) =>
-                  _onSortTable(columnIndex, ascending),
-            ),
-            DataColumn(
-              label: _buildSortableColumnHeader('Instrument', theme),
-              onSort: (columnIndex, ascending) =>
-                  _onSortTable(columnIndex, ascending),
-            ),
-            DataColumn(
-              label: _buildSortableColumnHeader('Qty', theme),
-              onSort: (columnIndex, ascending) =>
-                  _onSortTable(columnIndex, ascending),
-            ),
-            DataColumn(
-              label: _buildSortableColumnHeader('Act Avg Price', theme),
-              onSort: (columnIndex, ascending) =>
-                  _onSortTable(columnIndex, ascending),
-            ),
-            DataColumn(
-              label: _buildSortableColumnHeader('LTP', theme),
-              onSort: (columnIndex, ascending) =>
-                  _onSortTable(columnIndex, ascending),
-            ),
-            DataColumn(
-              label: _buildSortableColumnHeader('P&L', theme),
-              onSort: (columnIndex, ascending) =>
-                  _onSortTable(columnIndex, ascending),
-            ),
-            DataColumn(
-              label: _buildSortableColumnHeader('Avg Price', theme),
-              onSort: (columnIndex, ascending) =>
-                  _onSortTable(columnIndex, ascending),
-            ),
-            DataColumn(
-              label: _buildSortableColumnHeader('MTM', theme),
-              onSort: (columnIndex, ascending) =>
-                  _onSortTable(columnIndex, ascending),
-            ),
-            DataColumn(
-              label: _buildSortableColumnHeader('Buy Qty', theme),
-              onSort: (columnIndex, ascending) =>
-                  _onSortTable(columnIndex, ascending),
-            ),
-            DataColumn(
-              label: _buildSortableColumnHeader('Sell Qty', theme),
-              onSort: (columnIndex, ascending) =>
-                  _onSortTable(columnIndex, ascending),
-            ),
-            DataColumn(
-              label: _buildSortableColumnHeader('Buy Avg', theme),
-              onSort: (columnIndex, ascending) =>
-                  _onSortTable(columnIndex, ascending),
-            ),
-            DataColumn(
-              label: _buildSortableColumnHeader('Sell Avg', theme),
-              onSort: (columnIndex, ascending) =>
-                  _onSortTable(columnIndex, ascending),
-            ),
-          ],
-          rows: filteredPositions.map((position) {
-            final isClosed = _isPositionClosed(position);
-            final positionToken = position.token ?? '';
-            
-            return DataRow(
-              onSelectChanged: (bool? selected) {
-                _showPositionDetail(position);
+        child: Scrollbar(
+          controller: _horizontalScrollController,
+          thumbVisibility: true,
+          child: SingleChildScrollView(
+            controller: _horizontalScrollController,
+            scrollDirection: Axis.horizontal,
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: MouseRegion(
+              onExit: (_) {
+                if (_hoveredRowToken != null) setState(() => _hoveredRowToken = null);
               },
-              cells: [
-                DataCell(
-                  GestureDetector(
-                    onTap: isClosed ? null : () {
-                      // Find the position in the open positions list
-                      final openPositions = positionBook.openPosition ?? [];
-                      for (int i = 0; i < openPositions.length; i++) {
-                        if (openPositions[i].token == position.token) {
-                          positionBook.selectExitPosition(i);
+              child: Stack(
+                clipBehavior: Clip.hardEdge,
+                children: [
+                  DataTable(
+                    columnSpacing: 32,
+                    showCheckboxColumn: false,
+                    sortColumnIndex: _sortColumnIndex,
+                    sortAscending: _sortAscending,
+                    horizontalMargin: 12,
+                    headingRowHeight: 44,
+                    headingRowColor: WidgetStateProperty.all(Colors.transparent),
+        dataRowColor: WidgetStateProperty.resolveWith<Color?>(
+          (Set<WidgetState> states) {
+            if (states.contains(WidgetState.selected)) {
+              return (theme.isDarkMode
+                      ? WebDarkColors.primary
+                      : WebColors.primary)
+                  .withOpacity(0.1);
+            }
+            return null;
+          },
+        ),
+        columns: [
+          DataColumn(
+            label: Builder(
+              builder: (context) {
+                final theme = ref.read(themeProvider);
+                return Checkbox(
+                  value: positionBook.isExitAllPosition,
+                  onChanged: filteredPositions.isNotEmpty
+                      ? (bool? value) {
+                          positionBook.selectExitAllPosition(value ?? false);
                           setState(() {}); // Trigger rebuild to update button count
-                          break;
                         }
+                      : null,
+                  activeColor: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
+                );
+              },
+            ),
+          ),
+          DataColumn(
+            label: _buildSortableColumnHeader('Product', theme),
+            onSort: (columnIndex, ascending) =>
+                _onSortTable(columnIndex, ascending),
+          ),
+          DataColumn(
+            label: _buildSortableColumnHeader('Instrument', theme),
+            onSort: (columnIndex, ascending) =>
+                _onSortTable(columnIndex, ascending),
+          ),
+          DataColumn(
+            label: _buildSortableColumnHeader('Qty', theme),
+            onSort: (columnIndex, ascending) =>
+                _onSortTable(columnIndex, ascending),
+          ),
+          DataColumn(
+            label: _buildSortableColumnHeader('Act Avg Price', theme),
+            onSort: (columnIndex, ascending) =>
+                _onSortTable(columnIndex, ascending),
+          ),
+          DataColumn(
+            label: _buildSortableColumnHeader('LTP', theme),
+            onSort: (columnIndex, ascending) =>
+                _onSortTable(columnIndex, ascending),
+          ),
+          DataColumn(
+            label: _buildSortableColumnHeader('P&L', theme),
+            onSort: (columnIndex, ascending) =>
+                _onSortTable(columnIndex, ascending),
+          ),
+          DataColumn(
+            label: _buildSortableColumnHeader('Avg Price', theme),
+            onSort: (columnIndex, ascending) =>
+                _onSortTable(columnIndex, ascending),
+          ),
+          DataColumn(
+            label: _buildSortableColumnHeader('MTM', theme),
+            onSort: (columnIndex, ascending) =>
+                _onSortTable(columnIndex, ascending),
+          ),
+          DataColumn(
+            label: _buildSortableColumnHeader('Buy Qty', theme),
+            onSort: (columnIndex, ascending) =>
+                _onSortTable(columnIndex, ascending),
+          ),
+          DataColumn(
+            label: _buildSortableColumnHeader('Sell Qty', theme),
+            onSort: (columnIndex, ascending) =>
+                _onSortTable(columnIndex, ascending),
+          ),
+          DataColumn(
+            label: _buildSortableColumnHeader('Buy Avg', theme),
+            onSort: (columnIndex, ascending) =>
+                _onSortTable(columnIndex, ascending),
+          ),
+          DataColumn(
+            label: _buildSortableColumnHeader('Sell Avg', theme),
+            onSort: (columnIndex, ascending) =>
+                _onSortTable(columnIndex, ascending),
+          ),
+        ],
+        rows: filteredPositions.map((position) {
+          final isClosed = _isPositionClosed(position);
+          final positionToken = position.token ?? '';
+          
+          return DataRow(
+            onSelectChanged: (bool? selected) {
+              _showPositionDetail(position);
+            },
+            cells: [
+              DataCell(
+                Checkbox(
+                  value: position.isExitSelection ?? false,
+                  onChanged: isClosed ? null : (bool? value) {
+                    // Find the position in the open positions list
+                    final openPositions = positionBook.openPosition ?? [];
+                    for (int i = 0; i < openPositions.length; i++) {
+                      if (openPositions[i].token == position.token) {
+                        positionBook.selectExitPosition(i);
+                        setState(() {}); // Trigger rebuild to update button count
+                        break;
                       }
-                    },
-                    child: Checkbox(
-                      value: position.isExitSelection ?? false,
-                      onChanged: null, // Disable default checkbox behavior
-                      activeColor: isClosed 
-                          ? Colors.grey 
-                          : (theme.isDarkMode ? colors.primaryDark : colors.primaryLight),
-                    ),
-                  ),
-                ),
-                DataCell(
-                  Text(
-                    position.sPrdtAli ?? 'N/A',
-                    style: TextWidget.textStyle(
-                      fontSize: 12,
-                      color: _getPositionTextColor(position, theme),
-                      theme: theme.isDarkMode,
-                      fw: 2,
-                    ),
-                  ),
-                ),
-                DataCell(
-                  Text(
-                    '${position.symbol ?? ''} ${position.exch ?? ''} ${position.expDate ?? ''} ${position.option ?? ''}',
-                    style: TextWidget.textStyle(
-                      fontSize: 12,
-                      color: _getPositionTextColor(position, theme),
-                      theme: theme.isDarkMode,
-                      fw: 2,
-                    ),
-                  ),
-                ),
-               
-                DataCell(
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: isClosed 
-                          ? Colors.grey.withOpacity(0.1)
-                          : _getQtyColor(position.qty ?? '0', theme).withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      _formatQty(position.qty ?? '0'),
-                      style: TextWidget.textStyle(
-                        fontSize: 12,
-                        color: isClosed 
-                            ? Colors.grey
-                            : _getQtyColor(position.qty ?? '0', theme),
-                        theme: false,
-                        fw: 2,
-                      ),
-                    ),
-                  ),
-                ),
-                DataCell(
-                 (_hoveredRowToken != positionToken) ? Text(
-                    position.avgPrc ?? '0.00',
-                    style: TextWidget.textStyle(
-                      fontSize: 12,
-                      color: _getPositionTextColor(position, theme),
-                      theme: theme.isDarkMode,
-                      fw: 2,
-                    ),
-                  ):
-                  MouseRegion(
-                  onEnter: (_) => setState(() => _hoveredRowToken = positionToken),
-                  onExit: (_) {
-                    Future.delayed(const Duration(milliseconds: 200), () {
-                      if (mounted && _hoveredRowToken == positionToken) {
-                        setState(() => _hoveredRowToken = null);
-                      }
-                    });
+                    }
                   },
-                  child: AnimatedOpacity(
-                    opacity: _hoveredRowToken == positionToken ? 1.0 : 0.0,
-                    duration: const Duration(milliseconds: 120),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
+                  activeColor: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
+                ),
+              ),
+              DataCell(
+                Text(
+                  position.sPrdtAli ?? 'N/A',
+                  style: WebTextStyles.custom(
+                    fontSize: 13,
+                    isDarkTheme: theme.isDarkMode,
+                    color: _getPositionTextColor(position, theme),
+                    fontWeight: WebFonts.medium,
+                  ),
+                ),
+              ),
+              DataCell(
+                SizedBox(
+                  width: 250,
+                  child: (_hoveredRowToken != positionToken) ? Text(
+                    '${position.symbol ?? ''} ${position.exch ?? ''} ${position.expDate ?? ''} ${position.option ?? ''}',
+                    style: WebTextStyles.custom(
+                      fontSize: 13,
+                      isDarkTheme: theme.isDarkMode,
+                      color: _getPositionTextColor(position, theme),
+                      fontWeight: WebFonts.medium,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ) :
+                  MouseRegion(
+                    onEnter: (_) => setState(() => _hoveredRowToken = positionToken),
+                    onExit: (_) {
+                      Future.delayed(const Duration(milliseconds: 200), () {
+                        if (mounted && _hoveredRowToken == positionToken) {
+                          setState(() => _hoveredRowToken = null);
+                        }
+                      });
+                    },
+                    child: AnimatedOpacity(
+                      opacity: _hoveredRowToken == positionToken ? 1.0 : 0.0,
+                      duration: const Duration(milliseconds: 120),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
                         _buildHoverButton(
                           label: 'B',
                           color: Colors.white,
@@ -726,165 +955,251 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                           color: theme.isDarkMode
                               ? WebDarkColors.textSecondary
                               : WebColors.textSecondary,
+                          borderColor: theme.isDarkMode
+                              ? WebDarkColors.inputBorder
+                              : WebColors.inputBorder,
+                          borderRadius: 5.0,
                           onPressed: () async {
                             await _handleChartTap(context, position);
                           },
                           theme: theme,
                         ),
+                        // Exit, Add, and Convert Position buttons for open positions
+                        if (!isClosed && position.qty != "0" && position.sPrdtAli != "BO" && position.sPrdtAli != "CO" && !positionBook.isDay) ...[
+                          const SizedBox(width: 6),
+                          _buildHoverButton(
+                            label: 'Exit',
+                            color: Colors.white,
+                            backgroundColor: theme.isDarkMode
+                                ? WebDarkColors.error
+                                : WebColors.error,
+                            onPressed: () async {
+                              await _handleExitPosition(context, position);
+                            },
+                            theme: theme,
+                          ),
+                          const SizedBox(width: 6),
+                          _buildHoverButton(
+                            label: 'Add',
+                            color: Colors.white,
+                            backgroundColor: theme.isDarkMode
+                                ? WebDarkColors.primary
+                                : WebColors.primary,
+                            onPressed: () async {
+                              await _handleAddPosition(context, position);
+                            },
+                            theme: theme,
+                          ),
+                        ],
+                        // Convert Position button for open positions
+                        if (!isClosed && position.qty != "0") ...[
+                          const SizedBox(width: 6),
+                          _buildHoverButton(
+                            icon: Icons.swap_horiz,
+                            color: theme.isDarkMode
+                                ? WebDarkColors.textSecondary
+                                : WebColors.textSecondary,
+                            borderColor: theme.isDarkMode
+                                ? WebDarkColors.inputBorder
+                                : WebColors.inputBorder,
+                            borderRadius: 5.0,
+                            onPressed: () {
+                              _handleConvertPosition(context, position);
+                            },
+                            theme: theme,
+                          ),
+                        ],
                       ],
                     ),
                   ),
                 ),
-                ),
-                DataCell(
-                  Text(
-                    position.lp ?? '0.00',
-                    style: TextWidget.textStyle(
-                      fontSize: 12,
-                      color: _getPositionTextColor(position, theme),
-                      theme: theme.isDarkMode,
-                      fw: 2,
-                    ),
-                  ),
-                ),
-                DataCell(
-                  Text(
-                    position.profitNloss ?? '0.00',
-                    style: TextWidget.textStyle(
-                      fontSize: 12,
-                      color: isClosed 
-                          ? Colors.grey
-                          : _getValueColor(position.profitNloss ?? '0.00', theme),
-                      theme: false,
-                      fw: 2,
-                    ),
-                  ),
-                ),
-                DataCell(
-                  Text(
-                    position.avgPrc ?? '0.00',
-                    style: TextWidget.textStyle(
-                      fontSize: 12,
-                      color: _getPositionTextColor(position, theme),
-                      theme: theme.isDarkMode,
-                      fw: 2,
-                    ),
-                  ),
-                ),
-                DataCell(
-                  Text(
-                    position.mTm ?? '0.00',
-                    style: TextWidget.textStyle(
-                      fontSize: 12,
-                      color: isClosed 
-                          ? Colors.grey
-                          : _getValueColor(position.mTm ?? '0.00', theme),
-                      theme: false,
-                      fw: 2,
-                    ),
-                  ),
-                ),
-                DataCell(
-                  Text(
-                    position.daybuyqty ?? '0',
-                    style: TextWidget.textStyle(
-                      fontSize: 12,
-                      color: _getPositionTextColor(position, theme),
-                      theme: theme.isDarkMode,
-                      fw: 2,
-                    ),
-                  ),
-                ),
-                DataCell(
-                  Text(
-                    position.daysellqty ?? '0',
-                    style: TextWidget.textStyle(
-                      fontSize: 12,
-                      color: _getPositionTextColor(position, theme),
-                      theme: theme.isDarkMode,
-                      fw: 2,
-                    ),
-                  ),
-                ),
-                DataCell(
-                  Text(
-                    position.daybuyavgprc ?? '0.00',
-                    style: TextWidget.textStyle(
-                      fontSize: 12,
-                      color: _getPositionTextColor(position, theme),
-                      theme: theme.isDarkMode,
-                      fw: 2,
-                    ),
-                  ),
-                ),
-                DataCell(
-                  Text(
-                    position.daysellavgprc ?? '0.00',
-                    style: TextWidget.textStyle(
-                      fontSize: 12,
-                      color: _getPositionTextColor(position, theme),
-                      theme: theme.isDarkMode,
-                      fw: 2,
-                    ),
-                  ),
-                ),
-              // Actions cell shown only when row is hovered
-              
-              ],
-            );
-          }).toList(),
-            ),
-                  ),
-            // Transparent overlay to detect hover anywhere per row
-            Positioned.fill(
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  return Listener(
-                    behavior: HitTestBehavior.translucent,
-                    onPointerHover: (event) {
-                      final dy = event.localPosition.dy;
-                      final yAfterHeader = dy - _headerRowHeight;
-                      if (yAfterHeader < 0) {
-                        if (_hoveredRowToken != null) {
-                          setState(() => _hoveredRowToken = null);
-                        }
-                        return;
-                      }
-                      final index = (yAfterHeader / _dataRowHeight).floor();
-                      if (index >= 0 && index < filteredPositions.length) {
-                        final token = filteredPositions[index].token ?? '';
-                        if (_hoveredRowToken != token) {
-                          setState(() => _hoveredRowToken = token);
-                        }
-                      } else {
-                        if (_hoveredRowToken != null) {
-                          setState(() => _hoveredRowToken = null);
-                        }
-                      }
-                    },
-                    child: const SizedBox.expand(),
-                  );
-                },
               ),
+              ),
+             
+              DataCell(
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: isClosed 
+                        ? Colors.grey.withOpacity(0.1)
+                        : _getQtyColor(position.qty ?? '0', theme).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    _formatQty(position.qty ?? '0'),
+                    style: WebTextStyles.custom(
+                      fontSize: 13,
+                      isDarkTheme: theme.isDarkMode,
+                      color: isClosed 
+                          ? Colors.grey
+                          : _getQtyColor(position.qty ?? '0', theme),
+                      fontWeight: WebFonts.medium,
+                    ),
+                  ),
+                ),
+              ),
+              DataCell(
+                Text(
+                  position.avgPrc ?? '0.00',
+                  style: WebTextStyles.custom(
+                    fontSize: 13,
+                    isDarkTheme: theme.isDarkMode,
+                    color: _getPositionTextColor(position, theme),
+                    fontWeight: WebFonts.medium,
+                  ),
+                ),
+              ),
+              DataCell(
+                Text(
+                  position.lp ?? '0.00',
+                  style: WebTextStyles.custom(
+                    fontSize: 13,
+                    isDarkTheme: theme.isDarkMode,
+                    color: _getPositionTextColor(position, theme),
+                    fontWeight: WebFonts.medium,
+                  ),
+                ),
+              ),
+              DataCell(
+                Text(
+                  position.profitNloss ?? '0.00',
+                  style: WebTextStyles.custom(
+                    fontSize: 13,
+                    isDarkTheme: theme.isDarkMode,
+                    color: isClosed 
+                        ? Colors.grey
+                        : _getValueColor(position.profitNloss ?? '0.00', theme),
+                    fontWeight: WebFonts.medium,
+                  ),
+                ),
+              ),
+              DataCell(
+                Text(
+                  position.avgPrc ?? '0.00',
+                  style: WebTextStyles.custom(
+                    fontSize: 13,
+                    isDarkTheme: theme.isDarkMode,
+                    color: _getPositionTextColor(position, theme),
+                    fontWeight: WebFonts.medium,
+                  ),
+                ),
+              ),
+              DataCell(
+                Text(
+                  position.mTm ?? '0.00',
+                  style: WebTextStyles.custom(
+                    fontSize: 13,
+                    isDarkTheme: theme.isDarkMode,
+                    color: isClosed 
+                        ? Colors.grey
+                        : _getValueColor(position.mTm ?? '0.00', theme),
+                    fontWeight: WebFonts.medium,
+                  ),
+                ),
+              ),
+              DataCell(
+                Text(
+                  position.daybuyqty ?? '0',
+                  style: WebTextStyles.custom(
+                    fontSize: 13,
+                    isDarkTheme: theme.isDarkMode,
+                    color: _getPositionTextColor(position, theme),
+                    fontWeight: WebFonts.medium,
+                  ),
+                ),
+              ),
+              DataCell(
+                Text(
+                  position.daysellqty ?? '0',
+                  style: WebTextStyles.custom(
+                    fontSize: 13,
+                    isDarkTheme: theme.isDarkMode,
+                    color: _getPositionTextColor(position, theme),
+                    fontWeight: WebFonts.medium,
+                  ),
+                ),
+              ),
+              DataCell(
+                Text(
+                  position.daybuyavgprc ?? '0.00',
+                  style: WebTextStyles.custom(
+                    fontSize: 13,
+                    isDarkTheme: theme.isDarkMode,
+                    color: _getPositionTextColor(position, theme),
+                    fontWeight: WebFonts.medium,
+                  ),
+                ),
+              ),
+              DataCell(
+                Text(
+                  position.daysellavgprc ?? '0.00',
+                  style: WebTextStyles.custom(
+                    fontSize: 13,
+                    isDarkTheme: theme.isDarkMode,
+                    color: _getPositionTextColor(position, theme),
+                    fontWeight: WebFonts.medium,
+                  ),
+                ),
+              ),
+            // Actions cell shown only when row is hovered
+            
+            ],
+          );
+        }).toList(),
+                    ),
+          // Transparent overlay to detect hover anywhere per row
+          Positioned.fill(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return Listener(
+                  behavior: HitTestBehavior.translucent,
+                  onPointerHover: (event) {
+                    final dy = event.localPosition.dy;
+                    final yAfterHeader = dy - _headerRowHeight;
+                    if (yAfterHeader < 0) {
+                      if (_hoveredRowToken != null) {
+                        setState(() => _hoveredRowToken = null);
+                      }
+                      return;
+                    }
+                    final index = (yAfterHeader / _dataRowHeight).floor();
+                    if (index >= 0 && index < filteredPositions.length) {
+                      final token = filteredPositions[index].token ?? '';
+                      if (_hoveredRowToken != token) {
+                        setState(() => _hoveredRowToken = token);
+                      }
+                    } else {
+                      if (_hoveredRowToken != null) {
+                        setState(() => _hoveredRowToken = null);
+                      }
+                    }
+                  },
+                  child: const SizedBox.expand(),
+                );
+              },
             ),
-          ],
+          ),
+        ],
+                ),
+              ),
             ),
           ),
         ),
-      ),
-    );
+      );
+    
   }
 
   Widget _buildSortableColumnHeader(String label, ThemesProvider theme) {
     return Text(
       label,
-      style: TextWidget.textStyle(
-        fontSize: 12,
+      style: WebTextStyles.custom(
+        fontSize: 13,
+        isDarkTheme: theme.isDarkMode,
         color: theme.isDarkMode
-            ? colors.textSecondaryDark
-            : colors.textSecondaryLight,
-        theme: theme.isDarkMode,
-        fw: 2,
+            ? WebDarkColors.textPrimary
+            : WebColors.textPrimary,
+        fontWeight: WebFonts.bold,
       ),
     );
   }
@@ -1031,22 +1346,22 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
   Color _getValueColor(String value, ThemesProvider theme) {
     final numValue = double.tryParse(value) ?? 0.0;
     if (numValue > 0) {
-      return theme.isDarkMode ? colors.profitDark : colors.profitLight; // Green
+      return theme.isDarkMode ? WebDarkColors.success : WebColors.success; // Green
     } else if (numValue < 0) {
-      return theme.isDarkMode ? colors.lossDark : colors.lossLight; // Red
+      return theme.isDarkMode ? WebDarkColors.error : WebColors.error; // Red
     } else {
-      return theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight; // Grey
+      return theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary; // Grey
     }
   }
 
   Color _getQtyColor(String qty, ThemesProvider theme) {
     final numQty = int.tryParse(qty) ?? 0;
     if (numQty > 0) {
-      return theme.isDarkMode ? colors.profitDark : colors.profitLight;
+      return theme.isDarkMode ? WebDarkColors.success : WebColors.success;
     } else if (numQty < 0) {
-      return theme.isDarkMode ? colors.lossDark : colors.lossLight;
+      return theme.isDarkMode ? WebDarkColors.error : WebColors.error;
     } else {
-      return theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight;
+      return theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary;
     }
   }
 
@@ -1063,12 +1378,12 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
   Color _getPositionTextColor(PositionBookModel position, ThemesProvider theme) {
     if (_isPositionClosed(position)) {
       return theme.isDarkMode 
-          ? colors.textSecondaryDark.withOpacity(0.6)
-          : colors.textSecondaryLight.withOpacity(0.6);
+          ? WebDarkColors.textSecondary.withOpacity(0.6)
+          : WebColors.textSecondary.withOpacity(0.6);
     }
     return theme.isDarkMode
-        ? colors.textPrimaryDark
-        : colors.textPrimaryLight;
+        ? WebDarkColors.textPrimary
+        : WebColors.textPrimary;
   }
 
   void _exitAllPositions() {
@@ -1123,7 +1438,9 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
       barrierDismissible: true,
       builder: (BuildContext context) {
         return Dialog(
-          backgroundColor: Colors.transparent,
+         backgroundColor: WebColors.surface,
+          shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(5),),
           child: PositionDetailScreenWeb(positionList: position),
         );
       },
@@ -1135,29 +1452,40 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
     IconData? icon,
     required Color color,
     Color? backgroundColor,
+    Color? borderColor,
+    double? borderRadius,
     required VoidCallback? onPressed,
     required ThemesProvider theme,
   }) {
+    final isLongLabel = label != null && label.length > 1;
+    final borderRadiusValue = borderRadius ?? 5.0;
     return SizedBox(
-      width: 28,
+      width: isLongLabel ? null : 28,
       height: 28,
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(5),
+          borderRadius: BorderRadius.circular(borderRadiusValue),
           splashColor: color.withOpacity(0.15),
           highlightColor: color.withOpacity(0.08),
           onTap: onPressed,
           child: Container(
+            padding: isLongLabel ? const EdgeInsets.symmetric(horizontal: 8) : null,
             decoration: BoxDecoration(
               color: backgroundColor ?? Colors.transparent,
-              borderRadius: BorderRadius.circular(5),
+              borderRadius: BorderRadius.circular(borderRadiusValue),
+              border: borderColor != null
+                  ? Border.all(
+                      color: borderColor,
+                      width: 1,
+                    )
+                  : null,
             ),
             child: Center(
               child: icon != null
                   ? Icon(
                       icon,
-                      size: 14,
+                      size: 16,
                       color: color,
                     )
                   : Text(
@@ -1259,5 +1587,108 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
     } catch (e) {
       showResponsiveWarningMessage(context, "Error placing order: ${e.toString()}");
     }
+  }
+
+  Future<void> _handleExitPosition(BuildContext context, PositionBookModel position) async {
+    try {
+      final scripData = ref.read(marketWatchProvider);
+      
+      await scripData.fetchScripInfo(
+        position.token ?? "",
+        position.exch ?? "",
+        context,
+        true,
+      );
+      
+      if (scripData.scripInfoModel == null) {
+        showResponsiveWarningMessage(context, "Unable to fetch scrip information");
+        return;
+      }
+      
+      final netQty = int.tryParse(position.netqty ?? "0") ?? 0;
+      OrderScreenArgs orderArgs = OrderScreenArgs(
+        exchange: position.exch ?? "",
+        tSym: position.tsym ?? "",
+        isExit: true,
+        token: position.token ?? "",
+        transType: netQty < 0 ? true : false,
+        prd: position.prd ?? "",
+        lotSize: position.netqty ?? "",
+        ltp: position.lp ?? "0.00",
+        perChange: position.perChange ?? "0.00",
+        orderTpye: '',
+        holdQty: position.netqty ?? '',
+        isModify: false,
+        raw: {},
+      );
+
+      ResponsiveNavigation.toPlaceOrderScreen(
+        context: context,
+        arguments: {
+          "orderArg": orderArgs,
+          "scripInfo": scripData.scripInfoModel!,
+          "isBskt": "",
+        },
+      );
+    } catch (e) {
+      showResponsiveWarningMessage(context, "Error exiting position: ${e.toString()}");
+    }
+  }
+
+  Future<void> _handleAddPosition(BuildContext context, PositionBookModel position) async {
+    try {
+      final scripData = ref.read(marketWatchProvider);
+      
+      await scripData.fetchScripInfo(
+        position.token ?? "",
+        position.exch ?? "",
+        context,
+        true,
+      );
+      
+      if (scripData.scripInfoModel == null) {
+        showResponsiveWarningMessage(context, "Unable to fetch scrip information");
+        return;
+      }
+      
+      final lotSize = scripData.scripInfoModel!.ls?.toString() ?? "1";
+      final netQty = int.tryParse(position.netqty ?? "0") ?? 0;
+      
+      OrderScreenArgs orderArgs = OrderScreenArgs(
+        exchange: position.exch ?? "",
+        tSym: position.tsym ?? "",
+        isExit: false,
+        token: position.token ?? "",
+        transType: netQty < 0 ? false : true,
+        prd: position.prd ?? "",
+        lotSize: lotSize,
+        ltp: position.lp ?? "0.00",
+        perChange: position.perChange ?? "0.00",
+        orderTpye: '',
+        holdQty: position.netqty ?? '',
+        isModify: false,
+        raw: {},
+      );
+
+      ResponsiveNavigation.toPlaceOrderScreen(
+        context: context,
+        arguments: {
+          "orderArg": orderArgs,
+          "scripInfo": scripData.scripInfoModel!,
+          "isBskt": "",
+        },
+      );
+    } catch (e) {
+      showResponsiveWarningMessage(context, "Error adding position: ${e.toString()}");
+    }
+  }
+
+  void _handleConvertPosition(BuildContext context, PositionBookModel position) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return ConvertPositionDialogueWeb(convertPosition: position);
+      },
+    );
   }
 }
