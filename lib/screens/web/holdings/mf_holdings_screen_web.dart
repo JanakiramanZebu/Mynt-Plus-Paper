@@ -1,20 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart';
 
 import '../../../../provider/mf_provider.dart';
 import '../../../../provider/thems.dart';
 import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
+import '../../../../res/web_colors.dart';
+import '../../../../res/global_font_web.dart';
 import '../../../../sharedWidget/no_data_found.dart';
 import 'mf_holding_detail_screen_web.dart';
+import '../ordersbook/mf/redeem_bottom_sheet_web.dart';
 
 class MfHoldingsScreenWeb extends ConsumerStatefulWidget {
   final bool showSummaryCards;
+  final String? searchQuery;
   
   const MfHoldingsScreenWeb({
     super.key,
     this.showSummaryCards = true,
+    this.searchQuery,
   });
 
   @override
@@ -25,14 +29,37 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
   String _searchQuery = '';
   int? _sortColumnIndex;
   bool _sortAscending = true;
+  final ScrollController _horizontalScrollController = ScrollController();
+  String? _hoveredRowToken; // Track which row is being hovered
 
   @override
   void initState() {
     super.initState();
+    // Use search query from parent if provided
+    if (widget.searchQuery != null) {
+      _searchQuery = widget.searchQuery!;
+    }
     // Fetch mutual fund holdings data when screen initializes
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(mfProvider).fetchmfholdingnew();
     });
+  }
+
+  @override
+  void didUpdateWidget(MfHoldingsScreenWeb oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Update search query when parent changes it
+    if (widget.searchQuery != oldWidget.searchQuery) {
+      setState(() {
+        _searchQuery = widget.searchQuery ?? '';
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _horizontalScrollController.dispose();
+    super.dispose();
   }
 
   @override
@@ -179,19 +206,10 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
 
   Widget _buildMainContent(ThemesProvider theme, MFProvider mfData) {
     return Container(
-      decoration: BoxDecoration(
-        color: theme.isDarkMode
-            ? colors.kColorLightGreyDarkTheme
-            : colors.kColorLightGrey,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
-        ),
-      ),
       child: Column(
         children: [
-          // Action Bar
-          _buildActionBar(theme, mfData),
+          // Action Bar - only show when standalone (with summary cards)
+          if (widget.showSummaryCards) _buildActionBar(theme, mfData),
 
           // Table
           _buildHoldingsTable(theme, mfData),
@@ -202,67 +220,19 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
 
   Widget _buildActionBar(ThemesProvider theme, MFProvider mfData) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
+          ),
+        ),
+      ),
       child: Row(
         children: [
-          // Search Bar
-          Expanded(
-            flex: 2,
-            child: Container(
-              height: 40,
-              decoration: BoxDecoration(
-                color: theme.isDarkMode ? colors.searchBgDark : colors.searchBg,
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: TextField(
-                onChanged: (value) => setState(() => _searchQuery = value),
-                style: TextWidget.textStyle(
-                  fontSize: 14,
-                  color: theme.isDarkMode
-                      ? colors.textPrimaryDark
-                      : colors.textPrimaryLight,
-                  theme: theme.isDarkMode,
-                ),
-                decoration: InputDecoration(
-                  hintText: 'Search mutual funds',
-                  hintStyle: TextWidget.textStyle(
-                    fontSize: 12,
-                    color: theme.isDarkMode
-                        ? colors.textSecondaryDark
-                        : colors.textSecondaryLight,
-                    theme: theme.isDarkMode,
-                  ),
-                  prefixIcon: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: SvgPicture.asset(
-                      assets.searchIcon,
-                      color: theme.isDarkMode
-                          ? colors.textSecondaryDark
-                          : colors.textSecondaryLight,
-                      fit: BoxFit.scaleDown,
-                      width: 18,
-                    ),
-                  ),
-                  border: InputBorder.none,
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 16),
-          // Refresh Button
-          IconButton(
-            onPressed: () async {
-              await mfData.fetchmfholdingnew();
-            },
-            icon: Icon(
-              Icons.refresh,
-              color: theme.isDarkMode
-                  ? colors.textPrimaryDark
-                  : colors.textPrimaryLight,
-            ),
-          ),
+          // Spacer to push search and refresh to the right
+         
+          const SizedBox(width: 8),
         ],
       ),
     );
@@ -278,188 +248,322 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
       );
     }
 
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: SizedBox(
-        width: MediaQuery.of(context).size.width * 0.7,
-        child: DataTable(
-          showCheckboxColumn: false,
-          sortColumnIndex: _sortColumnIndex,
-          sortAscending: _sortAscending,
-          headingRowColor: WidgetStateProperty.all(
-            theme.isDarkMode
-                ? colors.kColorLightGreyDarkTheme
-                : colors.kColorLightGrey,
-          ),
-          dataRowColor: WidgetStateProperty.resolveWith<Color?>(
-            (Set<WidgetState> states) {
-              if (states.contains(WidgetState.selected)) {
-                return (theme.isDarkMode
-                        ? colors.primaryDark
-                        : colors.primaryLight)
-                    .withOpacity(0.1);
-              }
-              return null;
-            },
-          ),
-          columns: [
-            DataColumn(
-              label: _buildSortableColumnHeader('Fund Name', theme),
-              onSort: (columnIndex, ascending) => _onSortTable(columnIndex, ascending),
-            ),
-            DataColumn(
-              label: _buildSortableColumnHeader('Units', theme),
-              onSort: (columnIndex, ascending) => _onSortTable(columnIndex, ascending),
-            ),
-            DataColumn(
-              label: _buildSortableColumnHeader('Avg NAV', theme),
-              onSort: (columnIndex, ascending) => _onSortTable(columnIndex, ascending),
-            ),
-            DataColumn(
-              label: _buildSortableColumnHeader('Current NAV', theme),
-              onSort: (columnIndex, ascending) => _onSortTable(columnIndex, ascending),
-            ),
-            DataColumn(
-              label: _buildSortableColumnHeader('Invested', theme),
-              onSort: (columnIndex, ascending) => _onSortTable(columnIndex, ascending),
-            ),
-            DataColumn(
-              label: _buildSortableColumnHeader('Current Value', theme),
-              onSort: (columnIndex, ascending) => _onSortTable(columnIndex, ascending),
-            ),
-            DataColumn(
-              label: _buildSortableColumnHeader('P&L', theme),
-              onSort: (columnIndex, ascending) => _onSortTable(columnIndex, ascending),
-            ),
-            DataColumn(
-              label: _buildSortableColumnHeader('P&L %', theme),
-              onSort: (columnIndex, ascending) => _onSortTable(columnIndex, ascending),
-            ),
-          ],
-          rows: filteredHoldings.map((holding) {
-            return DataRow(
-              onSelectChanged: (bool? selected) {
-                _showHoldingDetail(holding);
-              },
-              cells: [
-                DataCell(
-                  Text(
-                    holding.name ?? 'N/A',
-                    style: TextWidget.textStyle(
-                      fontSize: 12,
-                      color: theme.isDarkMode
-                          ? colors.textPrimaryDark
-                          : colors.textPrimaryLight,
-                      theme: theme.isDarkMode,
-                      fw: 2,
-                    ),
-                  ),
+    return Container(
+      child: SingleChildScrollView(
+        scrollDirection: Axis.vertical,
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: Scrollbar(
+          controller: _horizontalScrollController,
+          thumbVisibility: true,
+          child: SingleChildScrollView(
+            controller: _horizontalScrollController,
+            scrollDirection: Axis.horizontal,
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: DataTable(
+              columnSpacing: 32,
+              showCheckboxColumn: false,
+              sortColumnIndex: _sortColumnIndex,
+              sortAscending: _sortAscending,
+              horizontalMargin: 12,
+              headingRowHeight: 44,
+              headingRowColor: WidgetStateProperty.all(Colors.transparent),
+              dataRowColor: WidgetStateProperty.resolveWith<Color?>(
+                (Set<WidgetState> states) {
+                  if (states.contains(WidgetState.hovered)) {
+                    return (theme.isDarkMode
+                            ? WebDarkColors.primary
+                            : WebColors.primary)
+                        .withOpacity(0.05);
+                  }
+                  if (states.contains(WidgetState.selected)) {
+                    return (theme.isDarkMode
+                            ? WebDarkColors.primary
+                            : WebColors.primary)
+                        .withOpacity(0.1);
+                  }
+                  return null;
+                },
+              ),
+              columns: [
+                DataColumn(
+                  label: _buildSortableColumnHeader('Fund Name', theme, 0),
+                  onSort: (columnIndex, ascending) => _onSortTable(columnIndex, ascending),
                 ),
-                DataCell(
-                  Text(
-                    holding.avgQty ?? '0',
-                    style: TextWidget.textStyle(
-                      fontSize: 12,
-                      color: theme.isDarkMode
-                          ? colors.textPrimaryDark
-                          : colors.textPrimaryLight,
-                      theme: theme.isDarkMode,
-                      fw: 2,
-                    ),
-                  ),
+                DataColumn(
+                  label: _buildSortableColumnHeader('Units', theme, 1),
+                  onSort: (columnIndex, ascending) => _onSortTable(columnIndex, ascending),
                 ),
-                DataCell(
-                  Text(
-                    holding.avgNav ?? '0.00',
-                    style: TextWidget.textStyle(
-                      fontSize: 12,
-                      color: theme.isDarkMode
-                          ? colors.textPrimaryDark
-                          : colors.textPrimaryLight,
-                      theme: theme.isDarkMode,
-                      fw: 2,
-                    ),
-                  ),
+                DataColumn(
+                  label: _buildSortableColumnHeader('Avg NAV', theme, 2),
+                  onSort: (columnIndex, ascending) => _onSortTable(columnIndex, ascending),
                 ),
-                DataCell(
-                  Text(
-                    holding.curNav ?? '0.00',
-                    style: TextWidget.textStyle(
-                      fontSize: 12,
-                      color: theme.isDarkMode
-                          ? colors.textPrimaryDark
-                          : colors.textPrimaryLight,
-                      theme: theme.isDarkMode,
-                      fw: 2,
-                    ),
-                  ),
+                DataColumn(
+                  label: _buildSortableColumnHeader('Current NAV', theme, 3),
+                  onSort: (columnIndex, ascending) => _onSortTable(columnIndex, ascending),
                 ),
-                DataCell(
-                  Text(
-                    holding.investedValue ?? '0.00',
-                    style: TextWidget.textStyle(
-                      fontSize: 12,
-                      color: theme.isDarkMode
-                          ? colors.textPrimaryDark
-                          : colors.textPrimaryLight,
-                      theme: theme.isDarkMode,
-                      fw: 2,
-                    ),
-                  ),
+                DataColumn(
+                  label: _buildSortableColumnHeader('Invested', theme, 4),
+                  onSort: (columnIndex, ascending) => _onSortTable(columnIndex, ascending),
                 ),
-                DataCell(
-                  Text(
-                    holding.currentValue ?? '0.00',
-                    style: TextWidget.textStyle(
-                      fontSize: 12,
-                      color: theme.isDarkMode
-                          ? colors.textPrimaryDark
-                          : colors.textPrimaryLight,
-                      theme: theme.isDarkMode,
-                      fw: 2,
-                    ),
-                  ),
+                DataColumn(
+                  label: _buildSortableColumnHeader('Current Value', theme, 5),
+                  onSort: (columnIndex, ascending) => _onSortTable(columnIndex, ascending),
                 ),
-                DataCell(
-                  Text(
-                    holding.profitLoss ?? '0.00',
-                    style: TextWidget.textStyle(
-                      fontSize: 12,
-                      color: _getValueColor(holding.profitLoss ?? '0.00', theme),
-                      theme: false,
-                      fw: 2,
-                    ),
-                  ),
+                DataColumn(
+                  label: _buildSortableColumnHeader('P&L', theme, 6),
+                  onSort: (columnIndex, ascending) => _onSortTable(columnIndex, ascending),
                 ),
-                DataCell(
-                  Text(
-                    '${holding.changeprofitLoss ?? '0.00'}%',
-                    style: TextWidget.textStyle(
-                      fontSize: 12,
-                      color: _getValueColor(holding.changeprofitLoss ?? '0.00', theme),
-                      theme: false,
-                      fw: 2,
-                    ),
-                  ),
+                DataColumn(
+                  label: _buildSortableColumnHeader('P&L %', theme, 7),
+                  onSort: (columnIndex, ascending) => _onSortTable(columnIndex, ascending),
                 ),
               ],
-            );
-          }).toList(),
+              rows: filteredHoldings.map((holding) {
+                final holdingId = holding.name ?? '';
+                final token = holdingId;
+                
+                return DataRow(
+                  onSelectChanged: (bool? selected) {
+                    _showHoldingDetail(holding);
+                  },
+                  cells: [
+                    _buildInstrumentCellWithHover(holding, theme, token),
+                    _buildCellWithHover(holding, theme, token, _buildUnitsCell(holding, theme)),
+                    _buildCellWithHover(holding, theme, token, _buildAvgNavCell(holding, theme)),
+                    _buildCellWithHover(holding, theme, token, _buildCurrentNavCell(holding, theme)),
+                    _buildCellWithHover(holding, theme, token, _buildInvestedCell(holding, theme)),
+                    _buildCellWithHover(holding, theme, token, _buildCurrentValueCell(holding, theme)),
+                    _buildCellWithHover(holding, theme, token, _buildPnLCell(holding, theme)),
+                    _buildCellWithHover(holding, theme, token, _buildPnLPercentCell(holding, theme)),
+                  ],
+                );
+              }).toList(),
+            ),
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildSortableColumnHeader(String label, ThemesProvider theme) {
-    return Text(
-      label,
-      style: TextWidget.textStyle(
-        fontSize: 12,
-        color: theme.isDarkMode
-            ? colors.textSecondaryDark
-            : colors.textSecondaryLight,
-        theme: theme.isDarkMode,
-        fw: 2,
+  Widget _buildSortableColumnHeader(String label, ThemesProvider theme, int columnIndex) {
+    final isSorted = _sortColumnIndex == columnIndex;
+    
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          label,
+          style: WebTextStyles.custom(
+            fontSize: 13,
+            isDarkTheme: theme.isDarkMode,
+            color: theme.isDarkMode
+                ? WebDarkColors.textPrimary
+                : WebColors.textPrimary,
+            fontWeight: WebFonts.bold,
+          ),
+        ),
+        const SizedBox(width: 4),
+        // Reserve fixed space for sort indicator
+        // Show custom icon when not sorted, DataTable will show its icon when sorted
+        SizedBox(
+          width: 20, // Fixed width to prevent layout shift
+          height: 16,
+          child: !isSorted 
+              ? Icon(
+                  Icons.unfold_more,
+                  size: 16,
+                  color: theme.isDarkMode ? WebDarkColors.iconSecondary : WebColors.iconSecondary,
+                )
+              : const SizedBox.shrink(), // Hide when sorted, DataTable will show its indicator
+        ),
+      ],
+    );
+  }
+
+  DataCell _buildInstrumentCellWithHover(dynamic holding, ThemesProvider theme, String token) {
+    final holdingName = holding.name ?? 'N/A';
+    final isHovered = _hoveredRowToken == token;
+    final avgQty = double.tryParse(holding.avgQty ?? '0') ?? 0.0;
+
+    return DataCell(
+      MouseRegion(
+        onEnter: (_) => setState(() => _hoveredRowToken = token),
+        onExit: (_) => setState(() => _hoveredRowToken = null),
+        child: SizedBox.expand(
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: SizedBox(
+              width: 250,
+              child: !isHovered ? Tooltip(
+                message: holdingName,
+                waitDuration: const Duration(milliseconds: 500),
+                child: Text(
+                  holdingName,
+                  style: WebTextStyles.custom(
+                    fontSize: 13,
+                    isDarkTheme: theme.isDarkMode,
+                    color: theme.isDarkMode
+                        ? WebDarkColors.textPrimary
+                        : WebColors.textPrimary,
+                    fontWeight: WebFonts.medium,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                ),
+              ) :
+              AnimatedOpacity(
+                opacity: isHovered ? 1.0 : 0.0,
+                duration: const Duration(milliseconds: 120),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Redeem button - only show if holding has units
+                    if (avgQty > 0) ...[
+                      _buildHoverButton(
+                        label: 'Redeem',
+                        color: Colors.white,
+                        backgroundColor: theme.isDarkMode
+                            ? WebDarkColors.error
+                            : WebColors.error,
+                        onPressed: () async {
+                          await _handleRedeem(context, holding);
+                        },
+                        theme: theme,
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  DataCell _buildCellWithHover(dynamic holding, ThemesProvider theme, String token, DataCell cell) {
+    // Wrap the cell's child with MouseRegion to detect hover anywhere on the row
+    // Use SizedBox.expand to fill the entire cell area, not just the text content
+    return DataCell(
+      MouseRegion(
+        onEnter: (_) => setState(() => _hoveredRowToken = token),
+        onExit: (_) => setState(() => _hoveredRowToken = null),
+        child: SizedBox.expand(
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: cell.child,
+          ),
+        ),
+      ),
+    );
+  }
+
+  DataCell _buildUnitsCell(dynamic holding, ThemesProvider theme) {
+    return DataCell(
+      Text(
+        holding.avgQty ?? '0',
+        style: WebTextStyles.custom(
+          fontSize: 13,
+          isDarkTheme: theme.isDarkMode,
+          color: theme.isDarkMode
+              ? WebDarkColors.textPrimary
+              : WebColors.textPrimary,
+          fontWeight: WebFonts.medium,
+        ),
+      ),
+    );
+  }
+
+  DataCell _buildAvgNavCell(dynamic holding, ThemesProvider theme) {
+    return DataCell(
+      Text(
+        holding.avgNav ?? '0.00',
+        style: WebTextStyles.custom(
+          fontSize: 13,
+          isDarkTheme: theme.isDarkMode,
+          color: theme.isDarkMode
+              ? WebDarkColors.textPrimary
+              : WebColors.textPrimary,
+          fontWeight: WebFonts.medium,
+        ),
+      ),
+    );
+  }
+
+  DataCell _buildCurrentNavCell(dynamic holding, ThemesProvider theme) {
+    return DataCell(
+      Text(
+        holding.curNav ?? '0.00',
+        style: WebTextStyles.custom(
+          fontSize: 13,
+          isDarkTheme: theme.isDarkMode,
+          color: theme.isDarkMode
+              ? WebDarkColors.textPrimary
+              : WebColors.textPrimary,
+          fontWeight: WebFonts.medium,
+        ),
+      ),
+    );
+  }
+
+  DataCell _buildInvestedCell(dynamic holding, ThemesProvider theme) {
+    return DataCell(
+      Text(
+        holding.investedValue ?? '0.00',
+        style: WebTextStyles.custom(
+          fontSize: 13,
+          isDarkTheme: theme.isDarkMode,
+          color: theme.isDarkMode
+              ? WebDarkColors.textPrimary
+              : WebColors.textPrimary,
+          fontWeight: WebFonts.medium,
+        ),
+      ),
+    );
+  }
+
+  DataCell _buildCurrentValueCell(dynamic holding, ThemesProvider theme) {
+    return DataCell(
+      Text(
+        holding.currentValue ?? '0.00',
+        style: WebTextStyles.custom(
+          fontSize: 13,
+          isDarkTheme: theme.isDarkMode,
+          color: theme.isDarkMode
+              ? WebDarkColors.textPrimary
+              : WebColors.textPrimary,
+          fontWeight: WebFonts.medium,
+        ),
+      ),
+    );
+  }
+
+  DataCell _buildPnLCell(dynamic holding, ThemesProvider theme) {
+    final pnl = holding.profitLoss ?? '0.00';
+    return DataCell(
+      Text(
+        pnl,
+        style: WebTextStyles.custom(
+          fontSize: 13,
+          isDarkTheme: theme.isDarkMode,
+          color: _getValueColor(pnl, theme),
+          fontWeight: WebFonts.medium,
+        ),
+      ),
+    );
+  }
+
+  DataCell _buildPnLPercentCell(dynamic holding, ThemesProvider theme) {
+    final pnlPercent = holding.changeprofitLoss ?? '0.00';
+    return DataCell(
+      Text(
+        '${pnlPercent}%',
+        style: WebTextStyles.custom(
+          fontSize: 13,
+          isDarkTheme: theme.isDarkMode,
+          color: _getValueColor(pnlPercent, theme),
+          fontWeight: WebFonts.medium,
+        ),
       ),
     );
   }
@@ -532,13 +636,11 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
   Color _getValueColor(String value, ThemesProvider theme) {
     final numValue = double.tryParse(value) ?? 0.0;
     if (numValue > 0) {
-      return theme.isDarkMode ? colors.profitDark : colors.profitLight;
+      return theme.isDarkMode ? WebDarkColors.success : WebColors.success; // Green
     } else if (numValue < 0) {
-      return theme.isDarkMode ? colors.lossDark : colors.lossLight;
+      return theme.isDarkMode ? WebDarkColors.error : WebColors.error; // Red
     } else {
-      return theme.isDarkMode
-          ? colors.textSecondaryDark
-          : colors.textSecondaryLight;
+      return theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary; // Grey
     }
   }
 
@@ -548,13 +650,11 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
     final numValue = double.tryParse(cleanValue) ?? 0.0;
 
     if (numValue > 0) {
-      return theme.isDarkMode ? colors.profitDark : colors.profitLight;
+      return theme.isDarkMode ? WebDarkColors.success : WebColors.success; // Green
     } else if (numValue < 0) {
-      return theme.isDarkMode ? colors.lossDark : colors.lossLight;
+      return theme.isDarkMode ? WebDarkColors.error : WebColors.error; // Red
     } else {
-      return theme.isDarkMode
-          ? colors.textPrimaryDark
-          : colors.textPrimaryLight;
+      return theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary; // Grey
     }
   }
 
@@ -571,6 +671,75 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
     );
   }
 
+  Future<void> _handleRedeem(BuildContext context, dynamic holding) async {
+    final mfData = ref.read(mfProvider);
+    // Set the holding data for redemption using the ISIN
+    mfData.fetchmfholdsingpage(holding.iSIN ?? '');
+    // Call the redeem evaluation function
+    mfData.recdemevalu();
+    // Show web redeem dialog
+    showDialog(
+      context: context,
+      builder: (context) => const RedemptionBottomSheetWeb(),
+    );
+  }
+
+  Widget _buildHoverButton({
+    String? label,
+    IconData? icon,
+    required Color color,
+    Color? backgroundColor,
+    Color? borderColor,
+    double? borderRadius,
+    required VoidCallback? onPressed,
+    required ThemesProvider theme,
+  }) {
+    final isLongLabel = label != null && label.length > 1;
+    final borderRadiusValue = borderRadius ?? 5.0;
+    return SizedBox(
+      width: isLongLabel ? null : 28,
+      height: 28,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(borderRadiusValue),
+          splashColor: color.withOpacity(0.15),
+          highlightColor: color.withOpacity(0.08),
+          onTap: onPressed,
+          child: Container(
+            padding: isLongLabel ? const EdgeInsets.symmetric(horizontal: 8) : null,
+            decoration: BoxDecoration(
+              color: backgroundColor ?? Colors.transparent,
+              borderRadius: BorderRadius.circular(borderRadiusValue),
+              border: borderColor != null
+                  ? Border.all(
+                      color: borderColor,
+                      width: 1,
+                    )
+                  : null,
+            ),
+            child: Center(
+              child: icon != null
+                  ? Icon(
+                      icon,
+                      size: 16,
+                      color: color,
+                    )
+                  : Text(
+                      label ?? "",
+                      style: WebTextStyles.custom(
+                        fontSize: 11,
+                        isDarkTheme: theme.isDarkMode,
+                        color: color,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 
   void _onSortTable(int columnIndex, bool ascending) {
     setState(() {

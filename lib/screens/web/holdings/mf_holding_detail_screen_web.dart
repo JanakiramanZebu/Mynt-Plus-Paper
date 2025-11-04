@@ -5,6 +5,7 @@ import '../../../../provider/thems.dart';
 import '../../../../provider/mf_provider.dart';
 import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
+import '../../../res/web_colors.dart';
 import '../ordersbook/mf/redeem_bottom_sheet_web.dart';
 
 class MfHoldingDetailScreenWeb extends ConsumerWidget {
@@ -22,35 +23,80 @@ class MfHoldingDetailScreenWeb extends ConsumerWidget {
     return Dialog(
       backgroundColor: Colors.transparent,
       child: Container(
-        width: MediaQuery.of(context).size.width * 0.5,
-        height: MediaQuery.of(context).size.height * 0.8,
+        width: 500,
+        // height: MediaQuery.of(context).size.height * 0.8,
         decoration: BoxDecoration(
           color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(5),
           border: Border.all(
             color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
           ),
         ),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            // Header
-            _buildHeader(theme, context),
-            
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              margin: const EdgeInsets.only(bottom: 8),
+              decoration: BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(
+                    color: theme.isDarkMode
+                        ? WebDarkColors.divider
+                        : WebColors.divider,
+                  ),
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    holding.name ?? 'N/A',
+                    style: TextWidget.textStyle(
+                      fontSize: 14,
+                      theme: theme.isDarkMode,
+                      color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                      fw: 2,
+                    ),
+                  ),
+                  Material(
+                    color: Colors.transparent,
+                    shape: const CircleBorder(),
+                    child: InkWell(
+                      customBorder: const CircleBorder(),
+                      splashColor: theme.isDarkMode
+                          ? Colors.white.withOpacity(.15)
+                          : Colors.black.withOpacity(.15),
+                      highlightColor: theme.isDarkMode
+                          ? Colors.white.withOpacity(.08)
+                          : Colors.black.withOpacity(.08),
+                      onTap: () => Navigator.of(context).pop(),
+                      child: Padding(
+                        padding: const EdgeInsets.all(6),
+                        child: Icon(
+                          Icons.close,
+                          size: 20,
+                          color: theme.isDarkMode
+                              ? WebDarkColors.iconSecondary
+                              : WebColors.iconSecondary,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
             // Content
-            Expanded(
+            ConstrainedBox(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height * 0.8,
+              ),
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.all(16),
                 child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Fund Name Section
-                    _buildFundNameSection(theme),
-                    const SizedBox(height: 24),
-                    
-                    // Redeem Button
-                    _buildRedeemButton(theme, ref, context),
-                    const SizedBox(height: 24),
-                    
                     // Returns Section
                     _buildReturnsSection(theme),
                     const SizedBox(height: 24),
@@ -67,67 +113,7 @@ class MfHoldingDetailScreenWeb extends ConsumerWidget {
     );
   }
 
-  Widget _buildHeader(ThemesProvider theme, BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: theme.isDarkMode ? colors.kColorLightGreyDarkTheme : colors.kColorLightGrey,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(16),
-          topRight: Radius.circular(16),
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            'Mutual Fund Details',
-            style: TextWidget.textStyle(
-              fontSize: 18,
-              theme: theme.isDarkMode,
-              color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-              fw: 3,
-            ),
-          ),
-          IconButton(
-            onPressed: () => Navigator.of(context).pop(),
-            icon: Icon(
-              Icons.close,
-              color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
-  Widget _buildFundNameSection(ThemesProvider theme) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: theme.isDarkMode ? colors.kColorLightGreyDarkTheme : colors.kColorLightGrey,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
-        ),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              holding.name ?? 'N/A',
-              style: TextWidget.textStyle(
-                fontSize: 20,
-                theme: theme.isDarkMode,
-                color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                fw: 3,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildRedeemButton(ThemesProvider theme, WidgetRef ref, BuildContext context) {
     return Center(
@@ -173,72 +159,50 @@ class MfHoldingDetailScreenWeb extends ConsumerWidget {
   }
 
   Widget _buildReturnsSection(ThemesProvider theme) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: theme.isDarkMode ? colors.kColorLightGreyDarkTheme : colors.kColorLightGrey,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Column(
+          children: [
+            Text(
+              "Returns",
+              style: TextWidget.textStyle(
+                fontSize: 16,
+                theme: theme.isDarkMode,
+                color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                fw: 3,
+              ),
+            ),
+
+            const SizedBox(height: 4),
+            Text(
+          "${holding.profitLoss ?? "0.00"} (${holding.changeprofitLoss ?? '0.00'}%)",
+          style: TextWidget.textStyle(
+            fontSize: 18,
+            theme: false,
+            color: _getValueColor(holding.profitLoss ?? '0.00', theme),
+            fw: 2,
+          ),
         ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            "Returns",
-            style: TextWidget.textStyle(
-              fontSize: 16,
-              theme: theme.isDarkMode,
-              color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-              fw: 3,
-            ),
-          ),
-          Text(
-            "${holding.profitLoss ?? "0.00"} (${holding.changeprofitLoss ?? '0.00'}%)",
-            style: TextWidget.textStyle(
-              fontSize: 18,
-              theme: false,
-              color: _getValueColor(holding.profitLoss ?? '0.00', theme),
-              fw: 3,
-            ),
-          ),
-        ],
-      ),
+          ],
+        ),
+       
+      ],
     );
   }
 
   Widget _buildDetailsSection(ThemesProvider theme) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: theme.isDarkMode ? colors.kColorLightGreyDarkTheme : colors.kColorLightGrey,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Fund Details',
-            style: TextWidget.textStyle(
-              fontSize: 16,
-              theme: theme.isDarkMode,
-              color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-              fw: 3,
-            ),
-          ),
-          const SizedBox(height: 16),
-          _buildInfoRow("Units", holding.avgQty ?? '0', theme),
-          _buildInfoRow("Avg Price", holding.avgNav ?? '0.00', theme),
-          _buildInfoRow("NAV", holding.curNav ?? '0.00', theme),
-          _buildInfoRow("Pledged Units", "0", theme), // This might need to be added to the data model
-          _buildInfoRow("Current", holding.currentValue ?? '0.00', theme),
-          _buildInfoRow("Invested", holding.investedValue ?? '0.00', theme),
-        ],
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+       
+        _buildInfoRow("Units", holding.avgQty ?? '0', theme),
+        _buildInfoRow("Avg Price", holding.avgNav ?? '0.00', theme),
+        _buildInfoRow("NAV", holding.curNav ?? '0.00', theme),
+        _buildInfoRow("Pledged Units", "0", theme), // This might need to be added to the data model
+        _buildInfoRow("Current", holding.currentValue ?? '0.00', theme),
+        _buildInfoRow("Invested", holding.investedValue ?? '0.00', theme),
+      ],
     );
   }
 
@@ -251,7 +215,7 @@ class MfHoldingDetailScreenWeb extends ConsumerWidget {
           Text(
             title,
             style: TextWidget.textStyle(
-              fontSize: 14,
+              fontSize: 13,
               theme: false,
               color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
               fw: 2,
@@ -260,7 +224,7 @@ class MfHoldingDetailScreenWeb extends ConsumerWidget {
           Text(
             value,
             style: TextWidget.textStyle(
-              fontSize: 14,
+              fontSize: 13,
               theme: false,
               color: valueColor ?? (theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight),
               fw: 2,

@@ -388,7 +388,7 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
                     fontSize: 14,
                     theme: theme.isDarkMode,
                     color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                    fw: 3,
+                    fw: 2,
                   ),
                 ),
 
@@ -604,7 +604,7 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
                       : theme.isDarkMode
                           ? colors.profitDark
                           : colors.profitLight,
-                  fw: 3,
+                  fw: 2,
                 ),
               ),
               const SizedBox(height: 4),
@@ -614,7 +614,7 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
                   fontSize: 14,
                   theme: false,
                   color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                  fw: 2,
+                  fw: 3,
                 ),
               ),
             ],

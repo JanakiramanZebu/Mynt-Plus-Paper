@@ -5,6 +5,9 @@ import '../../../../../provider/thems.dart';
 import '../../../../../provider/mf_provider.dart';
 import '../../../../../res/global_state_text.dart';
 import '../../../../../res/res.dart';
+import '../../../../../res/global_font_web.dart';
+import '../../../../../sharedWidget/cust_text_formfield.dart';
+import '../../../../res/web_colors.dart';
 
 class RedemptionBottomSheetWeb extends ConsumerStatefulWidget {
   const RedemptionBottomSheetWeb({super.key});
@@ -48,34 +51,82 @@ class _RedemptionBottomSheetWebState extends ConsumerState<RedemptionBottomSheet
     return Dialog(
       backgroundColor: Colors.transparent,
       child: Container(
-        width: MediaQuery.of(context).size.width * 0.6,
-        height: MediaQuery.of(context).size.height * 0.8,
+       width: 500,
         decoration: BoxDecoration(
           color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(5),
           border: Border.all(
             color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
           ),
         ),
         child: Column(
+           mainAxisSize: MainAxisSize.min,
           children: [
-            // Header
-            _buildHeader(theme),
-            
+
+             Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              margin: const EdgeInsets.only(bottom: 8),
+              decoration: BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(
+                    color: theme.isDarkMode
+                        ? WebDarkColors.divider
+                        : WebColors.divider,
+                  ),
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                 Text(
+              holding.name ?? 'N/A',
+              style: TextWidget.textStyle(
+                fontSize: 14,
+                theme: theme.isDarkMode,
+                color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                fw: 2,
+              ),
+            ),
+                  Material(
+                    color: Colors.transparent,
+                    shape: const CircleBorder(),
+                    child: InkWell(
+                      customBorder: const CircleBorder(),
+                      splashColor: theme.isDarkMode
+                          ? Colors.white.withOpacity(.15)
+                          : Colors.black.withOpacity(.15),
+                      highlightColor: theme.isDarkMode
+                          ? Colors.white.withOpacity(.08)
+                          : Colors.black.withOpacity(.08),
+                      onTap: () => Navigator.of(context).pop(),
+                      child: Padding(
+                        padding: const EdgeInsets.all(6),
+                        child: Icon(
+                          Icons.close,
+                          size: 20,
+                          color: theme.isDarkMode
+                              ? WebDarkColors.iconSecondary
+                              : WebColors.iconSecondary,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
             // Content
-            Expanded(
+            ConstrainedBox(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height * 0.8,
+              ),
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.all(16),
                 child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Fund Name
-                    _buildFundName(holding, theme),
-                    const SizedBox(height: 24),
-                    
+                  children: [                    
                     // Redemption Form
                     _buildRedemptionForm(holding, theme, mfData),
-                    const SizedBox(height: 24),
                     
                     // Fund Details
                     // _buildFundDetails(holding, theme),
@@ -123,180 +174,116 @@ class _RedemptionBottomSheetWebState extends ConsumerState<RedemptionBottomSheet
     );
   }
 
-  Widget _buildFundName(dynamic holding, ThemesProvider theme) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: theme.isDarkMode ? colors.kColorLightGreyDarkTheme : colors.kColorLightGrey,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
-        ),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              holding.name ?? 'N/A',
-              style: TextWidget.textStyle(
-                fontSize: 20,
-                theme: theme.isDarkMode,
-                color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                fw: 3,
-              ),
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: Text(
-              "MF",
-              style: TextWidget.textStyle(
-                fontSize: 12,
-                theme: false,
-                color: colors.colorWhite,
-                fw: 2,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+ 
 
   Widget _buildRedemptionForm(dynamic holding, ThemesProvider theme, MFProvider mfData) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: theme.isDarkMode ? colors.kColorLightGreyDarkTheme : colors.kColorLightGrey,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Redemption Details',
-            style: TextWidget.textStyle(
-              fontSize: 16,
-              theme: theme.isDarkMode,
-              color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-              fw: 3,
-            ),
-          ),
-          const SizedBox(height: 16),
-          
-          // Redemption Quantity Input
-          Text(
-            'Redemption Quantity',
-            style: TextWidget.textStyle(
-              fontSize: 14,
-              theme: theme.isDarkMode,
-              color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-              fw: 2,
-            ),
-          ),
-          const SizedBox(height: 8),
-          TextField(
-            controller: _redemptionQtyController,
-            keyboardType: TextInputType.number,
-            style: TextWidget.textStyle(
-              fontSize: 16,
-              theme: theme.isDarkMode,
-              color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-              fw: 2,
-            ),
-            decoration: InputDecoration(
-              hintText: 'Enter quantity to redeem',
-              hintStyle: TextWidget.textStyle(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+       
+        
+        // Redemption Quantity Input
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Redemption Quantity',
+              style: TextWidget.textStyle(
                 fontSize: 14,
                 theme: theme.isDarkMode,
                 color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                fw: 1,
-              ),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(
-                  color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
-                ),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(
-                  color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
-                ),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(
-                  color: colors.primaryLight,
-                  width: 2,
-                ),
-              ),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            ),
-          ),
-          const SizedBox(height: 16),
-          
-          // Available Units Info
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Available Units:',
-                style: TextWidget.textStyle(
-                  fontSize: 14,
-                  theme: theme.isDarkMode,
-                  color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                  fw: 2,
-                ),
-              ),
-              Text(
-                holding.avgQty ?? '0',
-                style: TextWidget.textStyle(
-                  fontSize: 14,
-                  theme: theme.isDarkMode,
-                  color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                  fw: 2,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
-          
-          // Redeem Button
-          SizedBox(
-            width: double.infinity,
-            height: 45,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: colors.primaryLight,
-                foregroundColor: colors.colorWhite,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              onPressed: () {
-                _handleRedemption(holding, mfData);
-              },
-              child: Text(
-                'Redeem',
-                style: TextWidget.textStyle(
-                  fontSize: 16,
-                  theme: false,
-                  color: colors.colorWhite,
-                  fw: 3,
-                ),
+                fw: 2,
               ),
             ),
+             Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Available Units:',
+              style: TextWidget.textStyle(
+                fontSize: 10,
+                theme: theme.isDarkMode,
+                color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                fw: 2,
+              ),
+            ),
+            Text(
+              holding.avgQty ?? '0',
+              style: TextWidget.textStyle(
+                fontSize: 10,
+                theme: theme.isDarkMode,
+                color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                fw: 2,
+              ),
+            ),
+          ],
+        ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        SizedBox(
+          height: 40,
+          child: CustomTextFormField(
+            fillColor: theme.isDarkMode
+                ? WebDarkColors.backgroundTertiary
+                : WebColors.backgroundTertiary,
+            onChanged: (value) {
+              // Handle change if needed
+            },
+            hintText: 'Enter quantity to redeem',
+            hintStyle: WebTextStyles.custom(
+              fontSize: 13,
+              isDarkTheme: theme.isDarkMode,
+              color: theme.isDarkMode
+                  ? WebDarkColors.textSecondary
+                  : WebColors.textSecondary,
+              fontWeight: FontWeight.w600,
+            ),
+            keyboardType: TextInputType.number,
+            style: WebTextStyles.custom(
+              fontSize: 13,
+              isDarkTheme: theme.isDarkMode,
+              color: theme.isDarkMode
+                  ? WebDarkColors.textPrimary
+                  : WebColors.textPrimary,
+              fontWeight: FontWeight.w600,
+            ),
+            textCtrl: _redemptionQtyController,
+            textAlign: TextAlign.start,
+            autofocus: false,
           ),
-        ],
-      ),
+        ),
+        
+        // Redeem Button
+        const SizedBox(height: 16),
+        SizedBox(
+          width: double.infinity,
+          height: 40,
+          child: ElevatedButton(
+            onPressed: () {
+              _handleRedemption(holding, mfData);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: theme.isDarkMode
+                  ? WebDarkColors.primary
+                  : WebColors.primary,
+              minimumSize: const Size(0, 40),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(5),
+              ),
+            ),
+            child: Text(
+              'Redeem',
+              style: WebTextStyles.custom(
+                fontSize: 13,
+                isDarkTheme: theme.isDarkMode,
+                color: WebColors.surface,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 

@@ -86,7 +86,7 @@ class _ConvertPositionDialogueWebState extends ConsumerState<ConvertPositionDial
                   Text(
                     "${widget.convertPosition.symbol} ${widget.convertPosition.option} ${widget.convertPosition.exch}",
                     style: WebTextStyles.custom(
-                      fontSize: 13,
+                      fontSize: 14,
                       isDarkTheme: theme.isDarkMode,
                       color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
                       fontWeight: WebFonts.bold,
@@ -259,7 +259,7 @@ class _ConvertPositionDialogueWebState extends ConsumerState<ConvertPositionDial
                     height: 40,
                     decoration: BoxDecoration(
                       color: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(5),
                     ),
                     child: Material(
                       color: Colors.transparent,

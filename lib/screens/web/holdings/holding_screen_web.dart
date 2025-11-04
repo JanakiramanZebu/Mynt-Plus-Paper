@@ -33,6 +33,7 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
   StreamSubscription? _socketSubscription;
   int _selectedTabIndex = 0; // 0 for Stocks, 1 for Mutual Funds
   String _searchQuery = '';
+  String _mfSearchQuery = ''; // Search query for Mutual Funds tab
   int? _sortColumnIndex;
   bool _sortAscending = true;
   final ScrollController _horizontalScrollController = ScrollController();
@@ -477,7 +478,10 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
             _buildHoldingsTable(theme, portfolioData),
           ] else if (_selectedTabIndex == 1) ...[
             // Mutual Funds Tab - Show MF Holdings Screen
-            const MfHoldingsScreenWeb(showSummaryCards: false),
+            MfHoldingsScreenWeb(
+              showSummaryCards: false,
+              searchQuery: _mfSearchQuery,
+            ),
           ],
         ],
       ),
@@ -503,8 +507,9 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
           _buildSegmentedControl(theme, portfolioData, stocksCount, mutualFundsCount),
           // Spacer to push action items to the right
           const Spacer(),
-          // Search Bar (only show for Stocks tab)
+          // Search Bar - Show different search based on selected tab
           if (_selectedTabIndex == 0) ...[
+            // Stocks tab search
             SizedBox(
               width: 400,
               child: Container(
@@ -528,7 +533,60 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
                         fontWeight: WebFonts.bold,
                   ),
                   decoration: InputDecoration(
-                    hintText: 'Search on holdings',
+                    hintText: 'Search holdings',
+                    hintStyle: WebTextStyles.custom(
+                      fontSize: 13,
+                      isDarkTheme: theme.isDarkMode,
+                      color: theme.isDarkMode
+                          ? WebDarkColors.textSecondary
+                          : WebColors.textSecondary,
+                      fontWeight: WebFonts.bold,
+                    ),
+                    prefixIcon: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: SvgPicture.asset(
+                        assets.searchIcon,
+                        color: theme.isDarkMode
+                            ? WebDarkColors.iconSecondary
+                            : WebColors.iconSecondary,
+                        fit: BoxFit.scaleDown,
+                        width: 18,
+                      ),
+                    ),
+                    border: InputBorder.none,
+                    contentPadding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 16),
+          ] else if (_selectedTabIndex == 1) ...[
+            // Mutual Funds tab search
+            SizedBox(
+              width: 400,
+              child: Container(
+                height: 40,
+                decoration: BoxDecoration(
+                  color: theme.isDarkMode ? WebDarkColors.inputBackground : WebColors.inputBackground,
+                  borderRadius: BorderRadius.circular(5),
+                  border: Border.all(
+                    color: theme.isDarkMode ? WebDarkColors.inputBorder : WebColors.inputBorder,
+                    width: 1,
+                  ),
+                ),
+                child: TextField(
+                  onChanged: (value) => setState(() => _mfSearchQuery = value),
+                  style: WebTextStyles.custom(
+                    fontSize: 13,
+                    isDarkTheme: theme.isDarkMode,
+                    color: theme.isDarkMode
+                        ? WebDarkColors.textPrimary
+                        : WebColors.textPrimary,
+                    fontWeight: WebFonts.bold,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: 'Search mutual funds',
                     hintStyle: WebTextStyles.custom(
                       fontSize: 13,
                       isDarkTheme: theme.isDarkMode,
@@ -570,7 +628,11 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
                   ? Colors.white.withOpacity(.08)
                   : Colors.black.withOpacity(.08),
               onTap: () async {
-                await portfolioData.fetchHoldings(context, "Refresh");
+                if (_selectedTabIndex == 0) {
+                  await portfolioData.fetchHoldings(context, "Refresh");
+                } else {
+                  await ref.read(mfProvider).fetchmfholdingnew();
+                }
               },
               child: Padding(
                 padding: const EdgeInsets.all(6),
@@ -715,52 +777,52 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
               ),
               columns: [
                 DataColumn(
-                  label: _buildSortableColumnHeader('Instrument', theme),
+                  label: _buildSortableColumnHeader('Instrument', theme, 0),
                   onSort: (columnIndex, ascending) =>
                       _onSortTable(columnIndex, ascending),
                 ),
                 DataColumn(
-                  label: _buildSortableColumnHeader('Net Qty', theme),
+                  label: _buildSortableColumnHeader('Net Qty', theme, 1),
                   onSort: (columnIndex, ascending) =>
                       _onSortTable(columnIndex, ascending),
                 ),
                 DataColumn(
-                  label: _buildSortableColumnHeader('Avg Price', theme),
+                  label: _buildSortableColumnHeader('Avg Price', theme, 2),
                   onSort: (columnIndex, ascending) =>
                       _onSortTable(columnIndex, ascending),
                 ),
                 DataColumn(
-                  label: _buildSortableColumnHeader('LTP', theme),
+                  label: _buildSortableColumnHeader('LTP', theme, 3),
                   onSort: (columnIndex, ascending) =>
                       _onSortTable(columnIndex, ascending),
                 ),
                 DataColumn(
-                  label: _buildSortableColumnHeader('Invested', theme),
+                  label: _buildSortableColumnHeader('Invested', theme, 4),
                   onSort: (columnIndex, ascending) =>
                       _onSortTable(columnIndex, ascending),
                 ),
                 DataColumn(
-                  label: _buildSortableColumnHeader('Current Value', theme),
+                  label: _buildSortableColumnHeader('Current Value', theme, 5),
                   onSort: (columnIndex, ascending) =>
                       _onSortTable(columnIndex, ascending),
                 ),
                 DataColumn(
-                  label: _buildSortableColumnHeader('Day P&L', theme),
+                  label: _buildSortableColumnHeader('Day P&L', theme, 6),
                   onSort: (columnIndex, ascending) =>
                       _onSortTable(columnIndex, ascending),
                 ),
                 DataColumn(
-                  label: _buildSortableColumnHeader('Day %', theme),
+                  label: _buildSortableColumnHeader('Day %', theme, 7),
                   onSort: (columnIndex, ascending) =>
                       _onSortTable(columnIndex, ascending),
                 ),
                 DataColumn(
-                  label: _buildSortableColumnHeader('Overall P&L', theme),
+                  label: _buildSortableColumnHeader('Overall P&L', theme, 8),
                   onSort: (columnIndex, ascending) =>
                       _onSortTable(columnIndex, ascending),
                 ),
                 DataColumn(
-                  label: _buildSortableColumnHeader('Overall %', theme),
+                  label: _buildSortableColumnHeader('Overall %', theme, 9),
                   onSort: (columnIndex, ascending) =>
                       _onSortTable(columnIndex, ascending),
                 ),
@@ -843,36 +905,8 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                _buildHoverButton(
-                  icon: Icons.bar_chart,
-                  color: theme.isDarkMode
-                      ? WebDarkColors.textSecondary
-                      : WebColors.textSecondary,
-                  borderColor: theme.isDarkMode
-                      ? WebDarkColors.inputBorder
-                      : WebColors.inputBorder,
-                  borderRadius: 5.0,
-                  onPressed: () async {
-                    await _handleChartTap(context, holding, exchTsym);
-                  },
-                  theme: theme,
-                ),
-                // Exit and Add buttons for holdings with quantity
-                if ((holding.saleableQty ?? 0) > 0) ...[
-                  const SizedBox(width: 6),
-                  _buildHoverButton(
-                    label: 'Exit',
-                    color: Colors.white,
-                    backgroundColor: theme.isDarkMode
-                        ? WebDarkColors.error
-                        : WebColors.error,
-                    onPressed: () async {
-                      await _handleExitHolding(context, holding, exchTsym);
-                    },
-                    theme: theme,
-                  ),
-                ],
-                if ((holding.currentQty ?? 0) > 0) ...[
+
+                 if ((holding.currentQty ?? 0) > 0) ...[
                   const SizedBox(width: 6),
                   _buildHoverButton(
                     label: 'Add',
@@ -886,7 +920,39 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
                     theme: theme,
                   ),
                 ],
+               
+                // Exit and Add buttons for holdings with quantity
+                if ((holding.saleableQty ?? 0) > 0) ...[
+                  const SizedBox(width: 6),
+                  _buildHoverButton(
+                    label: 'Exit',
+                    color: Colors.white,
+                    backgroundColor: theme.isDarkMode
+                        ? WebDarkColors.tertiary
+                        : WebColors.tertiary,
+                    onPressed: () async {
+                      await _handleExitHolding(context, holding, exchTsym);
+                    },
+                    theme: theme,
+                  ),
+                ],
+               
                 // Pledge/Unpledge button
+                const SizedBox(width: 6),
+                 _buildHoverButton(
+                  icon: Icons.bar_chart,
+                  color: theme.isDarkMode
+                      ? WebDarkColors.textSecondary
+                      : WebColors.textSecondary,
+                  borderColor: theme.isDarkMode
+                      ? WebDarkColors.inputBorder
+                      : WebColors.inputBorder,
+                  borderRadius: 5.0,
+                  onPressed: () async {
+                    await _handleChartTap(context, holding, exchTsym);
+                  },
+                  theme: theme,
+                ),
                 const SizedBox(width: 6),
                 _buildHoverButton(
                   label: 'Pledge',
@@ -1466,7 +1532,9 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
     });
   }
 
-  Widget _buildSortableColumnHeader(String label, ThemesProvider theme) {
+  Widget _buildSortableColumnHeader(String label, ThemesProvider theme, int columnIndex) {
+    final isSorted = _sortColumnIndex == columnIndex;
+    
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -1481,7 +1549,20 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
             fontWeight: WebFonts.bold,
           ),
         ),
-        // Sort indicators are automatically shown by DataTable2
+        const SizedBox(width: 4),
+        // Reserve fixed space for sort indicator
+        // Show custom icon when not sorted, DataTable will show its icon when sorted
+        SizedBox(
+          width: 20, // Fixed width to prevent layout shift
+          height: 16,
+          child: !isSorted 
+              ? Icon(
+                  Icons.unfold_more,
+                  size: 16,
+                  color: theme.isDarkMode ? WebDarkColors.iconSecondary : WebColors.iconSecondary,
+                )
+              : const SizedBox.shrink(), // Hide when sorted, DataTable will show its indicator
+        ),
       ],
     );
   }
