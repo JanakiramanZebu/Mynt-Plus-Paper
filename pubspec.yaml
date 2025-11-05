@@ -88,6 +88,7 @@ dependencies:
   flutter_swipe_action_cell: ^3.1.5
   flutter_displaymode: ^0.6.0
   package_info_plus: ^8.3.0
+  pluto_grid: ^8.0.0
   
   
   
@@ -102,6 +103,9 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^4.0.0
+
+dependency_overrides:
+  rxdart: ^0.28.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

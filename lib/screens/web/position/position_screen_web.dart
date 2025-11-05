@@ -1063,122 +1063,142 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
         child: SizedBox.expand(
           child: Align(
             alignment: Alignment.centerLeft,
-            child: SizedBox(
-              width: 250,
-              child: !isHovered ? Text(
-                '${position.symbol ?? ''} ${position.exch ?? ''} ${position.expDate ?? ''} ${position.option ?? ''}',
-                style: WebTextStyles.custom(
-                  fontSize: 13,
-                  isDarkTheme: theme.isDarkMode,
-                  color: _getPositionTextColor(position, theme),
-                  fontWeight: WebFonts.medium,
-                ),
-                overflow: TextOverflow.ellipsis,
-              ) :
-              AnimatedOpacity(
-                opacity: isHovered ? 1.0 : 0.0,
-                duration: const Duration(milliseconds: 120),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // _buildHoverButton(
-                    //   label: 'B',
-                    //   color: Colors.white,
-                    //   backgroundColor: theme.isDarkMode
-                    //       ? WebDarkColors.primary
-                    //       : WebColors.primary,
-                    //   onPressed: () async {
-                    //     await _handlePlaceOrder(context, position, true);
-                    //   },
-                    //   theme: theme,
-                    // ),
-                    // const SizedBox(width: 6),
-                    // _buildHoverButton(
-                    //   label: 'S',
-                    //   color: Colors.white,
-                    //   backgroundColor: theme.isDarkMode
-                    //       ? WebDarkColors.tertiary
-                    //       : WebColors.tertiary,
-                    //   onPressed: () async {
-                    //     await _handlePlaceOrder(context, position, false);
-                    //   },
-                    //   theme: theme,
-                    // ),
-                    // const SizedBox(width: 6),
-                   
-                    // Exit, Add, and Convert Position buttons for open positions
-                   
-                    // Convert Position button for open positions
-                 
-
-                     if (!isClosed && position.qty != "0" && position.sPrdtAli != "BO" && position.sPrdtAli != "CO" && !positionBook.isDay) ...[
-                      const SizedBox(width: 6),
-                    
-                      _buildHoverButton(
-                        label: 'Add',
-                        color: Colors.white,
-                        backgroundColor: theme.isDarkMode
-                            ? WebDarkColors.primary
-                            : WebColors.primary,
-                        onPressed: () async {
-                          await _handleAddPosition(context, position);
-                        },
-                        theme: theme,
-                      ),
-                      const SizedBox(width: 6),
-                        _buildHoverButton(
-                        label: 'Exit',
-                        color: Colors.white,
-                         backgroundColor: theme.isDarkMode
-                          ? WebDarkColors.tertiary
-                          : WebColors.tertiary,
-                        onPressed: () async {
-                          await _handleExitPosition(context, position);
-                        },
-                        theme: theme,
-                      ),
-                    ],
-
-                     _buildHoverButton(
-                      icon: Icons.bar_chart,
-                      color: theme.isDarkMode
-                          ? WebDarkColors.textSecondary
-                          : WebColors.textSecondary,
-                      borderColor: theme.isDarkMode
-                          ? WebDarkColors.inputBorder
-                          : WebColors.inputBorder,
-                      borderRadius: 5.0,
-                      onPressed: () async {
-                        await _handleChartTap(context, position);
-                      },
-                      theme: theme,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Text that shows half when hovered
+                Flexible(
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 120),
+                    constraints: BoxConstraints(
+                      maxWidth: isHovered ? 120 : double.infinity,
                     ),
-
-                       if (!isClosed && position.qty != "0") ...[
-                      const SizedBox(width: 6),
-                      _buildHoverButton(
-                        icon: Icons.swap_horiz,
-                        color: theme.isDarkMode
-                            ? WebDarkColors.textSecondary
-                            : WebColors.textSecondary,
-                        borderColor: theme.isDarkMode
-                            ? WebDarkColors.inputBorder
-                            : WebColors.inputBorder,
-                        borderRadius: 5.0,
-                        onPressed: () {
-                          _handleConvertPosition(context, position);
-                        },
-                        theme: theme,
+                    child: Tooltip(
+                      message: '${position.symbol ?? ''} ${position.exch ?? ''} ${position.expDate ?? ''} ${position.option ?? ''}',
+                      child: AnimatedOpacity(
+                        opacity: isHovered ? 0.7 : 1.0,
+                        duration: const Duration(milliseconds: 120),
+                        child: Text(
+                          '${position.symbol ?? ''} ${position.exch ?? ''} ${position.expDate ?? ''} ${position.option ?? ''}',
+                          style: WebTextStyles.custom(
+                            fontSize: 13,
+                            isDarkTheme: theme.isDarkMode,
+                            color: _getPositionTextColor(position, theme),
+                            fontWeight: WebFonts.medium,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
-                    ],
-                  ],
+                    ),
+                  ),
                 ),
+                // Buttons that appear on hover
+                AnimatedOpacity(
+                  opacity: isHovered ? 1.0 : 0.0,
+                  duration: const Duration(milliseconds: 120),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                        // _buildHoverButton(
+                        //   label: 'B',
+                        //   color: Colors.white,
+                        //   backgroundColor: theme.isDarkMode
+                        //       ? WebDarkColors.primary
+                        //       : WebColors.primary,
+                        //   onPressed: () async {
+                        //     await _handlePlaceOrder(context, position, true);
+                        //   },
+                        //   theme: theme,
+                        // ),
+                        // const SizedBox(width: 6),
+                        // _buildHoverButton(
+                        //   label: 'S',
+                        //   color: Colors.white,
+                        //   backgroundColor: theme.isDarkMode
+                        //       ? WebDarkColors.tertiary
+                        //       : WebColors.tertiary,
+                        //   onPressed: () async {
+                        //     await _handlePlaceOrder(context, position, false);
+                        //   },
+                        //   theme: theme,
+                        // ),
+                        // const SizedBox(width: 6),
+                       
+                        // Exit, Add, and Convert Position buttons for open positions
+                       
+                        // Convert Position button for open positions
+                     
+
+                         if (!isClosed && position.qty != "0" && position.sPrdtAli != "BO" && position.sPrdtAli != "CO" && !positionBook.isDay) ...[
+                          const SizedBox(width: 6),
+                        
+                          _buildHoverButton(
+                            label: 'Add',
+                            color: Colors.white,
+                            backgroundColor: theme.isDarkMode
+                                ? WebDarkColors.primary
+                                : WebColors.primary,
+                            onPressed: () async {
+                              await _handleAddPosition(context, position);
+                            },
+                            theme: theme,
+                          ),
+                          const SizedBox(width: 6),
+                            _buildHoverButton(
+                            label: 'Exit',
+                            color: Colors.white,
+                             backgroundColor: theme.isDarkMode
+                              ? WebDarkColors.tertiary
+                              : WebColors.tertiary,
+                            onPressed: () async {
+                              await _handleExitPosition(context, position);
+                            },
+                            theme: theme,
+                          ),
+                        ],
+
+                         _buildHoverButton(
+                          icon: Icons.bar_chart,
+                          color: theme.isDarkMode
+                              ? WebDarkColors.textSecondary
+                              : WebColors.textSecondary,
+                          borderColor: theme.isDarkMode
+                              ? WebDarkColors.inputBorder
+                              : WebColors.inputBorder,
+                          borderRadius: 5.0,
+                          onPressed: () async {
+                            await _handleChartTap(context, position);
+                          },
+                          theme: theme,
+                        ),
+
+                           if (!isClosed && position.qty != "0") ...[
+                          const SizedBox(width: 6),
+                          _buildHoverButton(
+                            icon: Icons.swap_horiz,
+                            color: theme.isDarkMode
+                                ? WebDarkColors.textSecondary
+                                : WebColors.textSecondary,
+                            borderColor: theme.isDarkMode
+                                ? WebDarkColors.inputBorder
+                                : WebColors.inputBorder,
+                            borderRadius: 5.0,
+                            onPressed: () {
+                              _handleConvertPosition(context, position);
+                            },
+                            theme: theme,
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
         ),
-      ),
-    );
+      );
+    
   }
 
   Widget _buildSortableColumnHeader(String label, ThemesProvider theme, int columnIndex) {
