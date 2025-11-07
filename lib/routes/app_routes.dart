@@ -506,8 +506,14 @@ class AppRoutes {
           beginOffset: const Offset(-1.0, 0.0),
         );
       case Routes.myaccountScreen:
+        // Extract arguments to pass to the screen
+        final args = settings.arguments as Map<String, dynamic>?;
+        final expandSection = args?['expandSection'] as String?;
+
         return _createRoute(
-          pageBuilder: (_, __, ___) => const account.MyAccountScreen(),
+          pageBuilder: (_, __, ___) => account.MyAccountScreen(
+            expandSection: expandSection,
+          ),
           beginOffset: const Offset(-1.0, 0.0),
         );
       case Routes.basketScreen:

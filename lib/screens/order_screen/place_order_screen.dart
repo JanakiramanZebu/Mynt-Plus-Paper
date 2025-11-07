@@ -31,7 +31,6 @@ import '../../provider/user_profile_provider.dart';
 import '../../provider/websocket_provider.dart';
 import '../../routes/route_names.dart';
 import '../../sharedWidget/cust_text_formfield.dart';
-import '../../sharedWidget/custom_exch_badge.dart';
 import '../../sharedWidget/custom_widget_button.dart';
 import '../../sharedWidget/enums.dart';
 import '../../sharedWidget/functions.dart';
@@ -39,8 +38,6 @@ import '../../sharedWidget/no_internet_widget.dart';
 import '../../sharedWidget/snack_bar.dart';
 import '../market_watch/slice_order_pop.dart';
 import '../profile_screen/profile_main_screen.dart';
-import 'gtt_condition.dart';
-import 'invest_type_widget.dart';
 import 'margin_charges_bottom_sheet.dart';
 import 'order_screen_header.dart';
 import 'package:intl/intl.dart';
@@ -136,6 +133,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
   // bool _GTTOCOPriceTypeIsMarket = false;
 
   bool _hasValidCircuitBreakerValues = false;
+  bool _isMarketClosed = false;
 
   @override
   void initState() {
@@ -397,6 +395,13 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
         widget.scripInfo.lc!.isNotEmpty &&
         widget.scripInfo.uc!.isNotEmpty;
 
+    // Check if market is closed and auto-enable AMO
+    _isMarketClosed =_checkMarketClosed();
+    if (_isMarketClosed && !checkRawValue) {
+      _afterMarketOrder = true;
+      isAdvancedOptionClicked = true; // Auto-expand advanced section
+    }
+
     ref.read(orderProvider).setDOrderloader(false);
     super.initState();
     anibuildctrl = AnimationController(
@@ -417,6 +422,25 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
   void dispose() {
     anibuildctrl.dispose();
     super.dispose();
+  }
+
+  // Check if market is closed based on exchange and current time
+  bool _checkMarketClosed() {
+    final now = DateTime.now();
+    final currentTime = TimeOfDay.fromDateTime(now);
+    final currentMinutes = currentTime.hour * 60 + currentTime.minute;
+
+    final exchange = widget.scripInfo.exch;
+
+    // MCX closes at 11:30 PM
+    if (exchange == "MCX") {
+      const mcxCloseTime = 23 * 60 + 50; // 23:30 (11:50 PM)
+      return currentMinutes >= mcxCloseTime;
+    }
+
+    // All other exchanges (NSE, BSE, NFO, BFO, etc.) close at 4:00 PM
+    const marketCloseTime = 16 * 60; // 16:00 (4:00 PM)
+    return currentMinutes >= marketCloseTime;
   }
 
   @override
@@ -736,6 +760,41 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                         padding: EdgeInsets.only(bottom: ((priceType == "Market" || priceType == "SL MKT") && isAvbSecu) ? 120 : 90),
                         // reverse: true,
                         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                          // AMO Alert Banner
+                          if (_isMarketClosed && orderType != "CO - BO") ...[
+                            Container(
+                              margin: const EdgeInsets.only(top: 12, left: 16, right: 16),
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                              decoration: BoxDecoration(
+                                color: colors.colorBlue.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color: colors.colorBlue.withOpacity(0.3),
+                                  width: 1,
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.info_outline,
+                                    color: colors.colorBlue,
+                                    size: 20,
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: TextWidget.subText(
+                                      text:'Market is closed. Orders will be placed as AMO (After Market Order).',
+                                      theme: theme.isDarkMode,
+                                      color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                                      fw: 0,
+                                      maxLines: 3,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                          ],
                           const SizedBox(height: 24),
                           if (orderType == "SIP") ...[
                             Column(crossAxisAlignment: CrossAxisAlignment.start, children: [

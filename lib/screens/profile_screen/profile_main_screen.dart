@@ -2100,18 +2100,25 @@ class SettingsScreen extends ConsumerWidget {
 
 // My Account Screen
 class MyAccountScreen extends ConsumerStatefulWidget {
-  const MyAccountScreen({super.key, this.initialIndex = 0});
+  const MyAccountScreen({super.key, this.initialIndex = 0, this.expandSection});
   final int initialIndex;
+  final String? expandSection;
   @override
   ConsumerState<MyAccountScreen> createState() => _MyAccountScreenState();
 }
 
 class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
   // late int _expandedIndex;
+  String? _expandedTitle;
 
   @override
   void initState() {
     super.initState();
+
+    // Set initial expanded section from widget parameter
+    if (widget.expandSection != null) {
+      _expandedTitle = widget.expandSection;
+    }
 
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       ref.read(profileAllDetailsProvider).fetchPendingstatus();
@@ -2223,9 +2230,6 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
   //     ),
   //   );
   // }
-
-  // Add this function
-  String? _expandedTitle;
 
   // List of items for the account screen
   final accountItems = [

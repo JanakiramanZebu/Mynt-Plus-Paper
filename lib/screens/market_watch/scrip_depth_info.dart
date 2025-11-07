@@ -24,15 +24,12 @@ import '../../res/global_state_text.dart';
 import '../../res/res.dart';
 import '../../routes/route_names.dart';
 import '../../sharedWidget/custom_drag_handler.dart';
-import '../../sharedWidget/custom_exch_badge.dart';
-import '../../sharedWidget/functions.dart';
 import '../../sharedWidget/no_data_found.dart';
+import '../../sharedWidget/segment_activation_dialog.dart';
 import 'futures/future_screen.dart';
 import 'over_view/funtamental_data_widget.dart';
 import 'scrip_detail_dialogue.dart';
 import 'set_alert_screen.dart';
-import './fundamental_detail_screen.dart';
-import './set_alert_screen_new.dart';
 
 class ScripDepthInfo extends ConsumerStatefulWidget {
   final DepthInputArgs wlValue;
@@ -209,6 +206,35 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
         token: widget.wlValue.token,
       );
     });
+  }
+
+    // Check if user has activated the segment for the current scrip
+  bool _isSegmentActive(String? segment) {
+    if (segment == null || segment.isEmpty) return true;
+
+    List<String> userExarr = ref.read(userProfileProvider).userDetailModel?.exarr ?? [];
+      userExarr.remove("NSE");
+    // Check if the segment exists in user's activated segments (exarr)
+    return userExarr.contains(segment);
+  }
+
+  // Show segment activation dialog
+  void _showSegmentActivationDialog(BuildContext context, String segment) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return SegmentActivationDialog(
+          segmentName: segment,
+          onActivate: () {
+            // Navigate to user account screen with Trading Preferences expanded
+            final args = {
+              'expandSection': 'Trading Preferences',
+            };
+            Navigator.pushNamed(context, Routes.myaccountScreen, arguments: args);
+          },
+        );
+      },
+    );
   }
 
   // Preprocess depth data
@@ -2231,10 +2257,16 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
         holdQty: '',
         isModify: false,
         raw: {});
+    
+    var scriptInfoData = ref.read(marketWatchProvider).scripInfoModel;
+    if (!_isSegmentActive(scriptInfoData?.exch)) {
+      _showSegmentActivationDialog(ctx, scriptInfoData?.exch ?? "Unknown");
+      return;
+    }
     Navigator.pop(ctx);
     Navigator.pushNamed(ctx, Routes.placeOrderScreen, arguments: {
       "orderArg": orderArgs,
-      "scripInfo": ref.read(marketWatchProvider).scripInfoModel!,
+      "scripInfo": scriptInfoData!,
       "isBskt": widget.isBasket
     });
   }
