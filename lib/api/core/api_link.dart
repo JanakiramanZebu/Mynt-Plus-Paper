@@ -25,8 +25,8 @@ class ApiLinks {
   String get apiKey => '$goMyntURL/RequestApiKey';
   String get generateapiKey => '$goMyntURL/UserApiKeyRenReq';
   String get generateapiKeynewuser => '$goMyntURL/GetUserApiKey';
-  String get getapikeynew => 'https://uat.mynt.in/NorenWClientWeb/GetAppKeyData';
-  String get appkeystore => 'https://uat.mynt.in/NorenWClientWeb/AppKeyStore';
+  String get getapikeynew => '$goMyntURL/GetAppKeyData';
+  String get appkeystore => '$goMyntURL/AppKeyStore';
   String get gettotp => "$goMyntURL/GetSecretKey";
   String get gentotp => "$goMyntURL/GenSecretKey";
 

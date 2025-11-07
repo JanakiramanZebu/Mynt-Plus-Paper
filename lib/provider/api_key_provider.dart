@@ -183,13 +183,13 @@ Future fetchgenerateapikey(BuildContext context, String month) async {
         // Create new model instance with hardcoded client ID for now
         _generateApikeyNew = GenerateNewApiKeyModel(
           stat: _generateApikeyNew!.stat,
-          appKey: "ZP00180", 
-          displayName: "ZP00180 API Key", // Default display name for new API key
+          appKey: "${pref.clientId ?? ""}_U", 
+          displayName: "${pref.clientId ?? ""} API Key", // Default display name for new API key
           secretCode: _generateApikeyNew!.secretCode,
           redirectUrl: _generateApikeyNew!.redirectUrl,
           ipAddresses: _generateApikeyNew!.ipAddresses,
           exchangeAlgos: _generateApikeyNew!.exchangeAlgos,
-          userIds: [UserIdEntry(userId: "ZP00180")], // Default user ID for new API key
+          userIds: [UserIdEntry(userId: pref.clientId ?? "")], // Default user ID for new API key
         );
       } else {
         _generatedSecretCode = null; // Use existing secret code

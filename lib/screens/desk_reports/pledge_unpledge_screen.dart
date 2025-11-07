@@ -114,13 +114,54 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
         ledgerprovider.fetchpledgeandunpledge(context);
       }
 
-      String displayValue = (ledgerprovider.pledgeandunpledge?.estTotalAvailable
-                      ?.toString() ==
-                  null ||
-              ledgerprovider.pledgeandunpledge?.estTotalAvailable?.toString() ==
-                  'null')
-          ? '0.00'
-          : ledgerprovider.pledgeandunpledge!.estTotalAvailable!.toString();
+      // Dynamic display value based on active tab
+      String displayValue;
+      String displayLabel;
+      String displayValue1 = '';
+      String displayLabel1 = '';
+      
+      if (activeTab == 0) {
+        displayLabel = 'Est Margin';
+        displayValue = (ledgerprovider.pledgeandunpledge?.estTotalAvailable
+                        ?.toString() ==
+                    null ||
+                ledgerprovider.pledgeandunpledge?.estTotalAvailable?.toString() ==
+                    'null')
+            ? '0.00'
+            : ledgerprovider.pledgeandunpledge!.estTotalAvailable!.toString();
+      } else if (activeTab == 1) {
+        displayLabel = 'Cash';
+        displayValue = (ledgerprovider.pledgeandunpledge?.cashEquivalent
+                        ?.toString() ==
+                    null ||
+                ledgerprovider.pledgeandunpledge?.cashEquivalent?.toString() ==
+                    'null')
+            ? '0.00'
+            : ledgerprovider.pledgeandunpledge!.cashEquivalent!.toString();
+        displayLabel1 = 'Non Cash';
+        displayValue1 = (ledgerprovider.pledgeandunpledge?.noncashEquivalent
+                        ?.toString() ==
+                    null ||
+                ledgerprovider.pledgeandunpledge?.noncashEquivalent?.toString() ==
+                    'null')
+            ? '0.00'
+            : ledgerprovider.pledgeandunpledge!.noncashEquivalent!.toString();
+      } else {
+        displayLabel = 'Non-Approved';
+        // Sum values from non-approved list
+        double nonApprovedSum = 0.0;
+        if (ledgerprovider.pledgeandunpledge?.data != null) {
+          for (var item in ledgerprovider.pledgeandunpledge!.data!) {
+            if (item.status == "Not_ok" && 
+                (double.tryParse(item.cOLQTY?.toString() ?? '0') ?? 0).toInt() == 0) {
+              // Sum scrip value for non-approved items
+              double scripValue = double.tryParse(item.aMOUNT?.toString() ?? '0') ?? 0.0;
+              nonApprovedSum += scripValue;
+            }
+          }
+        }
+        displayValue = nonApprovedSum.toStringAsFixed(2);
+      }
 
       // if (ledgerprovider.pledgeandunpledge?.data != null) {
       //   for (var i = 0;
@@ -345,10 +386,77 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
+                                if(activeTab == 1)
+                                Column(
+                                  children: [
+                                    Row(
+                                      children: [
+                                        TextWidget.subText(
+                                            text: "${displayLabel}",
+                                            color: theme.isDarkMode
+                                                ? colors.textPrimaryDark
+                                                : colors.textPrimaryLight,
+                                            textOverflow: TextOverflow.ellipsis,
+                                            theme: theme.isDarkMode,
+                                            fw: 0),
+                                        TextWidget.custmText(
+                                            text: " | ",
+                                            color: theme.isDarkMode
+                                                ? colors.textPrimaryDark
+                                                : colors.textPrimaryLight,
+                                            textOverflow: TextOverflow.ellipsis,
+                                            theme: theme.isDarkMode,
+                                            fs: 14,
+                                            fw: 1),
+                                            TextWidget.subText(
+                                            text: "${displayLabel1}",
+                                            color: theme.isDarkMode
+                                                ? colors.textPrimaryDark
+                                                : colors.textPrimaryLight,
+                                            textOverflow: TextOverflow.ellipsis,
+                                            theme: theme.isDarkMode,
+                                            fw: 0),
+                                      ],
+                                    ),
+                                    SizedBox(height: 5),
+                                    Row(
+                                      children: [
+                                        TextWidget.headText(
+                                            text: "${displayValue}",
+                                            maxLines: 1,
+                                            color: theme.isDarkMode
+                                                ? colors.textSecondaryDark
+                                                : colors.textPrimaryLight,
+                                            textOverflow: TextOverflow.ellipsis,
+                                            theme: theme.isDarkMode,
+                                            fw: 0),
+                                            TextWidget.custmText(
+                                            text: " | ",
+                                            color: theme.isDarkMode
+                                                ? colors.textPrimaryDark
+                                                : colors.textPrimaryLight,
+                                            textOverflow: TextOverflow.ellipsis,
+                                            theme: theme.isDarkMode,
+                                            fs: 14,
+                                            fw: 1),
+                                        TextWidget.headText(
+                                            text: "${displayValue1}",
+                                            maxLines: 1,
+                                            color: theme.isDarkMode
+                                                ? colors.textSecondaryDark
+                                                : colors.textPrimaryLight,
+                                            textOverflow: TextOverflow.ellipsis,
+                                            theme: theme.isDarkMode,
+                                            fw: 0),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                                if(activeTab != 1)
                                 Column(
                                   children: [
                                     TextWidget.subText(
-                                        text: 'Est Margin',
+                                        text: displayLabel,
                                         color: theme.isDarkMode
                                             ? colors.textPrimaryDark
                                             : colors.textPrimaryLight,
@@ -365,8 +473,40 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                                         textOverflow: TextOverflow.ellipsis,
                                         theme: theme.isDarkMode,
                                         fw: 0),
+                                   
                                   ],
                                 ),
+                                // if(activeTab == 1)
+                                // Padding(
+                                //   padding: const EdgeInsets.symmetric(horizontal: 10),
+                                //   child: Container(
+                                //     width: 1,
+                                //     height: 30,
+                                //     color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
+                                //   ),
+                                // ),
+                                // Column(
+                                //   children: [
+                                //     TextWidget.subText(
+                                //         text: displayLabel1,
+                                //         color: theme.isDarkMode
+                                //             ? colors.textPrimaryDark
+                                //             : colors.textPrimaryLight,
+                                //         textOverflow: TextOverflow.ellipsis,
+                                //         theme: theme.isDarkMode,
+                                //         fw: 0),
+                                //     SizedBox(height: 5),
+                                //     TextWidget.headText(
+                                //         text: "${displayValue1}",
+                                //         maxLines: 1,
+                                //         color: theme.isDarkMode
+                                //             ? colors.textSecondaryDark
+                                //             : colors.textPrimaryLight,
+                                //         textOverflow: TextOverflow.ellipsis,
+                                //         theme: theme.isDarkMode,
+                                //         fw: 0),
+                                //   ],
+                                // ),
                               ],
                             ),
                           ),

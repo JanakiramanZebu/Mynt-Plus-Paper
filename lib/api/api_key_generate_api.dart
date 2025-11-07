@@ -48,8 +48,8 @@ Future<GenerateApikeyModel> generateapikeynewuser(String month) async {
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
           body:
-              '''jData={"app_key":"ZP00180"}&jKey=4e87ce5848fd2087b2da0be90d6490935c8d528b7ab0a833fbfa8afa566b160e''');
-              
+              '''jData={"app_key":"${prefs.clientId}_U"}&jKey=${prefs.clientSession}''');
+        
       print('getapikeynew response: ${res.body}');
       final json = jsonDecode(res.body);
       return GenerateNewApiKeyModel.fromJson(json as Map<String, dynamic>);

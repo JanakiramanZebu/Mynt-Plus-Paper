@@ -1115,6 +1115,7 @@ class _ApiKeyBottomTabsState extends ConsumerState<ApiKeyBottomTabs>
           if (_tabController.index != index) {
             _tabController.index = index;
           }
+          FocusScope.of(context).unfocus();
         },
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -1918,19 +1919,19 @@ class SettingsScreen extends ConsumerWidget {
                                 topRight: Radius.circular(16),
                               ),
                             ),
-                            builder: (_) => ApiKeyScreen());
+                            // builder: (_) => ApiKeyScreen());
 
-                              // builder: (_) => Consumer(
-                              //     builder: (context, ref, __) {
-                              //       final screenHeight = MediaQuery.of(context).size.height;
-                              //       return SafeArea(
-                              //         child: SizedBox(
-                              //           height: screenHeight * 0.85,
-                              //           child: const ApiKeyBottomTabs(),
-                              //         ),
-                              //       );
-                              //     },
-                              //   ));
+                              builder: (_) => Consumer(
+                                  builder: (context, ref, __) {
+                                    final screenHeight = MediaQuery.of(context).size.height;
+                                    return SafeArea(
+                                      child: SizedBox(
+                                        height: screenHeight * 0.85,
+                                        child: const ApiKeyBottomTabs(),
+                                      ),
+                                    );
+                                  },
+                                ));
                         break;
                       case 'Generate TOTP':
                         await apikeys.fetchTotp();
