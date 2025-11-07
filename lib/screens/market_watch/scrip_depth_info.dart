@@ -213,7 +213,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
     if (segment == null || segment.isEmpty) return true;
 
     List<String> userExarr = ref.read(userProfileProvider).userDetailModel?.exarr ?? [];
-      userExarr.remove("NSE");
+      // userExarr.remove("NSE");
     // Check if the segment exists in user's activated segments (exarr)
     return userExarr.contains(segment);
   }
