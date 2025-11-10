@@ -253,14 +253,9 @@ Future fetchgenerateapikey(BuildContext context, String month) async {
       );
       
       notifyListeners();
-      return _generateApikeyNew;
+        return _generateApikeyNew;
     } catch (e) {
-      
-      ref.read(indexListProvider)
-          .logError
-          .add({"type": "Submit API Key", "Error": "$e"});
-      notifyListeners();
-      return null;
+      rethrow;
     }
   }
 }

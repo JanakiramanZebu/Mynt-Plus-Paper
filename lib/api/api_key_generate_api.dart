@@ -78,7 +78,7 @@ Future<GenerateApikeyModel> generateapikeynewuser(String month) async {
         'uid': userIds.map((e) => {'uid': e}).toList(),
       };
 
-      const sessionKey = '4e87ce5848fd2087b2da0be90d6490935c8d528b7ab0a833fbfa8afa566b160e';
+      String sessionKey = prefs.clientSession ?? '';
       final body = 'jData=' + jsonEncode(jDataMap) + '&jKey=' + sessionKey;
 
       print('=== AppKeyStore REQUEST === $body');
@@ -90,12 +90,8 @@ Future<GenerateApikeyModel> generateapikeynewuser(String month) async {
 
       print('=== AppKeyStore RESPONSE === Status Code: ${res.statusCode} | Response: ${res.body}');
       
-      if (res.statusCode != 200) {
-        throw Exception('API call failed with status ${res.statusCode}: ${res.body}');
-      }
-      
       final json = jsonDecode(res.body);
-      return GenerateNewApiKeyModel.fromJson(json as Map<String, dynamic>);
+        return GenerateNewApiKeyModel.fromJson(json as Map<String, dynamic>);
     } catch (e) {
       rethrow;
     }

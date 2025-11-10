@@ -246,11 +246,11 @@ class _ApiKeyScreenNewState extends ConsumerState<ApiKeyScreenNew> {
         userIds: userIds,
       );
 
-      if (result != null) {
+      if (result?.stat == "Ok") {
         successMessage(context, "API Key updated successfully");
         Navigator.pop(context);
       } else {
-        error(context, "Failed to update API Key");
+        error(context, result?.emsg ?? "");
     }
   }
 

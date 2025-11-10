@@ -8,6 +8,7 @@ class GenerateNewApiKeyModel {
     required this.ipAddresses,
     required this.exchangeAlgos,
     required this.userIds,
+    this.emsg,
   });
 
   final String stat;
@@ -18,7 +19,7 @@ class GenerateNewApiKeyModel {
   final List<IpAddressEntry> ipAddresses;
   final List<dynamic> exchangeAlgos;
   final List<UserIdEntry> userIds;
-
+  final String? emsg;
   factory GenerateNewApiKeyModel.fromJson(Map<String, dynamic> json) {
     return GenerateNewApiKeyModel(
       stat: json['stat'] as String? ?? '',
@@ -33,6 +34,7 @@ class GenerateNewApiKeyModel {
       userIds: (json['uid'] as List<dynamic>? ?? [])
           .map((e) => UserIdEntry.fromJson(e as Map<String, dynamic>))
           .toList(),
+      emsg: json['emsg'] as String? ?? '',
     );
   }
 
@@ -46,6 +48,7 @@ class GenerateNewApiKeyModel {
       'ipaddr': ipAddresses.map((e) => e.toJson()).toList(),
       'exch_algo': exchangeAlgos,
       'uid': userIds.map((e) => e.toJson()).toList(),
+      'emsg': emsg,
     };
   }
 }
