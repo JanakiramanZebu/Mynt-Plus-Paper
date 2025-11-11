@@ -385,24 +385,31 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
                 Text(
                   "${_exchTsym.tsym?.replaceAll("-EQ", "").toUpperCase() ?? ''} ${_exchTsym.expDate ?? ''} ${_exchTsym.option ?? ''} ",
                   style: TextWidget.textStyle(
-                    fontSize: 14,
+                    fontSize: 16,
                     theme: theme.isDarkMode,
                     color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                    fw: 2,
+                    fw: 1,
                   ),
                 ),
 
                 const SizedBox(width: 4),
-                 Text(
-              "${_exchTsym.exch}",
-              style: TextWidget.textStyle(
-                fontSize: 14,
-                theme: theme.isDarkMode,
-                 color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                fw: 2,
-              ),
-                // CustomExchBadge(exch: "${_exchTsym.exch}"),
-              )],
+                 Container(
+                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: theme.isDarkMode ? colors.primaryDark.withOpacity(0.7) : colors.primaryLight.withOpacity(0.7),
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                   child: Text(
+                                 "${_exchTsym.exch}",
+                                 style: TextWidget.textStyle(
+                                   fontSize: 12,
+                                   theme: theme.isDarkMode,
+                   color: colors.textPrimaryDark,
+                                   fw: 1,
+                                 ),
+                                   // CustomExchBadge(exch: "${_exchTsym.exch}"),
+                                 ),
+                 )],
             ),
             const SizedBox(height: 8),
             
@@ -412,7 +419,7 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
                 Text(
                   "${_exchTsym.lp != "null" ? _exchTsym.lp ?? _exchTsym.close ?? 0.00 : '0.00'}",
                   style: TextWidget.textStyle(
-                    fontSize: 14,
+                    fontSize: 16,
                     theme: false,
                     color: (_exchTsym.change == "null" || _exchTsym.change == null) || _exchTsym.change == "0.00"
                         ? theme.isDarkMode
@@ -425,17 +432,17 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
                             : theme.isDarkMode
                                 ? colors.profitDark
                                 : colors.profitLight,
-                    fw: 2,
+                    fw: 1,
                   ),
                 ),
                 const SizedBox(width: 4),
                 Text(
                   "${(double.tryParse(_exchTsym.change ?? '0.00') ?? 0.00).toStringAsFixed(2)} (${(double.tryParse(_exchTsym.perChange ?? '0.00') ?? 0.00).toStringAsFixed(2)}%)",
                   style: TextWidget.textStyle(
-                    fontSize: 14,
+                    fontSize: 16,
                     theme: false,
                     color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                    fw: 2,
+                    fw: 1,
                   ),
                 ),
               ],
@@ -583,14 +590,14 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
                 fontSize: 16,
                 theme: theme.isDarkMode,
                 color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                fw: 3,
+                fw: 1,
               ),
             ),
 
              FadeTransition(
           opacity: _animationController,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
+          child: Row(
+            // crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
                 "${_exchTsym.profitNloss ?? "0.00"}",
@@ -604,7 +611,7 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
                       : theme.isDarkMode
                           ? colors.profitDark
                           : colors.profitLight,
-                  fw: 2,
+                  fw: 1,
                 ),
               ),
               const SizedBox(height: 4),
@@ -690,19 +697,19 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
           Text(
             title,
             style: TextWidget.textStyle(
-              fontSize: 13,
+              fontSize: 14,
               theme: false,
               color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-              fw: 2,
+              fw: 1,
             ),
           ),
           Text(
             value,
             style: TextWidget.textStyle(
-              fontSize: 12,
+              fontSize: 14,
               theme: false,
               color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-              fw: 2,
+              fw: 1,
             ),
           ),
         ],

@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../provider/market_watch_provider.dart';
+import '../../../../provider/order_provider.dart';
+import '../../../models/order_book_model/order_book_model.dart';
 import '../../../provider/thems.dart';
 import '../../../res/global_font_web.dart';
 import '../../../res/web_colors.dart';
@@ -10,6 +12,7 @@ import '../../../res/res.dart';
 import '../../../sharedWidget/no_data_found.dart';
 import '../../../locator/preference.dart';
 import '../../../sharedWidget/snack_bar.dart';
+import '../../../utils/responsive_navigation.dart';
 
 class SearchDialogWeb extends ConsumerStatefulWidget {
   final String wlName;
@@ -33,7 +36,6 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
   final TextEditingController _textController = TextEditingController();
   final ScrollController _tabScrollController = ScrollController();
   final ScrollController _scrollController = ScrollController();
-  final double _tabWidth = 75.0;
   Preferences pref = Preferences();
   late bool scripisAscending;
   late bool pricepisAscending;
@@ -81,19 +83,12 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
   void _scrollToSelectedTab(int index) {
     if (!_tabScrollController.hasClients) return;
 
+    // Simplified scroll calculation for dynamic-width tabs
+    // Each tab has padding (16*2) + text width + spacing (6*2) = approximately 50-150px depending on text
+    // We'll use an average width estimate
+    final double estimatedTabWidth = 120.0; // Average width for tabs with padding
     final double viewportWidth = _tabScrollController.position.viewportDimension;
-    double totalOffset = 0.0;
-    
-    for (int i = 0; i < index; i++) {
-      final String currentText = ref.read(marketWatchProvider).searchTabList[i].text ?? '';
-      final bool isLongTab = (currentText == 'Currency' || currentText == 'Commodity');
-      totalOffset += isLongTab ? 100.0 : _tabWidth;
-    }
-
-    final String currentTabText = ref.read(marketWatchProvider).searchTabList[index].text ?? '';
-    final bool isCurrentLongTab = (currentTabText == 'Currency' || currentTabText == 'Commodity');
-    final double currentTabWidth = isCurrentLongTab ? 100.0 : _tabWidth;
-    final double targetOffset = totalOffset - (viewportWidth / 2) + (currentTabWidth / 2);
+    final double targetOffset = (index * estimatedTabWidth) - (viewportWidth / 2) + (estimatedTabWidth / 2);
     final double scrollTo = targetOffset.clamp(0.0, _tabScrollController.position.maxScrollExtent);
 
     _tabScrollController.animateTo(
@@ -364,6 +359,7 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
             // Always show tabs and content area
             Container(
               height: 45,
+              padding: const EdgeInsets.symmetric(horizontal: 10),
               decoration: BoxDecoration(
                 color: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
                 border: Border(
@@ -394,75 +390,104 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
   Widget _buildSearchTabs(WidgetRef ref, ThemesProvider theme) {
     final searchTabList = ref.read(marketWatchProvider).searchTabList.sublist(0, _tabCount);
 
-    return ListView.builder(
-      controller: _tabScrollController,
-      scrollDirection: Axis.horizontal,
-      physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      itemCount: searchTabList.length,
-      itemBuilder: (context, index) {
-        final tab = searchTabList[index];
-        final isSelected = _tabController.index == index;
-        final bool isLongTab = (tab.text == 'Currency' || tab.text == 'Commodity');
-        final double dynamicWidth = isLongTab ? 100.0 : 80.0;
-
-        return Container(
-          width: dynamicWidth,
-          margin: const EdgeInsets.only(right: 0),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              splashColor: Colors.transparent,
-              highlightColor: Colors.transparent,
-              onTap: () {
-                if (_tabController.index != index) {
-                  _tabController.animateTo(index);
-                  _scrollToSelectedTab(index);
-                }
-              },
-              child: Container(
-                width: double.infinity,
-                alignment: Alignment.center,
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      tab.text ?? '',
-                      style: WebTextStyles.para(
-                        isDarkTheme: theme.isDarkMode,
-                        color: isSelected
-                            ? theme.isDarkMode
-                                ? WebDarkColors.navItemActive
-                                : WebColors.navItemActive
-                            : theme.isDarkMode
-                                ? WebDarkColors.navItem
-                                : WebColors.navItem,
-                        fontWeight: FontWeight.w700,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Left arrow button
+        // _buildTabArrowButton(
+        //   icon: Icons.chevron_left,
+        //   onPressed: () => _scrollTabsLeft(),
+        //   theme: theme,
+        // ),
+        // const SizedBox(width: 5),
+        // Tabs scrollable area
+        Expanded(
+          child: SingleChildScrollView(
+            controller: _tabScrollController,
+            scrollDirection: Axis.horizontal,
+            physics: const ClampingScrollPhysics(),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (int index = 0; index < searchTabList.length; index++)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 6),
+                    child: _buildSearchTab(
+                      searchTabList[index].text ?? '',
+                      index,
+                      _tabController.index == index,
+                      theme,
                     ),
-                    const SizedBox(height: 6),
-                    AnimatedContainer(
-                      duration: const Duration(milliseconds: 250),
-                      curve: Curves.easeInOut,
-                      height: 2,
-                      width: isSelected ? 60 : 0,
-                      decoration: BoxDecoration(
-                        color: theme.isDarkMode
-                            ? WebDarkColors.primary
-                            : WebColors.primary,
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+                  ),
+              ],
             ),
           ),
-        );
-      },
+        ),
+        // const SizedBox(width: 5),
+        // Right arrow button
+        // _buildTabArrowButton(
+        //   icon: Icons.chevron_right,
+        //   onPressed: () => _scrollTabsRight(),
+        //   theme: theme,
+        // ),
+      ],
+    );
+  }
+
+  Widget _buildSearchTab(
+    String title,
+    int index,
+    bool isSelected,
+    ThemesProvider theme,
+  ) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: InkWell(
+        onTap: () {
+          if (_tabController.index != index) {
+            _tabController.animateTo(index);
+            _scrollToSelectedTab(index);
+          }
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? (theme.isDarkMode
+                    ? WebDarkColors.backgroundTertiary
+                    : WebColors.backgroundTertiary)
+                : (theme.isDarkMode
+                    ? WebDarkColors.surface
+                    : WebColors.surface),
+            border: Border.all(
+              color: isSelected
+                  ? (theme.isDarkMode
+                      ? WebDarkColors.primary
+                      : WebColors.primary)
+                  : (theme.isDarkMode
+                      ? WebDarkColors.textSecondary
+                      : WebColors.textSecondary),
+              width: 1.5,
+            ),
+            borderRadius: BorderRadius.circular(50),
+          ),
+          child: Text(
+            title,
+            overflow: TextOverflow.ellipsis,
+            style: WebTextStyles.sub(
+              isDarkTheme: theme.isDarkMode,
+              color: isSelected
+                  ? (theme.isDarkMode
+                      ? WebDarkColors.textPrimary
+                      : WebColors.textPrimary)
+                  : (theme.isDarkMode
+                      ? WebDarkColors.navItem
+                      : WebColors.navItem),
+              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -650,10 +675,67 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
                       ),
                     ),
                     
-                    // Save/Bookmark Icon
-                    if (widget.isBasket != "Chart||Is" &&
+                    // Buy/Sell buttons for Basket mode, or Save/Bookmark Icon for Watchlist mode
+                    if (widget.isBasket == "Basket") ...[
+                      // Buy Button
+                      Material(
+                        color: Colors.transparent,
+                        borderRadius: BorderRadius.circular(4),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(4),
+                          splashColor: WebDarkColors.primary.withOpacity(0.2),
+                          highlightColor: WebDarkColors.primary.withOpacity(0.1),
+                          onTap: () async {
+                            await _handleBuySellClick(context, scrip, true, ref, theme);
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              "Buy",
+                              style: WebTextStyles.para(
+                                isDarkTheme: theme.isDarkMode,
+                                color: WebDarkColors.textPrimary,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      // Sell Button
+                      Material(
+                        color: Colors.transparent,
+                        borderRadius: BorderRadius.circular(4),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(4),
+                          splashColor: WebDarkColors.error.withOpacity(0.2),
+                          highlightColor: WebDarkColors.error.withOpacity(0.1),
+                          onTap: () async {
+                            await _handleBuySellClick(context, scrip, false, ref, theme);
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: theme.isDarkMode ? WebDarkColors.error : WebColors.error,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              "Sell",
+                              style: WebTextStyles.para(
+                                isDarkTheme: theme.isDarkMode,
+                                color: WebDarkColors.textPrimary,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ] else if (widget.isBasket != "Chart||Is" &&
                         widget.isBasket != "Option||Is" &&
-                        widget.isBasket != "Basket" &&
                         searchScrip.isPreDefWLs != "Yes" &&
                         searchScrip.scrips.length < 50)
                       Material(
@@ -751,6 +833,116 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
         ),
       ),
     );
+  }
+
+  // Handle Buy/Sell click for basket mode
+  Future<void> _handleBuySellClick(
+    BuildContext context,
+    dynamic scrip,
+    bool isBuy,
+    WidgetRef ref,
+    ThemesProvider theme,
+  ) async {
+    try {
+      final marketWatch = ref.read(marketWatchProvider);
+      final orderProv = ref.read(orderProvider);
+      
+      // Check basket limit
+      if (orderProv.bsktScripList.length >= orderProv.frezQtyOrderSliceMaxLimit) {
+        showResponsiveErrorMessage(
+          context,
+          "Basket limit reached. Please create a new basket as you are exceeding the ${orderProv.frezQtyOrderSliceMaxLimit} item limit.",
+        );
+        return;
+      }
+
+      // Check if segment is active
+      if (!marketWatch.exarr.contains('"${scrip.exch}"')) {
+        showResponsiveErrorMessage(context, "Segment is not active.");
+        return;
+      }
+
+      // Get root navigator context before closing dialog
+      final rootNavigator = Navigator.of(context, rootNavigator: true);
+      final rootContext = rootNavigator.context;
+
+      // Fetch scrip info first
+      await marketWatch.fetchScripInfo(
+        scrip.token.toString(),
+        scrip.exch.toString(),
+        context,
+        true,
+      );
+
+      if (!context.mounted) return;
+
+      // Check if scrip info was fetched
+      if (marketWatch.scripInfoModel == null) {
+        showResponsiveErrorMessage(context, "Failed to fetch scrip information.");
+        return;
+      }
+
+      // Fetch depth data (getQuotes) to get LTP and percentage change
+      await marketWatch.fetchScripQuote(
+        scrip.token.toString(),
+        scrip.exch.toString(),
+        context,
+      );
+
+      if (!context.mounted) return;
+
+      // Get LTP and percentage change from depth data (getQuotes)
+      final depthData = marketWatch.getQuotes;
+      final ltp = depthData?.lp?.toString() ?? depthData?.c?.toString() ?? "0.00";
+      final perChange = depthData?.pc?.toString() ?? "0.00";
+
+      // Create OrderScreenArgs
+      // Note: ScripNewValue doesn't have prd, lp, pc properties - we get those from fetched data
+      OrderScreenArgs orderArgs = OrderScreenArgs(
+        exchange: scrip.exch.toString(),
+        tSym: scrip.tsym.toString(),
+        isExit: false,
+        token: scrip.token.toString(),
+        transType: isBuy,
+        lotSize: marketWatch.scripInfoModel?.ls?.toString() ?? "1",
+        ltp: ltp,
+        perChange: perChange,
+        orderTpye: '',
+        holdQty: '',
+        isModify: false,
+        prd: null, // prd is not available in search scrip model, will be set in order screen
+        raw: {
+          'exch': scrip.exch.toString(),
+          'token': scrip.token.toString(),
+          'tsym': scrip.tsym.toString(),
+          'symbol': scrip.symbol?.toString() ?? scrip.tsym.toString(),
+          'expDate': scrip.expDate?.toString() ?? '',
+          'option': scrip.option?.toString() ?? '',
+        },
+      );
+
+      // Close search dialog
+      Navigator.of(context).pop();
+
+      // Wait a bit to ensure dialog is closed
+      await Future.delayed(const Duration(milliseconds: 150));
+
+      // Navigate to order screen with basket context using root context
+      await ResponsiveNavigation.toPlaceOrderScreen(
+        context: rootContext,
+        arguments: {
+          "orderArg": orderArgs,
+          "scripInfo": marketWatch.scripInfoModel!,
+          "isBskt": "Basket",
+        },
+      );
+    } catch (e, stackTrace) {
+      print("Error in _handleBuySellClick: $e");
+      print("Stack trace: $stackTrace");
+      if (context.mounted) {
+        showResponsiveErrorMessage(context, "Failed to open order screen: ${e.toString()}");
+      }
+    }
   }
 }
 

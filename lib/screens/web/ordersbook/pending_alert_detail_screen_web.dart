@@ -10,6 +10,8 @@ import '../../../provider/market_watch_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
+import '../../../res/web_colors.dart';
+import '../../../res/global_font_web.dart';
 import '../../../sharedWidget/cust_text_formfield.dart';
 import '../../../sharedWidget/custom_exch_badge.dart';
 import '../../../sharedWidget/functions.dart';
@@ -96,39 +98,85 @@ class _PendingAlertDetailScreenWebState
   Widget build(BuildContext context) {
     final theme = ref.read(themeProvider);
     return Dialog(
-      backgroundColor: Colors.transparent,
+     backgroundColor: WebColors.surface,
       child: Container(
-        width: MediaQuery.of(context).size.width * 0.6,
-        height: MediaQuery.of(context).size.height * 0.85,
-        decoration: BoxDecoration(
-          color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
-          ),
-        ),
+        width: 500,
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.90,
+            ),
+            decoration: BoxDecoration(
+              // color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+              borderRadius: BorderRadius.circular(5),
+              // border: Border.all(
+              //   color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
+              // ),
+            ),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            // Header with close button
-            _buildHeader(theme),
+
+             Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  margin: const EdgeInsets.only(bottom: 8),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(
+                        color: theme.isDarkMode
+                            ? WebDarkColors.divider
+                            : WebColors.divider,
+                      ),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                       // Symbol and Price Section
+                    _buildSymbolSection(theme),
+                      Material(
+                        color: Colors.transparent,
+                        shape: const CircleBorder(),
+                        child: InkWell(
+                          customBorder: const CircleBorder(),
+                          splashColor: theme.isDarkMode
+                              ? Colors.white.withOpacity(.15)
+                              : Colors.black.withOpacity(.15),
+                          highlightColor: theme.isDarkMode
+                              ? Colors.white.withOpacity(.08)
+                              : Colors.black.withOpacity(.08),
+                          onTap: () => Navigator.of(context).pop(),
+                          child: Padding(
+                            padding: const EdgeInsets.all(6),
+                            child: Icon(
+                              Icons.close,
+                              size: 20,
+                              color: theme.isDarkMode
+                                  ? WebDarkColors.iconSecondary
+                                  : WebColors.iconSecondary,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
             
             // Content
-            Expanded(
+            Flexible(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.all(15),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Symbol and Price Section
-                    _buildSymbolSection(theme),
-                    const SizedBox(height: 24),
+                  
                     
                     // Action Buttons
-                    _buildActionButtons(theme),
-                    const SizedBox(height: 24),
+                    // const SizedBox(height: 24),
                     
                     // Alert Details Section
                     _buildAlertDetailsSection(theme),
+                    const SizedBox(height: 16),
+                    _buildActionButtons(theme),
                   ],
                 ),
               ),
@@ -174,171 +222,169 @@ class _PendingAlertDetailScreenWebState
   }
 
   Widget _buildSymbolSection(ThemesProvider theme) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: theme.isDarkMode ? colors.kColorLightGreyDarkTheme : colors.kColorLightGrey,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Symbol and Exchange
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  "${widget.alert.tsym?.replaceAll("-EQ", "")}",
-                  style: TextWidget.textStyle(
-                    fontSize: 20,
-                    theme: theme.isDarkMode,
-                    color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                    fw: 3,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Symbol and Exchange
+        Row(
+          children: [
+            Text(
+              "${widget.alert.tsym?.replaceAll("-EQ", "")}",
+              style: TextWidget.textStyle(
+                fontSize: 16,
+                theme: theme.isDarkMode,
+                color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                fw: 1,
+              ),
+            ),
+
+              const SizedBox(width: 4),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: theme.isDarkMode ? colors.primaryDark.withOpacity(0.7) : colors.primaryLight.withOpacity(0.7),
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  child: Text(
+                    "${widget.alert.exch ?? ''}",
+                    style: TextWidget.textStyle(
+                      fontSize: 12,
+                      theme: false,
+                     color: colors.textPrimaryDark,
+                  fw: 1,
+                    ),
                   ),
                 ),
-              ),
-              CustomExchBadge(exch: "${widget.alert.exch}"),
-            ],
-          ),
-          const SizedBox(height: 16),
-          
-          // Price and Change
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "${widget.alert.ltp ?? widget.alert.close ?? 0.00}",
-                      style: TextWidget.textStyle(
-                        fontSize: 24,
-                        theme: false,
-                        color: widget.alert.change == null
+          ],
+        ),
+        const SizedBox(height: 8),
+        
+        // Price and Change
+        Row(
+          children: [
+            Text(
+              "${widget.alert.ltp ?? widget.alert.close ?? 0.00}",
+              style: TextWidget.textStyle(
+                fontSize: 16,
+                theme: false,
+                color: widget.alert.change == null
+                    ? theme.isDarkMode
+                        ? colors.textSecondaryDark
+                        : colors.textSecondaryLight
+                    : widget.alert.change!.startsWith("-")
+                        ? theme.isDarkMode
+                            ? colors.lossDark
+                            : colors.lossLight
+                        : widget.alert.change == "0.00"
                             ? theme.isDarkMode
                                 ? colors.textSecondaryDark
                                 : colors.textSecondaryLight
-                            : widget.alert.change!.startsWith("-")
-                                ? theme.isDarkMode
-                                    ? colors.lossDark
-                                    : colors.lossLight
-                                : widget.alert.change == "0.00"
-                                    ? theme.isDarkMode
-                                        ? colors.textSecondaryDark
-                                        : colors.textSecondaryLight
-                                    : theme.isDarkMode
-                                        ? colors.profitDark
-                                        : colors.profitLight,
-                        fw: 3,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      "${widget.alert.perChange ?? 0.00}%",
-                      style: TextWidget.textStyle(
-                        fontSize: 14,
-                        theme: false,
-                        color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                        fw: 2,
-                      ),
-                    ),
-                  ],
-                ),
+                            : theme.isDarkMode
+                                ? colors.profitDark
+                                : colors.profitLight,
+                fw: 1,
               ),
-            ],
-          ),
-        ],
-      ),
+            ),
+            const SizedBox(width: 4),
+            Text(
+              "${widget.alert.perChange ?? 0.00}%",
+              style: TextWidget.textStyle(
+                fontSize: 16,
+                theme: false,
+                color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                fw: 1,
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 
   Widget _buildActionButtons(ThemesProvider theme) {
     return Row(
       children: [
-        Expanded(
-          child: Container(
-            height: 45,
-            decoration: BoxDecoration(
-              color: theme.isDarkMode
-                  ? colors.textSecondaryDark.withOpacity(0.6)
-                  : colors.btnBg,
-              borderRadius: BorderRadius.circular(5),
-              border: theme.isDarkMode
-                  ? null
-                  : Border.all(
-                      color: colors.primaryLight,
-                      width: 1),
-            ),
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                customBorder: const BeveledRectangleBorder(),
-                splashColor: theme.isDarkMode
-                    ? colors.splashColorDark
-                    : colors.splashColorLight,
-                highlightColor: theme.isDarkMode
-                    ? colors.highlightDark
-                    : colors.highlightLight,
-                onTap: isModifying || isCancelling
-                    ? null
-                    : () async {
-                        setState(() {
-                          isCancelling = true;
-                        });
+        // Expanded(
+        //   child: Container(
+        //     height: 45,
+        //     decoration: BoxDecoration(
+        //       color: theme.isDarkMode
+        //           ? colors.textSecondaryDark.withOpacity(0.6)
+        //           : colors.btnBg,
+        //       borderRadius: BorderRadius.circular(5),
+        //       border: theme.isDarkMode
+        //           ? null
+        //           : Border.all(
+        //               color: colors.primaryLight,
+        //               width: 1),
+        //     ),
+        //     child: Material(
+        //       color: Colors.transparent,
+        //       child: InkWell(
+        //         customBorder: const BeveledRectangleBorder(),
+        //         splashColor: theme.isDarkMode
+        //             ? colors.splashColorDark
+        //             : colors.splashColorLight,
+        //         highlightColor: theme.isDarkMode
+        //             ? colors.highlightDark
+        //             : colors.highlightLight,
+        //         onTap: isModifying || isCancelling
+        //             ? null
+        //             : () async {
+        //                 setState(() {
+        //                   isCancelling = true;
+        //                 });
 
-                        try {
-                          final String alertId = "${widget.alert.alId}";
+        //                 try {
+        //                   final String alertId = "${widget.alert.alId}";
 
-                          await ref
-                              .read(marketWatchProvider)
-                              .fetchCancelAlert(alertId, context);
+        //                   await ref
+        //                       .read(marketWatchProvider)
+        //                       .fetchCancelAlert(alertId, context);
 
-                          await ref
-                              .read(marketWatchProvider)
-                              .fetchPendingAlert(context);
+        //                   await ref
+        //                       .read(marketWatchProvider)
+        //                       .fetchPendingAlert(context);
 
-                          if (mounted) Navigator.pop(context);
-                        } catch (e) {
-                          if (mounted) {
-                            showResponsiveErrorMessage(
-                                context,
-                                "Failed to cancel alert: ${e.toString()}");
-                          }
-                        } finally {
-                          if (mounted) {
-                            setState(() {
-                              isCancelling = false;
-                            });
-                          }
-                        }
-                      },
-                child: Center(
-                  child: isCancelling
-                      ? SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: colors.colorWhite,
-                          ),
-                        )
-                      : TextWidget.subText(
-                          text: "Cancel Alert",
-                          theme: false,
-                          color: theme.isDarkMode
-                              ? colors.colorWhite
-                              : colors.primaryLight,
-                          fw: 2,
-                        ),
-                ),
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(width: 16),
+        //                   if (mounted) Navigator.pop(context);
+        //                 } catch (e) {
+        //                   if (mounted) {
+        //                     showResponsiveErrorMessage(
+        //                         context,
+        //                         "Failed to cancel alert: ${e.toString()}");
+        //                   }
+        //                 } finally {
+        //                   if (mounted) {
+        //                     setState(() {
+        //                       isCancelling = false;
+        //                     });
+        //                   }
+        //                 }
+        //               },
+        //         child: Center(
+        //           child: isCancelling
+        //               ? SizedBox(
+        //                   height: 20,
+        //                   width: 20,
+        //                   child: CircularProgressIndicator(
+        //                     strokeWidth: 2,
+        //                     color: colors.colorWhite,
+        //                   ),
+        //                 )
+        //               : TextWidget.subText(
+        //                   text: "Cancel Alert",
+        //                   theme: false,
+        //                   color: theme.isDarkMode
+        //                       ? colors.colorWhite
+        //                       : colors.primaryLight,
+        //                   fw: 2,
+        //                 ),
+        //         ),
+        //       ),
+        //     ),
+        //   ),
+        // ),
+        // const SizedBox(width: 16),
         Expanded(
           child: Container(
             height: 45,
@@ -421,33 +467,23 @@ class _PendingAlertDetailScreenWebState
   }
 
   Widget _buildAlertDetailsSection(ThemesProvider theme) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: theme.isDarkMode ? colors.kColorLightGreyDarkTheme : colors.kColorLightGrey,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _alertData("Type", widget.alert.aiT == "LTP_A"
-              ? "LTP"
-              : widget.alert.aiT == "LTP_B"
-                  ? "LTP"
-                  : widget.alert.aiT == "CH_PER_A"
-                      ? "Perc.Change"
-                      : "Perc.Change", theme),
-          const SizedBox(height: 8),
-          _alertDataCondition(theme),
-          const SizedBox(height: 8),
-          _alertData("Date&Time", formatDateTime(value: "${widget.alert.norentm}"), theme),
-          const SizedBox(height: 16),
-          _buildModifyValueField(theme),
-        ],
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _alertData("Type", widget.alert.aiT == "LTP_A"
+            ? "LTP"
+            : widget.alert.aiT == "LTP_B"
+                ? "LTP"
+                : widget.alert.aiT == "CH_PER_A"
+                    ? "Perc.Change"
+                    : "Perc.Change", theme),
+        const SizedBox(height: 8),
+        _alertDataCondition(theme),
+        const SizedBox(height: 8),
+        _alertData("Date&Time", formatDateTime(value: "${widget.alert.norentm}"), theme),
+        const SizedBox(height: 16),
+        _buildModifyValueField(theme),
+      ],
     );
   }
 
@@ -459,53 +495,55 @@ class _PendingAlertDetailScreenWebState
           text: "Modify Alert value",
           theme: theme.isDarkMode,
           color: theme.isDarkMode
-              ? colors.textSecondaryDark
-              : colors.textSecondaryLight,
-          fw: 3,
+              ? WebDarkColors.textSecondary
+              : WebColors.textSecondary,
+          fw: 1,
         ),
         const SizedBox(height: 8),
         SizedBox(
           height: 40,
           child: CustomTextFormField(
             fillColor: theme.isDarkMode
-                ? colors.darkGrey
-                : const Color(0xffF1F3F8),
+                ? WebDarkColors.backgroundTertiary
+                : WebColors.backgroundTertiary,
             textCtrl: valueCtrl,
             textAlign: TextAlign.start,
             inputFormate: [
               FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
             ],
-            style: TextWidget.textStyle(
-              fontSize: 16,
+            style: WebTextStyles.custom(
+              fontSize: 13,
+              isDarkTheme: theme.isDarkMode,
               color: theme.isDarkMode
-                  ? colors.textPrimaryDark
-                  : colors.textPrimaryLight,
-              theme: theme.isDarkMode,
+                  ? WebDarkColors.textPrimary
+                  : WebColors.textPrimary,
+              fontWeight: FontWeight.w600,
             ),
             keyboardType: TextInputType.number,
             hintText: "0",
-            hintStyle: TextWidget.textStyle(
-              fontSize: 14,
-              theme: theme.isDarkMode,
+            hintStyle: WebTextStyles.custom(
+              fontSize: 13,
+              isDarkTheme: theme.isDarkMode,
               color: theme.isDarkMode
-                  ? colors.textSecondaryDark
-                  : colors.textSecondaryLight,
+                  ? WebDarkColors.textSecondary
+                  : WebColors.textSecondary,
+              fontWeight: FontWeight.w600,
             ),
             prefixIcon: widget.alert.aiT == "CH_PER_A" ||
                     widget.alert.aiT == "CH_PER_B"
                 ?                     Icon(
                       Icons.percent_outlined,
                       color: theme.isDarkMode
-                          ? colors.textSecondaryDark
-                          : colors.textSecondaryLight,
+                          ? WebDarkColors.textSecondary
+                          : WebColors.textSecondary,
                       size: 18,
                     )
                   : SvgPicture.asset(
                       assets.ruppeIcon,
                       colorFilter: ColorFilter.mode(
                         theme.isDarkMode
-                            ? colors.textSecondaryDark
-                            : colors.textSecondaryLight,
+                            ? WebDarkColors.textSecondary
+                            : WebColors.textSecondary,
                         BlendMode.srcIn,
                       ),
                       fit: BoxFit.scaleDown),
@@ -546,7 +584,7 @@ class _PendingAlertDetailScreenWebState
               color: theme.isDarkMode
                   ? colors.textSecondaryDark
                   : colors.textSecondaryLight,
-              fw: 3),
+              fw: 1),
             Row(
               children: [
                 TextWidget.subText(
@@ -561,7 +599,7 @@ class _PendingAlertDetailScreenWebState
                   color: theme.isDarkMode
                       ? colors.textPrimaryDark
                       : colors.textPrimaryLight,
-                  fw: 3),
+                  fw: 1),
                 Transform.rotate(
                   angle: 55 * (pi / 180),
                   child: Icon(
@@ -591,34 +629,25 @@ class _PendingAlertDetailScreenWebState
 
   Widget _alertData(String title1, String value, ThemesProvider theme) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
-      child: Column(
+      padding: const EdgeInsets.only( bottom: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              TextWidget.subText(
-                text: title1,
-                theme: theme.isDarkMode,
-                fw: 3,
-                color: theme.isDarkMode
-                    ? colors.textSecondaryDark
-                    : colors.textSecondaryLight),
-              TextWidget.subText(
-                text: value,
-                theme: theme.isDarkMode,
-                fw: 3,
-                color: theme.isDarkMode
-                    ? colors.textPrimaryDark
-                    : colors.textPrimaryLight),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Divider(
-            thickness: 0,
-            color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
-          )
-        ]
+          TextWidget.subText(
+            text: title1,
+            theme: theme.isDarkMode,
+            fw: 1,
+            color: theme.isDarkMode
+                ? colors.textSecondaryDark
+                : colors.textSecondaryLight),
+          TextWidget.subText(
+            text: value,
+            theme: theme.isDarkMode,
+            fw: 1,
+            color: theme.isDarkMode
+                ? colors.textPrimaryDark
+                : colors.textPrimaryLight),
+        ],
       ),
     );
   }

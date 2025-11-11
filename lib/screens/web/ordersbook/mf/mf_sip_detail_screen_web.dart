@@ -4,6 +4,7 @@ import '../../../../models/mf_model/sip_mf_list_model.dart';
 import '../../../../provider/thems.dart';
 import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
+import '../../../../res/web_colors.dart';
 import '../../../../sharedWidget/functions.dart';
 import 'sip_pause_dialogue_web.dart';
 import 'sip_cancel_dialogue_web.dart';
@@ -26,42 +27,93 @@ class MFSipDetailScreenWeb extends ConsumerWidget {
     final theme = ref.watch(themeProvider);
 
     return Dialog(
-      backgroundColor: Colors.transparent,
+     backgroundColor: WebColors.surface,
       child: Container(
-        width: MediaQuery.of(context).size.width * 0.6,
-        height: MediaQuery.of(context).size.height * 0.9,
+         width: 500,
+        height: MediaQuery.of(context).size.height * 0.60,
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.60,
+        ),
         decoration: BoxDecoration(
-          color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
-          ),
+          // color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+          borderRadius: BorderRadius.circular(5),
+          // border: Border.all(
+          //   color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
+          // ),
         ),
         child: Column(
+           mainAxisSize: MainAxisSize.min,
           children: [
             // Header
-            _buildHeader(context, theme),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              margin: const EdgeInsets.only(bottom: 8),
+              decoration: BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(
+                    color: theme.isDarkMode
+                        ? WebDarkColors.divider
+                        : WebColors.divider,
+                  ),
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _buildHeader(context, theme),
+                  Material(
+                    color: Colors.transparent,
+                    shape: const CircleBorder(),
+                    child: InkWell(
+                      customBorder: const CircleBorder(),
+                      splashColor: theme.isDarkMode
+                          ? Colors.white.withOpacity(.15)
+                          : Colors.black.withOpacity(.15),
+                      highlightColor: theme.isDarkMode
+                          ? Colors.white.withOpacity(.08)
+                          : Colors.black.withOpacity(.08),
+                      onTap: () => Navigator.of(context).pop(),
+                      child: Padding(
+                        padding: const EdgeInsets.all(6),
+                        child: Icon(
+                          Icons.close,
+                          size: 20,
+                          color: theme.isDarkMode
+                              ? WebDarkColors.iconSecondary
+                              : WebColors.iconSecondary,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
             
             // Content
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.only(
+                    top: 0, bottom: 16, left: 16, right: 16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Action Buttons
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildPauseButton(context, theme),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _buildCancelSipButton(context, theme),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 24),
+                    // Action Buttons - Only show when status is ACTIVE
+                    // if (sipData.status?.toUpperCase() == "ACTIVE" || 
+                    //     sipData.status?.toUpperCase() == "RUNNING")
+                    //   Row(
+                    //     children: [
+                    //       Expanded(
+                    //         child: _buildPauseButton(context, theme),
+                    //       ),
+                    //       const SizedBox(width: 12),
+                    //       Expanded(
+                    //         child: _buildCancelSipButton(context, theme),
+                    //       ),
+                    //     ],
+                    //   ),
+                    // if (sipData.status?.toUpperCase() == "ACTIVE" || 
+                    //     sipData.status?.toUpperCase() == "RUNNING")
+                    //   const SizedBox(height: 24),
                     
                     // SIP Details Section
                     _buildSipDetailsSection(context, theme),
@@ -76,59 +128,15 @@ class MFSipDetailScreenWeb extends ConsumerWidget {
   }
 
   Widget _buildHeader(BuildContext context, ThemesProvider theme) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: theme.isDarkMode ? colors.kColorLightGreyDarkTheme : colors.kColorLightGrey,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(16),
-          topRight: Radius.circular(16),
-        ),
+    return Text(
+      sipData.name ?? "",
+      style: TextWidget.textStyle(
+        fontSize: 16,
+        theme: theme.isDarkMode,
+        color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+        fw: 1,
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Expanded(
-            child: Text(
-              sipData.name ?? "",
-              style: TextWidget.textStyle(
-                fontSize: 18,
-                theme: theme.isDarkMode,
-                color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                fw: 1,
-              ),
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-          const SizedBox(width: 12),
-          // LIVE badge
-          if (_isActive)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: const Color(0xFF4CAF50),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Text(
-                "LIVE",
-                style: TextWidget.textStyle(
-                  fontSize: 12,
-                  theme: false,
-                  color: colors.colorWhite,
-                  fw: 2,
-                ),
-              ),
-            ),
-          const SizedBox(width: 8),
-          IconButton(
-            onPressed: () => Navigator.of(context).pop(),
-            icon: Icon(
-              Icons.close,
-              color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-            ),
-          ),
-        ],
-      ),
+      overflow: TextOverflow.ellipsis,
     );
   }
 
@@ -136,12 +144,42 @@ class MFSipDetailScreenWeb extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // SIP Details with dividers
+        Text(
+          "SIP Details",
+          style: TextWidget.textStyle(
+            fontSize: 15,
+            theme: theme.isDarkMode,
+            color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+            fw: 2,
+          ),
+        ),
+        const SizedBox(height: 8),
+
+
         _buildInfoRowWithDivider(
-          "SIP Register Date",
-          sipformatDateTime(value: sipData.sIPRegnDate ?? ""),
+          "Status",
+          _isActive
+              ? Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF4CAF50),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    "LIVE",
+                    style: TextWidget.textStyle(
+                      fontSize: 12,
+                      theme: false,
+                      color: colors.colorWhite,
+                      fw: 2,
+                    ),
+                  ),
+                )
+              : (sipData.status ?? '').toUpperCase(),
           theme,
         ),
+        
+        // SIP Details with dividers
         _buildInfoRowWithDivider(
           "Amount",
           "${sipData.installmentAmount ?? '0.0'}",
@@ -187,42 +225,40 @@ class MFSipDetailScreenWeb extends ConsumerWidget {
     );
   }
 
-  Widget _buildInfoRowWithDivider(String title, String value, ThemesProvider theme) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              title,
-              style: TextWidget.textStyle(
-                fontSize: 14,
-                theme: false,
-                color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                fw: 3,
-              ),
+  Widget _buildInfoRowWithDivider(
+      String title, dynamic value, ThemesProvider theme) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            title,
+            style: TextWidget.textStyle(
+              fontSize: 14,
+              theme: false,
+              color: theme.isDarkMode
+                  ? colors.textSecondaryDark
+                  : colors.textSecondaryLight,
+              fw: 1,
             ),
-            Flexible(
-              child: Text(
-                value,
-                textAlign: TextAlign.end,
-                style: TextWidget.textStyle(
-                  fontSize: 14,
-                  theme: theme.isDarkMode,
-                  color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                  fw: 3,
+          ),
+          value is Widget
+              ? value
+              : Text(
+                  value.toString(),
+                  textAlign: TextAlign.end,
+                  style: TextWidget.textStyle(
+                    fontSize: 14,
+                    theme: false,
+                    color: theme.isDarkMode
+                        ? colors.textPrimaryDark
+                        : colors.textPrimaryLight,
+                    fw: 1,
+                  ),
                 ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        Divider(
-          thickness: 0.5,
-          color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
-        ),
-      ],
+        ],
+      ),
     );
   }
 

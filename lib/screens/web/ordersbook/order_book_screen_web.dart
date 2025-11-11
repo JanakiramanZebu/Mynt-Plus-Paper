@@ -3,16 +3,20 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:mynt_plus/screens/Mobile/order_book/basket/basket_list.dart';
+import 'package:mynt_plus/screens/web/ordersbook/basket/basket_list_web.dart';
 import 'package:mynt_plus/sharedWidget/functions.dart';
 
 import '../../../provider/order_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../provider/websocket_provider.dart';
+import '../../../provider/market_watch_provider.dart';
 import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
+import '../../../res/web_colors.dart';
+import '../../../res/global_font_web.dart';
 import '../../../sharedWidget/custom_text_form_field.dart';
 import '../../../sharedWidget/no_data_found.dart';
+import '../../../sharedWidget/snack_bar.dart';
 import '../../../models/order_book_model/order_book_model.dart';
 import '../../../models/order_book_model/trade_book_model.dart';
 import '../../../models/order_book_model/gtt_order_book.dart';
@@ -23,6 +27,9 @@ import 'pending_alert_card_web.dart';
 import 'order_book_detail_screen_web.dart';
 import 'trade_book_detail_screen_web.dart';
 import 'gtt_order_book_detail_screen_web.dart';
+import 'modify_gtt_web.dart';
+import '../order/modify_place_order_web_screen.dart';
+import '../../../utils/responsive_navigation.dart';
 
 class OrderBookScreenWeb extends ConsumerStatefulWidget {
   const OrderBookScreenWeb({super.key});
@@ -36,6 +43,15 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
   final Set<int> _selectedOrders = <int>{};
   late TabController _tabController;
   StreamSubscription? _socketSubscription;
+  final ScrollController _horizontalScrollController = ScrollController();
+  final ScrollController _verticalScrollController = ScrollController();
+  final ScrollController _tabScrollController = ScrollController();
+  String? _hoveredRowToken; // Track which row is being hovered
+  
+  // Track processing states for order actions
+  bool _isProcessingCancel = false;
+  bool _isProcessingModify = false;
+  String? _processingOrderToken; // Track which order is being processed
   
   // Sort state per table
   int? _orderSortColumnIndex;
@@ -44,6 +60,9 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
   bool _tradeSortAscending = true;
   int? _gttSortColumnIndex;
   bool _gttSortAscending = true;
+  
+  // MF tab state
+  int _mfTabIndex = 0; // 0 for Orders, 1 for SIP
 
   @override
   void initState() {
@@ -72,6 +91,9 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
   void dispose() {
     _socketSubscription?.cancel();
     _tabController.dispose();
+    _horizontalScrollController.dispose();
+    _verticalScrollController.dispose();
+    _tabScrollController.dispose();
     super.dispose();
   }
 
@@ -306,26 +328,27 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
       return const Center(child: CircularProgressIndicator());
     }
 
-    return GestureDetector(
-      onTap: () => FocusScope.of(context).unfocus(),
-      child: RefreshIndicator(
-        onRefresh: () async {
-          await orderBook.fetchOrderBook(context, true);
-        },
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header Section
-                _buildHeader(theme, orderBook),
-                const SizedBox(height: 24),
-                
-                // Main Content Area
-                _buildMainContent(theme, orderBook),
-              ],
+    return Container(
+        width: double.infinity,
+      height: double.infinity,
+      color: theme.isDarkMode ? WebDarkColors.background : Colors.white,
+      child: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        child: RefreshIndicator(
+          onRefresh: () async {
+            await orderBook.fetchOrderBook(context, true);
+          },
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Main Content Area (includes tabs and search bar)
+                  _buildMainContent(theme, orderBook),
+                ],
+              ),
             ),
           ),
         ),
@@ -334,254 +357,282 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
   }
 
   Widget _buildHeader(ThemesProvider theme, OrderProvider orderBook) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: theme.isDarkMode ? colors.kColorLightGreyDarkTheme : colors.kColorLightGrey,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          
-          Row(
-            children: [
-              Expanded(
-                child: Container(
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: theme.isDarkMode ? colors.searchBgDark : colors.searchBg,
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                  child: Row(
-                    children: [
-                      const SizedBox(width: 12),
-                      SvgPicture.asset(
-                        assets.searchIcon,
-                        width: 20,
-                        height: 20,
-                        fit: BoxFit.scaleDown,
-                        color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: TextFormField(
-                          controller: orderBook.orderSearchCtrl,
-                          autofocus: false,
-                          textCapitalization: TextCapitalization.characters,
-                          inputFormatters: [UpperCaseTextFormatter()],
-                          style: TextWidget.textStyle(
-                            fontSize: 16,
-                            theme: theme.isDarkMode,
-                            color: theme.isDarkMode
-                                ? colors.textPrimaryDark
-                                : colors.textPrimaryLight,
-                            fw: 3,
-                          ),
-                          decoration: InputDecoration(
-                            hintText: 'Search orders...',
-                            hintStyle: TextWidget.textStyle(
-                              fontSize: 14,
-                              theme: false,
-                              color: theme.isDarkMode
-                                  ? colors.textSecondaryDark
-                                  : colors.textSecondaryLight,
-                              fw: 3,
-                            ),
-                            border: InputBorder.none,
-                            isDense: true,
-                            contentPadding: const EdgeInsets.symmetric(vertical: 12),
-                          ),
-                          onChanged: (value) {
-                            orderBook.searchOrders(value, context);
-                          },
-                        ),
-                      ),
-                      if (orderBook.orderSearchCtrl.text.isNotEmpty)
-                        Material(
-                          color: Colors.transparent,
-                          shape: const CircleBorder(),
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(20),
-                            splashColor: theme.isDarkMode
-                                ? Colors.white.withOpacity(0.15)
-                                : Colors.black.withOpacity(0.15),
-                            highlightColor: theme.isDarkMode
-                                ? Colors.white.withOpacity(0.08)
-                                : Colors.black.withOpacity(0.08),
-                            onTap: () {
-                              FocusScope.of(context).unfocus();
-                              orderBook.clearOrderSearch();
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.all(6.0),
-                              child: SvgPicture.asset(
-                                assets.removeIcon,
-                                width: 20,
-                                height: 20,
-                                fit: BoxFit.scaleDown,
-                                color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                              ),
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-              // Removed standalone filter button; sorting is now available on each header
-            ],
-          ),
-        ],
-      ),
-    );
+    // This method is kept but not used directly - tabs and search are now in _buildTabsAndActionBar
+    return const SizedBox.shrink();
   }
 
   Widget _buildMainContent(ThemesProvider theme, OrderProvider orderBook) {
-    return Container(
-      decoration: BoxDecoration(
-        color: theme.isDarkMode ? colors.kColorLightGreyDarkTheme : colors.kColorLightGrey,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Tabs and Search Bar in same row
+        _buildTabsAndActionBar(theme, orderBook),
+    
+        const SizedBox(height: 16),
+        
+        // Content Area
+        _buildContentArea(theme, orderBook),
+      ],
+    );
+  }
+
+  Widget _buildTabsAndActionBar(ThemesProvider theme, OrderProvider orderBook) {
+    return Row(
+      children: [
+        // Segmented Control Tabs on the left
+        _buildSegmentedControl(theme, orderBook),
+        // Spacer to push action items to the right
+        const Spacer(),
+        // Search Bar
+        SizedBox(
+          width: 400,
+          child: Container(
+            height: 40,
+            decoration: BoxDecoration(
+              color: theme.isDarkMode ? colors.searchBgDark : colors.searchBg,
+              borderRadius: BorderRadius.circular(5),
+              border: Border.all(
+                color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
+              ),
+            ),
+            child: Row(
+              children: [
+                const SizedBox(width: 12),
+                SvgPicture.asset(
+                  assets.searchIcon,
+                  width: 20,
+                  height: 20,
+                  fit: BoxFit.scaleDown,
+                  color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: TextFormField(
+                    controller: orderBook.orderSearchCtrl,
+                    autofocus: false,
+                    textCapitalization: TextCapitalization.characters,
+                    inputFormatters: [UpperCaseTextFormatter()],
+                    style: TextWidget.textStyle(
+                      fontSize: 16,
+                      theme: theme.isDarkMode,
+                      color: theme.isDarkMode
+                          ? colors.textPrimaryDark
+                          : colors.textPrimaryLight,
+                      fw: 3,
+                    ),
+                    decoration: InputDecoration(
+                      hintText: 'Search orders...',
+                      hintStyle: TextWidget.textStyle(
+                        fontSize: 14,
+                        theme: false,
+                        color: theme.isDarkMode
+                            ? colors.textSecondaryDark
+                            : colors.textSecondaryLight,
+                        fw: 3,
+                      ),
+                      border: InputBorder.none,
+                      isDense: true,
+                      contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    onChanged: (value) {
+                      orderBook.searchOrders(value, context);
+                    },
+                  ),
+                ),
+                if (orderBook.orderSearchCtrl.text.isNotEmpty)
+                  Material(
+                    color: Colors.transparent,
+                    shape: const CircleBorder(),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(20),
+                      splashColor: theme.isDarkMode
+                          ? Colors.white.withOpacity(0.15)
+                          : Colors.black.withOpacity(0.15),
+                      highlightColor: theme.isDarkMode
+                          ? Colors.white.withOpacity(0.08)
+                          : Colors.black.withOpacity(0.08),
+                      onTap: () {
+                        FocusScope.of(context).unfocus();
+                        orderBook.clearOrderSearch();
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.all(6.0),
+                        child: SvgPicture.asset(
+                          assets.removeIcon,
+                          width: 20,
+                          height: 20,
+                          fit: BoxFit.scaleDown,
+                          color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
         ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        const SizedBox(width: 16),
+      ],
+    );
+  }
+
+  Widget _buildSegmentedControl(ThemesProvider theme, OrderProvider orderBook) {
+    return SizedBox(
+      height: 45,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          // Tabs
-          _buildTabs(theme, orderBook),
-          
-          // Content Area
-          _buildContentArea(theme, orderBook),
+          // Left arrow button
+          // _buildTabArrowButton(
+          //   icon: Icons.chevron_left,
+          //   onPressed: () => _scrollTabsLeft(),
+          //   theme: theme,
+          // ),
+          // const SizedBox(width: 5),
+          // Tabs scrollable area
+          SingleChildScrollView(
+            controller: _tabScrollController,
+            scrollDirection: Axis.horizontal,
+            physics: const ClampingScrollPhysics(),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: orderBook.orderTabName.asMap().entries.map((entry) {
+                final index = entry.key;
+                final tabString = entry.value;
+                final isSelected = _tabController.index == index;
+                final isLast = index == orderBook.orderTabName.length - 1;
+                
+                final parts = tabString.text?.split(' ') ?? [];
+                final title = parts.first;
+                final badge = parts.length > 1 ? parts[1] : null;
+                
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                  child: _buildSegmentedTab(
+                    title,
+                    badge,
+                    index,
+                    isSelected,
+                    isLast,
+                    theme,
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+          // const SizedBox(width: 5),
+          // Right arrow button
+          // _buildTabArrowButton(
+          //   icon: Icons.chevron_right,
+          //   onPressed: () => _scrollTabsRight(),
+          //   theme: theme,
+          // ),
         ],
       ),
     );
   }
 
-  Widget _buildTabs(ThemesProvider theme, OrderProvider orderBook) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
-      curve: Curves.easeInOut,
-      decoration: BoxDecoration(
-        color: theme.isDarkMode ? colors.kColorLightGreyDarkTheme : colors.kColorLightGrey,
-        border: Border(
-          bottom: BorderSide(
-            color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
-            width: 1,
+  Widget _buildSegmentedTab(
+    String title,
+    String? badge,
+    int index,
+    bool isSelected,
+    bool isLast,
+    ThemesProvider theme,
+  ) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: InkWell(
+        onTap: () {
+          if (_tabController.index != index) {
+            _tabController.animateTo(index);
+          }
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? (theme.isDarkMode
+                    ? WebDarkColors.backgroundTertiary
+                    : WebColors.backgroundTertiary)
+                : (theme.isDarkMode
+                    ? WebDarkColors.surface
+                    : WebColors.surface),
+            border: Border.all(
+              color: isSelected
+                  ? (theme.isDarkMode
+                      ? WebDarkColors.primary
+                      : WebColors.primary)
+                  : (theme.isDarkMode
+                      ? WebDarkColors.textSecondary
+                      : WebColors.textSecondary),
+              width:  1.5,
+            ),
+            borderRadius: BorderRadius.circular(50),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                title,
+                overflow: TextOverflow.ellipsis,
+                style: WebTextStyles.sub(
+                  isDarkTheme: theme.isDarkMode,
+                  color: isSelected
+                      ? (theme.isDarkMode
+                          ? WebDarkColors.textPrimary
+                          : WebColors.textPrimary)
+                      : (theme.isDarkMode
+                          ? WebDarkColors.navItem
+                          : WebColors.navItem),
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                ),
+              ),
+              if (badge != null) ...[
+                const SizedBox(width: 6),
+                Text(
+                  '($badge)',
+                  style: WebTextStyles.custom(
+                    fontSize: 14,
+                    isDarkTheme: theme.isDarkMode,
+                    color: isSelected
+                    ? (theme.isDarkMode
+                        ? WebDarkColors.textPrimary
+                        : WebColors.textPrimary)
+                    : (theme.isDarkMode
+                        ? WebDarkColors.navItem
+                        : WebColors.navItem),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ],
           ),
         ),
-      ),
-      child: TabBar(
-        controller: _tabController,
-        isScrollable: false,
-        indicatorSize: TabBarIndicatorSize.tab,
-        indicator: BoxDecoration(
-          color: theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        indicatorPadding: const EdgeInsets.all(8),
-        dividerColor: Colors.transparent,
-        unselectedLabelColor: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-        labelColor: Colors.white,
-        labelStyle: TextWidget.textStyle(
-          fontSize: 14,
-          theme: theme.isDarkMode,
-          fw: 2,
-          color: Colors.white,
-        ),
-        unselectedLabelStyle: TextWidget.textStyle(
-          fontSize: 14,
-          theme: theme.isDarkMode,
-          color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-          fw: 1,
-        ),
-        labelPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        tabs: orderBook.orderTabName.asMap().entries.map((entry) {
-          final index = entry.key;
-          final tabString = entry.value;
-          
-          final parts = tabString.text?.split(' ') ?? [];
-          final title = parts.first;
-          final badge = parts.length > 1 ? parts[1] : null;
-
-          return Tab(
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 150),
-              curve: Curves.easeInOut,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  AnimatedDefaultTextStyle(
-                    duration: const Duration(milliseconds: 150),
-                    curve: Curves.easeInOut,
-                    style: TextWidget.textStyle(
-                      fontSize: 14,
-                      theme: theme.isDarkMode,
-                      fw: _tabController.index == index ? 2 : 1,
-                      color: _tabController.index == index 
-                          ? Colors.white
-                          : theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                    ),
-                    child: Text(title),
-                  ),
-                  if (badge != null) ...[
-                    const SizedBox(width: 6),
-                    AnimatedContainer(
-                      duration: const Duration(milliseconds: 150),
-                      curve: Curves.easeInOut,
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: _tabController.index == index 
-                            ? Colors.white.withOpacity(0.2)
-                            : theme.isDarkMode 
-                                ? colors.textSecondaryDark.withOpacity(0.1)
-                                : colors.textSecondaryLight.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                          color: _tabController.index == index 
-                              ? Colors.white.withOpacity(0.3)
-                              : theme.isDarkMode 
-                                  ? colors.textSecondaryDark.withOpacity(0.2)
-                                  : colors.textSecondaryLight.withOpacity(0.2),
-                          width: 1,
-                        ),
-                      ),
-                      child: AnimatedDefaultTextStyle(
-                        duration: const Duration(milliseconds: 150),
-                        curve: Curves.easeInOut,
-                        style: TextWidget.textStyle(
-                          fontSize: 11,
-                          theme: theme.isDarkMode,
-                          fw: 2,
-                          color: _tabController.index == index 
-                              ? Colors.white
-                              : theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                        ),
-                        child: Text(badge),
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          );
-        }).toList(),
       ),
     );
   }
 
   Widget _buildContentArea(ThemesProvider theme, OrderProvider orderBook) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
-      curve: Curves.easeInOut,
-      height: 600,
-      child: TabBarView(
+    // Calculate table height based on available screen space
+    // Use LayoutBuilder to get actual available constraints
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Calculate available height: screen height minus all UI elements
+        final screenHeight = MediaQuery.of(context).size.height;
+        final padding = 32.0; // Top and bottom padding (16 * 2)
+        final headerHeight = 50.0; // Header height (tabs + search bar)
+        final spacing = 16.0; // Spacing between header and content
+        final bottomMargin = 20.0; // Bottom margin to prevent overflow
+        final tableHeight = screenHeight - padding - headerHeight - spacing - bottomMargin;
+        
+        // Ensure we don't exceed 75% of screen height to prevent overflow
+        final maxHeight = screenHeight * 0.75;
+        final calculatedHeight = tableHeight > maxHeight ? maxHeight : (tableHeight > 400 ? tableHeight : 400.0);
+        
+        return SizedBox(
+          height: calculatedHeight.toDouble(),
+          child: TabBarView(
         controller: _tabController,
         children: [
           AnimatedSwitcher(
@@ -649,9 +700,9 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
           //   duration: const Duration(milliseconds: 200),
           //   child: const BondsOrderBookScreenWeb(),
           // ),
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 200),
-            child: const BasketList(),
+          const AnimatedSwitcher(
+            duration: Duration(milliseconds: 200),
+            child: BasketList(),
           ),
           AnimatedSwitcher(
             duration: const Duration(milliseconds: 200),
@@ -660,71 +711,128 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
               child: const PendingAlertWeb()),
           ),
         ],
-      ),
+          ),
+        );
+      },
     );
   }
 
   Widget _buildMFSubTabs(ThemesProvider theme) {
-    return Container(
-      decoration: BoxDecoration(
-        color: theme.isDarkMode ? colors.kColorLightGreyDarkTheme : colors.kColorLightGrey,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Segmented Control Tabs
+        _buildMFSegmentedControl(theme),
+        const SizedBox(height: 16),
+        // Content Area
+        Expanded(
+          child: _mfTabIndex == 0
+              ? const MfOrderBookScreenWeb()
+              : const MFSipdetScreenWeb(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMFSegmentedControl(ThemesProvider theme) {
+    final tabs = ['Orders', 'SIP'];
+
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: SizedBox(
+        height: 45,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Left arrow button
+            // _buildTabArrowButton(
+            //   icon: Icons.chevron_left,
+            //   onPressed: () => _scrollTabsLeft(),
+            //   theme: theme,
+            // ),
+            // const SizedBox(width: 5),
+            // Tabs scrollable area
+            SingleChildScrollView(
+              controller: _tabScrollController,
+              scrollDirection: Axis.horizontal,
+              physics: const ClampingScrollPhysics(),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: List.generate(tabs.length, (index) {
+                  final isSelected = _mfTabIndex == index;
+                  
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 6),
+                    child: _buildMFSegmentedTab(
+                      tabs[index],
+                      index,
+                      isSelected,
+                      theme,
+                    ),
+                  );
+                }),
+              ),
+            ),
+            // const SizedBox(width: 5),
+            // Right arrow button
+            // _buildTabArrowButton(
+            //   icon: Icons.chevron_right,
+            //   onPressed: () => _scrollTabsRight(),
+            //   theme: theme,
+            // ),
+          ],
         ),
       ),
-      child: DefaultTabController(
-        length: 2,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              decoration: BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(
-                    color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
-                    width: 1,
-                  ),
-                ),
-              ),
-              child: TabBar(
-                isScrollable: false,
-                indicatorSize: TabBarIndicatorSize.tab,
-                indicator: BoxDecoration(
-                  color: theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                indicatorPadding: const EdgeInsets.all(8),
-                dividerColor: Colors.transparent,
-                unselectedLabelColor: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                labelColor: Colors.white,
-                labelStyle: TextWidget.textStyle(
-                  fontSize: 14,
-                  theme: theme.isDarkMode,
-                  fw: 2,
-                  color: Colors.white,
-                ),
-                unselectedLabelStyle: TextWidget.textStyle(
-                  fontSize: 14,
-                  theme: theme.isDarkMode,
-                  color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                  fw: 1,
-                ),
-                tabs: const [
-                  Tab(text: 'Orders'),
-                  Tab(text: 'SIP'),
-                ],
-              ),
+    );
+  }
+
+  Widget _buildMFSegmentedTab(
+    String title,
+    int index,
+    bool isSelected,
+    ThemesProvider theme,
+  ) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: InkWell(
+        onTap: () => setState(() => _mfTabIndex = index),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? (theme.isDarkMode
+                    ? WebDarkColors.backgroundTertiary
+                    : WebColors.backgroundTertiary)
+                : (theme.isDarkMode
+                    ? WebDarkColors.surface
+                    : WebColors.surface),
+            border: Border.all(
+              color: isSelected
+                  ? (theme.isDarkMode
+                      ? WebDarkColors.primary
+                      : WebColors.primary)
+                  : (theme.isDarkMode
+                      ? WebDarkColors.textSecondary
+                      : WebColors.textSecondary),
+              width: 1.5,
             ),
-            Expanded(
-              child: const TabBarView(
-                children: [
-                  MfOrderBookScreenWeb(),
-                  MFSipdetScreenWeb(),
-                ],
-              ),
+            borderRadius: BorderRadius.circular(50),
+          ),
+          child: Text(
+            title,
+            overflow: TextOverflow.ellipsis,
+            style: WebTextStyles.sub(
+              isDarkTheme: theme.isDarkMode,
+              color: isSelected
+                  ? (theme.isDarkMode
+                      ? WebDarkColors.textPrimary
+                      : WebColors.textPrimary)
+                  : (theme.isDarkMode
+                      ? WebDarkColors.navItem
+                      : WebColors.navItem),
+              fontWeight: FontWeight.w600,
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -744,122 +852,124 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
       );
     }
 
-    return SingleChildScrollView(
-      scrollDirection: Axis.vertical,
-      physics: const AlwaysScrollableScrollPhysics(),
+    return Scrollbar(
+      controller: _verticalScrollController,
+      thumbVisibility: true,
       child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
+        controller: _verticalScrollController,
+        scrollDirection: Axis.vertical,
         physics: const AlwaysScrollableScrollPhysics(),
-        child: GestureDetector(
-          onTap: () {
-            // Handle tap on empty space if needed
-          },
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              minWidth: MediaQuery.of(context).size.width * 0.7,
-            ),
-            child: IntrinsicWidth(
-              child: DataTable(
-            showCheckboxColumn: false,
-            sortColumnIndex: _orderSortColumnIndex,
-            sortAscending: _orderSortAscending,
-            headingRowColor: WidgetStateProperty.all(
-              theme.isDarkMode ? colors.kColorLightGreyDarkTheme : colors.kColorLightGrey,
-            ),
-            dataRowColor: WidgetStateProperty.resolveWith<Color?>(
-              (Set<WidgetState> states) {
-                if (states.contains(WidgetState.selected)) {
-                  return (theme.isDarkMode ? colors.primaryDark : colors.primaryLight).withOpacity(0.1);
-                }
-                if (states.contains(WidgetState.hovered)) {
-                  return (theme.isDarkMode ? colors.primaryDark : colors.primaryLight).withOpacity(0.05);
-                }
-                return null;
-              },
-            ),
+        child: Scrollbar(
+          controller: _horizontalScrollController,
+          thumbVisibility: true,
+          child: SingleChildScrollView(
+            controller: _horizontalScrollController,
+            scrollDirection: Axis.horizontal,
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: DataTable(
+              columnSpacing: 15,
+              showCheckboxColumn: false,
+              sortColumnIndex: _orderSortColumnIndex,
+              sortAscending: _orderSortAscending,
+              headingRowHeight: 44,
+              headingRowColor: WidgetStateProperty.all(Colors.transparent),
+              dataRowColor: WidgetStateProperty.resolveWith<Color?>(
+                (Set<WidgetState> states) {
+                  if (states.contains(WidgetState.hovered)) {
+                    return (theme.isDarkMode
+                            ? WebDarkColors.primary
+                            : WebColors.primary)
+                        .withOpacity(0.05);
+                  }
+                  if (states.contains(WidgetState.selected)) {
+                    return (theme.isDarkMode
+                            ? WebDarkColors.primary
+                            : WebColors.primary)
+                        .withOpacity(0.1);
+                  }
+                  return null;
+                },
+              ),
             columns: [
               DataColumn(
-                label: _buildSortableColumnHeader('Time', theme,
-                    isActive: _orderSortColumnIndex == 0, ascending: _orderSortAscending),
-                onSort: (i, asc) => _onSortOrderTable(0),
+                label: _buildSortableColumnHeader('Instrument', theme, 0),
+                onSort: (columnIndex, ascending) => _onSortOrderTable(columnIndex, ascending),
               ),
               DataColumn(
-                label: _buildSortableColumnHeader('Type', theme,
-                    isActive: _orderSortColumnIndex == 1, ascending: _orderSortAscending),
-                onSort: (i, asc) => _onSortOrderTable(1),
+                label: _buildSortableColumnHeader('Product', theme, 1),
+                onSort: (columnIndex, ascending) => _onSortOrderTable(columnIndex, ascending),
               ),
               DataColumn(
-                label: _buildSortableColumnHeader('Instrument', theme,
-                    isActive: _orderSortColumnIndex == 2, ascending: _orderSortAscending),
-                onSort: (i, asc) => _onSortOrderTable(2),
+                label: _buildSortableColumnHeader('Type', theme, 2),
+                onSort: (columnIndex, ascending) => _onSortOrderTable(columnIndex, ascending),
               ),
               DataColumn(
-                label: _buildSortableColumnHeader('Product', theme,
-                    isActive: _orderSortColumnIndex == 3, ascending: _orderSortAscending),
-                onSort: (i, asc) => _onSortOrderTable(3),
+                label: _buildSortableColumnHeader('Qty', theme, 3),
+                onSort: (columnIndex, ascending) => _onSortOrderTable(columnIndex, ascending),
               ),
               DataColumn(
-                label: _buildSortableColumnHeader('Qty', theme,
-                    isActive: _orderSortColumnIndex == 4, ascending: _orderSortAscending),
-                onSort: (i, asc) => _onSortOrderTable(4),
+                label: _buildSortableColumnHeader('Avg price', theme, 4),
+                onSort: (columnIndex, ascending) => _onSortOrderTable(columnIndex, ascending),
               ),
               DataColumn(
-                label: _buildSortableColumnHeader('Avg price', theme,
-                    isActive: _orderSortColumnIndex == 5, ascending: _orderSortAscending),
-                onSort: (i, asc) => _onSortOrderTable(5),
+                label: _buildSortableColumnHeader('LTP', theme, 5),
+                onSort: (columnIndex, ascending) => _onSortOrderTable(columnIndex, ascending),
               ),
               DataColumn(
-                label: _buildSortableColumnHeader('LTP', theme,
-                    isActive: _orderSortColumnIndex == 6, ascending: _orderSortAscending),
-                onSort: (i, asc) => _onSortOrderTable(6),
+                label: _buildSortableColumnHeader('Price', theme, 6),
+                onSort: (columnIndex, ascending) => _onSortOrderTable(columnIndex, ascending),
               ),
               DataColumn(
-                label: _buildSortableColumnHeader('Price', theme,
-                    isActive: _orderSortColumnIndex == 7, ascending: _orderSortAscending),
-                onSort: (i, asc) => _onSortOrderTable(7),
+                label: _buildSortableColumnHeader('Trigger price', theme, 7),
+                onSort: (columnIndex, ascending) => _onSortOrderTable(columnIndex, ascending),
               ),
               DataColumn(
-                label: _buildSortableColumnHeader('Trigger price', theme,
-                    isActive: _orderSortColumnIndex == 8, ascending: _orderSortAscending),
-                onSort: (i, asc) => _onSortOrderTable(8),
+                label: _buildSortableColumnHeader('Order value', theme, 8),
+                onSort: (columnIndex, ascending) => _onSortOrderTable(columnIndex, ascending),
               ),
               DataColumn(
-                label: _buildSortableColumnHeader('Order value', theme,
-                    isActive: _orderSortColumnIndex == 9, ascending: _orderSortAscending),
-                onSort: (i, asc) => _onSortOrderTable(9),
+                label: _buildSortableColumnHeader('Status', theme, 9),
+                onSort: (columnIndex, ascending) => _onSortOrderTable(columnIndex, ascending),
               ),
               DataColumn(
-                label: _buildSortableColumnHeader('Status', theme,
-                    isActive: _orderSortColumnIndex == 10, ascending: _orderSortAscending),
-                onSort: (i, asc) => _onSortOrderTable(10),
+                label: _buildSortableColumnHeader('Time', theme, 10),
+                onSort: (columnIndex, ascending) => _onSortOrderTable(columnIndex, ascending),
               ),
             ],
-            rows: _sortedOrders(orders).asMap().entries.map((entry) {
-              final index = entry.key;
-              final order = entry.value;
+            rows: _sortedOrders(orders).map((order) {
+              // Use order number as unique identifier for hover (not token, which is shared across orders)
+              final uniqueId = order.norenordno?.toString() ?? order.token?.toString() ?? '';
               
               return DataRow(
-                selected: _selectedOrders.contains(index),
                 onSelectChanged: (bool? selected) {
-                  // Open detail view when row is selected
                   _openOrderDetail(order);
                 },
                 cells: [
-                  _buildTimeCell(order, theme),
-                  _buildTypeCell(order, theme),
-                  _buildInstrumentCell(order, theme),
-                  _buildProductCell(order, theme),
-                  _buildQtyCell(order, theme),
-                  _buildAvgPriceCell(order, theme),
-                  _buildLTPCell(order, theme),
-                  _buildPriceCell(order, theme),
-                  _buildTriggerPriceCell(order, theme),
-                  _buildOrderValueCell(order, theme),
-                  _buildStatusCell(order, theme),
+                  // Instrument - text (left aligned)
+                  _buildInstrumentCellWithHover(order, theme, uniqueId),
+                  // Product - text (left aligned)
+                  _buildCellWithHover(order, theme, uniqueId, _buildProductCell(order, theme), alignment: Alignment.centerLeft),
+                  // Type - text (left aligned)
+                  _buildCellWithHover(order, theme, uniqueId, _buildTypeCell(order, theme), alignment: Alignment.centerLeft),
+                  // Qty - numeric (right aligned)
+                  _buildCellWithHover(order, theme, uniqueId, _buildQtyCell(order, theme), alignment: Alignment.centerRight),
+                  // Avg price - numeric (right aligned)
+                  _buildCellWithHover(order, theme, uniqueId, _buildAvgPriceCell(order, theme), alignment: Alignment.centerRight),
+                  // LTP - numeric (right aligned)
+                  _buildCellWithHover(order, theme, uniqueId, _buildLTPCell(order, theme), alignment: Alignment.centerRight),
+                  // Price - numeric (right aligned)
+                  _buildCellWithHover(order, theme, uniqueId, _buildPriceCell(order, theme), alignment: Alignment.centerRight),
+                  // Trigger price - numeric (right aligned)
+                  _buildCellWithHover(order, theme, uniqueId, _buildTriggerPriceCell(order, theme), alignment: Alignment.centerRight),
+                  // Order value - numeric (right aligned)
+                  _buildCellWithHover(order, theme, uniqueId, _buildOrderValueCell(order, theme), alignment: Alignment.centerRight),
+                  // Status - text (left aligned)
+                  _buildCellWithHover(order, theme, uniqueId, _buildStatusCell(order, theme), alignment: Alignment.centerLeft),
+                  // Time - text (left aligned)
+                  _buildCellWithHover(order, theme, uniqueId, _buildTimeCell(order, theme), alignment: Alignment.centerLeft),
                 ],
               );
             }).toList(),
-              ),
             ),
           ),
         ),
@@ -881,100 +991,106 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
       );
     }
 
-    return SingleChildScrollView(
-      scrollDirection: Axis.vertical,
-      physics: const AlwaysScrollableScrollPhysics(),
+    return Scrollbar(
+      controller: _verticalScrollController,
+      thumbVisibility: true,
       child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
+        controller: _verticalScrollController,
+        scrollDirection: Axis.vertical,
         physics: const AlwaysScrollableScrollPhysics(),
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-            minWidth: MediaQuery.of(context).size.width * 0.8,
-          ),
-          child: IntrinsicWidth(
+        child: Scrollbar(
+          controller: _horizontalScrollController,
+          thumbVisibility: true,
+          child: SingleChildScrollView(
+            controller: _horizontalScrollController,
+            scrollDirection: Axis.horizontal,
+            physics: const AlwaysScrollableScrollPhysics(),
             child: DataTable(
-          showCheckboxColumn: false,
-          sortColumnIndex: _tradeSortColumnIndex,
-          sortAscending: _tradeSortAscending,
-        headingRowColor: WidgetStateProperty.all(
-          theme.isDarkMode ? colors.kColorLightGreyDarkTheme : colors.kColorLightGrey,
-        ),
-        dataRowColor: WidgetStateProperty.resolveWith<Color?>(
-          (Set<WidgetState> states) {
-            if (states.contains(WidgetState.selected)) {
-              return (theme.isDarkMode ? colors.primaryDark : colors.primaryLight).withOpacity(0.1);
-            }
-            if (states.contains(WidgetState.hovered)) {
-              return (theme.isDarkMode ? colors.primaryDark : colors.primaryLight).withOpacity(0.05);
-            }
-            return null;
-          },
-        ),
+              columnSpacing: 15,
+              showCheckboxColumn: false,
+              sortColumnIndex: _tradeSortColumnIndex,
+              sortAscending: _tradeSortAscending,
+              headingRowHeight: 44,
+              headingRowColor: WidgetStateProperty.all(Colors.transparent),
+              dataRowColor: WidgetStateProperty.resolveWith<Color?>(
+                (Set<WidgetState> states) {
+                  if (states.contains(WidgetState.hovered)) {
+                    return (theme.isDarkMode
+                            ? WebDarkColors.primary
+                            : WebColors.primary)
+                        .withOpacity(0.05);
+                  }
+                  if (states.contains(WidgetState.selected)) {
+                    return (theme.isDarkMode
+                            ? WebDarkColors.primary
+                            : WebColors.primary)
+                        .withOpacity(0.1);
+                  }
+                  return null;
+                },
+              ),
         columns: [
           DataColumn(
-            label: _buildSortableColumnHeader('Time', theme,
-                isActive: _tradeSortColumnIndex == 0, ascending: _tradeSortAscending),
-            onSort: (i, asc) => _onSortTradeTable(0),
+            label: _buildTradeSortableColumnHeader('Instrument', theme, 0),
+            onSort: (columnIndex, ascending) => _onSortTradeTable(columnIndex, ascending),
           ),
           DataColumn(
-            label: _buildSortableColumnHeader('Type', theme,
-                isActive: _tradeSortColumnIndex == 1, ascending: _tradeSortAscending),
-            onSort: (i, asc) => _onSortTradeTable(1),
+            label: _buildTradeSortableColumnHeader('Product', theme, 1),
+            onSort: (columnIndex, ascending) => _onSortTradeTable(columnIndex, ascending),
           ),
           DataColumn(
-            label: _buildSortableColumnHeader('Instrument', theme,
-                isActive: _tradeSortColumnIndex == 2, ascending: _tradeSortAscending),
-            onSort: (i, asc) => _onSortTradeTable(2),
+            label: _buildTradeSortableColumnHeader('Type', theme, 2),
+            onSort: (columnIndex, ascending) => _onSortTradeTable(columnIndex, ascending),
           ),
           DataColumn(
-            label: _buildSortableColumnHeader('Product', theme,
-                isActive: _tradeSortColumnIndex == 3, ascending: _tradeSortAscending),
-            onSort: (i, asc) => _onSortTradeTable(3),
+            label: _buildTradeSortableColumnHeader('Qty', theme, 3),
+            onSort: (columnIndex, ascending) => _onSortTradeTable(columnIndex, ascending),
           ),
           DataColumn(
-            label: _buildSortableColumnHeader('Qty', theme,
-                isActive: _tradeSortColumnIndex == 4, ascending: _tradeSortAscending),
-            onSort: (i, asc) => _onSortTradeTable(4),
+            label: _buildTradeSortableColumnHeader('Price', theme, 4),
+            onSort: (columnIndex, ascending) => _onSortTradeTable(columnIndex, ascending),
           ),
           DataColumn(
-            label: _buildSortableColumnHeader('Price', theme,
-                isActive: _tradeSortColumnIndex == 5, ascending: _tradeSortAscending),
-            onSort: (i, asc) => _onSortTradeTable(5),
+            label: _buildTradeSortableColumnHeader('Trade value', theme, 5),
+            onSort: (columnIndex, ascending) => _onSortTradeTable(columnIndex, ascending),
           ),
           DataColumn(
-            label: _buildSortableColumnHeader('Trade value', theme,
-                isActive: _tradeSortColumnIndex == 6, ascending: _tradeSortAscending),
-            onSort: (i, asc) => _onSortTradeTable(6),
+            label: _buildTradeSortableColumnHeader('Order no', theme, 6),
+            onSort: (columnIndex, ascending) => _onSortTradeTable(columnIndex, ascending),
           ),
           DataColumn(
-            label: _buildSortableColumnHeader('Order no', theme,
-                isActive: _tradeSortColumnIndex == 7, ascending: _tradeSortAscending),
-            onSort: (i, asc) => _onSortTradeTable(7),
+            label: _buildTradeSortableColumnHeader('Time', theme, 7),
+            onSort: (columnIndex, ascending) => _onSortTradeTable(columnIndex, ascending),
           ),
         ],
-        rows: _sortedTrades(trades).asMap().entries.map((entry) {
-          final index = entry.key;
-          final trade = entry.value;
+        rows: _sortedTrades(trades).map((trade) {
+          final token = trade.token ?? '';
           
           return DataRow(
-            selected: _selectedOrders.contains(index),
             onSelectChanged: (bool? selected) {
-              // Open trade detail when row is selected
               _openTradeDetail(trade);
             },
             cells: [
-              _buildTimeCellForTrade(trade, theme),
-              _buildTransactionCellForTrade(trade, theme),
-              _buildSymbolCellForTrade(trade, theme),
-              _buildProductCellForTrade(trade, theme),
-              _buildQtyCellForTrade(trade, theme),
-              _buildPriceCellForTrade(trade, theme),
-              _buildTradeValueCellForTrade(trade, theme),
-              _buildOrderNoCellForTrade(trade, theme),
+              // Instrument - text (left aligned)
+              _buildTradeCellWithHover(trade, theme, token, _buildSymbolCellForTrade(trade, theme), alignment: Alignment.centerLeft),
+              // Product - text (left aligned)
+              _buildTradeCellWithHover(trade, theme, token, _buildProductCellForTrade(trade, theme), alignment: Alignment.centerLeft),
+              // Type - text (left aligned)
+              _buildTradeCellWithHover(trade, theme, token, _buildTransactionCellForTrade(trade, theme), alignment: Alignment.centerLeft),
+              // Qty - numeric (right aligned)
+              _buildTradeCellWithHover(trade, theme, token, _buildQtyCellForTrade(trade, theme), alignment: Alignment.centerRight),
+              // Price - numeric (right aligned)
+              _buildTradeCellWithHover(trade, theme, token, _buildPriceCellForTrade(trade, theme), alignment: Alignment.centerRight),
+              // Trade value - numeric (right aligned)
+              _buildTradeCellWithHover(trade, theme, token, _buildTradeValueCellForTrade(trade, theme), alignment: Alignment.centerRight),
+              // Order no - text (left aligned)
+              _buildTradeCellWithHover(trade, theme, token, _buildOrderNoCellForTrade(trade, theme), alignment: Alignment.centerLeft),
+              // Time - text (left aligned)
+              _buildTradeCellWithHover(trade, theme, token, _buildTimeCellForTrade(trade, theme), alignment: Alignment.centerLeft),
             ],
           );
         }).toList(),
-          ),
+            ),
           ),
         ),
       ),
@@ -995,80 +1111,84 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
       );
     }
 
-    return SingleChildScrollView(
-      scrollDirection: Axis.vertical,
-      physics: const AlwaysScrollableScrollPhysics(),
+    return Scrollbar(
+      controller: _verticalScrollController,
+      thumbVisibility: true,
       child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
+        controller: _verticalScrollController,
+        scrollDirection: Axis.vertical,
         physics: const AlwaysScrollableScrollPhysics(),
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-            minWidth: MediaQuery.of(context).size.width * 0.7,
-          ),
-          child: IntrinsicWidth(
+        child: Scrollbar(
+          controller: _horizontalScrollController,
+          thumbVisibility: true,
+          child: SingleChildScrollView(
+            controller: _horizontalScrollController,
+            scrollDirection: Axis.horizontal,
+            physics: const AlwaysScrollableScrollPhysics(),
             child: DataTable(
-          showCheckboxColumn: false,
-          sortColumnIndex: _gttSortColumnIndex,
-          sortAscending: _gttSortAscending,
-          headingRowColor: WidgetStateProperty.all(
-            theme.isDarkMode ? colors.kColorLightGreyDarkTheme : colors.kColorLightGrey,
-          ),
-          dataRowColor: WidgetStateProperty.resolveWith<Color?>(
-            (Set<WidgetState> states) {
-              if (states.contains(WidgetState.selected)) {
-                return (theme.isDarkMode ? colors.primaryDark : colors.primaryLight).withOpacity(0.1);
-              }
-              if (states.contains(WidgetState.hovered)) {
-                return (theme.isDarkMode ? colors.primaryDark : colors.primaryLight).withOpacity(0.05);
-              }
-              return null;
-            },
-          ),
+              columnSpacing: 10,
+              showCheckboxColumn: false,
+              sortColumnIndex: _gttSortColumnIndex,
+              sortAscending: _gttSortAscending,
+              headingRowHeight: 44,
+              headingRowColor: WidgetStateProperty.all(Colors.transparent),
+              dataRowColor: WidgetStateProperty.resolveWith<Color?>(
+                (Set<WidgetState> states) {
+                  if (states.contains(WidgetState.hovered)) {
+                    return (theme.isDarkMode
+                            ? WebDarkColors.primary
+                            : WebColors.primary)
+                        .withOpacity(0.05);
+                  }
+                  if (states.contains(WidgetState.selected)) {
+                    return (theme.isDarkMode
+                            ? WebDarkColors.primary
+                            : WebColors.primary)
+                        .withOpacity(0.1);
+                  }
+                  return null;
+                },
+              ),
           columns: [
+            // Reordered to match order book: Instrument, Product, Type, Qty, LTP, Trigger price, Status, Time
             DataColumn(
-              label: _buildSortableColumnHeader('Time', theme,
-                  isActive: _gttSortColumnIndex == 0, ascending: _gttSortAscending),
-              onSort: (i, asc) => _onSortGttTable(0),
+              label: _buildGttSortableColumnHeader('Instrument', theme, 0),
+              onSort: (columnIndex, ascending) => _onSortGttTable(columnIndex, ascending),
             ),
             DataColumn(
-              label: _buildSortableColumnHeader('Type', theme,
-                  isActive: _gttSortColumnIndex == 1, ascending: _gttSortAscending),
-              onSort: (i, asc) => _onSortGttTable(1),
+              label: _buildGttSortableColumnHeader('Product', theme, 1),
+              onSort: (columnIndex, ascending) => _onSortGttTable(columnIndex, ascending),
             ),
             DataColumn(
-              label: _buildSortableColumnHeader('Instrument', theme,
-                  isActive: _gttSortColumnIndex == 2, ascending: _gttSortAscending),
-              onSort: (i, asc) => _onSortGttTable(2),
+              label: _buildGttSortableColumnHeader('Type', theme, 2),
+              onSort: (columnIndex, ascending) => _onSortGttTable(columnIndex, ascending),
             ),
             DataColumn(
-              label: _buildSortableColumnHeader('Product', theme,
-                  isActive: _gttSortColumnIndex == 3, ascending: _gttSortAscending),
-              onSort: (i, asc) => _onSortGttTable(3),
+              label: _buildGttSortableColumnHeader('Qty', theme, 3),
+              onSort: (columnIndex, ascending) => _onSortGttTable(columnIndex, ascending),
             ),
             DataColumn(
-              label: _buildSortableColumnHeader('Qty', theme,
-                  isActive: _gttSortColumnIndex == 4, ascending: _gttSortAscending),
-              onSort: (i, asc) => _onSortGttTable(4),
+              label: _buildGttSortableColumnHeader('LTP', theme, 4),
+              onSort: (columnIndex, ascending) => _onSortGttTable(columnIndex, ascending),
             ),
             DataColumn(
-              label: _buildSortableColumnHeader('LTP', theme,
-                  isActive: _gttSortColumnIndex == 5, ascending: _gttSortAscending),
-              onSort: (i, asc) => _onSortGttTable(5),
+              label: _buildGttSortableColumnHeader('Trigger price', theme, 5),
+              onSort: (columnIndex, ascending) => _onSortGttTable(columnIndex, ascending),
             ),
             DataColumn(
-              label: _buildSortableColumnHeader('Trigger price', theme,
-                  isActive: _gttSortColumnIndex == 6, ascending: _gttSortAscending),
-              onSort: (i, asc) => _onSortGttTable(6),
+              label: _buildGttSortableColumnHeader('Status', theme, 6),
+              onSort: (columnIndex, ascending) => _onSortGttTable(columnIndex, ascending),
             ),
             DataColumn(
-              label: _buildSortableColumnHeader('Status', theme,
-                  isActive: _gttSortColumnIndex == 7, ascending: _gttSortAscending),
-              onSort: (i, asc) => _onSortGttTable(7),
+              label: _buildGttSortableColumnHeader('Time', theme, 7),
+              onSort: (columnIndex, ascending) => _onSortGttTable(columnIndex, ascending),
             ),
           ],
           rows: _sortedGtt(gttOrders).asMap().entries.map((entry) {
             final index = entry.key;
             final gttOrder = entry.value;
+            // Create unique identifier for hover
+            final uniqueId = '${gttOrder.alId ?? ''}_${gttOrder.tsym ?? ''}_$index';
             
             return DataRow(
               selected: _selectedOrders.contains(index),
@@ -1077,33 +1197,77 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                 _openGttOrderDetail(gttOrder);
               },
               cells: [
-                _buildTimeCellForGtt(gttOrder, theme),
-                _buildTypeCellForGtt(gttOrder, theme),
-                _buildInstrumentCellForGtt(gttOrder, theme),
-                _buildProductCellForGtt(gttOrder, theme),
-                _buildQtyCellForGtt(gttOrder, theme),
-                _buildLTPCellForGtt(gttOrder, theme),
-                _buildTriggerPriceCellForGtt(gttOrder, theme),
-                _buildStatusCellForGtt(gttOrder, theme),
+                // Instrument - text (left aligned) with hover buttons
+                _buildGttInstrumentCellWithHover(gttOrder, theme, uniqueId),
+                // Product - text (left aligned)
+                _buildGttCellWithHover(gttOrder, theme, uniqueId, _buildProductCellForGtt(gttOrder, theme), alignment: Alignment.centerLeft),
+                // Type - text (left aligned)
+                _buildGttCellWithHover(gttOrder, theme, uniqueId, _buildTypeCellForGtt(gttOrder, theme), alignment: Alignment.centerLeft),
+                // Qty - numeric (right aligned)
+                _buildGttCellWithHover(gttOrder, theme, uniqueId, _buildQtyCellForGtt(gttOrder, theme), alignment: Alignment.centerRight),
+                // LTP - numeric (right aligned)
+                _buildGttCellWithHover(gttOrder, theme, uniqueId, _buildLTPCellForGtt(gttOrder, theme), alignment: Alignment.centerRight),
+                // Trigger price - numeric (right aligned)
+                _buildGttCellWithHover(gttOrder, theme, uniqueId, _buildTriggerPriceCellForGtt(gttOrder, theme), alignment: Alignment.centerRight),
+                // Status - text (left aligned)
+                _buildGttCellWithHover(gttOrder, theme, uniqueId, _buildStatusCellForGtt(gttOrder, theme), alignment: Alignment.centerLeft),
+                // Time - text (left aligned)
+                _buildGttCellWithHover(gttOrder, theme, uniqueId, _buildTimeCellForGtt(gttOrder, theme), alignment: Alignment.centerLeft),
               ],
             );
           }).toList(),
-          ),
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildSortableColumnHeader(String label, ThemesProvider theme, {bool isActive = false, bool ascending = true}) {
-    // Rely on DataTable's built-in sort indicator; don't render a custom arrow here
-    return Text(
-      label,
-      style: TextWidget.textStyle(
-        fontSize: 12,
-        color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-        theme: theme.isDarkMode,
-        fw: 2,
+  Widget _buildSortableColumnHeader(String label, ThemesProvider theme, int columnIndex) {
+    final isSorted = _orderSortColumnIndex == columnIndex;
+    
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          label,
+          style: WebTextStyles.custom(
+            fontSize: 14,
+            isDarkTheme: theme.isDarkMode,
+            color: theme.isDarkMode
+                ? WebDarkColors.textPrimary
+                : WebColors.textPrimary,
+            fontWeight: WebFonts.bold,
+          ),
+        ),
+        const SizedBox(width: 4),
+        // Reserve fixed space for sort indicator
+        SizedBox(
+          width: 20,
+          height: 16,
+          child: !isSorted 
+              ? Icon(
+                  Icons.unfold_more,
+                  size: 16,
+                  color: theme.isDarkMode ? WebDarkColors.iconSecondary : WebColors.iconSecondary,
+                )
+              : const SizedBox.shrink(),
+        ),
+      ],
+    );
+  }
+
+  DataCell _buildCellWithHover(OrderBookModel order, ThemesProvider theme, String token, DataCell cell, {Alignment alignment = Alignment.centerRight}) {
+    return DataCell(
+      MouseRegion(
+        onEnter: (_) => setState(() => _hoveredRowToken = token),
+        onExit: (_) => setState(() => _hoveredRowToken = null),
+        child: SizedBox.expand(
+          child: Align(
+            alignment: alignment,
+            child: cell.child,
+          ),
+        ),
       ),
     );
   }
@@ -1124,40 +1288,40 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     sorted.sort((a, b) {
       int r = 0;
       switch (c) {
-        case 0: // Time
-          r = cmp(a.norentm, b.norentm);
-          break;
-        case 1: // Type
-          r = cmp(a.trantype, b.trantype);
-          break;
-        case 2: // Instrument
+        case 0: // Instrument
           r = cmp(a.tsym, b.tsym);
           break;
-        case 3: // Product
+        case 1: // Product
           r = cmp(a.sPrdtAli ?? a.prd, b.sPrdtAli ?? b.prd);
           break;
-        case 4: // Qty
+        case 2: // Type
+          r = cmp(a.trantype, b.trantype);
+          break;
+        case 3: // Qty
           r = cmp(num.tryParse(a.qty.toString()) ?? 0, num.tryParse(b.qty.toString()) ?? 0);
           break;
-        case 5: // Avg price
+        case 4: // Avg price
           r = cmp(parseNum(a.avgprc), parseNum(b.avgprc));
           break;
-        case 6: // LTP
+        case 5: // LTP
           r = cmp(parseNum(a.ltp), parseNum(b.ltp));
           break;
-        case 7: // Price
+        case 6: // Price
           r = cmp(parseNum(a.prc), parseNum(b.prc));
           break;
-        case 8: // Trigger price
+        case 7: // Trigger price
           r = cmp(parseNum(a.trgprc), parseNum(b.trgprc));
           break;
-        case 9: // Order value
-          final av = (parseNum(a.prc) * (int.tryParse(a.qty.toString()) ?? 0));
-          final bv = (parseNum(b.prc) * (int.tryParse(b.qty.toString()) ?? 0));
+        case 8: // Order value
+          final av = (parseNum(a.avgprc ?? "0") * (int.tryParse(a.qty.toString()) ?? 0));
+          final bv = (parseNum(b.avgprc ?? "0") * (int.tryParse(b.qty.toString()) ?? 0));
           r = cmp(av, bv);
           break;
-        case 10: // Status
+        case 9: // Status
           r = cmp(a.status, b.status);
+          break;
+        case 10: // Time
+          r = cmp(a.norentm, b.norentm);
           break;
       }
       return asc ? r : -r;
@@ -1165,13 +1329,13 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     return sorted;
   }
 
-  void _onSortOrderTable(int columnIndex) {
+  void _onSortOrderTable(int columnIndex, bool ascending) {
     setState(() {
       if (_orderSortColumnIndex == columnIndex) {
-        _orderSortAscending = !_orderSortAscending; // toggle asc/desc
+        _orderSortAscending = !_orderSortAscending;
       } else {
         _orderSortColumnIndex = columnIndex;
-        _orderSortAscending = true; // default to ascending on new column
+        _orderSortAscending = ascending;
       }
     });
   }
@@ -1191,29 +1355,31 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     sorted.sort((a, b) {
       int r = 0;
       switch (c) {
-        case 0: // Time
-          r = cmp(a.norentm, b.norentm);
-          break;
-        case 1: // Type (Transaction)
-          r = cmp(a.trantype, b.trantype);
-          break;
-        case 2: // Instrument
+        case 0: // Instrument
           r = cmp(a.tsym, b.tsym);
           break;
-        case 3: // Product
+        case 1: // Product
           r = cmp(a.sPrdtAli, b.sPrdtAli);
           break;
-        case 4: // Qty
+        case 2: // Type (Transaction)
+          r = cmp(a.trantype, b.trantype);
+          break;
+        case 3: // Qty
           r = cmp(num.tryParse(a.qty.toString()) ?? 0, num.tryParse(b.qty.toString()) ?? 0);
           break;
-        case 5: // Price
+        case 4: // Price
           r = cmp(parseNum(a.avgprc), parseNum(b.avgprc));
           break;
-        case 6: // Trade value (flprc)
-          r = cmp(parseNum(a.flprc), parseNum(b.flprc));
+        case 5: // Trade value (flqty * flprc)
+          final av = (parseNum(a.flqty?.toString() ?? "0") * parseNum(a.flprc ?? "0"));
+          final bv = (parseNum(b.flqty?.toString() ?? "0") * parseNum(b.flprc ?? "0"));
+          r = cmp(av, bv);
           break;
-        case 7: // Order no
+        case 6: // Order no
           r = cmp(a.norenordno, b.norenordno);
+          break;
+        case 7: // Time
+          r = cmp(a.norentm, b.norentm);
           break;
       }
       return asc ? r : -r;
@@ -1221,15 +1387,48 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     return sorted;
   }
 
-  void _onSortTradeTable(int columnIndex) {
+  void _onSortTradeTable(int columnIndex, bool ascending) {
     setState(() {
       if (_tradeSortColumnIndex == columnIndex) {
         _tradeSortAscending = !_tradeSortAscending;
       } else {
         _tradeSortColumnIndex = columnIndex;
-        _tradeSortAscending = true;
+        _tradeSortAscending = ascending;
       }
     });
+  }
+
+  Widget _buildTradeSortableColumnHeader(String label, ThemesProvider theme, int columnIndex) {
+    final isSorted = _tradeSortColumnIndex == columnIndex;
+    
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          label,
+          style: WebTextStyles.custom(
+            fontSize: 14,
+            isDarkTheme: theme.isDarkMode,
+            color: theme.isDarkMode
+                ? WebDarkColors.textPrimary
+                : WebColors.textPrimary,
+            fontWeight: WebFonts.bold,
+          ),
+        ),
+        const SizedBox(width: 4),
+        SizedBox(
+          width: 20,
+          height: 16,
+          child: !isSorted 
+              ? Icon(
+                  Icons.unfold_more,
+                  size: 16,
+                  color: theme.isDarkMode ? WebDarkColors.iconSecondary : WebColors.iconSecondary,
+                )
+              : const SizedBox.shrink(),
+        ),
+      ],
+    );
   }
 
   List<GttOrderBookModel> _sortedGtt(List<GttOrderBookModel> gtt) {
@@ -1247,29 +1446,29 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     sorted.sort((a, b) {
       int r = 0;
       switch (c) {
-        case 0: // Time
-          r = cmp(a.norentm, b.norentm);
-          break;
-        case 1: // Type
-          r = cmp(a.trantype, b.trantype);
-          break;
-        case 2: // Instrument
+        case 0: // Instrument (new order: Instrument is now column 0)
           r = cmp(a.tsym, b.tsym);
           break;
-        case 3: // Product
+        case 1: // Product (new order: Product is now column 1)
           r = cmp(a.placeOrderParams?.sPrdtAli, b.placeOrderParams?.sPrdtAli);
           break;
-        case 4: // Qty
+        case 2: // Type (new order: Type is now column 2)
+          r = cmp(a.trantype, b.trantype);
+          break;
+        case 3: // Qty
           r = cmp(num.tryParse(a.qty.toString()) ?? 0, num.tryParse(b.qty.toString()) ?? 0);
           break;
-        case 5: // LTP
+        case 4: // LTP
           r = cmp(parseNum(a.ltp), parseNum(b.ltp));
           break;
-        case 6: // Trigger price
+        case 5: // Trigger price
           r = cmp(parseNum(a.d), parseNum(b.d));
           break;
-        case 7: // Status
+        case 6: // Status
           r = cmp(a.gttOrderCurrentStatus, b.gttOrderCurrentStatus);
+          break;
+        case 7: // Time (new order: Time is now column 7)
+          r = cmp(a.norentm, b.norentm);
           break;
       }
       return asc ? r : -r;
@@ -1277,15 +1476,78 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     return sorted;
   }
 
-  void _onSortGttTable(int columnIndex) {
+  void _onSortGttTable(int columnIndex, bool ascending) {
     setState(() {
       if (_gttSortColumnIndex == columnIndex) {
         _gttSortAscending = !_gttSortAscending;
       } else {
         _gttSortColumnIndex = columnIndex;
-        _gttSortAscending = true;
+        _gttSortAscending = ascending;
       }
     });
+  }
+
+  DataCell _buildTradeCellWithHover(TradeBookModel trade, ThemesProvider theme, String token, DataCell cell, {Alignment alignment = Alignment.centerRight}) {
+    return DataCell(
+      MouseRegion(
+        onEnter: (_) => setState(() => _hoveredRowToken = token),
+        onExit: (_) => setState(() => _hoveredRowToken = null),
+        child: SizedBox.expand(
+          child: Align(
+            alignment: alignment,
+            child: cell.child,
+          ),
+        ),
+      ),
+    );
+  }
+
+  DataCell _buildGttCellWithHover(GttOrderBookModel gttOrder, ThemesProvider theme, String token, DataCell cell, {Alignment alignment = Alignment.centerRight}) {
+    return DataCell(
+      MouseRegion(
+        onEnter: (_) => setState(() => _hoveredRowToken = token),
+        onExit: (_) => setState(() => _hoveredRowToken = null),
+        child: SizedBox.expand(
+          child: Align(
+            alignment: alignment,
+            child: cell.child,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGttSortableColumnHeader(String label, ThemesProvider theme, int columnIndex) {
+    final isSorted = _gttSortColumnIndex == columnIndex;
+    
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          label,
+          style: WebTextStyles.custom(
+            fontSize: 14,
+            isDarkTheme: theme.isDarkMode,
+            color: theme.isDarkMode
+                ? WebDarkColors.textPrimary
+                : WebColors.textPrimary,
+            fontWeight: WebFonts.bold,
+          ),
+        ),
+        const SizedBox(width: 4),
+        SizedBox(
+          width: 20,
+          height: 16,
+          child: !isSorted 
+              ? Icon(
+                  Icons.unfold_more,
+                  size: 16,
+                  color: theme.isDarkMode ? WebDarkColors.iconSecondary : WebColors.iconSecondary,
+                )
+              : const SizedBox.shrink(),
+        ),
+      ],
+    );
   }
 
   void _openOrderDetail(OrderBookModel order) {
@@ -1294,6 +1556,157 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
       builder: (BuildContext context) {
         return OrderBookDetailScreenWeb(orderBookData: order);
       },
+    );
+  }
+
+  // Order action handlers
+  Future<void> _handleCancelOrder(OrderBookModel orderData) async {
+    final uniqueId = orderData.norenordno?.toString() ?? orderData.token?.toString() ?? '';
+    if (_isProcessingCancel && _processingOrderToken == uniqueId) return;
+
+    try {
+      setState(() {
+        _isProcessingCancel = true;
+        _processingOrderToken = uniqueId;
+      });
+
+      // Pass false for loop to avoid Navigator.pop issues when canceling from table
+      // The provider will not auto-pop dialogs, which is what we want when canceling from hover buttons
+      final cancelResult = await ref.read(orderProvider).fetchOrderCancel(
+        "${orderData.norenordno}",
+        context,
+        false, // Changed to false to prevent unwanted Navigator.pop calls
+      );
+
+      // Refresh order book after successful cancel
+      if (cancelResult != null && cancelResult.stat == "Ok") {
+        await ref.read(orderProvider).fetchOrderBook(context, true);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            successMessage(context, 'Order Cancelled'),
+          );
+        }
+      }
+    } catch (e) {
+      // Handle error
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          error(context, 'Failed to cancel order'),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isProcessingCancel = false;
+          _processingOrderToken = null;
+        });
+      }
+    }
+  }
+
+  Future<void> _handleModifyOrder(OrderBookModel orderData) async {
+    final uniqueId = orderData.norenordno?.toString() ?? orderData.token?.toString() ?? '';
+    if (_isProcessingModify && _processingOrderToken == uniqueId) return;
+
+    try {
+      setState(() {
+        _isProcessingModify = true;
+        _processingOrderToken = uniqueId;
+      });
+
+      await ref.read(marketWatchProvider).fetchScripInfo(
+        "${orderData.token}",
+        '${orderData.exch}',
+        context,
+        true,
+      );
+
+      if (!mounted) return;
+
+      final scripInfo = ref.read(marketWatchProvider).scripInfoModel;
+      if (scripInfo == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          error(context, 'Unable to fetch scrip information'),
+        );
+        return;
+      }
+
+      // Show modify order screen as dialog (same format as place order)
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(5),
+            ),
+            child: SizedBox(
+              width: 500,
+              height: MediaQuery.of(context).size.height * 0.9,
+              child: StatefulBuilder(
+                builder: (context, setState) {
+                  return ModifyPlaceOrderScreenWeb(
+                    modifyOrderArgs: orderData,
+                    orderArg: _createOrderArgs(orderData),
+                    scripInfo: scripInfo,
+                  );
+                }
+              ),
+            ),
+          );
+        },
+      );
+    } catch (e) {
+      // Handle error
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          error(context, 'Failed to open modify order: ${e.toString()}'),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isProcessingModify = false;
+          _processingOrderToken = null;
+        });
+      }
+    }
+  }
+
+  Future<void> _handleRepeatOrder(OrderBookModel orderData) async {
+    try {
+      await ref.read(marketWatchProvider).fetchScripInfo(
+        "${orderData.token}",
+        "${orderData.exch}",
+        context,
+        true,
+      );
+
+      if (!mounted) return;
+
+      ResponsiveNavigation.toPlaceOrderScreen(context: context, arguments: {
+        "orderArg": _createOrderArgs(orderData),
+        "scripInfo": ref.read(marketWatchProvider).scripInfoModel!,
+        "isBskt": '',
+      });
+    } catch (e) {
+      // Handle error
+    }
+  }
+
+  OrderScreenArgs _createOrderArgs(OrderBookModel orderData) {
+    return OrderScreenArgs(
+      exchange: orderData.exch.toString(),
+      tSym: orderData.tsym.toString(),
+      isExit: false,
+      token: orderData.token.toString(),
+      transType: orderData.trantype == 'B' ? true : false,
+      lotSize: orderData.ls,
+      ltp: "${orderData.ltp ?? orderData.c ?? 0.00}",
+      perChange: orderData.change ?? "0.00",
+      orderTpye: '',
+      holdQty: '',
+      isModify: false,
+      raw: orderData.toJson(),
     );
   }
 
@@ -1314,25 +1727,255 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
       },
     );
   }
+
+  // GTT order action handlers
+  Future<void> _handleCancelGttOrder(GttOrderBookModel gttOrderData) async {
+    final uniqueId = gttOrderData.alId?.toString() ?? gttOrderData.tsym?.toString() ?? '';
+    if (_isProcessingCancel && _processingOrderToken == uniqueId) return;
+
+    try {
+      setState(() {
+        _isProcessingCancel = true;
+        _processingOrderToken = uniqueId;
+      });
+
+      // Show confirmation dialog
+      final shouldCancel = await showDialog<bool>(
+        context: context,
+        builder: (BuildContext dialogContext) {
+          final theme = ref.read(themeProvider);
+          final symbol = gttOrderData.tsym?.replaceAll("-EQ", "") ?? 'N/A';
+          final exchange = gttOrderData.exch ?? '';
+          final displayText = '$symbol $exchange'.trim();
+          
+          return Dialog(
+            backgroundColor: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(5),
+            ),
+            child: Container(
+              width: 400,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header with close button
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(
+                          color: theme.isDarkMode
+                              ? WebDarkColors.divider
+                              : WebColors.divider,
+                        ),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Cancel GTT Order',
+                          style: WebTextStyles.sub(
+                            isDarkTheme: theme.isDarkMode,
+                            color: theme.isDarkMode
+                                ? WebDarkColors.textPrimary
+                                : WebColors.textPrimary,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        Material(
+                          color: Colors.transparent,
+                          shape: const CircleBorder(),
+                          child: InkWell(
+                            customBorder: const CircleBorder(),
+                            splashColor: theme.isDarkMode
+                                ? Colors.white.withOpacity(.15)
+                                : Colors.black.withOpacity(.15),
+                            highlightColor: theme.isDarkMode
+                                ? Colors.white.withOpacity(.08)
+                                : Colors.black.withOpacity(.08),
+                            onTap: () => Navigator.of(dialogContext).pop(false),
+                            child: Padding(
+                              padding: const EdgeInsets.all(5),
+                              child: Icon(
+                                Icons.close,
+                                size: 18,
+                                color: theme.isDarkMode
+                                    ? WebDarkColors.iconSecondary
+                                    : WebColors.iconSecondary,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Content area
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              'Are you sure you want to cancel this GTT order?\n\n$displayText',
+                              textAlign: TextAlign.center,
+                              style: WebTextStyles.custom(
+                                fontSize: 13,
+                                isDarkTheme: theme.isDarkMode,
+                                color: theme.isDarkMode
+                                    ? WebDarkColors.textPrimary
+                                    : WebColors.textPrimary,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        SizedBox(
+                          width: double.infinity,
+                          height: 40,
+                          child: ElevatedButton(
+                            onPressed: () => Navigator.of(dialogContext).pop(true),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: theme.isDarkMode
+                                  ? WebDarkColors.primary
+                                  : WebColors.primary,
+                              minimumSize: const Size(0, 40),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(5),
+                              ),
+                            ),
+                            child: Text(
+                              'Cancel Order',
+                              style: WebTextStyles.custom(
+                                fontSize: 13,
+                                isDarkTheme: theme.isDarkMode,
+                                color: WebColors.surface,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+
+      if (shouldCancel != true) {
+        return;
+      }
+
+      // Cancel the GTT order
+      await ref.read(orderProvider).cancelGttOrder(
+        "${gttOrderData.alId}",
+        context,
+      );
+
+      // Refresh GTT order book after successful cancel
+      await ref.read(orderProvider).fetchGTTOrderBook(context, "");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          successMessage(context, 'GTT Order Cancelled'),
+        );
+      }
+    } catch (e) {
+      // Handle error
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          error(context, 'Failed to cancel GTT order'),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isProcessingCancel = false;
+          _processingOrderToken = null;
+        });
+      }
+    }
+  }
+
+  Future<void> _handleModifyGttOrder(GttOrderBookModel gttOrderData) async {
+    final uniqueId = gttOrderData.alId?.toString() ?? gttOrderData.tsym?.toString() ?? '';
+    if (_isProcessingModify && _processingOrderToken == uniqueId) return;
+
+    try {
+      setState(() {
+        _isProcessingModify = true;
+        _processingOrderToken = uniqueId;
+      });
+
+      await ref.read(marketWatchProvider).fetchScripInfo(
+        "${gttOrderData.token}",
+        '${gttOrderData.exch}',
+        context,
+        true,
+      );
+
+      if (!mounted) return;
+
+      final scripInfo = ref.read(marketWatchProvider).scripInfoModel;
+      if (scripInfo == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          error(context, 'Unable to fetch scrip information'),
+        );
+        return;
+      }
+
+      // Show modify GTT order screen as dialog
+      // ModifyGttWeb already returns a Dialog, so we just show it directly
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return ModifyGttWeb(
+            gttOrderBook: gttOrderData,
+            scripInfo: scripInfo,
+          );
+        },
+      );
+    } catch (e) {
+      // Handle error
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          error(context, 'Failed to open modify GTT order: ${e.toString()}'),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isProcessingModify = false;
+          _processingOrderToken = null;
+        });
+      }
+    }
+  }
+
   DataCell _buildTimeCell(OrderBookModel item, ThemesProvider theme) {
-    // Format time to match web UI: "10:09:44"
     String time = item.norentm != null ? item.norentm! : '0.00';
     
     return DataCell(
       Text(
-       formatDateTime(value: time),
-        style: TextWidget.textStyle(
-          fontSize: 12,
-          color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-          theme: theme.isDarkMode,
-          fw: 2,
+        formatDateTime(value: time),
+        style: WebTextStyles.custom(
+          fontSize: 13,
+          isDarkTheme: theme.isDarkMode,
+          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+          fontWeight: WebFonts.medium,
         ),
       ),
     );
   }
 
   DataCell _buildTypeCell(OrderBookModel item, ThemesProvider theme) {
-    // Match web UI BUY/SELL button format
     String buySell = item.trantype == "S" ? "SELL" : "BUY";
     Color buttonColor = item.trantype == "S"
         ? (theme.isDarkMode ? colors.lossDark : colors.lossLight)
@@ -1341,18 +1984,17 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     return DataCell(
       Text(
         buySell,
-        style: TextWidget.textStyle(
-          fontSize: 12,
+        style: WebTextStyles.custom(
+          fontSize: 13,
+          isDarkTheme: theme.isDarkMode,
           color: buttonColor,
-          theme: false,
-          fw: 2,
+          fontWeight: WebFonts.medium,
         ),
       ),
     );
   }
 
   DataCell _buildInstrumentCell(OrderBookModel item, ThemesProvider theme) {
-    // Match web UI instrument format: "TCS-EQ NSE"
     String symbol = '${item.tsym}';
     String exchange = item.exch ?? '';
     
@@ -1364,11 +2006,181 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     return DataCell(
       Text(
         displayText,
-        style: TextWidget.textStyle(
-          fontSize: 12,
-          color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-          theme: theme.isDarkMode,
-          fw: 2,
+        style: WebTextStyles.custom(
+          fontSize: 13,
+          isDarkTheme: theme.isDarkMode,
+          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+          fontWeight: WebFonts.medium,
+        ),
+        overflow: TextOverflow.ellipsis,
+      ),
+    );
+  }
+
+  DataCell _buildInstrumentCellWithHover(OrderBookModel order, ThemesProvider theme, String token) {
+    final orderToken = token;
+    final isHovered = _hoveredRowToken == orderToken;
+    final isProcessing = _processingOrderToken == orderToken;
+    
+    // Determine which buttons to show based on order status
+    final isPending = order.status == "PENDING" || 
+                     order.status == "OPEN" || 
+                     order.status == "TRIGGER_PENDING";
+    
+    String symbol = '${order.tsym ?? ''}';
+    String exchange = order.exch ?? '';
+    
+    String displayText = symbol.trim();
+    if (exchange.isNotEmpty && exchange.trim().isNotEmpty) {
+      displayText += ' ${exchange.trim()}';
+    }
+
+    return DataCell(
+      MouseRegion(
+        onEnter: (_) => setState(() => _hoveredRowToken = orderToken),
+        onExit: (_) => setState(() => _hoveredRowToken = null),
+        child: SizedBox.expand(
+          child: Row(
+            children: [
+              // Text that takes at least 50% of width, leaves space for buttons
+              Expanded(
+                flex: isHovered ? 1 : 2, // When hovered, text takes less space but still visible
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Tooltip(
+                    message: displayText,
+                    child: Text(
+                      displayText,
+                      style: WebTextStyles.custom(
+                        fontSize: 13,
+                        isDarkTheme: theme.isDarkMode,
+                        color: theme.isDarkMode
+                            ? WebDarkColors.textPrimary
+                            : WebColors.textPrimary,
+                        fontWeight: WebFonts.medium,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                  ),
+                ),
+              ),
+              // Buttons on the right side - fade in/out
+              IgnorePointer(
+                ignoring: !isHovered,
+                child: AnimatedOpacity(
+                  opacity: isHovered ? 1.0 : 0.0,
+                  duration: const Duration(milliseconds: 150),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (isPending) ...[
+                        // Cancel button for pending orders
+                        _buildOrderHoverButton(
+                          label: 'Cancel',
+                          color: Colors.white,
+                          backgroundColor: theme.isDarkMode
+                              ? WebDarkColors.error
+                              : WebColors.error,
+                          onPressed: isProcessing && _isProcessingCancel
+                              ? null
+                              : () => _handleCancelOrder(order),
+                          theme: theme,
+                        ),
+                        const SizedBox(width: 6),
+                        // Modify button for pending orders
+                        _buildOrderHoverButton(
+                          label: 'Modify',
+                          color: Colors.white,
+                          backgroundColor: theme.isDarkMode
+                              ? WebDarkColors.primary
+                              : WebColors.primary,
+                          onPressed: isProcessing && _isProcessingModify
+                              ? null
+                              : () => _handleModifyOrder(order),
+                          theme: theme,
+                        ),
+                      ] else ...[
+                        // Repeat Order button for completed orders
+                        _buildOrderHoverButton(
+                          label: 'Repeat',
+                          color: Colors.white,
+                          backgroundColor: theme.isDarkMode
+                              ? WebDarkColors.primary
+                              : WebColors.primary,
+                          onPressed: () => _handleRepeatOrder(order),
+                          theme: theme,
+                        ),
+                        // Cancel button for OPEN status completed orders
+                        if (order.status == "OPEN") ...[
+                          const SizedBox(width: 6),
+                          _buildOrderHoverButton(
+                            label: 'Cancel',
+                            color: Colors.white,
+                            backgroundColor: theme.isDarkMode
+                                ? WebDarkColors.error
+                                : WebColors.error,
+                            onPressed: isProcessing && _isProcessingCancel
+                                ? null
+                                : () => _handleCancelOrder(order),
+                            theme: theme,
+                          ),
+                        ],
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOrderHoverButton({
+    String? label,
+    required Color color,
+    Color? backgroundColor,
+    Color? borderColor,
+    double? borderRadius,
+    required VoidCallback? onPressed,
+    required ThemesProvider theme,
+  }) {
+    final borderRadiusValue = borderRadius ?? 5.0;
+    return SizedBox(
+      height: 28,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(borderRadiusValue),
+          splashColor: color.withOpacity(0.15),
+          highlightColor: color.withOpacity(0.08),
+          onTap: onPressed,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            decoration: BoxDecoration(
+              color: backgroundColor ?? Colors.transparent,
+              borderRadius: BorderRadius.circular(borderRadiusValue),
+              border: borderColor != null
+                  ? Border.all(
+                      color: borderColor,
+                      width: 1,
+                    )
+                  : null,
+            ),
+            child: Center(
+              child: Text(
+                label ?? "",
+                style: WebTextStyles.custom(
+                  fontSize: 11,
+                  isDarkTheme: theme.isDarkMode,
+                  color: color,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -1380,52 +2192,49 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     return DataCell(
       Text(
         product,
-        style: TextWidget.textStyle(
-          fontSize: 12,
-          color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-          theme: theme.isDarkMode,
-          fw: 2,
+        style: WebTextStyles.custom(
+          fontSize: 13,
+          isDarkTheme: theme.isDarkMode,
+          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+          fontWeight: WebFonts.medium,
         ),
       ),
     );
   }
 
   DataCell _buildQtyCell(OrderBookModel item, ThemesProvider theme) {
-    // Match web UI quantity format: "1"
     String qty = item.qty?.toString() ?? '0.00';
     
     return DataCell(
       Text(
         qty,
-        style: TextWidget.textStyle(
-          fontSize: 12,
-          color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-          theme: theme.isDarkMode,
-          fw: 2,
+        style: WebTextStyles.custom(
+          fontSize: 13,
+          isDarkTheme: theme.isDarkMode,
+          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+          fontWeight: WebFonts.medium,
         ),
       ),
     );
   }
 
   DataCell _buildAvgPriceCell(OrderBookModel item, ThemesProvider theme) {
-    // Match web UI avg price format: "0.00"
     String avgPrice = item.avgprc ?? '0.00';
     
     return DataCell(
       Text(
         avgPrice,
-        style: TextWidget.textStyle(
-          fontSize: 12,
-          color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-          theme: theme.isDarkMode,
-          fw: 2,
+        style: WebTextStyles.custom(
+          fontSize: 13,
+          isDarkTheme: theme.isDarkMode,
+          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+          fontWeight: WebFonts.medium,
         ),
       ),
     );
   }
 
   DataCell _buildOrderValueCell(OrderBookModel item, ThemesProvider theme) {
-    // Match web UI order value format: "0.00"
     String orderValue = '0.00';
     
     try {
@@ -1439,56 +2248,49 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     return DataCell(
       Text(
         orderValue,
-        style: TextWidget.textStyle(
-          fontSize: 12,
-          color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-          theme: theme.isDarkMode,
-          fw: 2,
+        style: WebTextStyles.custom(
+          fontSize: 13,
+          isDarkTheme: theme.isDarkMode,
+          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+          fontWeight: WebFonts.medium,
         ),
       ),
     );
   }
 
-
   DataCell _buildLTPCell(OrderBookModel item, ThemesProvider theme) {
-    // Match web UI LTP format: "3001.50" (without LTP prefix)
-    // LTP should show real-time data from WebSocket
     String ltpValue = _getValidLTP(item);
     
     return DataCell(
       Text(
         ltpValue,
-        style: TextWidget.textStyle(
-          fontSize: 12,
-          color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-          theme: theme.isDarkMode,
-          fw: 2,
+        style: WebTextStyles.custom(
+          fontSize: 13,
+          isDarkTheme: theme.isDarkMode,
+          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+          fontWeight: WebFonts.medium,
         ),
       ),
     );
   }
 
-
   DataCell _buildPriceCell(OrderBookModel item, ThemesProvider theme) {
-    // Match mobile UI price display logic
     String displayText = _getValidPrice(item);
     
     return DataCell(
       Text(
         displayText,
-        style: TextWidget.textStyle(
-          fontSize: 12,
-          color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-          theme: theme.isDarkMode,
-          fw: 2,
+        style: WebTextStyles.custom(
+          fontSize: 13,
+          isDarkTheme: theme.isDarkMode,
+          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+          fontWeight: WebFonts.medium,
         ),
       ),
     );
   }
 
-
   DataCell _buildStatusCell(OrderBookModel item, ThemesProvider theme) {
-    // Match mobile UI status display
     String statusText = _getStatusText(item);
     Color statusColor = _getStatusColor(statusText, theme);
     
@@ -1501,39 +2303,32 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
         ),
         child: Text(
           statusText,
-          style: TextWidget.textStyle(
-            fontSize: 12,
+          style: WebTextStyles.custom(
+            fontSize: 13,
+            isDarkTheme: theme.isDarkMode,
             color: statusColor,
-            theme: false,
-            fw: 2,
+            fontWeight: WebFonts.medium,
           ),
         ),
       ),
     );
   }
 
-
   DataCell _buildTriggerPriceCell(OrderBookModel item, ThemesProvider theme) {
-    // For orders, trigger price is directly available as trgprc
     String triggerPrice = '0.00';
     
-    // Check direct trgprc property (for regular orders)
     if (item.trgprc != null && item.trgprc != '0' && item.trgprc != '0.00') {
       triggerPrice = item.trgprc!;
-    } 
-    // // Fallback to order price
-    // else if (item.prc != null) {
-    //   triggerPrice = item.prc!;
-    // }
+    }
     
     return DataCell(
       Text(
         triggerPrice,
-        style: TextWidget.textStyle(
-          fontSize: 12,
-          color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-          theme: theme.isDarkMode,
-          fw: 2,
+        style: WebTextStyles.custom(
+          fontSize: 13,
+          isDarkTheme: theme.isDarkMode,
+          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+          fontWeight: WebFonts.medium,
         ),
       ),
     );
@@ -1577,7 +2372,6 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
 
   // DataCell builders for TradeBookModel
   DataCell _buildSymbolCellForTrade(TradeBookModel item, ThemesProvider theme) {
-    // Match mobile UI formatting exactly
     String symbol = item.symbol?.replaceAll("-EQ", "") ?? item.tsym ?? 'N/A';
     String expDate = item.expDate ?? '';
     String option = item.option ?? '';
@@ -1593,21 +2387,19 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     return DataCell(
       Text(
         displayText,
-        style: TextWidget.textStyle(
-          fontSize: 12,
-          color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-          theme: theme.isDarkMode,
-          fw: 2,
+        style: WebTextStyles.custom(
+          fontSize: 13,
+          isDarkTheme: theme.isDarkMode,
+          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+          fontWeight: WebFonts.medium,
         ),
+        overflow: TextOverflow.ellipsis,
       ),
     );
   }
 
   DataCell _buildTransactionCellForTrade(TradeBookModel item, ThemesProvider theme) {
-    // Match mobile UI transaction format: "BUY 0 / 550"
     String buySell = item.trantype == "S" ? "SELL" : "BUY";
-    
-    String displayText = '$buySell';
     
     Color textColor = item.trantype == "S"
         ? (theme.isDarkMode ? colors.lossDark : colors.lossLight)
@@ -1615,29 +2407,28 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     
     return DataCell(
       Text(
-        displayText,
-        style: TextWidget.textStyle(
-          fontSize: 12,
+        buySell,
+        style: WebTextStyles.custom(
+          fontSize: 13,
+          isDarkTheme: theme.isDarkMode,
           color: textColor,
-          theme: theme.isDarkMode,
-          fw: 2,
+          fontWeight: WebFonts.medium,
         ),
       ),
     );
   }
 
   DataCell _buildTimeCellForTrade(TradeBookModel item, ThemesProvider theme) {
-    // Match mobile UI time format: "10:13 AM"
-    String time = item.norentm != null ? _formatTime(item.norentm!) : 'N/A';
+    String time = item.norentm != null ? item.norentm! : 'N/A';
     
     return DataCell(
       Text(
-       formatDateTime(value:time),
-        style: TextWidget.textStyle(
-          fontSize: 12,
-          color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-          theme: theme.isDarkMode,
-          fw: 2,
+        formatDateTime(value: time),
+        style: WebTextStyles.custom(
+          fontSize: 13,
+          isDarkTheme: theme.isDarkMode,
+          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+          fontWeight: WebFonts.medium,
         ),
       ),
     );
@@ -1649,11 +2440,11 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     return DataCell(
       Text(
         product,
-        style: TextWidget.textStyle(
-          fontSize: 12,
-          color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-          theme: theme.isDarkMode,
-          fw: 2,
+        style: WebTextStyles.custom(
+          fontSize: 13,
+          isDarkTheme: theme.isDarkMode,
+          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+          fontWeight: WebFonts.medium,
         ),
       ),
     );
@@ -1665,11 +2456,11 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     return DataCell(
       Text(
         qty,
-        style: TextWidget.textStyle(
-          fontSize: 12,
-          color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-          theme: theme.isDarkMode,
-          fw: 2,
+        style: WebTextStyles.custom(
+          fontSize: 13,
+          isDarkTheme: theme.isDarkMode,
+          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+          fontWeight: WebFonts.medium,
         ),
       ),
     );
@@ -1681,28 +2472,35 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     return DataCell(
       Text(
         price,
-        style: TextWidget.textStyle(
-          fontSize: 12,
-          color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-          theme: theme.isDarkMode,
-          fw: 2,
+        style: WebTextStyles.custom(
+          fontSize: 13,
+          isDarkTheme: theme.isDarkMode,
+          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+          fontWeight: WebFonts.medium,
         ),
       ),
     );
   }
 
   DataCell _buildTradeValueCellForTrade(TradeBookModel item, ThemesProvider theme) {
-    // Use flprc as requested
-    String tradeValue = "${item.flqty != null && item.flprc != null ? (double.parse(item.flqty!) * double.parse(item.flprc!)) : 0.00}";
+    String tradeValue = "0.00";
+    
+    try {
+      if (item.flqty != null && item.flprc != null) {
+        tradeValue = (double.parse(item.flqty!) * double.parse(item.flprc!)).toStringAsFixed(2);
+      }
+    } catch (e) {
+      tradeValue = "0.00";
+    }
     
     return DataCell(
       Text(
         tradeValue,
-        style: TextWidget.textStyle(
-          fontSize: 12,
-          color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-          theme: theme.isDarkMode,
-          fw: 2,
+        style: WebTextStyles.custom(
+          fontSize: 13,
+          isDarkTheme: theme.isDarkMode,
+          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+          fontWeight: WebFonts.medium,
         ),
       ),
     );
@@ -1714,11 +2512,11 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     return DataCell(
       Text(
         orderNo,
-        style: TextWidget.textStyle(
-          fontSize: 12,
-          color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-          theme: theme.isDarkMode,
-          fw: 2,
+        style: WebTextStyles.custom(
+          fontSize: 13,
+          isDarkTheme: theme.isDarkMode,
+          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+          fontWeight: WebFonts.medium,
         ),
       ),
     );
@@ -1794,11 +2592,11 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     return DataCell(
       Text(
         formatDateTime(value: item.norentm!),
-        style: TextWidget.textStyle(
-          fontSize: 12,
-          color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-          theme: theme.isDarkMode,
-          fw: 2,
+        style: WebTextStyles.custom(
+          fontSize: 13,
+          isDarkTheme: theme.isDarkMode,
+          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+          fontWeight: WebFonts.medium,
         ),
       ),
     );
@@ -1809,13 +2607,13 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     return DataCell(
       Text(
         isBuy ? "BUY" : "SELL",
-        style: TextWidget.textStyle(
-          fontSize: 12,
+        style: WebTextStyles.custom(
+          fontSize: 13,
+          isDarkTheme: theme.isDarkMode,
           color: isBuy
               ? (theme.isDarkMode ? colors.profitDark : colors.profitLight)
               : (theme.isDarkMode ? colors.lossDark : colors.lossLight),
-          theme: theme.isDarkMode,
-          fw: 2,
+          fontWeight: WebFonts.medium,
         ),
       ),
     );
@@ -1825,11 +2623,106 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     return DataCell(
       Text(
         '${item.tsym?.replaceAll("-EQ", "") ?? 'N/A'}-${item.exch ?? ''}',
-        style: TextWidget.textStyle(
-          fontSize: 12,
-          color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-          theme: theme.isDarkMode,
-          fw: 2,
+        style: WebTextStyles.custom(
+          fontSize: 13,
+          isDarkTheme: theme.isDarkMode,
+          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+          fontWeight: WebFonts.medium,
+        ),
+      ),
+    );
+  }
+
+  DataCell _buildGttInstrumentCellWithHover(GttOrderBookModel gttOrder, ThemesProvider theme, String token) {
+    final gttOrderToken = token;
+    final isHovered = _hoveredRowToken == gttOrderToken;
+    final isProcessing = _processingOrderToken == gttOrderToken;
+    
+    // Determine which buttons to show based on GTT order status
+    // GTT orders can be cancelled/modified if status is PENDING
+    final status = gttOrder.gttOrderCurrentStatus?.toUpperCase() ?? '';
+    final isPending = status == 'PENDING' || status == 'TRIGGER_PENDING';
+    
+    String symbol = '${gttOrder.tsym?.replaceAll("-EQ", "") ?? 'N/A'}';
+    String exchange = gttOrder.exch ?? '';
+    
+    String displayText = symbol.trim();
+    if (exchange.isNotEmpty && exchange.trim().isNotEmpty) {
+      displayText += '-${exchange.trim()}';
+    }
+
+    return DataCell(
+      MouseRegion(
+        onEnter: (_) => setState(() => _hoveredRowToken = gttOrderToken),
+        onExit: (_) => setState(() => _hoveredRowToken = null),
+        child: SizedBox.expand(
+          child: Row(
+            children: [
+              // Text that takes at least 50% of width, leaves space for buttons
+              Expanded(
+                flex: isHovered ? 1 : 2, // When hovered, text takes less space but still visible
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Tooltip(
+                    message: displayText,
+                    child: Text(
+                      displayText,
+                      style: WebTextStyles.custom(
+                        fontSize: 13,
+                        isDarkTheme: theme.isDarkMode,
+                        color: theme.isDarkMode
+                            ? WebDarkColors.textPrimary
+                            : WebColors.textPrimary,
+                        fontWeight: WebFonts.medium,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                  ),
+                ),
+              ),
+              // Buttons on the right side - fade in/out
+              IgnorePointer(
+                ignoring: !isHovered,
+                child: AnimatedOpacity(
+                  opacity: isHovered ? 1.0 : 0.0,
+                  duration: const Duration(milliseconds: 150),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (isPending) ...[
+                        // Cancel button for pending GTT orders
+                        _buildOrderHoverButton(
+                          label: 'Cancel',
+                          color: Colors.white,
+                          backgroundColor: theme.isDarkMode
+                              ? WebDarkColors.error
+                              : WebColors.error,
+                          onPressed: isProcessing && _isProcessingCancel
+                              ? null
+                              : () => _handleCancelGttOrder(gttOrder),
+                          theme: theme,
+                        ),
+                        const SizedBox(width: 6),
+                        // Modify button for pending GTT orders
+                        _buildOrderHoverButton(
+                          label: 'Modify',
+                          color: Colors.white,
+                          backgroundColor: theme.isDarkMode
+                              ? WebDarkColors.primary
+                              : WebColors.primary,
+                          onPressed: isProcessing && _isProcessingModify
+                              ? null
+                              : () => _handleModifyGttOrder(gttOrder),
+                          theme: theme,
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -1839,11 +2732,11 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     return DataCell(
       Text(
         item.placeOrderParams?.sPrdtAli ?? '',
-        style: TextWidget.textStyle(
-          fontSize: 12,
-          color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-          theme: theme.isDarkMode,
-          fw: 2,
+        style: WebTextStyles.custom(
+          fontSize: 13,
+          isDarkTheme: theme.isDarkMode,
+          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+          fontWeight: WebFonts.medium,
         ),
       ),
     );
@@ -1853,11 +2746,11 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     return DataCell(
       Text(
         item.qty?.toString() ?? '0',
-        style: TextWidget.textStyle(
-          fontSize: 12,
-          color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-          theme: theme.isDarkMode,
-          fw: 2,
+        style: WebTextStyles.custom(
+          fontSize: 13,
+          isDarkTheme: theme.isDarkMode,
+          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+          fontWeight: WebFonts.medium,
         ),
       ),
     );
@@ -1868,11 +2761,11 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     return DataCell(
       Text(
         _getValidLTPForGtt(item),
-        style: TextWidget.textStyle(
-          fontSize: 12,
-          color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-          theme: theme.isDarkMode,
-          fw: 2,
+        style: WebTextStyles.custom(
+          fontSize: 13,
+          isDarkTheme: theme.isDarkMode,
+          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+          fontWeight: WebFonts.medium,
         ),
       ),
     );
@@ -1883,11 +2776,11 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     return DataCell(
       Text(
         item.d ?? '0.00',
-        style: TextWidget.textStyle(
-          fontSize: 12,
-          color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-          theme: theme.isDarkMode,
-          fw: 2,
+        style: WebTextStyles.custom(
+          fontSize: 13,
+          isDarkTheme: theme.isDarkMode,
+          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+          fontWeight: WebFonts.medium,
         ),
       ),
     );
@@ -1905,11 +2798,11 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
         ),
         child: Text(
           _getGttStatusText(status),
-          style: TextWidget.textStyle(
-            fontSize: 12,
+          style: WebTextStyles.custom(
+            fontSize: 13,
+            isDarkTheme: theme.isDarkMode,
             color: _getGttStatusColor(status, theme),
-            theme: theme.isDarkMode,
-            fw: 2,
+            fontWeight: WebFonts.medium,
           ),
         ),
       ),

@@ -5,14 +5,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/provider/order_provider.dart';
+
 import '../../../../locator/locator.dart';
 import '../../../../locator/preference.dart';
 import '../../../../provider/thems.dart';
 import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
-import '../../../../sharedWidget/custom_drag_handler.dart';
-import '../../../../sharedWidget/functions.dart';
-import '../../../../sharedWidget/list_divider.dart';
 import '../../../../sharedWidget/cust_text_formfield.dart';
 
 class CreateBasket extends ConsumerStatefulWidget {
@@ -220,9 +218,8 @@ class _CreateBasketState extends ConsumerState<CreateBasket> {
                         hintStyle: TextWidget.textStyle(
                             fontSize: 14,
                             theme: theme.isDarkMode,
-                            color: theme.isDarkMode
-                                ? colors.textSecondaryDark
-                                : colors.textSecondaryLight,
+                            color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                            fw: 0,
                         ),
                         keyboardType: TextInputType.text,
                         style: TextWidget.textStyle(
@@ -231,6 +228,7 @@ class _CreateBasketState extends ConsumerState<CreateBasket> {
                                 ? colors.textPrimaryDark
                                 : colors.textPrimaryLight,
                             theme: theme.isDarkMode,
+                            fw: 0,
                         ),
                         textCtrl: textCtrl,
                         textAlign: TextAlign.start,

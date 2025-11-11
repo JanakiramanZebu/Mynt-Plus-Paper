@@ -751,14 +751,14 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                   : (theme.isDarkMode
                       ? WebDarkColors.textSecondary
                       : WebColors.textSecondary),
-              width: 1,
+              width: 1.5,
             ),
             borderRadius: BorderRadius.circular(30),
           ),
           child: Text(
             _formatTabName(name),
             overflow: TextOverflow.ellipsis,
-            style: WebTextStyles.para(
+            style: WebTextStyles.sub(
               isDarkTheme: theme.isDarkMode,
               color: isActive
                   ? (theme.isDarkMode
@@ -767,7 +767,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                   : (theme.isDarkMode
                       ? WebDarkColors.navItem
                       : WebColors.navItem),
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ),
@@ -1068,9 +1068,11 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
           ),
           child: Container(
             width: 500,
-            constraints: const BoxConstraints(maxHeight: 600),
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.70,
+            ),
             child: Column(
-              mainAxisSize: MainAxisSize.min,
+              mainAxisSize: MainAxisSize.max,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Header with close icon
@@ -1127,52 +1129,52 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                 ),
 
                 // Content area with padding
-                Padding(
-                  padding: const EdgeInsets.only(left: 16, right: 16, top: 6, bottom: 16),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Watchlist items with radio buttons
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 16, right: 16, top: 6, bottom: 16),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.max,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Watchlist items with radio buttons
 
-                        if (watchlist.length - preDefWl.length < 10) // 4 predefined watchlists: My Stocks, Nifty50, Niftybank, Sensex
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            Material(
-                              color: Colors.transparent,                          
-                              child: InkWell(
-                                onTap: () => _showCreateWatchlistDialog(context, ref),
-                                customBorder: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(5),
-                                ),
-                                splashColor: theme.isDarkMode
-                                    ? Colors.white.withOpacity(.15)
-                                    : Colors.black.withOpacity(.15),
-                                highlightColor: theme.isDarkMode
-                                    ? Colors.white.withOpacity(.08)
-                                    : Colors.black.withOpacity(.08),
-                                child: Container(
-                                  padding: const EdgeInsets.all(6),
-                                  alignment: Alignment.center,
-                                  child: Text(
-                                    '+ Create New Watchlist',
-                                    style: WebTextStyles.custom(
-                                      fontSize: 13,
-                                      isDarkTheme: theme.isDarkMode,
-                                      color: WebColors.primary,
-                                      fontWeight: FontWeight.w700,
+                          if (watchlist.length - preDefWl.length < 10) // 4 predefined watchlists: My Stocks, Nifty50, Niftybank, Sensex
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              Material(
+                                color: Colors.transparent,                          
+                                child: InkWell(
+                                  onTap: () => _showCreateWatchlistDialog(context, ref),
+                                  customBorder: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(5),
+                                  ),
+                                  splashColor: theme.isDarkMode
+                                      ? Colors.white.withOpacity(.15)
+                                      : Colors.black.withOpacity(.15),
+                                  highlightColor: theme.isDarkMode
+                                      ? Colors.white.withOpacity(.08)
+                                      : Colors.black.withOpacity(.08),
+                                  child: Container(
+                                    padding: const EdgeInsets.all(6),
+                                    alignment: Alignment.center,
+                                    child: Text(
+                                      '+ Create New Watchlist',
+                                      style: WebTextStyles.custom(
+                                        fontSize: 13,
+                                        isDarkTheme: theme.isDarkMode,
+                                        color: WebColors.primary,
+                                        fontWeight: FontWeight.w700,
+                                      ),
                                     ),
                                   ),
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-                      Flexible(
-                        child: ListView.builder(
-                          shrinkWrap: true,
-                          itemCount: watchlist.length,
+                            ],
+                          ),
+                        Expanded(
+                          child: ListView.builder(
+                            itemCount: watchlist.length,
                           itemBuilder: (context, index) {
                             final watchlistName = watchlist[index];
                             final isPredefined = preDefWl.contains(watchlistName);
@@ -1281,6 +1283,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                         ),
                       ),                    
                     ],
+                  ),
                   ),
                 ),
               ],

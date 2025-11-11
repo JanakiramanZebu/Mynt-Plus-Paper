@@ -3,16 +3,13 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/provider/order_provider.dart';
+
 import '../../../../locator/locator.dart';
 import '../../../../locator/preference.dart';
 import '../../../../provider/thems.dart';
-import '../../../../res/global_state_text.dart';
-import '../../../../res/res.dart';
-import '../../../../sharedWidget/custom_drag_handler.dart';
-import '../../../../sharedWidget/functions.dart';
-import '../../../../sharedWidget/list_divider.dart';
+import '../../../../res/web_colors.dart';
+import '../../../../res/global_font_web.dart';
 import '../../../../sharedWidget/cust_text_formfield.dart';
 
 class CreateBasket extends ConsumerStatefulWidget {
@@ -107,189 +104,163 @@ class _CreateBasketState extends ConsumerState<CreateBasket> {
   Widget build(BuildContext context) {
     final theme = ref.read(themeProvider);
 
-    return Padding(
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
-      ),
-      child: Container(
-        decoration: BoxDecoration(
-         borderRadius: const BorderRadius.only(
-      topLeft: Radius.circular(16),
-      topRight: Radius.circular(16),
-    ),
-          color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-         border: Border(
-                                  top: BorderSide(
-                                    color: theme.isDarkMode
-                                        ? colors.textSecondaryDark
-                                            .withOpacity(0.5)
-                                        : colors.colorWhite,
-                                  ),
-                                  left: BorderSide(
-                                    color: theme.isDarkMode
-                                        ? colors.textSecondaryDark
-                                            .withOpacity(0.5)
-                                        : colors.colorWhite,
-                                  ),
-                                  right: BorderSide(
-                                    color: theme.isDarkMode
-                                        ? colors.textSecondaryDark
-                                            .withOpacity(0.5)
-                                        : colors.colorWhite,
-                                  ),
-                                ),
-
-         
-        ),
-        child: SafeArea(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(
+                color: theme.isDarkMode
+                    ? WebDarkColors.divider
+                    : WebColors.divider,
+              ),
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // const CustomDragHandler(),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                          vertical: 8.0, horizontal: 16.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    TextWidget.titleText(
-                      text: 'Create Basket',
-                      color : theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                      theme: theme.isDarkMode,
-                      fw: 1,
-                    ),
-                    Material(
-                      color: Colors.transparent,
-                      shape: const CircleBorder(),
-                      child: InkWell(
-                        onTap: () async {
-                          await Future.delayed(const Duration(milliseconds: 150));
-                          Navigator.pop(context);
-                        },
-                        borderRadius: BorderRadius.circular(20),
-                        splashColor: theme.isDarkMode
-                            ? Colors.white.withOpacity(0.15)
-                            : Colors.black.withOpacity(0.15),
-                        highlightColor: theme.isDarkMode
-                            ? Colors.white.withOpacity(0.08)
-                            : Colors.black.withOpacity(0.08),
-                        child: Padding(
-                          padding: const EdgeInsets.all(6.0),
-                          child: Icon(
-                            Icons.close_rounded,
-                            size: 22,
-                             color:  theme.isDarkMode
-                  ? colors.textSecondaryDark
-                  : colors.textSecondaryLight,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+              Text(
+                'New Basket',
+                style: WebTextStyles.sub(
+                  isDarkTheme: theme.isDarkMode,
+                  color: theme.isDarkMode
+                      ? WebDarkColors.textPrimary
+                      : WebColors.textPrimary,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
-              Divider(
-                color: theme.isDarkMode
-                    ? colors.darkColorDivider
-                    : colors.colorDivider,
-                height: 0,
-              ),
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  children: [
-                    SizedBox(
-                      height: 45,
-                      child: CustomTextFormField(
-                        fillColor: theme.isDarkMode
-                            ? colors.darkGrey
-                            : const Color(0xffF1F3F8),
-                            autofocus: true,
-                        onChanged: (value) {
-                          setState(() {
-                            if (textCtrl.text.trim().isNotEmpty) {
-                              errorText = null;
-                            } else {
-                              errorText = "Please enter basket name";
-                            }
-                          });
-                        },
-                        hintText: "Enter basket name",
-                        hintStyle: TextWidget.textStyle(
-                            fontSize: 14,
-                            theme: theme.isDarkMode,
-                            color: theme.isDarkMode
-                                ? colors.textSecondaryDark
-                                : colors.textSecondaryLight,
-                        ),
-                        keyboardType: TextInputType.text,
-                        style: TextWidget.textStyle(
-                            fontSize: 16,
-                            color: theme.isDarkMode
-                                ? colors.textPrimaryDark
-                                : colors.textPrimaryLight,
-                            theme: theme.isDarkMode,
-                        ),
-                        textCtrl: textCtrl,
-                        textAlign: TextAlign.start,
-                        inputFormate: [
-                          FilteringTextInputFormatter.allow(
-                              RegExp(r'[a-zA-Z0-9 ]')),
-                        ],
-                      ),
+              Material(
+                color: Colors.transparent,
+                shape: const CircleBorder(),
+                child: InkWell(
+                  customBorder: const CircleBorder(),
+                  splashColor: theme.isDarkMode
+                      ? Colors.white.withOpacity(.15)
+                      : Colors.black.withOpacity(.15),
+                  highlightColor: theme.isDarkMode
+                      ? Colors.white.withOpacity(.08)
+                      : Colors.black.withOpacity(.08),
+                  onTap: () => Navigator.of(context).pop(),
+                  child: Padding(
+                    padding: const EdgeInsets.all(5),
+                    child: Icon(
+                      Icons.close,
+                      size: 18,
+                      color: theme.isDarkMode
+                          ? WebDarkColors.iconSecondary
+                          : WebColors.iconSecondary,
                     ),
-                    if (errorText != null) ...[
-                      const SizedBox(height: 8),
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: TextWidget.captionText(
-                          text: errorText!,
-                          color: colors.darkred,
-                          theme: theme.isDarkMode,
-                          fw: 0,
-                         
-                        ),
-                      ),
-                    ],
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton(
-                        onPressed: _isProcessing ? null : _handleButton,
-                        style: OutlinedButton.styleFrom(
-                          elevation: 0,
-                          minimumSize: const Size(0, 45), // width, height
-          
-                          backgroundColor: colors.btnOutlinedBorder,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(5),
-                          ),
-                        ),
-                        child: (_isProcessing)
-                            ? const SizedBox(
-                                width: 18,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                    strokeWidth: 2, color: Color(0xff666666)),
-                              )
-                            : TextWidget.subText(
-                                text: "Create",
-                                color: colors.colorWhite
-                                   ,
-                                theme: theme.isDarkMode,
-                                fw: 2,
-                              ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ],
           ),
         ),
-      ),
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                height: 40,
+                child: CustomTextFormField(
+                  fillColor: theme.isDarkMode
+                      ? WebDarkColors.backgroundTertiary
+                      : WebColors.backgroundTertiary,
+                  onChanged: (value) {
+                    setState(() {
+                      if (textCtrl.text.trim().isNotEmpty) {
+                        errorText = null;
+                      } else {
+                        errorText = "Please enter basket name";
+                      }
+                    });
+                  },
+                  hintText: "Enter basket name",
+                  hintStyle: WebTextStyles.custom(
+                    fontSize: 13,
+                    isDarkTheme: theme.isDarkMode,
+                    color: theme.isDarkMode
+                        ? WebDarkColors.textSecondary
+                        : WebColors.textSecondary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  keyboardType: TextInputType.text,
+                  style: WebTextStyles.custom(
+                    fontSize: 13,
+                    isDarkTheme: theme.isDarkMode,
+                    color: theme.isDarkMode
+                        ? WebDarkColors.textPrimary
+                        : WebColors.textPrimary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  textCtrl: textCtrl,
+                  textAlign: TextAlign.start,
+                  autofocus: true,
+                  inputFormate: [
+                    FilteringTextInputFormatter.allow(
+                      RegExp(r'[a-zA-Z0-9 ]'),
+                    ),
+                  ],
+                ),
+              ),
+              if (errorText != null) ...[
+                const SizedBox(height: 8),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    errorText!,
+                    style: WebTextStyles.custom(
+                      fontSize: 12,
+                      isDarkTheme: theme.isDarkMode,
+                      color: WebDarkColors.loss,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                height: 40,
+                child: ElevatedButton(
+                  onPressed: _isProcessing ? null : _handleButton,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: theme.isDarkMode
+                        ? WebDarkColors.primary
+                        : WebColors.primary,
+                    minimumSize: const Size(0, 40),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                  ),
+                  child: _isProcessing
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : Text(
+                          'Create',
+                          style: WebTextStyles.custom(
+                            fontSize: 13,
+                            isDarkTheme: theme.isDarkMode,
+                            color: WebColors.surface,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

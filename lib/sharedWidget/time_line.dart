@@ -76,7 +76,7 @@ class TimeLineWidget extends ConsumerWidget {
                     color: theme.isDarkMode
                         ? colors.textPrimaryDark  
                         : colors.textPrimaryLight,
-                    fw: 3)),
+                    fw: 1)),
             subtitle: Text(formatDateTime(value: orderHistoryData.norentm!),
                 style: TextWidget.textStyle(
                     fontSize: 12,
@@ -84,7 +84,7 @@ class TimeLineWidget extends ConsumerWidget {
                     color: theme.isDarkMode
                         ? colors.textSecondaryDark
                         : colors.textSecondaryLight,
-                    fw: 3)),
+                    fw: 1)),
           )),
     );
   }

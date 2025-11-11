@@ -9,7 +9,7 @@ import '../../../../provider/fund_provider.dart';
 import '../../../../provider/transcation_provider.dart';
 import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
-
+import '../../../../res/web_colors.dart';
 
 class MFOrderDetailScreenWeb extends ConsumerStatefulWidget {
   final Data mfOrderData;
@@ -20,10 +20,12 @@ class MFOrderDetailScreenWeb extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<MFOrderDetailScreenWeb> createState() => _MFOrderDetailScreenWebState();
+  ConsumerState<MFOrderDetailScreenWeb> createState() =>
+      _MFOrderDetailScreenWebState();
 }
 
-class _MFOrderDetailScreenWebState extends ConsumerState<MFOrderDetailScreenWeb> {
+class _MFOrderDetailScreenWebState
+    extends ConsumerState<MFOrderDetailScreenWeb> {
   final inProgressStatuses = {
     "PAYMENT NOT INITIATED",
     "MODIFIED",
@@ -39,52 +41,98 @@ class _MFOrderDetailScreenWebState extends ConsumerState<MFOrderDetailScreenWeb>
   @override
   Widget build(BuildContext context) {
     final theme = ref.watch(themeProvider);
-    final mfdata = ref.read(mfProvider);
 
     return Dialog(
-      backgroundColor: Colors.transparent,
+      backgroundColor: WebColors.surface,
       child: Container(
-        width: MediaQuery.of(context).size.width * 0.6,
-        height: MediaQuery.of(context).size.height * 0.9,
+        width: 500,
+        height: MediaQuery.of(context).size.height * 0.60,
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.60,
+        ),
         decoration: BoxDecoration(
-          color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
-          ),
+          // color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+          borderRadius: BorderRadius.circular(5),
+          // border: Border.all(
+          //   color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
+          // ),
         ),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
             // Header
-            _buildHeader(theme),
-            
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              margin: const EdgeInsets.only(bottom: 8),
+              decoration: BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(
+                    color: theme.isDarkMode
+                        ? WebDarkColors.divider
+                        : WebColors.divider,
+                  ),
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _buildHeader(theme),
+                  Material(
+                    color: Colors.transparent,
+                    shape: const CircleBorder(),
+                    child: InkWell(
+                      customBorder: const CircleBorder(),
+                      splashColor: theme.isDarkMode
+                          ? Colors.white.withOpacity(.15)
+                          : Colors.black.withOpacity(.15),
+                      highlightColor: theme.isDarkMode
+                          ? Colors.white.withOpacity(.08)
+                          : Colors.black.withOpacity(.08),
+                      onTap: () => Navigator.of(context).pop(),
+                      child: Padding(
+                        padding: const EdgeInsets.all(6),
+                        child: Icon(
+                          Icons.close,
+                          size: 20,
+                          color: theme.isDarkMode
+                              ? WebDarkColors.iconSecondary
+                              : WebColors.iconSecondary,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
             // Content
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.only(
+                    top: 0, bottom: 16, left: 16, right: 16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Re-Initiate Payment Button (if applicable)
-                    if (_shouldShowReinitiate())
-                      _buildReinitiateButton(theme, mfdata),
-                    
-                    if (_shouldShowReinitiate())
-                      const SizedBox(height: 24),
-                    
-                    // Cancel Order Button (if applicable)
-                    if (_shouldShowCancel())
-                      _buildCancelOrderButton(theme, mfdata),
-                    
-                    if (_shouldShowCancel())
-                      const SizedBox(height: 24),
-                    
+                    // // Re-Initiate Payment Button (if applicable)
+                    // if (_shouldShowReinitiate())
+                    //   _buildReinitiateButton(theme, mfdata),
+
+                    // if (_shouldShowReinitiate())
+                    //   const SizedBox(height: 24),
+
+                    // // Cancel Order Button (if applicable)
+                    // if (_shouldShowCancel())
+                    //   _buildCancelOrderButton(theme, mfdata),
+
+                    // if (_shouldShowCancel())
+                    //   const SizedBox(height: 24),
+
                     // Order Details Section
                     _buildOrderDetailsSection(theme),
-                    
+
                     // Reason/Remarks Section
                     if (_shouldShowReason()) ...[
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 10),
                       _buildReasonSection(theme),
                     ],
                   ],
@@ -98,59 +146,17 @@ class _MFOrderDetailScreenWebState extends ConsumerState<MFOrderDetailScreenWeb>
   }
 
   Widget _buildHeader(ThemesProvider theme) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: theme.isDarkMode ? colors.kColorLightGreyDarkTheme : colors.kColorLightGrey,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(16),
-          topRight: Radius.circular(16),
-        ),
+    return Text(
+      widget.mfOrderData.name ?? "Unknown Scheme",
+      style: TextWidget.textStyle(
+        fontSize: 16,
+        theme: theme.isDarkMode,
+        color:
+            theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+        fw: 1,
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Expanded(
-            child: Text(
-              widget.mfOrderData.name ?? "Unknown Scheme",
-              style: TextWidget.textStyle(
-                fontSize: 18,
-                theme: theme.isDarkMode,
-                color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                fw: 1,
-              ),
-              overflow: TextOverflow.ellipsis,
-              maxLines: 2,
-            ),
-          ),
-          const SizedBox(width: 12),
-          // Status Badge
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: _getStatusBadgeColor(theme),
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: Text(
-              _getStatusText(),
-              style: TextWidget.textStyle(
-                fontSize: 12,
-                theme: false,
-                color: _getStatusTextColor(theme),
-                fw: 2,
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-          IconButton(
-            onPressed: () => Navigator.of(context).pop(),
-            icon: Icon(
-              Icons.close,
-              color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-            ),
-          ),
-        ],
-      ),
+      overflow: TextOverflow.ellipsis,
+      maxLines: 2,
     );
   }
 
@@ -221,10 +227,14 @@ class _MFOrderDetailScreenWebState extends ConsumerState<MFOrderDetailScreenWeb>
         height: 50,
         decoration: BoxDecoration(
           border: Border.all(
-            color: theme.isDarkMode ? colors.textSecondaryDark.withOpacity(0.6) : colors.primaryLight,
+            color: theme.isDarkMode
+                ? colors.textSecondaryDark.withOpacity(0.6)
+                : colors.primaryLight,
             width: 1,
           ),
-          color: theme.isDarkMode ? colors.textSecondaryDark.withOpacity(0.6) : colors.btnBg,
+          color: theme.isDarkMode
+              ? colors.textSecondaryDark.withOpacity(0.6)
+              : colors.btnBg,
           borderRadius: BorderRadius.circular(8),
         ),
         child: Material(
@@ -234,8 +244,11 @@ class _MFOrderDetailScreenWebState extends ConsumerState<MFOrderDetailScreenWeb>
           ),
           child: InkWell(
             borderRadius: BorderRadius.circular(8),
-            splashColor: theme.isDarkMode ? colors.splashColorDark : colors.splashColorLight,
-            highlightColor: theme.isDarkMode ? colors.highlightDark : colors.highlightLight,
+            splashColor: theme.isDarkMode
+                ? colors.splashColorDark
+                : colors.splashColorLight,
+            highlightColor:
+                theme.isDarkMode ? colors.highlightDark : colors.highlightLight,
             onTap: () async {
               ref.read(fundProvider).fetchFunds(context);
               ref.read(transcationProvider).initialdata(context);
@@ -257,7 +270,9 @@ class _MFOrderDetailScreenWebState extends ConsumerState<MFOrderDetailScreenWeb>
                 style: TextWidget.textStyle(
                   fontSize: 14,
                   theme: theme.isDarkMode,
-                  color: theme.isDarkMode ? colors.colorWhite : colors.primaryLight,
+                  color: theme.isDarkMode
+                      ? colors.colorWhite
+                      : colors.primaryLight,
                   fw: 2,
                 ),
               ),
@@ -277,10 +292,14 @@ class _MFOrderDetailScreenWebState extends ConsumerState<MFOrderDetailScreenWeb>
         height: 50,
         decoration: BoxDecoration(
           border: Border.all(
-            color: theme.isDarkMode ? colors.textSecondaryDark.withOpacity(0.6) : colors.primaryLight,
+            color: theme.isDarkMode
+                ? colors.textSecondaryDark.withOpacity(0.6)
+                : colors.primaryLight,
             width: 1,
           ),
-          color: theme.isDarkMode ? colors.textSecondaryDark.withOpacity(0.6) : colors.btnBg,
+          color: theme.isDarkMode
+              ? colors.textSecondaryDark.withOpacity(0.6)
+              : colors.btnBg,
           borderRadius: BorderRadius.circular(8),
         ),
         child: Material(
@@ -290,8 +309,11 @@ class _MFOrderDetailScreenWebState extends ConsumerState<MFOrderDetailScreenWeb>
           ),
           child: InkWell(
             borderRadius: BorderRadius.circular(8),
-            splashColor: theme.isDarkMode ? colors.splashColorDark : colors.splashColorLight,
-            highlightColor: theme.isDarkMode ? colors.highlightDark : colors.highlightLight,
+            splashColor: theme.isDarkMode
+                ? colors.splashColorDark
+                : colors.splashColorLight,
+            highlightColor:
+                theme.isDarkMode ? colors.highlightDark : colors.highlightLight,
             onTap: () async {
               await showDialog(
                 context: context,
@@ -309,7 +331,9 @@ class _MFOrderDetailScreenWebState extends ConsumerState<MFOrderDetailScreenWeb>
                 style: TextWidget.textStyle(
                   fontSize: 14,
                   theme: theme.isDarkMode,
-                  color: theme.isDarkMode ? colors.colorWhite : colors.primaryLight,
+                  color: theme.isDarkMode
+                      ? colors.colorWhite
+                      : colors.primaryLight,
                   fw: 2,
                 ),
               ),
@@ -327,13 +351,15 @@ class _MFOrderDetailScreenWebState extends ConsumerState<MFOrderDetailScreenWeb>
         Text(
           "Order Details",
           style: TextWidget.textStyle(
-            fontSize: 16,
+            fontSize: 15,
             theme: theme.isDarkMode,
-            color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-            fw: 3,
+            color: theme.isDarkMode
+                ? colors.textPrimaryDark
+                : colors.textPrimaryLight,
+            fw: 2,
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 8),
         _buildInfoRowWithDivider(
           "Transaction Type",
           widget.mfOrderData.buySell == "P" ? "Purchase" : "Redemption",
@@ -366,75 +392,97 @@ class _MFOrderDetailScreenWebState extends ConsumerState<MFOrderDetailScreenWeb>
               : widget.mfOrderData.folioNo ?? "---",
           theme,
         ),
+        _buildInfoRowWithDivider(
+          "Status",
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: _getStatusBadgeColor(theme),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Text(
+              _getStatusText(),
+              style: TextWidget.textStyle(
+                fontSize: 12,
+                theme: false,
+                color: _getStatusTextColor(theme),
+                fw: 2,
+              ),
+            ),
+          ),
+          theme,
+        ),
       ],
     );
   }
 
   Widget _buildReasonSection(ThemesProvider theme) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          "Reason",
-          style: TextWidget.textStyle(
-            fontSize: 16,
-            theme: theme.isDarkMode,
-            color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-            fw: 3,
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            "Reason",
+            style: TextWidget.textStyle(
+              fontSize: 14,
+              theme: theme.isDarkMode,
+              color: theme.isDarkMode
+                  ? colors.textSecondaryDark
+                  : colors.textSecondaryLight,
+              fw: 1,
+            ),
           ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          widget.mfOrderData.remarks ?? "No remarks available",
-          style: TextWidget.textStyle(
-            fontSize: 14,
-            theme: theme.isDarkMode,
-            color: theme.isDarkMode ? colors.lossDark : colors.lossLight,
-            fw: 3,
+          Text(
+            widget.mfOrderData.remarks ?? "No remarks available",
+            style: TextWidget.textStyle(
+              fontSize: 14,
+              theme: theme.isDarkMode,
+              color: theme.isDarkMode ? colors.lossDark : colors.lossLight,
+              fw: 1,
+            ),
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
           ),
-          maxLines: 3,
-          overflow: TextOverflow.ellipsis,
-        ),
-      ],
+        ],
+      ),
     );
   }
 
-  Widget _buildInfoRowWithDivider(String title, String value, ThemesProvider theme) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              title,
-              style: TextWidget.textStyle(
-                fontSize: 14,
-                theme: false,
-                color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                fw: 3,
-              ),
+  Widget _buildInfoRowWithDivider(
+      String title, dynamic value, ThemesProvider theme) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            title,
+            style: TextWidget.textStyle(
+              fontSize: 14,
+              theme: false,
+              color: theme.isDarkMode
+                  ? colors.textSecondaryDark
+                  : colors.textSecondaryLight,
+              fw: 1,
             ),
-            Flexible(
-              child: Text(
-                value,
-                textAlign: TextAlign.end,
-                style: TextWidget.textStyle(
-                  fontSize: 14,
-                  theme: theme.isDarkMode,
-                  color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                  fw: 3,
+          ),
+          value is Widget
+              ? value
+              : Text(
+                  value.toString(),
+                  textAlign: TextAlign.end,
+                  style: TextWidget.textStyle(
+                    fontSize: 14,
+                    theme: false,
+                    color: theme.isDarkMode
+                        ? colors.textPrimaryDark
+                        : colors.textPrimaryLight,
+                    fw: 1,
+                  ),
                 ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        Divider(
-          thickness: 0.5,
-          color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -457,4 +505,3 @@ class _MFOrderDetailScreenWebState extends ConsumerState<MFOrderDetailScreenWeb>
     );
   }
 }
-

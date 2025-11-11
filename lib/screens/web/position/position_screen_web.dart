@@ -37,6 +37,8 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
   bool _sortAscending = true;
   String? _hoveredRowToken; // Track which row is being hovered
   final ScrollController _horizontalScrollController = ScrollController();
+  final ScrollController _verticalScrollController = ScrollController();
+  final ScrollController _tabScrollController = ScrollController();
 
   @override
   void initState() {
@@ -48,6 +50,8 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
   void dispose() {
     _socketSubscription?.cancel();
     _horizontalScrollController.dispose();
+    _verticalScrollController.dispose();
+    _tabScrollController.dispose();
     
     // Close WebSocket connection when screen is disposed
     try {
@@ -484,31 +488,48 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
       'Positions ($openPositionsCount)',
     ];
 
-    return Container(
-      decoration: BoxDecoration(
-        color: theme.isDarkMode 
-            ? WebDarkColors.inputBackground 
-            : WebColors.inputBackground,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: theme.isDarkMode ? WebDarkColors.inputBorder : WebColors.inputBorder,
-          width: 1,
-        ),
-      ),
+    return SizedBox(
+      height: 45,
       child: Row(
         mainAxisSize: MainAxisSize.min,
-        children: List.generate(tabs.length, (index) {
-          final isSelected = _selectedTabIndex == index;
-          final isLast = index == tabs.length - 1;
-          
-          return _buildSegmentedTab(
-            tabs[index],
-            index,
-            isSelected,
-            isLast,
-            theme,
-          );
-        }),
+        children: [
+          // Left arrow button
+          // _buildTabArrowButton(
+          //   icon: Icons.chevron_left,
+          //   onPressed: () => _scrollTabsLeft(),
+          //   theme: theme,
+          // ),
+          // const SizedBox(width: 5),
+          // Tabs scrollable area
+          SingleChildScrollView(
+            controller: _tabScrollController,
+            scrollDirection: Axis.horizontal,
+            physics: const ClampingScrollPhysics(),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (int index = 0; index < tabs.length; index++)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 6),
+                    child: _buildSegmentedTab(
+                      tabs[index],
+                      index,
+                      _selectedTabIndex == index,
+                      false,
+                      theme,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          // const SizedBox(width: 5),
+          // Right arrow button
+          // _buildTabArrowButton(
+          //   icon: Icons.chevron_right,
+          //   onPressed: () => _scrollTabsRight(),
+          //   theme: theme,
+          // ),
+        ],
       ),
     );
   }
@@ -520,34 +541,47 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
     bool isLast,
     ThemesProvider theme,
   ) {
-    return GestureDetector(
-      onTap: () => setState(() => _selectedTabIndex = index),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? (theme.isDarkMode ? WebDarkColors.primary : WebColors.primary)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(6),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: WebTextStyles.sub(
-                isDarkTheme: theme.isDarkMode,
-                color: isSelected
-                    ? WebDarkColors.textPrimary
-                    : (theme.isDarkMode 
-                        ? WebDarkColors.textSecondary 
-                        : WebColors.textSecondary),
-                fontWeight: isSelected ? WebFonts.semiBold : WebFonts.medium,
-                letterSpacing: 0.0,
-              ),
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: InkWell(
+        onTap: () => setState(() => _selectedTabIndex = index),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? (theme.isDarkMode
+                    ? WebDarkColors.backgroundTertiary
+                    : WebColors.backgroundTertiary)
+                : (theme.isDarkMode
+                    ? WebDarkColors.surface
+                    : WebColors.surface),
+            border: Border.all(
+              color: isSelected
+                  ? (theme.isDarkMode
+                      ? WebDarkColors.primary
+                      : WebColors.primary)
+                  : (theme.isDarkMode
+                      ? WebDarkColors.textSecondary
+                      : WebColors.textSecondary),
+              width: 1.5,
             ),
-          ],
+            borderRadius: BorderRadius.circular(50),
+          ),
+          child: Text(
+            title,
+            overflow: TextOverflow.ellipsis,
+            style: WebTextStyles.sub(
+              isDarkTheme: theme.isDarkMode,
+              color: isSelected
+                  ? (theme.isDarkMode
+                      ? WebDarkColors.textPrimary
+                      : WebColors.textPrimary)
+                  : (theme.isDarkMode
+                      ? WebDarkColors.navItem
+                      : WebColors.navItem),
+              fontWeight:  isSelected ? FontWeight.w700 : FontWeight.w600,
+            ),
+          ),
         ),
       ),
     );
@@ -745,42 +779,45 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
       //   ),
       //   borderRadius: BorderRadius.circular(8),
       // ),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.vertical,
-        physics: const AlwaysScrollableScrollPhysics(),
-        child: Scrollbar(
-          controller: _horizontalScrollController,
-          thumbVisibility: true,
-          child: SingleChildScrollView(
+      child: Scrollbar(
+        controller: _verticalScrollController,
+        thumbVisibility: true,
+        child: SingleChildScrollView(
+          controller: _verticalScrollController,
+          scrollDirection: Axis.vertical,
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Scrollbar(
             controller: _horizontalScrollController,
-            scrollDirection: Axis.horizontal,
-            physics: const AlwaysScrollableScrollPhysics(),
-            child: DataTable(
-              columnSpacing: 32,
-              showCheckboxColumn: false,
-              sortColumnIndex: _sortColumnIndex,
-              sortAscending: _sortAscending,
-              horizontalMargin: 12,
-              headingRowHeight: 44,
-              headingRowColor: WidgetStateProperty.all(Colors.transparent),
-              dataRowColor: WidgetStateProperty.resolveWith<Color?>(
-                (Set<WidgetState> states) {
-                  if (states.contains(WidgetState.hovered)) {
-                    return (theme.isDarkMode
-                            ? WebDarkColors.primary
-                            : WebColors.primary)
-                        .withOpacity(0.05);
-                  }
-                  if (states.contains(WidgetState.selected)) {
-                    return (theme.isDarkMode
-                            ? WebDarkColors.primary
-                            : WebColors.primary)
-                        .withOpacity(0.1);
-                  }
-                  return null;
-                },
-              ),
-        columns: [
+            thumbVisibility: true,
+            child: SingleChildScrollView(
+              controller: _horizontalScrollController,
+              scrollDirection: Axis.horizontal,
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: DataTable(
+                columnSpacing: 10,
+                showCheckboxColumn: false,
+                sortColumnIndex: _sortColumnIndex,
+                sortAscending: _sortAscending,
+                headingRowHeight: 44,
+                headingRowColor: WidgetStateProperty.all(Colors.transparent),
+                dataRowColor: WidgetStateProperty.resolveWith<Color?>(
+                  (Set<WidgetState> states) {
+                    if (states.contains(WidgetState.hovered)) {
+                      return (theme.isDarkMode
+                              ? WebDarkColors.primary
+                              : WebColors.primary)
+                          .withOpacity(0.05);
+                    }
+                    if (states.contains(WidgetState.selected)) {
+                      return (theme.isDarkMode
+                              ? WebDarkColors.primary
+                              : WebColors.primary)
+                          .withOpacity(0.1);
+                    }
+                    return null;
+                  },
+                ),
+                columns: [
           DataColumn(
             label: Builder(
               builder: (context) {
@@ -798,13 +835,14 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
               },
             ),
           ),
+          // Reordered: Instrument first (like order book)
           DataColumn(
-            label: _buildSortableColumnHeader('Product', theme, 1),
+            label: _buildSortableColumnHeader('Instrument', theme, 1),
             onSort: (columnIndex, ascending) =>
                 _onSortTable(columnIndex, ascending),
           ),
           DataColumn(
-            label: _buildSortableColumnHeader('Instrument', theme, 2),
+            label: _buildSortableColumnHeader('Product', theme, 2),
             onSort: (columnIndex, ascending) =>
                 _onSortTable(columnIndex, ascending),
           ),
@@ -829,12 +867,12 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                 _onSortTable(columnIndex, ascending),
           ),
           DataColumn(
-            label: _buildSortableColumnHeader('Avg Price', theme, 7),
+            label: _buildSortableColumnHeader('MTM', theme, 7),
             onSort: (columnIndex, ascending) =>
                 _onSortTable(columnIndex, ascending),
           ),
           DataColumn(
-            label: _buildSortableColumnHeader('MTM', theme, 8),
+            label: _buildSortableColumnHeader('Avg Price', theme, 8),
             onSort: (columnIndex, ascending) =>
                 _onSortTable(columnIndex, ascending),
           ),
@@ -858,17 +896,21 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
             onSort: (columnIndex, ascending) =>
                 _onSortTable(columnIndex, ascending),
           ),
-        ],
-        rows: filteredPositions.map((position) {
+                ],
+                rows: filteredPositions.asMap().entries.map((entry) {
+          final index = entry.key;
+          final position = entry.value;
           final isClosed = _isPositionClosed(position);
-          final positionToken = position.token ?? '';
+          // Create unique identifier for each position row (combine token, exchange, product, and index)
+          final uniqueId = '${position.token ?? ''}_${position.exch ?? ''}_${position.prd ?? ''}_${position.tsym ?? ''}_$index';
           
           return DataRow(
             onSelectChanged: (bool? selected) {
               _showPositionDetail(position);
             },
             cells: [
-              _buildCellWithHover(position, theme, positionToken, DataCell(
+              // Checkbox - left aligned
+              _buildCellWithHover(position, theme, uniqueId, DataCell(
                 Checkbox(
                   value: position.isExitSelection ?? false,
                   onChanged: isClosed ? null : (bool? value) {
@@ -884,8 +926,11 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                   },
                   activeColor: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
                 ),
-              )),
-              _buildCellWithHover(position, theme, positionToken, DataCell(
+              ), alignment: Alignment.centerLeft),
+              // Instrument - text (left aligned)
+              _buildInstrumentCellWithHover(position, theme, uniqueId, positionBook),
+              // Product - text (left aligned)
+              _buildCellWithHover(position, theme, uniqueId, DataCell(
                 Text(
                   position.sPrdtAli ?? 'N/A',
                   style: WebTextStyles.custom(
@@ -895,10 +940,9 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                     fontWeight: WebFonts.medium,
                   ),
                 ),
-              )),
-              _buildInstrumentCellWithHover(position, theme, positionToken, positionBook),
-             
-              _buildCellWithHover(position, theme, positionToken, DataCell(
+              ), alignment: Alignment.centerLeft),
+              // Qty - numeric (right aligned)
+              _buildCellWithHover(position, theme, uniqueId, DataCell(
                 Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -920,8 +964,9 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                     ),
                   ),
                 ),
-              )),
-              _buildCellWithHover(position, theme, positionToken, DataCell(
+              ), alignment: Alignment.centerRight),
+              // Act Avg Price - numeric (right aligned)
+              _buildCellWithHover(position, theme, uniqueId, DataCell(
                 Text(
                   position.avgPrc ?? '0.00',
                   style: WebTextStyles.custom(
@@ -931,8 +976,9 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                     fontWeight: WebFonts.medium,
                   ),
                 ),
-              )),
-              _buildCellWithHover(position, theme, positionToken, DataCell(
+              ), alignment: Alignment.centerRight),
+              // LTP - numeric (right aligned)
+              _buildCellWithHover(position, theme, uniqueId, DataCell(
                 Text(
                   position.lp ?? '0.00',
                   style: WebTextStyles.custom(
@@ -942,8 +988,9 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                     fontWeight: WebFonts.medium,
                   ),
                 ),
-              )),
-              _buildCellWithHover(position, theme, positionToken, DataCell(
+              ), alignment: Alignment.centerRight),
+              // P&L - numeric (right aligned)
+              _buildCellWithHover(position, theme, uniqueId, DataCell(
                 Text(
                   position.profitNloss ?? '0.00',
                   style: WebTextStyles.custom(
@@ -955,19 +1002,9 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                     fontWeight: WebFonts.medium,
                   ),
                 ),
-              )),
-              _buildCellWithHover(position, theme, positionToken, DataCell(
-                Text(
-                  position.avgPrc ?? '0.00',
-                  style: WebTextStyles.custom(
-                    fontSize: 13,
-                    isDarkTheme: theme.isDarkMode,
-                    color: _getPositionTextColor(position, theme),
-                    fontWeight: WebFonts.medium,
-                  ),
-                ),
-              )),
-              _buildCellWithHover(position, theme, positionToken, DataCell(
+              ), alignment: Alignment.centerRight),
+              // MTM - numeric (right aligned)
+              _buildCellWithHover(position, theme, uniqueId, DataCell(
                 Text(
                   position.mTm ?? '0.00',
                   style: WebTextStyles.custom(
@@ -979,8 +1016,21 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                     fontWeight: WebFonts.medium,
                   ),
                 ),
-              )),
-              _buildCellWithHover(position, theme, positionToken, DataCell(
+              ), alignment: Alignment.centerRight),
+              // Avg Price - numeric (right aligned)
+              _buildCellWithHover(position, theme, uniqueId, DataCell(
+                Text(
+                  position.avgPrc ?? '0.00',
+                  style: WebTextStyles.custom(
+                    fontSize: 13,
+                    isDarkTheme: theme.isDarkMode,
+                    color: _getPositionTextColor(position, theme),
+                    fontWeight: WebFonts.medium,
+                  ),
+                ),
+              ), alignment: Alignment.centerRight),
+              // Buy Qty - numeric (right aligned)
+              _buildCellWithHover(position, theme, uniqueId, DataCell(
                 Text(
                   position.daybuyqty ?? '0',
                   style: WebTextStyles.custom(
@@ -990,8 +1040,9 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                     fontWeight: WebFonts.medium,
                   ),
                 ),
-              )),
-              _buildCellWithHover(position, theme, positionToken, DataCell(
+              ), alignment: Alignment.centerRight),
+              // Sell Qty - numeric (right aligned)
+              _buildCellWithHover(position, theme, uniqueId, DataCell(
                 Text(
                   position.daysellqty ?? '0',
                   style: WebTextStyles.custom(
@@ -1001,8 +1052,9 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                     fontWeight: WebFonts.medium,
                   ),
                 ),
-              )),
-              _buildCellWithHover(position, theme, positionToken, DataCell(
+              ), alignment: Alignment.centerRight),
+              // Buy Avg - numeric (right aligned)
+              _buildCellWithHover(position, theme, uniqueId, DataCell(
                 Text(
                   position.daybuyavgprc ?? '0.00',
                   style: WebTextStyles.custom(
@@ -1012,8 +1064,9 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                     fontWeight: WebFonts.medium,
                   ),
                 ),
-              )),
-              _buildCellWithHover(position, theme, positionToken, DataCell(
+              ), alignment: Alignment.centerRight),
+              // Sell Avg - numeric (right aligned)
+              _buildCellWithHover(position, theme, uniqueId, DataCell(
                 Text(
                   position.daysellavgprc ?? '0.00',
                   style: WebTextStyles.custom(
@@ -1023,10 +1076,11 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                     fontWeight: WebFonts.medium,
                   ),
                 ),
-              )),
+              ), alignment: Alignment.centerRight),
             ],
           );
         }).toList(),
+              ),
             ),
           ),
         ),
@@ -1035,7 +1089,7 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
     
   }
 
-  DataCell _buildCellWithHover(PositionBookModel position, ThemesProvider theme, String token, DataCell cell) {
+  DataCell _buildCellWithHover(PositionBookModel position, ThemesProvider theme, String token, DataCell cell, {Alignment alignment = Alignment.centerRight}) {
     // Wrap the cell's child with MouseRegion to detect hover anywhere on the row
     // Use SizedBox.expand to fill the entire cell area, not just the text content
     return DataCell(
@@ -1044,7 +1098,7 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
         onExit: (_) => setState(() => _hoveredRowToken = null),
         child: SizedBox.expand(
           child: Align(
-            alignment: Alignment.centerLeft,
+            alignment: alignment, // Align content based on parameter
             child: cell.child,
           ),
         ),
@@ -1055,110 +1109,92 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
   DataCell _buildInstrumentCellWithHover(PositionBookModel position, ThemesProvider theme, String token, PortfolioProvider positionBook) {
     final isClosed = _isPositionClosed(position);
     final isHovered = _hoveredRowToken == token;
+    final displayText = '${position.symbol ?? ''} ${position.exch ?? ''} ${position.expDate ?? ''} ${position.option ?? ''}';
 
     return DataCell(
       MouseRegion(
         onEnter: (_) => setState(() => _hoveredRowToken = token),
         onExit: (_) => setState(() => _hoveredRowToken = null),
         child: SizedBox.expand(
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Text that shows half when hovered
-                Flexible(
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 120),
-                    constraints: BoxConstraints(
-                      maxWidth: isHovered ? 120 : double.infinity,
-                    ),
-                    child: Tooltip(
-                      message: '${position.symbol ?? ''} ${position.exch ?? ''} ${position.expDate ?? ''} ${position.option ?? ''}',
-                      child: AnimatedOpacity(
-                        opacity: isHovered ? 0.7 : 1.0,
-                        duration: const Duration(milliseconds: 120),
-                        child: Text(
-                          '${position.symbol ?? ''} ${position.exch ?? ''} ${position.expDate ?? ''} ${position.option ?? ''}',
-                          style: WebTextStyles.custom(
-                            fontSize: 13,
-                            isDarkTheme: theme.isDarkMode,
-                            color: _getPositionTextColor(position, theme),
-                            fontWeight: WebFonts.medium,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
+          child: Row(
+            children: [
+              // Text that takes at least 50% of width, leaves space for buttons
+              Expanded(
+                flex: isHovered ? 1 : 2, // When hovered, text takes less space but still visible
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Tooltip(
+                    message: displayText,
+                    child: Text(
+                      displayText,
+                      style: WebTextStyles.custom(
+                        fontSize: 13,
+                        isDarkTheme: theme.isDarkMode,
+                        color: _getPositionTextColor(position, theme),
+                        fontWeight: WebFonts.medium,
                       ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
                     ),
                   ),
                 ),
-                // Buttons that appear on hover
-                AnimatedOpacity(
+              ),
+              // Buttons on the right side - fade in/out
+              IgnorePointer(
+                ignoring: !isHovered,
+                child: AnimatedOpacity(
                   opacity: isHovered ? 1.0 : 0.0,
-                  duration: const Duration(milliseconds: 120),
+                  duration: const Duration(milliseconds: 150),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                        // _buildHoverButton(
-                        //   label: 'B',
-                        //   color: Colors.white,
-                        //   backgroundColor: theme.isDarkMode
-                        //       ? WebDarkColors.primary
-                        //       : WebColors.primary,
-                        //   onPressed: () async {
-                        //     await _handlePlaceOrder(context, position, true);
-                        //   },
-                        //   theme: theme,
-                        // ),
-                        // const SizedBox(width: 6),
-                        // _buildHoverButton(
-                        //   label: 'S',
-                        //   color: Colors.white,
-                        //   backgroundColor: theme.isDarkMode
-                        //       ? WebDarkColors.tertiary
-                        //       : WebColors.tertiary,
-                        //   onPressed: () async {
-                        //     await _handlePlaceOrder(context, position, false);
-                        //   },
-                        //   theme: theme,
-                        // ),
-                        // const SizedBox(width: 6),
-                       
-                        // Exit, Add, and Convert Position buttons for open positions
-                       
-                        // Convert Position button for open positions
-                     
-
-                         if (!isClosed && position.qty != "0" && position.sPrdtAli != "BO" && position.sPrdtAli != "CO" && !positionBook.isDay) ...[
-                          const SizedBox(width: 6),
-                        
-                          _buildHoverButton(
-                            label: 'Add',
-                            color: Colors.white,
-                            backgroundColor: theme.isDarkMode
-                                ? WebDarkColors.primary
-                                : WebColors.primary,
-                            onPressed: () async {
-                              await _handleAddPosition(context, position);
-                            },
-                            theme: theme,
-                          ),
-                          const SizedBox(width: 6),
-                            _buildHoverButton(
-                            label: 'Exit',
-                            color: Colors.white,
-                             backgroundColor: theme.isDarkMode
+                      // Add and Exit buttons for open positions
+                      if (!isClosed && position.qty != "0" && position.sPrdtAli != "BO" && position.sPrdtAli != "CO" && !positionBook.isDay) ...[
+                        _buildHoverButton(
+                          label: 'Add',
+                          color: Colors.white,
+                          backgroundColor: theme.isDarkMode
+                              ? WebDarkColors.primary
+                              : WebColors.primary,
+                          onPressed: () async {
+                            await _handleAddPosition(context, position);
+                          },
+                          theme: theme,
+                        ),
+                        const SizedBox(width: 6),
+                        _buildHoverButton(
+                          label: 'Exit',
+                          color: Colors.white,
+                          backgroundColor: theme.isDarkMode
                               ? WebDarkColors.tertiary
                               : WebColors.tertiary,
-                            onPressed: () async {
-                              await _handleExitPosition(context, position);
-                            },
-                            theme: theme,
-                          ),
-                        ],
-
-                         _buildHoverButton(
-                          icon: Icons.bar_chart,
+                          onPressed: () async {
+                            await _handleExitPosition(context, position);
+                          },
+                          theme: theme,
+                        ),
+                        const SizedBox(width: 6),
+                      ],
+                      // Chart button
+                      _buildHoverButton(
+                        icon: Icons.bar_chart,
+                        color: theme.isDarkMode
+                            ? WebDarkColors.textSecondary
+                            : WebColors.textSecondary,
+                        borderColor: theme.isDarkMode
+                            ? WebDarkColors.inputBorder
+                            : WebColors.inputBorder,
+                        borderRadius: 5.0,
+                        onPressed: () async {
+                          await _handleChartTap(context, position);
+                        },
+                        theme: theme,
+                      ),
+                      // Convert Position button for open positions
+                      if (!isClosed && position.qty != "0") ...[
+                        const SizedBox(width: 6),
+                        _buildHoverButton(
+                          icon: Icons.swap_horiz,
                           color: theme.isDarkMode
                               ? WebDarkColors.textSecondary
                               : WebColors.textSecondary,
@@ -1166,39 +1202,21 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                               ? WebDarkColors.inputBorder
                               : WebColors.inputBorder,
                           borderRadius: 5.0,
-                          onPressed: () async {
-                            await _handleChartTap(context, position);
+                          onPressed: () {
+                            _handleConvertPosition(context, position);
                           },
                           theme: theme,
                         ),
-
-                           if (!isClosed && position.qty != "0") ...[
-                          const SizedBox(width: 6),
-                          _buildHoverButton(
-                            icon: Icons.swap_horiz,
-                            color: theme.isDarkMode
-                                ? WebDarkColors.textSecondary
-                                : WebColors.textSecondary,
-                            borderColor: theme.isDarkMode
-                                ? WebDarkColors.inputBorder
-                                : WebColors.inputBorder,
-                            borderRadius: 5.0,
-                            onPressed: () {
-                              _handleConvertPosition(context, position);
-                            },
-                            theme: theme,
-                          ),
-                        ],
                       ],
-                    ),
+                    ],
                   ),
-                ],
+                ),
               ),
-            ),
+            ],
           ),
         ),
-      );
-    
+      ),
+    );
   }
 
   Widget _buildSortableColumnHeader(String label, ThemesProvider theme, int columnIndex) {
@@ -1320,12 +1338,12 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
       positions.sort((a, b) {
         int comparison = 0;
         switch (_sortColumnIndex) {
-          case 1: // Product
-            comparison = (a.sPrdtAli ?? '').compareTo(b.sPrdtAli ?? '');
-            break;
-          case 2: // Instrument
+          case 1: // Instrument (new order: Instrument is now column 1)
             comparison = '${a.symbol ?? ''} ${a.exch ?? ''}'
                 .compareTo('${b.symbol ?? ''} ${b.exch ?? ''}');
+            break;
+          case 2: // Product (new order: Product is now column 2)
+            comparison = (a.sPrdtAli ?? '').compareTo(b.sPrdtAli ?? '');
             break;
           case 3: // Qty
             comparison = (int.tryParse(a.qty ?? '0') ?? 0)
@@ -1343,13 +1361,13 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
             comparison = (double.tryParse(a.profitNloss ?? '0') ?? 0)
                 .compareTo(double.tryParse(b.profitNloss ?? '0') ?? 0);
             break;
-          case 7: // Avg Price
-            comparison = (double.tryParse(a.avgPrc ?? '0') ?? 0)
-                .compareTo(double.tryParse(b.avgPrc ?? '0') ?? 0);
-            break;
-          case 8: // MTM
+          case 7: // MTM (new order: MTM is now column 7)
             comparison = (double.tryParse(a.mTm ?? '0') ?? 0)
                 .compareTo(double.tryParse(b.mTm ?? '0') ?? 0);
+            break;
+          case 8: // Avg Price (new order: Avg Price is now column 8)
+            comparison = (double.tryParse(a.avgPrc ?? '0') ?? 0)
+                .compareTo(double.tryParse(b.avgPrc ?? '0') ?? 0);
             break;
           case 9: // Buy Qty
             comparison = (int.tryParse(a.daybuyqty ?? '0') ?? 0)

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/screens/web/ordersbook/modify_gtt_web.dart';
+import '../../../res/web_colors.dart';
 import '../../../sharedWidget/custom_exch_badge.dart';
 import '../../../models/order_book_model/gtt_order_book.dart';
 import '../../../models/marketwatch_model/get_quotes.dart';
@@ -122,36 +123,82 @@ class _GttOrderBookDetailScreenWebState extends ConsumerState<GttOrderBookDetail
             }
 
             return Dialog(
-              backgroundColor: Colors.transparent,
+               backgroundColor: WebColors.surface,
               child: Container(
-                width: MediaQuery.of(context).size.width * 0.6,
-                height: MediaQuery.of(context).size.height * 0.9,
+               width: 500,
+            height: MediaQuery.of(context).size.height * 0.60,
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.60,
+            ),
                 decoration: BoxDecoration(
-                  color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
+                  // color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                  borderRadius: BorderRadius.circular(5),
+                    // border: Border.all(
+                      // color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
+                    ),
+                // ),
+                child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                  children: [
+
+                     Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  margin: const EdgeInsets.only(bottom: 8),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(
+                        color: theme.isDarkMode
+                            ? WebDarkColors.divider
+                            : WebColors.divider,
+                      ),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                       _buildSymbolSection(theme, marketwatch, updatedGttOrder),
+                            // const SizedBox(height: 24),
+                      Material(
+                        color: Colors.transparent,
+                        shape: const CircleBorder(),
+                        child: InkWell(
+                          customBorder: const CircleBorder(),
+                          splashColor: theme.isDarkMode
+                              ? Colors.white.withOpacity(.15)
+                              : Colors.black.withOpacity(.15),
+                          highlightColor: theme.isDarkMode
+                              ? Colors.white.withOpacity(.08)
+                              : Colors.black.withOpacity(.08),
+                          onTap: () => Navigator.of(context).pop(),
+                          child: Padding(
+                            padding: const EdgeInsets.all(6),
+                            child: Icon(
+                              Icons.close,
+                              size: 20,
+                              color: theme.isDarkMode
+                                  ? WebDarkColors.iconSecondary
+                                  : WebColors.iconSecondary,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                child: Column(
-                  children: [
-                    // Header with close button
-                    _buildHeader(theme),
                     
                     // Content
                     Expanded(
                       child: SingleChildScrollView(
-                        padding: const EdgeInsets.all(24),
+                        padding: const EdgeInsets.all(16),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             // Symbol and Price Section
-                            _buildSymbolSection(theme, marketwatch, updatedGttOrder),
-                            const SizedBox(height: 24),
+                          
                             
                             // Action Buttons
-                            _buildActionButtons(theme, updatedGttOrder, marketwatch),
-                            const SizedBox(height: 24),
+                            // _buildActionButtons(theme, updatedGttOrder, marketwatch),
+                            // const SizedBox(height: 24),
                             
                             // Order Parameters Section
                             _buildOrderParametersSection(theme, updatedGttOrder),
@@ -219,7 +266,7 @@ class _GttOrderBookDetailScreenWebState extends ConsumerState<GttOrderBookDetail
       shape: RoundedRectangleBorder(),
       child: InkWell(
         customBorder: RoundedRectangleBorder(),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(0),
         splashColor: theme.isDarkMode ? colors.primaryDark.withOpacity(0.1) : colors.primaryLight.withOpacity(0.1),
         highlightColor: theme.isDarkMode ? colors.primaryDark.withOpacity(0.2) : colors.primaryLight.withOpacity(0.2),
         onTap: () async {
@@ -227,80 +274,78 @@ class _GttOrderBookDetailScreenWebState extends ConsumerState<GttOrderBookDetail
           await marketwatch.scripdepthsize(false);
           await marketwatch.calldepthApis(context, depthArgs, "");
         },
-        child: Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: theme.isDarkMode ? colors.kColorLightGreyDarkTheme : colors.kColorLightGrey,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Symbol and Exchange
+            Row(
+              children: [
+                Text(
+                  "${displayData.symbol?.replaceAll("-EQ", "").toUpperCase() ?? ''} ${displayData.expDate ?? ''} ${displayData.option ?? ''} ",
+                  style: TextWidget.textStyle(
+                    fontSize: 16,
+                    theme: theme.isDarkMode,
+                    color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                    fw: 1,
+                  ),
+                ),
+
+                 const SizedBox(width: 4),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: theme.isDarkMode ? colors.primaryDark.withOpacity(0.7) : colors.primaryLight.withOpacity(0.7),
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  child: Text(
+                    "${displayData.exch ?? ''}",
+                    style: TextWidget.textStyle(
+                      fontSize: 12,
+                      theme: false,
+                     color: colors.textPrimaryDark,
+                  fw: 1,
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Symbol and Exchange
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      "${displayData.symbol?.replaceAll("-EQ", "").toUpperCase() ?? ''} ${displayData.expDate ?? ''} ${displayData.option ?? ''} ",
-                      style: TextWidget.textStyle(
-                        fontSize: 20,
-                        theme: theme.isDarkMode,
-                        color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                        fw: 3,
-                      ),
-                    ),
+            const SizedBox(height: 8),
+            
+            // Price and Change
+            Row(
+              children: [
+                Text(
+                  "${displayData.ltp ?? displayData.prc ?? '0.00'}",
+                  style: TextWidget.textStyle(
+                    fontSize: 16,
+                    theme: false,
+                    color: (displayData.change == "null" || displayData.change == null) || displayData.change == "0.00"
+                        ? theme.isDarkMode
+                            ? colors.textSecondaryDark
+                            : colors.textSecondaryLight
+                        : (displayData.change?.startsWith("-") == true || displayData.perChange?.startsWith("-") == true)
+                            ? theme.isDarkMode
+                                ? colors.lossDark
+                                : colors.lossLight
+                            : theme.isDarkMode
+                                ? colors.profitDark
+                                : colors.profitLight,
+                    fw: 1,
                   ),
-                  CustomExchBadge(exch: "${displayData.exch}"),
-                ],
-              ),
-              const SizedBox(height: 16),
-              
-              // Price and Change
-              Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "${displayData.ltp ?? displayData.prc ?? '0.00'}",
-                          style: TextWidget.textStyle(
-                            fontSize: 24,
-                            theme: false,
-                            color: (displayData.change == "null" || displayData.change == null) || displayData.change == "0.00"
-                                ? theme.isDarkMode
-                                    ? colors.textSecondaryDark
-                                    : colors.textSecondaryLight
-                                : (displayData.change?.startsWith("-") == true || displayData.perChange?.startsWith("-") == true)
-                                    ? theme.isDarkMode
-                                        ? colors.lossDark
-                                        : colors.lossLight
-                                    : theme.isDarkMode
-                                        ? colors.profitDark
-                                        : colors.profitLight,
-                            fw: 3,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          "${(double.tryParse(displayData.change ?? '0.00') ?? 0.00).toStringAsFixed(2)} (${displayData.perChange ?? '0.00'}%)",
-                          style: TextWidget.textStyle(
-                            fontSize: 14,
-                            theme: false,
-                            color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                            fw: 2,
-                          ),
-                        ),
-                      ],
-                    ),
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  "${(double.tryParse(displayData.change ?? '0.00') ?? 0.00).toStringAsFixed(2)} (${displayData.perChange ?? '0.00'}%)",
+                  style: TextWidget.textStyle(
+                    fontSize: 16,
+                    theme: false,
+                    color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                    fw: 1,
                   ),
-                ],
-              ),
-            ],
-          ),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );
@@ -525,12 +570,12 @@ class _GttOrderBookDetailScreenWebState extends ConsumerState<GttOrderBookDetail
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (displayData.placeOrderParams != null) ...[
-          _buildInfoRowWithDivider(
+          _buildInfoRow(
             "${displayData.placeOrderParams?.trantype == 'B' ? 'Buy' : 'Sell'} Trigger",
             displayData.oivariable?.isNotEmpty == true ? "${displayData.oivariable?.first.d}" : displayData.d ?? "-",
             theme,
           ),
-          _buildInfoRowWithDivider(
+          _buildInfoRow(
             "Product",
             displayData.placeOrderParams?.prd == "C"
                 ? "CNC"
@@ -541,17 +586,17 @@ class _GttOrderBookDetailScreenWebState extends ConsumerState<GttOrderBookDetail
                         : "-",
             theme,
           ),
-          _buildInfoRowWithDivider(
+          _buildInfoRow(
             "Order Type",
             "${displayData.placeOrderParams?.prctyp}",
             theme,
           ),
-          _buildInfoRowWithDivider(
+          _buildInfoRow(
             "Qty",
             "${displayData.placeOrderParams?.qty}",
             theme,
           ),
-          _buildInfoRowWithDivider(
+          _buildInfoRow(
             "Price",
             displayData.placeOrderParams?.prctyp == "MKT" ? "MKT" : "${displayData.placeOrderParams?.prc}",
             theme,
@@ -569,7 +614,7 @@ class _GttOrderBookDetailScreenWebState extends ConsumerState<GttOrderBookDetail
             ),
           ),
           const SizedBox(height: 16),
-          _buildInfoRowWithDivider(
+          _buildInfoRow(
             "Product",
             displayData.placeOrderParamsLeg2?.prd == "C"
                 ? "CNC"
@@ -580,17 +625,17 @@ class _GttOrderBookDetailScreenWebState extends ConsumerState<GttOrderBookDetail
                         : "-",
             theme,
           ),
-          _buildInfoRowWithDivider(
+          _buildInfoRow(
             "Order Type",
             "${displayData.placeOrderParamsLeg2?.prctyp}",
             theme,
           ),
-          _buildInfoRowWithDivider(
+          _buildInfoRow( 
             "Qty",
             "${displayData.placeOrderParamsLeg2?.qty}",
             theme,
           ),
-          _buildInfoRowWithDivider(
+          _buildInfoRow(
             "Price",
             displayData.placeOrderParamsLeg2?.prctyp == "MKT" ? "MKT" : "${displayData.placeOrderParamsLeg2?.prc}",
             theme,
@@ -622,39 +667,32 @@ class _GttOrderBookDetailScreenWebState extends ConsumerState<GttOrderBookDetail
     );
   }
 
-  Widget _buildInfoRowWithDivider(String title, String value, ThemesProvider theme, [Color? valueColor]) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              title,
-              style: TextWidget.textStyle(
-                fontSize: 14,
-                theme: false,
-                color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                fw: 3,
-              ),
+   Widget _buildInfoRow(String title, String value, ThemesProvider theme, [Color? valueColor]) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            title,
+            style: TextWidget.textStyle(
+              fontSize: 14,
+              theme: false,
+              color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+              fw: 1,
             ),
-            Text(
-              value,
-              style: TextWidget.textStyle(
-                fontSize: 14,
-                theme: theme.isDarkMode,
-                color: valueColor ?? (theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight),
-                fw: 3,
-              ),
+          ),
+          Text(
+            value,
+            style: TextWidget.textStyle(
+              fontSize: 14,
+              theme: false,
+              color: valueColor ?? (theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight),
+              fw: 1,
             ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        Divider(
-          thickness: 0.5,
-          color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
-        ),
-      ],
+          ),
+        ],
+      ),
     );
   }
 }

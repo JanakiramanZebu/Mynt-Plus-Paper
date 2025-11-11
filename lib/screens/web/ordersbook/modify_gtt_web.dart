@@ -13,6 +13,7 @@ import '../../../provider/network_state_provider.dart';
 import '../../../provider/order_input_provider.dart';
 import '../../../provider/order_provider.dart';
 import '../../../provider/thems.dart';
+import '../../../provider/websocket_provider.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/cust_text_formfield.dart';
 import '../../../sharedWidget/no_internet_widget.dart';
@@ -43,6 +44,11 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
   String price = "0.00";
   bool _GTTPriceTypeIsMarket = false;
   bool _GTTOCOPriceTypeIsMarket = false;
+  
+  // For real-time LTP updates
+  String? currentLtp;
+  String? currentChange;
+  String? currentPerChange;
 
   @override
   void initState() {
@@ -61,6 +67,11 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
           .toString());
 
       product = "I";
+      
+      // Initialize LTP from order book
+      currentLtp = widget.gttOrderBook.ltp ?? widget.gttOrderBook.prc ?? "0.00";
+      currentChange = widget.gttOrderBook.change ?? "0.00";
+      currentPerChange = widget.gttOrderBook.perChange ?? "0.00";
     });
     super.initState();
   }
@@ -70,7 +81,51 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
     final theme = ref.read(themeProvider);
     final internet = ref.watch(networkStateProvider);
     
-    return PopScope(
+    return StreamBuilder<Map>(
+      stream: ref.watch(websocketProvider).socketDataStream,
+      builder: (context, snapshot) {
+        final socketDatas = snapshot.data ?? {};
+        
+        // Get updated LTP, change, and perChange from websocket if available
+        String? updatedLtp = currentLtp;
+        String? updatedChange = currentChange;
+        String? updatedPerChange = currentPerChange;
+        
+        if (widget.gttOrderBook.token != null && socketDatas.containsKey(widget.gttOrderBook.token)) {
+          final socketData = socketDatas[widget.gttOrderBook.token];
+          if (socketData != null) {
+            final lp = socketData['lp']?.toString();
+            final pc = socketData['pc']?.toString();
+            final chng = socketData['chng']?.toString();
+            
+            if (lp != null && lp != "null" && lp != "0" && lp != "0.00") {
+              updatedLtp = lp;
+            }
+            
+            if (pc != null && pc != "null" && pc != "0" && pc != "0.00") {
+              updatedPerChange = pc;
+            }
+            
+            if (chng != null && chng != "null") {
+              updatedChange = chng;
+            }
+          }
+        }
+        
+        // Update state variables if changed
+        if (updatedLtp != currentLtp || updatedChange != currentChange || updatedPerChange != currentPerChange) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              setState(() {
+                currentLtp = updatedLtp;
+                currentChange = updatedChange;
+                currentPerChange = updatedPerChange;
+              });
+            }
+          });
+        }
+        
+        return PopScope(
       canPop: true,
       onPopInvokedWithResult: (didPop, result) async {
         if (didPop) return;
@@ -83,14 +138,17 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
       child: Dialog(
         backgroundColor: Colors.transparent,
         child: Container(
-          width: MediaQuery.of(context).size.width * 0.5,
+          width: 500,
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.85,
+          ),
           height: MediaQuery.of(context).size.height * 0.85,
           decoration: BoxDecoration(
             color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
-            ),
+            borderRadius: BorderRadius.circular(5),
+            // border: Border.all(
+            //   color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
+            // ),
           ),
           child: Column(
             children: [
@@ -107,8 +165,8 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Symbol and Exchange Info
-                        _buildSymbolSection(theme),
-                        const SizedBox(height: 24),
+                        // _buildSymbolSection(theme),
+                        // const SizedBox(height: 24),
                         
                         // Trigger Price Section
                         _buildTriggerPriceSection(theme),
@@ -141,11 +199,22 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
         ),
       ),
     );
+      },
+    );
   }
 
   Widget _buildHeader(ThemesProvider theme) {
+    final symbol = widget.gttOrderBook.symbol?.replaceAll("-EQ", "").toUpperCase() ?? widget.scripInfo.symbol ?? '';
+    final expDate = widget.gttOrderBook.expDate ?? widget.scripInfo.expDate ?? '';
+    final option = widget.gttOrderBook.option ?? widget.scripInfo.option ?? '';
+    final exchange = widget.gttOrderBook.exch ?? widget.scripInfo.exch ?? '';
+    
+    final ltp = currentLtp ?? widget.gttOrderBook.ltp ?? widget.gttOrderBook.prc ?? '0.00';
+    final change = currentChange ?? widget.gttOrderBook.change ?? '0.00';
+    final perChange = currentPerChange ?? widget.gttOrderBook.perChange ?? '0.00';
+    
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
         border: Border(
           bottom: BorderSide(
@@ -159,69 +228,100 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Symbol and Exchange
                 Row(
                   children: [
-                    TextWidget.subText(
-                      text: "${widget.scripInfo.symbol!} ",
-                      theme: theme.isDarkMode,
-                      color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                      fw: 3,
-                      maxLines: 1,
-                      textOverflow: TextOverflow.ellipsis,
+                    Text(
+                      "$symbol $expDate $option ",
+                      style: TextWidget.textStyle(
+                        fontSize: 16,
+                        theme: theme.isDarkMode,
+                        color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                        fw: 1,
+                      ),
                     ),
-                    if (widget.scripInfo.option!.isNotEmpty)
-                      TextWidget.subText(
-                        text: widget.scripInfo.option!,
-                        theme: theme.isDarkMode,
-                        color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                        fw: 3,
-                        maxLines: 1,
-                        textOverflow: TextOverflow.ellipsis,
-                      ),
-                    if (widget.scripInfo.expDate!.isNotEmpty)
-                      TextWidget.subText(
-                        text: " ${widget.scripInfo.expDate} ",
-                        theme: theme.isDarkMode,
-                        color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                        fw: 3,
-                        maxLines: 1,
-                        textOverflow: TextOverflow.ellipsis,
-                      ),
+                    const SizedBox(width: 4),
                     Container(
-                      margin: const EdgeInsets.only(right: 4),
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(2),
-                        color: const Color(0xffF1F3F8),
+                        color: theme.isDarkMode ? colors.primaryDark.withOpacity(0.7) : colors.primaryLight.withOpacity(0.7),
+                        borderRadius: BorderRadius.circular(5),
                       ),
                       child: Text(
-                        "${widget.scripInfo.exch}",
-                        overflow: TextOverflow.ellipsis,
-                        style: textStyle(const Color(0xff666666), 10, FontWeight.w500),
+                        exchange,
+                        style: TextWidget.textStyle(
+                          fontSize: 12,
+                          theme: false,
+                          color: colors.textPrimaryDark,
+                          fw: 1,
+                        ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  "GTT Order Modification",
-                  style: TextWidget.textStyle(
-                    fontSize: 14,
-                    theme: theme.isDarkMode,
-                    color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                  ),
+                const SizedBox(height: 8),
+                // Price and Change
+                Row(
+                  children: [
+                    Text(
+                      ltp,
+                      style: TextWidget.textStyle(
+                        fontSize: 16,
+                        theme: false,
+                        color: (change == "null" || change == "0.00")
+                            ? (theme.isDarkMode
+                                ? colors.textSecondaryDark
+                                : colors.textSecondaryLight)
+                            : (change.startsWith("-") == true || perChange.startsWith("-") == true)
+                                ? (theme.isDarkMode
+                                    ? colors.lossDark
+                                    : colors.lossLight)
+                                : (theme.isDarkMode
+                                    ? colors.profitDark
+                                    : colors.profitLight),
+                        fw: 1,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      "${(double.tryParse(change) ?? 0.00).toStringAsFixed(2)} ($perChange%)",
+                      style: TextWidget.textStyle(
+                        fontSize: 16,
+                        theme: false,
+                        color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                        fw: 1,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
           ),
-          IconButton(
-            onPressed: () {
-              ref.read(ordInputProvider).clearTextField();
-              Navigator.pop(context);
-            },
-            icon: Icon(
-              Icons.close,
-              color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+          Material(
+            color: Colors.transparent,
+            shape: const CircleBorder(),
+            child: InkWell(
+              customBorder: const CircleBorder(),
+              splashColor: theme.isDarkMode
+                  ? Colors.white.withOpacity(.15)
+                  : Colors.black.withOpacity(.15),
+              highlightColor: theme.isDarkMode
+                  ? Colors.white.withOpacity(.08)
+                  : Colors.black.withOpacity(.08),
+              onTap: () {
+                ref.read(ordInputProvider).clearTextField();
+                Navigator.pop(context);
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(6),
+                child: Icon(
+                  Icons.close,
+                  size: 20,
+                  color: theme.isDarkMode
+                      ? colors.textSecondaryDark
+                      : colors.textSecondaryLight,
+                ),
+              ),
             ),
           ),
         ],
@@ -252,7 +352,7 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
               ),
               const SizedBox(height: 4),
               Text(
-                "${widget.gttOrderBook.ltp}",
+                currentLtp ?? widget.gttOrderBook.ltp ?? widget.gttOrderBook.prc ?? '0.00',
                 style: TextWidget.textStyle(
                   fontSize: 16,
                   theme: theme.isDarkMode,

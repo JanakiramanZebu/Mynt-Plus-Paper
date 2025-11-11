@@ -7353,7 +7353,9 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
             .read(orderProvider)
             .removeBsktScrip(widget.orderArg.raw['index'], bsktName);
       }
-      addBasketScrip(orderInput, bsktName, widget.isBasket == "Basket");
+      // Pass false for stay so basket dialog stays open when adding new symbols
+      // Only close basket dialog when editing existing basket script
+      addBasketScrip(orderInput, bsktName, false);
     } else {
       if (!isSliceOrd) {
         ScaffoldMessenger.of(context).removeCurrentSnackBar();

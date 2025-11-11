@@ -220,22 +220,29 @@ class _PositionDetailScreenWebState extends ConsumerState<PositionDetailScreenWe
                 Text(
                   "${position.symbol?.replaceAll("-EQ", "")} ${position.expDate} ${position.option} ",
                   style: TextWidget.textStyle(
-                    fontSize: 14,
+                    fontSize: 16,
                     theme: theme.isDarkMode,
                     color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                    fw: 2,
+                    fw: 1,
                   ),
                 ),
                 const SizedBox(width: 4),
-                 Text(
-              "${position.exch}",
-              style: TextWidget.textStyle(
-                fontSize: 14,
-                theme: theme.isDarkMode,
-                 color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                fw: 2,
-              ),
-            ),
+                 Container(
+                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: theme.isDarkMode ? colors.primaryDark.withOpacity(0.7) : colors.primaryLight.withOpacity(0.7),
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                   child: Text(
+                                 "${position.exch}",
+                                 style: TextWidget.textStyle(
+                                   fontSize: 12,
+                                   theme: theme.isDarkMode,
+                   color: colors.textPrimaryDark,
+                                   fw: 1,
+                                 ),
+                               ),
+                 ),
               ],
             ),
             const SizedBox(height: 8),
@@ -246,7 +253,7 @@ class _PositionDetailScreenWebState extends ConsumerState<PositionDetailScreenWe
                   Text(
                       "${position.lp}",
                       style: TextWidget.textStyle(
-                        fontSize: 14,
+                        fontSize: 16,
                         theme: theme.isDarkMode,
                         color: (position.lp == "null" || position.lp == null) ||
                                 position.lp == "0.00"
@@ -260,7 +267,7 @@ class _PositionDetailScreenWebState extends ConsumerState<PositionDetailScreenWe
                                 : theme.isDarkMode
                                     ? colors.profitDark
                                     : colors.profitLight,
-                        fw: 2,
+                        fw: 1,
                       ),
                     ),
                     const SizedBox(width: 4),
@@ -268,10 +275,10 @@ class _PositionDetailScreenWebState extends ConsumerState<PositionDetailScreenWe
                      Text(
                   "${double.parse("${position.chng ?? 0.00}").toStringAsFixed(2)} (${position.perChange ?? 0.00}%)",
                   style: TextWidget.textStyle(
-                    fontSize: 14,
+                    fontSize: 16,
                     theme: theme.isDarkMode,
                     color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                    fw: 2,
+                    fw: 1,
                   ),
                 ),
                 ],
@@ -576,19 +583,19 @@ class _PositionDetailScreenWebState extends ConsumerState<PositionDetailScreenWe
           Text(
             title,
             style: TextWidget.textStyle(
-              fontSize: 13,
+              fontSize: 14,
               theme: false,
               color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-              fw: 2,
+              fw: 1,
             ),
           ),
           Text(
             value,
             style: TextWidget.textStyle(
-              fontSize: 13,
+              fontSize: 14,
               theme: false,
               color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-              fw: 2,
+              fw: 1,
             ),
           ),
         ],

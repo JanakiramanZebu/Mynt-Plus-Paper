@@ -228,11 +228,11 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
           ),
         ),
       ),
-      child: Row(
+      child: const Row(
         children: [
           // Spacer to push search and refresh to the right
          
-          const SizedBox(width: 8),
+          SizedBox(width: 8),
         ],
       ),
     );
@@ -260,7 +260,7 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
             scrollDirection: Axis.horizontal,
             physics: const AlwaysScrollableScrollPhysics(),
             child: DataTable(
-              columnSpacing: 32,
+              columnSpacing: 10,
               showCheckboxColumn: false,
               sortColumnIndex: _sortColumnIndex,
               sortAscending: _sortAscending,
@@ -390,58 +390,67 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
         onEnter: (_) => setState(() => _hoveredRowToken = token),
         onExit: (_) => setState(() => _hoveredRowToken = null),
         child: SizedBox.expand(
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: SizedBox(
-              width: 250,
-              child: !isHovered ? Tooltip(
-                message: holdingName,
-                waitDuration: const Duration(milliseconds: 500),
-                child: Text(
-                  holdingName,
-                  style: WebTextStyles.custom(
-                    fontSize: 13,
-                    isDarkTheme: theme.isDarkMode,
-                    color: theme.isDarkMode
-                        ? WebDarkColors.textPrimary
-                        : WebColors.textPrimary,
-                    fontWeight: WebFonts.medium,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
-                ),
-              ) :
-              AnimatedOpacity(
-                opacity: isHovered ? 1.0 : 0.0,
-                duration: const Duration(milliseconds: 120),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Redeem button - only show if holding has units
-                    if (avgQty > 0) ...[
-                      _buildHoverButton(
-                        label: 'Redeem',
-                        color: Colors.white,
-                        backgroundColor: theme.isDarkMode
-                            ? WebDarkColors.error
-                            : WebColors.error,
-                        onPressed: () async {
-                          await _handleRedeem(context, holding);
-                        },
-                        theme: theme,
+          child: Row(
+            children: [
+              // Text that takes at least 50% of width, leaves space for buttons
+              Expanded(
+                flex: isHovered ? 1 : 2, // When hovered, text takes less space but still visible
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Tooltip(
+                    message: holdingName,
+                    waitDuration: const Duration(milliseconds: 500),
+                    child: Text(
+                      holdingName,
+                      style: WebTextStyles.custom(
+                        fontSize: 13,
+                        isDarkTheme: theme.isDarkMode,
+                        color: theme.isDarkMode
+                            ? WebDarkColors.textPrimary
+                            : WebColors.textPrimary,
+                        fontWeight: WebFonts.medium,
                       ),
-                    ],
-                  ],
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                  ),
                 ),
               ),
-            ),
+              // Buttons on the right side - fade in/out
+              IgnorePointer(
+                ignoring: !isHovered,
+                child: AnimatedOpacity(
+                  opacity: isHovered ? 1.0 : 0.0,
+                  duration: const Duration(milliseconds: 150),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Redeem button - only show if holding has units
+                      if (avgQty > 0) ...[
+                        _buildHoverButton(
+                          label: 'Redeem',
+                          color: Colors.white,
+                          backgroundColor: theme.isDarkMode
+                              ? WebDarkColors.error
+                              : WebColors.error,
+                          onPressed: () async {
+                            await _handleRedeem(context, holding);
+                          },
+                          theme: theme,
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
     );
   }
 
-  DataCell _buildCellWithHover(dynamic holding, ThemesProvider theme, String token, DataCell cell) {
+  DataCell _buildCellWithHover(dynamic holding, ThemesProvider theme, String token, DataCell cell, {Alignment alignment = Alignment.centerRight}) {
     // Wrap the cell's child with MouseRegion to detect hover anywhere on the row
     // Use SizedBox.expand to fill the entire cell area, not just the text content
     return DataCell(
@@ -450,7 +459,7 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
         onExit: (_) => setState(() => _hoveredRowToken = null),
         child: SizedBox.expand(
           child: Align(
-            alignment: Alignment.centerLeft,
+            alignment: alignment, // Right align for numbers, left align for text
             child: cell.child,
           ),
         ),

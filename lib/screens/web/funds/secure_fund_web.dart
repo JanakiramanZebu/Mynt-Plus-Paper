@@ -31,11 +31,11 @@ class _SecureFundWebState extends ConsumerState<SecureFundWeb> {
         child: Padding(
           padding: const EdgeInsets.all(24.0),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               // Header Section
-              _buildHeaderSection(funds, theme),
-              const SizedBox(height: 32),
+              // _buildHeaderSection(funds, theme),
+              // const SizedBox(height: 32),
               
               // Available Margin Card
               _buildAvailableMarginCard(funds, theme, trancation),
@@ -54,15 +54,7 @@ class _SecureFundWebState extends ConsumerState<SecureFundWeb> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          'Funds & Margin',
-          style: TextWidget.textStyle(
-            fontSize: 28,
-            theme: theme.isDarkMode,
-            color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-            fw: 3,
-          ),
-        ),
+       
         IconButton(
           onPressed: () {
             ref.read(fundProvider).fetchFunds(context);
@@ -78,86 +70,70 @@ class _SecureFundWebState extends ConsumerState<SecureFundWeb> {
   }
 
   Widget _buildAvailableMarginCard(funds, ThemesProvider theme, trancation) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: theme.isDarkMode ? colors.kColorLightGreyDarkTheme : colors.kColorLightGrey,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
-        ),
-      ),
+    return Container(     
+      padding: const EdgeInsets.all(20),     
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           // Available Margin Title and Value
+          TextWidget.titleText(
+            text: "Available Margin",
+            color: theme.isDarkMode
+                ? colors.textSecondaryDark
+                : colors.textSecondaryLight,
+            fw: 0,
+            theme: false,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            getFormatter(
+              value: double.parse("${funds.fundDetailModel?.avlMrg ?? 0.00}"),
+              v4d: false,
+              noDecimal: false,
+            ),
+            style: TextWidget.textStyle(
+              fontSize: 35,
+              theme: false,
+              color: theme.isDarkMode
+                  ? colors.textPrimaryDark
+                  : colors.textPrimaryLight,
+              fw: 1,
+            ),
+          ),
+          const SizedBox(height: 16),
+          // Action Buttons
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  TextWidget.subText(
-                    text: "Available Margin",
-                    color: theme.isDarkMode
-                        ? colors.textSecondaryDark
-                        : colors.textSecondaryLight,
-                    fw: 0,
-                    theme: false,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    getFormatter(
-                      value: double.parse("${funds.fundDetailModel?.avlMrg ?? 0.00}"),
-                      v4d: false,
-                      noDecimal: false,
-                    ),
-                    style: TextWidget.textStyle(
-                      fontSize: 24,
-                      theme: false,
-                      color: theme.isDarkMode
-                          ? colors.textPrimaryDark
-                          : colors.textPrimaryLight,
-                      fw: 3,
-                    ),
-                  ),
-                ],
+              _buildActionButton(
+                "Add Money",
+                true,
+                theme,
+                () {
+                  showDialog(context: context, builder: (context) => FundScreenWeb(dd: trancation));
+                },
               ),
-              // Action Buttons
-              Row(
-                children: [
-                  _buildActionButton(
-                    "Add Money",
-                    true,
-                    theme,
-                    () {
-                      showDialog(context: context, builder: (context) => FundScreenWeb(dd: trancation));
-                    },
-                  ),
-                  const SizedBox(width: 12),
-                  _buildActionButton(
-                    "Withdraw",
-                    false,
-                    theme,
+              const SizedBox(width: 12),
+              _buildActionButton(
+                "Withdraw",
+                false,
+                theme,
+                () async {
+                  await trancation.fetchValidateToken(context);
+                  Future.delayed(
+                    const Duration(milliseconds: 100),
                     () async {
-                      await trancation.fetchValidateToken(context);
-                      Future.delayed(
-                        const Duration(milliseconds: 100),
-                        () async {
-                          await trancation.ip();
-                          await trancation.fetchupiIdView(
-                            trancation.bankdetails!.dATA![trancation.indexss][1],
-                            trancation.bankdetails!.dATA![trancation.indexss][2],
-                          );
-                          await trancation.fetchcwithdraw(context);
-                        },
+                      await trancation.ip();
+                      await trancation.fetchupiIdView(
+                        trancation.bankdetails!.dATA![trancation.indexss][1],
+                        trancation.bankdetails!.dATA![trancation.indexss][2],
                       );
-                      trancation.changebool(false);
-                      showDialog(context: context, builder: (context) => WithdrawScreenWeb(withdarw: trancation, foucs: FocusNode(), theme: theme, segment: ""));
+                      await trancation.fetchcwithdraw(context);
                     },
-                  ),
-                ],
+                  );
+                  trancation.changebool(false);
+                  showDialog(context: context, builder: (context) => WithdrawScreenWeb(withdarw: trancation, foucs: FocusNode(), theme: theme, segment: ""));
+                },
               ),
             ],
           ),
@@ -168,7 +144,7 @@ class _SecureFundWebState extends ConsumerState<SecureFundWeb> {
 
   Widget _buildActionButton(String text, bool isPrimary, ThemesProvider theme, VoidCallback onPressed) {
     return SizedBox(
-      height: 40,
+      height: 48,
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
           backgroundColor: isPrimary
@@ -186,9 +162,9 @@ class _SecureFundWebState extends ConsumerState<SecureFundWeb> {
                   width: 1,
                 ),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(5),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 35, vertical: 8),
         ),
         onPressed: onPressed,
         child: Text(
@@ -261,7 +237,7 @@ class _SecureFundWebState extends ConsumerState<SecureFundWeb> {
       height: 400,
       decoration: BoxDecoration(
         color: theme.isDarkMode ? colors.kColorLightGreyDarkTheme : colors.kColorLightGrey,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(0),
         border: Border.all(
           color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
         ),
@@ -269,40 +245,35 @@ class _SecureFundWebState extends ConsumerState<SecureFundWeb> {
       child: Column(
         children: [
           // Card Header
-          InkWell(
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(12),
-              topRight: Radius.circular(12),
-            ),
-            child: Container(
-              padding: const EdgeInsets.all(20),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  TextWidget.subText(
-                    text: title,
-                    theme: false,
-                    color: theme.isDarkMode
-                        ? colors.textSecondaryDark
-                        : colors.textSecondaryLight,
-                    fw: 0,
-                  ),
-                  Row(
-                    children: [
-                      TextWidget.subText(
-                        text: value,
-                        theme: false,
-                        color: theme.isDarkMode
-                            ? colors.textPrimaryDark
-                            : colors.textPrimaryLight,
-                        fw: 3,
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+          Container(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                TextWidget.subText(
+                  text: title,
+                  theme: false,
+                  color: theme.isDarkMode
+                      ? colors.textSecondaryDark
+                      : colors.textSecondaryLight,
+                  fw: 0,
+                ),
+                Row(
+                  children: [
+                    TextWidget.heroText(
+                      text: value,
+                      theme: false,
+                      color: theme.isDarkMode
+                          ? colors.textPrimaryDark
+                          : colors.textPrimaryLight,
+                      fw: 1,
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
+          Divider(color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight),
           // Expanded Content with constrained height for scrolling
           Expanded(
             child: Container(
@@ -549,7 +520,7 @@ class _SecureFundWebState extends ConsumerState<SecureFundWeb> {
             color: theme.isDarkMode
                 ? colors.textPrimaryDark
                 : colors.textPrimaryLight,
-            fw: 0,
+            fw: 1,
           ),
         ],
       ),

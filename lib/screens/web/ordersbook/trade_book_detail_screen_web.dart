@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:mynt_plus/sharedWidget/custom_exch_badge.dart';
 
 import '../../../models/order_book_model/trade_book_model.dart';
 import '../../../models/marketwatch_model/get_quotes.dart';
@@ -11,6 +9,7 @@ import '../../../provider/thems.dart';
 import '../../../provider/websocket_provider.dart';
 import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
+import '../../../res/web_colors.dart';
 import '../../../utils/responsive_navigation.dart';
 import '../../../models/order_book_model/order_book_model.dart';
 
@@ -141,32 +140,77 @@ class _TradeBookDetailScreenWebState extends ConsumerState<TradeBookDetailScreen
             }
 
         return Dialog(
-          backgroundColor: Colors.transparent,
+          backgroundColor: WebColors.surface,
           child: Container(
-            width: MediaQuery.of(context).size.width * 0.6,
-            height: MediaQuery.of(context).size.height * 0.9,
+            width: 500,
+            height: MediaQuery.of(context).size.height * 0.60,
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.60,
+            ),
             decoration: BoxDecoration(
-              color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
-              ),
+              // color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+              borderRadius: BorderRadius.circular(5),
+              // border: Border.all(
+              //   color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
+              // ),
             ),
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                // Header with close button
-                _buildHeader(theme),
+                // Fixed Header
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  margin: const EdgeInsets.only(bottom: 8),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(
+                        color: theme.isDarkMode
+                            ? WebDarkColors.divider
+                            : WebColors.divider,
+                      ),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _buildSymbolSection(theme, marketwatch, updatedTradeData),
+                      Material(
+                        color: Colors.transparent,
+                        shape: const CircleBorder(),
+                        child: InkWell(
+                          customBorder: const CircleBorder(),
+                          splashColor: theme.isDarkMode
+                              ? Colors.white.withOpacity(.15)
+                              : Colors.black.withOpacity(.15),
+                          highlightColor: theme.isDarkMode
+                              ? Colors.white.withOpacity(.08)
+                              : Colors.black.withOpacity(.08),
+                          onTap: () => Navigator.of(context).pop(),
+                          child: Padding(
+                            padding: const EdgeInsets.all(6),
+                            child: Icon(
+                              Icons.close,
+                              size: 20,
+                              color: theme.isDarkMode
+                                  ? WebDarkColors.iconSecondary
+                                  : WebColors.iconSecondary,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
                 
-                // Content
+                // Scrollable Content
                 Expanded(
                   child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(24),
+                    padding: const EdgeInsets.only(top: 0, bottom: 16, left: 16, right: 16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Symbol and Price Section
-                        _buildSymbolSection(theme, marketwatch, updatedTradeData),
-                        const SizedBox(height: 24),
+                        // const SizedBox(height: 24),
                         
                         // Action Buttons
                         // _buildActionButtons(theme, marketwatch, updatedTradeData),
@@ -242,7 +286,7 @@ class _TradeBookDetailScreenWebState extends ConsumerState<TradeBookDetailScreen
       shape: RoundedRectangleBorder(),
       child: InkWell(
         customBorder: RoundedRectangleBorder(),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(0),
         splashColor: theme.isDarkMode ? colors.primaryDark.withOpacity(0.1) : colors.primaryLight.withOpacity(0.1),
         highlightColor: theme.isDarkMode ? colors.primaryDark.withOpacity(0.2) : colors.primaryLight.withOpacity(0.2),
         onTap: () async {
@@ -250,80 +294,77 @@ class _TradeBookDetailScreenWebState extends ConsumerState<TradeBookDetailScreen
           await marketwatch.scripdepthsize(false);
           await marketwatch.calldepthApis(context, depthArgs, "");
         },
-        child: Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: theme.isDarkMode ? colors.kColorLightGreyDarkTheme : colors.kColorLightGrey,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Symbol and Exchange
+            Row(
+              children: [
+                Text(
+                  "${displayData.symbol?.replaceAll("-EQ", "").toUpperCase() ?? ''} ${displayData.expDate ?? ''} ${displayData.option ?? ''} ",
+                  style: TextWidget.textStyle(
+                    fontSize: 16,
+                    theme: theme.isDarkMode,
+                    color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                    fw: 1,
+                  ),
+                ),
+                 const SizedBox(width: 4),
+                 Container(
+                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: theme.isDarkMode ? colors.primaryDark.withOpacity(0.7) : colors.primaryLight.withOpacity(0.7),
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                   child: Text(
+                                 "${displayData.exch}",
+                                 style: TextWidget.textStyle(
+                                   fontSize: 12,
+                                   theme: theme.isDarkMode,
+                   color:  colors.textPrimaryDark,
+                                   fw: 1,
+                                 ),
+                               ),
+                 ),
+              ],
             ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Symbol and Exchange
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      "${displayData.symbol?.replaceAll("-EQ", "").toUpperCase() ?? ''} ${displayData.expDate ?? ''} ${displayData.option ?? ''} ",
-                      style: TextWidget.textStyle(
-                        fontSize: 20,
-                        theme: theme.isDarkMode,
-                        color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                        fw: 3,
-                      ),
-                    ),
+            const SizedBox(height: 8),
+            
+            // Price and Change
+            Row(
+              children: [
+                Text(
+                  "${displayData.ltp ?? displayData.prc ?? '0.00'}",
+                  style: TextWidget.textStyle(
+                    fontSize: 16,
+                    theme: false,
+                    color: (displayData.change == "null" || displayData.change == null) || displayData.change == "0.00"
+                        ? theme.isDarkMode
+                            ? colors.textSecondaryDark
+                            : colors.textSecondaryLight
+                        : (displayData.change?.startsWith("-") == true || displayData.perChange?.startsWith("-") == true)
+                            ? theme.isDarkMode
+                                ? colors.lossDark
+                                : colors.lossLight
+                            : theme.isDarkMode
+                                ? colors.profitDark
+                                : colors.profitLight,
+                    fw: 1,
                   ),
-                CustomExchBadge(exch: "${displayData.exch}"),
-                ],
-              ),
-              const SizedBox(height: 16),
-              
-              // Price and Change
-              Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "${displayData.ltp ?? displayData.prc ?? '0.00'}",
-                          style: TextWidget.textStyle(
-                            fontSize: 24,
-                            theme: false,
-                            color: (displayData.change == "null" || displayData.change == null) || displayData.change == "0.00"
-                                ? theme.isDarkMode
-                                    ? colors.textSecondaryDark
-                                    : colors.textSecondaryLight
-                                : (displayData.change?.startsWith("-") == true || displayData.perChange?.startsWith("-") == true)
-                                    ? theme.isDarkMode
-                                        ? colors.lossDark
-                                        : colors.lossLight
-                                    : theme.isDarkMode
-                                        ? colors.profitDark
-                                        : colors.profitLight,
-                            fw: 3,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          "${(double.tryParse(displayData.change ?? '0.00') ?? 0.00).toStringAsFixed(2)} (${displayData.perChange ?? '0.00'}%)",
-                          style: TextWidget.textStyle(
-                            fontSize: 14,
-                            theme: false,
-                            color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                            fw: 2,
-                          ),
-                        ),
-                      ],
-                    ),
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  "${(double.tryParse(displayData.change ?? '0.00') ?? 0.00).toStringAsFixed(2)} (${displayData.perChange ?? '0.00'}%)",
+                  style: TextWidget.textStyle(
+                    fontSize: 16,
+                    theme: false,
+                    color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                    fw: 1,
                   ),
-                ],
-              ),
-            ],
-          ),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );
@@ -407,87 +448,73 @@ class _TradeBookDetailScreenWebState extends ConsumerState<TradeBookDetailScreen
     final tradeValue = _calculateTradeValue(displayData);
     final isProfit = tradeValue >= 0;
     
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: theme.isDarkMode ? colors.kColorLightGreyDarkTheme : colors.kColorLightGrey,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            "Trade Value",
-            style: TextWidget.textStyle(
-              fontSize: 16,
-              theme: theme.isDarkMode,
-              color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-              fw: 3,
-            ),
-          ),
-          FadeTransition(
-            opacity: _animationController,
-            child: Text(
-              "₹${tradeValue.toStringAsFixed(2)}",
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Column(
+          children: [
+            Text(
+              "Trade Value",
               style: TextWidget.textStyle(
-                fontSize: 18,
-                theme: false,
-                color: isProfit
-                    ? theme.isDarkMode
-                        ? colors.profitDark
-                        : colors.profitLight
-                    : theme.isDarkMode
-                        ? colors.lossDark
-                        : colors.lossLight,
-                fw: 3,
+                fontSize: 16,
+                theme: theme.isDarkMode,
+                color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                fw: 1,
               ),
             ),
+
+             FadeTransition(
+          opacity: _animationController,
+          child: Text(
+            "₹${tradeValue.toStringAsFixed(2)}",
+            style: TextWidget.textStyle(
+              fontSize: 18,
+              theme: false,
+              color: isProfit
+                  ? theme.isDarkMode
+                      ? colors.profitDark
+                      : colors.profitLight
+                  : theme.isDarkMode
+                      ? colors.lossDark
+                      : colors.lossLight,
+              fw: 1,
+            ),
           ),
-        ],
-      ),
+        ),
+          ],
+        ),
+       
+      ],
     );
   }
 
   Widget _buildTradeDetailsSection(ThemesProvider theme, TradeBookModel displayData) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: theme.isDarkMode ? colors.kColorLightGreyDarkTheme : colors.kColorLightGrey,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Trade Details',
-            style: TextWidget.textStyle(
-              fontSize: 16,
-              theme: theme.isDarkMode,
-              color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-              fw: 3,
-            ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Trade Details',
+          style: TextWidget.textStyle(
+            fontSize: 15,
+            theme: theme.isDarkMode,
+            color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+            fw: 1,
           ),
-          const SizedBox(height: 16),
-          _buildInfoRow("Transaction Type", displayData.trantype == "B" ? "Buy" : "Sell", theme),
-          _buildInfoRow("Quantity", "${displayData.qty ?? '0'}", theme),
-          _buildInfoRow("Price", "${displayData.avgprc ?? '0.00'}", theme),
-          _buildInfoRow("Product", "${displayData.sPrdtAli ?? '-'}", theme),
-          _buildInfoRow("Order Number", "${displayData.norenordno ?? '-'}", theme),
-          _buildInfoRow("Trade Time", displayData.norentm ?? "-", theme),
-          _buildInfoRow("Fill Quantity", "${displayData.flqty ?? '0'}", theme),
-          _buildInfoRow("Fill Price", "${displayData.flprc ?? '0.00'}", theme),
-          _buildInfoRow("Fill ID", "${displayData.flid ?? '-'}", theme),
-          _buildInfoRow("Fill Time", displayData.fltm ?? "-", theme),
-          _buildInfoRow("Fill Shares", "${displayData.fillshares ?? '0'}", theme),
-          _buildInfoRow("Product Type", "${displayData.prctyp ?? '-'}", theme),
-        ],
-      ),
+        ),
+        const SizedBox(height: 8),
+        _buildInfoRow("Transaction Type", displayData.trantype == "B" ? "Buy" : "Sell", theme),
+        _buildInfoRow("Quantity", "${displayData.qty ?? '0'}", theme),
+        _buildInfoRow("Price", "${displayData.avgprc ?? '0.00'}", theme),
+        _buildInfoRow("Product", "${displayData.sPrdtAli ?? '-'}", theme),
+        _buildInfoRow("Order Number", "${displayData.norenordno ?? '-'}", theme),
+        _buildInfoRow("Trade Time", displayData.norentm ?? "-", theme),
+        _buildInfoRow("Fill Quantity", "${displayData.flqty ?? '0'}", theme),
+        _buildInfoRow("Fill Price", "${displayData.flprc ?? '0.00'}", theme),
+        _buildInfoRow("Fill ID", "${displayData.flid ?? '-'}", theme),
+        _buildInfoRow("Fill Time", displayData.fltm ?? "-", theme),
+        _buildInfoRow("Fill Shares", "${displayData.fillshares ?? '0'}", theme),
+        _buildInfoRow("Product Type", "${displayData.prctyp ?? '-'}", theme),
+      ],
     );
   }
 
@@ -503,20 +530,16 @@ class _TradeBookDetailScreenWebState extends ConsumerState<TradeBookDetailScreen
               fontSize: 14,
               theme: false,
               color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-              fw: 3,
+              fw: 1,
             ),
           ),
-          SizedBox(
-            width: MediaQuery.of(context).size.width * 0.3,
-            child: Text(
-              value,
-              textAlign: TextAlign.end,
-              style: TextWidget.textStyle(
-                fontSize: 14,
-                theme: false,
-                color: valueColor ?? (theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight),
-                fw: 3,
-              ),
+          Text(
+            value,
+            style: TextWidget.textStyle(
+              fontSize: 14,
+              theme: false,
+              color: valueColor ?? (theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight),
+              fw: 1,
             ),
           ),
         ],

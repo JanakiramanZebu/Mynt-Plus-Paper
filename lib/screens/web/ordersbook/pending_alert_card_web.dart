@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../models/notification_model/broker_message_model.dart';
+import '../../../models/marketwatch_model/alert_model/alert_pending_model.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../../provider/notification_provider.dart';
 import '../../../provider/order_provider.dart';
@@ -10,7 +11,10 @@ import '../../../provider/websocket_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
+import '../../../res/web_colors.dart';
+import '../../../res/global_font_web.dart';
 import '../../../sharedWidget/no_data_found.dart';
+import '../../../sharedWidget/snack_bar.dart';
 import 'pending_alert_detail_screen_web.dart';
 
 class PendingAlertWeb extends ConsumerStatefulWidget {
@@ -34,6 +38,18 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
   // Throttling properties
   DateTime _lastSocketUpdateTime = DateTime.now();
   static const Duration _minUpdateInterval = Duration(milliseconds: 50);
+  
+  // Hover state
+  String? _hoveredRowToken;
+  
+  // Processing state for actions
+  bool _isProcessingCancel = false;
+  bool _isProcessingModify = false;
+  String? _processingAlertToken;
+  
+  // Scroll controllers
+  final ScrollController _horizontalScrollController = ScrollController();
+  final ScrollController _verticalScrollController = ScrollController();
 
   @override
   void initState() {
@@ -52,6 +68,8 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
   @override
   void dispose() {
     _teardownSocketSubscription();
+    _horizontalScrollController.dispose();
+    _verticalScrollController.dispose();
     super.dispose();
   }
 
@@ -280,14 +298,26 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
           r = cmp<String>(aType, bType);
           break;
         case 3: // Target
-          String aTarget = a is BrokerMessage ? 'N/A' : (a.aiT == "CH_PER_A" || a.aiT == "CH_PER_B" ? "%${a.d}" : "${a.d}");
-          String bTarget = b is BrokerMessage ? 'N/A' : (b.aiT == "CH_PER_A" || b.aiT == "CH_PER_B" ? "%${b.d}" : "${b.d}");
-          r = cmp<String>(aTarget, bTarget);
+          if (a is BrokerMessage || b is BrokerMessage) {
+            String aTarget = a is BrokerMessage ? 'N/A' : (a.aiT == "CH_PER_A" || a.aiT == "CH_PER_B" ? "%${a.d}" : "${a.d}");
+            String bTarget = b is BrokerMessage ? 'N/A' : (b.aiT == "CH_PER_A" || b.aiT == "CH_PER_B" ? "%${b.d}" : "${b.d}");
+            r = cmp<String>(aTarget, bTarget);
+          } else {
+            num aTarget = parseNum("${a.d ?? 0}");
+            num bTarget = parseNum("${b.d ?? 0}");
+            r = aTarget.compareTo(bTarget);
+          }
           break;
         case 4: // LTP
-          String aLtp = a is BrokerMessage ? 'N/A' : "${a.ltp ?? a.close ?? 0.00}";
-          String bLtp = b is BrokerMessage ? 'N/A' : "${b.ltp ?? b.close ?? 0.00}";
-          r = cmp<String>(aLtp, bLtp);
+          if (a is BrokerMessage || b is BrokerMessage) {
+            String aLtp = a is BrokerMessage ? 'N/A' : "${a.ltp ?? a.close ?? 0.00}";
+            String bLtp = b is BrokerMessage ? 'N/A' : "${b.ltp ?? b.close ?? 0.00}";
+            r = cmp<String>(aLtp, bLtp);
+          } else {
+            num aLtp = parseNum("${a.ltp ?? a.close ?? 0.00}");
+            num bLtp = parseNum("${b.ltp ?? b.close ?? 0.00}");
+            r = aLtp.compareTo(bLtp);
+          }
           break;
         case 5: // Status
           String aStatus = a is BrokerMessage ? 'TRIGGERED' : 'PENDING';
@@ -313,102 +343,150 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
 
   Widget _buildAlertTable(List<dynamic> alerts, ThemesProvider theme) {
     if (alerts.isEmpty) {
-      return const Align(
+      return SizedBox(
+        height: 400,
+        child: const Align(
           alignment: Alignment.center,
           child: Padding(
             padding: EdgeInsets.all(16.0),
             child: NoDataFound(),
           ),
-        );
+        ),
+      );
     }
 
-    return SingleChildScrollView(
-      child: SizedBox(
-        width: MediaQuery.of(context).size.width * 0.7,
-        child: DataTable(
-          showCheckboxColumn: false,
-          sortColumnIndex: _alertSortColumnIndex,
-          sortAscending: _alertSortAscending,
-          headingRowColor: WidgetStateProperty.all(
-            theme.isDarkMode ? colors.kColorLightGreyDarkTheme : colors.kColorLightGrey,
+    final screenHeight = MediaQuery.of(context).size.height;
+    final tableHeight = screenHeight * 0.6;
+
+    return SizedBox(
+      height: tableHeight,
+      child: Scrollbar(
+        controller: _verticalScrollController,
+        thumbVisibility: true,
+        child: SingleChildScrollView(
+          controller: _verticalScrollController,
+          scrollDirection: Axis.vertical,
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Scrollbar(
+            controller: _horizontalScrollController,
+            thumbVisibility: true,
+            child: SingleChildScrollView(
+              controller: _horizontalScrollController,
+              scrollDirection: Axis.horizontal,
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: DataTable(
+                columnSpacing: 10,
+                showCheckboxColumn: false,
+                sortColumnIndex: _alertSortColumnIndex,
+                sortAscending: _alertSortAscending,
+                headingRowHeight: 44,
+                headingRowColor: WidgetStateProperty.all(Colors.transparent),
+                dataRowColor: WidgetStateProperty.resolveWith<Color?>(
+                  (Set<WidgetState> states) {
+                    if (states.contains(WidgetState.hovered)) {
+                      return (theme.isDarkMode ? WebDarkColors.primary : WebColors.primary).withOpacity(0.05);
+                    }
+                    if (states.contains(WidgetState.selected)) {
+                      return (theme.isDarkMode ? WebDarkColors.primary : WebColors.primary).withOpacity(0.1);
+                    }
+                    return null;
+                  },
+                ),
+                columns: [
+                  DataColumn(
+                    label: _buildSortableColumnHeader('Instrument', theme, 0),
+                    onSort: (i, asc) => _onSortAlertTable(0),
+                  ),
+                  DataColumn(
+                    label: _buildSortableColumnHeader('Exchange', theme, 1),
+                    onSort: (i, asc) => _onSortAlertTable(1),
+                  ),
+                  DataColumn(
+                    label: _buildSortableColumnHeader('Alert Type', theme, 2),
+                    onSort: (i, asc) => _onSortAlertTable(2),
+                  ),
+                  DataColumn(
+                    label: _buildSortableColumnHeader('Target', theme, 3),
+                    onSort: (i, asc) => _onSortAlertTable(3),
+                  ),
+                  DataColumn(
+                    label: _buildSortableColumnHeader('LTP', theme, 4),
+                    onSort: (i, asc) => _onSortAlertTable(4),
+                  ),
+                  DataColumn(
+                    label: _buildSortableColumnHeader('Status', theme, 5),
+                    onSort: (i, asc) => _onSortAlertTable(5),
+                  ),
+                ],
+                rows: alerts.asMap().entries.map((entry) {
+                  final index = entry.key;
+                  final alert = entry.value;
+                  
+                  // Create unique identifier for hover
+                  String uniqueId;
+                  if (alert is BrokerMessage) {
+                    uniqueId = 'triggered_${alert.norentm ?? index}';
+                  } else {
+                    uniqueId = '${alert.alId ?? alert.token ?? index}';
+                  }
+                  
+                  return DataRow(
+                    selected: _selectedAlerts.contains(index),
+                    onSelectChanged: (bool? selected) {
+                      // Only show detail dialog for pending alerts, not triggered ones
+                      if (alert is! BrokerMessage) {
+                        showDialog(
+                          context: context,
+                          builder: (context) => PendingAlertDetailScreenWeb(alert: alert),
+                        );
+                      }
+                    },
+                    cells: [
+                      // Instrument with hover buttons (only for pending alerts)
+                      alert is BrokerMessage
+                          ? _buildInstrumentCell(alert, theme)
+                          : _buildInstrumentCellWithHover(alert, theme, uniqueId),
+                      _buildCellWithHover(alert, theme, uniqueId, _buildExchangeCell(alert, theme), alignment: Alignment.centerLeft),
+                      _buildCellWithHover(alert, theme, uniqueId, _buildAlertTypeCell(alert, theme), alignment: Alignment.centerLeft),
+                      _buildCellWithHover(alert, theme, uniqueId, _buildTargetCell(alert, theme), alignment: Alignment.centerRight),
+                      _buildCellWithHover(alert, theme, uniqueId, _buildLTPCell(alert, theme), alignment: Alignment.centerRight),
+                      _buildCellWithHover(alert, theme, uniqueId, _buildStatusCell(alert, theme), alignment: Alignment.centerLeft),
+                    ],
+                  );
+                }).toList(),
+              ),
+            ),
           ),
-          dataRowColor: WidgetStateProperty.resolveWith<Color?>(
-            (Set<WidgetState> states) {
-              if (states.contains(WidgetState.selected)) {
-                return (theme.isDarkMode ? colors.primaryDark : colors.primaryLight).withOpacity(0.1);
-              }
-              return null;
-            },
-          ),
-          columns: [
-            DataColumn(
-              label: _buildSortableColumnHeader('Instrument', theme,
-                  isActive: _alertSortColumnIndex == 0, ascending: _alertSortAscending),
-              onSort: (i, asc) => _onSortAlertTable(0),
-            ),
-            DataColumn(
-              label: _buildSortableColumnHeader('Exchange', theme,
-                  isActive: _alertSortColumnIndex == 1, ascending: _alertSortAscending),
-              onSort: (i, asc) => _onSortAlertTable(1),
-            ),
-            DataColumn(
-              label: _buildSortableColumnHeader('Alert Type', theme,
-                  isActive: _alertSortColumnIndex == 2, ascending: _alertSortAscending),
-              onSort: (i, asc) => _onSortAlertTable(2),
-            ),
-            DataColumn(
-              label: _buildSortableColumnHeader('Target', theme,
-                  isActive: _alertSortColumnIndex == 3, ascending: _alertSortAscending),
-              onSort: (i, asc) => _onSortAlertTable(3),
-            ),
-            DataColumn(
-              label: _buildSortableColumnHeader('LTP', theme,
-                  isActive: _alertSortColumnIndex == 4, ascending: _alertSortAscending),
-              onSort: (i, asc) => _onSortAlertTable(4),
-            ),
-            DataColumn(
-              label: _buildSortableColumnHeader('Status', theme,
-                  isActive: _alertSortColumnIndex == 5, ascending: _alertSortAscending),
-              onSort: (i, asc) => _onSortAlertTable(5),
-            ),
-          ],
-          rows: alerts.asMap().entries.map((entry) {
-            final index = entry.key;
-            final alert = entry.value;
-            
-            return DataRow(
-              selected: _selectedAlerts.contains(index),
-             onSelectChanged: (bool? selected) {
-                showDialog(
-                  context: context,
-                  builder: (context) => PendingAlertDetailScreenWeb(alert: alert),
-                );
-              },
-              cells: [
-                _buildInstrumentCell(alert, theme),
-                _buildExchangeCell(alert, theme),
-                _buildAlertTypeCell(alert, theme),
-                _buildTargetCell(alert, theme),
-                _buildLTPCell(alert, theme),
-                _buildStatusCell(alert, theme),
-              ],
-            );
-          }).toList(),
         ),
       ),
     );
   }
 
-  Widget _buildSortableColumnHeader(String label, ThemesProvider theme, {bool isActive = false, bool ascending = true}) {
-    // Rely on DataTable's built-in sort indicator; don't render a custom arrow here
-    return Text(
-      label,
-      style: TextWidget.textStyle(
-        fontSize: 12,
-        color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-        theme: theme.isDarkMode,
-        fw: 2,
-      ),
+  Widget _buildSortableColumnHeader(String label, ThemesProvider theme, int columnIndex) {
+    final isActive = _alertSortColumnIndex == columnIndex;
+    final ascending = _alertSortAscending;
+    
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          label,
+          style: WebTextStyles.custom(
+            fontSize: 14,
+            isDarkTheme: theme.isDarkMode,
+            color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+            fontWeight: WebFonts.bold,
+          ),
+        ),
+        if (isActive) ...[
+          const SizedBox(width: 4),
+          Icon(
+            ascending ? Icons.arrow_upward : Icons.arrow_downward,
+            size: 16,
+            color: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
+          ),
+        ],
+      ],
     );
   }
 
@@ -434,23 +512,203 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
     );
   }
 
+  // Helper function to parse BrokerMessage dmsg
+  Map<String, String> _parseBrokerMessage(BrokerMessage alert) {
+    final dmsg = alert.dmsg ?? '';
+    final result = <String, String>{
+      'instrument': '',
+      'exchange': '',
+      'target': '',
+      'ltp': '',
+    };
+    
+    if (dmsg.isEmpty) return result;
+    
+    // Try to extract instrument and exchange (e.g., "RELIANCE NSE", "YESBANK NSE")
+    final exchangeMatch = RegExp(r'\b(NSE|BSE|MCX|NCDEX)\b', caseSensitive: false).firstMatch(dmsg);
+    if (exchangeMatch != null) {
+      result['exchange'] = exchangeMatch.group(1) ?? '';
+      
+      // Extract instrument name before exchange
+      final exchangeIndex = dmsg.indexOf(exchangeMatch.group(0)!);
+      if (exchangeIndex > 0) {
+        final beforeExchange = dmsg.substring(0, exchangeIndex).trim();
+        // Extract the last word/phrase before exchange (likely the instrument name)
+        final words = beforeExchange.split(RegExp(r'\s+'));
+        if (words.isNotEmpty) {
+          // Take the last meaningful word (skip common words like "for", "at", etc.)
+          for (int i = words.length - 1; i >= 0; i--) {
+            final word = words[i].trim();
+            if (word.isNotEmpty && 
+                !word.toLowerCase().contains('for') && 
+                !word.toLowerCase().contains('at') &&
+                !word.toLowerCase().contains('above') &&
+                !word.toLowerCase().contains('below')) {
+              result['instrument'] = word;
+              break;
+            }
+          }
+        }
+      }
+    }
+    
+    // Try to extract target price (numbers after "above" or "below")
+    final priceMatch = RegExp(r'(?:above|below)\s+([\d,]+\.?\d*)', caseSensitive: false).firstMatch(dmsg);
+    if (priceMatch != null) {
+      result['target'] = priceMatch.group(1)?.replaceAll(',', '') ?? '';
+    }
+    
+    // Try to extract LTP if mentioned
+    final ltpMatch = RegExp(r'ltp[:\s]+([\d,]+\.?\d*)', caseSensitive: false).firstMatch(dmsg);
+    if (ltpMatch != null) {
+      result['ltp'] = ltpMatch.group(1)?.replaceAll(',', '') ?? '';
+    }
+    
+    return result;
+  }
+
   DataCell _buildInstrumentCell(dynamic alert, ThemesProvider theme) {
     String symbol = '';
+    String exchange = '';
+    
     if (alert is BrokerMessage) {
-      // Extract symbol from message or use default
-      symbol = 'N/A'; // BrokerMessage doesn't have tsym property
+      final parsed = _parseBrokerMessage(alert);
+      symbol = parsed['instrument'] ?? '';
+      exchange = parsed['exchange'] ?? '';
+      
+      String displayText = symbol.trim();
+      if (exchange.isNotEmpty && exchange.trim().isNotEmpty) {
+        displayText += ' ${exchange.trim()}';
+      }
+      
+      // If we couldn't parse, show the notification time or a default
+      if (displayText.trim().isEmpty) {
+        displayText = alert.norentm ?? 'N/A';
+      }
+      
+      symbol = displayText;
     } else {
       symbol = alert.tsym?.replaceAll("-EQ", "") ?? 'N/A';
+      exchange = alert.exch ?? '';
+      
+      String displayText = symbol.trim();
+      if (exchange.isNotEmpty && exchange.trim().isNotEmpty) {
+        displayText += ' ${exchange.trim()}';
+      }
+      symbol = displayText;
     }
     
     return DataCell(
       Text(
         symbol,
-        style: TextWidget.textStyle(
-          fontSize: 12,
-          color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-          theme: theme.isDarkMode,
-          fw: 2,
+        style: WebTextStyles.custom(
+          fontSize: 13,
+          isDarkTheme: theme.isDarkMode,
+          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+          fontWeight: WebFonts.medium,
+        ),
+      ),
+    );
+  }
+
+  DataCell _buildInstrumentCellWithHover(AlertPendingModel alert, ThemesProvider theme, String token) {
+    final alertToken = token;
+    final isHovered = _hoveredRowToken == alertToken;
+    final isProcessing = _processingAlertToken == alertToken;
+    
+    String symbol = alert.tsym?.replaceAll("-EQ", "") ?? 'N/A';
+    String exchange = alert.exch ?? '';
+    
+    String displayText = symbol.trim();
+    if (exchange.isNotEmpty && exchange.trim().isNotEmpty) {
+      displayText += ' ${exchange.trim()}';
+    }
+
+    return DataCell(
+      MouseRegion(
+        onEnter: (_) => setState(() => _hoveredRowToken = alertToken),
+        onExit: (_) => setState(() => _hoveredRowToken = null),
+        child: SizedBox.expand(
+          child: Row(
+            children: [
+              // Text that takes at least 50% of width, leaves space for buttons
+              Expanded(
+                flex: isHovered ? 1 : 2, // When hovered, text takes less space but still visible
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Tooltip(
+                    message: displayText,
+                    child: Text(
+                      displayText,
+                      style: WebTextStyles.custom(
+                        fontSize: 13,
+                        isDarkTheme: theme.isDarkMode,
+                        color: theme.isDarkMode
+                            ? WebDarkColors.textPrimary
+                            : WebColors.textPrimary,
+                        fontWeight: WebFonts.medium,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                  ),
+                ),
+              ),
+              // Buttons on the right side - fade in/out
+              IgnorePointer(
+                ignoring: !isHovered,
+                child: AnimatedOpacity(
+                  opacity: isHovered ? 1.0 : 0.0,
+                  duration: const Duration(milliseconds: 150),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Cancel button
+                      _buildAlertHoverButton(
+                        label: 'Cancel',
+                        color: Colors.white,
+                        backgroundColor: theme.isDarkMode
+                            ? WebDarkColors.error
+                            : WebColors.error,
+                        onPressed: isProcessing && _isProcessingCancel
+                            ? null
+                            : () => _handleCancelAlert(alert),
+                        theme: theme,
+                      ),
+                      const SizedBox(width: 6),
+                      // Modify button
+                      _buildAlertHoverButton(
+                        label: 'Modify',
+                        color: Colors.white,
+                        backgroundColor: theme.isDarkMode
+                            ? WebDarkColors.primary
+                            : WebColors.primary,
+                        onPressed: isProcessing && _isProcessingModify
+                            ? null
+                            : () => _handleModifyAlert(alert),
+                        theme: theme,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  DataCell _buildCellWithHover(dynamic alert, ThemesProvider theme, String token, DataCell cell, {Alignment alignment = Alignment.centerLeft}) {
+    return DataCell(
+      MouseRegion(
+        onEnter: (_) => setState(() => _hoveredRowToken = token),
+        onExit: (_) => setState(() => _hoveredRowToken = null),
+        child: SizedBox.expand(
+          child: Align(
+            alignment: alignment,
+            child: cell.child,
+          ),
         ),
       ),
     );
@@ -459,7 +717,11 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
   DataCell _buildExchangeCell(dynamic alert, ThemesProvider theme) {
     String exchange = '';
     if (alert is BrokerMessage) {
-      exchange = 'N/A'; // BrokerMessage doesn't have exch property
+      final parsed = _parseBrokerMessage(alert);
+      exchange = parsed['exchange'] ?? '';
+      if (exchange.isEmpty) {
+        exchange = 'N/A';
+      }
     } else {
       exchange = alert.exch ?? '';
     }
@@ -467,11 +729,11 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
     return DataCell(
       Text(
         exchange,
-        style: TextWidget.textStyle(
-          fontSize: 12,
-          color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-          theme: theme.isDarkMode,
-          fw: 2,
+        style: WebTextStyles.custom(
+          fontSize: 13,
+          isDarkTheme: theme.isDarkMode,
+          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+          fontWeight: WebFonts.medium,
         ),
       ),
     );
@@ -480,10 +742,12 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
   DataCell _buildAlertTypeCell(dynamic alert, ThemesProvider theme) {
     String alertType = '';
     Color alertColor = colors.pending;
+    bool hasBorder = true;
     
     if (alert is BrokerMessage) {
       alertType = 'TRIGGERED';
       alertColor = theme.isDarkMode ? colors.primaryDark : colors.primaryLight;
+      hasBorder = false; // No border for triggered alerts, matching mobile
     } else {
       switch (alert.aiT) {
         case 'LTP_A':
@@ -508,24 +772,13 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
     }
     
     return DataCell(
-      Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        decoration: BoxDecoration(
-          color: alertColor.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(4),
-          border: Border.all(
-            color: alertColor,
-            width: 1,
-          ),
-        ),
-        child: Text(
-          alertType,
-          style: TextWidget.textStyle(
-            fontSize: 12,
-            color: alertColor,
-            theme: theme.isDarkMode,
-            fw: 2,
-          ),
+      Text(
+        alertType,
+        style: WebTextStyles.custom(
+          fontSize: 13,
+          isDarkTheme: theme.isDarkMode,
+          color: alertColor,
+          fontWeight: WebFonts.medium,
         ),
       ),
     );
@@ -535,7 +788,11 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
     String target = '';
     
     if (alert is BrokerMessage) {
-      target = 'N/A'; // Triggered alerts don't show target
+      final parsed = _parseBrokerMessage(alert);
+      target = parsed['target'] ?? '';
+      if (target.isEmpty) {
+        target = 'N/A';
+      }
     } else {
       if (alert.aiT == "CH_PER_A" || alert.aiT == "CH_PER_B") {
         target = "%${alert.d}";
@@ -547,11 +804,11 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
     return DataCell(
       Text(
         target,
-        style: TextWidget.textStyle(
-          fontSize: 12,
-          color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-          theme: theme.isDarkMode,
-          fw: 2,
+        style: WebTextStyles.custom(
+          fontSize: 13,
+          isDarkTheme: theme.isDarkMode,
+          color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+          fontWeight: WebFonts.medium,
         ),
       ),
     );
@@ -562,7 +819,11 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
     String change = '';
     
     if (alert is BrokerMessage) {
-      ltp = 'N/A';
+      final parsed = _parseBrokerMessage(alert);
+      ltp = parsed['ltp'] ?? '';
+      if (ltp.isEmpty) {
+        ltp = 'N/A';
+      }
     } else {
       ltp = "${alert.ltp ?? alert.close ?? 0.00}";
       change = " (${alert.perChange ?? 0.00}%)";
@@ -574,21 +835,21 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
         children: [
           Text(
             ltp,
-            style: TextWidget.textStyle(
-              fontSize: 12,
-              color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-              theme: theme.isDarkMode,
-              fw: 2,
+            style: WebTextStyles.custom(
+              fontSize: 13,
+              isDarkTheme: theme.isDarkMode,
+              color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+              fontWeight: WebFonts.medium,
             ),
           ),
           if (change.isNotEmpty)
             Text(
               change,
-              style: TextWidget.textStyle(
-                fontSize: 12,
-                color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                theme: theme.isDarkMode,
-                fw: 2,
+              style: WebTextStyles.custom(
+                fontSize: 13,
+                isDarkTheme: theme.isDarkMode,
+                color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
+                fontWeight: WebFonts.medium,
               ),
             ),
         ],
@@ -621,15 +882,130 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
         ),
         child: Text(
           status,
-          style: TextWidget.textStyle(
-            fontSize: 12,
+          style: WebTextStyles.custom(
+            fontSize: 13,
+            isDarkTheme: theme.isDarkMode,
             color: statusColor,
-            theme: theme.isDarkMode,
-            fw: 2,
+            fontWeight: WebFonts.medium,
           ),
         ),
       ),
     );
+  }
+
+  Widget _buildAlertHoverButton({
+    String? label,
+    required Color color,
+    Color? backgroundColor,
+    Color? borderColor,
+    double? borderRadius,
+    required VoidCallback? onPressed,
+    required ThemesProvider theme,
+  }) {
+    final borderRadiusValue = borderRadius ?? 5.0;
+    return SizedBox(
+      height: 28,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(borderRadiusValue),
+          splashColor: color.withOpacity(0.15),
+          highlightColor: color.withOpacity(0.08),
+          onTap: onPressed,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            decoration: BoxDecoration(
+              color: backgroundColor ?? Colors.transparent,
+              borderRadius: BorderRadius.circular(borderRadiusValue),
+              border: borderColor != null
+                  ? Border.all(
+                      color: borderColor,
+                      width: 1,
+                    )
+                  : null,
+            ),
+            child: Center(
+              child: Text(
+                label ?? "",
+                style: WebTextStyles.custom(
+                  fontSize: 11,
+                  isDarkTheme: theme.isDarkMode,
+                  color: color,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Action handlers
+  Future<void> _handleCancelAlert(AlertPendingModel alert) async {
+    final uniqueId = alert.alId?.toString() ?? alert.token?.toString() ?? '';
+    if (_isProcessingCancel && _processingAlertToken == uniqueId) return;
+
+    try {
+      setState(() {
+        _isProcessingCancel = true;
+        _processingAlertToken = uniqueId;
+      });
+
+      final String alertId = "${alert.alId}";
+      await ref.read(marketWatchProvider).fetchCancelAlert(alertId, context);
+      await ref.read(marketWatchProvider).fetchPendingAlert(context);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          successMessage(context, 'Alert Cancelled'),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          error(context, 'Failed to cancel alert'),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isProcessingCancel = false;
+          _processingAlertToken = null;
+        });
+      }
+    }
+  }
+
+  Future<void> _handleModifyAlert(AlertPendingModel alert) async {
+    final uniqueId = alert.alId?.toString() ?? alert.token?.toString() ?? '';
+    if (_isProcessingModify && _processingAlertToken == uniqueId) return;
+
+    try {
+      setState(() {
+        _isProcessingModify = true;
+        _processingAlertToken = uniqueId;
+      });
+
+      // Open modify alert dialog
+      showDialog(
+        context: context,
+        builder: (context) => PendingAlertDetailScreenWeb(alert: alert),
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          error(context, 'Failed to open modify alert: ${e.toString()}'),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isProcessingModify = false;
+          _processingAlertToken = null;
+        });
+      }
+    }
   }
 
 }

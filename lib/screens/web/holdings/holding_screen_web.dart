@@ -5,7 +5,6 @@ import 'package:flutter_svg/svg.dart';
 import 'package:mynt_plus/provider/mf_provider.dart';
 import 'package:mynt_plus/screens/web/holdings/holding_detail_screen_web.dart';
 import 'package:mynt_plus/screens/web/holdings/mf_holdings_screen_web.dart';
-import 'package:pluto_grid/pluto_grid.dart';
 
 import '../../../../provider/portfolio_provider.dart';
 import '../../../../provider/thems.dart';
@@ -39,9 +38,8 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
   bool _sortAscending = true;
   final ScrollController _horizontalScrollController = ScrollController();
   final ScrollController _verticalScrollController = ScrollController();
+  final ScrollController _tabScrollController = ScrollController();
   String? _hoveredRowToken; // Track which row is being hovered
-  PlutoGridStateManager? _plutoStateManager;
-  final Map<int, dynamic> _rowIndexToHolding = {}; // Map row index to holdings
 
   @override
   void initState() {
@@ -54,6 +52,7 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
     _socketSubscription?.cancel();
     _horizontalScrollController.dispose();
     _verticalScrollController.dispose();
+    _tabScrollController.dispose();
     
     // Close WebSocket connection when screen is disposed
     try {
@@ -663,31 +662,48 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
       'Mutual Funds ($mutualFundsCount)',
     ];
 
-    return Container(
-      decoration: BoxDecoration(
-        color: theme.isDarkMode 
-            ? WebDarkColors.inputBackground 
-            : WebColors.inputBackground,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: theme.isDarkMode ? WebDarkColors.inputBorder : WebColors.inputBorder,
-          width: 1,
-        ),
-      ),
+    return SizedBox(
+      height: 45,
       child: Row(
         mainAxisSize: MainAxisSize.min,
-        children: List.generate(tabs.length, (index) {
-          final isSelected = _selectedTabIndex == index;
-          final isLast = index == tabs.length - 1;
-          
-          return _buildSegmentedTab(
-            tabs[index],
-            index,
-            isSelected,
-            isLast,
-            theme,
-          );
-        }),
+        children: [
+          // Left arrow button
+          // _buildTabArrowButton(
+          //   icon: Icons.chevron_left,
+          //   onPressed: () => _scrollTabsLeft(),
+          //   theme: theme,
+          // ),
+          // const SizedBox(width: 5),
+          // Tabs scrollable area
+          SingleChildScrollView(
+            controller: _tabScrollController,
+            scrollDirection: Axis.horizontal,
+            physics: const ClampingScrollPhysics(),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (int index = 0; index < tabs.length; index++)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 6),
+                    child: _buildSegmentedTab(
+                      tabs[index],
+                      index,
+                      _selectedTabIndex == index,
+                      false,
+                      theme,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          // const SizedBox(width: 5),
+          // Right arrow button
+          // _buildTabArrowButton(
+          //   icon: Icons.chevron_right,
+          //   onPressed: () => _scrollTabsRight(),
+          //   theme: theme,
+          // ),
+        ],
       ),
     );
   }
@@ -699,39 +715,118 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
     bool isLast,
     ThemesProvider theme,
   ) {
-    return GestureDetector(
-      onTap: () => setState(() => _selectedTabIndex = index),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? (theme.isDarkMode ? WebDarkColors.primary : WebColors.primary)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(6),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: WebTextStyles.sub(
-                isDarkTheme: theme.isDarkMode,
-                color: isSelected
-                    ? WebDarkColors.textPrimary
-                    : (theme.isDarkMode 
-                        ? WebDarkColors.textSecondary 
-                        : WebColors.textSecondary),
-                fontWeight: isSelected ? WebFonts.semiBold : WebFonts.medium,
-                letterSpacing: 0.0,
-              ),
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: InkWell(
+        onTap: () => setState(() => _selectedTabIndex = index),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? (theme.isDarkMode
+                    ? WebDarkColors.backgroundTertiary
+                    : WebColors.backgroundTertiary)
+                : (theme.isDarkMode
+                    ? WebDarkColors.surface
+                    : WebColors.surface),
+            border: Border.all(
+              color: isSelected
+                  ? (theme.isDarkMode
+                      ? WebDarkColors.primary
+                      : WebColors.primary)
+                  : (theme.isDarkMode
+                      ? WebDarkColors.textSecondary
+                      : WebColors.textSecondary),
+              width: 1.5,
             ),
-          ],
+            borderRadius: BorderRadius.circular(50),
+          ),
+          child: Text(
+            title,
+            overflow: TextOverflow.ellipsis,
+            style: WebTextStyles.sub(
+              isDarkTheme: theme.isDarkMode,
+              color: isSelected
+                  ? (theme.isDarkMode
+                      ? WebDarkColors.textPrimary
+                      : WebColors.textPrimary)
+                  : (theme.isDarkMode
+                      ? WebDarkColors.navItem
+                      : WebColors.navItem),
+              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+            ),
+          ),
         ),
       ),
     );
   }
 
+  Widget _buildTabArrowButton({
+    required IconData icon,
+    required VoidCallback onPressed,
+    required ThemesProvider theme,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onPressed,
+        customBorder: const CircleBorder(),
+        child: Ink(
+          width: 22,
+          height: 22,
+          decoration: BoxDecoration(
+            color: theme.isDarkMode
+                ? WebDarkColors.surface
+                : WebColors.surface,
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: theme.isDarkMode
+                  ? WebDarkColors.border
+                  : WebColors.border,
+              width: 1,
+            ),
+          ),
+          child: Center(
+            child: Icon(
+              icon,
+              size: 18,
+              color: theme.isDarkMode
+                  ? WebDarkColors.iconSecondary
+                  : WebColors.iconSecondary,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _scrollTabsLeft() {
+    if (!_tabScrollController.hasClients) return;
+
+    final currentOffset = _tabScrollController.offset;
+    final newOffset = (currentOffset - 200).clamp(
+        0.0, _tabScrollController.position.maxScrollExtent);
+
+    _tabScrollController.animateTo(
+      newOffset,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOutCubic,
+    );
+  }
+
+  void _scrollTabsRight() {
+    if (!_tabScrollController.hasClients) return;
+
+    final currentOffset = _tabScrollController.offset;
+    final newOffset = (currentOffset + 200).clamp(
+        0.0, _tabScrollController.position.maxScrollExtent);
+
+    _tabScrollController.animateTo(
+      newOffset,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOutCubic,
+    );
+  }
 
   Widget _buildHoldingsTable(
       ThemesProvider theme, PortfolioProvider portfolioData) {
@@ -746,763 +841,130 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
 
     // Calculate table height based on screen size (60% of available height)
     final screenHeight = MediaQuery.of(context).size.height;
-    final tableHeight = screenHeight * 0.6;
-
-    // Create columns configuration
-    final columns = [
-      PlutoColumn(
-        title: 'Instrument',
-        field: 'instrument',
-        type: PlutoColumnType.text(),
-        width: 380,
-        enableSorting: true,
-        enableContextMenu: false,
-        enableColumnDrag: false,
-        enableRowDrag: false,
-        renderer: (rendererContext) {
-          // Use cell value for display (this is sorted correctly)
-          final cellValue = rendererContext.cell.value.toString();
-          
-          // Get the row to access all cell values for matching
-          final row = rendererContext.row;
-          
-          // Find holding by matching multiple cell values to ensure correct match after sorting
-          final holding = _rowIndexToHolding.values.firstWhere(
-            (h) {
-              final exchTsym = h.exchTsym != null && h.exchTsym!.isNotEmpty ? h.exchTsym![0] : null;
-              if (exchTsym == null) return false;
-              
-              // Match instrument text
-              final holdingText = '${exchTsym.tsym ?? ''} ${exchTsym.exch ?? ''}'.trim();
-              final cellText = cellValue.trim();
-              if (holdingText != cellText && !(holdingText.isEmpty && cellText == 'N/A')) {
-                return false;
-              }
-              
-              // Also match overall P&L to ensure unique match
-              final holdingPnL = double.tryParse(exchTsym.profitNloss ?? '0.00') ?? 0.0;
-              final rowPnLCell = row.cells['overallPnL']?.value;
-              final rowPnL = rowPnLCell is num ? rowPnLCell : double.tryParse(rowPnLCell?.toString() ?? '0.00') ?? 0.0;
-              
-              return (holdingPnL - rowPnL).abs() < 0.01;
-            },
-            orElse: () => null,
-          );
-          
-          if (holding == null) {
-            // Fallback to default cell value if holding not found
-            return Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                cellValue,
-                style: WebTextStyles.custom(
-                  fontSize: 13,
-                  isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
-                  fontWeight: WebFonts.medium,
-                ),
-              ),
-            );
-          }
-          
-          final exchTsym = holding.exchTsym != null && holding.exchTsym!.isNotEmpty
-              ? holding.exchTsym![0]
-              : null;
-          
-          if (exchTsym == null) {
-            return Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                cellValue,
-                style: WebTextStyles.custom(
-                  fontSize: 13,
-                  isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
-                  fontWeight: WebFonts.medium,
-                ),
-              ),
-            );
-          }
-          
-          final holdingToken = exchTsym.token ?? '';
-          final isHovered = _hoveredRowToken == holdingToken;
-          
-          return MouseRegion(
-            onEnter: (_) => setState(() => _hoveredRowToken = holdingToken),
-            onExit: (_) => setState(() => _hoveredRowToken = null),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Text that shows half when hovered - use cell value for display
-                Flexible(
-                  child: AnimatedOpacity(
-                    opacity: isHovered ? 0.7 : 1.0,
-                    duration: const Duration(milliseconds: 120),
-                    child: Tooltip(
-                      message: cellValue,
-                      child: Text(
-                        cellValue,
-                        style: WebTextStyles.custom(
-                          fontSize: 13,
-                          isDarkTheme: theme.isDarkMode,
-                          color: theme.isDarkMode
-                              ? WebDarkColors.textPrimary
-                              : WebColors.textPrimary,
-                          fontWeight: WebFonts.medium,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ),
-                ),
-                // Buttons that appear on hover
-                AnimatedOpacity(
-                  opacity: isHovered ? 1.0 : 0.0,
-                  duration: const Duration(milliseconds: 120),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if ((holding.currentQty ?? 0) > 0) ...[
-                        const SizedBox(width: 6),
-                        _buildHoverButton(
-                          label: 'Add',
-                          color: Colors.white,
-                          backgroundColor: theme.isDarkMode
-                              ? WebDarkColors.primary
-                              : WebColors.primary,
-                          onPressed: () async {
-                            await _handleAddHolding(context, holding, exchTsym);
-                          },
-                          theme: theme,
-                        ),
-                      ],
-                      if ((holding.saleableQty ?? 0) > 0) ...[
-                        const SizedBox(width: 6),
-                        _buildHoverButton(
-                          label: 'Exit',
-                          color: Colors.white,
-                          backgroundColor: theme.isDarkMode
-                              ? WebDarkColors.tertiary
-                              : WebColors.tertiary,
-                          onPressed: () async {
-                            await _handleExitHolding(context, holding, exchTsym);
-                          },
-                          theme: theme,
-                        ),
-                      ],
-                      const SizedBox(width: 6),
-                      _buildHoverButton(
-                        icon: Icons.bar_chart,
-                        color: theme.isDarkMode
-                            ? WebDarkColors.textSecondary
-                            : WebColors.textSecondary,
-                        borderColor: theme.isDarkMode
-                            ? WebDarkColors.inputBorder
-                            : WebColors.inputBorder,
-                        borderRadius: 5.0,
-                        onPressed: () async {
-                          await _handleChartTap(context, holding, exchTsym);
-                        },
-                        theme: theme,
-                      ),
-                      const SizedBox(width: 6),
-                      _buildHoverButton(
-                        label: 'Pledge',
-                        color: theme.isDarkMode
-                            ? WebDarkColors.textSecondary
-                            : WebColors.textSecondary,
-                        borderColor: theme.isDarkMode
-                            ? WebDarkColors.inputBorder
-                            : WebColors.inputBorder,
-                        borderRadius: 5.0,
-                        onPressed: () {
-                          _handlePledgeUnpledge(context);
-                        },
-                        theme: theme,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
-      ),
-      PlutoColumn(
-        title: 'Net Qty',
-        field: 'netQty',
-        type: PlutoColumnType.number(), // Use number type for proper numeric sorting
-        width: 120,
-        enableSorting: true,
-        textAlign: PlutoColumnTextAlign.right,
-        enableContextMenu: false,
-        enableColumnDrag: false,
-        enableRowDrag: false,
-        renderer: (rendererContext) {
-          final rowIndex = rendererContext.rowIdx;
-          final holding = _rowIndexToHolding[rowIndex];
-          if (holding == null) {
-            // Fallback to default cell value if holding not found
-            return Align(
-              alignment: Alignment.centerRight,
-              child: Text(
-                rendererContext.cell.value.toString(),
-                style: WebTextStyles.custom(
-                  fontSize: 13,
-                  isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
-                  fontWeight: WebFonts.medium,
-                ),
-              ),
-            );
-          }
-          
-          final exchTsym = holding.exchTsym != null && holding.exchTsym!.isNotEmpty
-              ? holding.exchTsym![0]
-              : null;
-          final token = exchTsym?.token ?? '';
-          
-          final qty = holding.currentQty ?? 0;
-          // Get cell value (should be numeric for sorting)
-          final cellValue = rendererContext.cell.value;
-          final displayQty = cellValue is int ? cellValue : qty;
-          final displayQtyText = displayQty > 0 ? '+$displayQty' : '$displayQty';
-          
-          return MouseRegion(
-            onEnter: (_) => setState(() => _hoveredRowToken = token),
-            onExit: (_) => setState(() => _hoveredRowToken = null),
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: _getQtyColor(displayQty, theme).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Text(
-                  displayQtyText,
-                  style: WebTextStyles.custom(
-                    fontSize: 13,
-                    isDarkTheme: theme.isDarkMode,
-                    color: _getQtyColor(displayQty, theme),
-                    fontWeight: WebFonts.medium,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
-                ),
-              ),
-            ),
-          );
-        },
-      ),
-      PlutoColumn(
-        title: 'Avg Price',
-        field: 'avgPrice',
-        type: PlutoColumnType.number(), // Use number type for proper numeric sorting
-        width: 120,
-        enableSorting: true,
-        textAlign: PlutoColumnTextAlign.right,
-        enableContextMenu: false,
-        enableColumnDrag: false,
-        enableRowDrag: false,
-        renderer: (rendererContext) {
-          final rowIndex = rendererContext.rowIdx;
-          final holding = _rowIndexToHolding[rowIndex];
-          final token = holding?.exchTsym?[0]?.token ?? '';
-          
-          return MouseRegion(
-            onEnter: (_) => setState(() => _hoveredRowToken = token),
-            onExit: (_) => setState(() => _hoveredRowToken = null),
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: Text(
-                rendererContext.cell.value.toString(),
-                style: WebTextStyles.custom(
-                  fontSize: 13,
-                  isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode
-                      ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
-                  fontWeight: WebFonts.medium,
-                ),
-              ),
-            ),
-          );
-        },
-      ),
-      PlutoColumn(
-        title: 'LTP',
-        field: 'ltp',
-        type: PlutoColumnType.number(), // Use number type for proper numeric sorting
-        width: 120,
-        enableSorting: true,
-        textAlign: PlutoColumnTextAlign.right,
-        enableContextMenu: false,
-        enableColumnDrag: false,
-        enableRowDrag: false,
-        renderer: (rendererContext) {
-          final rowIndex = rendererContext.rowIdx;
-          final holding = _rowIndexToHolding[rowIndex];
-          final token = holding?.exchTsym?[0]?.token ?? '';
-          
-          return MouseRegion(
-            onEnter: (_) => setState(() => _hoveredRowToken = token),
-            onExit: (_) => setState(() => _hoveredRowToken = null),
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: Text(
-                rendererContext.cell.value.toString(),
-                style: WebTextStyles.custom(
-                  fontSize: 13,
-                  isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode
-                      ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
-                  fontWeight: WebFonts.medium,
-                ),
-              ),
-            ),
-          );
-        },
-      ),
-      PlutoColumn(
-        title: 'Invested',
-        field: 'invested',
-        type: PlutoColumnType.number(), // Use number type for proper numeric sorting
-        width: 120,
-        enableSorting: true,
-        textAlign: PlutoColumnTextAlign.right,
-        enableContextMenu: false,
-        enableColumnDrag: false,
-        enableRowDrag: false,
-        renderer: (rendererContext) {
-          final rowIndex = rendererContext.rowIdx;
-          final holding = _rowIndexToHolding[rowIndex];
-          final token = holding?.exchTsym?[0]?.token ?? '';
-          
-          return MouseRegion(
-            onEnter: (_) => setState(() => _hoveredRowToken = token),
-            onExit: (_) => setState(() => _hoveredRowToken = null),
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: Text(
-                rendererContext.cell.value.toString(),
-                style: WebTextStyles.custom(
-                  fontSize: 13,
-                  isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode
-                      ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
-                  fontWeight: WebFonts.medium,
-                ),
-              ),
-            ),
-          );
-        },
-      ),
-      PlutoColumn(
-        title: 'Current Value',
-        field: 'currentValue',
-        type: PlutoColumnType.number(), // Use number type for proper numeric sorting
-        width: 140,
-        enableSorting: true,
-        textAlign: PlutoColumnTextAlign.right,
-        enableContextMenu: false,
-        enableColumnDrag: false,
-        enableRowDrag: false,
-        renderer: (rendererContext) {
-          final rowIndex = rendererContext.rowIdx;
-          final holding = _rowIndexToHolding[rowIndex];
-          final token = holding?.exchTsym?[0]?.token ?? '';
-          
-          return MouseRegion(
-            onEnter: (_) => setState(() => _hoveredRowToken = token),
-            onExit: (_) => setState(() => _hoveredRowToken = null),
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: Text(
-                rendererContext.cell.value.toString(),
-                style: WebTextStyles.custom(
-                  fontSize: 13,
-                  isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode
-                      ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
-                  fontWeight: WebFonts.medium,
-                ),
-              ),
-            ),
-          );
-        },
-      ),
-      PlutoColumn(
-        title: 'Day P&L',
-        field: 'dayPnL',
-        type: PlutoColumnType.number(), // Use number type for proper numeric sorting
-        width: 120,
-        enableSorting: true,
-        textAlign: PlutoColumnTextAlign.right,
-        enableContextMenu: false,
-        enableColumnDrag: false,
-        enableRowDrag: false,
-        renderer: (rendererContext) {
-          final rowIndex = rendererContext.rowIdx;
-          final holding = _rowIndexToHolding[rowIndex];
-          final exchTsym = holding?.exchTsym?[0];
-          final dayPnL = exchTsym?.oneDayChg ?? '0.00';
-          final token = exchTsym?.token ?? '';
-          
-          return MouseRegion(
-            onEnter: (_) => setState(() => _hoveredRowToken = token),
-            onExit: (_) => setState(() => _hoveredRowToken = null),
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: Text(
-                dayPnL,
-                style: WebTextStyles.custom(
-                  fontSize: 13,
-                  isDarkTheme: theme.isDarkMode,
-                  color: _getValueColor(dayPnL, theme),
-                  fontWeight: WebFonts.medium,
-                ),
-              ),
-            ),
-          );
-        },
-      ),
-      PlutoColumn(
-        title: 'Day %',
-        field: 'dayPercent',
-        type: PlutoColumnType.number(), // Use number type for proper numeric sorting
-        width: 100,
-        enableSorting: true,
-        textAlign: PlutoColumnTextAlign.right,
-        enableContextMenu: false,
-        enableColumnDrag: false,
-        enableRowDrag: false,
-        renderer: (rendererContext) {
-          final rowIndex = rendererContext.rowIdx;
-          final holding = _rowIndexToHolding[rowIndex];
-          final exchTsym = holding?.exchTsym?[0];
-          final dayPercent = exchTsym?.perChange ?? '0.00';
-          final token = exchTsym?.token ?? '';
-          // Get cell value (should be numeric for sorting)
-          final cellValue = rendererContext.cell.value;
-          final percentValue = cellValue is num ? cellValue : double.tryParse(dayPercent) ?? 0.0;
-          final percentString = percentValue.toStringAsFixed(2);
-          
-          return MouseRegion(
-            onEnter: (_) => setState(() => _hoveredRowToken = token),
-            onExit: (_) => setState(() => _hoveredRowToken = null),
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: Text(
-                '${percentString}%',
-                style: WebTextStyles.custom(
-                  fontSize: 13,
-                  isDarkTheme: theme.isDarkMode,
-                  color: _getValueColor(percentString, theme),
-                  fontWeight: WebFonts.medium,
-                ),
-              ),
-            ),
-          );
-        },
-      ),
-      PlutoColumn(
-        title: 'Overall P&L',
-        field: 'overallPnL',
-        type: PlutoColumnType.number(), // Use number type for proper numeric sorting
-        width: 130,
-        enableSorting: true,
-        textAlign: PlutoColumnTextAlign.right,
-        enableContextMenu: false,
-        enableColumnDrag: false,
-        enableRowDrag: false,
-        renderer: (rendererContext) {
-          // Use cell value for display (this is sorted correctly)
-          final cellValue = rendererContext.cell.value;
-          final overallPnL = cellValue is num ? cellValue.toStringAsFixed(2) : cellValue.toString();
-          
-          // Get the row to access all cell values for matching
-          final row = rendererContext.row;
-          
-          // Find holding by matching multiple cell values to ensure correct match after sorting
-          final holding = _rowIndexToHolding.values.firstWhere(
-            (h) {
-              final exchTsym = h.exchTsym != null && h.exchTsym!.isNotEmpty ? h.exchTsym![0] : null;
-              if (exchTsym == null) return false;
-              
-              // Match overall P&L value
-              final holdingPnL = double.tryParse(exchTsym.profitNloss ?? '0.00') ?? 0.0;
-              final cellPnL = cellValue is num ? cellValue : double.tryParse(overallPnL) ?? 0.0;
-              if ((holdingPnL - cellPnL).abs() >= 0.01) return false;
-              
-              // Also match instrument to ensure unique match
-              final holdingText = '${exchTsym.tsym ?? ''} ${exchTsym.exch ?? ''}'.trim();
-              final rowInstrumentCell = row.cells['instrument']?.value?.toString() ?? '';
-              
-              return holdingText == rowInstrumentCell.trim() || (holdingText.isEmpty && rowInstrumentCell == 'N/A');
-            },
-            orElse: () => null,
-          );
-          
-          final exchTsym = holding?.exchTsym?[0];
-          final token = exchTsym?.token ?? '';
-          
-          return MouseRegion(
-            onEnter: (_) => setState(() => _hoveredRowToken = token),
-            onExit: (_) => setState(() => _hoveredRowToken = null),
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: Text(
-                overallPnL,
-                style: WebTextStyles.custom(
-                  fontSize: 13,
-                  isDarkTheme: theme.isDarkMode,
-                  color: _getValueColor(overallPnL, theme),
-                  fontWeight: WebFonts.medium,
-                ),
-              ),
-            ),
-          );
-        },
-      ),
-      PlutoColumn(
-        title: 'Overall %',
-        field: 'overallPercent',
-        type: PlutoColumnType.number(), // Use number type for proper numeric sorting
-        width: 110,
-        enableSorting: true,
-        textAlign: PlutoColumnTextAlign.right,
-        enableContextMenu: false,
-        enableColumnDrag: false,
-        enableRowDrag: false,
-        renderer: (rendererContext) {
-          final rowIndex = rendererContext.rowIdx;
-          final holding = _rowIndexToHolding[rowIndex];
-          final exchTsym = holding?.exchTsym?[0];
-          final overallPercent = exchTsym?.pNlChng ?? '0.00';
-          final token = exchTsym?.token ?? '';
-          // Get cell value (should be numeric for sorting)
-          final cellValue = rendererContext.cell.value;
-          final percentValue = cellValue is num ? cellValue : double.tryParse(overallPercent) ?? 0.0;
-          final percentString = percentValue.toStringAsFixed(2);
-          
-          return MouseRegion(
-            onEnter: (_) => setState(() => _hoveredRowToken = token),
-            onExit: (_) => setState(() => _hoveredRowToken = null),
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: Text(
-                '${percentString}%',
-                style: WebTextStyles.custom(
-                  fontSize: 13,
-                  isDarkTheme: theme.isDarkMode,
-                  color: _getValueColor(percentString, theme),
-                  fontWeight: WebFonts.medium,
-                ),
-              ),
-            ),
-          );
-        },
-      ),
-    ];
-
-    // Clear previous row mappings
-    _rowIndexToHolding.clear();
+    final tableHeight = screenHeight * 0.6; // Adjust this percentage as needed
     
-    // Create rows data - store holdings by row reference for lookup
-    final rows = filteredHoldings.asMap().entries.map((entry) {
-      final index = entry.key;
-      final holding = entry.value;
-      final exchTsym = holding.exchTsym != null && holding.exchTsym!.isNotEmpty
-          ? holding.exchTsym![0]
-          : null;
-      
-      final qty = holding.currentQty ?? 0;
-      
-      final row = PlutoRow(
-        cells: {
-          'instrument': PlutoCell(value: '${exchTsym?.tsym ?? ''} ${exchTsym?.exch ?? ''}'.trim().isEmpty ? 'N/A' : '${exchTsym?.tsym ?? ''} ${exchTsym?.exch ?? ''}'),
-          'netQty': PlutoCell(value: qty), // Store numeric value for proper sorting
-          'avgPrice': PlutoCell(value: double.tryParse(holding.avgPrc ?? '0.00') ?? 0.0),
-          'ltp': PlutoCell(value: double.tryParse(exchTsym?.lp ?? '0.00') ?? 0.0),
-          'invested': PlutoCell(value: double.tryParse(holding.invested ?? '0.00') ?? 0.0),
-          'currentValue': PlutoCell(value: double.tryParse(holding.currentValue ?? '0.00') ?? 0.0),
-          'dayPnL': PlutoCell(value: double.tryParse(exchTsym?.oneDayChg ?? '0.00') ?? 0.0),
-          'dayPercent': PlutoCell(value: double.tryParse(exchTsym?.perChange ?? '0.00') ?? 0.0), // Store numeric value, format in renderer
-          'overallPnL': PlutoCell(value: double.tryParse(exchTsym?.profitNloss ?? '0.00') ?? 0.0),
-          'overallPercent': PlutoCell(value: double.tryParse(exchTsym?.pNlChng ?? '0.00') ?? 0.0), // Store numeric value, format in renderer
-        },
-      );
-      
-      // Store holding reference by index (will be re-mapped after sorting if needed)
-      _rowIndexToHolding[index] = holding;
-      
-      return row;
-    }).toList();
-
     return SizedBox(
       height: tableHeight,
-      child: PlutoGrid(
-        columns: columns,
-        rows: rows,
-          configuration: PlutoGridConfiguration(
-          columnSize: const PlutoGridColumnSizeConfig(
-            autoSizeMode: PlutoAutoSizeMode.none,
-            resizeMode: PlutoResizeMode.normal,
-          ),
-          scrollbar: const PlutoGridScrollbarConfig(
-            isAlwaysShown: true,
-          ),
-          style: PlutoGridStyleConfig(
-            activatedColor: Colors.transparent,
-            activatedBorderColor: Colors.transparent,
-            gridBorderColor: Colors.transparent,
-            rowColor: Colors.transparent,
-            evenRowColor: Colors.transparent,
-            oddRowColor: Colors.transparent,
-            checkedColor: Colors.transparent,
-            columnTextStyle: WebTextStyles.custom(
-              fontSize: 13,
-              isDarkTheme: theme.isDarkMode,
-              color: theme.isDarkMode
-                  ? WebDarkColors.textPrimary
-                  : WebColors.textPrimary,
-              fontWeight: WebFonts.bold,
+      child: Scrollbar(
+        controller: _verticalScrollController,
+        thumbVisibility: true,
+        child: SingleChildScrollView(
+          controller: _verticalScrollController,
+          scrollDirection: Axis.vertical,
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Scrollbar(
+            controller: _horizontalScrollController,
+            thumbVisibility: true,
+            child: SingleChildScrollView(
+              controller: _horizontalScrollController,
+              scrollDirection: Axis.horizontal,
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: DataTable(
+                columnSpacing: 10,
+                showCheckboxColumn: false,
+                sortColumnIndex: _sortColumnIndex,
+                sortAscending: _sortAscending,
+                headingRowHeight: 44,
+                headingRowColor: WidgetStateProperty.all(Colors.transparent),
+                dataRowColor: WidgetStateProperty.resolveWith<Color?>(
+                  (Set<WidgetState> states) {
+                    if (states.contains(WidgetState.hovered)) {
+                      return (theme.isDarkMode
+                              ? WebDarkColors.primary
+                              : WebColors.primary)
+                          .withOpacity(0.05);
+                    }
+                    if (states.contains(WidgetState.selected)) {
+                      return (theme.isDarkMode
+                              ? WebDarkColors.primary
+                              : WebColors.primary)
+                          .withOpacity(0.1);
+                    }
+                    return null;
+                  },
+                ),
+                columns: [
+                  DataColumn(
+                    label: _buildSortableColumnHeader('Instrument', theme, 0),
+                    onSort: (columnIndex, ascending) =>
+                        _onSortTable(columnIndex, ascending),
+                  ),
+                  DataColumn(
+                    label: _buildSortableColumnHeader('Net Qty', theme, 1),
+                    onSort: (columnIndex, ascending) =>
+                        _onSortTable(columnIndex, ascending),
+                  ),
+                  DataColumn(
+                    label: _buildSortableColumnHeader('Avg Price', theme, 2),
+                    onSort: (columnIndex, ascending) =>
+                        _onSortTable(columnIndex, ascending),
+                  ),
+                  DataColumn(
+                    label: _buildSortableColumnHeader('LTP', theme, 3),
+                    onSort: (columnIndex, ascending) =>
+                        _onSortTable(columnIndex, ascending),
+                  ),
+                  DataColumn(
+                    label: _buildSortableColumnHeader('Invested', theme, 4),
+                    onSort: (columnIndex, ascending) =>
+                        _onSortTable(columnIndex, ascending),
+                  ),
+                  DataColumn(
+                    label: _buildSortableColumnHeader('Current Value', theme, 5),
+                    onSort: (columnIndex, ascending) =>
+                        _onSortTable(columnIndex, ascending),
+                  ),
+                  DataColumn(
+                    label: _buildSortableColumnHeader('Day P&L', theme, 6),
+                    onSort: (columnIndex, ascending) =>
+                        _onSortTable(columnIndex, ascending),
+                  ),
+                  DataColumn(
+                    label: _buildSortableColumnHeader('Day %', theme, 7),
+                    onSort: (columnIndex, ascending) =>
+                        _onSortTable(columnIndex, ascending),
+                  ),
+                  DataColumn(
+                    label: _buildSortableColumnHeader('Overall P&L', theme, 8),
+                    onSort: (columnIndex, ascending) =>
+                        _onSortTable(columnIndex, ascending),
+                  ),
+                  DataColumn(
+                    label: _buildSortableColumnHeader('Overall %', theme, 9),
+                    onSort: (columnIndex, ascending) =>
+                        _onSortTable(columnIndex, ascending),
+                  ),
+                ],
+                rows: filteredHoldings.map((holding) {
+                  final exchTsym = holding.exchTsym != null && holding.exchTsym!.isNotEmpty
+                      ? holding.exchTsym![0]
+                      : null;
+                  final token = exchTsym?.token ?? '';
+                  
+                  return DataRow(
+                    onSelectChanged: (bool? selected) {
+                      _showHoldingDetail(holding);
+                    },
+                    cells: [
+                      _buildInstrumentCellWithHover(holding, theme, token),
+                      _buildCellWithHover(holding, theme, token, _buildNetQtyCell(holding, theme)),
+                      _buildCellWithHover(holding, theme, token, _buildAvgPriceCell(holding, theme)),
+                      _buildCellWithHover(holding, theme, token, _buildLTPCell(holding, theme)),
+                      _buildCellWithHover(holding, theme, token, _buildInvestedCell(holding, theme)),
+                      _buildCellWithHover(holding, theme, token, _buildCurrentValueCell(holding, theme)),
+                      _buildCellWithHover(holding, theme, token, _buildDayPnLCell(holding, theme)),
+                      _buildCellWithHover(holding, theme, token, _buildDayPercentCell(holding, theme)),
+                      _buildCellWithHover(holding, theme, token, _buildOverallPnLCell(holding, theme)),
+                      _buildCellWithHover(holding, theme, token, _buildOverallPercentCell(holding, theme)),
+                    ],
+                  );
+                }).toList(),
+              ),
             ),
-            cellTextStyle: WebTextStyles.custom(
-              fontSize: 13,
-              isDarkTheme: theme.isDarkMode,
-              color: theme.isDarkMode
-                  ? WebDarkColors.textPrimary
-                  : WebColors.textPrimary,
-              fontWeight: WebFonts.medium,
-            ),
-            defaultCellPadding: const EdgeInsets.symmetric(
-              horizontal: 10,
-              vertical: 12,
-            ),
-            rowHeight: 44,
-            columnHeight: 44,
-            iconColor: theme.isDarkMode
-                ? WebDarkColors.iconSecondary
-                : WebColors.iconSecondary,
-            enableCellBorderVertical: false,
-            enableCellBorderHorizontal: true,
-            enableColumnBorderVertical: false, // Removes header vertical lines
-            enableColumnBorderHorizontal: true, // Keeps header bottom line
-            borderColor: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
           ),
         ),
-        onLoaded: (PlutoGridOnLoadedEvent event) {
-          _plutoStateManager = event.stateManager;
-          // Auto-expand columns based on content (except Instrument which is fixed)
-          _updateColumnWidths(event.stateManager, rows);
-        },
-        onRowDoubleTap: (PlutoGridOnRowDoubleTapEvent event) {
-          // Show holding detail when row is double-tapped
-          final rowIndex = event.rowIdx;
-          final holding = _rowIndexToHolding[rowIndex];
-          if (holding != null) {
-            _showHoldingDetail(holding);
-          }
-        },
-        onChanged: (PlutoGridOnChangedEvent event) {
-          // Handle cell changes if needed
-        },
       ),
     );
-  }
-
-  void _updateColumnWidths(PlutoGridStateManager stateManager, List<PlutoRow> rows) {
-    if (rows.isEmpty) return;
-    
-    // Text style for measurement
-    final textStyle = const TextStyle(
-      fontSize: 13,
-      fontWeight: FontWeight.w500,
-    );
-    final textPainter = TextPainter(
-      textDirection: TextDirection.ltr,
-    );
-    
-    // Column fields (excluding 'instrument' which is fixed)
-    final columnFields = ['netQty', 'avgPrice', 'ltp', 'invested', 'currentValue', 
-                          'dayPnL', 'dayPercent', 'overallPnL', 'overallPercent'];
-    
-    // Calculate max width for each column
-    final Map<String, double> maxWidths = {};
-    
-    for (final field in columnFields) {
-      double maxWidth = 0;
-      
-      // Measure header text
-      textPainter.text = TextSpan(text: _getColumnTitle(field), style: textStyle);
-      textPainter.layout();
-      maxWidth = textPainter.width;
-      
-      // Measure all cell values
-      for (final row in rows) {
-        final cell = row.cells[field];
-        if (cell != null) {
-          final cellValue = cell.value.toString();
-          textPainter.text = TextSpan(text: cellValue, style: textStyle);
-          textPainter.layout();
-          final cellWidth = textPainter.width;
-          if (cellWidth > maxWidth) {
-            maxWidth = cellWidth;
-          }
-        }
-      }
-      
-      // Add padding (horizontal padding * 2 + some extra space)
-      maxWidths[field] = maxWidth + 40; // 20px padding on each side + buffer
-    }
-    
-    // Update column widths (skip Instrument column which is fixed)
-    Future.microtask(() {
-      for (final column in stateManager.columns) {
-        if (column.field != 'instrument' && maxWidths.containsKey(column.field)) {
-          final newWidth = maxWidths[column.field]!;
-          final minWidth = _getColumnMinWidth(column.field);
-          if (newWidth > minWidth) {
-            stateManager.resizeColumn(column, newWidth);
-          }
-        }
-      }
-    });
-  }
-  
-  String _getColumnTitle(String field) {
-    switch (field) {
-      case 'netQty': return 'Net Qty';
-      case 'avgPrice': return 'Avg Price';
-      case 'ltp': return 'LTP';
-      case 'invested': return 'Invested';
-      case 'currentValue': return 'Current Value';
-      case 'dayPnL': return 'Day P&L';
-      case 'dayPercent': return 'Day %';
-      case 'overallPnL': return 'Overall P&L';
-      case 'overallPercent': return 'Overall %';
-      default: return field;
-    }
-  }
-  
-  double _getColumnMinWidth(String field) {
-    switch (field) {
-      case 'netQty': return 120;
-      case 'avgPrice': return 120;
-      case 'ltp': return 120;
-      case 'invested': return 120;
-      case 'currentValue': return 140;
-      case 'dayPnL': return 120;
-      case 'dayPercent': return 100;
-      case 'overallPnL': return 130;
-      case 'overallPercent': return 110;
-      default: return 100;
-    }
   }
 
   DataCell _buildInstrumentCellWithHover(dynamic holding, ThemesProvider theme, String token) {
@@ -1524,124 +986,116 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
 
     final holdingToken = exchTsym.token ?? '';
     final isHovered = _hoveredRowToken == holdingToken;
+    final displayText = '${exchTsym.tsym ?? ''} ${exchTsym.exch ?? ''}';
 
     return DataCell(
       MouseRegion(
         onEnter: (_) => setState(() => _hoveredRowToken = holdingToken),
         onExit: (_) => setState(() => _hoveredRowToken = null),
         child: SizedBox.expand(
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Text that shows half when hovered
-                Flexible(
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 120),
-                    constraints: BoxConstraints(
-                      maxWidth: isHovered ? 120 : double.infinity,
-                    ),
-                    child: Tooltip(
-                      message: '${exchTsym.tsym ?? ''} ${exchTsym.exch ?? ''}',
-                      child: AnimatedOpacity(
-                        opacity: isHovered ? 0.7 : 1.0,
-                        duration: const Duration(milliseconds: 120),
-                        child: Text(
-                          '${exchTsym.tsym ?? ''} ${exchTsym.exch ?? ''}',
-                          style: WebTextStyles.custom(
-                            fontSize: 13,
-                            isDarkTheme: theme.isDarkMode,
-                            color: theme.isDarkMode
-                                ? WebDarkColors.textPrimary
-                                : WebColors.textPrimary,
-                            fontWeight: WebFonts.medium,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
+          child: Row(
+            children: [
+              // Text that takes at least 50% of width, leaves space for buttons
+              Expanded(
+                flex: isHovered ? 1 : 2, // When hovered, text takes less space but still visible
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Tooltip(
+                    message: displayText,
+                    child: Text(
+                      displayText,
+                      style: WebTextStyles.custom(
+                        fontSize: 13,
+                        isDarkTheme: theme.isDarkMode,
+                        color: theme.isDarkMode
+                            ? WebDarkColors.textPrimary
+                            : WebColors.textPrimary,
+                        fontWeight: WebFonts.medium,
                       ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
                     ),
                   ),
                 ),
-                // Buttons that appear on hover
-                AnimatedOpacity(
+              ),
+              // Buttons on the right side - fade in/out
+              IgnorePointer(
+                ignoring: !isHovered,
+                child: AnimatedOpacity(
                   opacity: isHovered ? 1.0 : 0.0,
-                  duration: const Duration(milliseconds: 120),
+                  duration: const Duration(milliseconds: 150),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                        if ((holding.currentQty ?? 0) > 0) ...[
-                          const SizedBox(width: 6),
-                          _buildHoverButton(
-                            label: 'Add',
-                            color: Colors.white,
-                            backgroundColor: theme.isDarkMode
-                                ? WebDarkColors.primary
-                                : WebColors.primary,
-                            onPressed: () async {
-                              await _handleAddHolding(context, holding, exchTsym);
-                            },
-                            theme: theme,
-                          ),
-                        ],
-                       
-                        // Exit and Add buttons for holdings with quantity
-                        if ((holding.saleableQty ?? 0) > 0) ...[
-                          const SizedBox(width: 6),
-                          _buildHoverButton(
-                            label: 'Exit',
-                            color: Colors.white,
-                            backgroundColor: theme.isDarkMode
-                                ? WebDarkColors.tertiary
-                                : WebColors.tertiary,
-                            onPressed: () async {
-                              await _handleExitHolding(context, holding, exchTsym);
-                            },
-                            theme: theme,
-                          ),
-                        ],
-                       
-                        // Pledge/Unpledge button
-                        const SizedBox(width: 6),
-                         _buildHoverButton(
-                          icon: Icons.bar_chart,
-                          color: theme.isDarkMode
-                              ? WebDarkColors.textSecondary
-                              : WebColors.textSecondary,
-                          borderColor: theme.isDarkMode
-                              ? WebDarkColors.inputBorder
-                              : WebColors.inputBorder,
-                          borderRadius: 5.0,
-                          onPressed: () async {
-                            await _handleChartTap(context, holding, exchTsym);
-                          },
-                          theme: theme,
-                        ),
-                        const SizedBox(width: 6),
+                      if ((holding.currentQty ?? 0) > 0) ...[
                         _buildHoverButton(
-                          label: 'Pledge',
-                          color: theme.isDarkMode
-                              ? WebDarkColors.textSecondary
-                              : WebColors.textSecondary,
-                          borderColor: theme.isDarkMode
-                              ? WebDarkColors.inputBorder
-                              : WebColors.inputBorder,
-                          borderRadius: 5.0,
-                          onPressed: () {
-                            _handlePledgeUnpledge(context);
+                          label: 'Add',
+                          color: Colors.white,
+                          backgroundColor: theme.isDarkMode
+                              ? WebDarkColors.primary
+                              : WebColors.primary,
+                          onPressed: () async {
+                            await _handleAddHolding(context, holding, exchTsym);
                           },
                           theme: theme,
                         ),
+                        const SizedBox(width: 6),
                       ],
-                    ),
+                      // Exit button for holdings with saleable quantity
+                      if ((holding.saleableQty ?? 0) > 0) ...[
+                        _buildHoverButton(
+                          label: 'Exit',
+                          color: Colors.white,
+                          backgroundColor: theme.isDarkMode
+                              ? WebDarkColors.tertiary
+                              : WebColors.tertiary,
+                          onPressed: () async {
+                            await _handleExitHolding(context, holding, exchTsym);
+                          },
+                          theme: theme,
+                        ),
+                        const SizedBox(width: 6),
+                      ],
+                      // Chart button
+                      _buildHoverButton(
+                        icon: Icons.bar_chart,
+                        color: theme.isDarkMode
+                            ? WebDarkColors.textSecondary
+                            : WebColors.textSecondary,
+                        borderColor: theme.isDarkMode
+                            ? WebDarkColors.inputBorder
+                            : WebColors.inputBorder,
+                        borderRadius: 5.0,
+                        onPressed: () async {
+                          await _handleChartTap(context, holding, exchTsym);
+                        },
+                        theme: theme,
+                      ),
+                      const SizedBox(width: 6),
+                      // Pledge button
+                      _buildHoverButton(
+                        label: 'Pledge',
+                        color: theme.isDarkMode
+                            ? WebDarkColors.textSecondary
+                            : WebColors.textSecondary,
+                        borderColor: theme.isDarkMode
+                            ? WebDarkColors.inputBorder
+                            : WebColors.inputBorder,
+                        borderRadius: 5.0,
+                        onPressed: () {
+                          _handlePledgeUnpledge(context);
+                        },
+                        theme: theme,
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
-            ),
+            ],
           ),
         ),
-      );
-    
+      ),
+    );
   }
 
   DataCell _buildCellWithHover(dynamic holding, ThemesProvider theme, String token, DataCell cell) {
@@ -2193,14 +1647,8 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
 
   void _onSortTable(int columnIndex, bool ascending) {
     setState(() {
-      if (_sortColumnIndex == columnIndex) {
-        // Toggle ascending/descending if clicking the same column
-        _sortAscending = !_sortAscending;
-      } else {
-        // Set new column and default to ascending
-        _sortColumnIndex = columnIndex;
-        _sortAscending = ascending;
-      }
+      _sortColumnIndex = columnIndex;
+      _sortAscending = ascending;
     });
   }
 
