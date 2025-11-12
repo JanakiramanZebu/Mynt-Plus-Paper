@@ -157,7 +157,7 @@ class _ChartScreenWebViewsState extends State<ChartScreenWebViews> {
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               // Top bar with navigation and controls
-              _buildTopBar(tvChart, theme, userProfile, chartUpdate),
+              // _buildTopBar(tvChart, theme, userProfile, chartUpdate),
               
               // WebView for web platform
               _buildWebView(context),
@@ -231,84 +231,85 @@ class _ChartScreenWebViewsState extends State<ChartScreenWebViews> {
             //  if (transbtn) ...[
             //     _buildTransactionButtons(tvChart, theme, userProfile, context),
             //   ],
-            Material(
-              color: Colors.transparent,
-              child: InkWell(
-                customBorder: const CircleBorder(),
-                splashColor: theme.isDarkMode
-                    ? colors.splashColorDark
-                    : colors.splashColorLight,
-                highlightColor: theme.isDarkMode
-                    ? colors.highlightDark
-                    : colors.highlightLight,
-                onTap: () async {
-                  if (chartUpdate.orientation == 'portrait') {
-                    chartUpdate.changeOrientation('landscape');
-                  } else {
-                    chartUpdate.changeOrientation('portrait');
-                  }
-                },
-                child: Padding(
-                  padding: const EdgeInsets.all(8),
-                  child: SvgPicture.asset(
-                    assets.rotationIcon,
-                    width: 20,
-                    height: 20,
-                    color: theme.isDarkMode
-                        ? colors.textSecondaryDark
-                        : colors.textSecondaryLight,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Material(
-              color: Colors.transparent,
-              child: InkWell(
-                customBorder: const CircleBorder(),
-                splashColor: theme.isDarkMode
-                    ? colors.splashColorDark
-                    : colors.splashColorLight,
-                highlightColor: theme.isDarkMode
-                    ? colors.highlightDark
-                    : colors.highlightLight,
-                onTap: () async {
-                  // Block iframe immediately before navigation
-                  if (mounted) {
-                    setState(() {
-                      _blockIframe = true;
-                    });
-                  }
-                  _disableIframeInteraction();
-                  ref
-                      .read(marketWatchProvider)
-                      .requestMWScrip(context: context, isSubscribe: false);
-                  await Navigator.pushNamed(
-                    context,
-                    Routes.searchScrip,
-                    arguments: "Chart||Is",
-                  );
-                  // Unblock after returning
-                  _enableIframeInteraction();
-                  if (mounted) {
-                    setState(() {
-                      _blockIframe = false;
-                    });
-                  }
-                },
-                child: Padding(
-                  padding: const EdgeInsets.all(8),
-                  child: SvgPicture.asset(
-                    assets.searchIcon1,
-                    width: 20,
-                    height: 20,
-                    color: theme.isDarkMode
-                        ? colors.textSecondaryDark
-                        : colors.textSecondaryLight,
-                  ),
-                ),
-              ),
-            )
+            // Rotate icon - COMMENTED OUT (not needed)
+            // Material(
+            //   color: Colors.transparent,
+            //   child: InkWell(
+            //     customBorder: const CircleBorder(),
+            //     splashColor: theme.isDarkMode
+            //         ? colors.splashColorDark
+            //         : colors.splashColorLight,
+            //     highlightColor: theme.isDarkMode
+            //         ? colors.highlightDark
+            //         : colors.highlightLight,
+            //     onTap: () async {
+            //       if (chartUpdate.orientation == 'portrait') {
+            //         chartUpdate.changeOrientation('landscape');
+            //       } else {
+            //         chartUpdate.changeOrientation('portrait');
+            //       }
+            //     },
+            //     child: Padding(
+            //       padding: const EdgeInsets.all(8),
+            //       child: SvgPicture.asset(
+            //         assets.rotationIcon,
+            //         width: 20,
+            //         height: 20,
+            //         color: theme.isDarkMode
+            //             ? colors.textSecondaryDark
+            //             : colors.textSecondaryLight,
+            //       ),
+            //     ),
+            //   ),
+            // ),
+            // Search icon - COMMENTED OUT (moved to chart_with_depth_web.dart header)
+            // Material(
+            //   color: Colors.transparent,
+            //   child: InkWell(
+            //     customBorder: const CircleBorder(),
+            //     splashColor: theme.isDarkMode
+            //         ? colors.splashColorDark
+            //         : colors.splashColorLight,
+            //     highlightColor: theme.isDarkMode
+            //         ? colors.highlightDark
+            //         : colors.highlightLight,
+            //     onTap: () async {
+            //       // Block iframe immediately before navigation
+            //       if (mounted) {
+            //         setState(() {
+            //           _blockIframe = true;
+            //         });
+            //       }
+            //       _disableIframeInteraction();
+            //       ref
+            //           .read(marketWatchProvider)
+            //           .requestMWScrip(context: context, isSubscribe: false);
+            //       await Navigator.pushNamed(
+            //         context,
+            //         Routes.searchScrip,
+            //         arguments: "Chart||Is",
+            //       );
+            //       // Unblock after returning
+            //       _enableIframeInteraction();
+            //       if (mounted) {
+            //         setState(() {
+            //           _blockIframe = false;
+            //         });
+            //       }
+            //     },
+            //     child: Padding(
+            //       padding: const EdgeInsets.all(8),
+            //       child: SvgPicture.asset(
+            //         assets.searchIcon1,
+            //         width: 20,
+            //         height: 20,
+            //         color: theme.isDarkMode
+            //             ? colors.textSecondaryDark
+            //             : colors.textSecondaryLight,
+            //       ),
+            //     ),
+            //   ),
+            // )
           ],
         ),
       ),

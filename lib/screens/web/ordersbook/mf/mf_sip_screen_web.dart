@@ -55,18 +55,26 @@ class _MFSipdetScreenWebState extends ConsumerState<MFSipdetScreenWeb> {
           child: Scrollbar(
             controller: _verticalScrollController,
             thumbVisibility: true,
+            radius: Radius.zero,
             child: SingleChildScrollView(
               controller: _verticalScrollController,
               scrollDirection: Axis.vertical,
               physics: const AlwaysScrollableScrollPhysics(),
-              child: Scrollbar(
-                controller: _horizontalScrollController,
-                thumbVisibility: true,
-                child: SingleChildScrollView(
-                  controller: _horizontalScrollController,
-                  scrollDirection: Axis.horizontal,
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  child: DataTable(
+              child: Padding(
+                padding: const EdgeInsets.only(right: 16), // Space for vertical scrollbar
+                child: Column(
+                  children: [
+                    Scrollbar(
+                      controller: _horizontalScrollController,
+                      thumbVisibility: true,
+                      radius: Radius.zero,
+                      child: SingleChildScrollView(
+                        controller: _horizontalScrollController,
+                        scrollDirection: Axis.horizontal,
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 16), // Space at top of horizontal scrollbar
+                          child: DataTable(
                 columnSpacing: 10,
                 showCheckboxColumn: false,
                 sortColumnIndex: _sipSortColumnIndex,
@@ -213,7 +221,11 @@ class _MFSipdetScreenWebState extends ConsumerState<MFSipdetScreenWeb> {
                         ],
                       );
                     }).toList(),
-                  ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -399,8 +411,6 @@ class _MFSipdetScreenWebState extends ConsumerState<MFSipdetScreenWeb> {
   }
 
   DataCell _buildCellWithHover(dynamic sipDetail, String sipRegNo, ThemesProvider theme, DataCell cell) {
-    // Wrap the cell's child with MouseRegion to detect hover anywhere on the row
-    // Use SizedBox.expand to fill the entire cell area, not just the text content
     return DataCell(
       MouseRegion(
         onEnter: (_) => setState(() => _hoveredRowSipRegNo = sipRegNo),

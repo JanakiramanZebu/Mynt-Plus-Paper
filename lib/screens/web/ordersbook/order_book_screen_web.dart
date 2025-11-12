@@ -855,18 +855,26 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     return Scrollbar(
       controller: _verticalScrollController,
       thumbVisibility: true,
+      radius: Radius.zero,
       child: SingleChildScrollView(
         controller: _verticalScrollController,
         scrollDirection: Axis.vertical,
         physics: const AlwaysScrollableScrollPhysics(),
-        child: Scrollbar(
-          controller: _horizontalScrollController,
-          thumbVisibility: true,
-          child: SingleChildScrollView(
-            controller: _horizontalScrollController,
-            scrollDirection: Axis.horizontal,
-            physics: const AlwaysScrollableScrollPhysics(),
-            child: DataTable(
+        child: Padding(
+          padding: const EdgeInsets.only(right: 16), // Space for vertical scrollbar
+          child: Column(
+            children: [
+              Scrollbar(
+                controller: _horizontalScrollController,
+                thumbVisibility: true,
+                radius: Radius.zero,
+                child: SingleChildScrollView(
+                  controller: _horizontalScrollController,
+                  scrollDirection: Axis.horizontal,
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 16), // Space at top of horizontal scrollbar
+                    child: DataTable(
               columnSpacing: 15,
               showCheckboxColumn: false,
               sortColumnIndex: _orderSortColumnIndex,
@@ -970,11 +978,16 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                 ],
               );
             }).toList(),
+                    ),
+                  ),
+                ),
+              ),
+              ],
             ),
           ),
         ),
-      ),
-    );
+      );
+    
   }
 
   Widget _buildTradeBookTable(ThemesProvider theme, List<TradeBookModel> trades) {
@@ -994,18 +1007,26 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     return Scrollbar(
       controller: _verticalScrollController,
       thumbVisibility: true,
+      radius: Radius.zero,
       child: SingleChildScrollView(
         controller: _verticalScrollController,
         scrollDirection: Axis.vertical,
         physics: const AlwaysScrollableScrollPhysics(),
-        child: Scrollbar(
-          controller: _horizontalScrollController,
-          thumbVisibility: true,
-          child: SingleChildScrollView(
-            controller: _horizontalScrollController,
-            scrollDirection: Axis.horizontal,
-            physics: const AlwaysScrollableScrollPhysics(),
-            child: DataTable(
+        child: Padding(
+          padding: const EdgeInsets.only(right: 16), // Space for vertical scrollbar
+          child: Column(
+            children: [
+              Scrollbar(
+                controller: _horizontalScrollController,
+                thumbVisibility: true,
+                radius: Radius.zero,
+                child: SingleChildScrollView(
+                  controller: _horizontalScrollController,
+                  scrollDirection: Axis.horizontal,
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 16), // Space at top of horizontal scrollbar
+                    child: DataTable(
               columnSpacing: 15,
               showCheckboxColumn: false,
               sortColumnIndex: _tradeSortColumnIndex,
@@ -1090,11 +1111,16 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
             ],
           );
         }).toList(),
+                    ),
+                  ),
+                ),
+              ),
+              ],
             ),
           ),
         ),
-      ),
-    );
+      );
+    
   }
 
   Widget _buildGttOrderBookTable(ThemesProvider theme, List<GttOrderBookModel> gttOrders) {
@@ -1114,18 +1140,26 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     return Scrollbar(
       controller: _verticalScrollController,
       thumbVisibility: true,
+      radius: Radius.zero,
       child: SingleChildScrollView(
         controller: _verticalScrollController,
         scrollDirection: Axis.vertical,
         physics: const AlwaysScrollableScrollPhysics(),
-        child: Scrollbar(
-          controller: _horizontalScrollController,
-          thumbVisibility: true,
-          child: SingleChildScrollView(
-            controller: _horizontalScrollController,
-            scrollDirection: Axis.horizontal,
-            physics: const AlwaysScrollableScrollPhysics(),
-            child: DataTable(
+        child: Padding(
+          padding: const EdgeInsets.only(right: 16), // Space for vertical scrollbar
+          child: Column(
+            children: [
+              Scrollbar(
+                controller: _horizontalScrollController,
+                thumbVisibility: true,
+                radius: Radius.zero,
+                child: SingleChildScrollView(
+                  controller: _horizontalScrollController,
+                  scrollDirection: Axis.horizontal,
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 16), // Space at top of horizontal scrollbar
+                    child: DataTable(
               columnSpacing: 10,
               showCheckboxColumn: false,
               sortColumnIndex: _gttSortColumnIndex,
@@ -1216,11 +1250,16 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
               ],
             );
           }).toList(),
+                    ),
+                  ),
+                ),
+              ),
+              ],
             ),
           ),
         ),
-      ),
-    );
+      );
+    
   }
 
   Widget _buildSortableColumnHeader(String label, ThemesProvider theme, int columnIndex) {

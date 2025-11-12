@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:mynt_plus/sharedWidget/custom_exch_badge.dart';
 
 import '../../../models/portfolio_model/holdings_model.dart';
 import '../../../models/marketwatch_model/get_quotes.dart';
@@ -223,7 +221,6 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
   Widget build(BuildContext context) {
     final theme = ref.read(themeProvider);
     final scripInfo = ref.watch(marketWatchProvider);
-    final ledgerdate = ref.watch(ledgerProvider);
 
     DepthInputArgs depthArgs = DepthInputArgs(
         exch: _exchTsym.exch ?? "",
@@ -238,87 +235,90 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
       backgroundColor: Colors.transparent,
       child: Container(
       width: 500,
-        // height: MediaQuery.of(context).size.height * 0.9,
         decoration: BoxDecoration(
           color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-          borderRadius: BorderRadius.circular(5),
-          // border: Border.all(
-          //   color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
-          // ),
+          borderRadius: BorderRadius.circular(30),
         ),
         child: Column(
            mainAxisSize: MainAxisSize.min,
           children: [
+           // Header Section
            Container(
-                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                margin: const EdgeInsets.only(bottom: 8),
-                decoration: BoxDecoration(
-                  border: Border(
-                    bottom: BorderSide(
-                      color: theme.isDarkMode
-                          ? WebDarkColors.divider
-                          : WebColors.divider,
-                    ),
-                  ),
-                ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                          _buildSymbolSection(theme, scripInfo, depthArgs),
-                                        // const SizedBox(height: 24),
-                        
-                        Material(
-                      color: Colors.transparent,
-                      shape: const CircleBorder(),
-                      child: InkWell(
-                        customBorder: const CircleBorder(),
-                        splashColor: theme.isDarkMode
-                            ? Colors.white.withOpacity(.15)
-                            : Colors.black.withOpacity(.15),
-                        highlightColor: theme.isDarkMode
-                            ? Colors.white.withOpacity(.08)
-                            : Colors.black.withOpacity(.08),
-                        onTap: () => Navigator.of(context).pop(),
-                        child: Padding(
-                          padding: const EdgeInsets.all(6),
-                          child: Icon(
-                            Icons.close,
-                            size: 20,
-                            color: theme.isDarkMode
-                                ? WebDarkColors.iconSecondary
-                                : WebColors.iconSecondary,
-                          ),
-                        ),
-                      ),
-                    ),
-                      ],
-                    ),
-                  ),
+             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+             margin: const EdgeInsets.only(bottom: 8),
+            //  decoration: BoxDecoration(
+              //  border: Border(
+              //    bottom: BorderSide(
+              //      color: theme.isDarkMode
+              //          ? WebDarkColors.divider
+              //          : WebColors.divider,
+              //    ),
+              //  ),
+            //  ),
+             child: Row(
+               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+               children: [
+                 _buildSymbolSection(theme, scripInfo, depthArgs),
+                 Material(
+                   color: theme.isDarkMode
+                       ? WebDarkColors.surfaceVariant
+                       : WebColors.surfaceVariant,
+                   shape: const CircleBorder(),
+                   child: InkWell(
+                     customBorder: const CircleBorder(),
+                     splashColor: theme.isDarkMode
+                         ? Colors.white.withOpacity(.15)
+                         : Colors.black.withOpacity(.15),
+                     highlightColor: theme.isDarkMode
+                         ? Colors.white.withOpacity(.08)
+                         : Colors.black.withOpacity(.08),
+                     onTap: () => Navigator.of(context).pop(),
+                     child: Container(
+                       width: 32,
+                       height: 32,
+                       alignment: Alignment.center,
+                       child: Icon(
+                         Icons.close,
+                         size: 18,
+                         color: theme.isDarkMode
+                             ? WebDarkColors.textSecondary
+                             : WebColors.textSecondary,
+                       ),
+                     ),
+                   ),
+                 ),
+               ],
+             ),
+           ),
             
-            // Content
-            ConstrainedBox(
-              constraints: BoxConstraints(
-                maxHeight: MediaQuery.of(context).size.height * 0.8,
+            // Content wrapped in bordered box
+            Container(
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: theme.isDarkMode
+                      ? WebDarkColors.divider
+                      : WebColors.divider,
+                  width: 1.2,
+                ),
+                borderRadius: BorderRadius.circular(30),
               ),
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    
-                    // Action Buttons
-                    // _buildActionButtons(theme, scripInfo),
-                    
-                    // Pledge-Unpledge Button
-                    // _buildPledgeUnpledgeButton(theme, ledgerdate),
-                    
-                    // P&L Section
-                    _buildPnLSection(theme),
-                    
-                    // Details Section
-                    _buildDetailsSection(theme),
-                  ],
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxHeight: MediaQuery.of(context).size.height * 0.8,
+                ),
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // P&L Section
+                      _buildPnLSection(theme),
+                      
+                      // Details Section
+                      _buildDetailsSection(theme),
+                    ],
+                  ),
                 ),
               ),
             ),

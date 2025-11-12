@@ -363,18 +363,26 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
       child: Scrollbar(
         controller: _verticalScrollController,
         thumbVisibility: true,
+        radius: Radius.zero,
         child: SingleChildScrollView(
           controller: _verticalScrollController,
           scrollDirection: Axis.vertical,
           physics: const AlwaysScrollableScrollPhysics(),
-          child: Scrollbar(
-            controller: _horizontalScrollController,
-            thumbVisibility: true,
-            child: SingleChildScrollView(
-              controller: _horizontalScrollController,
-              scrollDirection: Axis.horizontal,
-              physics: const AlwaysScrollableScrollPhysics(),
-              child: DataTable(
+          child: Padding(
+            padding: const EdgeInsets.only(right: 16), // Space for vertical scrollbar
+            child: Column(
+              children: [
+                Scrollbar(
+                  controller: _horizontalScrollController,
+                  thumbVisibility: true,
+                  radius: Radius.zero,
+                  child: SingleChildScrollView(
+                    controller: _horizontalScrollController,
+                    scrollDirection: Axis.horizontal,
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 16), // Space at top of horizontal scrollbar
+                      child: DataTable(
                 columnSpacing: 10,
                 showCheckboxColumn: false,
                 sortColumnIndex: _alertSortColumnIndex,
@@ -454,7 +462,11 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
                     ],
                   );
                 }).toList(),
-              ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ),

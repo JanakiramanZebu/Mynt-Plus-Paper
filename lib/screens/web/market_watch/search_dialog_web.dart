@@ -5,6 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../provider/market_watch_provider.dart';
 import '../../../../provider/order_provider.dart';
 import '../../../models/order_book_model/order_book_model.dart';
+import '../../../models/marketwatch_model/get_quotes.dart';
 import '../../../provider/thems.dart';
 import '../../../res/global_font_web.dart';
 import '../../../res/web_colors.dart';
@@ -553,16 +554,27 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
                   : Colors.black.withOpacity(0.02),
               onTap: () async {
                 if (widget.isBasket == "Chart||Is") {
-                  await searchScrip.fetchScripQuoteIndex(
-                    scrip.token.toString(),
-                    scrip.exch.toString(),
-                    context,
+                  // Create DepthInputArgs from selected scrip to update header and scrip info
+                  final depthArgs = DepthInputArgs(
+                    exch: scrip.exch.toString(),
+                    token: scrip.token.toString(),
+                    tsym: scrip.tsym.toString(),
+                    instname: scrip.instname ?? "",
+                    symbol: scrip.symbol ?? scrip.tsym.toString(),
+                    expDate: scrip.expDate ?? "",
+                    option: scrip.option ?? "",
                   );
+                  
+                  // Update depth/scrip info panel and header
+                  await searchScrip.calldepthApis(context, depthArgs, "");
+                  
+                  // Update chart
                   searchScrip.setChartScript(
                     scrip.exch.toString(),
                     scrip.token.toString(),
                     scrip.tsym.toString(),
                   );
+                  
                   await searchScrip.searchClear();
                   Navigator.of(context).pop();
                 } else if (widget.isBasket == "Option||Is") {

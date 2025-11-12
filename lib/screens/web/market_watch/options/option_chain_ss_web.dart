@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
@@ -19,7 +18,6 @@ import '../../../../provider/index_list_provider.dart';
 import '../../../../provider/market_watch_provider.dart';
 import '../../../../provider/order_provider.dart';
 import '../../../../provider/portfolio_provider.dart';
-
 import '../../../../provider/thems.dart';
 import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
@@ -34,11 +32,15 @@ import '../search_dialog_web.dart';
 
 class OptionChainSSWeb extends ConsumerStatefulWidget {
   final DepthInputArgs wlValue;
+  final Function(bool)? onBasketModeChanged; // Callback to notify parent of basket mode changes
+  final Function(VoidCallback)? onToggleCallbackReady; // Callback to provide toggle function to parent
   // final String isBasket;
 
   const OptionChainSSWeb({
     super.key,
     required this.wlValue,
+    this.onBasketModeChanged,
+    this.onToggleCallbackReady,
     // required this.isBasket
   });
 
@@ -50,6 +52,34 @@ class _OptionChainSSState extends ConsumerState<OptionChainSSWeb> {
   String regtoken = "";
   bool showPriceView = true; // true for Price, false for OI
   bool isBasketMode = false; // true for Basket mode, false for normal mode
+  
+  // Expose basket mode state and toggle method for parent widget
+  void toggleBasketMode() async {
+    // Add delay for visual feedback
+    await Future.delayed(const Duration(milliseconds: 150));
+
+    setState(() {
+      isBasketMode = !isBasketMode;
+    });
+    
+    // Notify parent of basket mode change
+    widget.onBasketModeChanged?.call(isBasketMode);
+
+    // Load basket data when enabling basket mode
+    if (isBasketMode) {
+      final orderProv = ref.read(orderProvider);
+      await orderProv.getBasketName();
+
+      // If there's a selected basket, ensure WebSocket subscription
+      if (orderProv.selectedBsktName.isNotEmpty) {
+        await orderProv.chngBsktName(
+          orderProv.selectedBsktName,
+          context,
+          true, // isOpt = true to prevent navigation
+        );
+      }
+    }
+  }
 
   final ScrollController _mainScrollController = ScrollController();
   final GlobalKey _strikePriceKey = GlobalKey();
@@ -69,6 +99,11 @@ class _OptionChainSSState extends ConsumerState<OptionChainSSWeb> {
       setState(() {});
     });
     super.initState();
+    
+    // Provide toggle callback to parent
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      widget.onToggleCallbackReady?.call(toggleBasketMode);
+    });
 
     // Import the classes to reset global max OI
     // Reset global max OI values when opening option chain
@@ -138,91 +173,91 @@ class _OptionChainSSState extends ConsumerState<OptionChainSSWeb> {
         Navigator.pop(context);
       },
       child: Scaffold(
-        appBar: AppBar(
-          // leading: Consumer(builder: (context, ref, _) {
-          //   final theme = ref.read(themeProvider);
-          //   return Material(
-          //     color: Colors.transparent,
-          //     shape: const CircleBorder(),
-          //     clipBehavior: Clip.hardEdge,
-          //     child: InkWell(
-          //       customBorder: const CircleBorder(),
-          //       splashColor: Colors.grey.withOpacity(0.4),
-          //       highlightColor: Colors.grey.withOpacity(0.2),
-          //       onTap: () async {
-          //         // Add delay for visual feedback
-          //         await Future.delayed(const Duration(milliseconds: 150));
+        // appBar: AppBar(
+        //   // leading: Consumer(builder: (context, ref, _) {
+        //   //   final theme = ref.read(themeProvider);
+        //   //   return Material(
+        //   //     color: Colors.transparent,
+        //   //     shape: const CircleBorder(),
+        //   //     clipBehavior: Clip.hardEdge,
+        //   //     child: InkWell(
+        //   //       customBorder: const CircleBorder(),
+        //   //       splashColor: Colors.grey.withOpacity(0.4),
+        //   //       highlightColor: Colors.grey.withOpacity(0.2),
+        //   //       onTap: () async {
+        //   //         // Add delay for visual feedback
+        //   //         await Future.delayed(const Duration(milliseconds: 150));
 
-          //         final wsProvider = ref.read(websocketProvider);
-          //         final scripInfo = ref.read(marketWatchProvider);
-          //         final currentContext = context;
-          //         Navigator.pop(context);
-          //         await scripInfo.calldepthApis(
-          //             currentContext, scripInfo.getQuotes!, "");
-          //         await scripInfo.requestWSOptChain(
-          //             context: currentContext, isSubscribe: false);
-          //         await wsProvider.establishConnection(
-          //           channelInput:
-          //               "${widget.wlValue.exch}|${widget.wlValue.token}",
-          //           task: "ud",
-          //           context: currentContext,
-          //         );
-          //       },
-          //       child: Container(
-          //         width: 40,
-          //         height: 40,
-          //         alignment: Alignment.center,
-          //         child: Icon(
-          //           Icons.arrow_back_ios_outlined,
-          //           size: 18,
-          //           color: theme.isDarkMode
-          //               ? colors.textSecondaryDark
-          //               : colors.textSecondaryLight,
-          //         ),
-          //       ),
-          //     ),
-          //   );
-          // }),
-          // leadingWidth: 48,
-         toolbarHeight: 40,
-          elevation: 0,
-          title: _NewAppBarTitle(
-            wlValue: widget.wlValue,
-            showPriceView: showPriceView,
-            isBasketMode: isBasketMode,
-            onToggleView: () async {
-              // Add delay for visual feedback
-              await Future.delayed(const Duration(milliseconds: 150));
-              setState(() {
-                showPriceView = !showPriceView;
-              });
-            },
-            onToggleBasketMode: () async {
-              // Add delay for visual feedback
-              await Future.delayed(const Duration(milliseconds: 150));
+        //   //         final wsProvider = ref.read(websocketProvider);
+        //   //         final scripInfo = ref.read(marketWatchProvider);
+        //   //         final currentContext = context;
+        //   //         Navigator.pop(context);
+        //   //         await scripInfo.calldepthApis(
+        //   //             currentContext, scripInfo.getQuotes!, "");
+        //   //         await scripInfo.requestWSOptChain(
+        //   //             context: currentContext, isSubscribe: false);
+        //   //         await wsProvider.establishConnection(
+        //   //           channelInput:
+        //   //               "${widget.wlValue.exch}|${widget.wlValue.token}",
+        //   //           task: "ud",
+        //   //           context: currentContext,
+        //   //         );
+        //   //       },
+        //   //       child: Container(
+        //   //         width: 40,
+        //   //         height: 40,
+        //   //         alignment: Alignment.center,
+        //   //         child: Icon(
+        //   //           Icons.arrow_back_ios_outlined,
+        //   //           size: 18,
+        //   //           color: theme.isDarkMode
+        //   //               ? colors.textSecondaryDark
+        //   //               : colors.textSecondaryLight,
+        //   //         ),
+        //   //       ),
+        //   //     ),
+        //   //   );
+        //   // }),
+        //   // leadingWidth: 48,
+        //  toolbarHeight: 40,
+        //   elevation: 0,
+        //   title: _NewAppBarTitle(
+        //     wlValue: widget.wlValue,
+        //     showPriceView: showPriceView,
+        //     isBasketMode: isBasketMode,
+        //     onToggleView: () async {
+        //       // Add delay for visual feedback
+        //       await Future.delayed(const Duration(milliseconds: 150));
+        //       setState(() {
+        //         showPriceView = !showPriceView;
+        //       });
+        //     },
+        //     onToggleBasketMode: () async {
+        //       // Add delay for visual feedback
+        //       await Future.delayed(const Duration(milliseconds: 150));
 
-              // Show the basket bottom sheet
+        //       // Show the basket bottom sheet
 
-              setState(() {
-                isBasketMode = !isBasketMode;
-              });
+        //       setState(() {
+        //         isBasketMode = !isBasketMode;
+        //       });
 
-              // Load basket data when enabling basket mode
-              if (isBasketMode) {
-                final orderProv = ref.read(orderProvider);
-                await orderProv.getBasketName();
+        //       // Load basket data when enabling basket mode
+        //       if (isBasketMode) {
+        //         final orderProv = ref.read(orderProvider);
+        //         await orderProv.getBasketName();
 
-                // If there's a selected basket, ensure WebSocket subscription
-                if (orderProv.selectedBsktName.isNotEmpty) {
-                  await orderProv.chngBsktName(orderProv.selectedBsktName,
-                      context, true // isOpt = true to prevent navigation
-                      );
-                }
-              }
-            },
-            scrollToStrikePrice: _scrollToCurrentStrikePrice,
-          ),
-        ),
+        //         // If there's a selected basket, ensure WebSocket subscription
+        //         if (orderProv.selectedBsktName.isNotEmpty) {
+        //           await orderProv.chngBsktName(orderProv.selectedBsktName,
+        //               context, true // isOpt = true to prevent navigation
+        //               );
+        //         }
+        //       }
+        //     },
+        //     scrollToStrikePrice: _scrollToCurrentStrikePrice,
+        //   ),
+        // ),
         body: SafeArea(
           child: Stack(
             children: [
@@ -309,95 +344,95 @@ class _NewAppBarTitle extends ConsumerWidget {
     return Row(
       children: [
         // Symbol Name and Expiry Dropdown
-        Row(
-          children: [
-            Text(
-              wlValue.tsym.toUpperCase(),
-              style: WebTextStyles.custom(
-                fontSize: 13,
-                isDarkTheme: theme.isDarkMode,
-                color: theme.isDarkMode
-                    ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            const SizedBox(width: 8),
-            Theme(
-              data: Theme.of(context).copyWith(
-                popupMenuTheme: PopupMenuThemeData(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-              ),
-              child: DropdownButtonHideUnderline(
-                child: DropdownButton<String>(
-                  value: scripInfo.selectedExpDate,
-                  isExpanded: false,
-                  isDense: true,
-                  dropdownColor: theme.isDarkMode 
-                      ? WebDarkColors.surface
-                      : WebColors.surface,
-                  icon: Icon(
-                    Icons.arrow_drop_down,
-                    color:
-                        theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
-                    size: 20,
-                  ),
-                  style: WebTextStyles.custom(
-                    fontSize: 13,
-                    isDarkTheme: theme.isDarkMode,
-                    color: theme.isDarkMode
-                        ? WebDarkColors.textPrimary
-                        : WebColors.textPrimary,
-                    fontWeight: FontWeight.w700,
-                  ),
-                  items: scripInfo.sortDate.map((String date) {
-                    return DropdownMenuItem<String>(
-                      value: date,
-                      child: Text(
-                        date.replaceAll("-", " "),
-                        style: WebTextStyles.custom(
-                          fontSize: 13,
-                          isDarkTheme: theme.isDarkMode,
-                          color: theme.isDarkMode
-                              ? WebDarkColors.textPrimary
-                              : WebColors.textPrimary,
-                              fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                  onChanged: (String? newValue) async {
-                    if (newValue != null) {
-                      for (var i = 0; i < scripInfo.optExp!.length; i++) {
-                        if (newValue == scripInfo.optExp![i].exd) {
-                          scripInfo.selecTradSym("${scripInfo.optExp![i].tsym}");
-                          scripInfo.optExch("${scripInfo.optExp![i].exch}");
-                        }
-                      }
-                      scripInfo.selecexpDate(newValue);
+        // Row(
+        //   children: [
+        //     Text(
+        //       wlValue.tsym.toUpperCase(),
+        //       style: WebTextStyles.custom(
+        //         fontSize: 13,
+        //         isDarkTheme: theme.isDarkMode,
+        //         color: theme.isDarkMode
+        //             ? WebDarkColors.textPrimary
+        //             : WebColors.textPrimary,
+        //         fontWeight: FontWeight.w700,
+        //       ),
+        //     ),
+        //     const SizedBox(width: 8),
+        //     Theme(
+        //       data: Theme.of(context).copyWith(
+        //         popupMenuTheme: PopupMenuThemeData(
+        //           shape: RoundedRectangleBorder(
+        //             borderRadius: BorderRadius.circular(8),
+        //           ),
+        //         ),
+        //       ),
+        //       child: DropdownButtonHideUnderline(
+        //         child: DropdownButton<String>(
+        //           value: scripInfo.selectedExpDate,
+        //           isExpanded: false,
+        //           isDense: true,
+        //           dropdownColor: theme.isDarkMode 
+        //               ? WebDarkColors.surface
+        //               : WebColors.surface,
+        //           icon: Icon(
+        //             Icons.arrow_drop_down,
+        //             color:
+        //                 theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+        //             size: 20,
+        //           ),
+        //           style: WebTextStyles.custom(
+        //             fontSize: 13,
+        //             isDarkTheme: theme.isDarkMode,
+        //             color: theme.isDarkMode
+        //                 ? WebDarkColors.textPrimary
+        //                 : WebColors.textPrimary,
+        //             fontWeight: FontWeight.w700,
+        //           ),
+        //           items: scripInfo.sortDate.map((String date) {
+        //             return DropdownMenuItem<String>(
+        //               value: date,
+        //               child: Text(
+        //                 date.replaceAll("-", " "),
+        //                 style: WebTextStyles.custom(
+        //                   fontSize: 13,
+        //                   isDarkTheme: theme.isDarkMode,
+        //                   color: theme.isDarkMode
+        //                       ? WebDarkColors.textPrimary
+        //                       : WebColors.textPrimary,
+        //                       fontWeight: FontWeight.w700,
+        //                 ),
+        //               ),
+        //             );
+        //           }).toList(),
+        //           onChanged: (String? newValue) async {
+        //             if (newValue != null) {
+        //               for (var i = 0; i < scripInfo.optExp!.length; i++) {
+        //                 if (newValue == scripInfo.optExp![i].exd) {
+        //                   scripInfo.selecTradSym("${scripInfo.optExp![i].tsym}");
+        //                   scripInfo.optExch("${scripInfo.optExp![i].exch}");
+        //                 }
+        //               }
+        //               scripInfo.selecexpDate(newValue);
 
-                      await ref.read(marketWatchProvider).fetchOPtionChain(
-                          context: context,
-                          exchange: scripInfo.optionExch!,
-                          numofStrike: scripInfo.numStrike,
-                          strPrc: scripInfo.optionStrPrc,
-                          tradeSym: scripInfo.selectedTradeSym!);
+        //               await ref.read(marketWatchProvider).fetchOPtionChain(
+        //                   context: context,
+        //                   exchange: scripInfo.optionExch!,
+        //                   numofStrike: scripInfo.numStrike,
+        //                   strPrc: scripInfo.optionStrPrc,
+        //                   tradeSym: scripInfo.selectedTradeSym!);
 
-                      Future.delayed(const Duration(milliseconds: 300), () {
-                        scrollToStrikePrice();
-                      });
-                    }
-                  },
-                ),
-              ),
-            ),
-          ],
-        ),
+        //               Future.delayed(const Duration(milliseconds: 300), () {
+        //                 scrollToStrikePrice();
+        //               });
+        //             }
+        //           },
+        //         ),
+        //       ),
+        //     ),
+        //   ],
+        // ),
 
-        const Spacer(),
+        // const Spacer(),
 
         // Price/OI Toggle Button
         // Material(
@@ -424,64 +459,65 @@ class _NewAppBarTitle extends ConsumerWidget {
         //   ),
         // ),
 
-        const SizedBox(width: 4),
+        // const SizedBox(width: 4),
 
         // Basket Toggle Icon
-        InkWell(
-          borderRadius: BorderRadius.circular(20),
-          splashColor: theme.isDarkMode
-              ? Colors.white.withOpacity(0.1)
-              : Colors.black.withOpacity(0.1),
-          highlightColor:
-              theme.isDarkMode ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05),
-          onTap: onToggleBasketMode,
-          child: Padding(
-            padding: const EdgeInsets.all(8),
-            child: Icon(
-              isBasketMode
-                  ? Icons.shopping_basket
-                  : Icons.shopping_basket_outlined,
-              size: 18,
-              color: isBasketMode
-                  ?  WebColors.primary
-                  : (theme.isDarkMode ? WebDarkColors.iconSecondary : WebColors.iconSecondary),
-            ),
-          ),
-        ),
+        // InkWell(
+        //   borderRadius: BorderRadius.circular(20),
+        //   splashColor: theme.isDarkMode
+        //       ? Colors.white.withOpacity(0.1)
+        //       : Colors.black.withOpacity(0.1),
+        //   highlightColor:
+        //       theme.isDarkMode ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05),
+        //   onTap: onToggleBasketMode,
+        //   child: Padding(
+        //     padding: const EdgeInsets.all(8),
+        //     child: Icon(
+        //       isBasketMode
+        //           ? Icons.shopping_basket
+        //           : Icons.shopping_basket_outlined,
+        //       size: 18,
+        //       color: isBasketMode
+        //           ?  WebColors.primary
+        //           : (theme.isDarkMode ? WebDarkColors.iconSecondary : WebColors.iconSecondary),
+        //     ),
+        //   ),
+        // ),
 
-        const SizedBox(width: 4),
+        // const SizedBox(width: 4),
 
-        // Search Icon
-        InkWell(
-          borderRadius: BorderRadius.circular(20),
-          splashColor: theme.isDarkMode
-              ? Colors.white.withOpacity(0.1)
-              : Colors.black.withOpacity(0.1),
-          highlightColor:
-              theme.isDarkMode ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05),
-          onTap: () async {
-            // Add delay for visual feedback
-            await Future.delayed(const Duration(milliseconds: 150));
+        // // Search Icon
+        // InkWell(
+        //   borderRadius: BorderRadius.circular(20),
+        //   splashColor: theme.isDarkMode
+        //       ? Colors.white.withOpacity(0.1)
+        //       : Colors.black.withOpacity(0.1),
+        //   highlightColor:
+        //       theme.isDarkMode ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05),
+        //   onTap: () async {
+        //     // Add delay for visual feedback
+        //     await Future.delayed(const Duration(milliseconds: 150));
 
-            showDialog(
-              context: context,
-              builder: (BuildContext context) {
-                return SearchDialogWeb(
-                  wlName: ref.read(marketWatchProvider).wlName,
-                  isBasket: "Option||Replace",
-                );
-              },
-            );
-          },
-          child: Padding(
-            padding: const EdgeInsets.all(8),
-            child: SvgPicture.asset(
-              assets.searchIcon,
-              width: 18,
-              height: 18,
-            ),
-          ),
-        )
+        //     showDialog(
+        //       context: context,
+        //       barrierColor: Colors.transparent,
+        //       builder: (BuildContext context) {
+        //         return SearchDialogWeb(
+        //           wlName: ref.read(marketWatchProvider).wlName,
+        //           isBasket: "Option||Replace",
+        //         );
+        //       },
+        //     );
+        //   },
+        //   child: Padding(
+        //     padding: const EdgeInsets.all(8),
+        //     child: SvgPicture.asset(
+        //       assets.searchIcon,
+        //       width: 18,
+        //       height: 18,
+        //     ),
+        //   ),
+        // )
       ],
     );
   }
@@ -676,7 +712,7 @@ class _ColumnHeaders extends ConsumerWidget {
 
     return RepaintBoundary(
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
         color: theme.isDarkMode ? WebDarkColors.background : WebColors.background,
         child: Column(
           children: [
@@ -697,7 +733,7 @@ class _ColumnHeaders extends ConsumerWidget {
                           color: theme.isDarkMode
                               ? WebDarkColors.textPrimary
                               : WebColors.textPrimary,
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],
@@ -803,7 +839,7 @@ class _ColumnHeaders extends ConsumerWidget {
                               color: theme.isDarkMode
                                   ? WebDarkColors.textPrimary
                                   : WebColors.textPrimary,
-                              fontWeight: FontWeight.w700,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                           const SizedBox(width: 6),
@@ -827,7 +863,7 @@ class _ColumnHeaders extends ConsumerWidget {
                           color: theme.isDarkMode
                               ? WebDarkColors.textPrimary
                               : WebColors.textPrimary,
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],

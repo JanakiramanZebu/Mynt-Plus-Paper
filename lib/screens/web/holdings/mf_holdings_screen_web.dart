@@ -30,6 +30,7 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
   int? _sortColumnIndex;
   bool _sortAscending = true;
   final ScrollController _horizontalScrollController = ScrollController();
+  final ScrollController _verticalScrollController = ScrollController();
   String? _hoveredRowToken; // Track which row is being hovered
 
   @override
@@ -59,6 +60,7 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
   @override
   void dispose() {
     _horizontalScrollController.dispose();
+    _verticalScrollController.dispose();
     super.dispose();
   }
 
@@ -248,18 +250,35 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
       );
     }
 
-    return Container(
-      child: SingleChildScrollView(
-        scrollDirection: Axis.vertical,
-        physics: const AlwaysScrollableScrollPhysics(),
-        child: Scrollbar(
-          controller: _horizontalScrollController,
-          thumbVisibility: true,
-          child: SingleChildScrollView(
-            controller: _horizontalScrollController,
-            scrollDirection: Axis.horizontal,
-            physics: const AlwaysScrollableScrollPhysics(),
-            child: DataTable(
+    // Calculate table height based on screen size (60% of available height)
+    final screenHeight = MediaQuery.of(context).size.height;
+    final tableHeight = screenHeight * 0.6; // Adjust this percentage as needed
+    
+    return SizedBox(
+      height: tableHeight,
+      child: Scrollbar(
+        controller: _verticalScrollController,
+        thumbVisibility: true,
+        radius: Radius.zero,
+        child: SingleChildScrollView(
+          controller: _verticalScrollController,
+          scrollDirection: Axis.vertical,
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Padding(
+            padding: const EdgeInsets.only(right: 16), // Space for vertical scrollbar
+            child: Column(
+              children: [
+                Scrollbar(
+                  controller: _horizontalScrollController,
+                  thumbVisibility: true,
+                  radius: Radius.zero,
+                  child: SingleChildScrollView(
+                    controller: _horizontalScrollController,
+                    scrollDirection: Axis.horizontal,
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 16), // Space at top of horizontal scrollbar
+                      child: DataTable(
               columnSpacing: 10,
               showCheckboxColumn: false,
               sortColumnIndex: _sortColumnIndex,
@@ -338,6 +357,11 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
                   ],
                 );
               }).toList(),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ),

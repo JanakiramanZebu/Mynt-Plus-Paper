@@ -14,7 +14,6 @@ import '../../../provider/thems.dart';
 import '../../../res/res.dart';
 import '../../../res/web_colors.dart';
 import '../../../res/global_font_web.dart';
-import '../../../routes/route_names.dart';
 import '../../../sharedWidget/custom_text_btn_web.dart';
 import '../../../sharedWidget/list_divider.dart';
 import '../../../sharedWidget/cust_text_formfield.dart';
@@ -815,14 +814,16 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                 label: 'Add Symbol',
                 icon: assets.addCircleIcon,
                 onPress: () {
-                  WidgetsBinding.instance.addPostFrameCallback((_) async {
-                    await mw.requestMWScrip(
-                        context: context, isSubscribe: false);
-                  });
-                  Navigator.pushNamed(
-                    context,
-                    Routes.searchScrip,
-                    arguments: mw.wlName,
+                  mw.requestMWScrip(context: context, isSubscribe: false);
+                  showDialog(
+                    context: context,
+                    barrierColor: Colors.transparent,
+                    builder: (BuildContext context) {
+                      return SearchDialogWeb(
+                        wlName: mw.wlName,
+                        isBasket: "Watchlist",
+                      );
+                    },
                   );
                 },
               ),
@@ -1832,6 +1833,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
   void _showSearchDialog(BuildContext context, WidgetRef ref, String wlName) {
     showDialog(
       context: context,
+      barrierColor: Colors.transparent,
       builder: (BuildContext context) {
         return SearchDialogWeb(
           wlName: wlName,

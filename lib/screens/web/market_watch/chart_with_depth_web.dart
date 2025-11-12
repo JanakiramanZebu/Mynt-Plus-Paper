@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mynt_plus/models/marketwatch_model/get_quotes.dart';
 import 'package:mynt_plus/models/marketwatch_model/market_watch_scrip_model.dart';
 import 'package:mynt_plus/provider/market_watch_provider.dart';
@@ -9,6 +10,8 @@ import 'package:mynt_plus/res/global_font_web.dart';
 import 'package:mynt_plus/screens/web/market_watch/scrip_depth_info_web.dart';
 import 'package:mynt_plus/screens/web/market_watch/tv_chart/webview_chart.dart';
 import 'package:mynt_plus/screens/web/market_watch/options/option_chain_ss_web.dart';
+import 'package:mynt_plus/screens/web/market_watch/search_dialog_web.dart';
+import 'package:mynt_plus/res/res.dart';
 import '../../../../provider/websocket_provider.dart';
 
 class ChartWithDepthWeb extends ConsumerStatefulWidget {
@@ -24,6 +27,9 @@ class ChartWithDepthWeb extends ConsumerStatefulWidget {
 class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with TickerProviderStateMixin {
   String? _loadedToken;
   TabController? _tabController;
+  int _selectedTabIndex = 0; // 0 for Chart, 1 for Options
+  bool _isBasketMode = false; // Track basket mode from OptionChainSSWeb
+  VoidCallback? _toggleBasketModeCallback; // Callback to toggle basket mode
   // bool _isDepthVisible = false; // Controlled by wlValue.showDepthInitially
 
   @override
@@ -87,6 +93,12 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
       _tabController?.dispose();
       _tabController = TabController(length: 2, vsync: this);
       _tabController!.addListener(() {
+        // Update UI when tab changes (for search icon visibility)
+        if (mounted) {
+          setState(() {
+            _selectedTabIndex = _tabController!.index;
+          });
+        }
         if (_tabController!.index == 1 && _tabController!.indexIsChanging == false) {
           // Prepare option chain data when switching to Options tab
           final mw = ref.read(marketWatchProvider);
@@ -137,7 +149,7 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Text(
-                                  "${widget.wlValue.symbol.replaceAll('-EQ', '').toUpperCase()}${widget.wlValue.expDate} ${widget.wlValue.option} ${widget.wlValue.exch}",
+                                  "${(depthData?.symname ?? depthData?.symbol ?? depthData?.tsym ?? widget.wlValue.symbol).replaceAll('-EQ', '').toUpperCase()}${depthData?.expDate ?? widget.wlValue.expDate} ${depthData?.option ?? widget.wlValue.option} ${depthData?.exch ?? widget.wlValue.exch}",
                                   overflow: TextOverflow.ellipsis,
                                   style: WebTextStyles.title(
                                     isDarkTheme: theme.isDarkMode,
@@ -150,11 +162,12 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
                                   stream: ref.watch(websocketProvider).socketDataStream,
                                   builder: (context, snapshot) {
                                     final socketDatas = snapshot.data ?? {};
+                                    final currentToken = depthData?.token?.toString() ?? widget.wlValue.token;
                                     String ltp = depthData?.lp ?? depthData?.c ?? '0.00';
                                     String ch = depthData?.chng ?? '0.00';
                                     String pc = depthData?.pc ?? '0.00';
-                                    if (socketDatas.containsKey(widget.wlValue.token)) {
-                                      final s = socketDatas[widget.wlValue.token];
+                                    if (socketDatas.containsKey(currentToken)) {
+                                      final s = socketDatas[currentToken];
                                       ltp = "${s['lp'] ?? s['c'] ?? ltp}";
                                       ch = "${s['chng'] ?? ch}";
                                       pc = "${s['pc'] ?? pc}";
@@ -196,69 +209,265 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
                               ],
                             ),
                           ),
+                          // Search icon - only show for Chart tab (when no tabs or Chart tab is active)
+                          if (_tabController == null || _tabController!.index == 0) ...[
+                            const SizedBox(width: 12),
+                            Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                customBorder: const CircleBorder(),
+                                splashColor: theme.isDarkMode
+                                    ? Colors.white.withOpacity(0.15)
+                                    : Colors.black.withOpacity(0.15),
+                                highlightColor: theme.isDarkMode
+                                    ? Colors.white.withOpacity(0.08)
+                                    : Colors.black.withOpacity(0.08),
+                                onTap: () {
+                                  mw.requestMWScrip(context: context, isSubscribe: false);
+                                  showDialog(
+                                    context: context,
+                                    barrierColor: Colors.transparent,
+                                    builder: (BuildContext context) {
+                                      return SearchDialogWeb(
+                                        wlName: mw.wlName,
+                                        isBasket: "Chart||Is",
+                                      );
+                                    },
+                                  );
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: SvgPicture.asset(
+                                    assets.searchIcon1,
+                                    width: 20,
+                                    height: 20,
+                                    color: theme.isDarkMode
+                                        ? WebDarkColors.iconSecondary
+                                        : WebColors.iconSecondary,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                          // Options header row - only show for Options tab (symbol + dropdown + basket + search)
+                          if (hasOptions && _tabController != null && _selectedTabIndex == 1) ...[
+                            // const SizedBox(width: 12),
+                            // Symbol Name and Expiry Dropdown
+                            Row(
+                              children: [
+                                Text(
+                                  (depthData?.tsym ?? widget.wlValue.tsym).toUpperCase(),
+                                  style: WebTextStyles.custom(
+                                    fontSize: 13,
+                                    isDarkTheme: theme.isDarkMode,
+                                    color: theme.isDarkMode
+                                        ? WebDarkColors.textPrimary
+                                        : WebColors.textPrimary,
+                                    fontWeight: WebFonts.bold,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Theme(
+                                  data: Theme.of(context).copyWith(
+                                    popupMenuTheme: PopupMenuThemeData(
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                    ),
+                                  ),
+                                  child: DropdownButtonHideUnderline(
+                                    child: DropdownButton<String>(
+                                      value: mw.selectedExpDate,
+                                      isExpanded: false,
+                                      isDense: true,
+                                      dropdownColor: theme.isDarkMode 
+                                          ? WebDarkColors.surface
+                                          : WebColors.surface,
+                                      icon: Icon(
+                                        Icons.arrow_drop_down,
+                                        color: theme.isDarkMode 
+                                            ? WebDarkColors.textPrimary 
+                                            : WebColors.textPrimary,
+                                        size: 20,
+                                      ),
+                                      style: WebTextStyles.custom(
+                                        fontSize: 13,
+                                        isDarkTheme: theme.isDarkMode,
+                                        color: theme.isDarkMode
+                                            ? WebDarkColors.textPrimary
+                                            : WebColors.textPrimary,
+                                        fontWeight: WebFonts.bold,
+                                      ),
+                                      items: mw.sortDate.map((String date) {
+                                        return DropdownMenuItem<String>(
+                                          value: date,
+                                          child: Text(
+                                            date.replaceAll("-", " "),
+                                            style: WebTextStyles.custom(
+                                              fontSize: 13,
+                                              isDarkTheme: theme.isDarkMode,
+                                              color: theme.isDarkMode
+                                                  ? WebDarkColors.textPrimary
+                                                  : WebColors.textPrimary,
+                                              fontWeight: WebFonts.bold,
+                                            ),
+                                          ),
+                                        );
+                                      }).toList(),
+                                      onChanged: (String? newValue) async {
+                                        if (newValue != null) {
+                                          for (var i = 0; i < (mw.optExp?.length ?? 0); i++) {
+                                            if (newValue == mw.optExp![i].exd) {
+                                              mw.selecTradSym("${mw.optExp![i].tsym}");
+                                              mw.optExch("${mw.optExp![i].exch}");
+                                            }
+                                          }
+                                          mw.selecexpDate(newValue);
+
+                                          await mw.fetchOPtionChain(
+                                            context: context,
+                                            exchange: mw.optionExch!,
+                                            numofStrike: mw.numStrike,
+                                            strPrc: mw.optionStrPrc,
+                                            tradeSym: mw.selectedTradeSym!,
+                                          );
+                                        }
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            // const Spacer(),
+                            // Basket Toggle Icon
+                            Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                customBorder: const CircleBorder(),
+                                splashColor: theme.isDarkMode
+                                    ? Colors.white.withOpacity(0.1)
+                                    : Colors.black.withOpacity(0.1),
+                                highlightColor: theme.isDarkMode
+                                    ? Colors.white.withOpacity(0.05)
+                                    : Colors.black.withOpacity(0.05),
+                                onTap: () {
+                                  _toggleBasketModeCallback?.call();
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Icon(
+                                    _isBasketMode
+                                        ? Icons.shopping_basket
+                                        : Icons.shopping_basket_outlined,
+                                    size: 18,
+                                    color: _isBasketMode
+                                        ? WebColors.primary
+                                        : (theme.isDarkMode 
+                                            ? WebDarkColors.iconSecondary 
+                                            : WebColors.iconSecondary),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            // Search Icon
+                            Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                customBorder: const CircleBorder(),
+                                splashColor: theme.isDarkMode
+                                    ? Colors.white.withOpacity(0.1)
+                                    : Colors.black.withOpacity(0.1),
+                                highlightColor: theme.isDarkMode
+                                    ? Colors.white.withOpacity(0.05)
+                                    : Colors.black.withOpacity(0.05),
+                                onTap: () {
+                                  mw.requestMWScrip(context: context, isSubscribe: false);
+                                  showDialog(
+                                    context: context,
+                                    barrierColor: Colors.transparent,
+                                    builder: (BuildContext context) {
+                                      return SearchDialogWeb(
+                                        wlName: mw.wlName,
+                                        isBasket: "Option||Is",
+                                      );
+                                    },
+                                  );
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: SvgPicture.asset(
+                                    assets.searchIcon1,
+                                    width: 20,
+                                    height: 20,
+                                    color: theme.isDarkMode
+                                        ? WebDarkColors.iconSecondary
+                                        : WebColors.iconSecondary,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                           // Depth toggle icon
                           const SizedBox(width: 12),        
                           if (hasOptions)
-                            Container(
-                              width: 260,
-                              height: 45,
-                              padding: const EdgeInsets.all(2),
-                              margin: const EdgeInsets.only(right: 16),
-                              decoration: BoxDecoration(
-                                color: theme.isDarkMode
-                                    ? WebDarkColors.navBackground
-                                    : WebColors.navBackground,
-                                borderRadius: BorderRadius.circular(24),
-                              ),
-                              child: TabBar(
-                                controller: _tabController,
-                                isScrollable: false,
-                                labelColor:  WebDarkColors.textPrimary,
-                                labelStyle: const TextStyle(
-                                  fontWeight: WebFonts.bold,
-                                  fontSize: WebFonts.subSize,
+                            _buildSegmentedControl(theme),
+                          // Depth toggle chevron icon - with proper spacing
+                          if (hasOptions) ...[
+                            const SizedBox(width: 12),
+                            Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                customBorder: const CircleBorder(),
+                                splashColor: theme.isDarkMode
+                                    ? Colors.white.withOpacity(0.15)
+                                    : Colors.black.withOpacity(0.15),
+                                highlightColor: theme.isDarkMode
+                                    ? Colors.white.withOpacity(0.08)
+                                    : Colors.black.withOpacity(0.08),
+                                onTap: () {
+                                  ref.read(marketWatchProvider).setIsDepthVisibleWeb(!mw.isDepthVisible);
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Icon(
+                                    mw.isDepthVisible ? Icons.view_sidebar : Icons.view_sidebar_outlined,
+                                    size: 20,
+                                    color: mw.isDepthVisible
+                                        ? (theme.isDarkMode ? WebDarkColors.primary : WebColors.primary)
+                                        : (theme.isDarkMode ? WebDarkColors.iconSecondary : WebColors.iconSecondary),
+                                  ),
                                 ),
-                                unselectedLabelColor: theme.isDarkMode
-                                    ? WebDarkColors.textSecondary
-                                    : WebColors.textSecondary,
-                                unselectedLabelStyle: const TextStyle(
-                                  fontWeight: WebFonts.bold,
-                                  fontSize: WebFonts.subSize,
-                                ),
-                                indicator: BoxDecoration(
-                                  color: WebColors.primary,
-                                  borderRadius: BorderRadius.circular(5),
-                                ),
-                                indicatorPadding:
-                                    const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
-                                indicatorSize: TabBarIndicatorSize.tab,
-                                labelPadding:
-                                    const EdgeInsets.symmetric(horizontal: 10),
-                                tabs: const [
-                                  Tab(text: 'Chart'),
-                                  Tab(text: 'Options'),
-                                ],
                               ),
                             ),
+                          ],
                         ],
                       ),
                     ),
                     // Content area
                     Expanded(
                       child: hasOptions && _tabController != null
-                          ? TabBarView(
-                              controller: _tabController,
-                              children: [
-                                ChartScreenWebViews(
+                          ? _selectedTabIndex == 0
+                              ? ChartScreenWebViews(
                                   chartArgs: ChartArgs(
                                     exch: widget.wlValue.exch,
                                     tsym: widget.wlValue.tsym,
                                     token: widget.wlValue.token,
                                   ),
-                                ),
-                                OptionChainSSWeb(wlValue: widget.wlValue),
-                              ],
-                            )
+                                )
+                              : OptionChainSSWeb(
+                                  wlValue: widget.wlValue,
+                                  onBasketModeChanged: (bool isBasketMode) {
+                                    setState(() {
+                                      _isBasketMode = isBasketMode;
+                                    });
+                                  },
+                                  onToggleCallbackReady: (VoidCallback toggleCallback) {
+                                    setState(() {
+                                      _toggleBasketModeCallback = toggleCallback;
+                                    });
+                                  },
+                                )
                           : ChartScreenWebViews(
                               chartArgs: ChartArgs(
                                 exch: widget.wlValue.exch,
@@ -290,34 +499,94 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb> with Tick
                 ),
             ],
           ),
-          Positioned(
-                   top: 3,
-                   right: !mw.isDepthVisible ? 0 : 375,
-                   child: InkWell(
-                     customBorder: const RoundedRectangleBorder(
-                       borderRadius: BorderRadius.only(
-                         topLeft: Radius.circular(0),
-                         bottomLeft: Radius.circular(0),
-                       ),
-                     ),
-                     // splashColor: mw.isDepthVisible ? (theme.isDarkMode ? Colors.white : Colors.black).withOpacity(.15) : null,
-                     // highlightColor: mw.isDepthVisible ? (theme.isDarkMode ? Colors.white : Colors.black).withOpacity(.08) : null,
-                     onTap: () {
-                       ref.read(marketWatchProvider).setIsDepthVisibleWeb(!mw.isDepthVisible);
-                     },
-                     child: Padding(
-                       padding: const EdgeInsets.all(8.0),
-                       child: Icon(
-                         mw.isDepthVisible ? Icons.chevron_right : Icons.chevron_left,
-                         size:30,
-                         color: mw.isDepthVisible
-                             ? (theme.isDarkMode ? WebDarkColors.primary : WebColors.primary)
-                             : (theme.isDarkMode ? WebDarkColors.iconSecondary : WebColors.iconSecondary),
-                       ),
-                     ),
-                   ),
-                 ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSegmentedControl(ThemesProvider theme) {
+    final tabs = ['Chart', 'Options'];
+
+    return SizedBox(
+      height: 45,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (int index = 0; index < tabs.length; index++)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 6),
+              child: _buildSegmentedTab(
+                tabs[index],
+                index,
+                _selectedTabIndex == index,
+                theme,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSegmentedTab(
+    String title,
+    int index,
+    bool isSelected,
+    ThemesProvider theme,
+  ) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: InkWell(
+        onTap: () {
+          if (_tabController != null) {
+            _tabController!.animateTo(index);
+          }
+          setState(() {
+            _selectedTabIndex = index;
+          });
+          // Prepare option chain data when switching to Options tab
+          if (index == 1) {
+            final mw = ref.read(marketWatchProvider);
+            mw.setOptionScript(context, widget.wlValue.exch, widget.wlValue.token, widget.wlValue.tsym);
+          }
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? (theme.isDarkMode
+                    ? WebDarkColors.backgroundTertiary
+                    : WebColors.backgroundTertiary)
+                : (theme.isDarkMode
+                    ? WebDarkColors.surface
+                    : WebColors.surface),
+            border: Border.all(
+              color: isSelected
+                  ? (theme.isDarkMode
+                      ? WebDarkColors.primary
+                      : WebColors.primary)
+                  : (theme.isDarkMode
+                      ? WebDarkColors.textSecondary
+                      : WebColors.textSecondary),
+              width: 1.5,
+            ),
+            borderRadius: BorderRadius.circular(50),
+          ),
+          child: Text(
+            title,
+            overflow: TextOverflow.ellipsis,
+            style: WebTextStyles.sub(
+              isDarkTheme: theme.isDarkMode,
+              color: isSelected
+                  ? (theme.isDarkMode
+                      ? WebDarkColors.textPrimary
+                      : WebColors.textPrimary)
+                  : (theme.isDarkMode
+                      ? WebDarkColors.navItem
+                      : WebColors.navItem),
+              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+            ),
+          ),
+        ),
       ),
     );
   }
