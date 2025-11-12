@@ -62,170 +62,159 @@ class _MFSipdetScreenWebState extends ConsumerState<MFSipdetScreenWeb> {
               physics: const AlwaysScrollableScrollPhysics(),
               child: Padding(
                 padding: const EdgeInsets.only(right: 16), // Space for vertical scrollbar
-                child: Column(
-                  children: [
-                    Scrollbar(
-                      controller: _horizontalScrollController,
-                      thumbVisibility: true,
-                      radius: Radius.zero,
-                      child: SingleChildScrollView(
-                        controller: _horizontalScrollController,
-                        scrollDirection: Axis.horizontal,
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 16), // Space at top of horizontal scrollbar
-                          child: DataTable(
-                columnSpacing: 10,
-                showCheckboxColumn: false,
-                sortColumnIndex: _sipSortColumnIndex,
-                sortAscending: _sipSortAscending,
-                headingRowHeight: 44,
-                headingRowColor: WidgetStateProperty.all(Colors.transparent),
-                dataRowColor: WidgetStateProperty.resolveWith<Color?>(
-                  (Set<WidgetState> states) {
-                    if (states.contains(WidgetState.hovered)) {
-                      return (theme.isDarkMode
-                              ? WebDarkColors.primary
-                              : WebColors.primary)
-                          .withOpacity(0.05);
-                    }
-                    if (states.contains(WidgetState.selected)) {
-                      return (theme.isDarkMode
-                              ? WebDarkColors.primary
-                              : WebColors.primary)
-                          .withOpacity(0.1);
-                    }
-                    return null;
-                  },
-                ),
-                    columns: [
-                      DataColumn(
-                        label: _buildSortableColumnHeader('Scheme', theme, 0),
-                        onSort: (columnIndex, ascending) =>
-                            _onSortSipTable(columnIndex, ascending),
-                      ),
-                      DataColumn(
-                        label: _buildSortableColumnHeader('SIP Reg No', theme, 1),
-                        onSort: (columnIndex, ascending) =>
-                            _onSortSipTable(columnIndex, ascending),
-                      ),
-                      DataColumn(
-                        label: _buildSortableColumnHeader('Amount', theme, 2),
-                        onSort: (columnIndex, ascending) =>
-                            _onSortSipTable(columnIndex, ascending),
-                      ),
-                      DataColumn(
-                        label: _buildSortableColumnHeader('Frequency', theme, 3),
-                        onSort: (columnIndex, ascending) =>
-                            _onSortSipTable(columnIndex, ascending),
-                      ),
-                      DataColumn(
-                        label: _buildSortableColumnHeader('Next Installment', theme, 4),
-                        onSort: (columnIndex, ascending) =>
-                            _onSortSipTable(columnIndex, ascending),
-                      ),
-                      DataColumn(
-                        label: _buildSortableColumnHeader('Status', theme, 5),
-                        onSort: (columnIndex, ascending) =>
-                            _onSortSipTable(columnIndex, ascending),
-                      ),
-                    ],
-                    rows: _sortedSipDetails(sipDetails).map((s) {
-                      final scheme = s.name ?? '';
-                      final reg = s.sIPRegnNo ?? '';
-                      final amount = s.installmentAmount?.toString() ?? '0';
-                      final freq = s.frequencyType ?? '';
-                      final nextInst = s.NextSIPDate ?? '';
-                      final status = (s.status ?? '').toUpperCase();
-                      final statusColor = _statusColor(status, theme);
-                      final sipRegNo = reg; // Use SIP Reg No as unique identifier
-
-                      return DataRow(
-                        onSelectChanged: (bool? selected) {
-                          _openSipDetail(s);
+                child: SizedBox(
+                  width: constraints.maxWidth,
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: DataTable(
+                      columnSpacing: 10,
+                      showCheckboxColumn: false,
+                      sortColumnIndex: _sipSortColumnIndex,
+                      sortAscending: _sipSortAscending,
+                      headingRowHeight: 44,
+                      headingRowColor: WidgetStateProperty.all(Colors.transparent),
+                      dataRowColor: WidgetStateProperty.resolveWith<Color?>(
+                        (Set<WidgetState> states) {
+                          if (states.contains(WidgetState.hovered)) {
+                            return (theme.isDarkMode
+                                    ? WebDarkColors.primary
+                                    : WebColors.primary)
+                                .withOpacity(0.05);
+                          }
+                          if (states.contains(WidgetState.selected)) {
+                            return (theme.isDarkMode
+                                    ? WebDarkColors.primary
+                                    : WebColors.primary)
+                                .withOpacity(0.1);
+                          }
+                          return null;
                         },
-                        cells: [
-                          // Scheme with hover actions
-                          _buildSchemeCellWithHover(s, scheme, sipRegNo, theme),
-                          // SIP Reg No
-                          _buildCellWithHover(s, sipRegNo, theme, DataCell(
-                            Text(
-                              reg,
-                              style: WebTextStyles.custom(
-                                fontSize: 13,
-                                isDarkTheme: theme.isDarkMode,
-                                color: theme.isDarkMode
-                                    ? WebDarkColors.textPrimary
-                                    : WebColors.textPrimary,
-                                fontWeight: WebFonts.medium,
-                              ),
-                            ),
-                          )),
-                          // Amount
-                          _buildCellWithHover(s, sipRegNo, theme, DataCell(
-                            Text(
-                              double.tryParse(amount)?.toStringAsFixed(2) ?? amount,
-                              style: WebTextStyles.custom(
-                                fontSize: 13,
-                                isDarkTheme: theme.isDarkMode,
-                                color: theme.isDarkMode
-                                    ? WebDarkColors.textPrimary
-                                    : WebColors.textPrimary,
-                                fontWeight: WebFonts.medium,
-                              ),
-                            ),
-                          )),
-                          // Frequency
-                          _buildCellWithHover(s, sipRegNo, theme, DataCell(
-                            Text(
-                              freq,
-                              style: WebTextStyles.custom(
-                                fontSize: 13,
-                                isDarkTheme: theme.isDarkMode,
-                                color: theme.isDarkMode
-                                    ? WebDarkColors.textPrimary
-                                    : WebColors.textPrimary,
-                                fontWeight: WebFonts.medium,
-                              ),
-                            ),
-                          )),
-                          // Next Installment
-                          _buildCellWithHover(s, sipRegNo, theme, DataCell(
-                            Text(
-                              nextInst,
-                              style: WebTextStyles.custom(
-                                fontSize: 13,
-                                isDarkTheme: theme.isDarkMode,
-                                color: theme.isDarkMode
-                                    ? WebDarkColors.textPrimary
-                                    : WebColors.textPrimary,
-                                fontWeight: WebFonts.medium,
-                              ),
-                            ),
-                          )),
-                          // Status
-                          _buildCellWithHover(s, sipRegNo, theme, DataCell(
-                            InkWell(
-                              onTap: () => _openSipDetail(s),
-                              child: Text(
-                                status,
+                      ),
+                      columns: [
+                        DataColumn(
+                          label: _buildSortableColumnHeader('Scheme', theme, 0),
+                          onSort: (columnIndex, ascending) =>
+                              _onSortSipTable(columnIndex, ascending),
+                        ),
+                        DataColumn(
+                          label: _buildSortableColumnHeader('SIP Reg No', theme, 1),
+                          onSort: (columnIndex, ascending) =>
+                              _onSortSipTable(columnIndex, ascending),
+                        ),
+                        DataColumn(
+                          label: _buildSortableColumnHeader('Amount', theme, 2),
+                          onSort: (columnIndex, ascending) =>
+                              _onSortSipTable(columnIndex, ascending),
+                        ),
+                        DataColumn(
+                          label: _buildSortableColumnHeader('Frequency', theme, 3),
+                          onSort: (columnIndex, ascending) =>
+                              _onSortSipTable(columnIndex, ascending),
+                        ),
+                        DataColumn(
+                          label: _buildSortableColumnHeader('Next Installment', theme, 4),
+                          onSort: (columnIndex, ascending) =>
+                              _onSortSipTable(columnIndex, ascending),
+                        ),
+                        DataColumn(
+                          label: _buildSortableColumnHeader('Status', theme, 5),
+                          onSort: (columnIndex, ascending) =>
+                              _onSortSipTable(columnIndex, ascending),
+                        ),
+                      ],
+                      rows: _sortedSipDetails(sipDetails).map((s) {
+                        final scheme = s.name ?? '';
+                        final reg = s.sIPRegnNo ?? '';
+                        final amount = s.installmentAmount?.toString() ?? '0';
+                        final freq = s.frequencyType ?? '';
+                        final nextInst = s.NextSIPDate ?? '';
+                        final status = (s.status ?? '').toUpperCase();
+                        final statusColor = _statusColor(status, theme);
+                        final sipRegNo = reg; // Use SIP Reg No as unique identifier
+
+                        return DataRow(
+                          onSelectChanged: (bool? selected) {
+                            _openSipDetail(s);
+                          },
+                          cells: [
+                            // Scheme with hover actions
+                            _buildSchemeCellWithHover(s, scheme, sipRegNo, theme),
+                            // SIP Reg No
+                            _buildCellWithHover(s, sipRegNo, theme, DataCell(
+                              Text(
+                                reg,
                                 style: WebTextStyles.custom(
                                   fontSize: 13,
                                   isDarkTheme: theme.isDarkMode,
-                                  color: statusColor,
+                                  color: theme.isDarkMode
+                                      ? WebDarkColors.textPrimary
+                                      : WebColors.textPrimary,
                                   fontWeight: WebFonts.medium,
                                 ),
                               ),
-                            ),
-                          )),
-                        ],
-                      );
-                    }).toList(),
-                          ),
-                        ),
-                      ),
+                            )),
+                            // Amount
+                            _buildCellWithHover(s, sipRegNo, theme, DataCell(
+                              Text(
+                                double.tryParse(amount)?.toStringAsFixed(2) ?? amount,
+                                style: WebTextStyles.custom(
+                                  fontSize: 13,
+                                  isDarkTheme: theme.isDarkMode,
+                                  color: theme.isDarkMode
+                                      ? WebDarkColors.textPrimary
+                                      : WebColors.textPrimary,
+                                  fontWeight: WebFonts.medium,
+                                ),
+                              ),
+                            )),
+                            // Frequency
+                            _buildCellWithHover(s, sipRegNo, theme, DataCell(
+                              Text(
+                                freq,
+                                style: WebTextStyles.custom(
+                                  fontSize: 13,
+                                  isDarkTheme: theme.isDarkMode,
+                                  color: theme.isDarkMode
+                                      ? WebDarkColors.textPrimary
+                                      : WebColors.textPrimary,
+                                  fontWeight: WebFonts.medium,
+                                ),
+                              ),
+                            )),
+                            // Next Installment
+                            _buildCellWithHover(s, sipRegNo, theme, DataCell(
+                              Text(
+                                nextInst,
+                                style: WebTextStyles.custom(
+                                  fontSize: 13,
+                                  isDarkTheme: theme.isDarkMode,
+                                  color: theme.isDarkMode
+                                      ? WebDarkColors.textPrimary
+                                      : WebColors.textPrimary,
+                                  fontWeight: WebFonts.medium,
+                                ),
+                              ),
+                            )),
+                            // Status
+                            _buildCellWithHover(s, sipRegNo, theme, DataCell(
+                              InkWell(
+                                onTap: () => _openSipDetail(s),
+                                child: Text(
+                                  status,
+                                  style: WebTextStyles.custom(
+                                    fontSize: 13,
+                                    isDarkTheme: theme.isDarkMode,
+                                    color: statusColor,
+                                    fontWeight: WebFonts.medium,
+                                  ),
+                                ),
+                              ),
+                            )),
+                          ],
+                        );
+                      }).toList(),
                     ),
-                  ],
+                  ),
                 ),
               ),
             ),

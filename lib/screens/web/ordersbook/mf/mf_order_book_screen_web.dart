@@ -59,190 +59,183 @@ class _MfOrderBookScreenWebState extends ConsumerState<MfOrderBookScreenWeb> {
     
     return SizedBox(
       height: tableHeight,
-      child: Scrollbar(
-        controller: _verticalScrollController,
-        thumbVisibility: true,
-        radius: Radius.zero,
-        child: SingleChildScrollView(
-          controller: _verticalScrollController,
-          scrollDirection: Axis.vertical,
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: Padding(
-            padding: const EdgeInsets.only(right: 16), // Space for vertical scrollbar
-            child: Column(
-              children: [
-                Scrollbar(
-                  controller: _horizontalScrollController,
-                  thumbVisibility: true,
-                  radius: Radius.zero,
-                  child: SingleChildScrollView(
-                    controller: _horizontalScrollController,
-                    scrollDirection: Axis.horizontal,
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    child: Padding(
-                      padding: const EdgeInsets.only(bottom: 16), // Space at top of horizontal scrollbar
-                      child: DataTable(
-                columnSpacing: 10,
-                showCheckboxColumn: false,
-                sortColumnIndex: _mfSortColumnIndex,
-                sortAscending: _mfSortAscending,
-                headingRowHeight: 44,
-                headingRowColor: WidgetStateProperty.all(Colors.transparent),
-                dataRowColor: WidgetStateProperty.resolveWith<Color?>(
-                  (Set<WidgetState> states) {
-                    if (states.contains(WidgetState.hovered)) {
-                      return (theme.isDarkMode
-                              ? WebDarkColors.primary
-                              : WebColors.primary)
-                          .withOpacity(0.05);
-                    }
-                    if (states.contains(WidgetState.selected)) {
-                      return (theme.isDarkMode
-                              ? WebDarkColors.primary
-                              : WebColors.primary)
-                          .withOpacity(0.1);
-                    }
-                    return null;
-                  },
-                ),
-                    columns: [
-                      DataColumn(
-                        label: _buildSortableColumnHeader('Scheme', theme, 0),
-                        onSort: (columnIndex, ascending) =>
-                            _onSortMfTable(columnIndex, ascending),
-                      ),
-                      DataColumn(
-                        label: _buildSortableColumnHeader('Type', theme, 1),
-                        onSort: (columnIndex, ascending) =>
-                            _onSortMfTable(columnIndex, ascending),
-                      ),
-                      DataColumn(
-                        label: _buildSortableColumnHeader('Amount', theme, 2),
-                        onSort: (columnIndex, ascending) =>
-                            _onSortMfTable(columnIndex, ascending),
-                      ),
-                      DataColumn(
-                        label: _buildSortableColumnHeader('Time', theme, 3),
-                        onSort: (columnIndex, ascending) =>
-                            _onSortMfTable(columnIndex, ascending),
-                      ),
-                      DataColumn(
-                        label: _buildSortableColumnHeader('Status', theme, 4),
-                        onSort: (columnIndex, ascending) =>
-                            _onSortMfTable(columnIndex, ascending),
-                      ),
-                    ],
-                    rows: _sortedMfOrders(orders).map((o) {
-                      final time = o.datetime ?? '';
-                      final scheme = o.name ?? o.schemename ?? '';
-                      final type = (o.orderType == 'NRM' ? 'ONE-TIME' : 'SIP');
-                      final amount = o.orderVal ?? o.amount ?? '0';
-                      final status = (o.status ?? '').toUpperCase();
-
-                      final statusColor = _statusColor(status, theme);
-
-                      return DataRow(
-                        onSelectChanged: (bool? selected) {
-                          _openMfOrderDetail(o);
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return Scrollbar(
+            controller: _verticalScrollController,
+            thumbVisibility: true,
+            radius: Radius.zero,
+            child: SingleChildScrollView(
+              controller: _verticalScrollController,
+              scrollDirection: Axis.vertical,
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: Padding(
+                padding: const EdgeInsets.only(right: 16), // Space for vertical scrollbar
+                child: SizedBox(
+                  width: constraints.maxWidth,
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: DataTable(
+                      columnSpacing: 10,
+                      showCheckboxColumn: false,
+                      sortColumnIndex: _mfSortColumnIndex,
+                      sortAscending: _mfSortAscending,
+                      headingRowHeight: 44,
+                      headingRowColor: WidgetStateProperty.all(Colors.transparent),
+                      dataRowColor: WidgetStateProperty.resolveWith<Color?>(
+                        (Set<WidgetState> states) {
+                          if (states.contains(WidgetState.hovered)) {
+                            return (theme.isDarkMode
+                                    ? WebDarkColors.primary
+                                    : WebColors.primary)
+                                .withOpacity(0.05);
+                          }
+                          if (states.contains(WidgetState.selected)) {
+                            return (theme.isDarkMode
+                                    ? WebDarkColors.primary
+                                    : WebColors.primary)
+                                .withOpacity(0.1);
+                          }
+                          return null;
                         },
-                        cells: [
-                          // Scheme
-                          DataCell(
-                            Text(
-                              scheme,
-                              style: WebTextStyles.custom(
-                                fontSize: 13,
-                                isDarkTheme: theme.isDarkMode,
-                                color: theme.isDarkMode
-                                    ? WebDarkColors.textPrimary
-                                    : WebColors.textPrimary,
-                                fontWeight: WebFonts.medium,
-                              ),
-                            ),
-                          ),
-                          // Type
-                          DataCell(
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: type == 'ONE-TIME'
-                                    ? Color.fromARGB(255, 88, 69, 147).withOpacity(0.1)
-                                    : Color(0xff016B61).withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(4),
-                                border: Border.all(
-                                  color: type == 'ONE-TIME'
-                                      ? Color.fromARGB(255, 88, 69, 147)
-                                      : Color(0xff016B61),
-                                  width: 1,
-                                ),
-                              ),
-                              child: Text(
-                                type,
-                                style: WebTextStyles.custom(
-                                  fontSize: 13,
-                                  isDarkTheme: theme.isDarkMode,
-                                  color: type == 'ONE-TIME'
-                                      ? Color.fromARGB(255, 88, 69, 147)
-                                      : Color(0xff016B61),
-                                  fontWeight: WebFonts.medium,
-                                ),
-                              ),
-                            ),
-                          ),
-                          // Amount
-                          DataCell(
-                            Text(
-                              double.parse(amount).toStringAsFixed(2),
-                              style: WebTextStyles.custom(
-                                fontSize: 13,
-                                isDarkTheme: theme.isDarkMode,
-                                color: theme.isDarkMode
-                                    ? WebDarkColors.textPrimary
-                                    : WebColors.textPrimary,
-                                fontWeight: WebFonts.medium,
-                              ),
-                            ),
-                          ),
-                          // Time
-                          DataCell(
-                            Text(
-                              time,
-                              style: WebTextStyles.custom(
-                                fontSize: 13,
-                                isDarkTheme: theme.isDarkMode,
-                                color: theme.isDarkMode
-                                    ? WebDarkColors.textPrimary
-                                    : WebColors.textPrimary,
-                                fontWeight: WebFonts.medium,
-                              ),
-                            ),
-                          ),
-                          // Status
-                          DataCell(
-                            InkWell(
-                              onTap: () => _openMfOrderDetail(o),
-                              child: Text(
-                                status,
-                                style: WebTextStyles.custom(
-                                  fontSize: 13,
-                                  isDarkTheme: theme.isDarkMode,
-                                  color: statusColor,
-                                  fontWeight: WebFonts.medium,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      );
-                    }).toList(),
                       ),
+                      columns: [
+                        DataColumn(
+                          label: _buildSortableColumnHeader('Scheme', theme, 0),
+                          onSort: (columnIndex, ascending) =>
+                              _onSortMfTable(columnIndex, ascending),
+                        ),
+                        DataColumn(
+                          label: _buildSortableColumnHeader('Type', theme, 1),
+                          onSort: (columnIndex, ascending) =>
+                              _onSortMfTable(columnIndex, ascending),
+                        ),
+                        DataColumn(
+                          label: _buildSortableColumnHeader('Amount', theme, 2),
+                          onSort: (columnIndex, ascending) =>
+                              _onSortMfTable(columnIndex, ascending),
+                        ),
+                        DataColumn(
+                          label: _buildSortableColumnHeader('Time', theme, 3),
+                          onSort: (columnIndex, ascending) =>
+                              _onSortMfTable(columnIndex, ascending),
+                        ),
+                        DataColumn(
+                          label: _buildSortableColumnHeader('Status', theme, 4),
+                          onSort: (columnIndex, ascending) =>
+                              _onSortMfTable(columnIndex, ascending),
+                        ),
+                      ],
+                      rows: _sortedMfOrders(orders).map((o) {
+                        final time = o.datetime ?? '';
+                        final scheme = o.name ?? o.schemename ?? '';
+                        final type = (o.orderType == 'NRM' ? 'ONE-TIME' : 'SIP');
+                        final amount = o.orderVal ?? o.amount ?? '0';
+                        final status = (o.status ?? '').toUpperCase();
+
+                        final statusColor = _statusColor(status, theme);
+
+                        return DataRow(
+                          onSelectChanged: (bool? selected) {
+                            _openMfOrderDetail(o);
+                          },
+                          cells: [
+                            // Scheme
+                            DataCell(
+                              Text(
+                                scheme,
+                                style: WebTextStyles.custom(
+                                  fontSize: 13,
+                                  isDarkTheme: theme.isDarkMode,
+                                  color: theme.isDarkMode
+                                      ? WebDarkColors.textPrimary
+                                      : WebColors.textPrimary,
+                                  fontWeight: WebFonts.medium,
+                                ),
+                              ),
+                            ),
+                            // Type
+                            DataCell(
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: type == 'ONE-TIME'
+                                      ? Color.fromARGB(255, 88, 69, 147).withOpacity(0.1)
+                                      : Color(0xff016B61).withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(4),
+                                  border: Border.all(
+                                    color: type == 'ONE-TIME'
+                                        ? Color.fromARGB(255, 88, 69, 147)
+                                        : Color(0xff016B61),
+                                    width: 1,
+                                  ),
+                                ),
+                                child: Text(
+                                  type,
+                                  style: WebTextStyles.custom(
+                                    fontSize: 13,
+                                    isDarkTheme: theme.isDarkMode,
+                                    color: type == 'ONE-TIME'
+                                        ? Color.fromARGB(255, 88, 69, 147)
+                                        : Color(0xff016B61),
+                                    fontWeight: WebFonts.medium,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            // Amount
+                            DataCell(
+                              Text(
+                                double.parse(amount).toStringAsFixed(2),
+                                style: WebTextStyles.custom(
+                                  fontSize: 13,
+                                  isDarkTheme: theme.isDarkMode,
+                                  color: theme.isDarkMode
+                                      ? WebDarkColors.textPrimary
+                                      : WebColors.textPrimary,
+                                  fontWeight: WebFonts.medium,
+                                ),
+                              ),
+                            ),
+                            // Time
+                            DataCell(
+                              Text(
+                                time,
+                                style: WebTextStyles.custom(
+                                  fontSize: 13,
+                                  isDarkTheme: theme.isDarkMode,
+                                  color: theme.isDarkMode
+                                      ? WebDarkColors.textPrimary
+                                      : WebColors.textPrimary,
+                                  fontWeight: WebFonts.medium,
+                                ),
+                              ),
+                            ),
+                            // Status
+                            DataCell(
+                              InkWell(
+                                onTap: () => _openMfOrderDetail(o),
+                                child: Text(
+                                  status,
+                                  style: WebTextStyles.custom(
+                                    fontSize: 13,
+                                    isDarkTheme: theme.isDarkMode,
+                                    color: statusColor,
+                                    fontWeight: WebFonts.medium,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                      }).toList(),
                     ),
                   ),
                 ),
-              ],
+              ),
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }

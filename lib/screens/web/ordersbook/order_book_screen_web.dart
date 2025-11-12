@@ -852,142 +852,134 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
       );
     }
 
-    return Scrollbar(
-      controller: _verticalScrollController,
-      thumbVisibility: true,
-      radius: Radius.zero,
-      child: SingleChildScrollView(
-        controller: _verticalScrollController,
-        scrollDirection: Axis.vertical,
-        physics: const AlwaysScrollableScrollPhysics(),
-        child: Padding(
-          padding: const EdgeInsets.only(right: 16), // Space for vertical scrollbar
-          child: Column(
-            children: [
-              Scrollbar(
-                controller: _horizontalScrollController,
-                thumbVisibility: true,
-                radius: Radius.zero,
-                child: SingleChildScrollView(
-                  controller: _horizontalScrollController,
-                  scrollDirection: Axis.horizontal,
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 16), // Space at top of horizontal scrollbar
-                    child: DataTable(
-              columnSpacing: 15,
-              showCheckboxColumn: false,
-              sortColumnIndex: _orderSortColumnIndex,
-              sortAscending: _orderSortAscending,
-              headingRowHeight: 44,
-              headingRowColor: WidgetStateProperty.all(Colors.transparent),
-              dataRowColor: WidgetStateProperty.resolveWith<Color?>(
-                (Set<WidgetState> states) {
-                  if (states.contains(WidgetState.hovered)) {
-                    return (theme.isDarkMode
-                            ? WebDarkColors.primary
-                            : WebColors.primary)
-                        .withOpacity(0.05);
-                  }
-                  if (states.contains(WidgetState.selected)) {
-                    return (theme.isDarkMode
-                            ? WebDarkColors.primary
-                            : WebColors.primary)
-                        .withOpacity(0.1);
-                  }
-                  return null;
-                },
-              ),
-            columns: [
-              DataColumn(
-                label: _buildSortableColumnHeader('Instrument', theme, 0),
-                onSort: (columnIndex, ascending) => _onSortOrderTable(columnIndex, ascending),
-              ),
-              DataColumn(
-                label: _buildSortableColumnHeader('Product', theme, 1),
-                onSort: (columnIndex, ascending) => _onSortOrderTable(columnIndex, ascending),
-              ),
-              DataColumn(
-                label: _buildSortableColumnHeader('Type', theme, 2),
-                onSort: (columnIndex, ascending) => _onSortOrderTable(columnIndex, ascending),
-              ),
-              DataColumn(
-                label: _buildSortableColumnHeader('Qty', theme, 3),
-                onSort: (columnIndex, ascending) => _onSortOrderTable(columnIndex, ascending),
-              ),
-              DataColumn(
-                label: _buildSortableColumnHeader('Avg price', theme, 4),
-                onSort: (columnIndex, ascending) => _onSortOrderTable(columnIndex, ascending),
-              ),
-              DataColumn(
-                label: _buildSortableColumnHeader('LTP', theme, 5),
-                onSort: (columnIndex, ascending) => _onSortOrderTable(columnIndex, ascending),
-              ),
-              DataColumn(
-                label: _buildSortableColumnHeader('Price', theme, 6),
-                onSort: (columnIndex, ascending) => _onSortOrderTable(columnIndex, ascending),
-              ),
-              DataColumn(
-                label: _buildSortableColumnHeader('Trigger price', theme, 7),
-                onSort: (columnIndex, ascending) => _onSortOrderTable(columnIndex, ascending),
-              ),
-              DataColumn(
-                label: _buildSortableColumnHeader('Order value', theme, 8),
-                onSort: (columnIndex, ascending) => _onSortOrderTable(columnIndex, ascending),
-              ),
-              DataColumn(
-                label: _buildSortableColumnHeader('Status', theme, 9),
-                onSort: (columnIndex, ascending) => _onSortOrderTable(columnIndex, ascending),
-              ),
-              DataColumn(
-                label: _buildSortableColumnHeader('Time', theme, 10),
-                onSort: (columnIndex, ascending) => _onSortOrderTable(columnIndex, ascending),
-              ),
-            ],
-            rows: _sortedOrders(orders).map((order) {
-              // Use order number as unique identifier for hover (not token, which is shared across orders)
-              final uniqueId = order.norenordno?.toString() ?? order.token?.toString() ?? '';
-              
-              return DataRow(
-                onSelectChanged: (bool? selected) {
-                  _openOrderDetail(order);
-                },
-                cells: [
-                  // Instrument - text (left aligned)
-                  _buildInstrumentCellWithHover(order, theme, uniqueId),
-                  // Product - text (left aligned)
-                  _buildCellWithHover(order, theme, uniqueId, _buildProductCell(order, theme), alignment: Alignment.centerLeft),
-                  // Type - text (left aligned)
-                  _buildCellWithHover(order, theme, uniqueId, _buildTypeCell(order, theme), alignment: Alignment.centerLeft),
-                  // Qty - numeric (right aligned)
-                  _buildCellWithHover(order, theme, uniqueId, _buildQtyCell(order, theme), alignment: Alignment.centerRight),
-                  // Avg price - numeric (right aligned)
-                  _buildCellWithHover(order, theme, uniqueId, _buildAvgPriceCell(order, theme), alignment: Alignment.centerRight),
-                  // LTP - numeric (right aligned)
-                  _buildCellWithHover(order, theme, uniqueId, _buildLTPCell(order, theme), alignment: Alignment.centerRight),
-                  // Price - numeric (right aligned)
-                  _buildCellWithHover(order, theme, uniqueId, _buildPriceCell(order, theme), alignment: Alignment.centerRight),
-                  // Trigger price - numeric (right aligned)
-                  _buildCellWithHover(order, theme, uniqueId, _buildTriggerPriceCell(order, theme), alignment: Alignment.centerRight),
-                  // Order value - numeric (right aligned)
-                  _buildCellWithHover(order, theme, uniqueId, _buildOrderValueCell(order, theme), alignment: Alignment.centerRight),
-                  // Status - text (left aligned)
-                  _buildCellWithHover(order, theme, uniqueId, _buildStatusCell(order, theme), alignment: Alignment.centerLeft),
-                  // Time - text (left aligned)
-                  _buildCellWithHover(order, theme, uniqueId, _buildTimeCell(order, theme), alignment: Alignment.centerLeft),
-                ],
-              );
-            }).toList(),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Scrollbar(
+          controller: _verticalScrollController,
+          thumbVisibility: true,
+          radius: Radius.zero,
+          child: SingleChildScrollView(
+            controller: _verticalScrollController,
+            scrollDirection: Axis.vertical,
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: Padding(
+              padding: const EdgeInsets.only(right: 16), // Space for vertical scrollbar
+              child: SizedBox(
+                width: constraints.maxWidth,
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: DataTable(
+                    columnSpacing: 15,
+                    showCheckboxColumn: false,
+                    sortColumnIndex: _orderSortColumnIndex,
+                    sortAscending: _orderSortAscending,
+                    headingRowHeight: 44,
+                    headingRowColor: WidgetStateProperty.all(Colors.transparent),
+                    dataRowColor: WidgetStateProperty.resolveWith<Color?>(
+                      (Set<WidgetState> states) {
+                        if (states.contains(WidgetState.hovered)) {
+                          return (theme.isDarkMode
+                                  ? WebDarkColors.primary
+                                  : WebColors.primary)
+                              .withOpacity(0.05);
+                        }
+                        if (states.contains(WidgetState.selected)) {
+                          return (theme.isDarkMode
+                                  ? WebDarkColors.primary
+                                  : WebColors.primary)
+                              .withOpacity(0.1);
+                        }
+                        return null;
+                      },
                     ),
+                    columns: [
+                      DataColumn(
+                        label: _buildSortableColumnHeader('Instrument', theme, 0),
+                        onSort: (columnIndex, ascending) => _onSortOrderTable(columnIndex, ascending),
+                      ),
+                      DataColumn(
+                        label: _buildSortableColumnHeader('Product', theme, 1),
+                        onSort: (columnIndex, ascending) => _onSortOrderTable(columnIndex, ascending),
+                      ),
+                      DataColumn(
+                        label: _buildSortableColumnHeader('Type', theme, 2),
+                        onSort: (columnIndex, ascending) => _onSortOrderTable(columnIndex, ascending),
+                      ),
+                      DataColumn(
+                        label: _buildSortableColumnHeader('Qty', theme, 3),
+                        onSort: (columnIndex, ascending) => _onSortOrderTable(columnIndex, ascending),
+                      ),
+                      DataColumn(
+                        label: _buildSortableColumnHeader('Avg price', theme, 4),
+                        onSort: (columnIndex, ascending) => _onSortOrderTable(columnIndex, ascending),
+                      ),
+                      DataColumn(
+                        label: _buildSortableColumnHeader('LTP', theme, 5),
+                        onSort: (columnIndex, ascending) => _onSortOrderTable(columnIndex, ascending),
+                      ),
+                      DataColumn(
+                        label: _buildSortableColumnHeader('Price', theme, 6),
+                        onSort: (columnIndex, ascending) => _onSortOrderTable(columnIndex, ascending),
+                      ),
+                      DataColumn(
+                        label: _buildSortableColumnHeader('Trigger price', theme, 7),
+                        onSort: (columnIndex, ascending) => _onSortOrderTable(columnIndex, ascending),
+                      ),
+                      DataColumn(
+                        label: _buildSortableColumnHeader('Order value', theme, 8),
+                        onSort: (columnIndex, ascending) => _onSortOrderTable(columnIndex, ascending),
+                      ),
+                      DataColumn(
+                        label: _buildSortableColumnHeader('Status', theme, 9),
+                        onSort: (columnIndex, ascending) => _onSortOrderTable(columnIndex, ascending),
+                      ),
+                      DataColumn(
+                        label: _buildSortableColumnHeader('Time', theme, 10),
+                        onSort: (columnIndex, ascending) => _onSortOrderTable(columnIndex, ascending),
+                      ),
+                    ],
+                    rows: _sortedOrders(orders).map((order) {
+                      // Use order number as unique identifier for hover (not token, which is shared across orders)
+                      final uniqueId = order.norenordno?.toString() ?? order.token?.toString() ?? '';
+                      
+                      return DataRow(
+                        onSelectChanged: (bool? selected) {
+                          _openOrderDetail(order);
+                        },
+                        cells: [
+                          // Instrument - text (left aligned)
+                          _buildInstrumentCellWithHover(order, theme, uniqueId),
+                          // Product - text (left aligned)
+                          _buildCellWithHover(order, theme, uniqueId, _buildProductCell(order, theme), alignment: Alignment.centerLeft),
+                          // Type - text (left aligned)
+                          _buildCellWithHover(order, theme, uniqueId, _buildTypeCell(order, theme), alignment: Alignment.centerLeft),
+                          // Qty - numeric (right aligned)
+                          _buildCellWithHover(order, theme, uniqueId, _buildQtyCell(order, theme), alignment: Alignment.centerRight),
+                          // Avg price - numeric (right aligned)
+                          _buildCellWithHover(order, theme, uniqueId, _buildAvgPriceCell(order, theme), alignment: Alignment.centerRight),
+                          // LTP - numeric (right aligned)
+                          _buildCellWithHover(order, theme, uniqueId, _buildLTPCell(order, theme), alignment: Alignment.centerRight),
+                          // Price - numeric (right aligned)
+                          _buildCellWithHover(order, theme, uniqueId, _buildPriceCell(order, theme), alignment: Alignment.centerRight),
+                          // Trigger price - numeric (right aligned)
+                          _buildCellWithHover(order, theme, uniqueId, _buildTriggerPriceCell(order, theme), alignment: Alignment.centerRight),
+                          // Order value - numeric (right aligned)
+                          _buildCellWithHover(order, theme, uniqueId, _buildOrderValueCell(order, theme), alignment: Alignment.centerRight),
+                          // Status - text (left aligned)
+                          _buildCellWithHover(order, theme, uniqueId, _buildStatusCell(order, theme), alignment: Alignment.centerLeft),
+                          // Time - text (left aligned)
+                          _buildCellWithHover(order, theme, uniqueId, _buildTimeCell(order, theme), alignment: Alignment.centerLeft),
+                        ],
+                      );
+                    }).toList(),
                   ),
                 ),
               ),
-              ],
             ),
           ),
-        ),
-      );
-    
+        );
+      },
+    );
   }
 
   Widget _buildTradeBookTable(ThemesProvider theme, List<TradeBookModel> trades) {
@@ -1004,123 +996,115 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
       );
     }
 
-    return Scrollbar(
-      controller: _verticalScrollController,
-      thumbVisibility: true,
-      radius: Radius.zero,
-      child: SingleChildScrollView(
-        controller: _verticalScrollController,
-        scrollDirection: Axis.vertical,
-        physics: const AlwaysScrollableScrollPhysics(),
-        child: Padding(
-          padding: const EdgeInsets.only(right: 16), // Space for vertical scrollbar
-          child: Column(
-            children: [
-              Scrollbar(
-                controller: _horizontalScrollController,
-                thumbVisibility: true,
-                radius: Radius.zero,
-                child: SingleChildScrollView(
-                  controller: _horizontalScrollController,
-                  scrollDirection: Axis.horizontal,
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 16), // Space at top of horizontal scrollbar
-                    child: DataTable(
-              columnSpacing: 15,
-              showCheckboxColumn: false,
-              sortColumnIndex: _tradeSortColumnIndex,
-              sortAscending: _tradeSortAscending,
-              headingRowHeight: 44,
-              headingRowColor: WidgetStateProperty.all(Colors.transparent),
-              dataRowColor: WidgetStateProperty.resolveWith<Color?>(
-                (Set<WidgetState> states) {
-                  if (states.contains(WidgetState.hovered)) {
-                    return (theme.isDarkMode
-                            ? WebDarkColors.primary
-                            : WebColors.primary)
-                        .withOpacity(0.05);
-                  }
-                  if (states.contains(WidgetState.selected)) {
-                    return (theme.isDarkMode
-                            ? WebDarkColors.primary
-                            : WebColors.primary)
-                        .withOpacity(0.1);
-                  }
-                  return null;
-                },
-              ),
-        columns: [
-          DataColumn(
-            label: _buildTradeSortableColumnHeader('Instrument', theme, 0),
-            onSort: (columnIndex, ascending) => _onSortTradeTable(columnIndex, ascending),
-          ),
-          DataColumn(
-            label: _buildTradeSortableColumnHeader('Product', theme, 1),
-            onSort: (columnIndex, ascending) => _onSortTradeTable(columnIndex, ascending),
-          ),
-          DataColumn(
-            label: _buildTradeSortableColumnHeader('Type', theme, 2),
-            onSort: (columnIndex, ascending) => _onSortTradeTable(columnIndex, ascending),
-          ),
-          DataColumn(
-            label: _buildTradeSortableColumnHeader('Qty', theme, 3),
-            onSort: (columnIndex, ascending) => _onSortTradeTable(columnIndex, ascending),
-          ),
-          DataColumn(
-            label: _buildTradeSortableColumnHeader('Price', theme, 4),
-            onSort: (columnIndex, ascending) => _onSortTradeTable(columnIndex, ascending),
-          ),
-          DataColumn(
-            label: _buildTradeSortableColumnHeader('Trade value', theme, 5),
-            onSort: (columnIndex, ascending) => _onSortTradeTable(columnIndex, ascending),
-          ),
-          DataColumn(
-            label: _buildTradeSortableColumnHeader('Order no', theme, 6),
-            onSort: (columnIndex, ascending) => _onSortTradeTable(columnIndex, ascending),
-          ),
-          DataColumn(
-            label: _buildTradeSortableColumnHeader('Time', theme, 7),
-            onSort: (columnIndex, ascending) => _onSortTradeTable(columnIndex, ascending),
-          ),
-        ],
-        rows: _sortedTrades(trades).map((trade) {
-          final token = trade.token ?? '';
-          
-          return DataRow(
-            onSelectChanged: (bool? selected) {
-              _openTradeDetail(trade);
-            },
-            cells: [
-              // Instrument - text (left aligned)
-              _buildTradeCellWithHover(trade, theme, token, _buildSymbolCellForTrade(trade, theme), alignment: Alignment.centerLeft),
-              // Product - text (left aligned)
-              _buildTradeCellWithHover(trade, theme, token, _buildProductCellForTrade(trade, theme), alignment: Alignment.centerLeft),
-              // Type - text (left aligned)
-              _buildTradeCellWithHover(trade, theme, token, _buildTransactionCellForTrade(trade, theme), alignment: Alignment.centerLeft),
-              // Qty - numeric (right aligned)
-              _buildTradeCellWithHover(trade, theme, token, _buildQtyCellForTrade(trade, theme), alignment: Alignment.centerRight),
-              // Price - numeric (right aligned)
-              _buildTradeCellWithHover(trade, theme, token, _buildPriceCellForTrade(trade, theme), alignment: Alignment.centerRight),
-              // Trade value - numeric (right aligned)
-              _buildTradeCellWithHover(trade, theme, token, _buildTradeValueCellForTrade(trade, theme), alignment: Alignment.centerRight),
-              // Order no - text (left aligned)
-              _buildTradeCellWithHover(trade, theme, token, _buildOrderNoCellForTrade(trade, theme), alignment: Alignment.centerLeft),
-              // Time - text (left aligned)
-              _buildTradeCellWithHover(trade, theme, token, _buildTimeCellForTrade(trade, theme), alignment: Alignment.centerLeft),
-            ],
-          );
-        }).toList(),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Scrollbar(
+          controller: _verticalScrollController,
+          thumbVisibility: true,
+          radius: Radius.zero,
+          child: SingleChildScrollView(
+            controller: _verticalScrollController,
+            scrollDirection: Axis.vertical,
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: Padding(
+              padding: const EdgeInsets.only(right: 16), // Space for vertical scrollbar
+              child: SizedBox(
+                width: constraints.maxWidth,
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: DataTable(
+                    columnSpacing: 15,
+                    showCheckboxColumn: false,
+                    sortColumnIndex: _tradeSortColumnIndex,
+                    sortAscending: _tradeSortAscending,
+                    headingRowHeight: 44,
+                    headingRowColor: WidgetStateProperty.all(Colors.transparent),
+                    dataRowColor: WidgetStateProperty.resolveWith<Color?>(
+                      (Set<WidgetState> states) {
+                        if (states.contains(WidgetState.hovered)) {
+                          return (theme.isDarkMode
+                                  ? WebDarkColors.primary
+                                  : WebColors.primary)
+                              .withOpacity(0.05);
+                        }
+                        if (states.contains(WidgetState.selected)) {
+                          return (theme.isDarkMode
+                                  ? WebDarkColors.primary
+                                  : WebColors.primary)
+                              .withOpacity(0.1);
+                        }
+                        return null;
+                      },
                     ),
+                    columns: [
+                      DataColumn(
+                        label: _buildTradeSortableColumnHeader('Instrument', theme, 0),
+                        onSort: (columnIndex, ascending) => _onSortTradeTable(columnIndex, ascending),
+                      ),
+                      DataColumn(
+                        label: _buildTradeSortableColumnHeader('Product', theme, 1),
+                        onSort: (columnIndex, ascending) => _onSortTradeTable(columnIndex, ascending),
+                      ),
+                      DataColumn(
+                        label: _buildTradeSortableColumnHeader('Type', theme, 2),
+                        onSort: (columnIndex, ascending) => _onSortTradeTable(columnIndex, ascending),
+                      ),
+                      DataColumn(
+                        label: _buildTradeSortableColumnHeader('Qty', theme, 3),
+                        onSort: (columnIndex, ascending) => _onSortTradeTable(columnIndex, ascending),
+                      ),
+                      DataColumn(
+                        label: _buildTradeSortableColumnHeader('Price', theme, 4),
+                        onSort: (columnIndex, ascending) => _onSortTradeTable(columnIndex, ascending),
+                      ),
+                      DataColumn(
+                        label: _buildTradeSortableColumnHeader('Trade value', theme, 5),
+                        onSort: (columnIndex, ascending) => _onSortTradeTable(columnIndex, ascending),
+                      ),
+                      DataColumn(
+                        label: _buildTradeSortableColumnHeader('Order no', theme, 6),
+                        onSort: (columnIndex, ascending) => _onSortTradeTable(columnIndex, ascending),
+                      ),
+                      DataColumn(
+                        label: _buildTradeSortableColumnHeader('Time', theme, 7),
+                        onSort: (columnIndex, ascending) => _onSortTradeTable(columnIndex, ascending),
+                      ),
+                    ],
+                    rows: _sortedTrades(trades).map((trade) {
+                      final token = trade.token ?? '';
+                      
+                      return DataRow(
+                        onSelectChanged: (bool? selected) {
+                          _openTradeDetail(trade);
+                        },
+                        cells: [
+                          // Instrument - text (left aligned)
+                          _buildTradeCellWithHover(trade, theme, token, _buildSymbolCellForTrade(trade, theme), alignment: Alignment.centerLeft),
+                          // Product - text (left aligned)
+                          _buildTradeCellWithHover(trade, theme, token, _buildProductCellForTrade(trade, theme), alignment: Alignment.centerLeft),
+                          // Type - text (left aligned)
+                          _buildTradeCellWithHover(trade, theme, token, _buildTransactionCellForTrade(trade, theme), alignment: Alignment.centerLeft),
+                          // Qty - numeric (right aligned)
+                          _buildTradeCellWithHover(trade, theme, token, _buildQtyCellForTrade(trade, theme), alignment: Alignment.centerRight),
+                          // Price - numeric (right aligned)
+                          _buildTradeCellWithHover(trade, theme, token, _buildPriceCellForTrade(trade, theme), alignment: Alignment.centerRight),
+                          // Trade value - numeric (right aligned)
+                          _buildTradeCellWithHover(trade, theme, token, _buildTradeValueCellForTrade(trade, theme), alignment: Alignment.centerRight),
+                          // Order no - text (left aligned)
+                          _buildTradeCellWithHover(trade, theme, token, _buildOrderNoCellForTrade(trade, theme), alignment: Alignment.centerLeft),
+                          // Time - text (left aligned)
+                          _buildTradeCellWithHover(trade, theme, token, _buildTimeCellForTrade(trade, theme), alignment: Alignment.centerLeft),
+                        ],
+                      );
+                    }).toList(),
                   ),
                 ),
               ),
-              ],
             ),
           ),
-        ),
-      );
-    
+        );
+      },
+    );
   }
 
   Widget _buildGttOrderBookTable(ThemesProvider theme, List<GttOrderBookModel> gttOrders) {
@@ -1137,129 +1121,121 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
       );
     }
 
-    return Scrollbar(
-      controller: _verticalScrollController,
-      thumbVisibility: true,
-      radius: Radius.zero,
-      child: SingleChildScrollView(
-        controller: _verticalScrollController,
-        scrollDirection: Axis.vertical,
-        physics: const AlwaysScrollableScrollPhysics(),
-        child: Padding(
-          padding: const EdgeInsets.only(right: 16), // Space for vertical scrollbar
-          child: Column(
-            children: [
-              Scrollbar(
-                controller: _horizontalScrollController,
-                thumbVisibility: true,
-                radius: Radius.zero,
-                child: SingleChildScrollView(
-                  controller: _horizontalScrollController,
-                  scrollDirection: Axis.horizontal,
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 16), // Space at top of horizontal scrollbar
-                    child: DataTable(
-              columnSpacing: 10,
-              showCheckboxColumn: false,
-              sortColumnIndex: _gttSortColumnIndex,
-              sortAscending: _gttSortAscending,
-              headingRowHeight: 44,
-              headingRowColor: WidgetStateProperty.all(Colors.transparent),
-              dataRowColor: WidgetStateProperty.resolveWith<Color?>(
-                (Set<WidgetState> states) {
-                  if (states.contains(WidgetState.hovered)) {
-                    return (theme.isDarkMode
-                            ? WebDarkColors.primary
-                            : WebColors.primary)
-                        .withOpacity(0.05);
-                  }
-                  if (states.contains(WidgetState.selected)) {
-                    return (theme.isDarkMode
-                            ? WebDarkColors.primary
-                            : WebColors.primary)
-                        .withOpacity(0.1);
-                  }
-                  return null;
-                },
-              ),
-          columns: [
-            // Reordered to match order book: Instrument, Product, Type, Qty, LTP, Trigger price, Status, Time
-            DataColumn(
-              label: _buildGttSortableColumnHeader('Instrument', theme, 0),
-              onSort: (columnIndex, ascending) => _onSortGttTable(columnIndex, ascending),
-            ),
-            DataColumn(
-              label: _buildGttSortableColumnHeader('Product', theme, 1),
-              onSort: (columnIndex, ascending) => _onSortGttTable(columnIndex, ascending),
-            ),
-            DataColumn(
-              label: _buildGttSortableColumnHeader('Type', theme, 2),
-              onSort: (columnIndex, ascending) => _onSortGttTable(columnIndex, ascending),
-            ),
-            DataColumn(
-              label: _buildGttSortableColumnHeader('Qty', theme, 3),
-              onSort: (columnIndex, ascending) => _onSortGttTable(columnIndex, ascending),
-            ),
-            DataColumn(
-              label: _buildGttSortableColumnHeader('LTP', theme, 4),
-              onSort: (columnIndex, ascending) => _onSortGttTable(columnIndex, ascending),
-            ),
-            DataColumn(
-              label: _buildGttSortableColumnHeader('Trigger price', theme, 5),
-              onSort: (columnIndex, ascending) => _onSortGttTable(columnIndex, ascending),
-            ),
-            DataColumn(
-              label: _buildGttSortableColumnHeader('Status', theme, 6),
-              onSort: (columnIndex, ascending) => _onSortGttTable(columnIndex, ascending),
-            ),
-            DataColumn(
-              label: _buildGttSortableColumnHeader('Time', theme, 7),
-              onSort: (columnIndex, ascending) => _onSortGttTable(columnIndex, ascending),
-            ),
-          ],
-          rows: _sortedGtt(gttOrders).asMap().entries.map((entry) {
-            final index = entry.key;
-            final gttOrder = entry.value;
-            // Create unique identifier for hover
-            final uniqueId = '${gttOrder.alId ?? ''}_${gttOrder.tsym ?? ''}_$index';
-            
-            return DataRow(
-              selected: _selectedOrders.contains(index),
-              onSelectChanged: (bool? selected) {
-                // Open GTT order detail when row is selected
-                _openGttOrderDetail(gttOrder);
-              },
-              cells: [
-                // Instrument - text (left aligned) with hover buttons
-                _buildGttInstrumentCellWithHover(gttOrder, theme, uniqueId),
-                // Product - text (left aligned)
-                _buildGttCellWithHover(gttOrder, theme, uniqueId, _buildProductCellForGtt(gttOrder, theme), alignment: Alignment.centerLeft),
-                // Type - text (left aligned)
-                _buildGttCellWithHover(gttOrder, theme, uniqueId, _buildTypeCellForGtt(gttOrder, theme), alignment: Alignment.centerLeft),
-                // Qty - numeric (right aligned)
-                _buildGttCellWithHover(gttOrder, theme, uniqueId, _buildQtyCellForGtt(gttOrder, theme), alignment: Alignment.centerRight),
-                // LTP - numeric (right aligned)
-                _buildGttCellWithHover(gttOrder, theme, uniqueId, _buildLTPCellForGtt(gttOrder, theme), alignment: Alignment.centerRight),
-                // Trigger price - numeric (right aligned)
-                _buildGttCellWithHover(gttOrder, theme, uniqueId, _buildTriggerPriceCellForGtt(gttOrder, theme), alignment: Alignment.centerRight),
-                // Status - text (left aligned)
-                _buildGttCellWithHover(gttOrder, theme, uniqueId, _buildStatusCellForGtt(gttOrder, theme), alignment: Alignment.centerLeft),
-                // Time - text (left aligned)
-                _buildGttCellWithHover(gttOrder, theme, uniqueId, _buildTimeCellForGtt(gttOrder, theme), alignment: Alignment.centerLeft),
-              ],
-            );
-          }).toList(),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Scrollbar(
+          controller: _verticalScrollController,
+          thumbVisibility: true,
+          radius: Radius.zero,
+          child: SingleChildScrollView(
+            controller: _verticalScrollController,
+            scrollDirection: Axis.vertical,
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: Padding(
+              padding: const EdgeInsets.only(right: 16), // Space for vertical scrollbar
+              child: SizedBox(
+                width: constraints.maxWidth,
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: DataTable(
+                    columnSpacing: 10,
+                    showCheckboxColumn: false,
+                    sortColumnIndex: _gttSortColumnIndex,
+                    sortAscending: _gttSortAscending,
+                    headingRowHeight: 44,
+                    headingRowColor: WidgetStateProperty.all(Colors.transparent),
+                    dataRowColor: WidgetStateProperty.resolveWith<Color?>(
+                      (Set<WidgetState> states) {
+                        if (states.contains(WidgetState.hovered)) {
+                          return (theme.isDarkMode
+                                  ? WebDarkColors.primary
+                                  : WebColors.primary)
+                              .withOpacity(0.05);
+                        }
+                        if (states.contains(WidgetState.selected)) {
+                          return (theme.isDarkMode
+                                  ? WebDarkColors.primary
+                                  : WebColors.primary)
+                              .withOpacity(0.1);
+                        }
+                        return null;
+                      },
                     ),
+                    columns: [
+                      // Reordered to match order book: Instrument, Product, Type, Qty, LTP, Trigger price, Status, Time
+                      DataColumn(
+                        label: _buildGttSortableColumnHeader('Instrument', theme, 0),
+                        onSort: (columnIndex, ascending) => _onSortGttTable(columnIndex, ascending),
+                      ),
+                      DataColumn(
+                        label: _buildGttSortableColumnHeader('Product', theme, 1),
+                        onSort: (columnIndex, ascending) => _onSortGttTable(columnIndex, ascending),
+                      ),
+                      DataColumn(
+                        label: _buildGttSortableColumnHeader('Type', theme, 2),
+                        onSort: (columnIndex, ascending) => _onSortGttTable(columnIndex, ascending),
+                      ),
+                      DataColumn(
+                        label: _buildGttSortableColumnHeader('Qty', theme, 3),
+                        onSort: (columnIndex, ascending) => _onSortGttTable(columnIndex, ascending),
+                      ),
+                      DataColumn(
+                        label: _buildGttSortableColumnHeader('LTP', theme, 4),
+                        onSort: (columnIndex, ascending) => _onSortGttTable(columnIndex, ascending),
+                      ),
+                      DataColumn(
+                        label: _buildGttSortableColumnHeader('Trigger price', theme, 5),
+                        onSort: (columnIndex, ascending) => _onSortGttTable(columnIndex, ascending),
+                      ),
+                      DataColumn(
+                        label: _buildGttSortableColumnHeader('Status', theme, 6),
+                        onSort: (columnIndex, ascending) => _onSortGttTable(columnIndex, ascending),
+                      ),
+                      DataColumn(
+                        label: _buildGttSortableColumnHeader('Time', theme, 7),
+                        onSort: (columnIndex, ascending) => _onSortGttTable(columnIndex, ascending),
+                      ),
+                    ],
+                    rows: _sortedGtt(gttOrders).asMap().entries.map((entry) {
+                      final index = entry.key;
+                      final gttOrder = entry.value;
+                      // Create unique identifier for hover
+                      final uniqueId = '${gttOrder.alId ?? ''}_${gttOrder.tsym ?? ''}_$index';
+                      
+                      return DataRow(
+                        selected: _selectedOrders.contains(index),
+                        onSelectChanged: (bool? selected) {
+                          // Open GTT order detail when row is selected
+                          _openGttOrderDetail(gttOrder);
+                        },
+                        cells: [
+                          // Instrument - text (left aligned) with hover buttons
+                          _buildGttInstrumentCellWithHover(gttOrder, theme, uniqueId),
+                          // Product - text (left aligned)
+                          _buildGttCellWithHover(gttOrder, theme, uniqueId, _buildProductCellForGtt(gttOrder, theme), alignment: Alignment.centerLeft),
+                          // Type - text (left aligned)
+                          _buildGttCellWithHover(gttOrder, theme, uniqueId, _buildTypeCellForGtt(gttOrder, theme), alignment: Alignment.centerLeft),
+                          // Qty - numeric (right aligned)
+                          _buildGttCellWithHover(gttOrder, theme, uniqueId, _buildQtyCellForGtt(gttOrder, theme), alignment: Alignment.centerRight),
+                          // LTP - numeric (right aligned)
+                          _buildGttCellWithHover(gttOrder, theme, uniqueId, _buildLTPCellForGtt(gttOrder, theme), alignment: Alignment.centerRight),
+                          // Trigger price - numeric (right aligned)
+                          _buildGttCellWithHover(gttOrder, theme, uniqueId, _buildTriggerPriceCellForGtt(gttOrder, theme), alignment: Alignment.centerRight),
+                          // Status - text (left aligned)
+                          _buildGttCellWithHover(gttOrder, theme, uniqueId, _buildStatusCellForGtt(gttOrder, theme), alignment: Alignment.centerLeft),
+                          // Time - text (left aligned)
+                          _buildGttCellWithHover(gttOrder, theme, uniqueId, _buildTimeCellForGtt(gttOrder, theme), alignment: Alignment.centerLeft),
+                        ],
+                      );
+                    }).toList(),
                   ),
                 ),
               ),
-              ],
             ),
           ),
-        ),
-      );
-    
+        );
+      },
+    );
   }
 
   Widget _buildSortableColumnHeader(String label, ThemesProvider theme, int columnIndex) {

@@ -360,116 +360,109 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
 
     return SizedBox(
       height: tableHeight,
-      child: Scrollbar(
-        controller: _verticalScrollController,
-        thumbVisibility: true,
-        radius: Radius.zero,
-        child: SingleChildScrollView(
-          controller: _verticalScrollController,
-          scrollDirection: Axis.vertical,
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: Padding(
-            padding: const EdgeInsets.only(right: 16), // Space for vertical scrollbar
-            child: Column(
-              children: [
-                Scrollbar(
-                  controller: _horizontalScrollController,
-                  thumbVisibility: true,
-                  radius: Radius.zero,
-                  child: SingleChildScrollView(
-                    controller: _horizontalScrollController,
-                    scrollDirection: Axis.horizontal,
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    child: Padding(
-                      padding: const EdgeInsets.only(bottom: 16), // Space at top of horizontal scrollbar
-                      child: DataTable(
-                columnSpacing: 10,
-                showCheckboxColumn: false,
-                sortColumnIndex: _alertSortColumnIndex,
-                sortAscending: _alertSortAscending,
-                headingRowHeight: 44,
-                headingRowColor: WidgetStateProperty.all(Colors.transparent),
-                dataRowColor: WidgetStateProperty.resolveWith<Color?>(
-                  (Set<WidgetState> states) {
-                    if (states.contains(WidgetState.hovered)) {
-                      return (theme.isDarkMode ? WebDarkColors.primary : WebColors.primary).withOpacity(0.05);
-                    }
-                    if (states.contains(WidgetState.selected)) {
-                      return (theme.isDarkMode ? WebDarkColors.primary : WebColors.primary).withOpacity(0.1);
-                    }
-                    return null;
-                  },
-                ),
-                columns: [
-                  DataColumn(
-                    label: _buildSortableColumnHeader('Instrument', theme, 0),
-                    onSort: (i, asc) => _onSortAlertTable(0),
-                  ),
-                  DataColumn(
-                    label: _buildSortableColumnHeader('Exchange', theme, 1),
-                    onSort: (i, asc) => _onSortAlertTable(1),
-                  ),
-                  DataColumn(
-                    label: _buildSortableColumnHeader('Alert Type', theme, 2),
-                    onSort: (i, asc) => _onSortAlertTable(2),
-                  ),
-                  DataColumn(
-                    label: _buildSortableColumnHeader('Target', theme, 3),
-                    onSort: (i, asc) => _onSortAlertTable(3),
-                  ),
-                  DataColumn(
-                    label: _buildSortableColumnHeader('LTP', theme, 4),
-                    onSort: (i, asc) => _onSortAlertTable(4),
-                  ),
-                  DataColumn(
-                    label: _buildSortableColumnHeader('Status', theme, 5),
-                    onSort: (i, asc) => _onSortAlertTable(5),
-                  ),
-                ],
-                rows: alerts.asMap().entries.map((entry) {
-                  final index = entry.key;
-                  final alert = entry.value;
-                  
-                  // Create unique identifier for hover
-                  String uniqueId;
-                  if (alert is BrokerMessage) {
-                    uniqueId = 'triggered_${alert.norentm ?? index}';
-                  } else {
-                    uniqueId = '${alert.alId ?? alert.token ?? index}';
-                  }
-                  
-                  return DataRow(
-                    selected: _selectedAlerts.contains(index),
-                    onSelectChanged: (bool? selected) {
-                      // Only show detail dialog for pending alerts, not triggered ones
-                      if (alert is! BrokerMessage) {
-                        showDialog(
-                          context: context,
-                          builder: (context) => PendingAlertDetailScreenWeb(alert: alert),
-                        );
-                      }
-                    },
-                    cells: [
-                      // Instrument with hover buttons (only for pending alerts)
-                      alert is BrokerMessage
-                          ? _buildInstrumentCell(alert, theme)
-                          : _buildInstrumentCellWithHover(alert, theme, uniqueId),
-                      _buildCellWithHover(alert, theme, uniqueId, _buildExchangeCell(alert, theme), alignment: Alignment.centerLeft),
-                      _buildCellWithHover(alert, theme, uniqueId, _buildAlertTypeCell(alert, theme), alignment: Alignment.centerLeft),
-                      _buildCellWithHover(alert, theme, uniqueId, _buildTargetCell(alert, theme), alignment: Alignment.centerRight),
-                      _buildCellWithHover(alert, theme, uniqueId, _buildLTPCell(alert, theme), alignment: Alignment.centerRight),
-                      _buildCellWithHover(alert, theme, uniqueId, _buildStatusCell(alert, theme), alignment: Alignment.centerLeft),
-                    ],
-                  );
-                }).toList(),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return Scrollbar(
+            controller: _verticalScrollController,
+            thumbVisibility: true,
+            radius: Radius.zero,
+            child: SingleChildScrollView(
+              controller: _verticalScrollController,
+              scrollDirection: Axis.vertical,
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: Padding(
+                padding: const EdgeInsets.only(right: 16), // Space for vertical scrollbar
+                child: SizedBox(
+                  width: constraints.maxWidth,
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: DataTable(
+                      columnSpacing: 10,
+                      showCheckboxColumn: false,
+                      sortColumnIndex: _alertSortColumnIndex,
+                      sortAscending: _alertSortAscending,
+                      headingRowHeight: 44,
+                      headingRowColor: WidgetStateProperty.all(Colors.transparent),
+                      dataRowColor: WidgetStateProperty.resolveWith<Color?>(
+                        (Set<WidgetState> states) {
+                          if (states.contains(WidgetState.hovered)) {
+                            return (theme.isDarkMode ? WebDarkColors.primary : WebColors.primary).withOpacity(0.05);
+                          }
+                          if (states.contains(WidgetState.selected)) {
+                            return (theme.isDarkMode ? WebDarkColors.primary : WebColors.primary).withOpacity(0.1);
+                          }
+                          return null;
+                        },
                       ),
+                      columns: [
+                        DataColumn(
+                          label: _buildSortableColumnHeader('Instrument', theme, 0),
+                          onSort: (i, asc) => _onSortAlertTable(0),
+                        ),
+                        DataColumn(
+                          label: _buildSortableColumnHeader('Exchange', theme, 1),
+                          onSort: (i, asc) => _onSortAlertTable(1),
+                        ),
+                        DataColumn(
+                          label: _buildSortableColumnHeader('Alert Type', theme, 2),
+                          onSort: (i, asc) => _onSortAlertTable(2),
+                        ),
+                        DataColumn(
+                          label: _buildSortableColumnHeader('Target', theme, 3),
+                          onSort: (i, asc) => _onSortAlertTable(3),
+                        ),
+                        DataColumn(
+                          label: _buildSortableColumnHeader('LTP', theme, 4),
+                          onSort: (i, asc) => _onSortAlertTable(4),
+                        ),
+                        DataColumn(
+                          label: _buildSortableColumnHeader('Status', theme, 5),
+                          onSort: (i, asc) => _onSortAlertTable(5),
+                        ),
+                      ],
+                      rows: alerts.asMap().entries.map((entry) {
+                        final index = entry.key;
+                        final alert = entry.value;
+                        
+                        // Create unique identifier for hover
+                        String uniqueId;
+                        if (alert is BrokerMessage) {
+                          uniqueId = 'triggered_${alert.norentm ?? index}';
+                        } else {
+                          uniqueId = '${alert.alId ?? alert.token ?? index}';
+                        }
+                        
+                        return DataRow(
+                          selected: _selectedAlerts.contains(index),
+                          onSelectChanged: (bool? selected) {
+                            // Only show detail dialog for pending alerts, not triggered ones
+                            if (alert is! BrokerMessage) {
+                              showDialog(
+                                context: context,
+                                builder: (context) => PendingAlertDetailScreenWeb(alert: alert),
+                              );
+                            }
+                          },
+                          cells: [
+                            // Instrument with hover buttons (only for pending alerts)
+                            alert is BrokerMessage
+                                ? _buildInstrumentCell(alert, theme)
+                                : _buildInstrumentCellWithHover(alert, theme, uniqueId),
+                            _buildCellWithHover(alert, theme, uniqueId, _buildExchangeCell(alert, theme), alignment: Alignment.centerLeft),
+                            _buildCellWithHover(alert, theme, uniqueId, _buildAlertTypeCell(alert, theme), alignment: Alignment.centerLeft),
+                            _buildCellWithHover(alert, theme, uniqueId, _buildTargetCell(alert, theme), alignment: Alignment.centerRight),
+                            _buildCellWithHover(alert, theme, uniqueId, _buildLTPCell(alert, theme), alignment: Alignment.centerRight),
+                            _buildCellWithHover(alert, theme, uniqueId, _buildStatusCell(alert, theme), alignment: Alignment.centerLeft),
+                          ],
+                        );
+                      }).toList(),
                     ),
                   ),
                 ),
-              ],
+              ),
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }
