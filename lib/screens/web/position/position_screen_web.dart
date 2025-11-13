@@ -147,9 +147,10 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
     final closedCount = _getClosedPositionsCount(positionBook);
 
     return Container(
-      padding: const EdgeInsets.all(8),
+      height: 120,
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
+        color: theme.isDarkMode ? WebDarkColors.backgroundSecondary : WebColors.backgroundSecondary.withOpacity(0.3),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
           color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
@@ -164,8 +165,9 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
         // ],
       ),
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          SizedBox(height: 8),
+          
           // Main stats row
           Row(
             
@@ -247,7 +249,7 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
           style: WebTextStyles.sub(
             isDarkTheme: theme.isDarkMode,
             color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
-            fontWeight: WebFonts.regular,
+            fontWeight: WebFonts.semiBold,
           ),
         ),
         const SizedBox(height: 8),
@@ -807,7 +809,7 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                       return (theme.isDarkMode
                               ? WebDarkColors.primary
                               : WebColors.primary)
-                          .withOpacity(0.05);
+                          .withOpacity(0.15);
                     }
                     if (states.contains(WidgetState.selected)) {
                       return (theme.isDarkMode
@@ -1179,12 +1181,8 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                       // Chart button
                       _buildHoverButton(
                         icon: Icons.bar_chart,
-                        color: theme.isDarkMode
-                            ? WebDarkColors.textSecondary
-                            : WebColors.textSecondary,
-                        borderColor: theme.isDarkMode
-                            ? WebDarkColors.inputBorder
-                            : WebColors.inputBorder,
+                        color: Colors.black,
+                        backgroundColor: Colors.white,
                         borderRadius: 5.0,
                         onPressed: () async {
                           await _handleChartTap(context, position);
@@ -1196,13 +1194,10 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                         const SizedBox(width: 6),
                         _buildHoverButton(
                           icon: Icons.swap_horiz,
-                          color: theme.isDarkMode
-                              ? WebDarkColors.textSecondary
-                              : WebColors.textSecondary,
-                          borderColor: theme.isDarkMode
-                              ? WebDarkColors.inputBorder
-                              : WebColors.inputBorder,
+                          color: Colors.black,
+                          backgroundColor: Colors.white,
                           borderRadius: 5.0,
+                          iconWeight: 700,
                           onPressed: () {
                             _handleConvertPosition(context, position);
                           },
@@ -1487,7 +1482,7 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
       barrierDismissible: true,
       builder: (BuildContext context) {
         return Dialog(
-         backgroundColor: WebColors.surface,
+         backgroundColor: Colors.white,
           shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(5),),
           child: PositionDetailScreenWeb(positionList: position),
@@ -1503,14 +1498,15 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
     Color? backgroundColor,
     Color? borderColor,
     double? borderRadius,
+    double? iconWeight,
     required VoidCallback? onPressed,
     required ThemesProvider theme,
   }) {
     final isLongLabel = label != null && label.length > 1;
     final borderRadiusValue = borderRadius ?? 5.0;
     return SizedBox(
-      width: isLongLabel ? null : 28,
-      height: 28,
+      width: isLongLabel ? null : 25,
+      height: 25,
       child: Material(
         color: Colors.transparent,
         child: InkWell(
@@ -1526,8 +1522,7 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
               border: borderColor != null
                   ? Border.all(
                       color: borderColor,
-
-                      width: 1,
+                      width: 1.3,
                     )
                   : null,
             ),
@@ -1537,13 +1532,13 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                       icon,
                       size: 16,
                       color: color,
+                      weight: iconWeight ?? 400,
                     )
                   : Text(
                       label ?? "",
                       style: WebTextStyles.buttonXs(
                         isDarkTheme: theme.isDarkMode,
                         color: color,
-                        fontWeight: WebFonts.medium,
                       ),
                     ),
             ),

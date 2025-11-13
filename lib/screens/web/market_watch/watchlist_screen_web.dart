@@ -757,7 +757,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
           child: Text(
             _formatTabName(name),
             overflow: TextOverflow.ellipsis,
-            style: WebTextStyles.sub(
+            style: WebTextStyles.para(
               isDarkTheme: theme.isDarkMode,
               color: isActive
                   ? (theme.isDarkMode
@@ -766,7 +766,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                   : (theme.isDarkMode
                       ? WebDarkColors.navItem
                       : WebColors.navItem),
-              fontWeight: FontWeight.w600,
+              fontWeight: isActive ? FontWeight.w700 : FontWeight.w600,
             ),
           ),
         ),

@@ -55,7 +55,7 @@ class WebColors {
   
   // === INPUT COLORS ===
   static const Color inputBackground = Color(0xFFFFFFFF);
-  static const Color inputBorder = Color(0xFFDDE2E7);
+  static const Color inputBorder = Color(0xFFB0B0B0);
   static const Color inputBorderFocus = Color(0xFF0037B7);
   static const Color inputBorderError = Color(0xFFFF1717);
   static const Color inputPlaceholder = Color(0xFF999999);
@@ -139,7 +139,7 @@ class WebDarkColors {
   
   // === INPUT COLORS ===
   static const Color inputBackground = Color(0xFF1E1E1E);
-  static const Color inputBorder = Color(0xFF404040);
+  static const Color inputBorder = Color(0xFF555555);
   static const Color inputBorderFocus = Color(0xFF2E65F6);
   static const Color inputBorderError = Color(0xFFFF6B6B);
   static const Color inputPlaceholder = Color(0xFF666666);

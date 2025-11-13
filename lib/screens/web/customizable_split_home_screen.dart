@@ -3197,14 +3197,14 @@ class _HoverableNavItemState extends State<_HoverableNavItem> {
       hoverColor: Colors.transparent,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        child: Text(
-          widget.title,
-          style: WebTextStyles.sub(
-            isDarkTheme: true,
-            color: WebDarkColors.textPrimary,
-            fontWeight: widget.isActive ? WebFonts.bold : WebFonts.semiBold,
-          ),
+      child: Text(
+        widget.title,
+        style: WebTextStyles.sub(
+          isDarkTheme: true,
+          color: WebDarkColors.textPrimary,
+          fontWeight: widget.isActive ? WebFonts.bold : WebFonts.semiBold,
         ),
+      ),
       ),
     );
   }

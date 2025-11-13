@@ -881,7 +881,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                           return (theme.isDarkMode
                                   ? WebDarkColors.primary
                                   : WebColors.primary)
-                              .withOpacity(0.05);
+                              .withOpacity(0.15);
                         }
                         if (states.contains(WidgetState.selected)) {
                           return (theme.isDarkMode
@@ -1246,13 +1246,11 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
       children: [
         Text(
           label,
-          style: WebTextStyles.custom(
-            fontSize: 14,
+          style: WebTextStyles.tableHeader(
             isDarkTheme: theme.isDarkMode,
             color: theme.isDarkMode
                 ? WebDarkColors.textPrimary
                 : WebColors.textPrimary,
-            fontWeight: WebFonts.bold,
           ),
         ),
         const SizedBox(width: 4),
@@ -1421,13 +1419,11 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
       children: [
         Text(
           label,
-          style: WebTextStyles.custom(
-            fontSize: 14,
+          style: WebTextStyles.tableHeader(
             isDarkTheme: theme.isDarkMode,
             color: theme.isDarkMode
                 ? WebDarkColors.textPrimary
                 : WebColors.textPrimary,
-            fontWeight: WebFonts.bold,
           ),
         ),
         const SizedBox(width: 4),
@@ -1540,13 +1536,11 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
       children: [
         Text(
           label,
-          style: WebTextStyles.custom(
-            fontSize: 14,
+          style: WebTextStyles.tableHeader(
             isDarkTheme: theme.isDarkMode,
             color: theme.isDarkMode
                 ? WebDarkColors.textPrimary
                 : WebColors.textPrimary,
-            fontWeight: WebFonts.bold,
           ),
         ),
         const SizedBox(width: 4),
@@ -1980,11 +1974,9 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     return DataCell(
       Text(
         formatDateTime(value: time),
-        style: WebTextStyles.custom(
-          fontSize: 13,
+        style: WebTextStyles.tableDataCompact(
           isDarkTheme: theme.isDarkMode,
           color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
-          fontWeight: WebFonts.medium,
         ),
       ),
     );
@@ -1999,11 +1991,9 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     return DataCell(
       Text(
         buySell,
-        style: WebTextStyles.custom(
-          fontSize: 13,
+        style: WebTextStyles.tableDataCompact(
           isDarkTheme: theme.isDarkMode,
           color: buttonColor,
-          fontWeight: WebFonts.medium,
         ),
       ),
     );
@@ -2021,11 +2011,9 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     return DataCell(
       Text(
         displayText,
-        style: WebTextStyles.custom(
-          fontSize: 13,
+        style: WebTextStyles.tableDataCompact(
           isDarkTheme: theme.isDarkMode,
           color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
-          fontWeight: WebFonts.medium,
         ),
         overflow: TextOverflow.ellipsis,
       ),
@@ -2066,13 +2054,11 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                     message: displayText,
                     child: Text(
                       displayText,
-                      style: WebTextStyles.custom(
-                        fontSize: 13,
+                      style: WebTextStyles.tableDataCompact(
                         isDarkTheme: theme.isDarkMode,
                         color: theme.isDarkMode
                             ? WebDarkColors.textPrimary
                             : WebColors.textPrimary,
-                        fontWeight: WebFonts.medium,
                       ),
                       overflow: TextOverflow.ellipsis,
                       maxLines: 1,
@@ -2207,11 +2193,9 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     return DataCell(
       Text(
         product,
-        style: WebTextStyles.custom(
-          fontSize: 13,
+        style: WebTextStyles.tableDataCompact(
           isDarkTheme: theme.isDarkMode,
           color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
-          fontWeight: WebFonts.medium,
         ),
       ),
     );
@@ -2223,11 +2207,9 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     return DataCell(
       Text(
         qty,
-        style: WebTextStyles.custom(
-          fontSize: 13,
+        style: WebTextStyles.tableDataCompact(
           isDarkTheme: theme.isDarkMode,
           color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
-          fontWeight: WebFonts.medium,
         ),
       ),
     );
@@ -2239,11 +2221,9 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     return DataCell(
       Text(
         avgPrice,
-        style: WebTextStyles.custom(
-          fontSize: 13,
+        style: WebTextStyles.tableDataCompact(
           isDarkTheme: theme.isDarkMode,
           color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
-          fontWeight: WebFonts.medium,
         ),
       ),
     );
@@ -2263,11 +2243,9 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     return DataCell(
       Text(
         orderValue,
-        style: WebTextStyles.custom(
-          fontSize: 13,
+        style: WebTextStyles.tableDataCompact(
           isDarkTheme: theme.isDarkMode,
           color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
-          fontWeight: WebFonts.medium,
         ),
       ),
     );
@@ -2279,11 +2257,9 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     return DataCell(
       Text(
         ltpValue,
-        style: WebTextStyles.custom(
-          fontSize: 13,
+        style: WebTextStyles.tableDataCompact(
           isDarkTheme: theme.isDarkMode,
           color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
-          fontWeight: WebFonts.medium,
         ),
       ),
     );
@@ -2295,11 +2271,9 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     return DataCell(
       Text(
         displayText,
-        style: WebTextStyles.custom(
-          fontSize: 13,
+        style: WebTextStyles.tableDataCompact(
           isDarkTheme: theme.isDarkMode,
           color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
-          fontWeight: WebFonts.medium,
         ),
       ),
     );
@@ -2318,11 +2292,9 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
         ),
         child: Text(
           statusText,
-          style: WebTextStyles.custom(
-            fontSize: 13,
+          style: WebTextStyles.tableDataCompact(
             isDarkTheme: theme.isDarkMode,
             color: statusColor,
-            fontWeight: WebFonts.medium,
           ),
         ),
       ),
@@ -2339,11 +2311,9 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     return DataCell(
       Text(
         triggerPrice,
-        style: WebTextStyles.custom(
-          fontSize: 13,
+        style: WebTextStyles.tableDataCompact(
           isDarkTheme: theme.isDarkMode,
           color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
-          fontWeight: WebFonts.medium,
         ),
       ),
     );

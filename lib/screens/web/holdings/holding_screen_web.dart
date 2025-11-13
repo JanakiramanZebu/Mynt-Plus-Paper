@@ -157,9 +157,10 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
     final negativeCount = _getNegativeHoldingsCount(portfolioData);
 
     return Container(
-      padding: const EdgeInsets.all(8),
+      height: 120,
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
+       color: theme.isDarkMode ? WebDarkColors.backgroundSecondary : WebColors.backgroundSecondary.withOpacity(0.3),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
           color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
@@ -174,9 +175,8 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
         // ],
       ),
       child: Column(
+         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          SizedBox(height: 8),
-          // Main stats row
           Row(
             children: [
 
@@ -193,7 +193,7 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
                           style: WebTextStyles.sub(
                             isDarkTheme: theme.isDarkMode,
                             color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
-                            fontWeight: WebFonts.bold,
+                            fontWeight: WebFonts.semiBold,
                           ),
                         ),
                         const SizedBox(height: 8),
@@ -249,7 +249,7 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
                           style: WebTextStyles.sub(
                             isDarkTheme: theme.isDarkMode,
                             color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
-                            fontWeight: WebFonts.bold,
+                            fontWeight: WebFonts.semiBold,
                           ),
                         ),
                         const SizedBox(height: 8),
@@ -294,17 +294,17 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
              
             ],
           ),
-          const SizedBox(height: 20),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              const SizedBox(width: 20),
-              _buildPositionChip(
-                  '$positiveCount Positive', theme.isDarkMode ? WebDarkColors.success : WebColors.success, theme),
-              const SizedBox(width: 12),
-              _buildPositionChip('$negativeCount Negative', theme.isDarkMode ? WebDarkColors.error : WebColors.error, theme),
-            ],
-          ),
+          // const SizedBox(height: 20),
+          // Row(
+          //   mainAxisAlignment: MainAxisAlignment.end,
+          //   children: [
+          //     const SizedBox(width: 20),
+          //     _buildPositionChip(
+          //         '$positiveCount Positive', theme.isDarkMode ? WebDarkColors.success : WebColors.success, theme),
+          //     const SizedBox(width: 12),
+          //     _buildPositionChip('$negativeCount Negative', theme.isDarkMode ? WebDarkColors.error : WebColors.error, theme),
+          //   ],
+          // ),
         ],
       ),
     );
@@ -326,14 +326,15 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
         final negativeCount = _getNegativeMutualFundsCount(mfData);
 
         return Container(
-          padding: const EdgeInsets.all(8),
+          height: 120,
+          padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(
-              color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
-              width: 1,
-            ),
+            color: theme.isDarkMode ? WebDarkColors.backgroundSecondary : WebColors.backgroundSecondary.withOpacity(0.3),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
+          width: 1,
+        ),
             // boxShadow: [
             //   BoxShadow(
             //     color: Colors.black.withOpacity(0.05),
@@ -343,9 +344,8 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
             // ],
           ),
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              SizedBox(height: 8),
-              // Main stats row
               Row(
                 children: [
                   Expanded(
@@ -385,18 +385,18 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  const SizedBox(width: 20),
-                  _buildPositionChip(
-                      '$positiveCount Positive', theme.isDarkMode ? WebDarkColors.success : WebColors.success, theme),
-                  const SizedBox(width: 12),
-                  _buildPositionChip(
-                      '$negativeCount Negative', theme.isDarkMode ? WebDarkColors.error : WebColors.error, theme),
-                ],
-              ),
+              // const SizedBox(height: 20),
+              // Row(
+              //   mainAxisAlignment: MainAxisAlignment.end,
+              //   children: [
+              //     const SizedBox(width: 20),
+              //     _buildPositionChip(
+              //         '$positiveCount Positive', theme.isDarkMode ? WebDarkColors.success : WebColors.success, theme),
+              //     const SizedBox(width: 12),
+              //     _buildPositionChip(
+              //         '$negativeCount Negative', theme.isDarkMode ? WebDarkColors.error : WebColors.error, theme),
+              //   ],
+              // ),
             ],
           ),
         );
@@ -414,7 +414,7 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
           style: WebTextStyles.sub(
             isDarkTheme: theme.isDarkMode,
             color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
-            fontWeight: WebFonts.bold,
+            fontWeight: WebFonts.semiBold,
           ),
         ),
         const SizedBox(height: 8),
@@ -533,7 +533,7 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
                     color: theme.isDarkMode
                         ? WebDarkColors.textPrimary
                         : WebColors.textPrimary,
-                  ).copyWith(fontWeight: WebFonts.bold),
+                  ),
                   decoration: InputDecoration(
                     hintText: 'Search holdings',
                     hintStyle: WebTextStyles.formInput(
@@ -541,7 +541,7 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
                       color: theme.isDarkMode
                           ? WebDarkColors.textSecondary
                           : WebColors.textSecondary,
-                    ).copyWith(fontWeight: WebFonts.bold),
+                    ),
                     prefixIcon: Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: SvgPicture.asset(
@@ -577,13 +577,11 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
                 ),
                 child: TextField(
                   onChanged: (value) => setState(() => _mfSearchQuery = value),
-                  style: WebTextStyles.custom(
-                    fontSize: 13,
+                  style: WebTextStyles.formInput(
                     isDarkTheme: theme.isDarkMode,
                     color: theme.isDarkMode
                         ? WebDarkColors.textPrimary
                         : WebColors.textPrimary,
-                    fontWeight: WebFonts.bold,
                   ),
                   decoration: InputDecoration(
                     hintText: 'Search mutual funds',
@@ -592,7 +590,7 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
                       color: theme.isDarkMode
                           ? WebDarkColors.textSecondary
                           : WebColors.textSecondary,
-                    ).copyWith(fontWeight: WebFonts.bold),
+                    ),
                     prefixIcon: Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: SvgPicture.asset(
@@ -747,7 +745,7 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
                   : (theme.isDarkMode
                       ? WebDarkColors.navItem
                       : WebColors.navItem),
-              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+              fontWeight: isSelected ? WebFonts.bold : WebFonts.semiBold,
             ),
           ),
         ),
@@ -833,36 +831,26 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
       );
     }
 
-    // Calculate table height based on screen size (60% of available height)
-    final screenHeight = MediaQuery.of(context).size.height;
-    final tableHeight = screenHeight * 0.6; // Adjust this percentage as needed
-    
-    return SizedBox(
-      height: tableHeight,
-      child: Scrollbar(
-        controller: _verticalScrollController,
-        thumbVisibility: true,
-        radius: Radius.zero,
-        child: SingleChildScrollView(
-          controller: _verticalScrollController,
-          scrollDirection: Axis.vertical,
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: Padding(
-            padding: const EdgeInsets.only(right: 16), // Space for vertical scrollbar
-            child: Column(
-              children: [
-                Scrollbar(
-                  controller: _horizontalScrollController,
-                  thumbVisibility: true,
-                  radius: Radius.zero,
-                  child: SingleChildScrollView(
-                    controller: _horizontalScrollController,
-                    scrollDirection: Axis.horizontal,
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    child: Padding(
-                      padding: const EdgeInsets.only(bottom: 16), // Space at top of horizontal scrollbar
-                      child: DataTable(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Container(
+          child: Scrollbar(
+            controller: _verticalScrollController,
+            thumbVisibility: true,
+            radius: Radius.zero,
+            child: SingleChildScrollView(
+              controller: _verticalScrollController,
+              scrollDirection: Axis.vertical,
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: Padding(
+                padding: const EdgeInsets.only(right: 16), // Space for vertical scrollbar
+                child: SizedBox(
+                  width: constraints.maxWidth,
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: DataTable(
                 columnSpacing: 10,
+                horizontalMargin: 0,
                 showCheckboxColumn: false,
                 sortColumnIndex: _sortColumnIndex,
                 sortAscending: _sortAscending,
@@ -874,7 +862,7 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
                       return (theme.isDarkMode
                               ? WebDarkColors.primary
                               : WebColors.primary)
-                          .withOpacity(0.05);
+                          .withOpacity(0.15);
                     }
                     if (states.contains(WidgetState.selected)) {
                       return (theme.isDarkMode
@@ -961,15 +949,14 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
                     ],
                   );
                 }).toList(),
-                      ),
                     ),
                   ),
                 ),
-              ],
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -1061,12 +1048,8 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
                       // Chart button
                       _buildHoverButton(
                         icon: Icons.bar_chart,
-                        color: theme.isDarkMode
-                            ? WebDarkColors.textSecondary
-                            : WebColors.textSecondary,
-                        borderColor: theme.isDarkMode
-                            ? WebDarkColors.inputBorder
-                            : WebColors.inputBorder,
+                        color: Colors.black,
+                        backgroundColor: Colors.white,
                         borderRadius: 5.0,
                         onPressed: () async {
                           await _handleChartTap(context, holding, exchTsym);
@@ -1077,12 +1060,8 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
                       // Pledge button
                       _buildHoverButton(
                         label: 'Pledge',
-                        color: theme.isDarkMode
-                            ? WebDarkColors.textSecondary
-                            : WebColors.textSecondary,
-                        borderColor: theme.isDarkMode
-                            ? WebDarkColors.inputBorder
-                            : WebColors.inputBorder,
+                        color: Colors.black,
+                        backgroundColor: Colors.white,
                         borderRadius: 5.0,
                         onPressed: () {
                           _handlePledgeUnpledge(context);
@@ -1151,18 +1130,11 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
     final qtyText = qty > 0 ? '+$qty' : '$qty';
 
     return DataCell(
-      Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        decoration: BoxDecoration(
-          color: _getQtyColor(qty, theme).withOpacity(0.1),
-          borderRadius: BorderRadius.circular(4),
-        ),
-        child: Text(
-          qtyText,
-          style: WebTextStyles.tableDataCompact(
-            isDarkTheme: theme.isDarkMode,
-            color: _getQtyColor(qty, theme),
-          ),
+      Text(
+        qtyText,
+        style: WebTextStyles.tableDataCompact(
+          isDarkTheme: theme.isDarkMode,
+          color: _getQtyColor(qty, theme),
         ),
       ),
     );
@@ -1688,14 +1660,15 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
     Color? backgroundColor,
     Color? borderColor,
     double? borderRadius,
+    double? iconWeight,
     required VoidCallback? onPressed,
     required ThemesProvider theme,
   }) {
     final isLongLabel = label != null && label.length > 1;
     final borderRadiusValue = borderRadius ?? 5.0;
     return SizedBox(
-      width: isLongLabel ? null : 28,
-      height: 28,
+      width: isLongLabel ? null : 25,
+      height: 25,
       child: Material(
         color: Colors.transparent,
         child: InkWell(
@@ -1711,7 +1684,7 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
               border: borderColor != null
                   ? Border.all(
                       color: borderColor,
-                      width: 1,
+                      width: 1.3,
                     )
                   : null,
             ),
@@ -1721,13 +1694,13 @@ class _HoldingScreenWebState extends ConsumerState<HoldingScreenWeb> {
                       icon,
                       size: 16,
                       color: color,
+                      weight: iconWeight ?? 400,
                     )
                   : Text(
                       label ?? "",
                       style: WebTextStyles.buttonXs(
                         isDarkTheme: theme.isDarkMode,
                         color: color,
-                        fontWeight: WebFonts.semiBold,
                       ),
                     ),
             ),

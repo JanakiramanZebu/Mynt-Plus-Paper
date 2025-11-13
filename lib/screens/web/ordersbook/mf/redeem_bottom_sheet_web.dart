@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../../provider/thems.dart';
 import '../../../../../provider/mf_provider.dart';
-import '../../../../../res/global_state_text.dart';
 import '../../../../../res/res.dart';
 import '../../../../../res/global_font_web.dart';
 import '../../../../../sharedWidget/cust_text_formfield.dart';
@@ -51,20 +50,17 @@ class _RedemptionBottomSheetWebState extends ConsumerState<RedemptionBottomSheet
     return Dialog(
       backgroundColor: Colors.transparent,
       child: Container(
-       width: 500,
+        width: 400,
         decoration: BoxDecoration(
           color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
           borderRadius: BorderRadius.circular(5),
-          border: Border.all(
-            color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
-          ),
         ),
         child: Column(
-           mainAxisSize: MainAxisSize.min,
+          mainAxisSize: MainAxisSize.min,
           children: [
-
-             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            // Header with close button
+            Container(
+              padding: const EdgeInsets.only(left: 16, right: 16, top: 0, bottom: 10),
               margin: const EdgeInsets.only(bottom: 8),
               decoration: BoxDecoration(
                 border: Border(
@@ -78,15 +74,13 @@ class _RedemptionBottomSheetWebState extends ConsumerState<RedemptionBottomSheet
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                 Text(
-              holding.name ?? 'N/A',
-              style: TextWidget.textStyle(
-                fontSize: 14,
-                theme: theme.isDarkMode,
-                color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                fw: 2,
-              ),
-            ),
+                  Text(
+                    holding.name ?? 'N/A',
+                    style: WebTextStyles.dialogTitle(
+                      isDarkTheme: theme.isDarkMode,
+                      color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                    ),
+                  ),
                   Material(
                     color: Colors.transparent,
                     shape: const CircleBorder(),
@@ -114,22 +108,20 @@ class _RedemptionBottomSheetWebState extends ConsumerState<RedemptionBottomSheet
                 ],
               ),
             ),
+            
             // Content
-            ConstrainedBox(
-              constraints: BoxConstraints(
-                maxHeight: MediaQuery.of(context).size.height * 0.8,
-              ),
+            Flexible(
+              fit: FlexFit.loose,
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.only(top: 0, bottom: 20, left: 20, right: 20),
                 child: Column(
-                  mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [                    
+                  children: [
                     // Redemption Form
-                    _buildRedemptionForm(holding, theme, mfData),
-                    
-                    // Fund Details
-                    // _buildFundDetails(holding, theme),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      child: _buildRedemptionForm(holding, theme, mfData),
+                    ),
                   ],
                 ),
               ),
@@ -140,39 +132,6 @@ class _RedemptionBottomSheetWebState extends ConsumerState<RedemptionBottomSheet
     );
   }
 
-  Widget _buildHeader(ThemesProvider theme) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: theme.isDarkMode ? colors.kColorLightGreyDarkTheme : colors.kColorLightGrey,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(16),
-          topRight: Radius.circular(16),
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            'Redeem Mutual Fund',
-            style: TextWidget.textStyle(
-              fontSize: 18,
-              theme: theme.isDarkMode,
-              color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-              fw: 3,
-            ),
-          ),
-          IconButton(
-            onPressed: () => Navigator.of(context).pop(),
-            icon: Icon(
-              Icons.close,
-              color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
  
 
@@ -188,39 +147,34 @@ class _RedemptionBottomSheetWebState extends ConsumerState<RedemptionBottomSheet
           children: [
             Text(
               'Redemption Quantity',
-              style: TextWidget.textStyle(
-                fontSize: 14,
-                theme: theme.isDarkMode,
-                color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                fw: 2,
-              ),
-            ),
-             Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'Available Units:',
-              style: TextWidget.textStyle(
-                fontSize: 10,
-                theme: theme.isDarkMode,
-                color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                fw: 2,
-              ),
-            ),
-            Text(
-              holding.avgQty ?? '0',
-              style: TextWidget.textStyle(
-                fontSize: 10,
-                theme: theme.isDarkMode,
+              style: WebTextStyles.dialogContent(
+                isDarkTheme: theme.isDarkMode,
                 color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                fw: 2,
               ),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Available Units:',
+                  style: WebTextStyles.sub(
+                    isDarkTheme: theme.isDarkMode,
+                    color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  holding.avgQty ?? '0',
+                  style: WebTextStyles.sub(
+                    isDarkTheme: theme.isDarkMode,
+                    color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                  ),
+                ),
+              ],
             ),
           ],
         ),
-          ],
-        ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 10),
         SizedBox(
           height: 40,
           child: CustomTextFormField(
@@ -231,22 +185,12 @@ class _RedemptionBottomSheetWebState extends ConsumerState<RedemptionBottomSheet
               // Handle change if needed
             },
             hintText: 'Enter quantity to redeem',
-            hintStyle: WebTextStyles.custom(
-              fontSize: 13,
+            hintStyle: WebTextStyles.formInput(
               isDarkTheme: theme.isDarkMode,
-              color: theme.isDarkMode
-                  ? WebDarkColors.textSecondary
-                  : WebColors.textSecondary,
-              fontWeight: FontWeight.w600,
             ),
             keyboardType: TextInputType.number,
-            style: WebTextStyles.custom(
-              fontSize: 13,
+            style: WebTextStyles.formInput(
               isDarkTheme: theme.isDarkMode,
-              color: theme.isDarkMode
-                  ? WebDarkColors.textPrimary
-                  : WebColors.textPrimary,
-              fontWeight: FontWeight.w600,
             ),
             textCtrl: _redemptionQtyController,
             textAlign: TextAlign.start,
@@ -274,11 +218,10 @@ class _RedemptionBottomSheetWebState extends ConsumerState<RedemptionBottomSheet
             ),
             child: Text(
               'Redeem',
-              style: WebTextStyles.custom(
-                fontSize: 13,
+              style: WebTextStyles.buttonXs(
                 isDarkTheme: theme.isDarkMode,
                 color: WebColors.surface,
-                fontWeight: FontWeight.w700,
+                fontWeight: WebFonts.bold,
               ),
             ),
           ),
@@ -336,26 +279,22 @@ class _RedemptionBottomSheetWebState extends ConsumerState<RedemptionBottomSheet
 
   Widget _buildInfoRow(String title, String value, ThemesProvider theme, {Color? valueColor}) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.symmetric(vertical: 10),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
             title,
-            style: TextWidget.textStyle(
-              fontSize: 14,
-              theme: false,
-              color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-              fw: 2,
+            style: WebTextStyles.dialogContent(
+              isDarkTheme: theme.isDarkMode,
+              color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
             ),
           ),
           Text(
             value,
-            style: TextWidget.textStyle(
-              fontSize: 14,
-              theme: false,
+            style: WebTextStyles.dialogContent(
+              isDarkTheme: theme.isDarkMode,
               color: valueColor ?? (theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight),
-              fw: 2,
             ),
           ),
         ],

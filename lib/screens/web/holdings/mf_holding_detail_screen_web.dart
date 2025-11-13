@@ -6,6 +6,7 @@ import '../../../../provider/mf_provider.dart';
 import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
 import '../../../res/web_colors.dart';
+import '../../../res/global_font_web.dart';
 import '../ordersbook/mf/redeem_bottom_sheet_web.dart';
 
 class MfHoldingDetailScreenWeb extends ConsumerWidget {
@@ -23,18 +24,15 @@ class MfHoldingDetailScreenWeb extends ConsumerWidget {
     return Dialog(
       backgroundColor: Colors.transparent,
       child: Container(
-        width: 500,
-        // height: MediaQuery.of(context).size.height * 0.8,
+        width: 700,
         decoration: BoxDecoration(
           color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
           borderRadius: BorderRadius.circular(5),
-          border: Border.all(
-            color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
-          ),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            // Header with close button
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               margin: const EdgeInsets.only(bottom: 8),
@@ -52,11 +50,9 @@ class MfHoldingDetailScreenWeb extends ConsumerWidget {
                 children: [
                   Text(
                     holding.name ?? 'N/A',
-                    style: TextWidget.textStyle(
-                      fontSize: 14,
-                      theme: theme.isDarkMode,
+                    style: WebTextStyles.dialogTitle(
+                      isDarkTheme: theme.isDarkMode,
                       color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                      fw: 2,
                     ),
                   ),
                   Material(
@@ -86,20 +82,20 @@ class MfHoldingDetailScreenWeb extends ConsumerWidget {
                 ],
               ),
             ),
+            
             // Content
-            ConstrainedBox(
-              constraints: BoxConstraints(
-                maxHeight: MediaQuery.of(context).size.height * 0.8,
-              ),
+            Flexible(
+              fit: FlexFit.loose,
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.only(top: 0, bottom: 20, left: 20, right: 20),
                 child: Column(
-                  mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Returns Section
-                    _buildReturnsSection(theme),
-                    const SizedBox(height: 24),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      child: _buildReturnsSection(theme),
+                    ),
                     
                     // Details Section
                     _buildDetailsSection(theme),
@@ -166,68 +162,88 @@ class MfHoldingDetailScreenWeb extends ConsumerWidget {
           children: [
             Text(
               "Returns",
-              style: TextWidget.textStyle(
-                fontSize: 16,
-                theme: theme.isDarkMode,
+              style: WebTextStyles.title(
+                isDarkTheme: theme.isDarkMode,
                 color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                fw: 3,
+                fontWeight: WebFonts.medium,
               ),
             ),
-
-            const SizedBox(height: 4),
+            const SizedBox(height: 6),
             Text(
-          "${holding.profitLoss ?? "0.00"} (${holding.changeprofitLoss ?? '0.00'}%)",
-          style: TextWidget.textStyle(
-            fontSize: 18,
-            theme: false,
-            color: _getValueColor(holding.profitLoss ?? '0.00', theme),
-            fw: 2,
-          ),
-        ),
+              "${holding.profitLoss ?? "0.00"}",
+              style: WebTextStyles.head(
+                isDarkTheme: theme.isDarkMode,
+                color: _getValueColor(holding.profitLoss ?? '0.00', theme),
+                fontWeight: WebFonts.medium,
+              ),
+            ),
           ],
         ),
-       
       ],
     );
   }
 
   Widget _buildDetailsSection(ThemesProvider theme) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-       
-        _buildInfoRow("Units", holding.avgQty ?? '0', theme),
-        _buildInfoRow("Avg Price", holding.avgNav ?? '0.00', theme),
-        _buildInfoRow("NAV", holding.curNav ?? '0.00', theme),
-        _buildInfoRow("Pledged Units", "0", theme), // This might need to be added to the data model
-        _buildInfoRow("Current", holding.currentValue ?? '0.00', theme),
-        _buildInfoRow("Invested", holding.investedValue ?? '0.00', theme),
-      ],
+    return IntrinsicHeight(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Left column
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildInfoRow("Units", holding.avgQty ?? '0', theme),
+                  _buildInfoRow("Avg Price", holding.avgNav ?? '0.00', theme),
+                  _buildInfoRow("NAV", holding.curNav ?? '0.00', theme),
+                ],
+              ),
+            ),
+            // Vertical divider
+            Container(
+              width: 0.5,
+              margin: const EdgeInsets.symmetric(horizontal: 16),
+              color: theme.isDarkMode
+                  ? WebDarkColors.divider
+                  : WebColors.divider,
+            ),
+            // Right column
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildInfoRow("Pledged Units", "0", theme), // This might need to be added to the data model
+                  _buildInfoRow("Current Value", holding.currentValue ?? '0.00', theme),
+                  _buildInfoRow("Invested", holding.investedValue ?? '0.00', theme),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
   Widget _buildInfoRow(String title, String value, ThemesProvider theme, {Color? valueColor}) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.symmetric(vertical: 10),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
             title,
-            style: TextWidget.textStyle(
-              fontSize: 13,
-              theme: false,
-              color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-              fw: 2,
+            style: WebTextStyles.dialogContent(
+              isDarkTheme: theme.isDarkMode,
+              color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
             ),
           ),
           Text(
             value,
-            style: TextWidget.textStyle(
-              fontSize: 13,
-              theme: false,
+            style: WebTextStyles.dialogContent(
+              isDarkTheme: theme.isDarkMode,
               color: valueColor ?? (theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight),
-              fw: 2,
             ),
           ),
         ],

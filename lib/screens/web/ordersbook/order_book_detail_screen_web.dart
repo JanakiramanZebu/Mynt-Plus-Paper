@@ -12,6 +12,7 @@ import '../../../provider/websocket_provider.dart';
 import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../res/web_colors.dart';
+import '../../../res/global_font_web.dart';
 import '../../../routes/route_names.dart';
 import '../../../sharedWidget/functions.dart';
 import '../../../sharedWidget/time_line.dart';
@@ -38,6 +39,7 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
   bool _isProcessingCancel = false;
   bool _isProcessingModify = false;
   bool _hasFetchedOrderHistory = false; // Track if we've already fetched order history
+  bool _showOrderHistory = false; // Track whether to show order history or details
 
   @override
   void initState() {
@@ -150,24 +152,17 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
             }
 
         return Dialog(
-          backgroundColor: WebColors.surface,
+          backgroundColor: Colors.transparent,
           child: Container(
-            width: 500,
-            height: MediaQuery.of(context).size.height * 0.60,
-            constraints: BoxConstraints(
-              maxHeight: MediaQuery.of(context).size.height * 0.60,
-            ),
+            width: 700,
             decoration: BoxDecoration(
-              // color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+              color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
               borderRadius: BorderRadius.circular(5),
-              // border: Border.all(
-              //   color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
-              // ),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Fixed Header
+                // Header with close button
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   margin: const EdgeInsets.only(bottom: 8),
@@ -212,30 +207,52 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
                   ),
                 ),
                 
-                // Scrollable Content
-                Expanded(
+                // Content
+                Flexible(
+                  fit: FlexFit.loose,
                   child: SingleChildScrollView(
-                    padding: const EdgeInsets.only(top: 0, bottom: 16, left: 16, right: 16),
+                    padding: const EdgeInsets.only(top: 0, bottom: 20, left: 20, right: 20),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Action Buttons - Commented out for OPEN orders
-                        // _buildActionButtons(theme, ref.read(orderProvider), updatedOrderData),
-                        // const SizedBox(height: 24),
-                        
-                        // Order History Button - Removed, showing by default
-                        // _buildOrderHistoryButton(theme, order),
-                        // const SizedBox(height: 24),
-                        
-                        // Order Details Section
-                        _buildOrderDetailsSection(theme, updatedOrderData),
-                        const SizedBox(height: 16),
-                        
-                        // Order History Timeline - Show by default if available
-                        if (orderHistory != null &&
-                            orderHistory.isNotEmpty &&
-                            orderHistory[0].stat != "Not_Ok") ...[
-                          _buildOrderHistorySection(theme, orderHistory),
+                        if (!_showOrderHistory) ...[
+                          // Order Details Section
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            child: _buildOrderDetailsSection(theme, updatedOrderData),
+                          ),
+                          
+                          // Order History Button - Show if history is available
+                          if (orderHistory != null &&
+                              orderHistory.isNotEmpty &&
+                              orderHistory[0].stat != "Not_Ok") ...[
+                            const SizedBox(height: 16),
+                            _buildOrderHistoryButton(theme),
+                          ],
+                        ] else ...[
+                          // Order History Timeline - Show when _showOrderHistory is true
+                          if (orderHistory != null &&
+                              orderHistory.isNotEmpty &&
+                              orderHistory[0].stat != "Not_Ok") ...[
+                            Row(
+                              children: [
+                                _buildBackButton(theme),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Text(
+                                    'Order History',
+                                    style: WebTextStyles.title(
+                                      isDarkTheme: theme.isDarkMode,
+                                      color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                                      fontWeight: WebFonts.semiBold,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            _buildOrderHistorySection(theme, orderHistory),
+                          ],
                         ],
                       ],
                     ),
@@ -248,40 +265,6 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
           },
         );
       },
-    );
-  }
-
-  Widget _buildHeader(ThemesProvider theme) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: theme.isDarkMode ? colors.kColorLightGreyDarkTheme : colors.kColorLightGrey,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(16),
-          topRight: Radius.circular(16),
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            'Order Details',
-            style: TextWidget.textStyle(
-              fontSize: 18,
-              theme: theme.isDarkMode,
-              color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-              fw: 3,
-            ),
-          ),
-          IconButton(
-            onPressed: () => Navigator.of(context).pop(),
-            icon: Icon(
-              Icons.close,
-              color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-            ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -316,29 +299,18 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
             Row(
               children: [
                 Text(
-                  "${displayData.symbol?.replaceAll("-EQ", "").toUpperCase() ?? ''} ${displayData.expDate ?? ''} ${displayData.option ?? ''}",
-                  style: TextWidget.textStyle(
-                    fontSize: 16,
-                    theme: theme.isDarkMode,
+                  "${displayData.symbol?.replaceAll("-EQ", "") ?? ''} ${displayData.expDate ?? ''} ${displayData.option ?? ''} ",
+                  style: WebTextStyles.dialogTitle(
+                    isDarkTheme: theme.isDarkMode,
                     color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                    fw: 1,
                   ),
                 ),
-                 const SizedBox(width: 4),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: theme.isDarkMode ? colors.primaryDark.withOpacity(0.7) : colors.primaryLight.withOpacity(0.7),
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                  child: Text(
-                    "${displayData.exch ?? ''}",
-                    style: TextWidget.textStyle(
-                      fontSize: 12,
-                      theme: false,
-                     color: colors.textPrimaryDark,
-                  fw: 1,
-                    ),
+                const SizedBox(width: 4),
+                Text(
+                  "${displayData.exch ?? ''}",
+                  style: WebTextStyles.dialogTitle(
+                    isDarkTheme: theme.isDarkMode,
+                    color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                   ),
                 ),
               ],
@@ -350,10 +322,10 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
               children: [
                 Text(
                   "${displayData.ltp ?? displayData.close ?? '0.00'}",
-                  style: TextWidget.textStyle(
-                    fontSize: 16,
-                    theme: false,
-                    color: (displayData.change == "null" || displayData.change == null) || displayData.change == "0.00"
+                  style: WebTextStyles.title(
+                    isDarkTheme: theme.isDarkMode,
+                    color: (displayData.change == "null" || displayData.change == null) ||
+                            displayData.change == "0.00"
                         ? theme.isDarkMode
                             ? colors.textSecondaryDark
                             : colors.textSecondaryLight
@@ -364,17 +336,16 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
                             : theme.isDarkMode
                                 ? colors.profitDark
                                 : colors.profitLight,
-                    fw: 1,
+                    fontWeight: WebFonts.medium,
                   ),
                 ),
-                const SizedBox(width: 4),
+                const SizedBox(width: 8),
                 Text(
                   "${(double.tryParse(displayData.change ?? '0.00') ?? 0.00).toStringAsFixed(2)} (${displayData.perChange ?? '0.00'}%)",
-                  style: TextWidget.textStyle(
-                    fontSize: 16,
-                    theme: false,
+                  style: WebTextStyles.sub(
+                    isDarkTheme: theme.isDarkMode,
                     color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                    fw: 1,
+                    fontWeight: WebFonts.medium,
                   ),
                 ),
               ],
@@ -503,23 +474,23 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
     );
   }
 
-  Widget _buildOrderHistoryButton(ThemesProvider theme, OrderProvider order) {
+  Widget _buildOrderHistoryButton(ThemesProvider theme) {
     return Center(
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () async {
-            await order.showorderHistory(true);
-            await Future.delayed(const Duration(milliseconds: 100));
+          onTap: () {
             setState(() {
-              
+              _showOrderHistory = true;
             });
           },
           borderRadius: BorderRadius.circular(8),
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              border: Border.all(color: colors.primaryLight),
+              border: Border.all(
+                color: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
+              ),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Row(
@@ -529,20 +500,52 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
                   assets.orderhistoryicon,
                   width: 16,
                   height: 16,
-                  color: theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
+                  color: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
                 ),
                 const SizedBox(width: 8),
                 Text(
                   "Order History",
-                  style: TextWidget.textStyle(
-                    fontSize: 14,
-                    theme: false,
-                    color: theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
-                    fw: 2,
+                  style: WebTextStyles.buttonXs(
+                    isDarkTheme: theme.isDarkMode,
+                    color: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
+                    fontWeight: WebFonts.semiBold,
                   ),
                 ),
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBackButton(ThemesProvider theme) {
+    return Material(
+      color: Colors.transparent,
+      shape: const CircleBorder(),
+      child: InkWell(
+        customBorder: const CircleBorder(),
+        splashColor: theme.isDarkMode
+            ? Colors.white.withOpacity(.15)
+            : Colors.black.withOpacity(.15),
+        highlightColor: theme.isDarkMode
+            ? Colors.white.withOpacity(.08)
+            : Colors.black.withOpacity(.08),
+        onTap: () {
+          setState(() {
+            _showOrderHistory = false;
+          });
+        },
+        child: Container(
+          width: 44,
+          height: 44,
+          alignment: Alignment.center,
+          child: Icon(
+            Icons.arrow_back_ios_outlined,
+            size: 18,
+            color: theme.isDarkMode
+                ? WebDarkColors.iconSecondary
+                : WebColors.iconSecondary,
           ),
         ),
       ),
@@ -558,34 +561,53 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
                 ? theme.isDarkMode ? colors.lossDark : colors.lossLight
                 : theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Order Details',
-          style: TextWidget.textStyle(
-            fontSize: 15,
-            theme: theme.isDarkMode,
-            color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-            fw: 2,
-          ),
+    return IntrinsicHeight(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Left column
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildInfoRow("Status", _getStatusText(displayData.status), theme, color),
+                  _buildInfoRow("Type", displayData.trantype == "B" ? "Buy" : "Sell", theme),
+                  _buildInfoRow("Qty", _getQuantityDisplay(displayData), theme),
+                  _buildInfoRow("Price", "${displayData.prc ?? "-"}", theme),
+                  _buildInfoRow("Avg Price", "${displayData.avgprc ?? "0.00"}", theme),
+                  _buildInfoRow("Trigger Price", "${displayData.trgprc ?? "0.00"}", theme),
+                  _buildInfoRow("Product / Type", "${displayData.sPrdtAli} / ${displayData.prctyp ?? "-"}", theme),
+                ],
+              ),
+            ),
+            // Vertical divider
+            Container(
+              width: 0.5,
+              margin: const EdgeInsets.symmetric(horizontal: 16),
+              color: theme.isDarkMode
+                  ? WebDarkColors.divider
+                  : WebColors.divider,
+            ),
+            // Right column
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildInfoRow("Market Protection", "${displayData.mktProtection ?? "-"}", theme),
+                  _buildInfoRow("AMO", "${displayData.amo ?? "-"}", theme),
+                  _buildInfoRow("Order Id", "${displayData.norenordno ?? "-"}", theme),
+                  _buildInfoRow("Exchange", "${displayData.exchordid ?? "-"}", theme),
+                  _buildInfoRow("Date & Time", formatDateTime(value: displayData.norentm ?? "-"), theme),
+                  if (displayData.rejreason != null)
+                    _buildInfoRow("Reason", "${displayData.rejreason ?? "-"}", theme),
+                ],
+              ),
+            ),
+          ],
         ),
-        const SizedBox(height: 8),
-        _buildInfoRow("Status", _getStatusText(displayData.status), theme, color),
-        _buildInfoRow("Type", displayData.trantype == "B" ? "Buy" : "Sell", theme),
-        _buildInfoRow("Qty", _getQuantityDisplay(displayData), theme),
-        _buildInfoRow("Price", "${displayData.prc ?? "-"}", theme),
-        _buildInfoRow("Avg Price", "${displayData.avgprc ?? "0.00"}", theme),
-        _buildInfoRow("Trigger Price", "${displayData.trgprc ?? "0.00"}", theme),
-        _buildInfoRow("Product / Type", "${displayData.sPrdtAli} / ${displayData.prctyp ?? "-"}", theme),
-        _buildInfoRow("Market Protection", "${displayData.mktProtection ?? "-"}", theme),
-        _buildInfoRow("AMO", "${displayData.amo ?? "-"}", theme),
-        _buildInfoRow("Order Id", "${displayData.norenordno ?? "-"}", theme),
-        _buildInfoRow("Exchange", "${displayData.exchordid ?? "-"}", theme),
-        _buildInfoRow("Date & Time", formatDateTime(value: displayData.norentm ?? "-"), theme),
-        if (displayData.rejreason != null)
-          _buildInfoRow("Reason", "${displayData.rejreason ?? "-"}", theme),
-      ],
+      ),
     );
   }
 
@@ -593,16 +615,6 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Order History',
-          style: TextWidget.textStyle(
-            fontSize: 15,
-            theme: theme.isDarkMode,
-            color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-            fw: 2,
-          ),
-        ),
-        const SizedBox(height: 8),
         ListView.builder(
           reverse: true,
           itemCount: orderHistory.length,
@@ -622,27 +634,23 @@ class _OrderBookDetailScreenWebState extends ConsumerState<OrderBookDetailScreen
 
   Widget _buildInfoRow(String title, String value, ThemesProvider theme, [Color? valueColor]) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.symmetric(vertical: 10),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
             title,
-            style: TextWidget.textStyle(
-              fontSize: 14,
-              theme: false,
-              color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-              fw: 1,
+            style: WebTextStyles.dialogContent(
+              isDarkTheme: theme.isDarkMode,
+              color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
             ),
           ),
           Text(
             value,
             textAlign: TextAlign.end,
-            style: TextWidget.textStyle(
-              fontSize: 14,
-              theme: false,
+            style: WebTextStyles.dialogContent(
+              isDarkTheme: theme.isDarkMode,
               color: valueColor ?? (theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight),
-              fw: 1,
             ),
           ),
         ],

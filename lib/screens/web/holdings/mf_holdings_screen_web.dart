@@ -250,40 +250,29 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
       );
     }
 
-    // Calculate table height based on screen size (60% of available height)
-    final screenHeight = MediaQuery.of(context).size.height;
-    final tableHeight = screenHeight * 0.6; // Adjust this percentage as needed
-    
-    return SizedBox(
-      height: tableHeight,
-      child: Scrollbar(
-        controller: _verticalScrollController,
-        thumbVisibility: true,
-        radius: Radius.zero,
-        child: SingleChildScrollView(
-          controller: _verticalScrollController,
-          scrollDirection: Axis.vertical,
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: Padding(
-            padding: const EdgeInsets.only(right: 16), // Space for vertical scrollbar
-            child: Column(
-              children: [
-                Scrollbar(
-                  controller: _horizontalScrollController,
-                  thumbVisibility: true,
-                  radius: Radius.zero,
-                  child: SingleChildScrollView(
-                    controller: _horizontalScrollController,
-                    scrollDirection: Axis.horizontal,
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    child: Padding(
-                      padding: const EdgeInsets.only(bottom: 16), // Space at top of horizontal scrollbar
-                      child: DataTable(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Container(
+          child: Scrollbar(
+            controller: _verticalScrollController,
+            thumbVisibility: true,
+            radius: Radius.zero,
+            child: SingleChildScrollView(
+              controller: _verticalScrollController,
+              scrollDirection: Axis.vertical,
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: Padding(
+                padding: const EdgeInsets.only(right: 16), // Space for vertical scrollbar
+                child: SizedBox(
+                  width: constraints.maxWidth,
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: DataTable(
               columnSpacing: 10,
+              horizontalMargin: 0,
               showCheckboxColumn: false,
               sortColumnIndex: _sortColumnIndex,
               sortAscending: _sortAscending,
-              horizontalMargin: 12,
               headingRowHeight: 44,
               headingRowColor: WidgetStateProperty.all(Colors.transparent),
               dataRowColor: WidgetStateProperty.resolveWith<Color?>(
@@ -292,7 +281,7 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
                     return (theme.isDarkMode
                             ? WebDarkColors.primary
                             : WebColors.primary)
-                        .withOpacity(0.05);
+                        .withOpacity(0.15);
                   }
                   if (states.contains(WidgetState.selected)) {
                     return (theme.isDarkMode
@@ -357,15 +346,14 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
                   ],
                 );
               }).toList(),
-                      ),
                     ),
                   ),
                 ),
-              ],
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -706,14 +694,15 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
     Color? backgroundColor,
     Color? borderColor,
     double? borderRadius,
+    double? iconWeight,
     required VoidCallback? onPressed,
     required ThemesProvider theme,
   }) {
     final isLongLabel = label != null && label.length > 1;
     final borderRadiusValue = borderRadius ?? 5.0;
     return SizedBox(
-      width: isLongLabel ? null : 28,
-      height: 28,
+      width: isLongLabel ? null : 25,
+      height: 25,
       child: Material(
         color: Colors.transparent,
         child: InkWell(
@@ -729,7 +718,7 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
               border: borderColor != null
                   ? Border.all(
                       color: borderColor,
-                      width: 1,
+                      width: 1.3,
                     )
                   : null,
             ),
@@ -739,13 +728,14 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
                       icon,
                       size: 16,
                       color: color,
+                      weight: iconWeight ?? 400,
                     )
                   : Text(
                       label ?? "",
                       style: WebTextStyles.buttonXs(
                         isDarkTheme: theme.isDarkMode,
                         color: color,
-                        fontWeight: WebFonts.semiBold,
+                        fontWeight: WebFonts.medium,
                       ),
                     ),
             ),

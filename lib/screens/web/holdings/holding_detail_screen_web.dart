@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import '../../../models/portfolio_model/holdings_model.dart';
 import '../../../models/marketwatch_model/get_quotes.dart';
 import '../../../provider/market_watch_provider.dart';
@@ -11,6 +10,7 @@ import '../../../provider/ledger_provider.dart';
 import '../../../res/res.dart';
 import '../../../res/global_state_text.dart';
 import '../../../res/web_colors.dart';
+import '../../../res/global_font_web.dart';
 import '../../../utils/responsive_navigation.dart';
 import '../../../models/order_book_model/order_book_model.dart';
 import '../../../routes/route_names.dart';
@@ -30,8 +30,7 @@ class HoldingDetailScreenWeb extends ConsumerStatefulWidget {
   ConsumerState<HoldingDetailScreenWeb> createState() => _HoldingDetailScreenWebState();
 }
 
-class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
-    with SingleTickerProviderStateMixin {
+class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb> {
   StreamSubscription? _socketSubscription;
   late ExchTsym _exchTsym;
   late dynamic _holdingData;
@@ -40,22 +39,12 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
   bool _isProcessingBuy = false;
   bool _isProcessingSell = false;
 
-
-  // Add animation controller for smooth transitions
-  late AnimationController _animationController;
-
   @override
   void initState() {
     super.initState();
     // Make copies of the data to avoid modifying the original objects
     _exchTsym = _copyExchTsym(widget.exchTsym);
     _holdingData = widget.holding;
-
-    // Set up animation controller for smooth transitions
-    _animationController = AnimationController(
-      duration: const Duration(milliseconds: 300),
-      vsync: this,
-    );
 
     // Don't pre-load data here - moved to didChangeDependencies
   }
@@ -82,7 +71,6 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
   @override
   void dispose() {
     _socketSubscription?.cancel();
-    _animationController.dispose();
     
     // Close WebSocket connection when screen is disposed
     try {
@@ -150,7 +138,6 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
       if (mounted) {
         _setupSocketSubscription();
         setState(() {});
-        _animationController.forward();
       }
     });
   }
@@ -234,130 +221,81 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
     return Dialog(
       backgroundColor: Colors.transparent,
       child: Container(
-      width: 500,
+        width: 700,
         decoration: BoxDecoration(
           color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-          borderRadius: BorderRadius.circular(30),
+          borderRadius: BorderRadius.circular(5),
         ),
         child: Column(
-           mainAxisSize: MainAxisSize.min,
+          mainAxisSize: MainAxisSize.min,
           children: [
-           // Header Section
-           Container(
-             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-             margin: const EdgeInsets.only(bottom: 8),
-            //  decoration: BoxDecoration(
-              //  border: Border(
-              //    bottom: BorderSide(
-              //      color: theme.isDarkMode
-              //          ? WebDarkColors.divider
-              //          : WebColors.divider,
-              //    ),
-              //  ),
-            //  ),
-             child: Row(
-               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-               children: [
-                 _buildSymbolSection(theme, scripInfo, depthArgs),
-                 Material(
-                   color: theme.isDarkMode
-                       ? WebDarkColors.surfaceVariant
-                       : WebColors.surfaceVariant,
-                   shape: const CircleBorder(),
-                   child: InkWell(
-                     customBorder: const CircleBorder(),
-                     splashColor: theme.isDarkMode
-                         ? Colors.white.withOpacity(.15)
-                         : Colors.black.withOpacity(.15),
-                     highlightColor: theme.isDarkMode
-                         ? Colors.white.withOpacity(.08)
-                         : Colors.black.withOpacity(.08),
-                     onTap: () => Navigator.of(context).pop(),
-                     child: Container(
-                       width: 32,
-                       height: 32,
-                       alignment: Alignment.center,
-                       child: Icon(
-                         Icons.close,
-                         size: 18,
-                         color: theme.isDarkMode
-                             ? WebDarkColors.textSecondary
-                             : WebColors.textSecondary,
-                       ),
-                     ),
-                   ),
-                 ),
-               ],
-             ),
-           ),
-            
-            // Content wrapped in bordered box
+            // Header with close button
             Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              margin: const EdgeInsets.only(bottom: 8),
               decoration: BoxDecoration(
-                border: Border.all(
-                  color: theme.isDarkMode
-                      ? WebDarkColors.divider
-                      : WebColors.divider,
-                  width: 1.2,
-                ),
-                borderRadius: BorderRadius.circular(30),
-              ),
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxHeight: MediaQuery.of(context).size.height * 0.8,
-                ),
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // P&L Section
-                      _buildPnLSection(theme),
-                      
-                      // Details Section
-                      _buildDetailsSection(theme),
-                    ],
+                border: Border(
+                  bottom: BorderSide(
+                    color: theme.isDarkMode
+                        ? WebDarkColors.divider
+                        : WebColors.divider,
                   ),
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _buildSymbolSection(theme, scripInfo, depthArgs),
+                  Material(
+                    color: Colors.transparent,
+                    shape: const CircleBorder(),
+                    child: InkWell(
+                      customBorder: const CircleBorder(),
+                      splashColor: theme.isDarkMode
+                          ? Colors.white.withOpacity(.15)
+                          : Colors.black.withOpacity(.15),
+                      highlightColor: theme.isDarkMode
+                          ? Colors.white.withOpacity(.08)
+                          : Colors.black.withOpacity(.08),
+                      onTap: () => Navigator.of(context).pop(),
+                      child: Padding(
+                        padding: const EdgeInsets.all(6),
+                        child: Icon(
+                          Icons.close,
+                          size: 20,
+                          color: theme.isDarkMode
+                              ? WebDarkColors.iconSecondary
+                              : WebColors.iconSecondary,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            
+            // Content
+            Flexible(
+              fit: FlexFit.loose,
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.only(top: 0, bottom: 20, left: 20, right: 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // P&L Section
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      child: _buildPnLSection(theme),
+                    ),
+                    
+                    // Details Section
+                    _buildDetailsSection(theme),
+                  ],
                 ),
               ),
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildHeader(ThemesProvider theme) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: theme.isDarkMode ? colors.kColorLightGreyDarkTheme : colors.kColorLightGrey,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(16),
-          topRight: Radius.circular(16),
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            'Holding Details',
-            style: TextWidget.textStyle(
-              fontSize: 18,
-              theme: theme.isDarkMode,
-              color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-              fw: 3,
-            ),
-          ),
-          IconButton(
-            onPressed: () => Navigator.of(context).pop(),
-            icon: Icon(
-              Icons.close,
-              color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -383,33 +321,21 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
             Row(
               children: [
                 Text(
-                  "${_exchTsym.tsym?.replaceAll("-EQ", "").toUpperCase() ?? ''} ${_exchTsym.expDate ?? ''} ${_exchTsym.option ?? ''} ",
-                  style: TextWidget.textStyle(
-                    fontSize: 16,
-                    theme: theme.isDarkMode,
-                    color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                    fw: 1,
+                  "${_exchTsym.tsym?.replaceAll("-EQ", "") ?? ''} ${_exchTsym.expDate ?? ''} ${_exchTsym.option ?? ''} ",
+                  style: WebTextStyles.dialogTitle(
+                    isDarkTheme: theme.isDarkMode,
+                    color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
                   ),
                 ),
-
                 const SizedBox(width: 4),
-                 Container(
-                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: theme.isDarkMode ? colors.primaryDark.withOpacity(0.7) : colors.primaryLight.withOpacity(0.7),
-                    borderRadius: BorderRadius.circular(5),
+                Text(
+                  "${_exchTsym.exch}",
+                  style: WebTextStyles.dialogTitle(
+                    isDarkTheme: theme.isDarkMode,
+                    color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
                   ),
-                   child: Text(
-                                 "${_exchTsym.exch}",
-                                 style: TextWidget.textStyle(
-                                   fontSize: 12,
-                                   theme: theme.isDarkMode,
-                   color: colors.textPrimaryDark,
-                                   fw: 1,
-                                 ),
-                                   // CustomExchBadge(exch: "${_exchTsym.exch}"),
-                                 ),
-                 )],
+                ),
+              ],
             ),
             const SizedBox(height: 8),
             
@@ -418,10 +344,10 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
               children: [
                 Text(
                   "${_exchTsym.lp != "null" ? _exchTsym.lp ?? _exchTsym.close ?? 0.00 : '0.00'}",
-                  style: TextWidget.textStyle(
-                    fontSize: 16,
-                    theme: false,
-                    color: (_exchTsym.change == "null" || _exchTsym.change == null) || _exchTsym.change == "0.00"
+                  style: WebTextStyles.title(
+                    isDarkTheme: theme.isDarkMode,
+                    color: (_exchTsym.change == "null" || _exchTsym.change == null) ||
+                            _exchTsym.change == "0.00"
                         ? theme.isDarkMode
                             ? colors.textSecondaryDark
                             : colors.textSecondaryLight
@@ -432,17 +358,16 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
                             : theme.isDarkMode
                                 ? colors.profitDark
                                 : colors.profitLight,
-                    fw: 1,
+                    fontWeight: WebFonts.medium,
                   ),
                 ),
-                const SizedBox(width: 4),
+                const SizedBox(width: 8),
                 Text(
                   "${(double.tryParse(_exchTsym.change ?? '0.00') ?? 0.00).toStringAsFixed(2)} (${(double.tryParse(_exchTsym.perChange ?? '0.00') ?? 0.00).toStringAsFixed(2)}%)",
-                  style: TextWidget.textStyle(
-                    fontSize: 16,
-                    theme: false,
-                    color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                    fw: 1,
+                  style: WebTextStyles.sub(
+                    isDarkTheme: theme.isDarkMode,
+                    color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
+                    fontWeight: WebFonts.medium,
                   ),
                 ),
               ],
@@ -580,136 +505,150 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
 
   Widget _buildPnLSection(ThemesProvider theme) {
     return Row(
-     mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Column(
           children: [
             Text(
               "P&L",
-              style: TextWidget.textStyle(
-                fontSize: 16,
-                theme: theme.isDarkMode,
-                color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                fw: 1,
+              style: WebTextStyles.title(
+                isDarkTheme: theme.isDarkMode,
+                color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
+                fontWeight: WebFonts.medium,
               ),
             ),
-
-             FadeTransition(
-          opacity: _animationController,
-          child: Row(
-            // crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                "${_exchTsym.profitNloss ?? "0.00"}",
-                style: TextWidget.textStyle(
-                  fontSize: 18,
-                  theme: false,
-                  color: _exchTsym.profitNloss?.startsWith("-") == true
-                      ? theme.isDarkMode
-                          ? colors.lossDark
-                          : colors.lossLight
-                      : theme.isDarkMode
-                          ? colors.profitDark
-                          : colors.profitLight,
-                  fw: 1,
-                ),
+            const SizedBox(height: 6),
+            Text(
+              "${_exchTsym.profitNloss ?? "0.00"}",
+              style: WebTextStyles.head(
+                isDarkTheme: theme.isDarkMode,
+                color: _getPnLColor(theme),
+                fontWeight: WebFonts.medium,
               ),
-              const SizedBox(height: 4),
-              Text(
-                " (${_exchTsym.pNlChng ?? "0.00"}%)",
-                style: TextWidget.textStyle(
-                  fontSize: 14,
-                  theme: false,
-                  color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                  fw: 3,
-                ),
-              ),
-            ],
-          ),
-        ),
+            ),
           ],
         ),
-       
       ],
     );
   }
 
+  Color _getPnLColor(ThemesProvider theme) {
+    final pnl = _exchTsym.profitNloss ?? "0.00";
+    if (pnl.startsWith("-")) {
+      return theme.isDarkMode ? colors.lossDark : colors.lossLight;
+    } else if (pnl == "0.00") {
+      return theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight;
+    } else {
+      return theme.isDarkMode ? colors.profitDark : colors.profitLight;
+    }
+  }
+
   Widget _buildDetailsSection(ThemesProvider theme) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-                 _buildInfoRow(
-          "Non POA / Sell",
-          "${_holdingData.saleableQty ?? 0}/${_holdingData.npoadqty ?? 0}",
-          theme,
+    return IntrinsicHeight(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Left column
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildInfoRow(
+                    "Net Qty",
+                    "${_holdingData.currentQty ?? 0}",
+                    theme,
+                  ),
+                  _buildInfoRow(
+                    "Avg Price",
+                    "${_holdingData.upldprc ?? 0}",
+                    theme,
+                  ),
+                  _buildInfoRow(
+                    "Product",
+                    _holdingData.sPrdtAli != "null" ? "${_holdingData.sPrdtAli}" : "",
+                    theme,
+                  ),
+                  _buildInfoRow(
+                    "Non POA / Sell",
+                    "${_holdingData.saleableQty ?? 0}/${_holdingData.npoadqty ?? 0}",
+                    theme,
+                  ),
+                ],
+              ),
+            ),
+            // Vertical divider
+            Container(
+              width: 0.5,
+              margin: const EdgeInsets.symmetric(horizontal: 16),
+              color: theme.isDarkMode
+                  ? WebDarkColors.divider
+                  : WebColors.divider,
+            ),
+            // Right column
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildInfoRow(
+                    "Invested",
+                    "${_holdingData.invested == "0.00" ? _exchTsym.close ?? 0.00 : _holdingData.invested ?? 0.00}",
+                    theme,
+                  ),
+                  _buildInfoRow(
+                    "Current Value",
+                    (int.parse("${_holdingData.currentQty ?? 0}") *
+                            double.parse(_exchTsym.lp?.toString() ?? "0.0"))
+                        .toStringAsFixed(2),
+                    theme,
+                  ),
+                  if (_holdingData.btstqty != "0") ...[
+                    _buildInfoRow(
+                      "T1 Qty",
+                      "${_holdingData.btstqty ?? 0}",
+                      theme,
+                    ),
+                  ],
+                  if (_holdingData.rpnl != null && _holdingData.rpnl != "0") ...[
+                    _buildInfoRow(
+                      "Realised P&L",
+                      "${_holdingData.rpnl ?? 0}",
+                      theme,
+                    ),
+                  ],
+                  _buildInfoRow(
+                    "Pledged Qty",
+                    "${_holdingData.brkcolqty ?? 0}",
+                    theme,
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
-        _buildInfoRow(
-          "Avg Price",
-          "${_holdingData.upldprc ?? 0}",
-          theme,
-        ),
-        _buildInfoRow(
-          "Product",
-          _holdingData.sPrdtAli != "null" ? "${_holdingData.sPrdtAli}" : "",
-          theme,
-        ),
-        _buildInfoRow(
-          "Invested",
-          "${_holdingData.invested == "0.00" ? _exchTsym.close ?? 0.00 : _holdingData.invested ?? 0.00}",
-          theme,
-        ),
-        _buildInfoRow(
-          "Current",
-          (int.parse("${_holdingData.currentQty ?? 0}") *
-                  double.parse(_exchTsym.lp?.toString() ?? "0.0"))
-              .toStringAsFixed(2),
-          theme,
-        ),
-        if (_holdingData.btstqty != "0") ...[
-          _buildInfoRow(
-            "T1 Qty",
-            "${_holdingData.btstqty ?? 0}",
-            theme,
-          ),
-        ],
-        if (_holdingData.rpnl != null && _holdingData.rpnl != "0") ...[
-          _buildInfoRow(
-            "Realised P&L",
-            "${_holdingData.rpnl ?? 0}",
-            theme,
-          ),
-        ],
-        _buildInfoRow(
-          "Pledged Qty",
-          "${_holdingData.brkcolqty ?? 0}",
-          theme,
-        ),
-      ],
+      ),
     );
   }
 
   Widget _buildInfoRow(String title, String value, ThemesProvider theme) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.symmetric(vertical: 10),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
             title,
-            style: TextWidget.textStyle(
-              fontSize: 14,
-              theme: false,
-              color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-              fw: 1,
+            style: WebTextStyles.dialogContent(
+              isDarkTheme: theme.isDarkMode,
+              color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
             ),
           ),
           Text(
             value,
-            style: TextWidget.textStyle(
-              fontSize: 14,
-              theme: false,
-              color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-              fw: 1,
+            style: WebTextStyles.dialogContent(
+              isDarkTheme: theme.isDarkMode,
+              color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
             ),
           ),
         ],
