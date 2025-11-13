@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:mynt_plus/models/text_nugget_model/text_nugget_model.dart';
 import 'package:mynt_plus/provider/dashboard_provider.dart';
 import 'package:mynt_plus/provider/mf_provider.dart';
+import 'package:mynt_plus/widgets/text_nugget_widget.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../../../locator/locator.dart';
@@ -228,6 +230,11 @@ class _StockScreenState extends ConsumerState<StockScreen>
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
+                         
+            const AutoLoadTextNuggetWidget(
+              screenType: TextNuggetScreenType.homescreen,
+            ),
+              
               const TopIndices(),
 
               // const Padding(

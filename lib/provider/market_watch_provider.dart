@@ -5,6 +5,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:mynt_plus/provider/stocks_provider.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/provider/user_profile_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -4427,5 +4428,81 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     _hoveredEventDots.clear();
     _selectedEventDot = null;
     notifyListeners();
+  }
+
+
+
+  /// Filters stock events (dividend, bonus, split, rights) by matching the given stock token
+  /// Returns a map containing matching events across different event types
+  ///
+  /// Parameters:
+  /// - [stockToken]: The token of the stock to filter events for
+  ///
+  /// Returns a Map with keys: 'dividend', 'bonus', 'split', 'rights'
+  /// Each key contains the matching event object or null if not found
+  Map<String, dynamic> filterStockEventsByToken(String stockToken) {
+    final stockEvents = ref.read(stocksProvide).caeventsModel;
+
+    Map<String, dynamic> filteredEvents = {
+      'dividend': null,
+      'bonus': null,
+      'split': null,
+      'rights': null,
+    };
+
+    if (stockEvents == null) {
+      return filteredEvents;
+    }
+
+    // Find dividend
+    if (stockEvents.dividend != null) {
+      try {
+        filteredEvents['dividend'] = stockEvents.dividend!
+            .firstWhere((dividend) => dividend.token == stockToken);
+      } catch (e) {
+        // No matching dividend found
+      }
+    }
+
+    // Find bonus
+    if (stockEvents.bonus != null) {
+      try {
+        filteredEvents['bonus'] = stockEvents.bonus!
+            .firstWhere((bonus) => bonus.token == stockToken);
+      } catch (e) {
+        // No matching bonus found
+      }
+    }
+
+    // Find split
+    if (stockEvents.split != null) {
+      try {
+        filteredEvents['split'] = stockEvents.split!
+            .firstWhere((split) => split.token == stockToken);
+      } catch (e) {
+        // No matching split found
+      }
+    }
+
+    // Find rights
+    if (stockEvents.rights != null) {
+      try {
+        filteredEvents['rights'] = stockEvents.rights!
+            .firstWhere((right) => right.token == stockToken);
+      } catch (e) {
+        // No matching right found
+      }
+    }
+
+    return filteredEvents;
+  }
+
+  /// Returns true if the stock has any corporate action events
+  bool hasStockEvents(Map<String,dynamic> events,String stockToken) {
+    // final events = filterStockEventsByToken(stockToken);
+    return events['dividend'] != null ||
+        events['bonus'] != null ||
+        events['split'] != null ||
+        events['rights'] != null;
   }
 }

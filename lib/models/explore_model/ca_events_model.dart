@@ -1,10 +1,10 @@
 class CAevents {
   List<Dividend>? dividend;
   List<Bonus>? bonus;
-  List<Splits>? splits;
+  List<Splits>? split;
   List<Rights>? rights;
 
-  CAevents({this.dividend, this.bonus, this.splits, this.rights});
+  CAevents({this.dividend, this.bonus, this.split, this.rights});
 
   CAevents.fromJson(Map<String, dynamic> json) {
     if (json['dividend'] != null) {
@@ -19,10 +19,10 @@ class CAevents {
         bonus!.add(Bonus.fromJson(v));
       });
     }
-    if (json['splits'] != null) {
-      splits = <Splits>[];
-      json['splits'].forEach((v) {
-        splits!.add(Splits.fromJson(v));
+    if (json['split'] != null) {
+      split = <Splits>[];
+      json['split'].forEach((v) {
+        split!.add(Splits.fromJson(v));
       });
     }
     if (json['rights'] != null) {
@@ -43,8 +43,8 @@ class CAevents {
     if (bonus != null) {
       data['bonus'] = bonus!.map((v) => v.toJson()).toList();
     }
-    if (splits != null) {
-      data['splits'] = splits!.map((v) => v.toJson()).toList();
+    if (split != null) {
+      data['split'] = split!.map((v) => v.toJson()).toList();
     }
     if (rights != null) {
       data['rights'] = rights!.map((v) => v.toJson()).toList();
