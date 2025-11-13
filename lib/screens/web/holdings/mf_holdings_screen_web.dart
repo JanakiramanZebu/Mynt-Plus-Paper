@@ -377,13 +377,11 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
       children: [
         Text(
           label,
-          style: WebTextStyles.custom(
-            fontSize: 13,
+          style: WebTextStyles.tableHeader(
             isDarkTheme: theme.isDarkMode,
             color: theme.isDarkMode
                 ? WebDarkColors.textPrimary
                 : WebColors.textPrimary,
-            fontWeight: WebFonts.bold,
           ),
         ),
         const SizedBox(width: 4),
@@ -426,13 +424,11 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
                     waitDuration: const Duration(milliseconds: 500),
                     child: Text(
                       holdingName,
-                      style: WebTextStyles.custom(
-                        fontSize: 13,
+                      style: WebTextStyles.tableDataCompact(
                         isDarkTheme: theme.isDarkMode,
                         color: theme.isDarkMode
                             ? WebDarkColors.textPrimary
                             : WebColors.textPrimary,
-                        fontWeight: WebFonts.medium,
                       ),
                       overflow: TextOverflow.ellipsis,
                       maxLines: 1,
@@ -495,13 +491,11 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
     return DataCell(
       Text(
         holding.avgQty ?? '0',
-        style: WebTextStyles.custom(
-          fontSize: 13,
+        style: WebTextStyles.tableDataCompact(
           isDarkTheme: theme.isDarkMode,
           color: theme.isDarkMode
               ? WebDarkColors.textPrimary
               : WebColors.textPrimary,
-          fontWeight: WebFonts.medium,
         ),
       ),
     );
@@ -511,13 +505,11 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
     return DataCell(
       Text(
         holding.avgNav ?? '0.00',
-        style: WebTextStyles.custom(
-          fontSize: 13,
+        style: WebTextStyles.tableDataCompact(
           isDarkTheme: theme.isDarkMode,
           color: theme.isDarkMode
               ? WebDarkColors.textPrimary
               : WebColors.textPrimary,
-          fontWeight: WebFonts.medium,
         ),
       ),
     );
@@ -527,13 +519,11 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
     return DataCell(
       Text(
         holding.curNav ?? '0.00',
-        style: WebTextStyles.custom(
-          fontSize: 13,
+        style: WebTextStyles.tableDataCompact(
           isDarkTheme: theme.isDarkMode,
           color: theme.isDarkMode
               ? WebDarkColors.textPrimary
               : WebColors.textPrimary,
-          fontWeight: WebFonts.medium,
         ),
       ),
     );
@@ -543,13 +533,11 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
     return DataCell(
       Text(
         holding.investedValue ?? '0.00',
-        style: WebTextStyles.custom(
-          fontSize: 13,
+        style: WebTextStyles.tableDataCompact(
           isDarkTheme: theme.isDarkMode,
           color: theme.isDarkMode
               ? WebDarkColors.textPrimary
               : WebColors.textPrimary,
-          fontWeight: WebFonts.medium,
         ),
       ),
     );
@@ -559,13 +547,11 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
     return DataCell(
       Text(
         holding.currentValue ?? '0.00',
-        style: WebTextStyles.custom(
-          fontSize: 13,
+        style: WebTextStyles.tableDataCompact(
           isDarkTheme: theme.isDarkMode,
           color: theme.isDarkMode
               ? WebDarkColors.textPrimary
               : WebColors.textPrimary,
-          fontWeight: WebFonts.medium,
         ),
       ),
     );
@@ -576,11 +562,9 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
     return DataCell(
       Text(
         pnl,
-        style: WebTextStyles.custom(
-          fontSize: 13,
+        style: WebTextStyles.tableDataCompact(
           isDarkTheme: theme.isDarkMode,
           color: _getValueColor(pnl, theme),
-          fontWeight: WebFonts.medium,
         ),
       ),
     );
@@ -591,11 +575,9 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
     return DataCell(
       Text(
         '${pnlPercent}%',
-        style: WebTextStyles.custom(
-          fontSize: 13,
+        style: WebTextStyles.tableDataCompact(
           isDarkTheme: theme.isDarkMode,
           color: _getValueColor(pnlPercent, theme),
-          fontWeight: WebFonts.medium,
         ),
       ),
     );
@@ -760,11 +742,10 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
                     )
                   : Text(
                       label ?? "",
-                      style: WebTextStyles.custom(
-                        fontSize: 11,
+                      style: WebTextStyles.buttonXs(
                         isDarkTheme: theme.isDarkMode,
                         color: color,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: WebFonts.semiBold,
                       ),
                     ),
             ),

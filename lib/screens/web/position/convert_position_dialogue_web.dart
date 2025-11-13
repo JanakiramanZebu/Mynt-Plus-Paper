@@ -63,7 +63,7 @@ class _ConvertPositionDialogueWebState extends ConsumerState<ConvertPositionDial
         borderRadius: BorderRadius.circular(5),
       ),
       child: Container(
-        width: 300,
+        width: 350,
        
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -85,11 +85,9 @@ class _ConvertPositionDialogueWebState extends ConsumerState<ConvertPositionDial
                 children: [
                   Text(
                     "${widget.convertPosition.symbol} ${widget.convertPosition.option} ${widget.convertPosition.exch}",
-                    style: WebTextStyles.custom(
-                      fontSize: 14,
+                    style: WebTextStyles.dialogTitle(
                       isDarkTheme: theme.isDarkMode,
                       color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
-                      fontWeight: WebFonts.bold,
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -128,33 +126,30 @@ class _ConvertPositionDialogueWebState extends ConsumerState<ConvertPositionDial
                     children: [
                 Text(
                   "Order Type",
-                  style: WebTextStyles.custom(
-                    fontSize: 13,
+                  style: WebTextStyles.formLabel(
                     isDarkTheme: theme.isDarkMode,
                     color: theme.isDarkMode
                           ? WebDarkColors.textPrimary
                           : WebColors.textPrimary,
-                    fontWeight: WebFonts.bold,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 10),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     // Current product (NRML/MIS/CNC)
                     Container(
-                      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                      padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 10),
                       decoration: BoxDecoration(
                         color: theme.isDarkMode ? WebDarkColors.surfaceVariant : WebColors.surfaceVariant,
                         borderRadius: BorderRadius.circular(5),
                       ),
                       child: Text(
                         "${widget.convertPosition.sPrdtAli}",
-                        style: WebTextStyles.custom(
-                          fontSize: 13,
+                        style: WebTextStyles.bodySmall(
                           isDarkTheme: theme.isDarkMode,
                           color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
-                          fontWeight: WebFonts.bold,
+                          fontWeight: WebFonts.semiBold,
                         ),
                       ),
                     ),
@@ -169,7 +164,7 @@ class _ConvertPositionDialogueWebState extends ConsumerState<ConvertPositionDial
                     
                     // Target product
                     Container(
-                      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                      padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 10),
                       decoration: BoxDecoration(
                         color: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
                         borderRadius: BorderRadius.circular(5),
@@ -184,29 +179,26 @@ class _ConvertPositionDialogueWebState extends ConsumerState<ConvertPositionDial
                                 : widget.convertPosition.sPrdtAli == "CNC"
                                     ? "MIS"
                                     : "MIS",
-                        style: WebTextStyles.custom(
-                          fontSize: 13,
+                        style: WebTextStyles.bodySmall(
                           isDarkTheme: theme.isDarkMode,
                           color: Colors.white,
-                          fontWeight: WebFonts.bold,
+                          fontWeight: WebFonts.semiBold,
                         ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 16),
                 
                 // Quantity Section
                 Text(
                   "Quantity (${widget.convertPosition.ls})",
-                  style: WebTextStyles.custom(
-                    fontSize: 13,
+                  style: WebTextStyles.formLabel(
                     isDarkTheme: theme.isDarkMode,
                     color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
-                    fontWeight: WebFonts.bold,
                   ),
                 ),
-               const SizedBox(height: 8),
+               const SizedBox(height: 10),
                SizedBox(
                  height: 40,
                  child: CustomTextFormField(
@@ -214,22 +206,18 @@ class _ConvertPositionDialogueWebState extends ConsumerState<ConvertPositionDial
                        ? WebDarkColors.backgroundTertiary
                        : WebColors.backgroundTertiary,
                    hintText: "0",
-                   hintStyle: WebTextStyles.custom(
-                     fontSize: 13,
+                   hintStyle: WebTextStyles.helperText(
                      isDarkTheme: theme.isDarkMode,
                      color: theme.isDarkMode
                          ? WebDarkColors.textSecondary
                          : WebColors.textSecondary,
-                     fontWeight: WebFonts.semiBold,
                    ),
                    keyboardType: TextInputType.number,
-                   style: WebTextStyles.custom(
-                     fontSize: 13,
+                   style: WebTextStyles.formInput(
                      isDarkTheme: theme.isDarkMode,
                      color: theme.isDarkMode
                          ? WebDarkColors.textPrimary
                          : WebColors.textPrimary,
-                     fontWeight: WebFonts.semiBold,
                    ),
                    textCtrl: qty,
                    textAlign: TextAlign.center,
@@ -318,11 +306,9 @@ class _ConvertPositionDialogueWebState extends ConsumerState<ConvertPositionDial
                         child: Center(
                           child: Text(
                             "Convert Position",
-                            style: WebTextStyles.custom(
-                              fontSize: 14,
+                            style: WebTextStyles.buttonMd(
                               isDarkTheme: theme.isDarkMode,
                               color: Colors.white,
-                              fontWeight: WebFonts.bold,
                             ),
                           ),
                         ),

@@ -197,41 +197,41 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                   theme,
                 ),
               ),
-              _buildDivider(theme),
-              Expanded(
-                child: _buildStatItem(
-                  'Open Position',
-                  _calculateOpenPosition(positionBook),
-                  _getValueColor(_calculateOpenPosition(positionBook), theme),
-                  theme,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          // Trade Positions section
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              // Text(
-              //   'Trade Positions',
-              //   style: WebTextStyles.title(
-              //     isDarkTheme: theme.isDarkMode,
-              //     color: const Color(0xFF374151), // Dark grey
-              //     fontWeight: WebFonts.semiBold,
+              // _buildDivider(theme),
+              // Expanded(
+              //   child: _buildStatItem(
+              //     'Open Position',
+              //     _calculateOpenPosition(positionBook),
+              //     _getValueColor(_calculateOpenPosition(positionBook), theme),
+              //     theme,
               //   ),
               // ),
-              const SizedBox(width: 20),
-              _buildPositionChip(
-                  '$positiveCount Positive', theme.isDarkMode ? WebDarkColors.success : WebColors.success, theme),
-              const SizedBox(width: 12),
-              _buildPositionChip(
-                  '$negativeCount Negative', theme.isDarkMode ? WebDarkColors.error : WebColors.error, theme),
-              const SizedBox(width: 12),
-              _buildPositionChip(
-                  '$closedCount Closed', theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary, theme),
             ],
           ),
+          // const SizedBox(height: 20),
+          // // Trade Positions section
+          // Row(
+          //   mainAxisAlignment: MainAxisAlignment.end,
+          //   children: [
+          //     // Text(
+          //     //   'Trade Positions',
+          //     //   style: WebTextStyles.title(
+          //     //     isDarkTheme: theme.isDarkMode,
+          //     //     color: const Color(0xFF374151), // Dark grey
+          //     //     fontWeight: WebFonts.semiBold,
+          //     //   ),
+          //     // ),
+          //     const SizedBox(width: 20),
+          //     _buildPositionChip(
+          //         '$positiveCount Positive', theme.isDarkMode ? WebDarkColors.success : WebColors.success, theme),
+          //     const SizedBox(width: 12),
+          //     _buildPositionChip(
+          //         '$negativeCount Negative', theme.isDarkMode ? WebDarkColors.error : WebColors.error, theme),
+          //     const SizedBox(width: 12),
+          //     _buildPositionChip(
+          //         '$closedCount Closed', theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary, theme),
+          //   ],
+          // ),
         ],
       ),
     );
@@ -247,7 +247,7 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
           style: WebTextStyles.sub(
             isDarkTheme: theme.isDarkMode,
             color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
-            fontWeight: WebFonts.bold,
+            fontWeight: WebFonts.regular,
           ),
         ),
         const SizedBox(height: 8),
@@ -349,23 +349,19 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
               ),
               child: TextField(
                 onChanged: (value) => setState(() => _searchQuery = value),
-                style: WebTextStyles.custom(
-                  fontSize: 13,
+                style: WebTextStyles.formInput(
                   isDarkTheme: theme.isDarkMode,
                   color: theme.isDarkMode
                       ? WebDarkColors.textPrimary
                       : WebColors.textPrimary,
-                      fontWeight: WebFonts.bold,
                 ),
                 decoration: InputDecoration(
                   hintText: 'Search positions',
-                  hintStyle: WebTextStyles.custom(
-                    fontSize: 13,
+                  hintStyle: WebTextStyles.formInput(
                     isDarkTheme: theme.isDarkMode,
                     color: theme.isDarkMode
                         ? WebDarkColors.textSecondary
                         : WebColors.textSecondary,
-                    fontWeight: WebFonts.bold,
                   ),
                   prefixIcon: Padding(
                     padding: const EdgeInsets.all(8.0),
@@ -421,10 +417,10 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                       : (selectedCount == 1
                           ? 'Exit (1)'
                           : 'Exit ($selectedCount)'),
-                  style: WebTextStyles.sub(
+                  style: WebTextStyles.buttonMd(
                     isDarkTheme: theme.isDarkMode,
                     color: Colors.white,
-                    fontWeight: WebFonts.bold,
+                    fontWeight: WebFonts.medium,
                   ),
                 ),
               );
@@ -643,24 +639,20 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
               ),
               child: TextField(
                 onChanged: (value) => setState(() => _searchQuery = value),
-                style: WebTextStyles.custom(
-                  fontSize: 13,
+                style: WebTextStyles.formInput(
                   isDarkTheme: theme.isDarkMode,
                   color: theme.isDarkMode
                       ? WebDarkColors.textPrimary
                       : WebColors.textPrimary,
-                      fontWeight: WebFonts.bold,
-                ),
+                ).copyWith(fontWeight: WebFonts.bold),
                 decoration: InputDecoration(
                   hintText: '',
-                  hintStyle: WebTextStyles.custom(
-                    fontSize: 13,
+                  hintStyle: WebTextStyles.formInput(
                     isDarkTheme: theme.isDarkMode,
                     color: theme.isDarkMode
                         ? WebDarkColors.textSecondary
                         : WebColors.textSecondary,
-                    fontWeight: WebFonts.bold,
-                  ),
+                  ).copyWith(fontWeight: WebFonts.bold),
                   prefixIcon: Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: SvgPicture.asset(
@@ -803,6 +795,7 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                     padding: const EdgeInsets.only(bottom: 16), // Space at top of horizontal scrollbar
                     child: DataTable(
                 columnSpacing: 10,
+                  horizontalMargin: 0,
                 showCheckboxColumn: false,
                 sortColumnIndex: _sortColumnIndex,
                 sortAscending: _sortAscending,
@@ -830,15 +823,30 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
             label: Builder(
               builder: (context) {
                 final theme = ref.read(themeProvider);
-                return Checkbox(
-                  value: positionBook.isExitAllPosition,
-                  onChanged: filteredPositions.isNotEmpty
-                      ? (bool? value) {
-                          positionBook.selectExitAllPosition(value ?? false);
-                          setState(() {}); // Trigger rebuild to update button count
-                        }
-                      : null,
-                  activeColor: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
+                return Theme(
+                  data: Theme.of(context).copyWith(
+                    checkboxTheme: CheckboxThemeData(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      side: BorderSide(
+                        color: theme.isDarkMode 
+                            ? WebDarkColors.textPrimary.withOpacity(0.5)
+                            : WebColors.textPrimary.withOpacity(0.5),
+                        width: 1.5,
+                      ),
+                    ),
+                  ),
+                  child: Checkbox(
+                    value: positionBook.isExitAllPosition,
+                    onChanged: filteredPositions.isNotEmpty
+                        ? (bool? value) {
+                            positionBook.selectExitAllPosition(value ?? false);
+                            setState(() {}); // Trigger rebuild to update button count
+                          }
+                        : null,
+                    activeColor: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
+                  ),
                 );
               },
             ),
@@ -919,20 +927,35 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
             cells: [
               // Checkbox - left aligned
               _buildCellWithHover(position, theme, uniqueId, DataCell(
-                Checkbox(
-                  value: position.isExitSelection ?? false,
-                  onChanged: isClosed ? null : (bool? value) {
-                    // Find the position in the open positions list
-                    final openPositions = positionBook.openPosition ?? [];
-                    for (int i = 0; i < openPositions.length; i++) {
-                      if (openPositions[i].token == position.token) {
-                        positionBook.selectExitPosition(i);
-                        setState(() {}); // Trigger rebuild to update button count
-                        break;
+                Theme(
+                   data: Theme.of(context).copyWith(
+                    checkboxTheme: CheckboxThemeData(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      side: BorderSide(
+                        color: theme.isDarkMode 
+                            ? WebDarkColors.textPrimary.withOpacity(0.5)
+                            : WebColors.textPrimary.withOpacity(0.5),
+                        width: 1.5,
+                      ),
+                    ),
+                  ),
+                  child: Checkbox(
+                    value: position.isExitSelection ?? false,
+                    onChanged: isClosed ? null : (bool? value) {
+                      // Find the position in the open positions list
+                      final openPositions = positionBook.openPosition ?? [];
+                      for (int i = 0; i < openPositions.length; i++) {
+                        if (openPositions[i].token == position.token) {
+                          positionBook.selectExitPosition(i);
+                          setState(() {}); // Trigger rebuild to update button count
+                          break;
+                        }
                       }
-                    }
-                  },
-                  activeColor: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
+                    },
+                    activeColor: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
+                  ),
                 ),
               ), alignment: Alignment.centerLeft),
               // Instrument - text (left aligned)
@@ -941,35 +964,21 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
               _buildCellWithHover(position, theme, uniqueId, DataCell(
                 Text(
                   position.sPrdtAli ?? 'N/A',
-                  style: WebTextStyles.custom(
-                    fontSize: 13,
+                  style: WebTextStyles.tableDataCompact(
                     isDarkTheme: theme.isDarkMode,
                     color: _getPositionTextColor(position, theme),
-                    fontWeight: WebFonts.medium,
                   ),
                 ),
               ), alignment: Alignment.centerLeft),
               // Qty - numeric (right aligned)
               _buildCellWithHover(position, theme, uniqueId, DataCell(
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
+                Text(
+                  _formatQty(position.qty ?? '0'),
+                  style: WebTextStyles.tableDataCompact(
+                    isDarkTheme: theme.isDarkMode,
                     color: isClosed 
-                        ? Colors.grey.withOpacity(0.1)
-                        : _getQtyColor(position.qty ?? '0', theme).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Text(
-                    _formatQty(position.qty ?? '0'),
-                    style: WebTextStyles.custom(
-                      fontSize: 13,
-                      isDarkTheme: theme.isDarkMode,
-                      color: isClosed 
-                          ? Colors.grey
-                          : _getQtyColor(position.qty ?? '0', theme),
-                      fontWeight: WebFonts.medium,
-                    ),
+                        ? Colors.grey
+                        : _getQtyColor(position.qty ?? '0', theme),
                   ),
                 ),
               ), alignment: Alignment.centerRight),
@@ -977,11 +986,9 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
               _buildCellWithHover(position, theme, uniqueId, DataCell(
                 Text(
                   position.avgPrc ?? '0.00',
-                  style: WebTextStyles.custom(
-                    fontSize: 13,
+                  style: WebTextStyles.tableDataCompact(
                     isDarkTheme: theme.isDarkMode,
                     color: _getPositionTextColor(position, theme),
-                    fontWeight: WebFonts.medium,
                   ),
                 ),
               ), alignment: Alignment.centerRight),
@@ -989,11 +996,9 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
               _buildCellWithHover(position, theme, uniqueId, DataCell(
                 Text(
                   position.lp ?? '0.00',
-                  style: WebTextStyles.custom(
-                    fontSize: 13,
+                  style: WebTextStyles.tableDataCompact(
                     isDarkTheme: theme.isDarkMode,
                     color: _getPositionTextColor(position, theme),
-                    fontWeight: WebFonts.medium,
                   ),
                 ),
               ), alignment: Alignment.centerRight),
@@ -1001,13 +1006,11 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
               _buildCellWithHover(position, theme, uniqueId, DataCell(
                 Text(
                   position.profitNloss ?? '0.00',
-                  style: WebTextStyles.custom(
-                    fontSize: 13,
+                  style: WebTextStyles.tableDataCompact(
                     isDarkTheme: theme.isDarkMode,
                     color: isClosed 
                         ? Colors.grey
                         : _getValueColor(position.profitNloss ?? '0.00', theme),
-                    fontWeight: WebFonts.medium,
                   ),
                 ),
               ), alignment: Alignment.centerRight),
@@ -1015,13 +1018,11 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
               _buildCellWithHover(position, theme, uniqueId, DataCell(
                 Text(
                   position.mTm ?? '0.00',
-                  style: WebTextStyles.custom(
-                    fontSize: 13,
+                  style: WebTextStyles.tableDataCompact(
                     isDarkTheme: theme.isDarkMode,
                     color: isClosed 
                         ? Colors.grey
                         : _getValueColor(position.mTm ?? '0.00', theme),
-                    fontWeight: WebFonts.medium,
                   ),
                 ),
               ), alignment: Alignment.centerRight),
@@ -1029,11 +1030,9 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
               _buildCellWithHover(position, theme, uniqueId, DataCell(
                 Text(
                   position.avgPrc ?? '0.00',
-                  style: WebTextStyles.custom(
-                    fontSize: 13,
+                  style: WebTextStyles.tableDataCompact(
                     isDarkTheme: theme.isDarkMode,
                     color: _getPositionTextColor(position, theme),
-                    fontWeight: WebFonts.medium,
                   ),
                 ),
               ), alignment: Alignment.centerRight),
@@ -1041,11 +1040,9 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
               _buildCellWithHover(position, theme, uniqueId, DataCell(
                 Text(
                   position.daybuyqty ?? '0',
-                  style: WebTextStyles.custom(
-                    fontSize: 13,
+                  style: WebTextStyles.tableDataCompact(
                     isDarkTheme: theme.isDarkMode,
                     color: _getPositionTextColor(position, theme),
-                    fontWeight: WebFonts.medium,
                   ),
                 ),
               ), alignment: Alignment.centerRight),
@@ -1053,11 +1050,9 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
               _buildCellWithHover(position, theme, uniqueId, DataCell(
                 Text(
                   position.daysellqty ?? '0',
-                  style: WebTextStyles.custom(
-                    fontSize: 13,
+                  style: WebTextStyles.tableDataCompact(
                     isDarkTheme: theme.isDarkMode,
                     color: _getPositionTextColor(position, theme),
-                    fontWeight: WebFonts.medium,
                   ),
                 ),
               ), alignment: Alignment.centerRight),
@@ -1065,11 +1060,9 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
               _buildCellWithHover(position, theme, uniqueId, DataCell(
                 Text(
                   position.daybuyavgprc ?? '0.00',
-                  style: WebTextStyles.custom(
-                    fontSize: 13,
+                  style: WebTextStyles.tableDataCompact(
                     isDarkTheme: theme.isDarkMode,
                     color: _getPositionTextColor(position, theme),
-                    fontWeight: WebFonts.medium,
                   ),
                 ),
               ), alignment: Alignment.centerRight),
@@ -1077,11 +1070,9 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
               _buildCellWithHover(position, theme, uniqueId, DataCell(
                 Text(
                   position.daysellavgprc ?? '0.00',
-                  style: WebTextStyles.custom(
-                    fontSize: 13,
+                  style: WebTextStyles.tableDataCompact(
                     isDarkTheme: theme.isDarkMode,
                     color: _getPositionTextColor(position, theme),
-                    fontWeight: WebFonts.medium,
                   ),
                 ),
               ), alignment: Alignment.centerRight),
@@ -1139,14 +1130,12 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                     message: displayText,
                     child: Text(
                       displayText,
-                      style: WebTextStyles.custom(
-                        fontSize: 13,
+                      style: WebTextStyles.tableDataCompact(
                         isDarkTheme: theme.isDarkMode,
                         color: _getPositionTextColor(position, theme),
-                        fontWeight: WebFonts.medium,
                       ),
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
+                      // overflow: TextOverflow.ellipsis,
+                      // maxLines: 1,
                     ),
                   ),
                 ),
@@ -1239,13 +1228,11 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
       children: [
         Text(
           label,
-          style: WebTextStyles.custom(
-            fontSize: 13,
+          style: WebTextStyles.tableHeader(
             isDarkTheme: theme.isDarkMode,
             color: theme.isDarkMode
                 ? WebDarkColors.textPrimary
                 : WebColors.textPrimary,
-            fontWeight: WebFonts.bold,
           ),
         ),
         const SizedBox(width: 4),
@@ -1539,6 +1526,7 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
               border: borderColor != null
                   ? Border.all(
                       color: borderColor,
+
                       width: 1,
                     )
                   : null,
@@ -1552,11 +1540,10 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                     )
                   : Text(
                       label ?? "",
-                      style: WebTextStyles.custom(
-                        fontSize: 11,
+                      style: WebTextStyles.buttonXs(
                         isDarkTheme: theme.isDarkMode,
                         color: color,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: WebFonts.medium,
                       ),
                     ),
             ),

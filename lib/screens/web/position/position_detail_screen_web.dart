@@ -9,8 +9,8 @@ import '../../../provider/portfolio_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../provider/websocket_provider.dart';
 import '../../../res/res.dart';
-import '../../../res/global_state_text.dart';
 import '../../../res/web_colors.dart';
+import '../../../res/global_font_web.dart';
  
 import '../../../models/order_book_model/order_book_model.dart';
 import '../../../utils/responsive_navigation.dart';
@@ -99,7 +99,7 @@ class _PositionDetailScreenWebState extends ConsumerState<PositionDetailScreenWe
             }
 
             return Container(
-              width: 500,
+              width: 700,
               // decoration: BoxDecoration(
               //   color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
               //   borderRadius: BorderRadius.circular(16),
@@ -164,14 +164,17 @@ class _PositionDetailScreenWebState extends ConsumerState<PositionDetailScreenWe
                    Flexible(
                      fit: FlexFit.loose,
                      child: SingleChildScrollView(
-                      padding: const EdgeInsets.only(top: 0, bottom: 16, left: 16, right: 16),
+                      padding: const EdgeInsets.only(top: 0, bottom: 20, left: 20, right: 20),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           // Symbol and Price Section
                         
                           
-                          _buildPnLSection(theme, positions, updatedPosition),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            child: _buildPnLSection(theme, positions, updatedPosition),
+                          ),
                           // Action Buttons
                           // _buildActionButtons(theme, marketwatch, ref, updatedPosition),
                           
@@ -219,30 +222,19 @@ class _PositionDetailScreenWebState extends ConsumerState<PositionDetailScreenWe
               children: [
                 Text(
                   "${position.symbol?.replaceAll("-EQ", "")} ${position.expDate} ${position.option} ",
-                  style: TextWidget.textStyle(
-                    fontSize: 16,
-                    theme: theme.isDarkMode,
+                  style: WebTextStyles.dialogTitle(
+                    isDarkTheme: theme.isDarkMode,
                     color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                    fw: 1,
                   ),
                 ),
                 const SizedBox(width: 4),
-                 Container(
-                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: theme.isDarkMode ? colors.primaryDark.withOpacity(0.7) : colors.primaryLight.withOpacity(0.7),
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                   child: Text(
-                                 "${position.exch}",
-                                 style: TextWidget.textStyle(
-                                   fontSize: 12,
-                                   theme: theme.isDarkMode,
-                   color: colors.textPrimaryDark,
-                                   fw: 1,
-                                 ),
+                 Text(
+                               "${position.exch}",
+                               style: WebTextStyles.dialogTitle(
+                                 isDarkTheme: theme.isDarkMode,
+                                 color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                                ),
-                 ),
+                             ),
               ],
             ),
             const SizedBox(height: 8),
@@ -252,9 +244,8 @@ class _PositionDetailScreenWebState extends ConsumerState<PositionDetailScreenWe
                 children: [
                   Text(
                       "${position.lp}",
-                      style: TextWidget.textStyle(
-                        fontSize: 16,
-                        theme: theme.isDarkMode,
+                      style: WebTextStyles.title(
+                        isDarkTheme: theme.isDarkMode,
                         color: (position.lp == "null" || position.lp == null) ||
                                 position.lp == "0.00"
                             ? theme.isDarkMode
@@ -267,18 +258,17 @@ class _PositionDetailScreenWebState extends ConsumerState<PositionDetailScreenWe
                                 : theme.isDarkMode
                                     ? colors.profitDark
                                     : colors.profitLight,
-                        fw: 1,
+                        fontWeight: WebFonts.medium,
                       ),
                     ),
-                    const SizedBox(width: 4),
+                    const SizedBox(width: 8), 
 
                      Text(
                   "${double.parse("${position.chng ?? 0.00}").toStringAsFixed(2)} (${position.perChange ?? 0.00}%)",
-                  style: TextWidget.textStyle(
-                    fontSize: 16,
-                    theme: theme.isDarkMode,
+                  style: WebTextStyles.sub(
+                    isDarkTheme: theme.isDarkMode,
                     color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                    fw: 1,
+                    fontWeight: WebFonts.medium,
                   ),
                 ),
                 ],
@@ -413,11 +403,10 @@ class _PositionDetailScreenWebState extends ConsumerState<PositionDetailScreenWe
         onPressed: onPressed,
         child: Text(
           text,
-          style: TextWidget.textStyle(
-            fontSize: 14,
-            theme: false,
+          style: WebTextStyles.buttonXs(
+            isDarkTheme: theme.isDarkMode,
             color: isPrimary ? colors.colorWhite : (theme.isDarkMode ? colors.colorWhite : colors.primaryLight),
-            fw: 2,
+            fontWeight: WebFonts.semiBold,
           ),
         ),
       ),
@@ -461,11 +450,10 @@ class _PositionDetailScreenWebState extends ConsumerState<PositionDetailScreenWe
                   const SizedBox(width: 8),
                   Text(
                     "Convert Position",
-                    style: TextWidget.textStyle(
-                      fontSize: 14,
-                      theme: false,
+                    style: WebTextStyles.buttonXs(
+                      isDarkTheme: theme.isDarkMode,
                       color: colors.primaryLight,
-                      fw: 2,
+                      fontWeight: WebFonts.semiBold,
                     ),
                   ),
                 ],
@@ -485,23 +473,21 @@ class _PositionDetailScreenWebState extends ConsumerState<PositionDetailScreenWe
           children: [
             Text(
               positions.isNetPnl ? "P&L" : "MTM",
-              style: TextWidget.textStyle(
-                fontSize: 16,
-                theme: theme.isDarkMode,
+              style: WebTextStyles.title(
+                isDarkTheme: theme.isDarkMode,
                 color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                fw: 1,
+                fontWeight: WebFonts.medium,
               ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 6),
              Text(
           positions.isNetPnl
               ? "${position.profitNloss ?? position.rpnl}"
               : "${position.mTm}",
-          style: TextWidget.textStyle(
-            fontSize: 18,
-            theme: false,
+          style: WebTextStyles.head(
+            isDarkTheme: theme.isDarkMode,
             color: _getPnLColor(positions, theme, position),
-            fw: 1,
+            fontWeight: WebFonts.medium,
           ),
         ),
           ],
@@ -526,76 +512,100 @@ class _PositionDetailScreenWebState extends ConsumerState<PositionDetailScreenWe
   }
 
   Widget _buildDetailsSection(ThemesProvider theme, PortfolioProvider positions, PositionBookModel position) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-       
-        _buildInfoRow(
-          "Net Qty",
-          "${((int.tryParse(position.netqty.toString()) ?? 0) / (position.exch == 'MCX' ? (int.tryParse(position.ls.toString()) ?? 1) : 1)).toInt()}",
-          theme,
+    return IntrinsicHeight(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Left column - First 4 items
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildInfoRow(
+                    "Net Qty",
+                    "${((int.tryParse(position.netqty.toString()) ?? 0) / (position.exch == 'MCX' ? (int.tryParse(position.ls.toString()) ?? 1) : 1)).toInt()}",
+                    theme,
+                  ),
+                  _buildInfoRow(
+                    "Avg Price",
+                    "${position.netupldprc ?? 0.00}",
+                    theme,
+                  ),
+                  _buildInfoRow(
+                    "Product",
+                    "${position.sPrdtAli ?? ""}",
+                    theme,
+                  ),
+                  _buildInfoRow(
+                    "Buy Qty ( Day / CF )",
+                    "${((int.tryParse(position.daybuyqty.toString()) ?? 0) / (position.exch == 'MCX' ? (int.tryParse(position.ls.toString()) ?? 1) : 1)).toInt()} / ${position.cfbuyqty}",
+                    theme,
+                  ),
+                ],
+              ),
+            ),
+            // Vertical divider
+            Container(
+              width: 0.5,
+              margin: const EdgeInsets.symmetric(horizontal: 16),
+              color: theme.isDarkMode
+                  ? WebDarkColors.divider
+                  : WebColors.divider,
+            ),
+            // Right column - Last 4 items
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildInfoRow(
+                    "Sell Qty ( Day / CF )",
+                    "${((int.tryParse(position.daysellqty.toString()) ?? 0) / (position.exch == 'MCX' ? (int.tryParse(position.ls.toString()) ?? 1) : 1)).toInt()} / ${position.cfsellqty}",
+                    theme,
+                  ),
+                  _buildInfoRow(
+                    "Buy Avg prc ( Day / CF )",
+                    "${position.daybuyavgprc ?? 0.00} / ${position.cfbuyavgprc}",
+                    theme,
+                  ),
+                  _buildInfoRow(
+                    "Sell Avg prc ( Day / CF )",
+                    "${position.daysellavgprc ?? 0.00} / ${position.cfsellavgprc}",
+                    theme,
+                  ),
+                  _buildInfoRow(
+                    "Actual Avg Price",
+                    "${position.upldprc ?? 0.00}",
+                    theme,
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
-        _buildInfoRow(
-          "Avg Price",
-          "${position.netupldprc ?? 0.00}",
-          theme,
-        ),
-        _buildInfoRow(
-          "Product",
-          "${position.sPrdtAli ?? ""}",
-          theme,
-        ),
-        _buildInfoRow(
-          "Buy Qty ( Day / CF )",
-          "${((int.tryParse(position.daybuyqty.toString()) ?? 0) / (position.exch == 'MCX' ? (int.tryParse(position.ls.toString()) ?? 1) : 1)).toInt()} / ${position.cfbuyqty}",
-          theme,
-        ),
-        _buildInfoRow(
-          "Sell Qty ( Day / CF )",
-          "${((int.tryParse(position.daysellqty.toString()) ?? 0) / (position.exch == 'MCX' ? (int.tryParse(position.ls.toString()) ?? 1) : 1)).toInt()} / ${position.cfsellqty}",
-          theme,
-        ),
-        _buildInfoRow(
-          "Buy Avg prc ( Day / CF )",
-          "${position.daybuyavgprc ?? 0.00} / ${position.cfbuyavgprc}",
-          theme,
-        ),
-        _buildInfoRow(
-          "Sell Avg prc ( Day / CF )",
-          "${position.daysellavgprc ?? 0.00} / ${position.cfsellavgprc}",
-          theme,
-        ),
-        _buildInfoRow(
-          "Actual Avg Price",
-          "${position.upldprc ?? 0.00}",
-          theme,
-        ),
-      ],
+      ),
     );
   }
 
   Widget _buildInfoRow(String title, String value, ThemesProvider theme) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.symmetric(vertical: 10),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
             title,
-            style: TextWidget.textStyle(
-              fontSize: 14,
-              theme: false,
-              color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-              fw: 1,
+            style: WebTextStyles.dialogContent(
+              isDarkTheme: theme.isDarkMode,
+             color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
             ),
           ),
           Text(
             value,
-            style: TextWidget.textStyle(
-              fontSize: 14,
-              theme: false,
+            style: WebTextStyles.dialogContent(
+              isDarkTheme: theme.isDarkMode,
               color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-              fw: 1,
             ),
           ),
         ],

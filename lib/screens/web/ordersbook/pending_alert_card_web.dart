@@ -9,7 +9,6 @@ import '../../../provider/notification_provider.dart';
 import '../../../provider/order_provider.dart';
 import '../../../provider/websocket_provider.dart';
 import '../../../provider/thems.dart';
-import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../res/web_colors.dart';
 import '../../../res/global_font_web.dart';
@@ -476,11 +475,9 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
       children: [
         Text(
           label,
-          style: WebTextStyles.custom(
-            fontSize: 14,
+          style: WebTextStyles.tableHeader(
             isDarkTheme: theme.isDarkMode,
             color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
-            fontWeight: WebFonts.bold,
           ),
         ),
         if (isActive) ...[
@@ -507,11 +504,9 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
     return DataCell(
       Text(
         timeText,
-        style: TextWidget.textStyle(
-          fontSize: 12,
+        style: WebTextStyles.helperText(
+          isDarkTheme: theme.isDarkMode,
           color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-          theme: theme.isDarkMode,
-          fw: 2,
         ),
       ),
     );
@@ -606,11 +601,9 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
     return DataCell(
       Text(
         symbol,
-        style: WebTextStyles.custom(
-          fontSize: 13,
+        style: WebTextStyles.tableData(
           isDarkTheme: theme.isDarkMode,
           color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
-          fontWeight: WebFonts.medium,
         ),
       ),
     );
@@ -645,13 +638,11 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
                     message: displayText,
                     child: Text(
                       displayText,
-                      style: WebTextStyles.custom(
-                        fontSize: 13,
+                      style: WebTextStyles.tableData(
                         isDarkTheme: theme.isDarkMode,
                         color: theme.isDarkMode
                             ? WebDarkColors.textPrimary
                             : WebColors.textPrimary,
-                        fontWeight: WebFonts.medium,
                       ),
                       overflow: TextOverflow.ellipsis,
                       maxLines: 1,
@@ -734,11 +725,9 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
     return DataCell(
       Text(
         exchange,
-        style: WebTextStyles.custom(
-          fontSize: 13,
+        style: WebTextStyles.tableData(
           isDarkTheme: theme.isDarkMode,
           color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
-          fontWeight: WebFonts.medium,
         ),
       ),
     );
@@ -747,12 +736,10 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
   DataCell _buildAlertTypeCell(dynamic alert, ThemesProvider theme) {
     String alertType = '';
     Color alertColor = colors.pending;
-    bool hasBorder = true;
     
     if (alert is BrokerMessage) {
       alertType = 'TRIGGERED';
       alertColor = theme.isDarkMode ? colors.primaryDark : colors.primaryLight;
-      hasBorder = false; // No border for triggered alerts, matching mobile
     } else {
       switch (alert.aiT) {
         case 'LTP_A':
@@ -779,11 +766,9 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
     return DataCell(
       Text(
         alertType,
-        style: WebTextStyles.custom(
-          fontSize: 13,
+        style: WebTextStyles.tableData(
           isDarkTheme: theme.isDarkMode,
           color: alertColor,
-          fontWeight: WebFonts.medium,
         ),
       ),
     );
@@ -809,11 +794,9 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
     return DataCell(
       Text(
         target,
-        style: WebTextStyles.custom(
-          fontSize: 13,
+        style: WebTextStyles.tableData(
           isDarkTheme: theme.isDarkMode,
           color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
-          fontWeight: WebFonts.medium,
         ),
       ),
     );
@@ -840,21 +823,17 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
         children: [
           Text(
             ltp,
-            style: WebTextStyles.custom(
-              fontSize: 13,
+            style: WebTextStyles.tableData(
               isDarkTheme: theme.isDarkMode,
               color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
-              fontWeight: WebFonts.medium,
             ),
           ),
           if (change.isNotEmpty)
             Text(
               change,
-              style: WebTextStyles.custom(
-                fontSize: 13,
+              style: WebTextStyles.tableData(
                 isDarkTheme: theme.isDarkMode,
                 color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
-                fontWeight: WebFonts.medium,
               ),
             ),
         ],
@@ -887,11 +866,9 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
         ),
         child: Text(
           status,
-          style: WebTextStyles.custom(
-            fontSize: 13,
+          style: WebTextStyles.statusBadge(
             isDarkTheme: theme.isDarkMode,
             color: statusColor,
-            fontWeight: WebFonts.medium,
           ),
         ),
       ),
@@ -932,11 +909,10 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
             child: Center(
               child: Text(
                 label ?? "",
-                style: WebTextStyles.custom(
-                  fontSize: 11,
+                style: WebTextStyles.buttonXs(
                   isDarkTheme: theme.isDarkMode,
                   color: color,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: WebFonts.semiBold,
                 ),
               ),
             ),
