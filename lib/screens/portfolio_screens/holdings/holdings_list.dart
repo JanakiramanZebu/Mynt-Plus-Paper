@@ -12,11 +12,12 @@ import '../../../sharedWidget/functions.dart';
 
 // A wrapper widget that only rebuilds when necessary
 class HoldingsList extends ConsumerStatefulWidget {
+  final bool fromDepthScreen;
   final HoldingsModel holdingData;
   final ExchTsym exchTsym;
 
   const HoldingsList(
-      {super.key, required this.holdingData, required this.exchTsym});
+      {super.key,this.fromDepthScreen = false, required this.holdingData, required this.exchTsym});
 
   @override
   ConsumerState<HoldingsList> createState() => _HoldingsListState();
@@ -98,7 +99,56 @@ class _HoldingsListState extends ConsumerState<HoldingsList> {
 
     return Container(
         padding: const EdgeInsets.all(16),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        child: widget.fromDepthScreen ?
+        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      
+          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+            // Static quantity information - use cached version
+            Row(
+              children: [
+                _getCachedStaticComponent(
+                    qtyKey,
+                    () => _StaticQuantityInfo(
+                          holdingData: widget.holdingData,
+                          exchTsym: widget.exchTsym,
+                          labelColor: labelColor,
+                          contentColor: contentColor,
+                        )),
+                const SizedBox(width: 4),
+                _getCachedStaticComponent(
+                  investKey,
+                  () => _StaticPriceInfo(
+                    holdingData: widget.holdingData,
+                    exchTsym: widget.exchTsym,
+                    labelColor: labelColor,
+                    contentColor: contentColor,
+                  ),
+                ),
+              ],
+            ),
+              _DynamicPnlInfo(
+              profitLoss: widget.exchTsym.profitNloss ?? '0.00',
+            ),
+
+          ]),
+          const SizedBox(height: 8),
+          // Investment (static) and current value (dynamic)
+          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+            // Static investment information - use cached version
+            _StaticInvestmentInfo(
+              holdingData: widget.holdingData,
+              exchTsym: widget.exchTsym,
+              labelColor: labelColor,
+              contentColor: contentColor,
+            ),
+
+          _DynamicPnlInfo(
+              pnlChange: widget.exchTsym.pNlChng ?? '0.00',
+            ),
+          ])
+        ],
+        ) : 
+        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           // Static header information (symbol name)
           Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
             // Symbol name - static
@@ -200,7 +250,9 @@ class _HoldingsListState extends ConsumerState<HoldingsList> {
             //   contentColor: contentColor,
             // )
           ])
-        ]));
+        ],
+        ),
+        );
   }
 }
 

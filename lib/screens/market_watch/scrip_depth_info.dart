@@ -17,9 +17,12 @@ import '../../locator/constant.dart';
 import '../../models/marketwatch_model/get_quotes.dart';
 import '../../models/marketwatch_model/market_watch_scrip_model.dart';
 import '../../models/order_book_model/order_book_model.dart';
+import '../../models/portfolio_model/holdings_model.dart';
 import '../../provider/market_watch_provider.dart';
+import '../../provider/portfolio_provider.dart';
 import '../../provider/thems.dart';
 import '../../provider/user_profile_provider.dart';
+import '../portfolio_screens/holdings/holdings_list.dart';
 import '../../res/global_state_text.dart';
 import '../../res/res.dart';
 import '../../routes/route_names.dart';
@@ -142,6 +145,71 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
     }
 
     return safeSize;
+  }
+
+  // Helper method to get holding data for current scrip
+  HoldingsModel? _getHoldingForCurrentScrip() {
+    final portfolio = ref.read(portfolioProvider);
+    final holdings = portfolio.holdingsModel;
+
+    if (holdings == null || holdings.isEmpty) {
+      return null;
+    }
+
+    // Find holding that matches current token
+    try {
+      return holdings.firstWhere(
+        (holding) {
+          if (holding.exchTsym == null || holding.exchTsym!.isEmpty) {
+            return false;
+          }
+          return holding.exchTsym![0].token == widget.wlValue.token;
+        },
+      );
+    } catch (e) {
+      // No matching holding found
+      return null;
+    }
+  }
+
+  // Build holdings card widget if user holds this scrip
+  Widget? _buildHoldingsCard() {
+    final holding = _getHoldingForCurrentScrip();
+
+    if (holding == null || holding.exchTsym == null || holding.exchTsym!.isEmpty) {
+      return null;
+    }
+
+    final theme = ref.read(themeProvider);
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+      decoration: BoxDecoration(
+        color: theme.isDarkMode ? colors.searchBgDark : colors.searchBg,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Padding(
+          //   padding: const EdgeInsets.only(left: 16, top: 0, bottom: 4),
+          //   child: TextWidget.subText(
+          //     text: "Your Holdings",
+          //     theme: theme.isDarkMode,
+          //     color: theme.isDarkMode
+          //         ? colors.textSecondaryDark
+          //         : colors.textSecondaryLight,
+          //     fw: 2,
+          //   ),
+          // ),
+          HoldingsList(
+            fromDepthScreen: true,
+            holdingData: holding,
+            exchTsym: holding.exchTsym![0],
+          ),
+        ],
+      ),
+    );
   }
 
   // Calculate dynamic initial size based on content height
@@ -514,7 +582,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
             
                                          // Calculate dynamic initial size for Overview state
                      if (scripInfo.actDeptBtn == "Overview") {
-                       initSize = _calculateDynamicInitialSize(context);
+                       initSize = _buildHoldingsCard() != null ? 0.39 : _calculateDynamicInitialSize(context);
                      }
                      
                      // Ensure initSize is safe before building DraggableScrollableSheet
@@ -917,6 +985,9 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                       ],
                                                     ),
                                                   ),
+                                                  // Holdings card - display if user holds this scrip
+                                                  if (_buildHoldingsCard() != null)
+                                                    _buildHoldingsCard()!,
                                                   if (!scripInfo
                                                           .scripDepthloader &&
                                                       widget.wlValue.instname !=
